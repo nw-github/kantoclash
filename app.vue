@@ -75,7 +75,6 @@
   </UContainer>
 
   <UNotifications />
-  <MusicController />
 </template>
 
 <style>

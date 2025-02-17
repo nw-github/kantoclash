@@ -26,6 +26,8 @@
       @timer="startTimer"
     />
   </template>
+
+  <MusicController />
 </template>
 
 <script setup lang="ts">
