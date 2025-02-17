@@ -11,4 +11,5 @@ export default defineNuxtConfig({
   anime: {
     composables: true,
   },
+  components: [{ path: "~/components", pathPrefix: false }],
 });

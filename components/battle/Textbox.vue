@@ -114,7 +114,7 @@
 </template>
 
 <style>
-@import "../assets/colors.css";
+@import "@/assets/colors.css";
 .events {
   .red {
     color: var(--stat-down);

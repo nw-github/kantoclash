@@ -22,8 +22,8 @@
 </template>
 
 <script setup lang="ts">
-import { speciesList } from "~/game/species";
-import { Pokemon } from "../game/pokemon";
+import { speciesList } from "@/game/species";
+import { Pokemon } from "@/game/pokemon";
 
 defineEmits<{ (e: "click"): void }>();
 const props = defineProps<{ poke: Pokemon; disabled: boolean; active: boolean }>();

@@ -141,9 +141,9 @@
 </style>
 
 <script setup lang="ts">
-import { calcStat } from "~/game/pokemon";
-import { speciesList, type Species } from "~/game/species";
-import { statKeys, type Stats } from "~/game/utils";
+import { calcStat } from "@/game/pokemon";
+import { speciesList, type Species } from "@/game/species";
+import { statKeys, type Stats } from "@/game/utils";
 
 // const unusedMoves = computed(() => species.moves.filter(id => !moves.value.includes(id)));
 

@@ -42,10 +42,10 @@
 </template>
 
 <script setup lang="ts">
-import type { Pokemon } from "../game/pokemon";
-import { speciesList } from "../game/species";
-import { moveList } from "../game/moveList";
-import { hpPercentExact } from "../game/utils";
+import type { Pokemon } from "../../game/pokemon";
+import { speciesList } from "../../game/species";
+import { moveList } from "../../game/moveList";
+import { hpPercentExact } from "../../game/utils";
 import "assets/colors.css";
 
 const props = defineProps<{ active?: ClientActivePokemon; poke: Pokemon }>();

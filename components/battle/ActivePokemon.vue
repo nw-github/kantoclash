@@ -97,7 +97,7 @@
 </template>
 
 <style scoped>
-@import "../assets/colors.css";
+@import "@/assets/colors.css";
 
 .hp-fill {
   width: v-bind("hp + '%'");
@@ -135,10 +135,10 @@
 </style>
 
 <script setup lang="ts">
-import { hpPercent, stageMultipliers } from "../game/utils";
-import { calcStat, type Pokemon } from "../game/pokemon";
-import { speciesList } from "../game/species";
-import { moveList, type MoveId } from "../game/moveList";
+import { hpPercent, stageMultipliers } from "@/game/utils";
+import { calcStat, type Pokemon } from "@/game/pokemon";
+import { speciesList } from "@/game/species";
+import { moveList, type MoveId } from "@/game/moveList";
 import tailwindColors from "tailwindcss/colors";
 
 const props = defineProps<{ poke?: ClientActivePokemon; base?: Pokemon; back?: boolean }>();

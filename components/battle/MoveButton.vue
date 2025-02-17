@@ -36,9 +36,9 @@
 </template>
 
 <script setup lang="ts">
-import type { MoveOption } from "../game/battle";
-import { moveList } from "../game/moveList";
-import { isSpecial } from "../game/utils";
+import type { MoveOption } from "@/game/battle";
+import { moveList } from "@/game/moveList";
+import { isSpecial } from "@/game/utils";
 
 defineEmits<{ (e: "click"): void }>();
 

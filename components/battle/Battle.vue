@@ -154,7 +154,7 @@
 </template>
 
 <style>
-@import "../assets/colors.css";
+@import "@/assets/colors.css";
 
 .events {
   @apply text-sm sm:text-base;
@@ -176,12 +176,12 @@
 </style>
 
 <script setup lang="ts">
-import type { Options, Turn } from "../game/battle";
-import type { Pokemon, Status } from "../game/pokemon";
-import type { BattleEvent, InfoReason } from "../game/events";
-import { speciesList, type SpeciesId } from "../game/species";
-import { clamp, hpPercentExact } from "../game/utils";
-import { moveList, type MoveId } from "../game/moveList";
+import type { Options, Turn } from "@/game/battle";
+import type { Pokemon, Status } from "@/game/pokemon";
+import type { BattleEvent, InfoReason } from "@/game/events";
+import { speciesList, type SpeciesId } from "@/game/species";
+import { clamp, hpPercentExact } from "@/game/utils";
+import { moveList, type MoveId } from "@/game/moveList";
 import { stageTable } from "#imports";
 import type { ClientVolatileFlag } from "~/utils";
 import type { BattleTimer } from "~/server/utils/gameServer";
