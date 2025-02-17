@@ -20,12 +20,12 @@ const props = defineProps<{
   substitute?: boolean;
 }>();
 const sprite = computed(() => {
-  if (!props.species) {
-    return "";
-  }
-
   const scale =
     1 / (props.substitute && props.kind !== "front" ? (props.scale ?? 1) / 2 : props.scale ?? 1);
+  if (!props.species) {
+    return `/sprites/${props.kind === "box" ? "box" : "battle"}/unknown.png ${scale}x`;
+  }
+
   const id = props.substitute ? "substitute" : props.species.dexId;
   if (props.kind === "front") {
     return `/sprites/battle/${id}.gif ${scale}x`;

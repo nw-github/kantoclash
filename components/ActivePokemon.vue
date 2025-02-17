@@ -48,23 +48,13 @@
     <div class="flex flex-col items-center">
       <div class="w-[128px] h-[117px] sm:w-[256px] sm:h-[234px] items-center justify-center flex">
         <UPopover mode="hover" :popper="{ placement: 'top', offsetDistance: 0 }">
-          <div class="sprite z-20" :class="{ back, front: !back }" ref="sprite">
-            <div class="block sm:hidden">
-              <Sprite
-                :species="species"
-                :substitute="poke?.flags.substitute"
-                :kind="back ? 'back' : 'front'"
-                :scale="1"
-              />
-            </div>
-            <div class="hidden sm:block">
-              <Sprite
-                :species="species"
-                :substitute="poke?.flags.substitute"
-                :kind="back ? 'back' : 'front'"
-                :scale="2"
-              />
-            </div>
+          <div class="sprite z-20" :class="{ back, front: !back, invisible: !poke }" ref="sprite">
+            <Sprite
+              :species="species"
+              :substitute="poke?.flags.substitute"
+              :kind="back ? 'back' : 'front'"
+              :scale="isSmall ? 1 : 2"
+            />
           </div>
 
           <template #panel v-if="poke">
@@ -164,6 +154,7 @@ const maxSpe = computed(
 const hp = computed(() =>
   props.base ? hpPercent(props.base.hp, props.base.stats.hp) : props.poke?.hp ?? 0,
 );
+const isSmall = useMediaQuery("(max-width: 640px)");
 
 const sprite = ref<HTMLDivElement>();
 const pokeBall = ref<HTMLDivElement>();

@@ -1,6 +1,6 @@
 import { moveList, type MoveId } from "./moveList";
 import { speciesList, type SpeciesId } from "./species";
-import { statKeys, type StageStats, type Stats } from "./utils";
+import { type StageStats, type Stats } from "./utils";
 
 export type Status = "psn" | "par" | "slp" | "frz" | "tox" | "brn";
 
@@ -39,7 +39,7 @@ export class Pokemon {
     };
 
     this.speciesId = speciesId;
-    this.name = name ?? this.species.name;
+    this.name = name || this.species.name;
     this.moves = moves;
     this.pp = moves.map(move => moveList[move].pp);
     this.level = level;
@@ -58,20 +58,8 @@ export class Pokemon {
     return speciesList[this.speciesId];
   }
 
-  static fromString(src: string) {
-    const result = parsePokemon(src);
-    if (Array.isArray(result)) {
-      return result;
-    }
-
-    return new Pokemon(
-      result.species,
-      result.dvs,
-      result.statexp,
-      result.level,
-      result.moves,
-      result.name,
-    );
+  static fromDescriptor({ species, dvs, statexp, level, moves, name }: Gen1PokemonDesc) {
+    return new Pokemon(species, dvs, statexp, level, moves, name);
   }
 }
 
@@ -87,84 +75,4 @@ export const getHpDv = (dvs: Partial<StageStats>) => {
     (((dvs.spc ?? 15) & 1) << 1) |
     ((dvs.spe ?? 15) & 1)
   );
-};
-
-const nameWithSpecies = /^\s*(.*?)\s*\((\w+)\)/;
-const pokeLevel = /^\s*Level:\s*(\d+)/i;
-const evs = /^EVs:\s*(\d+\s+\w+\s*\/?\s*)+/i;
-const ivs = /^IVs:\s*(\d+\s+\w+\s*\/?\s*)+/i;
-const move = /^\s*-\s*([\w\s]+)/i;
-const statRegex = /\s*(\d+)\s+(\w+)\s*/g;
-
-export const parsePokemon = (src: string) => {
-  const moves: MoveId[] = [];
-  const dvs: Partial<Stats> = {};
-  const statexp: Partial<Stats> = {};
-  let level = 100;
-  let name: string | undefined = undefined;
-  let speciesName = "";
-
-  const lines = src.split("\n");
-
-  let match;
-  if ((match = lines[0].match(nameWithSpecies))) {
-    speciesName = match[2].toLowerCase();
-    name = match[1];
-  } else {
-    speciesName = lines[0].toLowerCase();
-  }
-
-  const problems = [];
-  outer: for (const line of lines.slice(1)) {
-    if ((match = line.match(pokeLevel))) {
-      level = +match[1];
-    } else if ((match = line.match(evs)) || (match = line.match(ivs))) {
-      // EVs and IVs for smogon compatibility
-      const isEvs = match[0].toLowerCase().includes("evs");
-      for (const [, v, s] of match[1].matchAll(statRegex)) {
-        const value = +v;
-        const stat = s.toLowerCase();
-        if (!(statKeys as readonly string[]).includes(stat.toLowerCase())) {
-          problems.push(`Invalid stat '${stat}'`);
-        }
-
-        if (value < 0 || (isEvs && value > 255) || (!isEvs && value > 15)) {
-          problems.push(`Invalid ${isEvs ? "EV" : "IV"} value '${value}'`);
-        }
-
-        if (isEvs) {
-          // FIXME: this is wrong
-          statexp[stat as keyof Stats] = Math.floor(value * 257);
-        } else {
-          if (stat === "hp") {
-            problems.push(`Cannot set HP IV, it is dependent on the value of the other IVs`);
-          }
-
-          dvs[stat as keyof Stats] = Math.floor(value / 2);
-        }
-      }
-    } else if ((match = line.match(move))) {
-      for (const move in moveList) {
-        if (moveList[move as MoveId].name.toLowerCase() === match[1].trim().toLowerCase()) {
-          moves.push(move as MoveId);
-          continue outer;
-        }
-      }
-
-      problems.push(`Invalid move '${match[1]}'`);
-    }
-  }
-
-  for (const species in speciesList) {
-    if (speciesList[species as SpeciesId].name.toLowerCase() === speciesName) {
-      if (problems.length) {
-        return problems;
-      }
-
-      return { species: species as SpeciesId, dvs, statexp, level, moves, name };
-    }
-  }
-
-  problems.push(`Invalid species '${speciesName}'`);
-  return problems;
 };

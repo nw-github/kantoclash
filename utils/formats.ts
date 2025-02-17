@@ -3,6 +3,8 @@ import { moveList, type MoveId } from "../game/moveList";
 import { speciesList, type Species, type SpeciesId } from "../game/species";
 import { AlwaysFailMove, Move } from "../game/moves";
 import random from "random";
+import { statKeys, type Stats } from "~/game/utils";
+import { z } from "zod";
 
 export const battleFormats = [
   "standard",
@@ -15,11 +17,11 @@ export const battleFormats = [
 
 export type FormatId = (typeof battleFormats)[number];
 
-export type TeamProblems = (string | { source: string; problems: string[] })[];
+export type TeamProblems = { path: (string | number)[]; message: string }[];
 
 type FormatDesc = {
   generate?(): Pokemon[];
-  validate?(team: string): readonly [true, Pokemon[]] | readonly [false, TeamProblems];
+  validate?(team: any): readonly [true, Pokemon[]] | readonly [false, TeamProblems];
 };
 
 const speciesIds = Object.keys(speciesList) as SpeciesId[];
@@ -69,47 +71,53 @@ const randoms = (validSpecies: (s: Species, id: SpeciesId) => boolean, level = 1
   });
 };
 
-const validateTeam = (text: string, onPoke?: (poke: Pokemon, problems: TeamProblems) => void) => {
-  const problems: TeamProblems = [];
-  const team = text
-    .split("\n\n")
-    .map(poke => poke.trim())
-    .filter(poke => poke.length);
-  if (team.length < 1 || team.length > 6) {
-    problems.push("Team must have between 1 and 6 pokemon");
+const teamValidator = z
+  .object({
+    name: z.string().trim().max(24).optional(),
+    level: z.number().min(0).max(100),
+    species: z.string().refine(s => (speciesList as any)[s] !== undefined, "Species is invalid"),
+    moves: z
+      .string()
+      .refine(m => (moveList as any)[m] !== undefined, "Move does not exist")
+      .array()
+      .nonempty()
+      .refine(arr => new Set(arr).size === arr.length, "Duplicate moves are not allowed"),
+    dvs: z.record(z.enum(statKeys), z.number().min(0).max(15)),
+    statexp: z.record(z.enum(statKeys), z.number().min(0).max(65535)),
+  })
+  .superRefine((desc, ctx) => {
+    const learnset = speciesList[desc.species as SpeciesId]?.moves as MoveId[];
+    if (!learnset) {
+      return;
+    }
+
+    for (let i = 0; i < desc.moves.length; i++) {
+      if (!learnset.includes(desc.moves[i] as MoveId)) {
+        ctx.addIssue({ path: ["moves", i], message: "Does not learn this move", code: "custom" });
+      }
+    }
+  })
+  .array()
+  .max(6)
+  .nonempty("Team must have between 1 and 6 pokemon")
+  .refine(
+    team => new Set(team.map(p => p.species)).size === team.length,
+    "Cannot contain two pokemon of the same species",
+  );
+
+const validateTeam = (team: any, onPoke?: (poke: Pokemon, add: (s: string) => void) => void) => {
+  const parsed = teamValidator.safeParse(team);
+  if (parsed.error) {
+    return [false, parsed.error.issues] as const;
   }
 
   const result = [];
-  for (const text of team) {
-    const poke = Pokemon.fromString(text);
-    if (!(poke instanceof Pokemon)) {
-      problems.push({ source: text, problems: poke });
-      continue;
-    }
-
-    const myProblems: string[] = [];
+  const problems: TeamProblems = [];
+  for (const desc of parsed.data) {
+    result.push(Pokemon.fromDescriptor(desc as Gen1PokemonDesc));
     if (onPoke) {
-      onPoke(poke, myProblems);
+      onPoke(result.at(-1)!, message => problems.push({ path: ["unknown"], message }));
     }
-
-    for (const move of poke.moves) {
-      if (!(poke.species.moves as MoveId[]).includes(move)) {
-        myProblems.push(`${poke.species.name} does not learn ${moveList[move].name}`);
-      }
-    }
-
-    if (!poke.moves.length) {
-      myProblems.push(`${poke.species.name} must have at least one move`);
-    }
-
-    if (poke.level < 1 || poke.level > 100) {
-      myProblems.push(`${poke.species.name} must have a level between 1 and 100`);
-    }
-
-    if (myProblems.length) {
-      problems.push({ source: text, problems: myProblems });
-    }
-    result.push(poke);
   }
 
   if (problems.length) {
@@ -121,15 +129,15 @@ const validateTeam = (text: string, onPoke?: (poke: Pokemon, problems: TeamProbl
 
 export const formatDescs: Record<FormatId, FormatDesc> = {
   standard: {
-    validate(text) {
-      return validateTeam(text);
+    validate(team) {
+      return validateTeam(team);
     },
   },
   nfe: {
-    validate(text) {
-      return validateTeam(text, (poke, problems) => {
+    validate(team) {
+      return validateTeam(team, (poke, addProblem) => {
         if (!poke.species.evolves) {
-          problems.push(`'${poke.species.name}' cannot be used in NFE format (it does not evolve)`);
+          addProblem(`'${poke.species.name}' cannot be used in NFE format (it does not evolve)`);
         }
       });
     },

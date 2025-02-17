@@ -1,12 +1,10 @@
 import { v4 as uuid } from "uuid";
 import { Server as SocketIoServer, Socket as SocketIoClient } from "socket.io";
-
 import { Pokemon } from "../../game/pokemon";
-import { hpPercent } from "../../game/utils";
 import { Battle, Options, Player, Turn } from "../../game/battle";
-import { BattleEvent } from "../../game/events";
 import { type FormatId, type TeamProblems, formatDescs } from "../../utils/formats";
 import { User } from "#auth-utils";
+import type { Gen1PokemonDesc } from "~/utils/pokemon";
 
 export type LoginResponse = {
   id: string;
@@ -39,7 +37,7 @@ export interface ClientMessage {
   getRooms: (ack: (rooms: RoomDescriptor[]) => void) => void;
 
   enterMatchmaking: (
-    team: string | undefined,
+    team: Gen1PokemonDesc[] | undefined,
     format: FormatId,
     ack: (err?: "must_login" | "invalid_team", problems?: TeamProblems) => void,
   ) => void;
@@ -427,13 +425,9 @@ export class GameServer extends SocketIoServer<ClientMessage, ServerMessage> {
     });
   }
 
-  private enterMatchmaking(account: Account, format: FormatId, team?: string) {
+  private enterMatchmaking(account: Account, format: FormatId, team?: any) {
     let player;
     if (formatDescs[format].validate) {
-      if (!team) {
-        return ["Must provide a team for this format"];
-      }
-
       const [success, result] = formatDescs[format].validate(team);
       if (!success) {
         return result;

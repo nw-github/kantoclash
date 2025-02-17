@@ -13,8 +13,6 @@
         :disabled="!formatInfo[format].needsTeam"
         option-attribute="name"
       />
-      <span class="text-sm text-red-600" v-if="status">{{ status }}</span>
-
       <UButton
         @click="enterMatchmaking"
         :disabled="!user || (formatInfo[format].needsTeam && !selectedTeam)"
@@ -59,15 +57,36 @@
       </UTable>
     </div>
   </div>
+
+  <UModal v-model="modalOpen">
+    <UAlert
+      title="Your team is invalid!"
+      :actions="[
+        // Bring user to teambuilder
+        // { variant: 'solid', color: 'primary', label: 'Fix', click: () =>  },
+        { variant: 'solid', color: 'primary', label: 'OK', click: () => (modalOpen = false) },
+      ]"
+    >
+      <template #description>
+        <div class="max-h-60 overflow-auto">
+          <div v-for="[poke, problems] in errors">
+            <span>{{ poke }}</span>
+            <ul class="list-disc pl-8">
+              <li v-for="problem in problems">{{ problem }}</li>
+            </ul>
+          </div>
+        </div>
+      </template>
+    </UAlert>
+  </UModal>
 </template>
 
 <script setup lang="ts">
-import { serializeTeam } from "~/composables/states";
+import { speciesList } from "~/game/species";
 import type { RoomDescriptor } from "~/server/utils/gameServer";
 
 const { $conn } = useNuxtApp();
 const { user } = useUserSession();
-const status = ref("");
 const findingMatch = ref(false);
 const cancelling = ref(false);
 const rooms = ref<RoomDescriptor[]>([]);
@@ -75,6 +94,9 @@ const format = useLocalStorage<FormatId>("lastFormat", () => "randoms");
 const selectedTeam = ref<Team | undefined>();
 const myTeams = useMyTeams();
 const validTeams = computed(() => myTeams.value.filter(team => team.format === format.value));
+const modalOpen = ref(false);
+const errors = ref<Record<number, [string, string[]]>>({});
+
 watch(format, () => (selectedTeam.value = validTeams.value[0]));
 
 const roomsRows = computed(() =>
@@ -105,15 +127,50 @@ onMounted(() => {
   });
 });
 
+onUnmounted(() => {
+  if (findingMatch.value) {
+    $conn.emit("exitMatchmaking", () => {});
+    findingMatch.value = false;
+  }
+});
+
 const enterMatchmaking = () => {
   if (!findingMatch.value) {
     findingMatch.value = true;
-    const team = selectedTeam.value ? serializeTeam(selectedTeam.value) : undefined;
+
+    const team = selectedTeam.value ? selectedTeam.value.pokemon.map(convertDesc) : undefined;
     $conn.emit("enterMatchmaking", team, format.value, (err, problems) => {
       if (err) {
         findingMatch.value = false;
-        status.value = `Matchmaking failed: ${err}`;
-        console.log(problems);
+        if (!problems) {
+          return;
+        }
+
+        const issues: Record<number, [string, string[]]> = {};
+        for (const { path, message } of problems) {
+          const [pokemon, category, index] = path as [number, string, number | string];
+          const name =
+            team![pokemon]?.name ||
+            speciesList[team![pokemon].species]?.name ||
+            `Pokemon ${pokemon + 1}`;
+          const arr = (issues[pokemon] ??= [name, []]);
+          if (category === "moves") {
+            if (index) {
+              arr[1].push(`Move '${team![pokemon].moves[index as number]}' is invalid: ${message}`);
+            } else {
+              arr[1].push(`Moves are invalid: ${message}`);
+            }
+          } else if (category === "statexp") {
+            arr[1].push(`'${toTitleCase(index as string)}' EV is invalid: ${message}`);
+          } else if (category === "dv") {
+            arr[1].push(`'${toTitleCase(index as string)}' IV is invalid: ${message}`);
+          } else {
+            arr[1].push(`${message}`);
+          }
+        }
+
+        errors.value = issues;
+        modalOpen.value = true;
       }
     });
   } else {

@@ -99,19 +99,23 @@
           <UButton @click="cancelMove" color="red">Cancel</UButton>
         </div>
         <template v-else-if="!victor">
-          <div v-if="!isBattler && !isRunningTurn">
-            <UButton @click="chosenPerspective = opponent" icon="mi:switch">Switch Sides</UButton>
-          </div>
-          <div v-else-if="!isRunningTurn" class="italic">Waiting for opponent...</div>
+          <div v-if="isBattler && !isRunningTurn" class="italic">Waiting for opponent...</div>
           <div v-else class="flex space-x-2">
+            <UButton v-if="!isBattler" @click="chosenPerspective = opponent" icon="mi:switch">
+              Switch Sides
+            </UButton>
             <UButton
               icon="material-symbols:skip-next"
               @click="skippingTurn = true"
-              v-if="!skippingTurn"
+              v-if="isRunningTurn"
             >
               Skip
             </UButton>
-            <UButton icon="material-symbols:fast-forward" @click="skippingToTurn = turns.length">
+            <UButton
+              icon="material-symbols:fast-forward"
+              @click="skippingToTurn = turns.length"
+              v-if="isRunningTurn"
+            >
               Skip All
             </UButton>
           </div>
@@ -469,8 +473,14 @@ const runTurn = async (turn: Turn, live: boolean, turnNo: number) => {
 
           if (player === e.id && active.status === "tox") {
             active.status = "psn";
+            if (player === myId.value) {
+              activeInTeam.value!.status = "psn";
+            }
           } else if (player !== e.id) {
             active.status = undefined;
+            if (player === myId.value) {
+              activeInTeam.value!.status = undefined;
+            }
           }
 
           active.stages = {};

@@ -897,7 +897,7 @@ export const speciesList = createSpeciesList({
     ],
     evolves: false,
   },
-  "nidoran-f": {
+  nidoranf: {
     dexId: 29,
     name: "Nidoran♀️",
     types: ["poison"],
@@ -1014,7 +1014,7 @@ export const speciesList = createSpeciesList({
     ],
     evolves: false,
   },
-  "nidoran-m": {
+  nidoranm: {
     dexId: 32,
     name: "Nidoran♂️",
     types: ["poison"],

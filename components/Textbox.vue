@@ -1,5 +1,11 @@
 <template>
-  <UCard class="card h-full w-full flex flex-col" :ui="{ body: { base: 'grow overflow-auto' } }">
+  <UCard
+    class="card h-full w-full flex flex-col"
+    :ui="{
+      body: { base: 'grow overflow-auto', padding: 'p-0 sm:p-0' },
+      header: { padding: 'p-1 sm:p-1' },
+    }"
+  >
     <template #header>
       <div class="flex justify-between items-center">
         <div>
@@ -106,17 +112,6 @@
     />
   </UModal>
 </template>
-
-<style scoped>
-.card > :nth-child(1) {
-  padding: 0.2rem;
-}
-
-/* for some reason setting p-0 in the card :ui doesn't work */
-.card > :nth-child(2) {
-  padding: 0;
-}
-</style>
 
 <style>
 @import "../assets/colors.css";

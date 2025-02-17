@@ -2,90 +2,134 @@
   <UCard class="h-full flex flex-col" :ui="{ body: { base: 'grow overflow-auto' } }">
     <template #header>
       <h1 class="text-2xl text-center pb-5">Your Teams</h1>
-      <div class="flex space-x-2">
-        <FormatDropdown teamOnly multiple class="w-1/2" placeholder="Filter by format..." />
-        <UInput
-          icon="heroicons:magnifying-glass-20-solid"
-          :trailing="false"
-          placeholder="Search..."
-          class="w-full"
-        />
+      <div class="flex flex-col space-y-1 sm:space-y-0 sm:flex-row sm:space-x-2">
+        <div class="flex space-x-1 w-full">
+          <FormatDropdown teamOnly multiple class="w-1/2" placeholder="Format" v-model="formats" />
+          <UInput
+            icon="heroicons:magnifying-glass-20-solid"
+            :trailing="false"
+            placeholder="Search..."
+            class="w-full"
+            v-model="query"
+          />
+        </div>
+        <div class="flex space-x-1">
+          <UTooltip text="Import">
+            <UButton
+              color="green"
+              icon="heroicons:arrow-down-tray-20-solid"
+              variant="soft"
+              @click="importTeam"
+            />
+          </UTooltip>
+          <UTooltip text="New">
+            <UButton color="green" icon="heroicons:plus-20-solid" variant="soft" />
+          </UTooltip>
+        </div>
       </div>
     </template>
 
-    <UTable :rows="myTeams" :columns="teamCols">
-      <template #actions-header>
-        <div class="flex space-x-2 justify-end">
-          <UButton color="green" icon="heroicons:arrow-down-tray-20-solid" @click="importTeam">
-            Import
-          </UButton>
-          <UButton color="green" icon="heroicons:plus-20-solid">New</UButton>
-        </div>
-      </template>
-      <template #format-data="{ row }">
-        <div class="flex items-center space-x-1">
-          <UIcon :name="formatInfo[row.format as FormatId].icon" class="size-5" />
-          <span>{{ formatInfo[row.format as FormatId].name }}</span>
-        </div>
-      </template>
-      <template #pokemon-data="{ row }">
-        <div class="flex space-x-2">
-          <Sprite
-            v-for="poke in (row as Team).pokemon"
-            :species="speciesList[poke.species]"
-            :scale="2"
-            kind="box"
+    <div class="flex justify-center h-full">
+      <div class="w-max">
+        <div
+          v-if="!myTeams.length"
+          class="flex flex-col items-center justify-center flex-1 px-6 py-14 sm:px-14"
+        >
+          <UIcon
+            name="i-heroicons:circle-stack-20-solid"
+            class="size-6 mx-auto text-gray-400 dark:text-gray-500 mb-4"
           />
+          <p class="text-sm text-center text-gray-900 dark:text-white">You don't have any teams</p>
         </div>
-      </template>
-      <template #actions-data="{ row }">
-        <div class="flex justify-end">
-          <UDropdown :items="dropdownItems(row)">
-            <UButton color="gray" variant="ghost" icon="heroicons:ellipsis-horizontal-20-solid" />
-          </UDropdown>
-        </div>
-      </template>
-    </UTable>
 
-    <!-- <UPagination /> -->
+        <div
+          v-for="team in myTeams"
+          class="space-y-1 py-1 divide-y divide-gray-200 dark:divide-gray-800"
+        >
+          <div class="flex justify-between items-end">
+            <div class="">
+              <span class="text-sm">{{ team.name }}</span>
+              <div class="flex items-center space-x-1 text-xs">
+                <UIcon :name="formatInfo[team.format as FormatId].icon" class="size-3" />
+                <span>{{ formatInfo[team.format as FormatId].name }}</span>
+              </div>
+            </div>
+            <div>
+              <UTooltip v-for="{ icon, click, color, label } in dropdownItems(team)" :text="label">
+                <UButton
+                  :icon="icon"
+                  variant="ghost"
+                  :color="color as any ?? 'gray'"
+                  @click="click"
+                />
+              </UTooltip>
+            </div>
+          </div>
+          <div class="flex justify-center">
+            <Sprite
+              v-for="poke in team.pokemon"
+              :species="(speciesList as Record<string, Species>)[poke.species]"
+              :scale="isXS ? 1.5 : 2"
+              kind="box"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
   </UCard>
+
+  <UModal v-model="open">
+    <TeamBuilder v-if="editingTeam" :team="editingTeam" />
+  </UModal>
 </template>
 
 <script setup lang="ts">
-import { speciesList } from "~/game/species";
+import { speciesList, type Species } from "~/game/species";
 
-// const moves = ref<(string | undefined)[]>([]);
-// const unusedMoves = computed(() => species.moves.filter(id => !moves.value.includes(id)));
+const formats = ref<string[]>([]);
+const query = ref("");
 const toast = useToast();
 const myTeams = useMyTeams();
-
-const teamCols = [
-  { key: "format", label: "Format" },
-  { key: "name", label: "Name" },
-  { key: "pokemon", label: "Pokemon" },
-  { key: "actions" },
-];
+const editingTeam = ref<Team | undefined>(myTeams.value[0]);
+const open = computed({
+  get() {
+    return !!editingTeam.value;
+  },
+  set() {
+    editingTeam.value = undefined;
+  },
+});
+const isXS = useMediaQuery("(max-width: 480px)");
 
 const dropdownItems = (team: Team) => [
-  [
-    {
-      label: "Copy",
-      icon: "heroicons-outline:clipboard",
-      async click() {
-        await navigator.clipboard.writeText(serializeTeam(team));
-        toast.add({ title: `Team '${team.name}' copied to clipboard!` });
-      },
+  {
+    label: "Copy",
+    icon: "material-symbols:content-copy-outline",
+    async click() {
+      await navigator.clipboard.writeText(serializeTeam(team));
+      toast.add({ title: `'${team.name}' copied to clipboard!` });
     },
-    { label: "Edit", icon: "heroicons:pencil-square-20-solid" },
-    { label: "Export", icon: "heroicons:arrow-up-tray-20-solid" },
-    {
-      label: "Delete",
-      icon: "heroicons:trash",
-      click() {
-        myTeams.value.splice(myTeams.value.indexOf(team), 1);
-      },
+  },
+  {
+    label: "Edit",
+    icon: "material-symbols:edit-square-outline",
+    click() {
+      editingTeam.value = team;
     },
-  ],
+  },
+  {
+    label: "Delete",
+    icon: "material-symbols:delete-outline",
+    color: "red",
+    click() {
+      const idx = myTeams.value.indexOf(team);
+      const [removed] = myTeams.value.splice(idx, 1);
+      toast.add({
+        title: `'${team.name}' deleted!`,
+        actions: [{ label: "Undo", click: () => myTeams.value.splice(idx, 0, removed) }],
+      });
+    },
+  },
 ];
 
 const importTeam = async () => {
@@ -94,8 +138,7 @@ const importTeam = async () => {
     .split("\n\n")
     .map(t => t.trim())
     .filter(t => t.length)
-    .map(pokeFromString)
-    .filter(poke => !Array.isArray(poke)) as EditPokemon[];
+    .map(parsePokemon);
   if (!team.length) {
     return;
   }
