@@ -58,18 +58,26 @@
     <template #default>
       {{ void (turnCounter = 0) }}
       <template v-for="([turn, switchTurn], i) in turns">
-        <div class="bg-gray-300 dark:bg-gray-700 w-full px-1" v-if="i && !switchTurn">
+        <div class="bg-gray-300 dark:bg-gray-700 w-full px-1 py-0.5" v-if="i && !switchTurn">
           <h2 class="text-xl">Turn {{ ++turnCounter }}</h2>
         </div>
         <div class="events p-1">
-          <component :is="() => turn" />
-          <template v-for="{ message, player } in chats[i] ?? []">
-            <p v-if="player.length">
-              <b>{{ players[player].name }}</b
-              >: {{ message }}
-            </p>
-            <p v-else>{{ message }}</p>
-          </template>
+          <component v-if="i > 0" :is="() => turn" />
+          <p v-for="chat in chats[i] ?? []">
+            <b v-if="chat.id && chat.type !== 'timerStart'">
+              {{ players[chat.id!]?.name ?? "???" }}
+            </b>
+
+            <span v-if="chat.type === 'chat'">: {{ chat.message }}</span>
+            <span v-if="chat.type === 'userJoin'"> joined the room.</span>
+            <span v-if="chat.type === 'userLeave'"> left the room.</span>
+            <span v-if="chat.type === 'userReconnect'"> reconnected.</span>
+            <span v-if="chat.type === 'timerStart'">
+              The timer was started by <b>{{ players[chat.id!]?.name ?? "???" }}</b
+              >.
+            </span>
+          </p>
+          <component v-if="i === 0" :is="() => turn" />
         </div>
       </template>
       <div ref="scrollPoint"></div>
@@ -153,10 +161,12 @@
 </style>
 
 <script setup lang="ts">
+import type { InfoRecord } from "~/server/utils/gameServer";
+
 const props = defineProps<{
   turns: [VNode[], boolean][];
   players: Record<string, ClientPlayer>;
-  chats: Chats;
+  chats: InfoRecord;
   victor?: string;
   closable?: boolean;
 }>();

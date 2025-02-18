@@ -33,7 +33,8 @@
 import type { Battle } from "#components";
 import type { Options, Turn } from "~/game/battle";
 import type { Pokemon } from "~/game/pokemon";
-import type { BattleTimer, Chats, JoinRoomResponse } from "~/server/utils/gameServer";
+import type { BattleTimer, InfoRecord, JoinRoomResponse } from "~/server/utils/gameServer";
+import type { InfoMessage } from "~/server/utils/info";
 
 const { $conn } = useNuxtApp();
 const { user } = useUserSession();
@@ -46,7 +47,7 @@ const players = reactive<Record<string, ClientPlayer>>({});
 const battlers = ref<string[]>([]);
 const turns = ref<Turn[]>([]);
 const options = ref<Options>();
-const chats = reactive<Chats>({});
+const chats = reactive<InfoRecord>({});
 const team = ref<Pokemon[]>();
 const timer = ref<BattleTimer>();
 const room = `${route.params.id}`;
@@ -104,13 +105,8 @@ onMounted(() => {
       chats[k] = resp.chats[k];
     }
 
-    if (resp.timer) {
-      chats[sequenceNo] ??= [];
-      chats[sequenceNo].unshift({ player: "", message: "The timer is on." });
-    }
-
     status.value = "battle";
-    title.value = battlers.value.join(" vs. ");
+    title.value = battlers.value.map(id => players[id].name).join(" vs. ");
     if (fresh) {
       battle.value!.onConnect();
     } else {
@@ -120,13 +116,13 @@ onMounted(() => {
     }
   };
 
-  const pushChat = (id: string, message: string, turn?: number) => {
+  const pushChat = (message: InfoMessage, turn?: number) => {
     turn ??= Math.max(turns.value.length - 1, 0);
     if (!chats[turn]) {
       chats[turn] = [];
     }
 
-    chats[turn].push({ message, player: id });
+    chats[turn].push(message);
   };
 
   if ($conn.connected) {
@@ -157,45 +153,27 @@ onMounted(() => {
     }
   });
 
-  $conn.on("userJoin", (roomId, name, id, isSpectator, nPokemon) => {
-    if (roomId === room) {
+  $conn.on("info", (roomId, message, turn) => {
+    if (roomId !== room) {
+      return;
+    }
+
+    if (message.type === "userJoin") {
+      const { name, isSpectator, nPokemon, id } = message;
       players[id] = { name, isSpectator, nPokemon, connected: true, nFainted: 0 };
-      pushChat("", `${players[id].name} joined the room.`);
-    }
-  });
-
-  $conn.on("userReconnect", (roomId, id) => {
-    if (roomId === room) {
-      if (players[id]) {
-        pushChat("", `${players[id].name} reconnected.`);
+    } else if (message.type === "userLeave") {
+      players[message.id].connected = false;
+    } else if (message.type === "userReconnect") {
+      if (players[message.id]) {
+        players[message.id].connected = true;
       }
     }
+
+    pushChat(message, turn);
   });
 
-  $conn.on("userLeave", (roomId, id) => {
+  $conn.on("timerStart", (roomId, _, tmr) => {
     if (roomId === room) {
-      players[id].connected = false;
-      if (players[id].isSpectator) {
-        pushChat("", `${players[id].name} disconnected from the room.`);
-      } else {
-        pushChat("", `${players[id].name} left the room.`);
-      }
-    }
-  });
-
-  $conn.on("userChat", (roomId, id, message, turn) => {
-    if (roomId === room) {
-      pushChat(id, message, turn);
-    }
-  });
-
-  $conn.on("timerStart", (roomId, who, tmr) => {
-    if (roomId === room) {
-      const turn = Math.max(turns.value.length - 1, 0);
-      if (timer.value === undefined) {
-        pushChat("", `${players[who].name} started the timer.`, turn);
-      }
-
       timer.value = tmr || undefined;
     }
   });

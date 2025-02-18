@@ -184,7 +184,7 @@ import { clamp, hpPercentExact } from "@/game/utils";
 import { moveList, type MoveId } from "@/game/moveList";
 import { stageTable } from "#imports";
 import type { ClientVolatileFlag } from "~/utils";
-import type { BattleTimer } from "~/server/utils/gameServer";
+import type { BattleTimer, InfoRecord } from "~/server/utils/gameServer";
 import type { ActivePokemon } from "#build/components";
 import type { AnimationType } from "./ActivePokemon.vue";
 
@@ -203,7 +203,7 @@ const props = defineProps<{
   options?: Options;
   players: Record<string, ClientPlayer>;
   turns: Turn[];
-  chats: Chats;
+  chats: InfoRecord;
   battlers: string[];
   timer?: BattleTimer;
 }>();
