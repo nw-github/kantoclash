@@ -43,7 +43,11 @@ export interface ClientMessage {
   ) => void;
   exitMatchmaking: (ack: () => void) => void;
 
-  joinRoom: (room: string, ack: (resp: JoinRoomResponse | "bad_room") => void) => void;
+  joinRoom: (
+    room: string,
+    turn: number,
+    ack: (resp: JoinRoomResponse | "bad_room") => void,
+  ) => void;
   leaveRoom: (room: string, ack: (resp?: "bad_room") => void) => void;
   choose: (
     room: string,
@@ -271,7 +275,7 @@ export class GameServer extends SocketIoServer<ClientMessage, ServerMessage> {
       }
       ack();
     });
-    socket.on("joinRoom", (roomId, ack) => {
+    socket.on("joinRoom", (roomId, turn, ack) => {
       const room = this.rooms[roomId];
       if (!room) {
         return ack("bad_room");
@@ -297,7 +301,7 @@ export class GameServer extends SocketIoServer<ClientMessage, ServerMessage> {
             nPokemon: room.battle.findPlayer(acc.id)?.team.length ?? 0,
           }))
           .toArray(),
-        turns: room.turns.map(({ events, switchTurn }) => ({
+        turns: room.turns.slice(turn).map(({ events, switchTurn }) => ({
           events: Battle.censorEvents(events, player),
           switchTurn,
         })),

@@ -47,7 +47,7 @@ export async function startBot(
     console.log(`[${name}] Connected! Logging in...`);
 
     $conn.on("foundMatch", roomId => {
-      $conn.emit("joinRoom", roomId, resp => {
+      $conn.emit("joinRoom", roomId, 0, resp => {
         if (resp === "bad_room") {
           console.error(`[${name}] got bad room trying to join ${roomId}!`);
           return;
@@ -58,6 +58,7 @@ export async function startBot(
         console.log(`[${name}] found a match for '${resp.format}': ${roomId}`);
         playGame(roomId, resp, botFunction, () => {
           console.log(`[${name}] finished game ${roomId} (${resp.format})`);
+          $conn.emit("leaveRoom", roomId, () => {});
 
           delete games[roomId];
           findMatch(resp.format);

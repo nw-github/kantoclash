@@ -42,7 +42,13 @@
           />
           <template #panel>
             <div class="p-2 space-y-1 flex flex-col">
-              <span v-for="(player, id) in players">{{ playerInfo(player, id) }}</span>
+              <UChip
+                v-for="(player, id) in players"
+                :color="players[id].connected ? 'lime' : 'red'"
+                class="text-left"
+              >
+                <span class="px-2">{{ playerInfo(player, id) }}</span>
+              </UChip>
             </div>
           </template>
         </UPopover>
@@ -188,9 +194,6 @@ const playerInfo = (player: ClientPlayer, id: string) => {
   }
   if (player.isSpectator) {
     label += " (Spectator)";
-  }
-  if (!player.connected) {
-    label += " (Disconnected)";
   }
   return label;
 };

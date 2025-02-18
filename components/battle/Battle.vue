@@ -13,7 +13,7 @@
         <div class="pb-2 sm:pb-0">
           <div class="h-10 sm:h-14"></div>
           <ActivePokemon
-            :poke="players[perspective].active!"
+            :poke="players[perspective]?.active"
             :base="perspective === myId ? activeInTeam : undefined"
             ref="backPokemon"
             back
@@ -223,7 +223,9 @@ const backPokemon = ref<InstanceType<typeof ActivePokemon>>();
 const frontPokemon = ref<InstanceType<typeof ActivePokemon>>();
 
 const activeIndex = ref(0);
-const activeInTeam = computed<Pokemon | undefined>(() => props.team?.[activeIndex.value]);
+const activeInTeam = computed(() =>
+  isBattler.value ? props.team?.[activeIndex.value] : undefined,
+);
 
 const isBattler = computed(() => props.battlers.includes(myId.value));
 const chosenPerspective = ref("");
@@ -233,9 +235,10 @@ const victor = ref<string>();
 const htmlTurns = ref<[VNode[], boolean][]>([]);
 const liveEvents = ref<[VNode[], number][]>([]);
 
-const audioContext = new AudioContext();
 const savedAudio: Record<string, AudioBuffer> = {};
+let audioContext: AudioContext;
 
+onMounted(() => (audioContext = new AudioContext()));
 onUnmounted(() => audioContext.close());
 
 useIntervalFn(() => {
@@ -274,12 +277,7 @@ watch([skippingTurn, skippingToTurn], () => {
 });
 
 watch(perspective, () => {
-  htmlTurns.value.length = 0;
   liveEvents.value.length = 0;
-  for (const k in props.players) {
-    props.players[k].nFainted = 0;
-  }
-
   onConnect();
 });
 
@@ -804,6 +802,11 @@ const onConnect = async () => {
   reconnecting = true;
   if (currentTurnPromise) {
     await currentTurnPromise;
+  }
+
+  htmlTurns.value.length = 0;
+  for (const k in props.players) {
+    props.players[k].nFainted = 0;
   }
 
   for (let i = 0; i < currentTurn; i++) {
