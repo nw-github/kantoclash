@@ -383,19 +383,9 @@ export class Battle {
     for (let i = 0; i < result.length; i++) {
       const e = result[i];
       if ((e.type === "damage" || e.type === "recover") && e.target !== player?.id) {
-        result[i] = {
-          ...e,
-          hpBefore: hpPercent(e.hpBefore, e.maxHp),
-          hpAfter: hpPercent(e.hpAfter, e.maxHp),
-          maxHp: 100,
-        };
+        result[i] = { ...e, hpBefore: undefined, hpAfter: undefined };
       } else if (e.type === "switch" && e.src !== player?.id) {
-        result[i] = {
-          ...e,
-          hp: hpPercent(e.hp, e.maxHp),
-          maxHp: 100,
-          indexInTeam: -1,
-        };
+        result[i] = { ...e, hp: undefined, indexInTeam: -1 };
       } else if ((e.type === "stages" || e.type === "status") && e.id !== player?.id) {
         // FIXME: this might not be accurate if two status moves were used in the same turn.
         result[i] = {
@@ -427,8 +417,8 @@ export class ActivePokemon {
       type: "switch",
       speciesId: next.speciesId,
       status: next.status,
+      hpPercent: hpPercent(next.hp, next.stats.hp),
       hp: next.hp,
-      maxHp: next.stats.hp,
       src: this.owner.id,
       name: next.name,
       level: next.level,
@@ -499,9 +489,11 @@ export class ActivePokemon {
         type: "damage",
         src: src.owner.id,
         target: this.owner.id,
-        maxHp: this.base.stats.hp,
-        hpAfter: this.base.hp,
+        hpPercentBefore: hpPercent(hpBefore, this.base.stats.hp),
+        hpPercentAfter: hpPercent(this.base.hp, this.base.stats.hp),
         hpBefore,
+        hpAfter: this.base.hp,
+        dead: this.base.hp === 0,
         why,
         eff,
         isCrit,
@@ -530,9 +522,11 @@ export class ActivePokemon {
       type: "recover",
       src: src.owner.id,
       target: this.owner.id,
-      maxHp: this.base.stats.hp,
-      hpAfter: this.base.hp,
+      hpPercentBefore: hpPercent(hpBefore, this.base.stats.hp),
+      hpPercentAfter: hpPercent(this.base.hp, this.base.stats.hp),
       hpBefore,
+      hpAfter: this.base.hp,
+      dead: false,
       why,
     });
   }

@@ -18,7 +18,8 @@ export type ClientVolatileFlag = (typeof clientVolatiles)[number];
 export type ClientActivePokemon = {
   speciesId: SpeciesId;
   name: string;
-  hp: number;
+  fainted: boolean;
+  hpPercent: number;
   level: number;
   stages: Partial<Record<Stages, number>>;
   status?: Status;

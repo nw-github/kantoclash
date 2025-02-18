@@ -97,7 +97,7 @@ export async function startBot(
       // TODO: unify this and Battle.vue:handleEvent
       if (e.type === "switch") {
         const player = players[e.src];
-        player.active = { ...e, stages: {}, flags: {} };
+        player.active = { ...e, stages: {}, flags: {}, fainted: false };
         if (e.src === myId) {
           if (team?.[activeIndex]?.status === "tox") {
             team[activeIndex].status = "psn";
@@ -107,12 +107,12 @@ export async function startBot(
           player.active.stats = undefined;
         }
       } else if (e.type === "damage" || e.type === "recover") {
-        players[e.target].active!.hp = e.hpAfter;
+        players[e.target].active!.hpPercent = e.hpPercentAfter;
         if (e.target === myId) {
-          team![activeIndex].hp = e.hpAfter;
+          team![activeIndex].hp = e.hpAfter!;
         }
 
-        if (e.hpAfter === 0) {
+        if (e.dead) {
           players[e.target].nFainted++;
         }
 

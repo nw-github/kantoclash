@@ -368,7 +368,7 @@ const runTurn = async (turn: Turn, live: boolean, turnNo: number) => {
     if (e.type === "switch") {
       const player = props.players[e.src];
       if (player.active) {
-        if (player.active.hp) {
+        if (!player.active.fainted) {
           await playAnimation(e.src, "retract", player.active.name);
         }
 
@@ -377,22 +377,24 @@ const runTurn = async (turn: Turn, live: boolean, turnNo: number) => {
       }
 
       await playAnimation(e.src, "sendin", e.name, () => {
-        player.active = { ...e, stages: {}, flags: {} };
+        player.active = { ...e, stages: {}, flags: {}, fainted: false };
         if (e.src === myId.value) {
           if (activeInTeam.value?.status === "tox") {
             activeInTeam.value.status = "psn";
           }
 
           activeIndex.value = e.indexInTeam;
+          activeInTeam.value!.hp = e.hp!;
           player.active.stats = undefined;
         }
         playCry(e.speciesId);
       });
     } else if (e.type === "damage" || e.type === "recover") {
       const update = () => {
-        props.players[e.target].active!.hp = e.hpAfter;
+        props.players[e.target].active!.hpPercent = e.hpPercentAfter;
+        props.players[e.target].active!.fainted = e.dead;
         if (e.target === myId.value) {
-          activeInTeam.value!.hp = e.hpAfter;
+          activeInTeam.value!.hp = e.hpAfter!;
         }
       };
 
@@ -415,7 +417,7 @@ const runTurn = async (turn: Turn, live: boolean, turnNo: number) => {
         });
       }
 
-      if (e.hpAfter === 0 && isLive()) {
+      if (e.dead && isLive()) {
         playCry(props.players[e.target].active!.speciesId, true);
         await playAnimation(e.target, "faint");
         if (!skippingTurn.value) {
@@ -423,7 +425,7 @@ const runTurn = async (turn: Turn, live: boolean, turnNo: number) => {
         }
       }
 
-      if (e.hpAfter === 0) {
+      if (e.dead) {
         props.players[e.target].nFainted++;
       }
 
@@ -568,7 +570,7 @@ const htmlForEvent = (e: BattleEvent) => {
   const res: Array<VNode> = [];
   if (e.type === "switch") {
     const player = props.players[e.src];
-    if (player.active && player.active.hp) {
+    if (player.active && !player.active.fainted) {
       if (e.src === perspective.value) {
         res.push(text(`Come back! ${player.active.name}!`, "switch"));
       } else {
@@ -584,7 +586,14 @@ const htmlForEvent = (e: BattleEvent) => {
   } else if (e.type === "damage" || e.type === "recover") {
     const src = pname(e.src);
     const target = pname(e.target);
-    const percent = roundTo(Math.abs(hpPercentExact(e.hpBefore - e.hpAfter, e.maxHp)), 1);
+
+    let pv = Math.abs(e.hpPercentBefore - e.hpPercentAfter);
+    if (e.target === myId.value) {
+      const maxHp = activeInTeam.value!.stats.hp;
+      pv = roundTo(Math.abs(hpPercentExact(e.hpBefore! - e.hpAfter!, maxHp)), 1);
+    }
+    const percent = pv === 0 ? "<1%" : `${pv}%`;
+
     if (e.type === "damage") {
       const effMsg = `It's ${(e.eff ?? 1) > 1 ? "super effective!" : "not very effective..."}`;
       if (e.why === "recoil") {
@@ -612,7 +621,7 @@ const htmlForEvent = (e: BattleEvent) => {
       }
 
       if (e.why !== "explosion") {
-        res.push(text([`${target} lost `, bold(`${percent}%`), " of its health."], "red"));
+        res.push(text([`${target} lost `, bold(percent), " of its health."], "red"));
       }
 
       if (e.why === "substitute") {
@@ -626,7 +635,7 @@ const htmlForEvent = (e: BattleEvent) => {
         res.push(text(`Hit ${e.hitCount} time(s)!`));
       }
 
-      if (e.hpAfter === 0) {
+      if (e.dead) {
         res.push(text(`${target} fainted!`));
       }
     } else {
@@ -638,7 +647,7 @@ const htmlForEvent = (e: BattleEvent) => {
         res.push(text(`${src} started sleeping!`));
       }
 
-      res.push(text([`${target} gained `, bold(`${percent}%`), " of its health."], "green"));
+      res.push(text([`${target} gained `, bold(percent), " of its health."], "green"));
     }
   } else if (e.type === "move") {
     if (e.thrashing && e.move !== "rage") {

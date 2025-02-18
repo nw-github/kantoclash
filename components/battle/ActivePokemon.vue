@@ -135,7 +135,7 @@
 </style>
 
 <script setup lang="ts">
-import { hpPercent, stageMultipliers } from "@/game/utils";
+import { stageMultipliers } from "@/game/utils";
 import { calcStat, type Pokemon } from "@/game/pokemon";
 import { speciesList } from "@/game/species";
 import { moveList, type MoveId } from "@/game/moveList";
@@ -151,9 +151,7 @@ const minSpe = computed(
 const maxSpe = computed(
   () => props.poke && calcStat(species.value!.stats.spe, props.poke.level, 15, 65535),
 );
-const hp = computed(() =>
-  props.base ? hpPercent(props.base.hp, props.base.stats.hp) : props.poke?.hp ?? 0,
-);
+const hp = computed(() => props.poke?.hpPercent ?? 0);
 const isSmall = useMediaQuery("(max-width: 640px)");
 
 const sprite = ref<HTMLDivElement>();

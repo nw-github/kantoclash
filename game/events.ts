@@ -27,8 +27,8 @@ type SwitchEvent = {
   src: PlayerId;
   speciesId: SpeciesId;
   level: number;
-  hp: number;
-  maxHp: number;
+  hpPercent: number;
+  hp?: number;
   name: string;
   indexInTeam: number;
   status?: Status;
@@ -53,10 +53,12 @@ export type DamageEvent = {
   type: "damage";
   src: PlayerId;
   target: PlayerId;
-  hpBefore: number;
-  hpAfter: number;
-  maxHp: number;
+  hpPercentBefore: number;
+  hpPercentAfter: number;
+  hpBefore?: number;
+  hpAfter?: number;
   isCrit: boolean;
+  dead: boolean;
   why: DamageReason;
   /**
    * undefined: this is the one and only hit of a normal attack
@@ -71,9 +73,11 @@ export type RecoverEvent = {
   type: "recover";
   src: PlayerId;
   target: PlayerId;
-  hpBefore: number;
-  hpAfter: number;
-  maxHp: number;
+  hpPercentBefore: number;
+  hpPercentAfter: number;
+  hpBefore?: number;
+  hpAfter?: number;
+  dead: false;
   why: RecoveryReason;
 };
 
