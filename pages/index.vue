@@ -15,7 +15,7 @@
       />
       <UButton
         @click="enterMatchmaking"
-        :disabled="!user || (formatInfo[format].needsTeam && !selectedTeam)"
+        :disabled="formatInfo[format].needsTeam && !selectedTeam"
         :color="findingMatch ? 'red' : 'primary'"
       >
         {{ cancelling ? "Cancelling..." : findingMatch ? "Cancel" : "Find Match" }}
@@ -85,6 +85,8 @@
 import { speciesList } from "~/game/species";
 import type { RoomDescriptor } from "~/server/utils/gameServer";
 
+const emit = defineEmits<{ (e: "requestLogin"): void }>();
+
 const { $conn } = useNuxtApp();
 const { user } = useUserSession();
 const findingMatch = ref(false);
@@ -135,6 +137,10 @@ onUnmounted(() => {
 });
 
 const enterMatchmaking = () => {
+  if (!user.value) {
+    return emit("requestLogin");
+  }
+
   if (!findingMatch.value) {
     findingMatch.value = true;
 

@@ -65,12 +65,12 @@
                 </div>
               </template>
             </UPopover>
-            <AccountButton />
+            <AccountButton v-model:open="accountOpen" />
           </div>
         </nav>
       </template>
 
-      <NuxtPage />
+      <NuxtPage @requestLogin="accountOpen = true" />
     </UCard>
   </UContainer>
 
@@ -95,6 +95,7 @@ const musicTrackItems = allMusicTracks.map(track => ({
   value: track,
 }));
 const connected = ref($conn.connected);
+const accountOpen = ref(false);
 
 const links = [
   {

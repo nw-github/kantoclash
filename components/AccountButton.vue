@@ -1,5 +1,5 @@
 <template>
-  <UPopover mode="click" :popper="{ placement: 'bottom-end' }">
+  <UPopover mode="click" v-model="model" :popper="{ placement: 'bottom-end' }">
     <UAvatar icon="material-symbols:account-circle-full" />
     <template #panel>
       <div class="p-4">
@@ -32,6 +32,7 @@
 const { $conn } = useNuxtApp();
 const { clear } = useUserSession();
 const loading = ref(false);
+const model = defineModel<{ open: boolean }>();
 
 const logout = async () => {
   await clear();

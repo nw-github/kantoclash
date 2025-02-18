@@ -10,7 +10,7 @@
       >
         <div class="after:w-full after:border-1 space-y-2">
           <UFormGroup label="Username" name="username" required>
-            <UInput v-model="state.username" />
+            <UInput v-model="state.username" ref="username" autofocus />
           </UFormGroup>
           <UFormGroup label="Password" name="password" required>
             <UInput v-model="state.password" type="password" />
