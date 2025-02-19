@@ -106,7 +106,7 @@ const links = [
   {
     label: "Team Builder",
     icon: "famicons:hammer-outline",
-    to: "/teambuilder",
+    to: "/builder",
   },
   {
     label: "My Battles",
