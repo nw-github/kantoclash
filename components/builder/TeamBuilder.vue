@@ -16,7 +16,12 @@
             />
           </UTooltip>
           <UTooltip text="Close">
-            <UButton icon="material-symbols:close" color="red" variant="ghost" />
+            <UButton
+              icon="material-symbols:close"
+              color="red"
+              variant="ghost"
+              @click="$emit('close')"
+            />
           </UTooltip>
         </div>
       </div>
@@ -98,10 +103,8 @@
             v-if="selectedTab === 0"
           >
             <div class="flex space-x-2">
-              <div class="flex flex-col items-center justify-between">
-                <div class="w-[128px] h-[117px] my-2">
-                  <Sprite :species="item.species" :scale="2" kind="front" />
-                </div>
+              <div class="flex flex-col">
+                <PokemonSelector v-model="item.poke.species" :team="team" />
                 <UInput
                   :maxlength="24"
                   v-model="item.poke.name"
@@ -159,14 +162,9 @@
                   <span class="text-center px-1.5 min-w-10 text-gray-500" v-if="item.species">
                     {{ calcPokeStat(stat, item.poke) }}
                   </span>
-                  <!-- TODO: blend between colors -->
                   <span
                     class="text-center px-1.5 min-w-8 text-xs"
-                    :class="[
-                      item.species.stats[stat] < 70 && 'text-red-400',
-                      item.species.stats[stat] < 100 && 'text-amber-300',
-                      item.species.stats[stat] >= 100 && 'text-lime-400',
-                    ]"
+                    :class="baseStatColor(item.species.stats[stat])"
                   >
                     {{ item.species.stats[stat] }}
                   </span>
@@ -207,12 +205,12 @@
 </style>
 
 <script setup lang="ts">
-import { calcStat, getHpDv, Pokemon } from "@/game/pokemon";
+import { calcStat, getHpDv } from "@/game/pokemon";
 import { speciesList, type Species, type SpeciesId } from "@/game/species";
 import { statKeys, type Stats } from "@/game/utils";
 import { evToStatexp, ivToDv } from "~/utils/pokemon";
 
-defineEmits<{ (e: "delete"): void }>();
+defineEmits<{ (e: "delete"): void; (e: "close"): void }>();
 
 const statName: Record<keyof Stats, string> = {
   hp: "HP",
@@ -250,11 +248,6 @@ for (const poke of props.team.pokemon) {
 
   for (const key of statKeys) {
     poke.evs[key] ??= 255;
-    if (key === "hp") {
-      poke.ivs[key] ??= 31;
-    } else {
-      poke.ivs[key] = undefined;
-    }
   }
 }
 

@@ -6,6 +6,7 @@
       @update:model-value="open = true"
       v-model="query"
       v-bind="$props"
+      :color="isIllegal(normalizeName(query)) ? 'red' : undefined"
     />
 
     <ul
@@ -73,7 +74,7 @@ watch(open, async value => {
 onKeyStroke("ArrowDown", () => trySetHovered(1));
 onKeyStroke("ArrowUp", () => trySetHovered(-1));
 onKeyStroke("Enter", () => {
-  if (filteredMoves.value[hovered.value]) {
+  if (open.value && filteredMoves.value[hovered.value]) {
     query.value = filteredMoves.value[hovered.value][1].name;
     open.value = false;
   }

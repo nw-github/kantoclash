@@ -79,7 +79,12 @@
   </UCard>
 
   <UModal v-model="open">
-    <TeamBuilder v-if="editingTeam" :team="editingTeam" @delete="deleteTeam(editingTeam)" />
+    <TeamBuilder
+      v-if="editingTeam"
+      :team="editingTeam"
+      @delete="deleteTeam(editingTeam)"
+      @close="editingTeam = undefined"
+    />
   </UModal>
 </template>
 
@@ -90,7 +95,7 @@ const formats = ref<string[]>([]);
 const query = ref("");
 const toast = useToast();
 const myTeams = useMyTeams();
-const editingTeam = ref<Team | undefined>(myTeams.value[0]);
+const editingTeam = ref<Team>();
 const open = computed({
   get() {
     return !!editingTeam.value;

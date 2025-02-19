@@ -79,7 +79,7 @@ export const parsePokemon = (src: string): PokemonDesc => {
   const moves: string[] = [];
   const ivs: Partial<Stats> = {};
   const evs: Partial<Stats> = {};
-  let level = 100;
+  let level = undefined;
   let name = "";
   let speciesName = "";
 

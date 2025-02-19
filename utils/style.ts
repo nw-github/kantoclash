@@ -27,3 +27,12 @@ export const statusColor: Record<Status, string> = {
   slp: "#a4a48b",
   par: "#F59E0B",
 };
+
+export const baseStatColor = (stat: number) => {
+  // TODO: blend between colors
+  return [
+    stat < 70 && "text-red-400",
+    stat < 100 && "text-amber-300",
+    stat >= 100 && "text-lime-400",
+  ];
+};
