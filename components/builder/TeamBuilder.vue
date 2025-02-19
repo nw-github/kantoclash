@@ -35,7 +35,7 @@
       v-model="selectedPoke"
     >
       <template #default="{ item }">
-        <div class="w-[64px] h-[64px] m-1">
+        <div class="size-[64px] m-1">
           <Sprite
             :species="(speciesList as Record<string, Species>)[item.poke.species]"
             :scale="2"
@@ -128,12 +128,7 @@
                     v-model="item.poke.level"
                   />
                 </div>
-                <MoveSelector
-                  v-for="(_, i) in 4"
-                  :poke="item.poke"
-                  v-model="item.poke.moves[i]"
-                  placeholder="Add move..."
-                />
+                <MoveSelector v-for="(_, i) in 4" :poke="item.poke" v-model="item.poke.moves[i]" />
               </div>
             </div>
             <div class="grid items-center grid-cols-[auto,1fr,auto,auto,auto,auto] gap-1">
