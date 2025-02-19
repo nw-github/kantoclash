@@ -13,7 +13,7 @@
         <div class="w-full text-center text-gray-100 text-xs sm:text-sm z-30">{{ hp }}%</div>
       </div>
       <div class="relative">
-        <div class="flex gap-1 flex-wrap effects absolute" v-if="poke">
+        <div class="flex gap-1 flex-wrap absolute *:px-[0.2rem] *:py-[0.1rem]" v-if="poke">
           <UBadge color="black" v-if="poke.transformed">Transformed</UBadge>
 
           <TypeBadge
@@ -105,10 +105,6 @@
   transition: width 0.5s, background-color 0.5s;
 }
 
-.effects > * {
-  padding: 0.1rem 0.2rem;
-}
-
 .status {
   background-color: v-bind("poke?.status ? statusColor[poke.status] : 'transparent'");
 }
@@ -146,10 +142,10 @@ const species = computed(
   () => props.poke && speciesList[props.poke.transformed ?? props.poke.speciesId],
 );
 const minSpe = computed(
-  () => props.poke && calcStat(species.value!.stats.spe, props.poke.level, 0, 0),
+  () => props.poke && calcStat(false, species.value!.stats.spe, props.poke.level, 0, 0),
 );
 const maxSpe = computed(
-  () => props.poke && calcStat(species.value!.stats.spe, props.poke.level, 15, 65535),
+  () => props.poke && calcStat(false, species.value!.stats.spe, props.poke.level, 15, 65535),
 );
 const hp = computed(() => props.poke?.hpPercent ?? 0);
 const isSmall = useMediaQuery("(max-width: 640px)");

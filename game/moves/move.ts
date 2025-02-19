@@ -1,5 +1,5 @@
 import type { ActivePokemon, Battle } from "../battle";
-import { floatTo255, scaleAccuracy255, type Type } from "../utils";
+import { floatTo255, isSpecial, scaleAccuracy255, type Type } from "../utils";
 
 export abstract class Move {
   readonly pp: number;
@@ -58,6 +58,10 @@ export abstract class Move {
     });
     user.v.lastMove = this;
     return this.execute(battle, user, target);
+  }
+
+  get category() {
+    return this.power ? (isSpecial(this.type) ? "special" : "physical") : "status";
   }
 
   protected abstract execute(battle: Battle, user: ActivePokemon, target: ActivePokemon): boolean;

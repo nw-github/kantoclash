@@ -15,7 +15,7 @@ export type Gen1PokemonDesc = {
 export type PokemonDesc = {
   evs: Partial<Stats>;
   ivs: Partial<Stats>;
-  level: number;
+  level?: number;
   name?: string;
   species: string;
   moves: string[];
@@ -33,7 +33,7 @@ export const descToString = (poke: PokemonDesc) => {
   const stats = (stats: Partial<Stats>, def: number, name: string) => {
     const result = [];
     for (const k in stats) {
-      if (stats[k as keyof Stats] !== def) {
+      if (stats[k as keyof Stats] !== undefined && stats[k as keyof Stats] !== def) {
         result.push(`${stats[k as keyof Stats]!} ${k}`);
       }
     }
@@ -50,14 +50,14 @@ export const descToString = (poke: PokemonDesc) => {
     result += `${species?.name ?? poke.name}\n`;
   }
 
-  if (poke.level !== 100) {
+  if (poke.level !== 100 && poke.level !== undefined) {
     result += `Level: ${poke.level}\n`;
   }
 
   result += stats(poke.evs, 255, "EVs");
   result += stats(poke.ivs, 31, "IVs");
   for (const move of poke.moves) {
-    const id = move.trim().toLowerCase().replaceAll(ignoreChars, "");
+    const id = normalizeName(move);
     if ((moveList as Record<string, Move>)[id]) {
       result += ` - ${moveList[id as MoveId].name}\n`;
     } else if (move.trim()) {
@@ -116,32 +116,31 @@ export const parsePokemon = (src: string): PokemonDesc => {
       moves.push(match[1]);
     }
   }
-
-  for (const key of statKeys) {
-    evs[key] ??= 255;
-    ivs[key] ??= 31;
-  }
   return { species: speciesName, evs, ivs, level, moves, name };
 };
 
 export const convertDesc = (desc: PokemonDesc): Gen1PokemonDesc => {
-  const species = desc.species.trim().toLowerCase().replaceAll(ignoreChars, "") as SpeciesId;
+  const species = normalizeName(desc.species) as SpeciesId;
   const moves: MoveId[] = [];
   for (const move of desc.moves) {
     if (move.trim()) {
-      moves.push(move.trim().toLowerCase().replaceAll(ignoreChars, "") as MoveId);
+      moves.push(normalizeName(move) as MoveId);
     }
   }
 
   const statexp: Partial<Stats> = {};
-  for (const ev in desc.evs) {
-    statexp[ev as keyof Stats] = Math.floor(desc.evs[ev as keyof Stats]! * 257);
-  }
-
   const dvs: Partial<Stats> = {};
-  for (const iv in desc.ivs) {
-    dvs[iv as keyof Stats] = Math.floor(desc.ivs[iv as keyof Stats]! / 2);
+  for (const stat of statKeys) {
+    statexp[stat] = evToStatexp(desc.evs[stat]);
+    dvs[stat] = ivToDv(desc.ivs[stat]);
   }
-
-  return { statexp, dvs, moves, level: desc.level, name: desc.name, species };
+  return { statexp, dvs, moves, level: desc.level ?? 100, name: desc.name, species };
 };
+
+export const normalizeName = (v: string) => v.trim().toLowerCase().replaceAll(ignoreChars, "");
+
+export const ivToDv = (v?: number) => Math.floor((v ?? 31) / 2);
+export const dvToIv = (v?: number) => (v ?? 15) * 2;
+// FIXME: showdown parity
+export const evToStatexp = (v?: number) => (v ?? 255) * 257;
+export const statexpToEv = (v?: number) => Math.floor((v ?? 65535) / 257);

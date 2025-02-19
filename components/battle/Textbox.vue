@@ -87,7 +87,7 @@
       <UInput
         placeholder="Send a message..."
         v-model="message"
-        v-on:keyup.enter="sendMessage"
+        @keyup.enter="sendMessage"
         :disabled="!myId"
       >
         <template #trailing>

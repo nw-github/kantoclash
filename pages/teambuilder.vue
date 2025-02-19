@@ -79,7 +79,7 @@
   </UCard>
 
   <UModal v-model="open">
-    <TeamBuilder v-if="editingTeam" :team="editingTeam" />
+    <TeamBuilder v-if="editingTeam" :team="editingTeam" @delete="deleteTeam(editingTeam)" />
   </UModal>
 </template>
 
@@ -121,14 +121,7 @@ const dropdownItems = (team: Team) => [
     label: "Delete",
     icon: "material-symbols:delete-outline",
     color: "red",
-    click() {
-      const idx = myTeams.value.indexOf(team);
-      const [removed] = myTeams.value.splice(idx, 1);
-      toast.add({
-        title: `'${team.name}' deleted!`,
-        actions: [{ label: "Undo", click: () => myTeams.value.splice(idx, 0, removed) }],
-      });
-    },
+    click: () => deleteTeam(team),
   },
 ];
 
@@ -147,6 +140,17 @@ const importTeam = async () => {
     name: "New Team",
     pokemon: team,
     format: "standard",
+  });
+};
+
+const deleteTeam = (team: Team) => {
+  editingTeam.value = undefined;
+
+  const idx = myTeams.value.indexOf(team);
+  const [removed] = myTeams.value.splice(idx, 1);
+  toast.add({
+    title: `'${team.name}' deleted!`,
+    actions: [{ label: "Undo", click: () => myTeams.value.splice(idx, 0, removed) }],
   });
 };
 </script>

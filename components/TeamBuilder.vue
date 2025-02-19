@@ -6,16 +6,18 @@
         <UInput :trailing="false" placeholder="Team name" class="w-full" v-model="team.name" />
 
         <div class="flex space-x-0.5">
-          <UButton
-            icon="material-symbols:add-2"
-            variant="ghost"
-            color="gray"
-            @click="selectedPoke = props.team.pokemon.push(parsePokemon(''))"
-            :disabled="props.team.pokemon.length >= 6"
-          />
           <!-- <UButton icon="material-symbols:save-outline" color="gray" variant="ghost" /> -->
-          <UButton icon="material-symbols:delete-outline" color="red" variant="ghost" />
-          <UButton icon="material-symbols:close" color="red" variant="ghost" />
+          <UTooltip text="Delete Team">
+            <UButton
+              icon="material-symbols:delete-outline"
+              color="red"
+              variant="ghost"
+              @click="$emit('delete')"
+            />
+          </UTooltip>
+          <UTooltip text="Close">
+            <UButton icon="material-symbols:close" color="red" variant="ghost" />
+          </UTooltip>
         </div>
       </div>
     </template>
@@ -36,94 +38,162 @@
           />
         </div>
       </template>
-      <template #item="{ item }">
-        <UTabs
-          class="parent-h-100 tab-2 flex flex-col h-full"
-          :items="[{ label: 'Edit' }, { label: 'PokePaste' }]"
-          @change="index => index === 1 && (textAreaText = descToString(item.poke))"
-        >
-          <template #item="{ index }">
-            <UCard
-              class="parent-h-100 h-full flex"
-              :ui="{ body: { base: 'flex flex-col gap-2 grow', padding: 'p-2 sm:p-2' } }"
-              v-if="index === 0"
-            >
-              <div class="flex space-x-2 grow">
-                <div class="flex flex-col items-center justify-between">
-                  <div class="w-[128px] h-[117px] my-2">
-                    <Sprite :species="item.species" :scale="2" kind="front" />
-                  </div>
-                  <UInput
-                    :maxlength="24"
-                    v-model="item.poke.name"
-                    :placeholder="item.species?.name ?? ''"
-                  >
-                    <template #trailing>
-                      <span class="text-xs text-gray-500 dark:text-gray-400">
-                        {{ item.poke.name?.length ?? 0 }}/24
-                      </span>
-                    </template>
-                  </UInput>
+      <template #item="{ item, index }">
+        <div class="parent-h-100 flex flex-col h-full">
+          <div class="flex justify-between pb-1.5">
+            <div class="bg-gray-100 dark:bg-gray-800 rounded-lg p-1 h-10 items-center">
+              <UButton
+                variant="ghost"
+                icon="material-symbols:edit-square-outline"
+                label="Edit"
+                color="gray"
+                class="rounded-md text-gray-500 dark:text-gray-400"
+                :class="[
+                  selectedTab === 0 &&
+                    'text-gray-900 dark:text-white bg-white dark:bg-gray-900 shadow-sm',
+                ]"
+                @click="selectedTab = 0"
+              />
+              <UButton
+                variant="ghost"
+                icon="material-symbols:content-paste"
+                label="PokePaste"
+                color="gray"
+                class="rounded-md text-gray-500 dark:text-gray-400"
+                :class="[
+                  selectedTab === 1 &&
+                    'text-gray-900 dark:text-white bg-white dark:bg-gray-900 shadow-sm',
+                ]"
+                @click="selectedTab = 1"
+              />
+            </div>
+
+            <div class="flex items-center">
+              <UTooltip text="Add Pokemon">
+                <UButton
+                  icon="material-symbols:add-2"
+                  variant="ghost"
+                  color="gray"
+                  @click="addPokemon"
+                  :disabled="props.team.pokemon.length >= 6"
+                />
+              </UTooltip>
+              <UTooltip text="Delete Pokemon">
+                <UButton
+                  icon="material-symbols:delete-outline"
+                  color="red"
+                  variant="ghost"
+                  :disabled="props.team.pokemon.length < 2"
+                  @click="deletePokemon(index)"
+                />
+              </UTooltip>
+            </div>
+          </div>
+
+          <UCard
+            class="flex grow"
+            :ui="{
+              body: { base: 'flex flex-col gap-2 grow justify-between', padding: 'p-2 sm:p-2' },
+            }"
+            v-if="selectedTab === 0"
+          >
+            <div class="flex space-x-2">
+              <div class="flex flex-col items-center justify-between">
+                <div class="w-[128px] h-[117px] my-2">
+                  <Sprite :species="item.species" :scale="2" kind="front" />
                 </div>
-                <div class="flex flex-col justify-between">
-                  <div class="flex justify-between items-center">
-                    <span>Level:</span>
-                    <UInput class="w-20" placeholder="100" />
-                  </div>
-                  <UInput
-                    v-for="(_, i) in 4"
-                    v-model="item.poke.moves[i]"
-                    placeholder="Add move..."
+                <UInput
+                  :maxlength="24"
+                  v-model="item.poke.name"
+                  :placeholder="item.species?.name ?? ''"
+                >
+                  <template #trailing>
+                    <span class="text-xs text-gray-500 dark:text-gray-400">
+                      {{ item.poke.name?.length ?? 0 }}/24
+                    </span>
+                  </template>
+                </UInput>
+              </div>
+              <div class="flex flex-col justify-between gap-1">
+                <div class="flex justify-between items-center">
+                  <span>Level</span>
+                  <NumericInput
+                    class="w-20"
+                    placeholder="100"
+                    :min="1"
+                    :max="100"
+                    v-model="item.poke.level"
                   />
                 </div>
+                <MoveSelector
+                  v-for="(_, i) in 4"
+                  :poke="item.poke"
+                  v-model="item.poke.moves[i]"
+                  placeholder="Add move..."
+                />
               </div>
-              <div class="grid items-center grid-cols-[auto,1fr,auto,auto,auto,auto] gap-1">
-                <template v-for="stat in statKeys">
-                  <span class="px-1.5">{{ statName[stat] }}</span>
-                  <URange :min="0" :max="255" color="green" v-model="item.poke.evs[stat]" />
-                  <span class="text-center px-1.5 min-w-8 text-xs">
-                    {{ item.poke.evs[stat] }}
+            </div>
+            <div class="grid items-center grid-cols-[auto,1fr,auto,auto,auto,auto] gap-1">
+              <template v-for="stat in statKeys">
+                <span class="px-1.5">{{ statName[stat] }}</span>
+                <URange :min="0" :max="255" color="green" v-model="item.poke.evs[stat]" />
+                <span class="text-center px-1.5 min-w-8 text-xs">
+                  {{ item.poke.evs[stat] }}
+                </span>
+                <NumericInput
+                  v-if="stat === 'hp'"
+                  class="w-10"
+                  disabled
+                  :placeholder="String(dvToIv(getHpDvFromEvs(item.poke)))"
+                />
+                <NumericInput
+                  class="w-10"
+                  placeholder="31"
+                  :min="0"
+                  :max="31"
+                  v-model="item.poke.ivs[stat]"
+                  v-else
+                />
+
+                <template v-if="item.species">
+                  <span class="text-center px-1.5 min-w-10 text-gray-500" v-if="item.species">
+                    {{ calcPokeStat(stat, item.poke) }}
                   </span>
-                  <UInput class="w-10" :disabled="stat === 'hp'" />
-                  <template v-if="item.species">
-                    <span class="text-center px-1.5 min-w-10 text-gray-500" v-if="item.species">
-                      {{
-                        calcStat(
-                          item.species.stats[stat],
-                          item.poke.level,
-                          item.poke.ivs[stat] / 2,
-                          item.poke.evs[stat] * 257,
-                        )
-                      }}
-                    </span>
-                    <span class="text-center px-1.5 min-w-8 text-gray-500 text-xs">
-                      {{ item.species.stats[stat] }}
-                    </span>
-                  </template>
-                  <template v-else>
-                    <span class="text-center px-1.5 min-w-10 text-gray-500">--</span>
-                    <span class="text-center px-1.5 min-w-8 text-gray-500 text-xs">--</span>
-                  </template>
+                  <!-- TODO: blend between colors -->
+                  <span
+                    class="text-center px-1.5 min-w-8 text-xs"
+                    :class="[
+                      item.species.stats[stat] < 70 && 'text-red-400',
+                      item.species.stats[stat] < 100 && 'text-amber-300',
+                      item.species.stats[stat] >= 100 && 'text-lime-400',
+                    ]"
+                  >
+                    {{ item.species.stats[stat] }}
+                  </span>
                 </template>
-              </div>
-            </UCard>
-            <UTextarea
-              class="parent-h-100 h-full"
-              v-else
-              :ui="{ base: 'h-full', rounded: 'rounded-lg' }"
-              v-model="textAreaText"
-              @change="team.pokemon[item.teamIndex] = parsePokemon(textAreaText)"
-            >
-              <UButton
-                class="absolute top-2 right-2"
-                icon="material-symbols:content-copy-outline"
-                variant="ghost"
-                color="gray"
-                @click="copyTextArea"
-              />
-            </UTextarea>
-          </template>
-        </UTabs>
+                <template v-else>
+                  <span class="text-center px-1.5 min-w-10 text-gray-500">--</span>
+                  <span class="text-center px-1.5 min-w-8 text-gray-500 text-xs">--</span>
+                </template>
+              </template>
+            </div>
+          </UCard>
+          <UTextarea
+            class="grow"
+            v-else
+            :ui="{ base: 'h-full', rounded: 'rounded-lg' }"
+            v-model="textAreaText"
+            @change="team.pokemon[item.teamIndex] = parsePokemon(textAreaText)"
+          >
+            <UButton
+              class="absolute top-2 right-2"
+              icon="material-symbols:content-copy-outline"
+              variant="ghost"
+              color="gray"
+              @click="copyTextArea"
+            />
+          </UTextarea>
+        </div>
       </template>
     </UTabs>
   </UCard>
@@ -134,18 +204,15 @@
   height: 100%;
   padding-bottom: 0.5rem;
 }
-
-.tab-2 > :nth-child(2) {
-  height: 100%;
-}
 </style>
 
 <script setup lang="ts">
-import { calcStat } from "@/game/pokemon";
-import { speciesList, type Species } from "@/game/species";
+import { calcStat, getHpDv, Pokemon } from "@/game/pokemon";
+import { speciesList, type Species, type SpeciesId } from "@/game/species";
 import { statKeys, type Stats } from "@/game/utils";
+import { evToStatexp, ivToDv } from "~/utils/pokemon";
 
-// const unusedMoves = computed(() => species.moves.filter(id => !moves.value.includes(id)));
+defineEmits<{ (e: "delete"): void }>();
 
 const statName: Record<keyof Stats, string> = {
   hp: "HP",
@@ -168,15 +235,76 @@ const items = computed(() => {
 });
 const textAreaText = ref("");
 const selectedPoke = ref(0);
+const selectedTab = ref(0);
+
+watch([selectedPoke, selectedTab], ([_, tab]) => {
+  if (tab === 1) {
+    textAreaText.value = descToString(props.team.pokemon[selectedPoke.value]);
+  }
+});
 
 for (const poke of props.team.pokemon) {
   for (let i = poke.moves.length; i < 4; i++) {
     poke.moves.push("");
+  }
+
+  for (const key of statKeys) {
+    poke.evs[key] ??= 255;
+    if (key === "hp") {
+      poke.ivs[key] ??= 31;
+    } else {
+      poke.ivs[key] = undefined;
+    }
   }
 }
 
 const copyTextArea = () => {
   navigator.clipboard.writeText(textAreaText.value);
   toast.add({ title: `Copied to clipboard!` });
+};
+
+const getHpDvFromEvs = (poke: PokemonDesc) => {
+  const dvs: Partial<Stats> = {};
+  for (const stat of statKeys) {
+    dvs[stat] = ivToDv(poke.ivs[stat]);
+  }
+  return getHpDv(dvs);
+};
+
+const calcPokeStat = (stat: keyof Stats, poke: PokemonDesc) => {
+  return calcStat(
+    stat === "hp",
+    speciesList[poke.species as SpeciesId].stats[stat],
+    poke.level ?? 100,
+    stat === "hp" ? getHpDvFromEvs(poke) : ivToDv(poke.ivs[stat]),
+    evToStatexp(poke.evs[stat]),
+  );
+};
+
+const deletePokemon = (i: number) => {
+  if (props.team.pokemon.length <= 1) {
+    return;
+  }
+
+  const [poke] = props.team.pokemon.splice(i, 1);
+  if (selectedPoke.value >= props.team.pokemon.length) {
+    selectedPoke.value = props.team.pokemon.length - 1;
+  }
+
+  const name = poke.name || speciesList[poke.species as SpeciesId]?.name || `Pokemon ${i + 1}`;
+  toast.add({
+    title: `${name} deleted!`,
+    actions: [{ label: "Undo", click: () => props.team.pokemon.splice(i, 0, poke) }],
+  });
+};
+
+const addPokemon = async () => {
+  if (props.team.pokemon.length >= 6) {
+    return;
+  }
+
+  const length = props.team.pokemon.push(parsePokemon(""));
+  await nextTick();
+  selectedPoke.value = length - 1;
 };
 </script>
