@@ -19,9 +19,9 @@
     :battlers
     :timer
     @chat="sendChat"
-    @forfeit="forfeit"
-    @move="selectMove"
-    @switch="selectSwitch"
+    @forfeit="() => makeChoice('forfeit')"
+    @move="i => makeChoice('move', i)"
+    @switch="i => makeChoice('switch', i)"
     @cancel="cancelMove"
     @timer="startTimer"
   />
@@ -38,6 +38,7 @@ import type { InfoMessage } from "~/server/utils/info";
 
 const { $conn } = useNuxtApp();
 const title = useTitle("Battle");
+const toast = useToast();
 const route = useRoute();
 const currentTrack = useCurrentTrack();
 const battle = ref<InstanceType<typeof Battle>>();
@@ -186,39 +187,58 @@ onUnmounted(() => {
   }
 });
 
-const sendChat = (message: string) => {
-  $conn.emit("chat", room, message, err => {
-    // TODO: do something with the error
-  });
+const sendChat = (message: string) => $conn.emit("chat", room, message, displayErrorToast);
+const makeChoice = (e: "move" | "switch" | "forfeit", index?: number) => {
+  $conn.emit("choose", room, index ?? 0, e, sequenceNo, displayErrorToast);
 };
+const cancelMove = () => $conn.emit("cancel", room, sequenceNo, displayErrorToast);
+const startTimer = () => $conn.emit("startTimer", room, displayErrorToast);
 
-const forfeit = () => {
-  $conn.emit("choose", room, 0, "forfeit", sequenceNo, err => {
-    // TODO: do something with the error
-  });
-};
-
-const selectMove = (index: number) => {
-  $conn.emit("choose", room, index, "move", sequenceNo, err => {
-    // TODO: do something with the error
-  });
-};
-
-const selectSwitch = (index: number) => {
-  $conn.emit("choose", room, index, "switch", sequenceNo, err => {
-    // TODO: do something with the error
-  });
-};
-
-const cancelMove = () => {
-  $conn.emit("cancel", room, sequenceNo, err => {
-    // TODO: do something with the error
-  });
-};
-
-const startTimer = () => {
-  $conn.emit("startTimer", room, err => {
-    // TODO: do something with the error
-  });
+const displayErrorToast = (err?: string) => {
+  if (!err) {
+    return;
+  } else if (err === "invalid_choice") {
+    toast.add({
+      title: "Your choice was invalid",
+      icon: "material-symbols:error-circle-rounded-outline-sharp",
+    });
+  } else if (err === "not_in_battle") {
+    toast.add({
+      title: "You are not in this battle",
+      icon: "material-symbols:error-circle-rounded-outline-sharp",
+    });
+  } else if (err === "too_late") {
+    toast.add({
+      title: "Your choice was too late, the next turn has started",
+      icon: "material-symbols:error-circle-rounded-outline-sharp",
+    });
+  } else if (err === "bad_room") {
+    toast.add({
+      title: "This room has expired",
+      icon: "material-symbols:error-circle-rounded-outline-sharp",
+    });
+  } else if (err === "bad_message") {
+    toast.add({
+      title: "Your message has been blocked",
+      icon: "material-symbols:chat-error-outline-rounded",
+    });
+  } else if (err === "bad_room") {
+    toast.add({ title: "This room has expired", icon: "material-symbols:chat-info-outline" });
+  } else if (err === "not_in_room") {
+    toast.add({
+      title: "You must join this room first (Try reloading the page)",
+      icon: "material-symbols:error-circle-rounded-outline-sharp",
+    });
+  } else if (err === "already_on") {
+    toast.add({
+      title: "The timer is already on",
+      icon: "material-symbols:error-circle-rounded-outline-sharp",
+    });
+  } else {
+    toast.add({
+      title: `An unknown error occoured: '${err}'`,
+      icon: "material-symbols:error-circle-rounded-outline-sharp",
+    });
+  }
 };
 </script>

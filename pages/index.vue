@@ -4,7 +4,15 @@
       <h1 class="text-center">
         {{ user ? `Welcome ${user.name}!` : "You must first log in to find a battle" }}
       </h1>
-      <FormatDropdown v-model="format" :disabled="findingMatch" />
+      <div class="flex items-center gap-2">
+        <FormatDropdown v-model="format" :disabled="findingMatch" class="grow" />
+        <UPopover mode="hover">
+          <UButton icon="material-symbols:info-outline-rounded" color="gray" variant="ghost" />
+          <template #panel>
+            <span class="p-1">{{ formatInfo[format].desc }}</span>
+          </template>
+        </UPopover>
+      </div>
       <ClientOnly>
         <div ref="selectTeamMenu">
           <USelectMenu

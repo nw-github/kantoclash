@@ -347,7 +347,7 @@ export class GameServer extends SocketIoServer<ClientMessage, ServerMessage> {
           return ack("invalid_choice");
         }
       } else if (type === "switch") {
-        if (!player.chooseSwitch(index)) {
+        if (!player.chooseSwitch(index, room.battle)) {
           return ack("invalid_choice");
         }
       } else if (type !== "forfeit") {
@@ -458,7 +458,7 @@ export class GameServer extends SocketIoServer<ClientMessage, ServerMessage> {
     if (mm) {
       const roomId = uuid();
       const [opponent, opponentAcc] = mm;
-      const [battle, turn0] = Battle.start(player, opponent);
+      const [battle, turn0] = Battle.start(player, opponent, formatDescs[format].chooseLead);
       this.rooms[roomId] = new Room(roomId, battle, turn0, format, this);
 
       account.joinBattle(this.rooms[roomId], this);

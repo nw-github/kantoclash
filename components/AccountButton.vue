@@ -1,12 +1,12 @@
 <template>
   <UPopover mode="click" v-model="model" :popper="{ placement: 'bottom-end' }">
-    <UAvatar icon="material-symbols:account-circle-full" />
+    <UButton icon="material-symbols:account-circle-full" variant="ghost" color="gray" />
     <template #panel>
       <div class="p-4">
         <AuthState v-slot="{ user }">
           <div v-if="user">
             <div class="flex items-center space-x-2">
-              <UAvatar icon="material-symbols:account-circle-full" />
+              <UIcon name="material-symbols:account-circle-full" class="size-5" />
               <h2>{{ user.name }}</h2>
             </div>
             <UDivider class="py-2" />
@@ -29,6 +29,8 @@
 </template>
 
 <script setup lang="ts">
+import { UButton } from "#components";
+
 const { $conn } = useNuxtApp();
 const { clear } = useUserSession();
 const loading = ref(false);

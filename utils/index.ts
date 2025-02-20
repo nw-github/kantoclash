@@ -133,35 +133,48 @@ const flagDesc: Record<NonNullable<DamagingMove["flag"]>, string> = {
   super_fang: "Deals damage equal to 1/2 the target's current HP. ",
 };
 
-export const formatInfo: Record<FormatId, { name: string; icon: string; needsTeam: boolean }> = {
+type FormatInfo = {
+  name: string;
+  icon: string;
+  needsTeam: boolean;
+  desc: string;
+};
+
+export const formatInfo: Record<FormatId, FormatInfo> = {
   standard: {
     name: "Standard Battle",
     icon: "akar-icons:sword",
+    desc: "A standard battle allowing all Pokémon. Bring your own team.",
     needsTeam: true,
   },
   nfe: {
     name: "Standard Battle (NFE)",
     icon: "mingcute:mickeymouse-line",
+    desc: "A standard battle allowing only Pokémon that have not fully evoled. Bring your own team.",
     needsTeam: true,
   },
   randoms: {
     name: "Random Battle",
     icon: "mdi:dice-3-outline",
+    desc: "A standard Pokémon battle, but your team and sets will be randomly generated.",
     needsTeam: false,
   },
   metronome: {
-    name: "Metronome Battle",
+    name: "Random Metronome Battle",
     icon: "mdi:metronome",
+    desc: "A random battle where all Pokémon only know the move Metronome.",
     needsTeam: false,
   },
   truly_randoms: {
     name: "Truly Random Battle",
     icon: "mdi:dice-5-outline",
+    desc: "A random battle with no limits on the generated move sets.",
     needsTeam: false,
   },
   randoms_nfe: {
     name: "Random Battle (NFE)",
     icon: "mdi:dice-1-outline",
+    desc: "A random battle where only Pokémon that are not fully evolved are included.",
     needsTeam: false,
   },
 };

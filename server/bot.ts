@@ -88,7 +88,7 @@ export async function startBot(format: FormatId = "randoms", botFunction: BotFun
     gameOver: () => void,
   ) {
     const players: Record<string, ClientPlayer> = {};
-    let activeIndex = 0;
+    let activeIndex = -1;
     let turnNo = 0;
 
     const handleEvent = (e: BattleEvent) => {

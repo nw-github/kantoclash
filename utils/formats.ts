@@ -20,6 +20,7 @@ export type FormatId = (typeof battleFormats)[number];
 export type TeamProblems = { path: (string | number)[]; message: string }[];
 
 type FormatDesc = {
+  chooseLead?: boolean;
   generate?(): Pokemon[];
   validate?(team: any): readonly [true, Pokemon[]] | readonly [false, TeamProblems];
 };
@@ -129,11 +130,13 @@ const validateTeam = (team: any, onPoke?: (poke: Pokemon, add: (s: string) => vo
 
 export const formatDescs: Record<FormatId, FormatDesc> = {
   standard: {
+    chooseLead: true,
     validate(team) {
       return validateTeam(team);
     },
   },
   nfe: {
+    chooseLead: true,
     validate(team) {
       return validateTeam(team, (poke, addProblem) => {
         if (!poke.species.evolves) {

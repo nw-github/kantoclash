@@ -22,7 +22,7 @@
       </div>
 
       <div class="relative w-full z-30">
-        <div class="events absolute w-full flex flex-col bottom-1">
+        <div class="events absolute w-full flex flex-col bottom-1 space-y-0.5">
           <TransitionGroup name="list">
             <div
               v-for="[events, time] in liveEvents"
@@ -85,6 +85,7 @@
               <template v-for="(option, i) in options.moves">
                 <MoveButton v-if="option.display" :option="option" @click="selectMove(i)" />
               </template>
+              <div v-if="!options.moves.length && activeIndex === -1">Choose your lead</div>
             </div>
 
             <div class="grid grid-cols-2 gap-1 sm:gap-2 items-center">
@@ -248,7 +249,7 @@ const updateMarker = ref(0);
 const backPokemon = ref<InstanceType<typeof ActivePokemon>>();
 const frontPokemon = ref<InstanceType<typeof ActivePokemon>>();
 
-const activeIndex = ref(0);
+const activeIndex = ref(-1);
 const activeInTeam = computed(() => (isBattler.value ? team?.[activeIndex.value] : undefined));
 
 const isBattler = computed(() => battlers.includes(myId.value));

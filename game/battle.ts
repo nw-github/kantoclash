@@ -91,17 +91,19 @@ export class Player {
     return true;
   }
 
-  chooseSwitch(index: number) {
+  chooseSwitch(index: number, battle: Battle) {
     if (!this.options?.canSwitch) {
       return false;
     }
 
     const poke = this.team[index];
-    const current = this.active.base;
-    if (!poke || poke === current || !poke.hp) {
-      return false;
-    } else if (current instanceof TransformedPokemon && poke === current.base) {
-      return false;
+    if (!battle.leadTurn) {
+      const current = this.active.base;
+      if (!poke || poke === current || !poke.hp) {
+        return false;
+      } else if (current instanceof TransformedPokemon && poke === current.base) {
+        return false;
+      }
     }
 
     this.choice = { move: new SwitchMove(poke), user: this.active };
@@ -112,6 +114,11 @@ export class Player {
     const { active } = this;
     if (battle.victor || (!battle.opponentOf(this).active.base.hp && active.base.hp)) {
       this.options = undefined;
+      return;
+    }
+
+    if (battle.leadTurn) {
+      this.options = { canSwitch: true, moves: [] };
       return;
     }
 
@@ -149,7 +156,7 @@ export class Player {
     };
   }
 
-  isAllDead() {
+  areAllDead() {
     return this.team.every(poke => poke.hp === 0);
   }
 
@@ -180,28 +187,31 @@ export class Battle {
   private readonly events: BattleEvent[] = [];
   private readonly moveListToId;
   private switchTurn = false;
-  _victor?: Player;
-  rng: Random;
+  private _victor?: Player;
+  readonly rng: Random;
+  leadTurn = true;
 
   private constructor(player1: Player, player2: Player, seed?: SeedOrRNG) {
     this.players = [player1, player2];
     this.moveListToId = new Map<Move, MoveId>();
     this.rng = new Random(seed);
     for (const k in moveList) {
-      // @ts-ignore
-      this.moveListToId.set(moveList[k], k);
+      this.moveListToId.set(moveList[k as MoveId], k as MoveId);
     }
   }
 
-  static start(player1: Player, player2: Player) {
+  static start(player1: Player, player2: Player, chooseLead?: boolean) {
     const self = new Battle(player1, player2);
 
-    // TODO: is the initial switch order determined by speed?
-    for (const player of self.players) {
-      player.active.switchTo(player.active.base, self);
+    player1.updateOptions(self);
+    player2.updateOptions(self);
+    if (chooseLead) {
+      return [self, { events: [], switchTurn: true } satisfies Turn] as const;
     }
 
-    return [self, self.endTurn()] as const;
+    player1.chooseSwitch(0, self);
+    player2.chooseSwitch(0, self);
+    return [self, self.nextTurn()!] as const;
   }
 
   get victor() {
@@ -248,6 +258,13 @@ export class Battle {
         return bSpe - aSpe;
       });
 
+    if (this.leadTurn) {
+      // Randomize choices to avoid leaking speed. Not sure what determines the order of lead
+      // switch in Gen 1
+      choices.sort(() => (this.rng.bool() ? -1 : 1));
+      this.leadTurn = false;
+    }
+
     let skipEnd = false;
     for (const choice of choices) {
       if (choice.move instanceof SwitchMove) {
@@ -256,11 +273,11 @@ export class Battle {
       }
 
       const target = this.opponentOf(choice.user.owner).active;
-      if (this.userMove(choice, target) || choice.user.handleRecurrentDamage(this)) {
+      if (this.tryUseMove(choice, target) || choice.user.handleRecurrentDamage(this)) {
         if (!this._victor) {
-          if (target.owner.isAllDead()) {
+          if (target.owner.areAllDead()) {
             this._victor = choice.user.owner;
-          } else if (choice.user.owner.isAllDead()) {
+          } else if (choice.user.owner.areAllDead()) {
             this._victor = target.owner;
           }
         }
@@ -273,7 +290,7 @@ export class Battle {
     if (!skipEnd && !this.switchTurn) {
       for (const { user } of choices) {
         if (user.handleStatusDamage(this)) {
-          if (user.owner.isAllDead()) {
+          if (user.owner.areAllDead()) {
             this._victor = this.opponentOf(user.owner);
           }
           break;
@@ -281,7 +298,24 @@ export class Battle {
       }
     }
 
-    return this.endTurn();
+    if (this.victor) {
+      this.event({ type: "victory", id: this.victor.id });
+    }
+
+    for (const player of this.players) {
+      player.choice = undefined;
+      player.active.v.handledStatus = false;
+      player.active.v.hazed = false;
+      player.active.v.flinch = false;
+      if (player.active.v.trapped && !this.opponentOf(player).active.v.trapping) {
+        player.active.v.trapped = false;
+      }
+      player.updateOptions(this);
+    }
+
+    const switchTurn = this.switchTurn;
+    this.switchTurn = this.players.some(pl => pl.active.base.hp === 0);
+    return { events: this.events.splice(0), switchTurn };
   }
 
   findPlayer(id: string) {
@@ -291,10 +325,14 @@ export class Battle {
   forfeit(player: Player, timer: boolean) {
     this._victor = this.opponentOf(player);
     this.event({ type: "info", id: player.id, why: timer ? "forfeit_timer" : "forfeit" });
-    return this.endTurn();
+    this.event({ type: "victory", id: this._victor.id });
+    for (const player of this.players) {
+      player.updateOptions(this);
+    }
+    return { events: this.events.splice(0), switchTurn: false };
   }
 
-  private userMove({ move, user, indexInMoves }: ChosenMove, target: ActivePokemon) {
+  private tryUseMove({ move, user, indexInMoves }: ChosenMove, target: ActivePokemon) {
     if (user.v.trapped) {
       this.info(user, "trapped");
       return false;
@@ -351,27 +389,6 @@ export class Battle {
     }
 
     return move.use(this, user, target, indexInMoves);
-  }
-
-  private endTurn(): Turn {
-    if (this.victor) {
-      this.event({ type: "victory", id: this.victor.id });
-    }
-
-    for (const player of this.players) {
-      player.choice = undefined;
-      player.active.v.handledStatus = false;
-      player.active.v.hazed = false;
-      player.active.v.flinch = false;
-      if (player.active.v.trapped && !this.opponentOf(player).active.v.trapping) {
-        player.active.v.trapped = false;
-      }
-      player.updateOptions(this);
-    }
-
-    const switchTurn = this.switchTurn;
-    this.switchTurn = this.players.some(pl => pl.active.base.hp === 0);
-    return { events: this.events.splice(0), switchTurn };
   }
 
   rand255(num: number) {
