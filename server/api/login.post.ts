@@ -9,15 +9,17 @@ declare module "#auth-utils" {
 }
 
 export const USERS: Record<string, { password: string; id: string }> = {
-  admin: { password: "123", id: "admin-1" },
-  user: { password: "123", id: "user-2" },
-  bot1: { password: uuid(), id: "bot-1" },
+  admin: { password: "", id: uuid() },
+  user: { password: "", id: uuid() },
 };
+
+hashPassword("123").then(pw => (USERS.admin.password = pw));
+hashPassword("123").then(pw => (USERS.user.password = pw));
 
 export default defineEventHandler(async event => {
   const { username, password } = await readValidatedBody(event, userSchema.parse);
 
-  if (USERS[username]?.password !== password) {
+  if (!(await verifyPassword(USERS[username]?.password, password))) {
     throw createError({ statusCode: 401, message: "Bad credentials" });
   }
 

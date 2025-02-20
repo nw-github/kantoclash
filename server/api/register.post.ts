@@ -8,7 +8,7 @@ export default defineEventHandler(async event => {
     throw createError({ statusCode: 409, message: "Username already taken" });
   }
 
-  USERS[username] = { password, id: uuid() };
+  USERS[username] = { password: await hashPassword(password), id: uuid() };
 
   await setUserSession(event, { user: { name: username, id: USERS[username].id } });
   return {};

@@ -10,7 +10,6 @@ import { InfoMessage } from "./info";
 export type JoinRoomResponse = {
   team?: Pokemon[];
   options?: Options;
-  players: { id: string; name: string; isSpectator: boolean; nPokemon: number }[];
   turns: Turn[];
   chats: InfoRecord;
   format: FormatId;
@@ -234,21 +233,19 @@ class Account {
 
       room.accounts.delete(this);
       this.disconnectedRooms.delete(room);
+      return false;
     } else if (sockets.some(s => s.rooms.has(room.id))) {
       return true;
     } else {
-      const player = room.battle.findPlayer(this.id);
-      if (player) {
-        // TODO: start room disconnect timer
+      room.sendChat({ type: "userLeave", id: this.id });
+      if (room.battle.findPlayer(this.id) && !room.battle.victor) {
         this.disconnectedRooms.add(room);
-      } else {
-        room.accounts.delete(this);
+        return true;
       }
 
-      room.sendChat({ type: "userLeave", id: this.id });
-      return !!player;
+      room.accounts.delete(this);
+      return false;
     }
-    return false;
   }
 }
 
@@ -315,15 +312,6 @@ export class GameServer extends SocketIoServer<ClientMessage, ServerMessage> {
       return ack({
         team: player?.originalTeam,
         options: player?.options,
-        players: room.accounts
-          .keys()
-          .map(acc => ({
-            name: acc.name,
-            id: acc.id,
-            isSpectator: !room.battle.findPlayer(acc.id),
-            nPokemon: room.battle.findPlayer(acc.id)?.team.length ?? 0,
-          }))
-          .toArray(),
         turns: room.turns.slice(turn).map(({ events, switchTurn }) => ({
           events: Battle.censorEvents(events, player),
           switchTurn,
@@ -443,7 +431,7 @@ export class GameServer extends SocketIoServer<ClientMessage, ServerMessage> {
         }
       }
 
-      if (!sockets.length) {
+      if (!sockets.length && !account.disconnectedRooms.size) {
         this.leaveMatchmaking(account);
         if (!stillInRooms) {
           delete this.accounts[account.id];

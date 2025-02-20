@@ -37,7 +37,6 @@ import type { BattleTimer, InfoRecord, JoinRoomResponse } from "~/server/utils/g
 import type { InfoMessage } from "~/server/utils/info";
 
 const { $conn } = useNuxtApp();
-const { user } = useUserSession();
 const title = useTitle("Battle");
 const route = useRoute();
 const currentTrack = useCurrentTrack();
@@ -75,19 +74,6 @@ onMounted(() => {
       players[player].connected = false;
     }
 
-    for (const { isSpectator, id, name, nPokemon } of resp.players) {
-      players[id] = {
-        name,
-        isSpectator,
-        connected: true,
-        nPokemon,
-        nFainted: players[id]?.nFainted ?? 0,
-      };
-      if (!isSpectator && !battlers.value.includes(id)) {
-        battlers.value.push(id);
-      }
-    }
-
     if (fresh) {
       sequenceNo = resp.turns.length;
       turns.value = resp.turns;
@@ -102,7 +88,12 @@ onMounted(() => {
 
     clearObj(chats);
     for (const k in resp.chats) {
-      chats[k] = resp.chats[k];
+      if (resp.chats[k]) {
+        chats[k] = resp.chats[k];
+        for (const chat of resp.chats[k]) {
+          processMessage(chat);
+        }
+      }
     }
 
     status.value = "battle";
@@ -116,13 +107,26 @@ onMounted(() => {
     }
   };
 
-  const pushChat = (message: InfoMessage, turn?: number) => {
-    turn ??= Math.max(turns.value.length - 1, 0);
-    if (!chats[turn]) {
-      chats[turn] = [];
+  const processMessage = (message: InfoMessage) => {
+    if (message.type === "userJoin") {
+      const { name, isSpectator, nPokemon, id } = message;
+      players[id] = {
+        name,
+        isSpectator,
+        connected: true,
+        nPokemon,
+        nFainted: players[id]?.nFainted ?? 0,
+      };
+      if (!isSpectator && !battlers.value.includes(id)) {
+        battlers.value.push(id);
+      }
+    } else if (message.type === "userLeave") {
+      players[message.id].connected = false;
+    } else if (message.type === "userReconnect") {
+      if (players[message.id]) {
+        players[message.id].connected = true;
+      }
     }
-
-    chats[turn].push(message);
   };
 
   if ($conn.connected) {
@@ -158,18 +162,13 @@ onMounted(() => {
       return;
     }
 
-    if (message.type === "userJoin") {
-      const { name, isSpectator, nPokemon, id } = message;
-      players[id] = { name, isSpectator, nPokemon, connected: true, nFainted: 0 };
-    } else if (message.type === "userLeave") {
-      players[message.id].connected = false;
-    } else if (message.type === "userReconnect") {
-      if (players[message.id]) {
-        players[message.id].connected = true;
-      }
-    }
+    processMessage(message);
 
-    pushChat(message, turn);
+    turn ??= Math.max(turns.value.length - 1, 0);
+    if (!chats[turn]) {
+      chats[turn] = [];
+    }
+    chats[turn].push(message);
   });
 
   $conn.on("timerStart", (roomId, _, tmr) => {

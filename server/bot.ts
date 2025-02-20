@@ -7,7 +7,7 @@ import type { ClientPlayer } from "~/utils";
 import type { Pokemon } from "~/game/pokemon";
 import { clamp } from "../game/utils";
 import random from "random";
-import { USERS } from "./api/login.post";
+import { v4 as uuid } from "uuid";
 
 export type BotFunction = (
   team: Pokemon[],
@@ -17,17 +17,14 @@ export type BotFunction = (
   activePokemon: number,
 ) => readonly [number, "switch" | "move"];
 
-export async function startBot(
-  format: FormatId = "randoms",
-  name: string,
-  botFunction: BotFunction = randomBot,
-) {
+export async function startBot(format: FormatId = "randoms", botFunction: BotFunction = randomBot) {
+  const name = "BOT " + random.int(1111, 9999);
   console.log(`[${name}] initializing bot...`);
 
   await $fetch("/api/_auth/session", { method: "DELETE" }).catch(() => {});
-  const resp = await $fetch.raw("/api/login", {
+  const resp = await $fetch.raw("/api/register", {
     method: "POST",
-    body: { username: name, password: USERS[name].password },
+    body: { username: name, password: uuid() },
   });
   const cookie = resp.headers.getSetCookie().at(-1)!.split(";")[0];
   const { user } = await $fetch("/api/_auth/session", { method: "GET", headers: { cookie } });
@@ -86,7 +83,7 @@ export async function startBot(
 
   function playGame(
     room: string,
-    { team, options, players: respPlayers, turns }: JoinRoomResponse,
+    { team, options, chats, turns }: JoinRoomResponse,
     ai: BotFunction,
     gameOver: () => void,
   ) {
@@ -192,6 +189,25 @@ export async function startBot(
       });
     };
 
+    const processMessage = (message: InfoMessage) => {
+      if (message.type === "userJoin") {
+        const { name, isSpectator, nPokemon, id } = message;
+        players[id] = {
+          name,
+          isSpectator,
+          connected: true,
+          nPokemon,
+          nFainted: players[id]?.nFainted ?? 0,
+        };
+      } else if (message.type === "userLeave") {
+        players[message.id].connected = false;
+      } else if (message.type === "userReconnect") {
+        if (players[message.id]) {
+          players[message.id].connected = true;
+        }
+      }
+    };
+
     games[room] = (turn: Turn, options?: Options) => {
       turnNo++;
 
@@ -214,8 +230,10 @@ export async function startBot(
       }
     };
 
-    for (const { isSpectator, id, name, nPokemon } of respPlayers) {
-      players[id] = { name, isSpectator, connected: true, nPokemon, nFainted: 0 };
+    for (const k in chats) {
+      for (const msg of chats[k]) {
+        processMessage(msg);
+      }
     }
 
     for (let i = 0; i < turns.length; i++) {
