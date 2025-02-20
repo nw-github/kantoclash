@@ -42,8 +42,10 @@
 .v-enter-active {
   transition: opacity 0.1s ease;
 }
+.v-leave-from,
 .v-leave-active {
-  transition: opacity 0s;
+  transition-duration: 0s;
+  transition-property: none;
 }
 
 .v-enter-from,

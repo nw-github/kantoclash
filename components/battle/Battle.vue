@@ -21,13 +21,17 @@
         </div>
       </div>
 
-      <div class="relative w-full z-30" v-if="liveEvents.length">
-        <div
-          class="events absolute w-full flex flex-col bottom-1 p-2 rounded-lg bg-gray-300/90 dark:bg-gray-700/95"
-        >
-          <div v-for="[events, _] in liveEvents">
-            <component :is="() => events" />
-          </div>
+      <div class="relative w-full z-30">
+        <div class="events absolute w-full flex flex-col bottom-1">
+          <TransitionGroup name="list">
+            <div
+              v-for="[events, time] in liveEvents"
+              :key="time"
+              class="events w-full bg-gray-300/90 dark:bg-gray-700/95 rounded-lg"
+            >
+              <component :is="() => events" />
+            </div>
+          </TransitionGroup>
         </div>
       </div>
 
@@ -153,6 +157,28 @@
   </div>
 </template>
 
+<style scoped>
+.list-move,
+.list-enter-active,
+.list-leave-active {
+  transition: all 0.5s ease;
+}
+
+.list-enter-from {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.list-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+.list-leave-active {
+  position: relative;
+}
+</style>
+
 <style>
 @import "@/assets/colors.css";
 
@@ -161,12 +187,12 @@
 
   .red {
     color: var(--stat-down);
-    @apply text-xs sm:text-sm;
+    @apply text-xs sm:text-[0.8rem];
   }
 
   .green {
     color: green;
-    @apply text-xs sm:text-sm;
+    @apply text-xs sm:text-[0.8rem];
   }
 
   > :first-child {
@@ -182,7 +208,7 @@ import type { BattleEvent, InfoReason } from "@/game/events";
 import { speciesList, type SpeciesId } from "@/game/species";
 import { clamp, hpPercentExact } from "@/game/utils";
 import { moveList, type MoveId } from "@/game/moveList";
-import { stageTable } from "#imports";
+import { stageTable, type VNode } from "#imports";
 import type { ClientVolatileFlag } from "~/utils";
 import type { BattleTimer, InfoRecord } from "~/server/utils/gameServer";
 import type { ActivePokemon } from "#build/components";
@@ -362,11 +388,26 @@ const runTurn = async (turn: Turn, live: boolean, turnNo: number) => {
     }
   };
 
+  const pushHtml = (src: VNode[], count?: number) => {
+    const html = src.splice(0, count ?? src.length);
+    if (html.length) {
+      htmlTurns.value.at(-1)![0].push(...html);
+      if (isLive()) {
+        liveEvents.value.push([html, Date.now()]);
+      }
+    }
+  };
+
   const handleEvent = async (e: BattleEvent) => {
+    const html = htmlForEvent(e);
+
     if (e.type === "switch") {
       const player = props.players[e.src];
+      let start = 0;
       if (player.active) {
         if (!player.active.fainted) {
+          pushHtml(html, 1);
+          start = 1;
           await playAnimation(e.src, "retract", player.active.name);
         }
 
@@ -374,6 +415,7 @@ const runTurn = async (turn: Turn, live: boolean, turnNo: number) => {
         player.active!.speciesId = e.speciesId;
       }
 
+      pushHtml(html);
       await playAnimation(e.src, "sendin", e.name, () => {
         player.active = { ...e, stages: {}, flags: {}, fainted: false };
         if (e.src === myId.value) {
@@ -394,6 +436,7 @@ const runTurn = async (turn: Turn, live: boolean, turnNo: number) => {
         if (e.target === myId.value) {
           activeInTeam.value!.hp = e.hpAfter!;
         }
+        pushHtml(html, e.dead ? html.length - 1 : html.length);
       };
 
       if (e.type === "damage" && (e.why === "attacked" || e.why === "ohko" || e.why === "trap")) {
@@ -415,15 +458,17 @@ const runTurn = async (turn: Turn, live: boolean, turnNo: number) => {
         });
       }
 
-      if (e.dead && isLive()) {
-        playCry(props.players[e.target].active!.speciesId, true);
-        await playAnimation(e.target, "faint");
-        if (!skippingTurn.value) {
-          await delay(400);
-        }
-      }
-
       if (e.dead) {
+        if (isLive()) {
+          await delay(250);
+
+          playCry(props.players[e.target].active!.speciesId, true);
+          pushHtml(html);
+          await playAnimation(e.target, "faint");
+          if (isLive()) {
+            await delay(400);
+          }
+        }
         props.players[e.target].nFainted++;
       }
 
@@ -512,8 +557,12 @@ const runTurn = async (turn: Turn, live: boolean, turnNo: number) => {
     } else if (e.type === "victory") {
       victor.value = e.id;
     } else if (e.type === "hit_sub") {
-      await playAnimation(e.src, "bodyslam", undefined, () => playDmg(e.eff ?? 1));
+      await playAnimation(e.src, "bodyslam", undefined, () => {
+        pushHtml(html, 1);
+        playDmg(e.eff ?? 1);
+      });
       if (e.broken) {
+        pushHtml(html);
         await playAnimation(e.target, "lose_sub", undefined, () => {
           props.players[e.target].active!.flags.substitute = false;
         });
@@ -525,6 +574,11 @@ const runTurn = async (turn: Turn, live: boolean, turnNo: number) => {
     } else if (e.type === "move") {
       props.players[e.src].active!.charging = undefined;
     }
+
+    pushHtml(html);
+    if (isLive()) {
+      await delay(250);
+    }
   };
 
   isRunningTurn.value = true;
@@ -533,16 +587,7 @@ const runTurn = async (turn: Turn, live: boolean, turnNo: number) => {
 
   htmlTurns.value.push([[], turn.switchTurn]);
   for (const e of turn.events) {
-    const html = htmlForEvent(e);
-    htmlTurns.value.at(-1)![0].push(...html);
-
     await handleEvent(e);
-    if (isLive()) {
-      liveEvents.value.push([html, Date.now()]);
-      if (e.type !== "damage" && e.type !== "switch" && e.type !== "hit_sub") {
-        await delay(300);
-      }
-    }
   }
 
   skippingTurn.value = false;

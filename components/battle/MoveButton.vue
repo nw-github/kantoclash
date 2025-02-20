@@ -57,11 +57,7 @@ const hex2rgba = (rgb: string, a: number) => {
     .join(", ")}, ${a})`;
 };
 
-const categoryColor = {
-  physical: "red",
-  special: "gray",
-  status: "gray",
-} as const;
+const categoryColor = { physical: "red", special: "gray", status: "gray" } as const;
 </script>
 
 <style scoped>

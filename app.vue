@@ -86,6 +86,10 @@
 </style>
 
 <script setup lang="ts">
+import { provideSSRWidth } from "@vueuse/core";
+
+provideSSRWidth(768);
+
 const { $conn } = useNuxtApp();
 const musicVol = useMusicVolume();
 const sfxVol = useSfxVolume();

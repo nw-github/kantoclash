@@ -5,19 +5,19 @@
         {{ user ? `Welcome ${user.name}!` : "You must first log in to find a battle" }}
       </h1>
       <FormatDropdown v-model="format" :disabled="findingMatch" />
-      <USelectMenu
-        searchable
-        placeholder="Select Team..."
-        v-model="selectedTeam"
-        :options="validTeams"
-        :disabled="!formatInfo[format].needsTeam"
-        option-attribute="name"
-      />
-      <UButton
-        @click="enterMatchmaking"
-        :disabled="formatInfo[format].needsTeam && !selectedTeam"
-        :color="findingMatch ? 'red' : 'primary'"
-      >
+      <ClientOnly>
+        <div ref="selectTeamMenu">
+          <USelectMenu
+            searchable
+            placeholder="Select Team..."
+            v-model="selectedTeam"
+            :options="validTeams"
+            :disabled="!formatInfo[format].needsTeam || findingMatch"
+            option-attribute="name"
+          />
+        </div>
+      </ClientOnly>
+      <UButton @click="enterMatchmaking" :color="findingMatch ? 'red' : 'primary'">
         {{ cancelling ? "Cancelling..." : findingMatch ? "Cancel" : "Find Match" }}
 
         <template #leading v-if="findingMatch || cancelling">
@@ -98,6 +98,9 @@ const myTeams = useMyTeams();
 const validTeams = computed(() => myTeams.value.filter(team => team.format === format.value));
 const modalOpen = ref(false);
 const errors = ref<Record<number, [string, string[]]>>({});
+const selectTeamMenu = ref<HTMLDivElement>();
+
+useTitle("Standoff");
 
 watch(format, () => (selectedTeam.value = validTeams.value[0]));
 
@@ -141,6 +144,11 @@ const enterMatchmaking = () => {
     return emit("requestLogin");
   }
 
+  if (formatInfo[format.value].needsTeam && !selectedTeam.value) {
+    selectTeamMenu.value!.querySelector("button")?.click();
+    return;
+  }
+
   if (!findingMatch.value) {
     findingMatch.value = true;
 
@@ -157,8 +165,9 @@ const enterMatchmaking = () => {
           const [pokemon, category, index] = path as [number, string, number | string];
           const name =
             team![pokemon]?.name ||
-            speciesList[team![pokemon].species]?.name ||
-            `Pokemon ${pokemon + 1}`;
+            speciesList[team![pokemon]?.species]?.name ||
+            (pokemon !== undefined && `Pokemon ${pokemon + 1}`) ||
+            "General";
           const arr = (issues[pokemon] ??= [name, []]);
           if (category === "moves") {
             if (index) {

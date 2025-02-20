@@ -16,10 +16,7 @@
         }}%)
       </span>
 
-      <UBadge v-if="poke.hp <= 0" color="red">FNT</UBadge>
-      <UBadge v-else-if="poke.status" :style="{ backgroundColor: statusColor[poke.status] }">
-        {{ poke.status.toUpperCase() }}
-      </UBadge>
+      <StatusOrFaint :poke="poke" faint />
     </div>
 
     <div class="flex space-x-1">

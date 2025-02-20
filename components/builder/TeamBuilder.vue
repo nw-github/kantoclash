@@ -174,9 +174,9 @@
           <UTextarea
             class="grow"
             v-else
-            :ui="{ base: 'h-full', rounded: 'rounded-lg' }"
+            :ui="{ base: 'h-full min-h-80', rounded: 'rounded-lg' }"
             v-model="textAreaText"
-            @change="team.pokemon[item.teamIndex] = parsePokemon(textAreaText)"
+            @change="team.pokemon[item.teamIndex] = parsePokemon(textAreaText.trim())"
           >
             <UButton
               class="absolute top-2 right-2"

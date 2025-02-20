@@ -53,7 +53,7 @@
               :species="species"
               :substitute="poke?.flags.substitute"
               :kind="back ? 'back' : 'front'"
-              :scale="isSmall ? 1 : 2"
+              :scale="breakpoints.isSmallerOrEqual('sm') ? 1 : 2"
             />
           </div>
 
@@ -136,6 +136,7 @@ import { calcStat, type Pokemon } from "@/game/pokemon";
 import { speciesList } from "@/game/species";
 import { moveList, type MoveId } from "@/game/moveList";
 import tailwindColors from "tailwindcss/colors";
+import { breakpointsTailwind } from "@vueuse/core";
 
 const props = defineProps<{ poke?: ClientActivePokemon; base?: Pokemon; back?: boolean }>();
 const species = computed(
@@ -148,7 +149,7 @@ const maxSpe = computed(
   () => props.poke && calcStat(false, species.value!.stats.spe, props.poke.level, 15, 65535),
 );
 const hp = computed(() => props.poke?.hpPercent ?? 0);
-const isSmall = useMediaQuery("(max-width: 640px)");
+const breakpoints = useBreakpoints(breakpointsTailwind);
 
 const sprite = ref<HTMLDivElement>();
 const pokeBall = ref<HTMLDivElement>();

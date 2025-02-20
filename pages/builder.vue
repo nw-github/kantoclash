@@ -23,7 +23,7 @@
             />
           </UTooltip>
           <UTooltip text="New">
-            <UButton color="green" icon="heroicons:plus-20-solid" variant="soft" />
+            <UButton color="green" icon="heroicons:plus-20-solid" variant="soft" @click="newTeam" />
           </UTooltip>
         </div>
       </div>
@@ -106,6 +106,8 @@ const open = computed({
 });
 const isXS = useMediaQuery("(max-width: 480px)");
 
+useTitle("Team Builder");
+
 const dropdownItems = (team: Team) => [
   {
     label: "Copy",
@@ -141,11 +143,12 @@ const importTeam = async () => {
     return;
   }
 
-  myTeams.value.push({
+  const len = myTeams.value.push({
     name: "New Team",
     pokemon: team,
     format: "standard",
   });
+  editingTeam.value = myTeams.value[len - 1];
 };
 
 const deleteTeam = (team: Team) => {
@@ -157,5 +160,14 @@ const deleteTeam = (team: Team) => {
     title: `'${team.name}' deleted!`,
     actions: [{ label: "Undo", click: () => myTeams.value.splice(idx, 0, removed) }],
   });
+};
+
+const newTeam = () => {
+  const len = myTeams.value.push({
+    name: "New Team",
+    format: "standard",
+    pokemon: [parsePokemon("")],
+  });
+  editingTeam.value = myTeams.value[len - 1];
 };
 </script>
