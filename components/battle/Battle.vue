@@ -7,7 +7,7 @@
 
       <div class="flex">
         <div class="order-2">
-          <ActivePokemon :poke="players[opponent ?? '']?.active" ref="frontPokemon" />
+          <ActivePokemon :poke="players[opponent]?.active" ref="frontPokemon" />
         </div>
 
         <div class="pb-2 sm:pb-0">
@@ -89,7 +89,7 @@
 
             <div class="grid grid-cols-2 gap-1 sm:gap-2 items-center">
               <SwitchButton
-                v-for="(poke, i) in props.team"
+                v-for="(poke, i) in team"
                 :poke="poke"
                 :disabled="i === activeIndex || !options.canSwitch"
                 :active="i === activeIndex"
@@ -224,7 +224,7 @@ const emit = defineEmits<{
   (e: "timer"): void;
   (e: "cancel"): void;
 }>();
-const props = defineProps<{
+const { team, options, players, turns, chats, battlers, timer } = defineProps<{
   team?: Pokemon[];
   options?: Options;
   players: Record<string, ClientPlayer>;
@@ -249,14 +249,12 @@ const backPokemon = ref<InstanceType<typeof ActivePokemon>>();
 const frontPokemon = ref<InstanceType<typeof ActivePokemon>>();
 
 const activeIndex = ref(0);
-const activeInTeam = computed(() =>
-  isBattler.value ? props.team?.[activeIndex.value] : undefined,
-);
+const activeInTeam = computed(() => (isBattler.value ? team?.[activeIndex.value] : undefined));
 
-const isBattler = computed(() => props.battlers.includes(myId.value));
+const isBattler = computed(() => battlers.includes(myId.value));
 const chosenPerspective = ref("");
 const perspective = computed(() => (isBattler.value ? myId.value : chosenPerspective.value));
-const opponent = computed(() => props.battlers.find(v => v != perspective.value));
+const opponent = computed(() => battlers.find(v => v != perspective.value) ?? "");
 const victor = ref<string>();
 const htmlTurns = ref<[VNode[], boolean][]>([]);
 const liveEvents = ref<[VNode[], number][]>([]);
@@ -273,9 +271,9 @@ useIntervalFn(() => {
 }, 400);
 
 watch(
-  () => props.options,
+  () => options,
   newOptions => {
-    if (newOptions && !props.players[myId.value].active?.transformed) {
+    if (newOptions && players[myId.value]?.active && !players[myId.value].active?.transformed) {
       for (const { pp, indexInMoves } of newOptions.moves) {
         if (indexInMoves !== undefined && pp !== undefined) {
           activeInTeam.value!.pp[indexInMoves] = pp;
@@ -285,11 +283,14 @@ watch(
   },
 );
 
-watch(props.chats, () => {
-  if (isMenuVisible.value && !slideoverOpen.value) {
-    unseen.value++;
-  }
-});
+watch(
+  () => chats,
+  () => {
+    if (isMenuVisible.value && !slideoverOpen.value) {
+      unseen.value++;
+    }
+  },
+);
 
 watch([skippingTurn, skippingToTurn], () => {
   if (frontPokemon.value) {
@@ -307,20 +308,24 @@ watch(perspective, () => {
   onConnect();
 });
 
-watchImmediate(props.battlers, () => (chosenPerspective.value = randChoice(props.battlers)));
+watchImmediate(battlers, () => (chosenPerspective.value = randChoice(battlers)));
 
 const selectMove = (index: number) => {
-  selectionText.value = `${props.players[myId.value].active!.name} will use ${
-    moveList[props.options!.moves[index].move].name
+  selectionText.value = `${players[myId.value].active!.name} will use ${
+    moveList[options!.moves[index].move].name
   }`;
 
   emit("move", index);
 };
 
 const selectSwitch = (index: number) => {
-  selectionText.value = `${props.players[myId.value].active!.name} will be replaced by ${
-    props.team![index].name
-  }`;
+  if (players[myId.value].active) {
+    selectionText.value = `${players[myId.value].active!.name} will be replaced by ${
+      team![index].name
+    }`;
+  } else {
+    selectionText.value = `${team![index].name} will be sent out first`;
+  }
 
   emit("switch", index);
 };
@@ -402,7 +407,7 @@ const runTurn = async (turn: Turn, live: boolean, turnNo: number) => {
     const html = htmlForEvent(e);
 
     if (e.type === "switch") {
-      const player = props.players[e.src];
+      const player = players[e.src];
       let start = 0;
       if (player.active) {
         if (!player.active.fainted) {
@@ -431,8 +436,8 @@ const runTurn = async (turn: Turn, live: boolean, turnNo: number) => {
       });
     } else if (e.type === "damage" || e.type === "recover") {
       const update = () => {
-        props.players[e.target].active!.hpPercent = e.hpPercentAfter;
-        props.players[e.target].active!.fainted = e.dead;
+        players[e.target].active!.hpPercent = e.hpPercentAfter;
+        players[e.target].active!.fainted = e.dead;
         if (e.target === myId.value) {
           activeInTeam.value!.hp = e.hpAfter!;
         }
@@ -454,7 +459,7 @@ const runTurn = async (turn: Turn, live: boolean, turnNo: number) => {
 
       if (e.why === "substitute") {
         await playAnimation(e.target, "get_sub", undefined, () => {
-          props.players[e.target].active!.flags.substitute = true;
+          players[e.target].active!.flags.substitute = true;
         });
       }
 
@@ -462,40 +467,40 @@ const runTurn = async (turn: Turn, live: boolean, turnNo: number) => {
         if (isLive()) {
           await delay(250);
 
-          playCry(props.players[e.target].active!.speciesId, true);
+          playCry(players[e.target].active!.speciesId, true);
           pushHtml(html);
           await playAnimation(e.target, "faint");
           if (isLive()) {
             await delay(400);
           }
         }
-        props.players[e.target].nFainted++;
+        players[e.target].nFainted++;
       }
 
       if (e.why === "rest") {
-        props.players[e.target].active!.status = "slp";
+        players[e.target].active!.status = "slp";
         if (e.target === myId.value) {
           activeInTeam.value!.status = "slp";
         }
       }
     } else if (e.type === "status") {
-      props.players[e.id].active!.status = e.status;
+      players[e.id].active!.status = e.status;
       if (e.id === myId.value) {
-        props.players[e.id].active!.stats = e.stats;
+        players[e.id].active!.stats = e.stats;
         activeInTeam.value!.status = e.status;
       }
     } else if (e.type === "stages") {
       if (isBattler.value) {
-        props.players[myId.value].active!.stats = e.stats;
+        players[myId.value].active!.stats = e.stats;
       }
 
-      const active = props.players[e.id].active!;
+      const active = players[e.id].active!;
       for (const [stat, val] of e.stages) {
         active.stages[stat] = clamp((active.stages[stat] ?? 0) + val, -6, 6);
       }
     } else if (e.type === "transform") {
-      const target = props.players[e.target].active!;
-      const src = props.players[e.src].active!;
+      const target = players[e.target].active!;
+      const src = players[e.src].active!;
       src.transformed = target.transformed ?? target.speciesId;
       src.stages = { ...target.stages };
     } else if (e.type === "info") {
@@ -510,8 +515,8 @@ const runTurn = async (turn: Turn, live: boolean, turnNo: number) => {
       };
 
       if (e.why === "haze") {
-        for (const player in props.players) {
-          const active = props.players[player].active;
+        for (const player in players) {
+          const active = players[player].active;
           if (!active) {
             continue;
           }
@@ -539,21 +544,21 @@ const runTurn = async (turn: Turn, live: boolean, turnNo: number) => {
         }
 
         if (isBattler.value) {
-          props.players[myId.value].active!.stats = undefined;
+          players[myId.value].active!.stats = undefined;
         }
       } else if (e.why === "wake" || e.why === "thaw") {
-        props.players[e.id].active!.status = undefined;
+        players[e.id].active!.status = undefined;
       } else if (e.why === "disable_end") {
-        props.players[e.id].active!.flags.disabled = false;
+        players[e.id].active!.flags.disabled = false;
       } else if (e.why === "confused_end") {
-        props.players[e.id].active!.flags.confused = false;
+        players[e.id].active!.flags.confused = false;
       } else if (enableFlag[e.why]) {
-        props.players[e.id].active!.flags[enableFlag[e.why]!] = true;
+        players[e.id].active!.flags[enableFlag[e.why]!] = true;
       } else if (e.why === "paralyze") {
-        props.players[e.id].active!.charging = undefined;
+        players[e.id].active!.charging = undefined;
       }
     } else if (e.type === "conversion") {
-      props.players[e.user].active!.conversion = e.types;
+      players[e.user].active!.conversion = e.types;
     } else if (e.type === "victory") {
       victor.value = e.id;
     } else if (e.type === "hit_sub") {
@@ -564,15 +569,15 @@ const runTurn = async (turn: Turn, live: boolean, turnNo: number) => {
       if (e.broken) {
         pushHtml(html);
         await playAnimation(e.target, "lose_sub", undefined, () => {
-          props.players[e.target].active!.flags.substitute = false;
+          players[e.target].active!.flags.substitute = false;
         });
       }
     } else if (e.type === "disable") {
-      props.players[e.id].active!.flags.disabled = true;
+      players[e.id].active!.flags.disabled = true;
     } else if (e.type === "charge") {
-      props.players[e.id].active!.charging = e.move;
+      players[e.id].active!.charging = e.move;
     } else if (e.type === "move") {
-      props.players[e.src].active!.charging = undefined;
+      players[e.src].active!.charging = undefined;
     }
 
     pushHtml(html);
@@ -602,17 +607,17 @@ const htmlForEvent = (e: BattleEvent) => {
   const italic = (s: any) => h("i", s);
   const pname = (id: string, title = true) => {
     if (id === perspective.value) {
-      return props.players[id].active!.name;
+      return players[id].active!.name;
     } else if (title) {
-      return `The opposing ${props.players[id].active!.name}`;
+      return `The opposing ${players[id].active!.name}`;
     } else {
-      return `the opposing ${props.players[id].active!.name}`;
+      return `the opposing ${players[id].active!.name}`;
     }
   };
 
   const res: Array<VNode> = [];
   if (e.type === "switch") {
-    const player = props.players[e.src];
+    const player = players[e.src];
     if (player.active && !player.active.fainted) {
       if (e.src === perspective.value) {
         res.push(text(`Come back! ${player.active.name}!`, "switch"));
@@ -704,7 +709,7 @@ const htmlForEvent = (e: BattleEvent) => {
     if (e.id === myId.value) {
       res.push(text("You win!"));
     } else {
-      res.push(text(`${props.players[e.id].name} wins!`));
+      res.push(text(`${players[e.id].name} wins!`));
     }
   } else if (e.type === "hit_sub") {
     if (e.confusion) {
@@ -779,7 +784,7 @@ const htmlForEvent = (e: BattleEvent) => {
     };
 
     if (e.why === "forfeit" || e.why === "forfeit_timer") {
-      res.push(text(messages[e.why].replace("{}", props.players[e.id].name)));
+      res.push(text(messages[e.why].replace("{}", players[e.id].name)));
     } else {
       const clazz: Partial<Record<InfoReason, string>> = {
         confused: "confused",
@@ -833,7 +838,7 @@ const onTurnReceived = () => {
   }
 
   const turnNo = currentTurn++;
-  const turn = props.turns[turnNo];
+  const turn = turns[turnNo];
   const task = () => runTurn(turn, true, turnNo);
 
   currentTurnPromise = currentTurnPromise ? currentTurnPromise.then(task) : task();
@@ -850,17 +855,17 @@ const onConnect = async () => {
   }
 
   htmlTurns.value.length = 0;
-  for (const k in props.players) {
-    props.players[k].nFainted = 0;
+  for (const k in players) {
+    players[k].nFainted = 0;
   }
 
   for (let i = 0; i < currentTurn; i++) {
-    await runTurn(props.turns[i], false, i);
+    await runTurn(turns[i], false, i);
   }
 
   reconnecting = false;
   // do not inline, currentTurn changes
-  const amount = props.turns.length - currentTurn;
+  const amount = turns.length - currentTurn;
   for (let i = 0; i < amount; i++) {
     onTurnReceived();
   }
