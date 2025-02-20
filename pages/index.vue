@@ -99,7 +99,7 @@ const { $conn } = useNuxtApp();
 const { user } = useUserSession();
 const findingMatch = ref(false);
 const cancelling = ref(false);
-const rooms = ref<RoomDescriptor[]>([]);
+const rooms = ref<{ to: string; name: string; format: FormatId }[]>([]);
 const format = useLocalStorage<FormatId>("lastFormat", () => "randoms");
 const selectedTeam = ref<Team | undefined>();
 const myTeams = useMyTeams();
@@ -112,13 +112,8 @@ useTitle("Standoff");
 
 watch(format, () => (selectedTeam.value = validTeams.value[0]));
 
-const roomsRows = computed(() =>
-  rooms.value.map(room => ({
-    name: room.battlers.join(" vs. "),
-    to: "/room/" + room.id,
-    format: room.format,
-  })),
-);
+const roomsRows = computed(() => rooms.value);
+
 const roomsCols = [
   { key: "type", label: "Type" },
   { key: "name", label: "Players" },
@@ -131,12 +126,24 @@ const filterFormats = ref<string[]>([]);
 const battleQuery = ref<string>();
 
 onMounted(() => {
-  $conn.emit("getRooms", result => {
-    rooms.value = result;
-  });
-
-  $conn.on("foundMatch", async roomId => {
-    await navigateTo(`/room/${roomId}`);
+  const nameCache: Record<string, string> = {};
+  $conn.emit("getRooms", async result => {
+    rooms.value = await Promise.all(
+      result.map(async room => ({
+        name: (
+          await Promise.all(
+            room.battlers.map(
+              async id =>
+                (nameCache[id] ??= await $fetch(`/api/users/${id}`, { method: "GET" })
+                  .then(res => res.name)
+                  .catch(e => (console.log(e), "<unknown>"))),
+            ),
+          )
+        ).join(" vs. "),
+        to: "/room/" + room.id,
+        format: room.format,
+      })),
+    );
   });
 });
 

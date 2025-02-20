@@ -120,4 +120,5 @@ const links = [
 
 $conn.on("connect", () => (connected.value = true));
 $conn.on("disconnect", () => (connected.value = false));
+$conn.on("foundMatch", roomId => navigateTo(`/room/${roomId}`));
 </script>

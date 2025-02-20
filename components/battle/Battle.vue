@@ -62,15 +62,17 @@
             </UTooltip>
 
             <div class="min-[900px]:hidden p-2 flex justify-end items-start" ref="menuDiv">
-              <UChip :show="unseen !== 0" :text="unseen" size="xl">
-                <UButton
-                  icon="material-symbols:chat-outline"
-                  variant="link"
-                  color="gray"
-                  @click="(slideoverOpen = true), (unseen = 0)"
-                  ref="menuButton"
-                />
-              </UChip>
+              <UTooltip text="Open Chat" :popper="{ placement: 'top' }">
+                <UChip :show="unseen !== 0" :text="unseen" size="xl">
+                  <UButton
+                    icon="material-symbols:chat-outline"
+                    variant="link"
+                    color="gray"
+                    @click="(slideoverOpen = true), (unseen = 0)"
+                    ref="menuButton"
+                  />
+                </UChip>
+              </UTooltip>
             </div>
           </div>
         </div>
@@ -212,7 +214,7 @@ import { moveList, type MoveId } from "@/game/moveList";
 import { stageTable, type VNode } from "#imports";
 import type { ClientVolatileFlag } from "~/utils";
 import type { BattleTimer, InfoRecord } from "~/server/utils/gameServer";
-import type { ActivePokemon } from "#build/components";
+import { type ActivePokemon } from "#build/components";
 import type { AnimationType } from "./ActivePokemon.vue";
 
 let timeLeft = 0;

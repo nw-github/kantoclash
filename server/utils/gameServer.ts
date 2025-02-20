@@ -90,6 +90,7 @@ class Room {
   timer?: NodeJS.Timeout;
   lastTurn: number = Date.now();
   spectatorRoom: string;
+  isBeingDestroyed = false;
 
   constructor(
     public id: string,
@@ -123,9 +124,8 @@ class Room {
         return;
       }
 
-      for (const account of this.accounts) {
-        const player = this.battle.findPlayer(account.id);
-        if (player && !player.choice && player.options) {
+      for (const player of this.battle.players) {
+        if (!player.choice && player.options) {
           this.broadcastTurn(this.battle.forfeit(player, true));
           return;
         }
@@ -185,7 +185,6 @@ class Room {
 class Account {
   matchmaking?: FormatId;
   userRoom: string;
-  disconnectedRooms = new Set<Room>();
 
   constructor(public id: string, public name: string) {
     this.userRoom = `user:${this.id}`;
@@ -199,9 +198,6 @@ class Account {
 
   onSocketJoinRoom(room: Room, notifyJoin: boolean) {
     if (room.accounts.has(this)) {
-      if (this.disconnectedRooms.delete(room)) {
-        room.sendChat({ type: "userReconnect", id: this.id });
-      }
       return;
     }
 
@@ -218,10 +214,9 @@ class Account {
     room.accounts.add(this);
   }
 
-  /** @returns true if this account still has one or more sockets connected in this room */
   async onSocketLeaveRoom(room: Room, server: GameServer, forced: boolean, sockets?: Socket[]) {
     if (!room.accounts.has(this)) {
-      return false;
+      return;
     }
 
     sockets ??= (await server.in(this.userRoom).fetchSockets()) as unknown as Socket[];
@@ -232,27 +227,17 @@ class Account {
       }
 
       room.accounts.delete(this);
-      this.disconnectedRooms.delete(room);
-      return false;
-    } else if (sockets.some(s => s.rooms.has(room.id))) {
-      return true;
-    } else {
+    } else if (!sockets.some(s => s.rooms.has(room.id))) {
       room.sendChat({ type: "userLeave", id: this.id });
-      if (room.battle.findPlayer(this.id) && !room.battle.victor) {
-        this.disconnectedRooms.add(room);
-        return true;
-      }
-
       room.accounts.delete(this);
-      return false;
     }
   }
 }
 
 export class GameServer extends SocketIoServer<ClientMessage, ServerMessage> {
-  private accounts: Record<string, Account> = {};
+  private accounts = new Map<string, Account>();
   private mmWaiting: Partial<Record<FormatId, [Player, Account]>> = {};
-  private rooms: Record<string, Room> = {};
+  private rooms = new Map<string, Room>();
 
   constructor(server?: any) {
     super(server);
@@ -266,7 +251,11 @@ export class GameServer extends SocketIoServer<ClientMessage, ServerMessage> {
     const user: User | undefined = socket.request.__SOCKETIO_USER__;
     if (user) {
       console.log(`new connection: ${socket.id} from user: '${user.name}' (${user.id})`);
-      socket.account = this.accounts[user.id] ??= new Account(user.id, user.name);
+      if (!(socket.account = this.accounts.get(user.id))) {
+        const account = new Account(user.id, user.name);
+        this.accounts.set(user.id, account);
+        socket.account = account;
+      }
       socket.join(socket.account.userRoom);
     } else {
       console.log(`new connection: ${socket.id}`);
@@ -296,8 +285,8 @@ export class GameServer extends SocketIoServer<ClientMessage, ServerMessage> {
       ack();
     });
     socket.on("joinRoom", (roomId, turn, ack) => {
-      const room = this.rooms[roomId];
-      if (!room) {
+      const room = this.rooms.get(roomId);
+      if (!room || room.isBeingDestroyed) {
         return ack("bad_room");
       }
 
@@ -322,7 +311,7 @@ export class GameServer extends SocketIoServer<ClientMessage, ServerMessage> {
       });
     });
     socket.on("leaveRoom", async (roomId, ack) => {
-      const room = this.rooms[roomId];
+      const room = this.rooms.get(roomId);
       if (!room) {
         return ack("bad_room");
       }
@@ -370,7 +359,7 @@ export class GameServer extends SocketIoServer<ClientMessage, ServerMessage> {
       ack();
     });
     socket.on("startTimer", (roomId, ack) => {
-      const room = this.rooms[roomId];
+      const room = this.rooms.get(roomId);
       if (!room) {
         return ack("bad_room");
       } else if (!socket.account || !room.accounts.has(socket.account)) {
@@ -384,7 +373,7 @@ export class GameServer extends SocketIoServer<ClientMessage, ServerMessage> {
     socket.on("chat", (roomId, message, ack) => {
       message = message.trim();
 
-      const room = this.rooms[roomId];
+      const room = this.rooms.get(roomId);
       if (!room) {
         return ack("bad_room");
       } else if (!message.length) {
@@ -398,17 +387,15 @@ export class GameServer extends SocketIoServer<ClientMessage, ServerMessage> {
     });
     socket.on("getRooms", ack =>
       ack(
-        Object.entries(this.rooms)
+        this.rooms
+          .entries()
           .filter(([, room]) => !room.battle.victor)
           .map(([id, room]) => ({
             id,
-            battlers: room.accounts
-              .keys()
-              .filter(acc => room.battle.findPlayer(acc.id))
-              .map(acc => acc.name)
-              .toArray(),
+            battlers: room.battle.players.map(pl => pl.id),
             format: room.format,
-          })),
+          }))
+          .toArray(),
       ),
     );
     socket.on("disconnecting", async () => {
@@ -422,20 +409,16 @@ export class GameServer extends SocketIoServer<ClientMessage, ServerMessage> {
       const rooms = [...socket.rooms];
       // across this await point SocketIO might clean up this socket and clear rooms
       const sockets = (await this.in(account.userRoom).fetchSockets()) as unknown as Socket[];
-
-      let stillInRooms = false;
       for (const id of rooms) {
-        const room = this.rooms[id];
-        if (room && (await account.onSocketLeaveRoom(room, this, false, sockets))) {
-          stillInRooms = true;
+        const room = this.rooms.get(id);
+        if (room) {
+          await account.onSocketLeaveRoom(room, this, false, sockets);
         }
       }
 
-      if (!sockets.length && !account.disconnectedRooms.size) {
+      if (!sockets.length) {
         this.leaveMatchmaking(account);
-        if (!stillInRooms) {
-          delete this.accounts[account.id];
-        }
+        this.accounts.delete(account.id);
       }
     });
   }
@@ -459,10 +442,11 @@ export class GameServer extends SocketIoServer<ClientMessage, ServerMessage> {
       const roomId = uuid();
       const [opponent, opponentAcc] = mm;
       const [battle, turn0] = Battle.start(player, opponent, formatDescs[format].chooseLead);
-      this.rooms[roomId] = new Room(roomId, battle, turn0, format, this);
+      const room = new Room(roomId, battle, turn0, format, this);
+      this.rooms.set(roomId, room);
 
-      account.joinBattle(this.rooms[roomId], this);
-      opponentAcc.joinBattle(this.rooms[roomId], this);
+      account.joinBattle(room, this);
+      opponentAcc.joinBattle(room, this);
 
       this.leaveMatchmaking(account);
       this.leaveMatchmaking(opponentAcc);
@@ -481,7 +465,7 @@ export class GameServer extends SocketIoServer<ClientMessage, ServerMessage> {
   }
 
   private validatePlayer(socket: Socket, roomId: string, sequenceNo: number) {
-    const room = this.rooms[roomId];
+    const room = this.rooms.get(roomId);
     if (!room) {
       return "bad_room";
     } else if (!socket.account) {
@@ -499,7 +483,8 @@ export class GameServer extends SocketIoServer<ClientMessage, ServerMessage> {
   }
 
   async destroyRoom(room: Room) {
+    room.isBeingDestroyed = true;
     await Promise.allSettled(room.accounts.keys().map(a => a.onSocketLeaveRoom(room, this, true)));
-    delete this.rooms[room.id];
+    this.rooms.delete(room.id);
   }
 }

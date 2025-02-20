@@ -1,4 +1,3 @@
-import { v4 as uuid } from "uuid";
 import { userSchema } from "~/utils/schema";
 
 declare module "#auth-utils" {
@@ -8,21 +7,21 @@ declare module "#auth-utils" {
   }
 }
 
-export const USERS: Record<string, { password: string; id: string }> = {
-  admin: { password: "", id: uuid() },
-  user: { password: "", id: uuid() },
-};
+export const USERS = new Map<string, { password: string; id: string }>([
+  ["admin", { password: "", id: "0" }],
+  ["user", { password: "", id: "1" }],
+]);
 
-hashPassword("123").then(pw => (USERS.admin.password = pw));
-hashPassword("123").then(pw => (USERS.user.password = pw));
+hashPassword("123").then(pw => (USERS.get("admin")!.password = pw));
+hashPassword("123").then(pw => (USERS.get("user")!.password = pw));
 
 export default defineEventHandler(async event => {
   const { username, password } = await readValidatedBody(event, userSchema.parse);
-
-  if (!(await verifyPassword(USERS[username]?.password, password))) {
+  const user = USERS.get(username);
+  if (!user || !(await verifyPassword(user.password, password))) {
     throw createError({ statusCode: 401, message: "Bad credentials" });
   }
 
-  await setUserSession(event, { user: { name: username, id: USERS[username].id } });
+  await setUserSession(event, { user: { name: username, id: user.id } });
   return {};
 });

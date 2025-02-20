@@ -80,6 +80,9 @@ const filter = (moves: typeof items, query: string) => {
 const onChoose = ([_, move]: [string, Move]) => (query.value = move.name);
 
 const isIllegal = (id: string) => {
+  if (!id) {
+    return false;
+  }
   return species.value ? !species.value.moves.includes(id as MoveId) : true;
 };
 </script>

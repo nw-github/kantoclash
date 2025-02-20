@@ -69,10 +69,12 @@
             </b>
 
             <span v-if="chat.type === 'chat'">: {{ chat.message }}</span>
-            <span v-if="chat.type === 'userJoin'"> joined the room.</span>
-            <span v-if="chat.type === 'userLeave'"> left the room.</span>
-            <span v-if="chat.type === 'userReconnect'"> reconnected.</span>
-            <span v-if="chat.type === 'timerStart'">
+            <span v-else-if="chat.type === 'userJoin' && players[chat.id].isSpectator">
+              reconnected.
+            </span>
+            <span v-else-if="chat.type === 'userJoin'"> joined the room.</span>
+            <span v-else-if="chat.type === 'userLeave'"> left the room.</span>
+            <span v-else-if="chat.type === 'timerStart'">
               The timer was started by <b>{{ players[chat.id!]?.name ?? "???" }}</b
               >.
             </span>
