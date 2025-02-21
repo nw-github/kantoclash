@@ -1,3 +1,4 @@
+import type { Random } from "random";
 import type { ActivePokemon } from "./battle";
 
 export type Type =
@@ -49,22 +50,54 @@ export const scaleAccuracy255 = (acc: number, user: ActivePokemon, target: Activ
 
 export const calcDamage = ({
   lvl,
-  crit,
   pow,
   atk,
   def,
-  stab,
   eff,
+  isCrit,
+  isStab,
+  rand,
+  old,
 }: {
   lvl: number;
-  crit: number;
   pow: number;
   atk: number;
   def: number;
-  stab: number;
   eff: number;
+  isCrit: boolean;
+  isStab: boolean;
+  rand: number | Random | false;
+  old?: boolean;
 }) => {
-  return Math.floor(((((2 * lvl * crit) / 5 + 2) * pow * (atk / def)) / 50 + 2) * stab * eff);
+  const crit = isCrit ? 2 : 1;
+
+  let dmg = idiv(idiv((idiv(2 * lvl * crit, 5) + 2) * pow * atk, def), 50) + 2;
+  if (isStab) {
+    dmg += idiv(dmg, 2);
+  }
+  if (eff > 1) {
+    dmg = idiv(dmg * 20, 10);
+    if (eff > 2) {
+      dmg = idiv(dmg * 20, 10);
+    }
+  } else if (eff < 1) {
+    dmg = idiv(dmg * 5, 10);
+    if (eff < 0.5) {
+      dmg = idiv(dmg * 5, 10);
+    }
+  }
+
+  if (old) {
+    dmg = Math.floor(
+      ((((2 * lvl * crit) / 5 + 2) * pow * (atk / def)) / 50 + 2) * (isStab ? 1.5 : 1) * eff,
+    );
+  }
+
+  let r = typeof rand === "number" ? rand : 255;
+  if (rand && typeof rand !== "number" && dmg > 1) {
+    r = rand.int(217, 255);
+  }
+  return idiv(dmg * r, 255);
 };
 
 export const getEffectiveness = (atk: Type, def: Type[]) => {
@@ -92,6 +125,8 @@ export const isSpecial = (atk: Type) => {
       return true;
   }
 };
+
+export const idiv = (a: number, b: number) => Math.floor(a / b);
 
 export const stageMultipliers: Record<number, number> = {
   [-6]: 25,

@@ -333,24 +333,9 @@ export class Battle {
   }
 
   private tryUseMove({ move, user, indexInMoves }: ChosenMove, target: ActivePokemon) {
-    if (user.v.trapped) {
-      this.info(user, "trapped");
-      return false;
-    } else if (user.v.trapping && target.v.trapped) {
-      const dead = target.damage(user.v.trapping.dmg, user, this, false, "trap").dead;
-      if (dead || --user.v.trapping.turns === 0) {
-        user.v.trapping = undefined;
-      }
-
-      return dead;
-    } else if (user.v.flinch) {
-      this.info(user, "flinch");
-      user.v.recharge = undefined;
-      return false;
-    } else if (user.v.hazed) {
-      return false;
-    } else if (user.base.status === "frz") {
-      this.info(user, "frozen");
+    // Order of events comes from here:
+    //  https://www.smogon.com/forums/threads/past-gens-research-thread.3506992/#post-5878612
+    if (user.v.hazed) {
       return false;
     } else if (user.base.status === "slp") {
       const done = --user.base.sleepTurns === 0;
@@ -359,6 +344,22 @@ export class Battle {
       }
 
       this.info(user, done ? "wake" : "sleep");
+      return false;
+    } else if (user.base.status === "frz") {
+      this.info(user, "frozen");
+      return false;
+    }
+
+    // See: damaging.ts:counterDamage
+    // https://bulbapedia.bulbagarden.net/wiki/Counter_(move) | Full Para desync
+    user.lastChosenMove = move;
+
+    if (user.v.flinch) {
+      this.info(user, "flinch");
+      user.v.recharge = undefined;
+      return false;
+    } else if (user.v.trapped) {
+      this.info(user, "trapped");
       return false;
     } else if (user.v.recharge) {
       this.info(user, "recharge");
@@ -375,17 +376,23 @@ export class Battle {
       this.info(user, --user.v.confusion === 0 ? "confused_end" : "confused");
     }
 
-    if (user.base.status === "par" && this.rand255(floatTo255(25))) {
-      this.info(user, "paralyze");
-
+    const confuse = user.v.confusion && this.rng.bool();
+    const fullPara = user.base.status === "par" && this.rand255(floatTo255(25));
+    if (confuse || fullPara) {
+      // Gen 1 bug: remove charging w/o removing user.v.invuln
       user.v.charging = undefined;
       user.v.bide = undefined;
       if (user.v.thrashing?.turns !== -1) {
         user.v.thrashing = undefined;
       }
-      return false;
-    } else if (user.v.confusion && this.rng.bool()) {
+      user.v.trapping = undefined;
+    }
+
+    if (confuse) {
       return user.handleConfusionDamage(this, target);
+    } else if (fullPara) {
+      this.info(user, "paralyze");
+      return false;
     }
 
     return move.use(this, user, target, indexInMoves);
@@ -418,6 +425,8 @@ export class Battle {
 
 export class ActivePokemon {
   v: Volatiles;
+  lastChosenMove?: Move;
+  lastDamage = 0;
 
   constructor(public base: Pokemon, public readonly owner: Player) {
     this.base = base;
@@ -474,9 +483,9 @@ export class ActivePokemon {
     direct?: boolean,
     eff?: number,
   ) {
-    if (why === "attacked" || why === "confusion" || why === "recoil" || why === "crash") {
+    if (why !== "brn" && why !== "psn" && why !== "seeded" && why !== "substitute") {
       // Counter uses the damage it would've done ignoring substitutes
-      this.v.lastDamage = Math.min(this.base.hp, dmg);
+      this.lastDamage = Math.min(this.base.hp, dmg);
     }
 
     if (this.v.substitute !== 0 && !direct) {
@@ -662,12 +671,13 @@ export class ActivePokemon {
   handleConfusionDamage(battle: Battle, target: ActivePokemon) {
     const dmg = calcDamage({
       lvl: this.base.level,
-      crit: 1,
       pow: 40,
       def: this.getStat("def", false, true, target.v.flags.reflect),
       atk: this.v.stats.atk,
-      stab: 1,
       eff: 1,
+      rand: false,
+      isCrit: false,
+      isStab: false,
     });
 
     if (this.v.substitute && target.v.substitute) {
@@ -715,7 +725,6 @@ class Volatiles {
   flags: Partial<Record<VolatileFlag, boolean>> = {};
   substitute = 0;
   confusion = 0;
-  lastDamage = 0;
   counter = 1;
   flinch = false;
   invuln = false;
@@ -730,7 +739,7 @@ class Volatiles {
   bide?: { move: Move; turns: number; dmg: number };
   disabled?: { turns: number; indexInMoves: number };
   mimic?: { move: MoveId; indexInMoves: number };
-  trapping?: { move: Move; turns: number; dmg: number };
+  trapping?: { move: Move; turns: number };
 
   constructor(base: Pokemon) {
     this.types = [...base.species.types];

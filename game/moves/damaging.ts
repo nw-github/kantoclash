@@ -30,7 +30,8 @@ type Flag =
   | "level"
   | "ohko"
   | "counter"
-  | "super_fang";
+  | "super_fang"
+  | "psywave";
 
 export class DamagingMove extends Move {
   readonly flag?: Flag;
@@ -69,19 +70,24 @@ export class DamagingMove extends Move {
   }
 
   override use(battle: Battle, user: ActivePokemon, target: ActivePokemon, moveIndex?: number) {
+    if (user.v.trapping && target.v.trapped) {
+      const dead = target.damage(target.lastDamage, user, battle, false, "trap").dead;
+      if (dead || --user.v.trapping.turns === 0) {
+        user.v.trapping = undefined;
+      }
+      return dead;
+    }
+
     if ((this.flag === "charge" || this.flag === "charge_invuln") && user.v.charging !== this) {
       battle.event({ type: "charge", id: user.owner.id, move: battle.moveIdOf(this)! });
       user.v.charging = this;
-      if (this.flag === "charge_invuln") {
-        user.v.invuln = true;
-      }
-
+      user.v.invuln = this.flag === "charge_invuln" || user.v.invuln;
       return false;
     }
 
     user.v.charging = undefined;
     user.v.trapping = undefined;
-    target.v.lastDamage = 0;
+    target.lastDamage = 0;
     if (this.flag === "charge_invuln") {
       user.v.invuln = false;
     }
@@ -108,7 +114,7 @@ export class DamagingMove extends Move {
         if (eff === 0) {
           battle.info(target, "immune");
           if (this.flag === "trap") {
-            this.trapTarget(battle.rng, user, target, dmg);
+            this.trapTarget(battle.rng, user, target);
           }
         } else {
           battle.info(user, "miss");
@@ -168,7 +174,11 @@ export class DamagingMove extends Move {
       }
 
       if (this.flag === "drain" || this.flag === "dream_eater") {
-        user.recover(Math.max(Math.floor(dealt / 2), 1), target, battle, "drain");
+        // https://www.smogon.com/forums/threads/past-gens-research-thread.3506992/#post-5878612
+        //  - DRAIN HP SIDE EFFECT
+        const dmg = Math.max(Math.floor(dealt / 2), 1);
+        target.lastDamage = dmg;
+        user.recover(dmg, target, battle, "drain");
       } else if (this.flag === "explosion") {
         dead = user.damage(user.base.hp, user, battle, false, "explosion", true).dead || dead;
       } else if (this.flag === "double" || this.flag === "multi") {
@@ -198,7 +208,7 @@ export class DamagingMove extends Move {
     if (this.flag === "recharge") {
       user.v.recharge = this;
     } else if (this.flag === "trap") {
-      this.trapTarget(battle.rng, user, target, dmg);
+      this.trapTarget(battle.rng, user, target);
     }
 
     if (this.effect) {
@@ -211,7 +221,7 @@ export class DamagingMove extends Move {
         return dead;
       }
 
-      if (!battle.rand255(floatTo255(chance))) {
+      if (battle.rng.int(1, 256) > Math.floor((chance / 100) * 256)) {
         return dead;
       }
 
@@ -253,15 +263,35 @@ export class DamagingMove extends Move {
         eff,
       };
     } else if (this.flag === "counter") {
-      return { dmg: this.counterDamage(user, target), isCrit: false, eff: 1 };
+      // https://www.youtube.com/watch?v=ftTalHMjPRY
+      //  On cartrige, the move counter uses is updated whenever a player hovers over a move (even
+      //  if he doesn't select it). In a link battle, this information is not shared between both
+      //  players. This means, that a player can influence the ability of counter to succeed by
+      //  hovering over a move on their side, cancelling the 'FIGHT' menu, and switching out. Since
+      //  we don't have a FIGHT menu, and this can cause a desync anyway, just use the last
+      //  attempted move.
+
+      const mv = target.lastChosenMove;
+      let dmg = user.lastDamage * 2;
+      if (mv && ((mv.type !== "normal" && mv.type !== "fight") || !mv.power || mv === this)) {
+        dmg = 0;
+      } else if (target.owner.choice?.move === this) {
+        dmg = 0;
+      }
+      // Counter can crit, but it won't do any more damage
+      return { dmg, isCrit: false, eff: 1 };
     } else if (this.flag === "super_fang") {
       return { dmg: Math.max(Math.floor(target.base.hp / 2), 1), isCrit: false, eff: 1 };
+    } else if (this.flag === "psywave") {
+      // psywave has a desync glitch that we don't emulate
+      const dmg = battle.rng.int(1, Math.max(Math.floor(user.base.level * 1.5 - 1), 1));
+      return { dmg, isCrit: false, eff: 1 };
     } else if (this.dmg) {
       return { dmg: this.dmg, isCrit: false, eff: 1 };
     }
 
     const baseSpe = user.base.species.stats.spe;
-    let chance: number;
+    let chance;
     if (this.flag === "high_crit") {
       chance = user.v.flags.focus ? 4 * Math.floor(baseSpe / 4) : 8 * Math.floor(baseSpe / 2);
     } else {
@@ -278,45 +308,23 @@ export class DamagingMove extends Move {
     const dmg = calcDamage({
       lvl: user.base.level,
       pow: this.power!,
-      crit: isCrit ? 2 : 1,
       atk: user.getStat(atks, isCrit),
       def: Math.floor(target.getStat(defs, isCrit, true, ls || reflect) / explosion),
-      stab: user.v.types.includes(this.type) ? 1.5 : 1,
+      isCrit,
+      isStab: user.v.types.includes(this.type),
+      rand: battle.rng,
       eff,
     });
-    if (dmg === 0) {
-      return { dmg: 0, isCrit: false, eff };
-    }
-
-    const rand = dmg === 1 ? 255 : battle.rng.int(217, 255);
-    return { dmg: Math.floor((dmg * rand) / 255), isCrit, eff };
-  }
-
-  private counterDamage(user: ActivePokemon, target: ActivePokemon) {
-    const lastMove = target.v.lastMove;
-    if (lastMove) {
-      if (lastMove.type !== "normal" && lastMove.type !== "fight") {
-        return 0;
-      } else if (lastMove === this || !lastMove.power) {
-        return 0;
-      }
-    }
-
-    if (target.owner.choice?.move === this) {
-      return 0;
-    }
-
-    return user.v.lastDamage * 2;
+    return { dmg, isCrit, eff };
   }
 
   private static multiHitCount(rng: Random) {
     return randChoiceWeighted(rng, [2, 3, 4, 5], [37.5, 37.5, 12.5, 12.5]);
   }
 
-  private trapTarget(rng: Random, user: ActivePokemon, target: ActivePokemon, dmg: number) {
-    const turns = DamagingMove.multiHitCount(rng) - 1;
+  private trapTarget(rng: Random, user: ActivePokemon, target: ActivePokemon) {
     target.v.trapped = true;
-    user.v.trapping = { move: this, turns, dmg };
+    user.v.trapping = { move: this, turns: DamagingMove.multiHitCount(rng) - 1 };
   }
 }
 

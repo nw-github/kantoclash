@@ -26,9 +26,8 @@ export const moveList = Object.freeze({
         return super.use(battle, user, target, moveIndex);
       }
 
-      // TODO: bulbapedia says lastDamage includes the opponent's self-inflicted confusion
-      // damage
-      user.v.bide.dmg += user.v.lastDamage;
+      // TODO: bulbapedia says lastDamage includes the opponent's self-inflicted confusion damage
+      user.v.bide.dmg += user.lastDamage;
       if (--user.v.bide.turns !== 0) {
         return false;
       }
@@ -47,7 +46,7 @@ export const moveList = Object.freeze({
     }
 
     override execute(battle: Battle, user: ActivePokemon, target: ActivePokemon) {
-      target.v.lastDamage = 0;
+      target.lastDamage = 0;
       user.v.bide = { move: this, turns: battle.rng.int(2, 3), dmg: 0 };
       return false;
     }
@@ -74,7 +73,7 @@ export const moveList = Object.freeze({
     type: "normal",
     acc: 55,
     execute(battle, user, target) {
-      target.v.lastDamage = 0;
+      target.lastDamage = 0;
 
       const options = [...target.base.moves.keys()].filter(i => target.base.pp[i] !== 0);
       if (!options.length || target.v.disabled) {
@@ -158,6 +157,7 @@ export const moveList = Object.freeze({
     pp: 10,
     type: "normal",
     execute(battle, user, target): boolean {
+      target.lastDamage = 0;
       const moves: Move[] = Object.values(moveList);
 
       let move;
@@ -192,33 +192,13 @@ export const moveList = Object.freeze({
     pp: 20,
     type: "flying",
     execute(battle, user, target) {
+      target.lastDamage = 0;
       if (!target.v.lastMove || target.v.lastMove === this) {
         battle.info(user, "fail_generic");
         return false;
       }
 
       return target.v.lastMove.use(battle, user, target);
-    },
-  }),
-  psywave: new UniqueMove({
-    name: "Psywave",
-    pp: 15,
-    type: "psychic",
-    acc: 80,
-    power: 1,
-    execute(battle, user, target) {
-      if (!this.checkAccuracy(battle, user, target)) {
-        return false;
-      }
-
-      // psywave has a desync glitch that we don't emulate
-      return target.damage(
-        battle.rng.int(1, Math.max(Math.floor(user.base.level * 1.5 - 1), 1)),
-        user,
-        battle,
-        false,
-        "attacked",
-      ).dead;
     },
   }),
   substitute: new UniqueMove({
@@ -246,7 +226,7 @@ export const moveList = Object.freeze({
     pp: 10,
     type: "normal",
     execute(battle, user, target) {
-      target.v.lastDamage = 0;
+      target.lastDamage = 0;
       if (user.base instanceof TransformedPokemon) {
         user.base = new TransformedPokemon(user.base.base, target.base);
       } else {
@@ -556,7 +536,7 @@ export const moveList = Object.freeze({
     type: "poison",
     power: 40,
     acc: 100,
-    effect: [10, [["spc", -1]]],
+    effect: [33.21 /* 85/256 */, [["spc", -1]]],
   }),
   aurorabeam: new DamagingMove({
     name: "Aurora Beam",
@@ -564,7 +544,7 @@ export const moveList = Object.freeze({
     type: "ice",
     power: 65,
     acc: 100,
-    effect: [10, [["atk", -1]]],
+    effect: [33.21 /* 85/256 */, [["atk", -1]]],
   }),
   barrage: new DamagingMove({
     name: "Barrage",
@@ -588,7 +568,7 @@ export const moveList = Object.freeze({
     type: "normal",
     power: 85,
     acc: 100,
-    effect: [30.1, "par"],
+    effect: [30.1 /* 77/256 */, "par"],
   }),
   bonemerang: new DamagingMove({
     name: "Bonemerang",
@@ -611,7 +591,7 @@ export const moveList = Object.freeze({
     type: "water",
     power: 65,
     acc: 100,
-    effect: [10, [["spe", -1]]],
+    effect: [33.21 /* 85/256 */, [["spe", -1]]],
   }),
   bite: new DamagingMove({
     name: "Bite",
@@ -619,6 +599,7 @@ export const moveList = Object.freeze({
     type: "normal",
     power: 60,
     acc: 100,
+    effect: [10.2 /* 26/256 */, "flinch"],
   }),
   blizzard: new DamagingMove({
     name: "Blizzard",
@@ -626,7 +607,7 @@ export const moveList = Object.freeze({
     type: "ice",
     power: 120,
     acc: 90,
-    effect: [10, "frz"],
+    effect: [10.2 /* 26/256 */, "frz"],
   }),
   boneclub: new DamagingMove({
     name: "Bone Club",
@@ -634,7 +615,7 @@ export const moveList = Object.freeze({
     type: "ground",
     power: 65,
     acc: 85,
-    effect: [10, "flinch"],
+    effect: [10.2 /* 26/256 */, "flinch"],
   }),
   clamp: new DamagingMove({
     name: "Clamp",
@@ -658,7 +639,7 @@ export const moveList = Object.freeze({
     type: "psychic",
     power: 50,
     acc: 100,
-    effect: [10, "confusion"],
+    effect: [10 /* 25/256 */, "confusion"],
   }),
   constrict: new DamagingMove({
     name: "Constrict",
@@ -666,7 +647,7 @@ export const moveList = Object.freeze({
     type: "normal",
     power: 10,
     acc: 100,
-    effect: [10, [["spe", -1]]],
+    effect: [33.21 /* 85/256 */, [["spe", -1]]],
   }),
   counter: new DamagingMove({
     name: "Counter",
@@ -774,7 +755,7 @@ export const moveList = Object.freeze({
     type: "fire",
     power: 40,
     acc: 100,
-    effect: [10, "brn"],
+    effect: [10.2 /* 26/256 */, "brn"],
   }),
   explosion: new DamagingMove({
     name: "Explosion",
@@ -790,7 +771,7 @@ export const moveList = Object.freeze({
     type: "fire",
     power: 120,
     acc: 85,
-    effect: [30, "brn"],
+    effect: [30.1 /* 77/256 */, "brn"],
   }),
   firepunch: new DamagingMove({
     name: "Fire Punch",
@@ -798,7 +779,7 @@ export const moveList = Object.freeze({
     type: "fire",
     power: 75,
     acc: 100,
-    effect: [10, "brn"],
+    effect: [10.2 /* 26/256 */, "brn"],
   }),
   firespin: new DamagingMove({
     name: "Fire Spin",
@@ -822,7 +803,7 @@ export const moveList = Object.freeze({
     type: "fire",
     power: 95,
     acc: 100,
-    effect: [10, "brn"],
+    effect: [10.2 /* 26/256 */, "brn"],
   }),
   fly: new DamagingMove({
     name: "Fly",
@@ -869,7 +850,7 @@ export const moveList = Object.freeze({
     type: "normal",
     power: 70,
     acc: 100,
-    effect: [30.1, "flinch"],
+    effect: [30.1 /* 77/256 */, "flinch"],
   }),
   hijumpkick: new DamagingMove({
     name: "Hi Jump Kick",
@@ -915,7 +896,7 @@ export const moveList = Object.freeze({
     type: "normal",
     power: 80,
     acc: 90,
-    effect: [10, "flinch"],
+    effect: [10.2 /* 26/256 */, "flinch"],
   }),
   icebeam: new DamagingMove({
     name: "Ice Beam",
@@ -923,7 +904,7 @@ export const moveList = Object.freeze({
     type: "ice",
     power: 95,
     acc: 100,
-    effect: [10, "frz"],
+    effect: [10.2 /* 26/256 */, "frz"],
   }),
   icepunch: new DamagingMove({
     name: "Ice Punch",
@@ -931,7 +912,7 @@ export const moveList = Object.freeze({
     type: "ice",
     power: 75,
     acc: 100,
-    effect: [10, "frz"],
+    effect: [10.2 /* 26/256 */, "frz"],
   }),
   jumpkick: new DamagingMove({
     name: "Jump Kick",
@@ -963,7 +944,7 @@ export const moveList = Object.freeze({
     type: "ghost",
     power: 20,
     acc: 100,
-    effect: [30, "par"],
+    effect: [30.1 /* 77/256 */, "par"],
   }),
   lowkick: new DamagingMove({
     name: "Low Kick",
@@ -971,7 +952,7 @@ export const moveList = Object.freeze({
     type: "fight",
     power: 50,
     acc: 100,
-    effect: [30, "flinch"],
+    effect: [30.1 /* 77/256 */, "flinch"],
   }),
   megadrain: new DamagingMove({
     name: "Mega Drain",
@@ -1040,7 +1021,7 @@ export const moveList = Object.freeze({
     type: "poison",
     power: 15,
     acc: 100,
-    effect: [20, "psn"],
+    effect: [20.4 /* 52/256 */, "psn"],
   }),
   pound: new DamagingMove({
     name: "Pound",
@@ -1055,7 +1036,7 @@ export const moveList = Object.freeze({
     type: "psychic",
     power: 65,
     acc: 100,
-    effect: [10.2, "confusion"],
+    effect: [10 /* 25/256 */, "confusion"],
   }),
   psychic: new DamagingMove({
     name: "Psychic",
@@ -1063,7 +1044,15 @@ export const moveList = Object.freeze({
     type: "psychic",
     power: 90,
     acc: 100,
-    effect: [33.2, [["spc", -1]]],
+    effect: [33.21 /* 85/256 */, [["spc", -1]]],
+  }),
+  psywave: new DamagingMove({
+    name: "Psywave",
+    pp: 15,
+    type: "psychic",
+    power: 1,
+    acc: 80,
+    flag: "psywave",
   }),
   quickattack: new DamagingMove({
     name: "Quick Attack",
@@ -1117,7 +1106,7 @@ export const moveList = Object.freeze({
     type: "fight",
     power: 60,
     acc: 85,
-    effect: [30, "flinch"],
+    effect: [30.1 /* 77/256 */, "flinch"],
   }),
   selfdestruct: new DamagingMove({
     name: "Self-Destruct",
@@ -1179,7 +1168,7 @@ export const moveList = Object.freeze({
     type: "poison",
     power: 65,
     acc: 100,
-    effect: [40, "psn"],
+    effect: [40.4 /* 103/256 */, "psn"],
   }),
   smog: new DamagingMove({
     name: "Smog",
@@ -1187,7 +1176,7 @@ export const moveList = Object.freeze({
     type: "poison",
     power: 20,
     acc: 70,
-    effect: [40, "psn"],
+    effect: [40.4 /* 103/256 */, "psn"],
   }),
   solarbeam: new DamagingMove({
     name: "SolarBeam",
@@ -1219,7 +1208,7 @@ export const moveList = Object.freeze({
     type: "normal",
     power: 65,
     acc: 100,
-    effect: [30, "flinch"],
+    effect: [30.1 /* 77/256 */, "flinch"],
   }),
   strength: new DamagingMove({
     name: "Strength",
@@ -1294,7 +1283,7 @@ export const moveList = Object.freeze({
     type: "electric",
     power: 120,
     acc: 70,
-    effect: [10, "par"],
+    effect: [10.2 /* 26/256 */, "par"],
   }),
   thunderpunch: new DamagingMove({
     name: "Thunder Punch",
@@ -1302,7 +1291,7 @@ export const moveList = Object.freeze({
     type: "electric",
     power: 75,
     acc: 100,
-    effect: [10, "par"],
+    effect: [10.2 /* 26/256 */, "par"],
   }),
   thundershock: new DamagingMove({
     name: "Thunder Shock",
@@ -1310,7 +1299,7 @@ export const moveList = Object.freeze({
     type: "electric",
     power: 40,
     acc: 100,
-    effect: [10, "par"],
+    effect: [10.2 /* 26/256 */, "par"],
   }),
   thunderbolt: new DamagingMove({
     name: "Thunderbolt",
@@ -1318,7 +1307,7 @@ export const moveList = Object.freeze({
     type: "electric",
     power: 95,
     acc: 100,
-    effect: [10, "par"],
+    effect: [10.2 /* 26/256 */, "par"],
   }),
   triattack: new DamagingMove({
     name: "Tri Attack",
@@ -1334,7 +1323,7 @@ export const moveList = Object.freeze({
     power: 25,
     acc: 100,
     flag: "double",
-    effect: [20, "psn"],
+    effect: [20 /* 51/256 [citation needed] */, "psn"],
   }),
   vinewhip: new DamagingMove({
     name: "Vine Whip",

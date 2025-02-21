@@ -23,8 +23,8 @@ export class StageMove extends Move {
   }
 
   override execute(battle: Battle, user: ActivePokemon, target: ActivePokemon) {
+    target.lastDamage = 0;
     if (this.acc) {
-      target.v.lastDamage = 0;
       if (target.v.flags.mist || target.v.substitute) {
         battle.info(target, target.v.flags.mist ? "mist_protect" : "fail_generic");
         return false;
