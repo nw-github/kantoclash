@@ -69,9 +69,6 @@
             </b>
 
             <span v-if="chat.type === 'chat'">: {{ chat.message }}</span>
-            <span v-else-if="chat.type === 'userJoin' && players[chat.id].isSpectator">
-              reconnected.
-            </span>
             <span v-else-if="chat.type === 'userJoin'"> joined the room.</span>
             <span v-else-if="chat.type === 'userLeave'"> left the room.</span>
             <span v-else-if="chat.type === 'timerStart'">
@@ -181,6 +178,15 @@ const myId = useMyId();
 const message = ref("");
 const scrollPoint = ref<HTMLDivElement>();
 const forfeitModalOpen = ref(false);
+
+onMounted(async () => {
+  await nextTick();
+  scrollPoint.value?.scrollIntoView({
+    // behavior: "smooth",
+    block: "center",
+    inline: "center",
+  });
+});
 
 watch([props.chats, props.turns], async () => {
   await nextTick();

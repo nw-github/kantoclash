@@ -156,10 +156,6 @@ const processMessage = (message: InfoMessage) => {
     }
   } else if (message.type === "userLeave") {
     players[message.id].connected = false;
-  } else if (message.type === "userReconnect") {
-    if (players[message.id]) {
-      players[message.id].connected = true;
-    }
   }
 };
 

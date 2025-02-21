@@ -20,6 +20,7 @@ import {
   stageMultipliers,
   type Stages,
   type Type,
+  type VolatileFlag,
 } from "./utils";
 
 export type MoveOption = {
@@ -711,10 +712,6 @@ export class ActivePokemon {
     }
   }
 }
-
-export type VolatileFlag = (typeof volatileFlags)[number];
-
-export const volatileFlags = ["light_screen", "reflect", "mist", "focus", "seeded"] as const;
 
 export type VolatileStats = Volatiles["stats"];
 

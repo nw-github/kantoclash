@@ -1,6 +1,6 @@
-import type { ActivePokemon, Battle, VolatileFlag } from "../battle";
+import type { ActivePokemon, Battle } from "../battle";
 import { Move } from "./move";
-import type { Type } from "../utils";
+import type { Type, VolatileFlag } from "../utils";
 
 export class VolatileFlagMove extends Move {
   readonly flag: VolatileFlag;

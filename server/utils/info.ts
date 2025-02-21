@@ -12,11 +12,6 @@ type InfoUserJoin = {
   nPokemon: number;
 };
 
-type InfoUserReconnect = {
-  type: "userReconnect";
-  id: string;
-};
-
 type InfoUserLeave = {
   type: "userLeave";
   id: string;
@@ -27,9 +22,4 @@ type InfoTimerStart = {
   id: string;
 };
 
-export type InfoMessage =
-  | InfoChatMessage
-  | InfoUserJoin
-  | InfoUserReconnect
-  | InfoUserLeave
-  | InfoTimerStart;
+export type InfoMessage = InfoChatMessage | InfoUserJoin | InfoUserLeave | InfoTimerStart;

@@ -1,4 +1,4 @@
-import { ActivePokemon, Battle, volatileFlags } from "./battle";
+import { ActivePokemon, Battle } from "./battle";
 import {
   Move,
   VolatileFlagMove,
@@ -11,7 +11,7 @@ import {
   UniqueMove,
 } from "./moves";
 import { TransformedPokemon } from "./transformed";
-import { stageKeys } from "./utils";
+import { stageKeys, volatileFlags } from "./utils";
 
 export type MoveId = keyof typeof moveList;
 

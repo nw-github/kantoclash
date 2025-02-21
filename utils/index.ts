@@ -7,10 +7,10 @@ import {
   AlwaysFailMove,
   RecoveryMove,
 } from "../game/moves";
-import { volatileFlags, type VolatileStats } from "../game/battle";
+import { type VolatileStats } from "../game/battle";
 import { moveList, type MoveId } from "../game/moveList";
 import type { SpeciesId } from "../game/species";
-import type { Stages, Type } from "../game/utils";
+import { volatileFlags, type Stages, type Type } from "../game/utils";
 
 export const clientVolatiles = [...volatileFlags, "substitute", "confused", "disabled"] as const;
 export type ClientVolatileFlag = (typeof clientVolatiles)[number];
@@ -90,7 +90,6 @@ const descriptions: Partial<Record<MoveId, string>> = {
     "HP, and it will be restored to the user. Ends if the target switches out.",
   metronome: "Selects any move except Struggle for the user to use at random.",
   mirrormove: "Uses the last move targeted at the user by a pokemon still on the field.",
-  psywave: "Damages the target for a random amount between 1 HP and 1.5x the user's level. ",
   substitute:
     "The user sacrifices 1/4 its HP to create a substitute with 1/4 its HP + 1. The " +
     "substitute protects it from status and stat stage changes from the opponent's attacks, " +
@@ -131,6 +130,7 @@ const flagDesc: Record<NonNullable<DamagingMove["flag"]>, string> = {
   trap: "Deals damage and prevents the target from moving for 2-5 turns. ",
   counter: "Deals 2x the last move's damage if it was normal or fighting type. ",
   super_fang: "Deals damage equal to 1/2 the target's current HP. ",
+  psywave: "Damages the target for a random amount between 1 HP and 1.5x the user's level. ",
 };
 
 type FormatInfo = {

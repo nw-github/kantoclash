@@ -201,10 +201,6 @@ export async function startBot(format: FormatId = "randoms", botFunction: BotFun
         };
       } else if (message.type === "userLeave") {
         players[message.id].connected = false;
-      } else if (message.type === "userReconnect") {
-        if (players[message.id]) {
-          players[message.id].connected = true;
-        }
       }
     };
 

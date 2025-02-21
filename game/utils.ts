@@ -25,6 +25,10 @@ export const stageStatKeys = ["atk", "def", "spc", "spe"] as const;
 export const statKeys = ["hp", ...stageStatKeys] as const;
 export const stageKeys = [...stageStatKeys, "acc", "eva"] as const;
 
+export type VolatileFlag = (typeof volatileFlags)[number];
+
+export const volatileFlags = ["light_screen", "reflect", "mist", "focus", "seeded"] as const;
+
 export const floatTo255 = (num: number) => Math.floor((num / 100) * 255);
 
 export const clamp = (num: number, min: number, max: number) => Math.max(Math.min(num, max), min);

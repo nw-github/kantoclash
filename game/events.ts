@@ -1,8 +1,8 @@
-import type { VolatileFlag, VolatileStats } from "./battle";
+import type { VolatileStats } from "./battle";
 import type { MoveId } from "./moveList";
-import { type Status } from "./pokemon";
+import type { Status } from "./pokemon";
 import type { SpeciesId } from "./species";
-import type { Stages, Type } from "./utils";
+import type { Stages, Type, VolatileFlag } from "./utils";
 
 export type BattleEvent =
   | SwitchEvent
