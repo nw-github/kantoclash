@@ -15,6 +15,6 @@ export const musicTrackName = (track: string) => {
   return track.slice(track.lastIndexOf("/") + 1, track.lastIndexOf("."));
 };
 
-export const useSfxVolume = () => useLocalStorage("sfxVolume", () => 0.8);
+export const useSfxVolume = () => useLocalStorage("sfxVolume", () => 0.7);
 
-export const useMusicVolume = () => useLocalStorage("musicVolume", () => 1.0);
+export const useMusicVolume = () => useLocalStorage("musicVolume", () => 0.5);

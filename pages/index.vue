@@ -126,20 +126,10 @@ const filterFormats = ref<string[]>([]);
 const battleQuery = ref<string>();
 
 onMounted(() => {
-  const nameCache: Record<string, string> = {};
   $conn.emit("getRooms", async result => {
     rooms.value = await Promise.all(
       result.map(async room => ({
-        name: (
-          await Promise.all(
-            room.battlers.map(
-              async id =>
-                (nameCache[id] ??= await $fetch(`/api/users/${id}`, { method: "GET" })
-                  .then(res => res.name)
-                  .catch(e => (console.log(e), "<unknown>"))),
-            ),
-          )
-        ).join(" vs. "),
+        name: room.battlers.map(pl => pl.name).join(" vs. "),
         to: "/room/" + room.id,
         format: room.format,
       })),

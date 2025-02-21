@@ -62,16 +62,12 @@ export type Turn = {
 export class Player {
   readonly active: ActivePokemon;
   readonly originalTeam: Pokemon[];
-  readonly team: Pokemon[];
-  readonly id: PlayerId;
   choice?: ChosenMove;
   options?: { canSwitch: boolean; moves: MoveOption[] };
 
-  constructor(id: PlayerId, team: Pokemon[]) {
+  constructor(readonly id: PlayerId, readonly team: Pokemon[]) {
     this.active = new ActivePokemon(team[0], this);
-    this.team = team;
     this.originalTeam = structuredClone(team);
-    this.id = id;
   }
 
   cancel() {

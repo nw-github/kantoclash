@@ -3,7 +3,17 @@
     class="flex h-full flex-col sm:flex-row p-4 overflow-auto rounded-lg dark:divide-gray-800 ring-1 ring-gray-200 dark:ring-gray-800 shadow space-x-4"
   >
     <div class="flex flex-col w-full items-center">
-      <TeamDisplay class="w-full justify-end" v-if="opponent" :player="players[opponent]" />
+      <div class="flex justify-between w-full">
+        <div class="relative w-full" v-if="runningTurn">
+          <div
+            class="absolute rounded-md bg-gray-300 dark:bg-gray-700 flex justify-center py-0.5 px-1"
+          >
+            <span class="text-lg">Turn {{ runningTurn }}</span>
+          </div>
+        </div>
+
+        <TeamDisplay v-if="opponent" :player="players[opponent]" />
+      </div>
 
       <div class="flex">
         <div class="order-2">
@@ -247,6 +257,7 @@ const isRunningTurn = ref(false);
 const skippingTurn = ref(false);
 const skippingToTurn = ref(0);
 const updateMarker = ref(0);
+const runningTurn = ref(0);
 
 const backPokemon = ref<InstanceType<typeof ActivePokemon>>();
 const frontPokemon = ref<InstanceType<typeof ActivePokemon>>();
@@ -259,14 +270,14 @@ const chosenPerspective = ref("");
 const perspective = computed(() => (isBattler.value ? myId.value : chosenPerspective.value));
 const opponent = computed(() => battlers.find(v => v != perspective.value) ?? "");
 const victor = ref<string>();
-const htmlTurns = ref<[VNode[], boolean][]>([]);
+const htmlTurns = ref<[VNode[], boolean, number][]>([]);
 const liveEvents = ref<[VNode[], number][]>([]);
 
 const savedAudio: Record<string, AudioBuffer> = {};
 let audioContext: AudioContext;
 
 onMounted(() => (audioContext = new AudioContext()));
-onUnmounted(() => audioContext.close());
+onUnmounted(() => audioContext && audioContext.close());
 
 useIntervalFn(() => {
   liveEvents.value = liveEvents.value.filter(ev => Date.now() - ev[1] < 1400);
@@ -411,11 +422,9 @@ const runTurn = async (turn: Turn, live: boolean, turnNo: number) => {
 
     if (e.type === "switch") {
       const player = players[e.src];
-      let start = 0;
       if (player.active) {
         if (!player.active.fainted) {
           pushHtml(html, 1);
-          start = 1;
           await playAnimation(e.src, "retract", player.active.name);
         }
 
@@ -593,9 +602,13 @@ const runTurn = async (turn: Turn, live: boolean, turnNo: number) => {
   liveEvents.value.length = 0;
   selectionText.value = "";
 
-  htmlTurns.value.push([[], turn.switchTurn]);
+  htmlTurns.value.push([[], turn.switchTurn, runningTurn.value]);
   for (const e of turn.events) {
     await handleEvent(e);
+  }
+
+  if (!turn.switchTurn) {
+    runningTurn.value++;
   }
 
   skippingTurn.value = false;
@@ -835,10 +848,14 @@ let currentTurnPromise: Promise<void> | undefined;
 let reconnecting = false;
 let currentTurn = 0;
 
-const onTurnReceived = () => {
+const onTurnReceived = async () => {
+  console.log("received turn, reconnecting: ", reconnecting);
   if (reconnecting) {
     return;
   }
+
+  // hack to make sure turns.value is updated
+  await nextTick();
 
   const turnNo = currentTurn++;
   const turn = turns[turnNo];
@@ -856,6 +873,9 @@ const onConnect = async () => {
   if (currentTurnPromise) {
     await currentTurnPromise;
   }
+
+  // hack to make sure turns.value is updated
+  await nextTick();
 
   htmlTurns.value.length = 0;
   for (const k in players) {

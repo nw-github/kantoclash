@@ -14,6 +14,7 @@ export type JoinRoomResponse = {
   chats: InfoRecord;
   format: FormatId;
   timer?: BattleTimer;
+  battlers: { id: string; name: string; nPokemon: number }[];
 };
 
 export type BattleTimer = { startedAt: number; duration: number };
@@ -22,8 +23,7 @@ export type ChoiceError = "invalid_choice" | "bad_room" | "not_in_battle" | "too
 
 export type RoomDescriptor = {
   id: string;
-  /** Name[], not Id[] */
-  battlers: string[];
+  battlers: { name: string; id: string }[];
   format: FormatId;
 };
 
@@ -83,10 +83,17 @@ type Socket = SocketIoClient<ClientMessage, ServerMessage>;
 const ROOM_CLEANUP_DELAY_MS = 15 * 60 * 1000;
 const TURN_DECISION_TIME_MS = 45 * 1000;
 
+type Account = {
+  id: string;
+  name: string;
+  matchmaking?: FormatId;
+  userRoom: string;
+};
+
 class Room {
   turns: Turn[];
   accounts = new Set<Account>();
-  chats: InfoRecord = [];
+  chats: InfoRecord = {};
   timer?: NodeJS.Timeout;
   lastTurn: number = Date.now();
   spectatorRoom: string;
@@ -103,7 +110,7 @@ class Room {
     this.spectatorRoom = `spectator:${this.id}`;
   }
 
-  endTurn() {
+  resetTimerState() {
     if (this.battle.victor) {
       clearInterval(this.timer);
       this.timer = undefined;
@@ -132,7 +139,7 @@ class Room {
       }
     }, 1000);
 
-    this.endTurn();
+    this.resetTimerState();
     for (const account of this.accounts) {
       const info = this.timerInfo(account);
       if (info) {
@@ -140,7 +147,7 @@ class Room {
       }
     }
 
-    this.sendChat({ type: "timerStart", id: initiator.id });
+    this.sendMessage({ type: "timerStart", id: initiator.id });
     return true;
   }
 
@@ -153,7 +160,7 @@ class Room {
 
   broadcastTurn(turn: Turn) {
     this.turns.push(turn);
-    this.endTurn();
+    this.resetTimerState();
 
     const { switchTurn, events } = turn;
     for (const account of this.accounts) {
@@ -172,7 +179,7 @@ class Room {
     });
   }
 
-  sendChat(message: InfoMessage) {
+  sendMessage(message: InfoMessage) {
     const turn = Math.max(this.turns.length - 1, 0);
     if (!this.chats[turn]) {
       this.chats[turn] = [];
@@ -180,56 +187,42 @@ class Room {
     this.chats[turn].push(message);
     this.server.to(this.id).emit("info", this.id, message, turn);
   }
-}
 
-class Account {
-  matchmaking?: FormatId;
-  userRoom: string;
-
-  constructor(public id: string, public name: string) {
-    this.userRoom = `user:${this.id}`;
-  }
-
-  joinBattle(room: Room, server: GameServer) {
-    this.onSocketJoinRoom(room, true);
-
-    server.to(this.userRoom).emit("foundMatch", room.id);
-  }
-
-  onSocketJoinRoom(room: Room, notifyJoin: boolean) {
-    if (room.accounts.has(this)) {
+  onSocketJoin(socket: Socket, notifyJoin: boolean) {
+    socket.join(this.id);
+    if (!socket.account) {
+      socket.join(this.spectatorRoom);
+      return;
+    } else if (this.accounts.has(socket.account)) {
       return;
     }
 
     if (notifyJoin) {
-      const player = room.battle.findPlayer(this.id);
-      room.sendChat({
+      const player = this.battle.findPlayer(socket.account.id);
+      this.sendMessage({
         type: "userJoin",
-        id: this.id,
-        name: this.name,
+        id: socket.account.id,
+        name: socket.account.name,
         isSpectator: !player,
         nPokemon: player?.team.length ?? 0,
       });
     }
-    room.accounts.add(this);
+    this.accounts.add(socket.account);
   }
 
-  async onSocketLeaveRoom(room: Room, server: GameServer, forced: boolean, sockets?: Socket[]) {
-    if (!room.accounts.has(this)) {
+  async onSocketLeave(socket: Socket, server: GameServer, sockets?: Socket[]) {
+    socket.leave(this.id);
+    if (!socket.account) {
+      socket.leave(this.spectatorRoom);
+      return;
+    } else if (!this.accounts.has(socket.account)) {
       return;
     }
 
-    sockets ??= (await server.in(this.userRoom).fetchSockets()) as unknown as Socket[];
-    if (forced) {
-      for (const socket of sockets) {
-        socket.leave(room.id);
-        socket.leave(room.spectatorRoom);
-      }
-
-      room.accounts.delete(this);
-    } else if (!sockets.some(s => s.rooms.has(room.id))) {
-      room.sendChat({ type: "userLeave", id: this.id });
-      room.accounts.delete(this);
+    sockets ??= (await server.in(socket.account.userRoom).fetchSockets()) as unknown as Socket[];
+    if (sockets.every(s => !s.rooms.has(this.id))) {
+      this.sendMessage({ type: "userLeave", id: socket.account.id });
+      this.accounts.delete(socket.account);
     }
   }
 }
@@ -252,7 +245,7 @@ export class GameServer extends SocketIoServer<ClientMessage, ServerMessage> {
     if (user) {
       console.log(`new connection: ${socket.id} from user: '${user.name}' (${user.id})`);
       if (!(socket.account = this.accounts.get(user.id))) {
-        const account = new Account(user.id, user.name);
+        const account: Account = { id: user.id, name: user.name, userRoom: `user:${user.id}` };
         this.accounts.set(user.id, account);
         socket.account = account;
       }
@@ -290,12 +283,7 @@ export class GameServer extends SocketIoServer<ClientMessage, ServerMessage> {
         return ack("bad_room");
       }
 
-      socket.join(roomId);
-      if (socket.account) {
-        socket.account.onSocketJoinRoom(room, true);
-      } else {
-        socket.join(room.spectatorRoom);
-      }
+      room.onSocketJoin(socket, true);
 
       const player = socket.account && room.battle.findPlayer(socket.account.id);
       return ack({
@@ -308,6 +296,7 @@ export class GameServer extends SocketIoServer<ClientMessage, ServerMessage> {
         chats: room.chats,
         format: room.format,
         timer: socket.account && room.timerInfo(socket.account),
+        battlers: this.getBattlers(room),
       });
     });
     socket.on("leaveRoom", async (roomId, ack) => {
@@ -316,12 +305,7 @@ export class GameServer extends SocketIoServer<ClientMessage, ServerMessage> {
         return ack("bad_room");
       }
 
-      socket.leave(roomId);
-      if (socket.account) {
-        await socket.account.onSocketLeaveRoom(room, this, false);
-      } else {
-        socket.leave(room.spectatorRoom);
-      }
+      await room.onSocketLeave(socket, this);
       return ack();
     });
     socket.on("choose", (roomId, index, type, sequenceNo, ack) => {
@@ -383,7 +367,7 @@ export class GameServer extends SocketIoServer<ClientMessage, ServerMessage> {
       }
 
       ack();
-      room.sendChat({ type: "chat", message, id: socket.account.id });
+      room.sendMessage({ type: "chat", message, id: socket.account.id });
     });
     socket.on("getRooms", ack =>
       ack(
@@ -392,7 +376,7 @@ export class GameServer extends SocketIoServer<ClientMessage, ServerMessage> {
           .filter(([, room]) => !room.battle.victor)
           .map(([id, room]) => ({
             id,
-            battlers: room.battle.players.map(pl => pl.id),
+            battlers: this.getBattlers(room),
             format: room.format,
           }))
           .toArray(),
@@ -412,13 +396,13 @@ export class GameServer extends SocketIoServer<ClientMessage, ServerMessage> {
       for (const id of rooms) {
         const room = this.rooms.get(id);
         if (room) {
-          await account.onSocketLeaveRoom(room, this, false, sockets);
+          await room.onSocketLeave(socket, this, sockets);
         }
       }
 
       if (!sockets.length) {
         this.leaveMatchmaking(account);
-        this.accounts.delete(account.id);
+        // this.accounts.delete(account.id);
       }
     });
   }
@@ -445,8 +429,8 @@ export class GameServer extends SocketIoServer<ClientMessage, ServerMessage> {
       const room = new Room(roomId, battle, turn0, format, this);
       this.rooms.set(roomId, room);
 
-      account.joinBattle(room, this);
-      opponentAcc.joinBattle(room, this);
+      this.to(account.userRoom).emit("foundMatch", room.id);
+      this.to(opponentAcc.userRoom).emit("foundMatch", room.id);
 
       this.leaveMatchmaking(account);
       this.leaveMatchmaking(opponentAcc);
@@ -482,9 +466,23 @@ export class GameServer extends SocketIoServer<ClientMessage, ServerMessage> {
     return [player, room] as const;
   }
 
-  async destroyRoom(room: Room) {
+  private getBattlers(room: Room) {
+    return room.battle.players.map(pl => {
+      const acc = this.accounts.get(pl.id)!;
+      return { name: acc.name, id: acc.id, nPokemon: pl.originalTeam.length };
+    });
+  }
+
+  destroyRoom(room: Room) {
     room.isBeingDestroyed = true;
-    await Promise.allSettled(room.accounts.keys().map(a => a.onSocketLeaveRoom(room, this, true)));
     this.rooms.delete(room.id);
+    return Promise.allSettled(
+      room.accounts.keys().map(async acc => {
+        for (const socket of await this.in(acc.userRoom).fetchSockets()) {
+          socket.leave(room.id);
+          socket.leave(room.spectatorRoom);
+        }
+      }),
+    );
   }
 }

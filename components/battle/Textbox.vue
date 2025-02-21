@@ -56,10 +56,9 @@
     </template>
 
     <template #default>
-      {{ void (turnCounter = 0) }}
-      <template v-for="([turn, switchTurn], i) in turns">
+      <template v-for="([turn, switchTurn, turnNo], i) in turns">
         <div class="bg-gray-300 dark:bg-gray-700 w-full px-1 py-0.5" v-if="i && !switchTurn">
-          <h2 class="text-xl">Turn {{ ++turnCounter }}</h2>
+          <h2 class="text-xl font-bold">Turn {{ turnNo }}</h2>
         </div>
         <div class="events p-1">
           <component v-if="i > 0" :is="() => turn" />
@@ -163,7 +162,7 @@
 import type { InfoRecord } from "~/server/utils/gameServer";
 
 const props = defineProps<{
-  turns: [VNode[], boolean][];
+  turns: [VNode[], boolean, number][];
   players: Record<string, ClientPlayer>;
   chats: InfoRecord;
   victor?: string;
@@ -215,6 +214,4 @@ const playerInfo = (player: ClientPlayer, id: string) => {
   }
   return label;
 };
-
-let turnCounter = 0;
 </script>

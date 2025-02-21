@@ -83,7 +83,7 @@ export async function startBot(format: FormatId = "randoms", botFunction: BotFun
 
   function playGame(
     room: string,
-    { team, options, chats, turns }: JoinRoomResponse,
+    { team, options, chats, turns, battlers }: JoinRoomResponse,
     ai: BotFunction,
     gameOver: () => void,
   ) {
@@ -203,6 +203,10 @@ export async function startBot(format: FormatId = "randoms", botFunction: BotFun
         players[message.id].connected = false;
       }
     };
+
+    for (const { id, name, nPokemon } of battlers) {
+      players[id] = { name, isSpectator: false, connected: false, nPokemon, nFainted: 0 };
+    }
 
     games[room] = (turn: Turn, options?: Options) => {
       turnNo++;

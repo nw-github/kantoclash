@@ -181,10 +181,14 @@ const onJoinRoom = (resp: JoinRoomResponse | "bad_room", fresh: boolean) => {
     currentTrack.value = randChoice(allMusicTracks);
   }
 
-  for (const player in players) {
-    players[player].connected = false;
+  for (const { id, name, nPokemon } of resp.battlers) {
+    if (!players[id]) {
+      players[id] = { name, isSpectator: false, connected: false, nPokemon, nFainted: 0 };
+      battlers.value.push(id);
+    }
   }
 
+  console.log("turns: ", resp.turns);
   if (fresh) {
     sequenceNo = resp.turns.length;
     turns.value = resp.turns;
