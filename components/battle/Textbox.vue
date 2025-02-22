@@ -64,13 +64,22 @@
         <div class="events p-1">
           <component :is="() => turn" v-if="i > 0" />
           <p v-for="chat in chats[i] ?? []" :key="JSON.stringify(chat)">
-            <b v-if="chat.id && chat.type !== 'timerStart'">
-              {{ players[chat.id!]?.name ?? "???" }}
-            </b>
-
-            <span v-if="chat.type === 'chat'">: {{ chat.message }}</span>
-            <span v-else-if="chat.type === 'userJoin'"> joined the room.</span>
-            <span v-else-if="chat.type === 'userLeave'"> left the room.</span>
+            <span v-if="chat.type === 'chat'">
+              <b>{{ players[chat.id!]?.name ?? "???" }}</b
+              >: {{ chat.message }}
+            </span>
+            <span
+              v-else-if="chat.type === 'userJoin'"
+              class="text-sm text-gray-600 dark:text-gray-400"
+            >
+              <b>{{ players[chat.id!]?.name ?? "???" }}</b> joined the room.
+            </span>
+            <span
+              v-else-if="chat.type === 'userLeave'"
+              class="text-sm text-gray-600 dark:text-gray-400"
+            >
+              <b>{{ players[chat.id!]?.name ?? "???" }}</b> left the room.
+            </span>
             <span v-else-if="chat.type === 'timerStart'">
               The timer was started by <b>{{ players[chat.id!]?.name ?? "???" }}</b
               >.

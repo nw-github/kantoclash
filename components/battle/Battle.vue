@@ -281,10 +281,10 @@ const htmlTurns = ref<[VNode[], boolean, number][]>([]);
 const liveEvents = ref<[VNode[], number][]>([]);
 
 const savedAudio: Record<string, AudioBuffer> = {};
-let audioContext: AudioContext;
+let audioContext: AudioContext | undefined;
 
 onMounted(() => (audioContext = new AudioContext()));
-onUnmounted(() => audioContext && audioContext.close());
+onUnmounted(() => audioContext && audioContext.close(), (audioContext = undefined));
 
 useIntervalFn(() => {
   liveEvents.value = liveEvents.value.filter(ev => Date.now() - ev[1] < 1400);
@@ -361,7 +361,7 @@ const runTurn = async (turn: Turn, live: boolean, turnNo: number) => {
   const isLive = () => live && !skippingTurn.value && skippingToTurn.value <= turnNo;
 
   const playSound = async (path: string, pitchDown = false) => {
-    if (!isLive()) {
+    if (!isLive() || !audioContext) {
       return;
     }
 
@@ -622,8 +622,6 @@ const runTurn = async (turn: Turn, live: boolean, turnNo: number) => {
   isRunningTurn.value = false;
 };
 
-const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
-
 const htmlForEvent = (e: BattleEvent) => {
   const text = (s: any, clazz: string = "") => h("p", { class: clazz }, s);
   const bold = (s: any) => h("b", s);
@@ -856,7 +854,6 @@ let reconnecting = false;
 let currentTurn = 0;
 
 const onTurnReceived = async () => {
-  console.log("received turn, reconnecting: ", reconnecting);
   if (reconnecting) {
     return;
   }

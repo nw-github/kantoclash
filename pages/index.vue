@@ -50,8 +50,15 @@
           placeholder="Search..."
           class="w-full"
         />
+        <UButton
+          icon="material-symbols:refresh"
+          :loading="loadingRooms"
+          variant="ghost"
+          color="gray"
+          @click="loadRooms"
+        />
       </div>
-      <UTable :rows="roomsRows" :columns="roomsCols" :empty-state="emptyState">
+      <UTable :rows="filteredRooms" :columns="roomsCols" :empty-state="emptyState">
         <template #name-data="{ row }">
           <UButton :to="row.to">{{ row.name }}</UButton>
         </template>
@@ -99,6 +106,7 @@ const { user } = useUserSession();
 const toast = useToast();
 const findingMatch = ref(false);
 const cancelling = ref(false);
+const loadingRooms = ref(false);
 const rooms = ref<{ to: string; name: string; format: FormatId }[]>([]);
 const format = useLocalStorage<FormatId>("lastFormat", () => "randoms");
 const selectedTeam = ref<Team | undefined>();
@@ -107,35 +115,39 @@ const validTeams = computed(() => myTeams.value.filter(team => team.format === f
 const modalOpen = ref(false);
 const errors = ref<Record<number, [string, string[]]>>({});
 const selectTeamMenu = ref<HTMLDivElement>();
+const filterFormats = ref<string[]>([]);
+const battleQuery = ref<string>("");
+const filteredRooms = computed(() => {
+  const q = battleQuery.value;
+  const f = filterFormats.value;
+  return rooms.value
+    .filter(room => !q || room.name.toLowerCase().includes(q.toLowerCase()))
+    .filter(room => !f.length || f.includes(room.format));
+});
 
 useTitle("Standoff");
 
 watch(format, () => (selectedTeam.value = validTeams.value[0]));
 
-const roomsRows = computed(() => rooms.value);
-
 const roomsCols = [
   { key: "type", label: "Type" },
   { key: "name", label: "Players" },
 ];
-const emptyState = {
+const emptyStateEmpty = {
   label: "There are currently no active battles. Be the first!",
   icon: "heroicons:circle-stack-20-solid",
 };
-const filterFormats = ref<string[]>([]);
-const battleQuery = ref<string>();
-
-onMounted(() => {
-  $conn.emit("getRooms", async result => {
-    rooms.value = await Promise.all(
-      result.map(async room => ({
-        name: room.battlers.map(pl => pl.name).join(" vs. "),
-        to: "/room/" + room.id,
-        format: room.format,
-      })),
-    );
-  });
+const emptyStateFilter = {
+  label: "No battles match this query.",
+  icon: "heroicons:magnifying-glass-20-solid",
+};
+const emptyState = computed(() => {
+  return filterFormats.value.length || battleQuery.value.length
+    ? emptyStateFilter
+    : emptyStateEmpty;
 });
+
+onMounted(() => loadRooms());
 
 onUnmounted(() => {
   if (findingMatch.value) {
@@ -217,5 +229,20 @@ const enterMatchmaking = () => {
       cancelling.value = false;
     });
   }
+};
+
+const loadRooms = () => {
+  loadingRooms.value = true;
+  $conn.emit("getRooms", async result => {
+    await delay(200);
+    rooms.value = await Promise.all(
+      result.map(async room => ({
+        name: room.battlers.map(pl => pl.name).join(" vs. "),
+        to: "/room/" + room.id,
+        format: room.format,
+      })),
+    );
+    loadingRooms.value = false;
+  });
 };
 </script>

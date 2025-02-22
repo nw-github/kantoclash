@@ -50,6 +50,8 @@ export const roundTo = (num: number, places: number = 1) => {
 
 export const randChoice = <T>(arr: T[]) => arr[Math.floor(Math.random() * arr.length)];
 
+export const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
 const dmgStatusTable: Record<Status, string> = {
   brn: "burn the target. ",
   par: "paralyze the target. ",

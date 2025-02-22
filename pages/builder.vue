@@ -32,18 +32,31 @@
     <div class="flex justify-center h-full">
       <div class="w-max">
         <div
-          v-if="!myTeams.length"
+          v-if="!filteredTeams.length"
           class="flex flex-col items-center justify-center flex-1 px-6 py-14 sm:px-14"
         >
-          <UIcon
-            name="i-heroicons:circle-stack-20-solid"
-            class="size-6 mx-auto text-gray-400 dark:text-gray-500 mb-4"
-          />
-          <p class="text-sm text-center text-gray-900 dark:text-white">You don't have any teams</p>
+          <template v-if="!filterFormats.length && !query">
+            <UIcon
+              name="i-heroicons:circle-stack-20-solid"
+              class="size-6 mx-auto text-gray-400 dark:text-gray-500 mb-4"
+            />
+            <p class="text-sm text-center text-gray-900 dark:text-white">
+              You don't have any teams.
+            </p>
+          </template>
+          <template v-else>
+            <UIcon
+              name="i-heroicons:circle-stack-20-solid"
+              class="size-6 mx-auto text-gray-400 dark:text-gray-500 mb-4"
+            />
+            <p class="text-sm text-center text-gray-900 dark:text-white">
+              No teams match this query.
+            </p>
+          </template>
         </div>
 
         <div
-          v-for="(team, i) in myTeams"
+          v-for="(team, i) in filteredTeams"
           :key="i"
           class="space-y-1 py-1 divide-y divide-gray-200 dark:divide-gray-800"
         >
@@ -98,7 +111,6 @@
 import { speciesList, type Species } from "~/game/species";
 
 const formats = ref<string[]>([]);
-const query = ref("");
 const toast = useToast();
 const myTeams = useMyTeams();
 const editingTeam = ref<Team>();
@@ -111,6 +123,16 @@ const open = computed({
   },
 });
 const isXS = useMediaQuery("(max-width: 480px)");
+
+const query = ref("");
+const filterFormats = ref<string[]>([]);
+const filteredTeams = computed(() => {
+  const q = query.value;
+  const f = filterFormats.value;
+  return myTeams.value
+    .filter(team => !q || team.name.toLowerCase().includes(q.toLowerCase()))
+    .filter(team => !f.length || f.includes(team.format));
+});
 
 useTitle("Team Builder");
 

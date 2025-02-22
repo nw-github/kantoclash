@@ -189,7 +189,6 @@ const onJoinRoom = (resp: JoinRoomResponse | "bad_room", fresh: boolean) => {
     }
   }
 
-  console.log("turns: ", resp.turns);
   if (fresh) {
     sequenceNo = resp.turns.length;
     turns.value = resp.turns;

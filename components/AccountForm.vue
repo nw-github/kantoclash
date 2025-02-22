@@ -1,44 +1,48 @@
 <template>
-  <UTabs v-model="currentTab" :items="items">
-    <template #item="{ index }">
-      <UForm
-        ref="form"
-        :schema="schema"
-        :state="state"
-        class="p-2 space-y-2 rounded-lg divide-y divide-gray-200 dark:divide-gray-800 ring-1 ring-gray-200 dark:ring-gray-800 shadow bg-white dark:bg-gray-900"
-        @submit="submit"
-      >
-        <div class="after:w-full after:border-1 space-y-2">
-          <UFormGroup label="Username" name="username" required>
-            <UInput ref="username" v-model="state.username" autofocus />
-          </UFormGroup>
-          <UFormGroup label="Password" name="password" required>
-            <UInput v-model="state.password" type="password" />
-          </UFormGroup>
-          <UFormGroup v-if="index === 1" label="Confirm Password" name="confirmPassword" required>
-            <UInput v-model="state.confirmPassword" type="password" />
-          </UFormGroup>
-        </div>
+  <div>
+    <UTabs v-model="currentTab" :items="items" />
+    <UForm
+      ref="form"
+      :schema="schema"
+      :state="state"
+      class="p-2 space-y-2 rounded-lg divide-y divide-gray-200 dark:divide-gray-800 ring-1 ring-gray-200 dark:ring-gray-800 shadow bg-white dark:bg-gray-900"
+      @submit="submit"
+    >
+      <div class="after:w-full after:border-1 space-y-2">
+        <UFormGroup label="Username" name="username" required>
+          <UInput v-model="state.username" autofocus />
+        </UFormGroup>
+        <UFormGroup label="Password" name="password" required>
+          <UInput v-model="state.password" type="password" />
+        </UFormGroup>
+        <UFormGroup
+          v-if="currentTab === 1"
+          label="Confirm Password"
+          name="confirmPassword"
+          required
+        >
+          <UInput v-model="state.confirmPassword" type="password" />
+        </UFormGroup>
+      </div>
 
-        <div class="pt-2">
-          <UButton
-            v-if="index === 1"
-            type="submit"
-            icon="material-symbols:person-add"
-            :label="!loading ? 'Sign Up' : 'Signing up...'"
-            :loading="loading"
-          />
-          <UButton
-            v-else
-            type="submit"
-            icon="material-symbols:login"
-            :label="!loading ? 'Log In' : 'Logging in...'"
-            :loading="loading"
-          />
-        </div>
-      </UForm>
-    </template>
-  </UTabs>
+      <div class="pt-2">
+        <UButton
+          v-if="currentTab === 1"
+          type="submit"
+          icon="material-symbols:person-add"
+          :label="!loading ? 'Sign Up' : 'Signing up...'"
+          :loading="loading"
+        />
+        <UButton
+          v-else
+          type="submit"
+          icon="material-symbols:login"
+          :label="!loading ? 'Log In' : 'Logging in...'"
+          :loading="loading"
+        />
+      </div>
+    </UForm>
+  </div>
 </template>
 
 <script setup lang="ts">
