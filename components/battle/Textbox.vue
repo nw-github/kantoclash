@@ -49,6 +49,18 @@
                 class="text-left"
               >
                 <span class="px-2">{{ playerInfo(player, id) }}</span>
+                <UTooltip :text="`${mutedPlayers.includes(id) ? 'Unmute' : 'Mute'} this player`">
+                  <UButton
+                    color="gray"
+                    variant="ghost"
+                    :icon="
+                      mutedPlayers.includes(id)
+                        ? 'heroicons-outline:speaker-x-mark'
+                        : 'heroicons-outline:speaker-wave'
+                    "
+                    @click="toggleMute(id)"
+                  />
+                </UTooltip>
               </UChip>
             </div>
           </template>
@@ -64,24 +76,24 @@
         <div class="events p-1">
           <component :is="() => turn" v-if="i > 0" />
           <p v-for="chat in chats[i] ?? []" :key="JSON.stringify(chat)">
-            <span v-if="chat.type === 'chat'">
-              <b>{{ players[chat.id!]?.name ?? "???" }}</b
+            <span v-if="chat.type === 'chat' && !mutedPlayers.includes(chat.id)">
+              <b>{{ players[chat.id]?.name ?? "???" }}</b
               >: {{ chat.message }}
             </span>
             <span
-              v-else-if="chat.type === 'userJoin'"
+              v-else-if="chat.type === 'userJoin' && !mutedPlayers.includes(chat.id)"
               class="text-sm text-gray-600 dark:text-gray-400"
             >
-              <b>{{ players[chat.id!]?.name ?? "???" }}</b> joined the room.
+              <b>{{ players[chat.id]?.name ?? "???" }}</b> joined the room.
             </span>
             <span
-              v-else-if="chat.type === 'userLeave'"
+              v-else-if="chat.type === 'userLeave' && !mutedPlayers.includes(chat.id)"
               class="text-sm text-gray-600 dark:text-gray-400"
             >
-              <b>{{ players[chat.id!]?.name ?? "???" }}</b> left the room.
+              <b>{{ players[chat.id]?.name ?? "???" }}</b> left the room.
             </span>
             <span v-else-if="chat.type === 'timerStart'">
-              The timer was started by <b>{{ players[chat.id!]?.name ?? "???" }}</b
+              The timer was started by <b>{{ players[chat.id]?.name ?? "???" }}</b
               >.
             </span>
           </p>
@@ -169,6 +181,7 @@
 </style>
 
 <script setup lang="ts">
+import { useMutedPlayerIds } from "~/composables/states";
 import type { InfoRecord } from "~/server/utils/gameServer";
 
 const props = defineProps<{
@@ -183,6 +196,7 @@ const emit = defineEmits<{
   (e: "forfeit" | "close"): void;
 }>();
 const myId = useMyId();
+const mutedPlayers = useMutedPlayerIds();
 const message = ref("");
 const scrollPoint = ref<HTMLDivElement>();
 const forfeitModalOpen = ref(false);
@@ -222,5 +236,14 @@ const playerInfo = (player: ClientPlayer, id: string) => {
     label += " (Spectator)";
   }
   return label;
+};
+
+const toggleMute = (id: string) => {
+  const index = mutedPlayers.value.indexOf(id);
+  if (index !== -1) {
+    mutedPlayers.value.splice(index, 1);
+  } else {
+    mutedPlayers.value.push(id);
+  }
 };
 </script>

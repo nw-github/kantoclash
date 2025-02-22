@@ -1,6 +1,6 @@
 type InfoChatMessage = {
   type: "chat";
-  id?: string;
+  id: string;
   message: string;
 };
 

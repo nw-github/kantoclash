@@ -31,7 +31,7 @@
                 @click="$colorMode.preference = $colorMode.value === 'dark' ? 'light' : 'dark'"
               />
             </ColorScheme>
-            <UPopover mode="hover" :popper="{ placement: 'bottom-start' }">
+            <UPopover mode="click" :popper="{ placement: 'bottom-start' }">
               <ClientOnly>
                 <UButton
                   :icon="
@@ -47,11 +47,11 @@
                 <div class="p-4 w-80 space-y-2">
                   <div>
                     <span>Music</span>
-                    <URange v-model="musicVol" :max="1" :step="0.01" />
+                    <URange v-model="musicVol" :max="0.8" :step="0.005" />
                   </div>
                   <div>
                     <span>Sound Effects</span>
-                    <URange v-model="sfxVol" :max="1" :step="0.01" />
+                    <URange v-model="sfxVol" :max="0.8" :step="0.005" />
                   </div>
                   <div v-if="currentTrack">
                     <span>Current Track</span>

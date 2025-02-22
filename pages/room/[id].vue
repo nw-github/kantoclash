@@ -61,10 +61,9 @@ let needsFreshStart = true;
 
 onMounted(() => {
   if ($conn.connected) {
-    $conn.emit("joinRoom", room, 0, resp => onJoinRoom(resp, true));
+    $conn.emit("joinRoom", room, 0, onJoinRoom);
   }
 
-  needsFreshStart = true;
   $conn.on("connect", onConnect);
   $conn.on("disconnect", onDisconnect);
   $conn.on("nextTurn", onNextTurn);
@@ -143,16 +142,19 @@ const displayErrorToast = (err?: string) => {
 
 const processMessage = (message: InfoMessage) => {
   if (message.type === "userJoin") {
-    const { name, isSpectator, nPokemon, id } = message;
-    players[id] = {
-      name,
-      isSpectator,
-      connected: true,
-      nPokemon,
-      nFainted: players[id]?.nFainted ?? 0,
-    };
-    if (!isSpectator && !battlers.value.includes(id)) {
-      battlers.value.push(id);
+    if (message.id in players) {
+      players[message.id].connected = true;
+      if (!battlers.value.includes(message.id) && !message.isSpectator) {
+        battlers.value.push(message.id);
+      }
+    } else {
+      players[message.id] = {
+        name: message.name,
+        isSpectator: message.isSpectator,
+        nPokemon: message.nPokemon,
+        nFainted: 0,
+        connected: true,
+      };
     }
   } else if (message.type === "userLeave") {
     players[message.id].connected = false;
@@ -161,7 +163,7 @@ const processMessage = (message: InfoMessage) => {
 
 // Event listeners
 
-const onJoinRoom = (resp: JoinRoomResponse | "bad_room", fresh: boolean) => {
+const onJoinRoom = (resp: JoinRoomResponse | "bad_room") => {
   const clearObj = (foo: Record<string, any>) => {
     for (const k in foo) {
       // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
@@ -183,13 +185,15 @@ const onJoinRoom = (resp: JoinRoomResponse | "bad_room", fresh: boolean) => {
   }
 
   for (const { id, name, nPokemon } of resp.battlers) {
-    if (!players[id]) {
+    if (!(id in players)) {
       players[id] = { name, isSpectator: false, connected: false, nPokemon, nFainted: 0 };
-      battlers.value.push(id);
+      if (!battlers.value.includes(id)) {
+        battlers.value.push(id);
+      }
     }
   }
 
-  if (fresh) {
+  if (needsFreshStart) {
     sequenceNo = resp.turns.length;
     turns.value = resp.turns;
     team.value = resp.team;
@@ -213,7 +217,7 @@ const onJoinRoom = (resp: JoinRoomResponse | "bad_room", fresh: boolean) => {
 
   status.value = "battle";
   title.value = battlers.value.map(id => players[id].name).join(" vs. ");
-  if (fresh) {
+  if (needsFreshStart) {
     battle.value!.onConnect();
   } else {
     for (let i = 0; i < resp.turns.length; i++) {
@@ -228,7 +232,7 @@ const onConnect = () => {
   timer.value = undefined;
 
   const sq = needsFreshStart ? 0 : sequenceNo;
-  $conn.emit("joinRoom", room, sq, resp => onJoinRoom(resp, needsFreshStart));
+  $conn.emit("joinRoom", room, sq, onJoinRoom);
 };
 
 const onDisconnect = (reason: Socket.DisconnectReason) => {
