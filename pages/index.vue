@@ -97,6 +97,7 @@ const emit = defineEmits<{ (e: "requestLogin"): void }>();
 
 const { $conn } = useNuxtApp();
 const { user } = useUserSession();
+const toast = useToast();
 const findingMatch = ref(false);
 const cancelling = ref(false);
 const rooms = ref<{ to: string; name: string; format: FormatId }[]>([]);
@@ -159,39 +160,56 @@ const enterMatchmaking = () => {
 
     const team = selectedTeam.value ? selectedTeam.value.pokemon.map(convertDesc) : undefined;
     $conn.emit("enterMatchmaking", team, format.value, (err, problems) => {
-      if (err) {
-        findingMatch.value = false;
-        if (!problems) {
-          return;
-        }
-
-        const issues: Record<number, [string, string[]]> = {};
-        for (const { path, message } of problems) {
-          const [pokemon, category, index] = path as [number, string, number | string];
-          const name =
-            team![pokemon]?.name ||
-            speciesList[team![pokemon]?.species]?.name ||
-            (pokemon !== undefined && `Pokemon ${pokemon + 1}`) ||
-            "General";
-          const arr = (issues[pokemon] ??= [name, []]);
-          if (category === "moves") {
-            if (index) {
-              arr[1].push(`Move '${team![pokemon].moves[index as number]}' is invalid: ${message}`);
-            } else {
-              arr[1].push(`Moves are invalid: ${message}`);
-            }
-          } else if (category === "statexp") {
-            arr[1].push(`'${toTitleCase(index as string)}' EV is invalid: ${message}`);
-          } else if (category === "dv") {
-            arr[1].push(`'${toTitleCase(index as string)}' IV is invalid: ${message}`);
-          } else {
-            arr[1].push(`${message}`);
-          }
-        }
-
-        errors.value = issues;
-        modalOpen.value = true;
+      if (!err) {
+        return;
       }
+
+      findingMatch.value = false;
+      if (err === "must_login") {
+        return toast.add({
+          title: "Matchmaking failed!",
+          description: "Try logging back in.",
+          icon: "material-symbols:error-circle-rounded-outline-sharp",
+        });
+      } else if (err === "too_many") {
+        return toast.add({
+          title: "Matchmaking failed!",
+          description: "You're already in too many battles.",
+          icon: "material-symbols:error-circle-rounded-outline-sharp",
+        });
+      } else if (!problems) {
+        return toast.add({
+          title: "Matchmaking failed for an unknown reason.",
+          icon: "material-symbols:error-circle-rounded-outline-sharp",
+        });
+      }
+
+      const issues: Record<number, [string, string[]]> = {};
+      for (const { path, message } of problems) {
+        const [pokemon, category, index] = path as [number, string, number | string];
+        const name =
+          team![pokemon]?.name ||
+          speciesList[team![pokemon]?.species]?.name ||
+          (pokemon !== undefined && `Pokemon ${pokemon + 1}`) ||
+          "General";
+        const arr = (issues[pokemon] ??= [name, []]);
+        if (category === "moves") {
+          if (index) {
+            arr[1].push(`Move '${team![pokemon].moves[index as number]}' is invalid: ${message}`);
+          } else {
+            arr[1].push(`Moves are invalid: ${message}`);
+          }
+        } else if (category === "statexp") {
+          arr[1].push(`'${toTitleCase(index as string)}' EV is invalid: ${message}`);
+        } else if (category === "dv") {
+          arr[1].push(`'${toTitleCase(index as string)}' IV is invalid: ${message}`);
+        } else {
+          arr[1].push(`${message}`);
+        }
+      }
+
+      errors.value = issues;
+      modalOpen.value = true;
     });
   } else {
     cancelling.value = true;

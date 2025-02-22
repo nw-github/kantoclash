@@ -9,7 +9,7 @@ import type {
   InfoReason,
 } from "./events";
 import { moveList, type MoveId } from "./moveList";
-import { Move } from "./moves";
+import { DamagingMove, Move } from "./moves";
 import type { Pokemon, Status } from "./pokemon";
 import { TransformedPokemon } from "./transformed";
 import {
@@ -183,7 +183,7 @@ export class Battle {
   readonly players: [Player, Player];
   private readonly events: BattleEvent[] = [];
   private readonly moveListToId;
-  private switchTurn = false;
+  private switchTurn = true;
   private _victor?: Player;
   readonly rng: Random;
   leadTurn = true;
@@ -458,17 +458,10 @@ export class ActivePokemon {
       return this.base.base.stats[stat];
     } else if (isCrit) {
       return this.base.stats[stat];
+    } else if (screen) {
+      return this.v.stats[stat] * 2;
     }
-
-    let res = this.v.stats[stat];
-    if (screen) {
-      res *= 2;
-      if (res > 1024) {
-        res -= res % 1024;
-      }
-    }
-
-    return res;
+    return this.v.stats[stat];
   }
 
   damage(
@@ -659,18 +652,19 @@ export class ActivePokemon {
 
   applyStatusDebuff() {
     if (this.base.status === "brn") {
-      this.v.stats.atk = Math.floor(Math.max(this.v.stats.atk / 2, 1));
+      this.v.stats.atk = Math.max(Math.floor(this.v.stats.atk / 2), 1);
     } else if (this.base.status === "par") {
-      this.v.stats.spe = Math.floor(Math.max(this.v.stats.spe / 4, 1));
+      this.v.stats.spe = Math.max(Math.floor(this.v.stats.spe / 4), 1);
     }
   }
 
   handleConfusionDamage(battle: Battle, target: ActivePokemon) {
+    const [atk, def] = DamagingMove.getDamageVariables(false, target, target, false);
     const dmg = calcDamage({
       lvl: this.base.level,
       pow: 40,
-      def: this.getStat("def", false, true, target.v.flags.reflect),
-      atk: this.v.stats.atk,
+      def,
+      atk,
       eff: 1,
       rand: false,
       isCrit: false,

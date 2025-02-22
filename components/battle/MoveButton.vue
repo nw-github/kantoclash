@@ -3,10 +3,18 @@
     <UButton
       @click="$emit('click')"
       :disabled="!option.valid"
-      class="flex justify-between content-center w-full border p-1 text-black"
+      class="flex justify-between content-center w-full p-1 text-black"
+      color="gray"
     >
-      <span class="text-sm sm:text-lg">{{ move.name }}</span>
-      <span> {{ option.pp !== undefined ? option.pp : "--" }}/{{ move.pp }} </span>
+      <div class="flex items-center">
+        <div class="pl-0.5 pr-1">
+          <img class="size-[24px]" :src="`/sprites/type/${move.type}.png`" :alt="move.type" />
+        </div>
+        <span class="text-sm sm:text-base text-ellipsis whitespace-nowrap overflow-hidden">
+          {{ move.name }}
+        </span>
+      </div>
+      <span class="text-xs">{{ option.pp !== undefined ? option.pp : "--" }}/{{ move.pp }}</span>
     </UButton>
 
     <template #panel>
@@ -47,31 +55,11 @@ const move = computed(() => moveList[props.option.move]);
 const category = computed(() => {
   return move.value.power ? (isSpecial(move.value.type) ? "special" : "physical") : "status";
 });
-const bgColor = computed(() => typeColor[move.value.type]);
-
-const hex2rgba = (rgb: string, a: number) => {
-  return `rgba(${rgb
-    .slice(1)
-    .match(/.{2}/g)!
-    .map(n => parseInt(n, 16))
-    .join(", ")}, ${a})`;
-};
 
 const categoryColor = { physical: "red", special: "gray", status: "gray" } as const;
 </script>
 
 <style scoped>
-button {
-  border-bottom: 0px;
-  background-image: linear-gradient(#fff, v-bind(bgColor));
-  border-color: v-bind("hex2rgba(bgColor, 0.8)");
-}
-
-button:hover,
-button:focus {
-  filter: brightness(110%);
-}
-
 .mb-number {
   display: inline-block;
   width: 30px;

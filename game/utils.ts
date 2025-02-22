@@ -61,7 +61,6 @@ export const calcDamage = ({
   isCrit,
   isStab,
   rand,
-  old,
 }: {
   lvl: number;
   pow: number;
@@ -71,30 +70,23 @@ export const calcDamage = ({
   isCrit: boolean;
   isStab: boolean;
   rand: number | Random | false;
-  old?: boolean;
 }) => {
-  const crit = isCrit ? 2 : 1;
+  if (eff === 0) {
+    return 0;
+  }
 
-  let dmg = idiv(idiv((idiv(2 * lvl * crit, 5) + 2) * pow * atk, def), 50) + 2;
+  lvl *= isCrit ? 2 : 1;
+  let dmg = Math.min(idiv(idiv((idiv(2 * lvl, 5) + 2) * pow * atk, def), 50), 997) + 2;
   if (isStab) {
     dmg += idiv(dmg, 2);
   }
+
   if (eff > 1) {
     dmg = idiv(dmg * 20, 10);
-    if (eff > 2) {
-      dmg = idiv(dmg * 20, 10);
-    }
+    dmg = eff > 2 ? idiv(dmg * 20, 10) : dmg;
   } else if (eff < 1) {
     dmg = idiv(dmg * 5, 10);
-    if (eff < 0.5) {
-      dmg = idiv(dmg * 5, 10);
-    }
-  }
-
-  if (old) {
-    dmg = Math.floor(
-      ((((2 * lvl * crit) / 5 + 2) * pow * (atk / def)) / 50 + 2) * (isStab ? 1.5 : 1) * eff,
-    );
+    dmg = eff < 0.5 ? idiv(dmg * 5, 10) : dmg;
   }
 
   let r = typeof rand === "number" ? rand : 255;

@@ -33,7 +33,7 @@ export interface ClientMessage {
   enterMatchmaking: (
     team: Gen1PokemonDesc[] | undefined,
     format: FormatId,
-    ack: (err?: "must_login" | "invalid_team", problems?: TeamProblems) => void,
+    ack: (err?: "must_login" | "invalid_team" | "too_many", problems?: TeamProblems) => void,
   ) => void;
   exitMatchmaking: (ack: () => void) => void;
 
@@ -88,6 +88,7 @@ type Account = {
   name: string;
   matchmaking?: FormatId;
   userRoom: string;
+  nActiveBattles: number;
 };
 
 class Room {
@@ -170,6 +171,9 @@ class Room {
         this.server
           .to(account.userRoom)
           .emit("nextTurn", this.id, result, player?.options, this.timerInfo(account));
+        if (this.battle.victor) {
+          account.nActiveBattles--;
+        }
       }
     }
 
@@ -245,7 +249,12 @@ export class GameServer extends SocketIoServer<ClientMessage, ServerMessage> {
     if (user) {
       console.log(`new connection: ${socket.id} from user: '${user.name}' (${user.id})`);
       if (!(socket.account = this.accounts.get(user.id))) {
-        const account: Account = { id: user.id, name: user.name, userRoom: `user:${user.id}` };
+        const account: Account = {
+          id: user.id,
+          name: user.name,
+          userRoom: `user:${user.id}`,
+          nActiveBattles: 0,
+        };
         this.accounts.set(user.id, account);
         socket.account = account;
       }
@@ -262,6 +271,10 @@ export class GameServer extends SocketIoServer<ClientMessage, ServerMessage> {
 
       if (account.matchmaking) {
         this.leaveMatchmaking(account);
+      }
+
+      if (account.nActiveBattles >= 5) {
+        return ack("too_many");
       }
 
       const problems = this.enterMatchmaking(account, format, team);
@@ -423,17 +436,13 @@ export class GameServer extends SocketIoServer<ClientMessage, ServerMessage> {
     // highly advanced matchmaking algorithm
     const mm = this.mmWaiting[format];
     if (mm) {
-      const roomId = uuid();
       const [opponent, opponentAcc] = mm;
       const [battle, turn0] = Battle.start(player, opponent, formatDescs[format].chooseLead);
-      const room = new Room(roomId, battle, turn0, format, this);
-      this.rooms.set(roomId, room);
+      const room = new Room(uuid(), battle, turn0, format, this);
+      this.rooms.set(room.id, room);
 
-      this.to(account.userRoom).emit("foundMatch", room.id);
-      this.to(opponentAcc.userRoom).emit("foundMatch", room.id);
-
-      this.leaveMatchmaking(account);
-      this.leaveMatchmaking(opponentAcc);
+      this.onFoundMatch(room, account);
+      this.onFoundMatch(room, opponentAcc);
     } else {
       this.mmWaiting[format] = [player, account];
       account.matchmaking = format;
@@ -471,6 +480,12 @@ export class GameServer extends SocketIoServer<ClientMessage, ServerMessage> {
       const acc = this.accounts.get(pl.id)!;
       return { name: acc.name, id: acc.id, nPokemon: pl.originalTeam.length };
     });
+  }
+
+  private onFoundMatch(room: Room, account: Account) {
+    account.nActiveBattles++;
+    this.to(account.userRoom).emit("foundMatch", room.id);
+    this.leaveMatchmaking(account);
   }
 
   destroyRoom(room: Room) {

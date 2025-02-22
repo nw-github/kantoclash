@@ -3,16 +3,19 @@
     class="flex h-full flex-col sm:flex-row p-4 overflow-auto rounded-lg dark:divide-gray-800 ring-1 ring-gray-200 dark:ring-gray-800 shadow space-x-4"
   >
     <div class="flex flex-col w-full items-center">
-      <div class="flex justify-between w-full">
-        <div class="relative w-full" v-if="runningTurn">
-          <div
-            class="absolute rounded-md bg-gray-300 dark:bg-gray-700 flex justify-center py-0.5 px-1"
-          >
-            <span class="text-lg">Turn {{ runningTurn }}</span>
-          </div>
+      <div class="flex w-full relative">
+        <div
+          class="rounded-md bg-gray-300 dark:bg-gray-700 flex justify-center py-0.5 px-1"
+          :class="[!runningTurn && 'invisible']"
+        >
+          <span class="text-lg font-medium">Turn {{ runningTurn }}</span>
         </div>
 
-        <TeamDisplay v-if="opponent" :player="players[opponent]" />
+        <TeamDisplay
+          v-if="opponent"
+          :player="players[opponent]"
+          class="absolute right-0 flex-col sm:flex-row"
+        />
       </div>
 
       <div class="flex">
@@ -46,8 +49,8 @@
       </div>
 
       <div class="w-full relative" v-if="players[perspective]">
-        <div class="absolute bottom-0 z-0 flex flex-row justify-between w-full p-0.5">
-          <TeamDisplay :player="players[perspective]" class="self-end" />
+        <div class="absolute bottom-0 z-0 flex flex-row justify-between w-full p-0.5 items-end">
+          <TeamDisplay :player="players[perspective]" class="self-end flex-col sm:flex-row" />
 
           <div class="flex flex-row">
             <UTooltip
@@ -117,7 +120,7 @@
         </div>
         <template v-else-if="!victor">
           <div v-if="isBattler && !isRunningTurn" class="italic">Waiting for opponent...</div>
-          <div v-else class="flex space-x-2">
+          <div v-else class="flex space-x-2 flex-wrap">
             <UButton v-if="!isBattler" @click="chosenPerspective = opponent" icon="mi:switch">
               Switch Sides
             </UButton>
@@ -602,13 +605,13 @@ const runTurn = async (turn: Turn, live: boolean, turnNo: number) => {
   liveEvents.value.length = 0;
   selectionText.value = "";
 
+  if (!turn.switchTurn) {
+    runningTurn.value++;
+  }
+
   htmlTurns.value.push([[], turn.switchTurn, runningTurn.value]);
   for (const e of turn.events) {
     await handleEvent(e);
-  }
-
-  if (!turn.switchTurn) {
-    runningTurn.value++;
   }
 
   skippingTurn.value = false;

@@ -248,6 +248,27 @@ export class DamagingMove extends Move {
     return dead;
   }
 
+  static getDamageVariables(
+    special: boolean,
+    user: ActivePokemon,
+    target: ActivePokemon,
+    isCrit: boolean,
+  ) {
+    const [atks, defs] = special ? (["spc", "spc"] as const) : (["atk", "def"] as const);
+
+    const ls = atks === "spc" && target.v.flags.light_screen;
+    const reflect = atks === "atk" && target.v.flags.reflect;
+
+    let atk = user.getStat(atks, isCrit);
+    let def = target.getStat(defs, isCrit, true, ls || reflect);
+    if (atk >= 256 || def >= 256) {
+      atk = Math.max(Math.floor(atk / 4) % 256, 1);
+      // defense doesn't get capped here on cart, potentially causing divide by 0
+      def = Math.max(Math.floor(def / 4) % 256, 1);
+    }
+    return [atk, def] as const;
+  }
+
   private getDamage(battle: Battle, user: ActivePokemon, target: ActivePokemon) {
     // https://bulbapedia.bulbagarden.net/wiki/Damage#Generation_I
     const eff = getEffectiveness(this.type, target.v.types);
@@ -299,17 +320,13 @@ export class DamagingMove extends Move {
     }
 
     const isCrit = battle.rand255(chance);
-    const [atks, defs] = isSpecial(this.type)
-      ? (["spc", "spc"] as const)
-      : (["atk", "def"] as const);
-    const ls = atks === "spc" && target.v.flags.light_screen;
-    const reflect = atks === "atk" && target.v.flags.reflect;
     const explosion = this.flag === "explosion" ? 2 : 1;
+    const [atk, def] = DamagingMove.getDamageVariables(isSpecial(this.type), user, target, isCrit);
     const dmg = calcDamage({
       lvl: user.base.level,
       pow: this.power!,
-      atk: user.getStat(atks, isCrit),
-      def: Math.floor(target.getStat(defs, isCrit, true, ls || reflect) / explosion),
+      atk,
+      def: Math.max(Math.floor(def / explosion), 1),
       isCrit,
       isStab: user.v.types.includes(this.type),
       rand: battle.rng,
