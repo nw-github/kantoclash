@@ -44,6 +44,7 @@
             <div class="p-2 space-y-1 flex flex-col">
               <UChip
                 v-for="(player, id) in players"
+                :key="id"
                 :color="players[id].connected ? 'lime' : 'red'"
                 class="text-left"
               >
@@ -56,13 +57,13 @@
     </template>
 
     <template #default>
-      <template v-for="([turn, switchTurn, turnNo], i) in turns">
-        <div class="bg-gray-300 dark:bg-gray-700 w-full px-1 py-0.5" v-if="i && !switchTurn">
+      <template v-for="([turn, switchTurn, turnNo], i) in turns" :key="i">
+        <div v-if="i && !switchTurn" class="bg-gray-300 dark:bg-gray-700 w-full px-1 py-0.5">
           <h2 class="text-xl font-bold">Turn {{ turnNo }}</h2>
         </div>
         <div class="events p-1">
-          <component v-if="i > 0" :is="() => turn" />
-          <p v-for="chat in chats[i] ?? []">
+          <component :is="() => turn" v-if="i > 0" />
+          <p v-for="chat in chats[i] ?? []" :key="JSON.stringify(chat)">
             <b v-if="chat.id && chat.type !== 'timerStart'">
               {{ players[chat.id!]?.name ?? "???" }}
             </b>
@@ -75,26 +76,26 @@
               >.
             </span>
           </p>
-          <component v-if="i === 0" :is="() => turn" />
+          <component :is="() => turn" v-if="i === 0" />
         </div>
       </template>
-      <div ref="scrollPoint"></div>
+      <div ref="scrollPoint" />
     </template>
 
     <template #footer>
       <UInput
-        placeholder="Send a message..."
         v-model="message"
-        @keyup.enter="sendMessage"
+        placeholder="Send a message..."
         :disabled="!myId"
+        @keyup.enter="sendMessage"
       >
         <template #trailing>
           <UButton
+            v-show="message !== ''"
             icon="material-symbols:send"
             variant="link"
             color="gray"
             :padded="false"
-            v-show="message !== ''"
             @click="sendMessage"
           />
         </template>
@@ -170,8 +171,7 @@ const props = defineProps<{
 }>();
 const emit = defineEmits<{
   (e: "chat", message: string): void;
-  (e: "forfeit"): void;
-  (e: "close"): void;
+  (e: "forfeit" | "close"): void;
 }>();
 const myId = useMyId();
 const message = ref("");

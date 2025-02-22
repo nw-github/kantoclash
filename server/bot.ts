@@ -57,6 +57,7 @@ export async function startBot(format: FormatId = "randoms", botFunction: BotFun
           console.log(`[${name}] finished game ${roomId} (${resp.format})`);
           $conn.emit("leaveRoom", roomId, () => {});
 
+          // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
           delete games[roomId];
           findMatch(resp.format);
         });
@@ -118,8 +119,8 @@ export async function startBot(format: FormatId = "randoms", botFunction: BotFun
           players[e.target].active!.status = "slp";
         }
 
-        if (e.why === "substitute") {
-        }
+        // if (e.why === "substitute") {
+        // }
       } else if (e.type === "status") {
         players[e.id].active!.status = e.status;
         if (e.id === myId) {
@@ -161,8 +162,8 @@ export async function startBot(format: FormatId = "randoms", botFunction: BotFun
       } else if (e.type === "conversion") {
         players[e.user].active!.conversion = e.types;
       } else if (e.type === "hit_sub") {
-        if (e.broken) {
-        }
+        // if (e.broken) {
+        // }
       }
     };
 
@@ -170,7 +171,7 @@ export async function startBot(format: FormatId = "randoms", botFunction: BotFun
       if (tries === 0) {
         console.error(`[${name}] Couldn't make a valid move after 3 tries, abandoning game.`);
         $conn.emit("chat", room, "Sorry, I couldn't figure out a move and must forfeit!", () => {});
-        $conn.emit("choose", room, 0, "forfeit", turnNo, err => {});
+        $conn.emit("choose", room, 0, "forfeit", turnNo, () => {});
 
         gameOver();
         return;

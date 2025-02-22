@@ -7,7 +7,7 @@ import {
   AlwaysFailMove,
   RecoveryMove,
 } from "../game/moves";
-import { type VolatileStats } from "../game/battle";
+import type { VolatileStats } from "../game/battle";
 import { moveList, type MoveId } from "../game/moveList";
 import type { SpeciesId } from "../game/species";
 import { volatileFlags, type Stages, type Type } from "../game/utils";

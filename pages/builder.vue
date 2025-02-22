@@ -4,13 +4,13 @@
       <h1 class="text-2xl text-center pb-5">Your Teams</h1>
       <div class="flex flex-col space-y-1 sm:space-y-0 sm:flex-row sm:space-x-2">
         <div class="flex space-x-1 w-full">
-          <FormatDropdown teamOnly multiple class="w-1/2" placeholder="Format" v-model="formats" />
+          <FormatDropdown v-model="formats" team-only multiple class="w-1/2" placeholder="Format" />
           <UInput
+            v-model="query"
             icon="heroicons:magnifying-glass-20-solid"
             :trailing="false"
             placeholder="Search..."
             class="w-full"
-            v-model="query"
           />
         </div>
         <div class="flex space-x-1">
@@ -43,7 +43,8 @@
         </div>
 
         <div
-          v-for="team in myTeams"
+          v-for="(team, i) in myTeams"
+          :key="i"
           class="space-y-1 py-1 divide-y divide-gray-200 dark:divide-gray-800"
         >
           <div class="flex justify-between items-end">
@@ -55,7 +56,11 @@
               </div>
             </div>
             <div>
-              <UTooltip v-for="{ icon, click, color, label } in dropdownItems(team)" :text="label">
+              <UTooltip
+                v-for="({ icon, click, color, label }, j) in dropdownItems(team)"
+                :key="j"
+                :text="label"
+              >
                 <UButton
                   :icon="icon"
                   variant="ghost"
@@ -67,7 +72,8 @@
           </div>
           <div class="flex justify-center">
             <Sprite
-              v-for="poke in team.pokemon"
+              v-for="(poke, j) in team.pokemon"
+              :key="j"
               :species="(speciesList as Record<string, Species>)[poke.species]"
               :scale="isXS ? 1.5 : 2"
               kind="box"
@@ -76,16 +82,16 @@
         </div>
       </div>
     </div>
-  </UCard>
 
-  <UModal v-model="open">
-    <TeamBuilder
-      v-if="editingTeam"
-      :team="editingTeam"
-      @delete="deleteTeam(editingTeam)"
-      @close="editingTeam = undefined"
-    />
-  </UModal>
+    <UModal v-model="open">
+      <TeamBuilder
+        v-if="editingTeam"
+        :team="editingTeam"
+        @delete="deleteTeam(editingTeam)"
+        @close="editingTeam = undefined"
+      />
+    </UModal>
+  </UCard>
 </template>
 
 <script setup lang="ts">

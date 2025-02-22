@@ -1,15 +1,15 @@
 <template>
   <div class="relative">
-    <slot></slot>
+    <slot />
 
     <Transition appear mode="out-in">
       <ul
+        v-if="open"
+        ref="container"
         class="absolute z-30 max-h-60 p-0.5 focus:outline-none overflow-y-auto scroll-py-1 ring-1 ring-gray-200 dark:ring-gray-700 rounded-md shadow-lg bg-white dark:bg-gray-800"
         :class="base"
-        ref="container"
-        v-if="open"
       >
-        <li class="pb-1" v-if="searchable">
+        <li v-if="searchable" class="pb-1">
           <UInput
             v-model="modelQuery"
             placeholder="Search..."
@@ -21,16 +21,17 @@
 
         <li
           v-for="(item, i) in filteredItems"
+          :key="i"
           class="cursor-default select-none relative flex items-center justify-between gap-1 rounded-md px-1.5 py-1 text-sm text-gray-900 dark:text-white"
           :class="[hovered === i && 'bg-gray-100 dark:bg-gray-900 hovered']"
           @click="select(i)"
           @mouseover="hovered = i"
           @mouseleave="hovered = hovered === i ? -1 : hovered"
         >
-          <slot :item :index="i" name="item"></slot>
+          <slot :item :index="i" name="item" />
         </li>
 
-        <li class="text-center text-sm" v-if="!filteredItems.length">
+        <li v-if="!filteredItems.length" class="text-center text-sm">
           <slot name="empty">No Items.</slot>
         </li>
       </ul>

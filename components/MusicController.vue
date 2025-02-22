@@ -1,5 +1,5 @@
 <template>
-  <audio ref="musicController" loop :src="track" autoplay></audio>
+  <audio ref="musicController" loop :src="track" autoplay />
 </template>
 
 <script setup lang="ts">

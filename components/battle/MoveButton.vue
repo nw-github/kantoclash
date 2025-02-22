@@ -1,10 +1,10 @@
 <template>
   <UPopover mode="hover" :popper="{ placement: 'auto' }">
     <UButton
-      @click="$emit('click')"
       :disabled="!option.valid"
       class="flex justify-between content-center w-full p-1 text-black"
       color="gray"
+      @click="$emit('click')"
     >
       <div class="flex items-center">
         <div class="pl-0.5 pr-1">

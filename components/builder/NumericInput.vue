@@ -1,10 +1,10 @@
 <template>
   <UInput
     v-model.number="text"
+    :color="hasError ? 'red' : undefined"
+    :max-length="max && String(max).length"
     @keydown="checkDigit"
     @paste="checkPaste"
-    :color="hasError ? 'red' : undefined"
-    :maxLength="max && String(max).length"
   />
 </template>
 

@@ -1,32 +1,34 @@
 <template>
-  <template v-if="status === 'loading'">
-    <div class="flex gap-2">
-      <UIcon name="line-md:loading-loop" class="size-6" />
-      <span class="text-xl">Loading...</span>
-    </div>
-  </template>
-  <template v-else-if="status === 'notfound'">
-    <h1>Room not found.</h1>
-  </template>
+  <div class="w-full h-full">
+    <template v-if="status === 'loading'">
+      <div class="flex gap-2">
+        <UIcon name="line-md:loading-loop" class="size-6" />
+        <span class="text-xl">Loading...</span>
+      </div>
+    </template>
+    <template v-else-if="status === 'notfound'">
+      <h1>Room not found.</h1>
+    </template>
 
-  <Battle
-    ref="battle"
-    :team
-    :options
-    :players
-    :turns
-    :chats
-    :battlers
-    :timer
-    @chat="sendChat"
-    @forfeit="() => makeChoice('forfeit')"
-    @move="i => makeChoice('move', i)"
-    @switch="i => makeChoice('switch', i)"
-    @cancel="cancelMove"
-    @timer="startTimer"
-  />
+    <Battle
+      ref="battle"
+      :team
+      :options
+      :players
+      :turns
+      :chats
+      :battlers
+      :timer
+      @chat="sendChat"
+      @forfeit="() => makeChoice('forfeit')"
+      @move="i => makeChoice('move', i)"
+      @switch="i => makeChoice('switch', i)"
+      @cancel="cancelMove"
+      @timer="startTimer"
+    />
 
-  <MusicController />
+    <MusicController />
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -121,8 +123,6 @@ const displayErrorToast = (err?: string) => {
       title: "Your message has been blocked",
       icon: "material-symbols:chat-error-outline-rounded",
     });
-  } else if (err === "bad_room") {
-    toast.add({ title: "This room has expired", icon: "material-symbols:chat-info-outline" });
   } else if (err === "not_in_room") {
     toast.add({
       title: "You must join this room first (Try reloading the page)",
@@ -164,6 +164,7 @@ const processMessage = (message: InfoMessage) => {
 const onJoinRoom = (resp: JoinRoomResponse | "bad_room", fresh: boolean) => {
   const clearObj = (foo: Record<string, any>) => {
     for (const k in foo) {
+      // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
       delete foo[k];
     }
   };

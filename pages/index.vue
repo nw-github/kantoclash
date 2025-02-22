@@ -16,19 +16,19 @@
       <ClientOnly>
         <div ref="selectTeamMenu">
           <USelectMenu
+            v-model="selectedTeam"
             searchable
             placeholder="Select Team..."
-            v-model="selectedTeam"
             :options="validTeams"
             :disabled="!formatInfo[format].needsTeam || findingMatch"
             option-attribute="name"
           />
         </div>
       </ClientOnly>
-      <UButton @click="enterMatchmaking" :color="findingMatch ? 'red' : 'primary'">
+      <UButton :color="findingMatch ? 'red' : 'primary'" @click="enterMatchmaking">
         {{ cancelling ? "Cancelling..." : findingMatch ? "Cancel" : "Find Match" }}
 
-        <template #leading v-if="findingMatch || cancelling">
+        <template v-if="findingMatch || cancelling" #leading>
           <UIcon name="heroicons:arrow-path-20-solid" class="animate-spin size-5" />
         </template>
       </UButton>
@@ -64,34 +64,33 @@
         </template>
       </UTable>
     </div>
-  </div>
 
-  <UModal v-model="modalOpen">
-    <UAlert
-      title="Your team is invalid!"
-      :actions="[
-        // Bring user to teambuilder
-        // { variant: 'solid', color: 'primary', label: 'Fix', click: () =>  },
-        { variant: 'solid', color: 'primary', label: 'OK', click: () => (modalOpen = false) },
-      ]"
-    >
-      <template #description>
-        <div class="max-h-60 overflow-auto">
-          <div v-for="[poke, problems] in errors">
-            <span>{{ poke }}</span>
-            <ul class="list-disc pl-8">
-              <li v-for="problem in problems">{{ problem }}</li>
-            </ul>
+    <UModal v-model="modalOpen">
+      <UAlert
+        title="Your team is invalid!"
+        :actions="[
+          // Bring user to teambuilder
+          // { variant: 'solid', color: 'primary', label: 'Fix', click: () =>  },
+          { variant: 'solid', color: 'primary', label: 'OK', click: () => (modalOpen = false) },
+        ]"
+      >
+        <template #description>
+          <div class="max-h-60 overflow-auto">
+            <div v-for="([poke, problems], i) in errors" :key="i">
+              <span>{{ poke }}</span>
+              <ul class="list-disc pl-8">
+                <li v-for="(problem, j) in problems" :key="j">{{ problem }}</li>
+              </ul>
+            </div>
           </div>
-        </div>
-      </template>
-    </UAlert>
-  </UModal>
+        </template>
+      </UAlert>
+    </UModal>
+  </div>
 </template>
 
 <script setup lang="ts">
 import { speciesList } from "~/game/species";
-import type { RoomDescriptor } from "~/server/utils/gameServer";
 
 const emit = defineEmits<{ (e: "requestLogin"): void }>();
 

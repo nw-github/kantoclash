@@ -2,8 +2,8 @@
   <UCard :ui="{ header: { padding: 'p-4 sm:p-4' }, body: { padding: 'p-0 sm:p-0' } }">
     <template #header>
       <div class="flex space-x-1">
-        <FormatDropdown class="w-1/2" placeholder="Format" v-model="team.format" teamOnly />
-        <UInput :trailing="false" placeholder="Team name" class="w-full" v-model="team.name" />
+        <FormatDropdown v-model="team.format" class="w-1/2" placeholder="Format" team-only />
+        <UInput v-model="team.name" :trailing="false" placeholder="Team name" class="w-full" />
 
         <div class="flex space-x-0.5">
           <!-- <UButton icon="material-symbols:save-outline" color="gray" variant="ghost" /> -->
@@ -28,11 +28,11 @@
     </template>
 
     <UTabs
+      v-model="selectedPoke"
       orientation="vertical"
       class="flex gap-2 pr-2"
       :items="items"
       :ui="{ list: { width: 'w-min', rounded: 'rounded-tl-none', tab: { height: 'h-min' } } }"
-      v-model="selectedPoke"
     >
       <template #default="{ item }">
         <div class="size-[64px] m-1">
@@ -79,8 +79,8 @@
                   icon="material-symbols:add-2"
                   variant="ghost"
                   color="gray"
-                  @click="addPokemon"
                   :disabled="props.team.pokemon.length >= 6"
+                  @click="addPokemon"
                 />
               </UTooltip>
               <UTooltip text="Delete Pokemon">
@@ -96,18 +96,18 @@
           </div>
 
           <UCard
+            v-if="selectedTab === 0"
             class="flex grow"
             :ui="{
               body: { base: 'flex flex-col gap-2 grow justify-between', padding: 'p-2 sm:p-2' },
             }"
-            v-if="selectedTab === 0"
           >
             <div class="flex space-x-2">
               <div class="flex flex-col">
                 <PokemonSelector v-model="item.poke.species" :team="team" />
                 <UInput
-                  :maxlength="24"
                   v-model="item.poke.name"
+                  :maxlength="24"
                   :placeholder="item.species?.name ?? ''"
                 >
                   <template #trailing>
@@ -121,20 +121,25 @@
                 <div class="flex justify-between items-center">
                   <span>Level</span>
                   <NumericInput
+                    v-model="item.poke.level"
                     class="w-20"
                     placeholder="100"
                     :min="1"
                     :max="100"
-                    v-model="item.poke.level"
                   />
                 </div>
-                <MoveSelector v-for="(_, i) in 4" :poke="item.poke" v-model="item.poke.moves[i]" />
+                <MoveSelector
+                  v-for="(_, i) in 4"
+                  :key="i"
+                  v-model="item.poke.moves[i]"
+                  :poke="item.poke"
+                />
               </div>
             </div>
             <div class="grid items-center grid-cols-[auto,1fr,auto,auto,auto,auto] gap-1">
-              <template v-for="stat in statKeys">
+              <template v-for="stat in statKeys" :key="stat">
                 <span class="px-1.5">{{ statName[stat] }}</span>
-                <URange :min="0" :max="255" color="green" v-model="item.poke.evs[stat]" />
+                <URange v-model="item.poke.evs[stat]" :min="0" :max="255" color="green" />
                 <span class="text-center px-1.5 min-w-8 text-xs">
                   {{ item.poke.evs[stat] }}
                 </span>
@@ -145,16 +150,16 @@
                   :placeholder="String(dvToIv(getHpDvFromEvs(item.poke)))"
                 />
                 <NumericInput
+                  v-else
+                  v-model="item.poke.ivs[stat]"
                   class="w-10"
                   placeholder="31"
                   :min="0"
                   :max="31"
-                  v-model="item.poke.ivs[stat]"
-                  v-else
                 />
 
                 <template v-if="item.species">
-                  <span class="text-center px-1.5 min-w-10 text-gray-500" v-if="item.species">
+                  <span v-if="item.species" class="text-center px-1.5 min-w-10 text-gray-500">
                     {{ calcPokeStat(stat, item.poke) }}
                   </span>
                   <span
@@ -172,10 +177,10 @@
             </div>
           </UCard>
           <UTextarea
-            class="grow"
             v-else
-            :ui="{ base: 'h-full min-h-80', rounded: 'rounded-lg' }"
             v-model="textAreaText"
+            class="grow"
+            :ui="{ base: 'h-full min-h-80', rounded: 'rounded-lg' }"
             @change="team.pokemon[item.teamIndex] = parsePokemon(textAreaText.trim())"
           >
             <UButton
@@ -205,7 +210,7 @@ import { speciesList, type Species, type SpeciesId } from "@/game/species";
 import { statKeys, type Stats } from "@/game/utils";
 import { evToStatexp, ivToDv } from "~/utils/pokemon";
 
-defineEmits<{ (e: "delete"): void; (e: "close"): void }>();
+defineEmits<{ (e: "delete" | "close"): void }>();
 
 const statName: Record<keyof Stats, string> = {
   hp: "HP",

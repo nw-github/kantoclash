@@ -1,6 +1,6 @@
 import { v4 as uuid } from "uuid";
-import { Server as SocketIoServer, Socket as SocketIoClient } from "socket.io";
-import { Pokemon } from "../../game/pokemon";
+import { Server as SocketIoServer, type Socket as SocketIoClient } from "socket.io";
+import type { Pokemon } from "../../game/pokemon";
 import { Battle, type Options, Player, type Turn } from "../../game/battle";
 import { type FormatId, type TeamProblems, formatDescs } from "../../utils/formats";
 import type { User } from "#auth-utils";
@@ -452,6 +452,7 @@ export class GameServer extends SocketIoServer<ClientMessage, ServerMessage> {
   private leaveMatchmaking(account: Account) {
     const format = account.matchmaking;
     if (format && this.mmWaiting[format]?.[1] === account) {
+      // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
       delete this.mmWaiting[format];
     }
     delete account.matchmaking;

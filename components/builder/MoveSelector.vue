@@ -1,20 +1,20 @@
 <template>
   <Selector
-    base="w-80 right-0 mt-1"
+    ref="selector"
     v-model:open="open"
     v-model:query="query"
+    base="w-80 right-0 mt-1"
     :items
     :filter
     @chose="onChoose"
-    ref="selector"
   >
     <UInput
+      v-model="query"
       placeholder="Add move..."
+      :color="isIllegal(normalizeName(query)) ? 'red' : undefined"
       @focus="open = true"
       @update:model-value="open = true"
       @keydown.tab="open = false"
-      v-model="query"
-      :color="isIllegal(normalizeName(query)) ? 'red' : undefined"
     />
 
     <template #item="{ item: [id, move] }">
@@ -43,12 +43,12 @@
 </template>
 
 <script setup lang="ts">
-import { type MoveId } from "@/game/moveList";
+import type { MoveId } from "@/game/moveList";
 import { speciesList, type Species, type SpeciesId } from "@/game/species";
 import type { Move } from "@/game/moves";
 import { moveListEntries as items } from "#imports";
 
-const query = defineModel({ default: "" });
+const query = defineModel<string>({ default: "" });
 const { poke } = defineProps<{ poke?: PokemonDesc }>();
 const open = ref(false);
 

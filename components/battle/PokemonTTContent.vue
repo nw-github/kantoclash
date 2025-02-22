@@ -4,7 +4,7 @@
       <span>{{ species.name }}</span>
 
       <div class="flex space-x-1">
-        <TypeBadge v-for="type in species.types" :type="type" />
+        <TypeBadge v-for="type in species.types" :key="type" :type="type" />
       </div>
     </div>
 
@@ -22,7 +22,7 @@
     <div class="flex space-x-1">
       <template v-for="(val, stat) in poke.stats">
         <template v-if="stat !== 'hp'">
-          <UBadge color="black" :class="statClass(stat)">
+          <UBadge :key="stat" color="black" :class="statClass(stat)">
             <span>{{ active?.stats?.[stat] ?? val }}</span>
             {{ toTitleCase(stat) }}
           </UBadge>
@@ -31,7 +31,7 @@
     </div>
 
     <ul class="pl-10 list-disc">
-      <li v-for="(move, i) in poke.moves">
+      <li v-for="(move, i) in poke.moves" :key="move">
         {{ moveList[move].name }} ({{ poke.pp[i] }}/{{ moveList[move].pp }})
       </li>
     </ul>

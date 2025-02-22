@@ -20,15 +20,15 @@
 
       <div class="flex">
         <div class="order-2">
-          <ActivePokemon :poke="players[opponent]?.active" ref="frontPokemon" />
+          <ActivePokemon ref="frontPokemon" :poke="players[opponent]?.active" />
         </div>
 
         <div class="pb-2 sm:pb-0">
-          <div class="h-10 sm:h-14"></div>
+          <div class="h-10 sm:h-14" />
           <ActivePokemon
+            ref="backPokemon"
             :poke="players[perspective]?.active"
             :base="perspective === myId ? activeInTeam : undefined"
-            ref="backPokemon"
             back
           />
         </div>
@@ -48,7 +48,7 @@
         </div>
       </div>
 
-      <div class="w-full relative" v-if="players[perspective]">
+      <div v-if="players[perspective]" class="w-full relative">
         <div class="absolute bottom-0 z-0 flex flex-row justify-between w-full p-0.5 items-end">
           <TeamDisplay :player="players[perspective]" class="self-end flex-col sm:flex-row" />
 
@@ -67,22 +67,22 @@
                 class="my-1"
                 leading-icon="material-symbols:alarm-add-outline"
                 variant="ghost"
-                @click="$emit('timer')"
                 :color="timeLeft <= 10 ? 'red' : 'gray'"
                 :disabled="!players[myId] || players[myId].isSpectator || !!victor || !!timer"
                 :label="timer && !options ? '--' : timer ? `${Math.max(timeLeft, 0)}` : ''"
+                @click="$emit('timer')"
               />
             </UTooltip>
 
-            <div class="min-[900px]:hidden p-2 flex justify-end items-start" ref="menuDiv">
+            <div ref="menuDiv" class="min-[900px]:hidden p-2 flex justify-end items-start">
               <UTooltip text="Open Chat" :popper="{ placement: 'top' }">
                 <UChip :show="unseen !== 0" :text="unseen" size="xl">
                   <UButton
+                    ref="menuButton"
                     icon="material-symbols:chat-outline"
                     variant="link"
                     color="gray"
                     @click="(slideoverOpen = true), (unseen = 0)"
-                    ref="menuButton"
                   />
                 </UChip>
               </UTooltip>
@@ -98,7 +98,12 @@
           <div class="grid gap-2 sm:grid-cols-[1fr,1.5fr] h-min">
             <div class="flex flex-col gap-1 sm:gap-2">
               <template v-for="(option, i) in options.moves">
-                <MoveButton v-if="option.display" :option="option" @click="selectMove(i)" />
+                <MoveButton
+                  v-if="option.display"
+                  :key="i"
+                  :option="option"
+                  @click="selectMove(i)"
+                />
               </template>
               <div v-if="!options.moves.length && activeIndex === -1">Choose your lead</div>
             </div>
@@ -106,6 +111,7 @@
             <div class="grid grid-cols-2 gap-1 sm:gap-2 items-center">
               <SwitchButton
                 v-for="(poke, i) in team"
+                :key="i"
                 :poke="poke"
                 :disabled="i === activeIndex || !options.canSwitch"
                 :active="i === activeIndex"
@@ -114,27 +120,27 @@
             </div>
           </div>
         </template>
-        <div class="cancel" v-else-if="options && !isRunningTurn">
+        <div v-else-if="options && !isRunningTurn" class="cancel">
           <div class="italic">{{ selectionText }}...</div>
-          <UButton @click="cancelMove" color="red">Cancel</UButton>
+          <UButton color="red" @click="cancelMove">Cancel</UButton>
         </div>
         <template v-else-if="!victor">
           <div v-if="isBattler && !isRunningTurn" class="italic">Waiting for opponent...</div>
           <div v-else class="flex space-x-2 flex-wrap">
-            <UButton v-if="!isBattler" @click="chosenPerspective = opponent" icon="mi:switch">
+            <UButton v-if="!isBattler" icon="mi:switch" @click="chosenPerspective = opponent">
               Switch Sides
             </UButton>
             <UButton
+              v-if="isRunningTurn"
               icon="material-symbols:skip-next"
               @click="skippingTurn = true"
-              v-if="isRunningTurn"
             >
               Skip
             </UButton>
             <UButton
+              v-if="isRunningTurn"
               icon="material-symbols:fast-forward"
               @click="skippingToTurn = turns.length"
-              v-if="isRunningTurn"
             >
               Skip All
             </UButton>
@@ -164,10 +170,10 @@
         :chats
         :victor
         :turns="htmlTurns"
+        closable
         @chat="message => $emit('chat', message)"
         @forfeit="$emit('forfeit')"
         @close="slideoverOpen = false"
-        closable
       />
     </USlideover>
   </div>
@@ -227,18 +233,16 @@ import { moveList, type MoveId } from "@/game/moveList";
 import { stageTable, type VNode } from "#imports";
 import type { ClientVolatileFlag } from "~/utils";
 import type { BattleTimer, InfoRecord } from "~/server/utils/gameServer";
-import { type ActivePokemon } from "#build/components";
+import type { ActivePokemon } from "#build/components";
 import type { AnimationType } from "./ActivePokemon.vue";
 
+// eslint-disable-next-line
 let timeLeft = 0;
 
 const emit = defineEmits<{
   (e: "chat", message: string): void;
-  (e: "forfeit"): void;
-  (e: "move", index: number): void;
-  (e: "switch", index: number): void;
-  (e: "timer"): void;
-  (e: "cancel"): void;
+  (e: "forfeit" | "timer" | "cancel"): void;
+  (e: "move" | "switch", index: number): void;
 }>();
 const { team, options, players, turns, chats, battlers, timer } = defineProps<{
   team?: Pokemon[];

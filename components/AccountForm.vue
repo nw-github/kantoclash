@@ -1,21 +1,21 @@
 <template>
-  <UTabs :items="items" v-model="currentTab">
+  <UTabs v-model="currentTab" :items="items">
     <template #item="{ index }">
       <UForm
+        ref="form"
         :schema="schema"
         :state="state"
-        @submit="submit"
-        ref="form"
         class="p-2 space-y-2 rounded-lg divide-y divide-gray-200 dark:divide-gray-800 ring-1 ring-gray-200 dark:ring-gray-800 shadow bg-white dark:bg-gray-900"
+        @submit="submit"
       >
         <div class="after:w-full after:border-1 space-y-2">
           <UFormGroup label="Username" name="username" required>
-            <UInput v-model="state.username" ref="username" autofocus />
+            <UInput ref="username" v-model="state.username" autofocus />
           </UFormGroup>
           <UFormGroup label="Password" name="password" required>
             <UInput v-model="state.password" type="password" />
           </UFormGroup>
-          <UFormGroup label="Confirm Password" name="confirmPassword" required v-if="index === 1">
+          <UFormGroup v-if="index === 1" label="Confirm Password" name="confirmPassword" required>
             <UInput v-model="state.confirmPassword" type="password" />
           </UFormGroup>
         </div>

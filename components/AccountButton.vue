@@ -1,5 +1,5 @@
 <template>
-  <UPopover mode="click" v-model="model" :popper="{ placement: 'bottom-end' }">
+  <UPopover v-model="model" mode="click" :popper="{ placement: 'bottom-end' }">
     <UButton icon="material-symbols:account-circle-full" variant="ghost" color="gray" />
     <template #panel>
       <div class="p-4">
@@ -13,9 +13,9 @@
             <div class="space-y-2">
               <UCheckbox label="Announce presence when spectating" />
               <UButton
-                @click="logout"
                 :label="!loading ? 'Log out' : 'Logging out...'"
                 :loading="loading"
+                @click="logout"
               />
             </div>
           </div>

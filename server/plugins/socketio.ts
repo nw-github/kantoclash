@@ -12,12 +12,13 @@ export default defineNitroPlugin(nitro => {
     "/socket.io/",
     defineEventHandler({
       async handler(event) {
-        // smuggle the user info to the socket io handler, where it can be accessed through
-        // socket.request
-        // @ts-ignore
+        // smuggle the user info to the socket io handler, where it can be accessed in GameServer
+        // through socket.request
+
+        // @ts-expect-error property __SOCKETIO_USER__ does not exist
         event.node.req.__SOCKETIO_USER__ = (await getUserSession(event)).user;
 
-        // @ts-ignore
+        // @ts-expect-error argument is not assignable
         engine.handleRequest(event.node.req, event.node.res);
         event._handled = true;
       },

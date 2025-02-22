@@ -1,12 +1,12 @@
 <template>
   <Selector
+    v-model:open="open"
     class="grow"
     base="w-[31rem] max-h-60 left-[-7rem]"
     :items
     searchable
     :filter
     @chose="onChoose"
-    v-model:open="open"
   >
     <div class="w-full h-full flex items-center justify-center">
       <div class="w-[128px] h-[117px] cursor-pointer flex items-center justify-center">
@@ -19,7 +19,7 @@
       </div>
     </div>
 
-    <template #item="{ item: [_, species] }">
+    <template #item="{ item: [, species] }">
       <div class="flex items-center gap-1">
         <Sprite :species="species" kind="box" :scale="1" />
         <span class="text-xs">{{ species.name }}</span>
@@ -28,6 +28,7 @@
       <div class="flex items-center gap-2">
         <img
           v-for="type in species.types"
+          :key="type"
           class="size-[24px]"
           :src="`/sprites/type/${type}.png`"
           :alt="type"
@@ -35,6 +36,7 @@
         <div class="flex items-center gap-0.5">
           <UBadge
             v-for="stat in statKeys"
+            :key="stat"
             color="white"
             class="w-11"
             size="xs"

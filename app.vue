@@ -47,19 +47,19 @@
                 <div class="p-4 w-80 space-y-2">
                   <div>
                     <span>Music</span>
-                    <URange :max="1" v-model="musicVol" :step="0.01" />
+                    <URange v-model="musicVol" :max="1" :step="0.01" />
                   </div>
                   <div>
                     <span>Sound Effects</span>
-                    <URange :max="1" v-model="sfxVol" :step="0.01" />
+                    <URange v-model="sfxVol" :max="1" :step="0.01" />
                   </div>
                   <div v-if="currentTrack">
                     <span>Current Track</span>
                     <USelectMenu
+                      v-model="currentTrack"
                       searchable
                       :options="musicTrackItems"
                       value-attribute="value"
-                      v-model="currentTrack"
                     />
                   </div>
                 </div>
@@ -70,7 +70,7 @@
         </nav>
       </template>
 
-      <NuxtPage @requestLogin="accountOpen = true" />
+      <NuxtPage @request-login="accountOpen = true" />
     </UCard>
   </UContainer>
 

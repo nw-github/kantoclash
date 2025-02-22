@@ -1,10 +1,10 @@
 <template>
   <UPopover mode="hover" :popper="{ placement: 'auto' }">
     <UButton
-      @click="$emit('click')"
       class="w-full"
       :disabled="disabled || !poke.hp"
       :color="active ? 'blue' : 'primary'"
+      @click="$emit('click')"
     >
       <div class="w-full space-y-0.5">
         <div class="flex items-center gap-1 w-full justify-start">
@@ -24,7 +24,7 @@
 
 <script setup lang="ts">
 import { speciesList } from "@/game/species";
-import { Pokemon } from "@/game/pokemon";
+import type { Pokemon } from "@/game/pokemon";
 
 defineEmits<{ (e: "click"): void }>();
 const props = defineProps<{ poke: Pokemon; disabled: boolean; active: boolean }>();

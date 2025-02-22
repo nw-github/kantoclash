@@ -2,8 +2,8 @@
   <div class="overflow-y-auto h-full overflow-x-hidden p-2">
     <div class="flex justify-between gap-2">
       <USelectMenu
-        :options="allSpecies"
         v-model="userSpecies"
+        :options="allSpecies"
         searchable
         class="grow"
         clear-search-on-close
@@ -12,8 +12,8 @@
     </div>
     <div class="flex justify-between gap-2">
       <USelectMenu
-        :options="allSpecies"
         v-model="targetSpecies"
+        :options="allSpecies"
         searchable
         class="grow"
         clear-search-on-close
@@ -32,11 +32,11 @@
     </div>
 
     <div class="py-2">
-      <USelectMenu :options="allMoves" multiple v-model="moves" searchable />
+      <USelectMenu v-model="moves" :options="allMoves" multiple searchable />
       <UButton label="Clear" @click="moves.length = 0" />
     </div>
 
-    <div v-for="[id, move, rolls, min, max] in moves.map(getRolls)" class="py-5">
+    <div v-for="[id, move, rolls, min, max] in moves.map(getRolls)" :key="id" class="py-5">
       <div>
         {{ id }} ({{ move.power ?? 0 }}), {{ move.type }}, {{ move.category }} | {{ min }}% -
         {{ max }}%
@@ -106,7 +106,7 @@ const verify = (id: MoveId, rolls: number[]) => {
     }
     errors[id] = mismatches.join(", ");
   } else {
-    delete errors[id];
+    errors[id] = undefined;
   }
 };
 

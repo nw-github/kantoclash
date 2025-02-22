@@ -6,15 +6,15 @@
     >
       <div class="flex justify-between flex-col sm:flex-row">
         <span class="font-bold">{{ poke?.name ?? "--" }}</span>
-        <span class="text-[0.75rem] sm:text-sm" v-if="poke">Lv. {{ poke.level }}</span>
+        <span v-if="poke" class="text-[0.75rem] sm:text-sm">Lv. {{ poke.level }}</span>
       </div>
       <div class="relative overflow-hidden rounded-md bg-[#333] flex">
-        <div class="hp-fill absolute h-full rounded-md"></div>
+        <div class="hp-fill absolute h-full rounded-md" />
         <div class="w-full text-center text-gray-100 text-xs sm:text-sm z-30">{{ hp }}%</div>
       </div>
       <div class="relative">
-        <div class="flex gap-1 flex-wrap absolute *:px-[0.2rem] *:py-[0.1rem]" v-if="poke">
-          <UBadge color="black" v-if="poke.transformed">Transformed</UBadge>
+        <div v-if="poke" class="flex gap-1 flex-wrap absolute *:px-[0.2rem] *:py-[0.1rem]">
+          <UBadge v-if="poke.transformed" color="black">Transformed</UBadge>
 
           <TypeBadge
             v-if="poke.charging"
@@ -23,7 +23,7 @@
           />
 
           <template v-if="!species!.types.every((ty, i) => ty === poke!.conversion?.[i])">
-            <TypeBadge v-for="type in poke.conversion" :type="type" />
+            <TypeBadge v-for="type in poke.conversion" :key="type" :type="type" />
           </template>
 
           <UBadge v-if="poke.status" :style="{ backgroundColor: statusColor[poke.status] }">
@@ -31,13 +31,13 @@
           </UBadge>
 
           <template v-for="(value, flag) in poke.flags">
-            <UBadge v-if="value && flag !== 'substitute'" :color="flagInfo[flag].color">
+            <UBadge v-if="value && flag !== 'substitute'" :key="flag" :color="flagInfo[flag].color">
               {{ flagInfo[flag].name }}
             </UBadge>
           </template>
 
           <template v-for="(val, stage) in poke.stages">
-            <UBadge v-if="val" :class="val > 0 ? 'up' : 'down'">
+            <UBadge v-if="val" :key="stage" :class="val > 0 ? 'up' : 'down'">
               {{ roundTo(stageMultipliers[val] / 100, 2) }}x {{ toTitleCase(stage) }}
             </UBadge>
           </template>
@@ -48,7 +48,7 @@
     <div class="flex flex-col items-center">
       <div class="w-[128px] h-[117px] sm:w-[256px] sm:h-[234px] items-center justify-center flex">
         <UPopover mode="hover" :popper="{ placement: 'top', offsetDistance: 0 }">
-          <div class="sprite z-20" :class="{ back, front: !back, invisible: !poke }" ref="sprite">
+          <div ref="sprite" class="sprite z-20" :class="{ back, front: !back, invisible: !poke }">
             <Sprite
               :species="species"
               :substitute="poke?.flags.substitute"
@@ -57,7 +57,7 @@
             />
           </div>
 
-          <template #panel v-if="poke">
+          <template v-if="poke" #panel>
             <div class="p-2">
               <template v-if="base && !poke.transformed">
                 <PokemonTTContent :poke="base" :active="poke" />
@@ -72,7 +72,7 @@
                       </span>
                     </span>
                     <div class="flex space-x-1">
-                      <TypeBadge v-for="type in species!.types" :type="type" />
+                      <TypeBadge v-for="type in species!.types" :key="type" :type="type" />
                     </div>
                   </div>
 
@@ -86,12 +86,12 @@
 
       <div class="relative flex justify-center">
         <div
-          class="absolute bottom-4 sm:bottom-8 bg-gray-200 dark:bg-gray-600 h-10 w-20 sm:h-16 sm:w-40 rounded-[100%]"
           ref="ground"
-        ></div>
+          class="absolute bottom-4 sm:bottom-8 bg-gray-200 dark:bg-gray-600 h-10 w-20 sm:h-16 sm:w-40 rounded-[100%]"
+        />
       </div>
 
-      <div class="pokeball absolute w-[42px] h-[42px] z-10 opacity-0" ref="pokeBall"></div>
+      <div ref="pokeBall" class="pokeball absolute w-[42px] h-[42px] z-10 opacity-0" />
     </div>
   </div>
 </template>
