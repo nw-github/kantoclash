@@ -1,9 +1,9 @@
 import { Pokemon } from "../game/pokemon";
 import { moveList, type MoveId } from "../game/moveList";
 import { speciesList, type Species, type SpeciesId } from "../game/species";
-import { AlwaysFailMove, Move } from "../game/moves";
+import { AlwaysFailMove, type Move } from "../game/moves";
 import random from "random";
-import { statKeys, type Stats } from "~/game/utils";
+import { statKeys } from "~/game/utils";
 import { z } from "zod";
 
 export const battleFormats = [

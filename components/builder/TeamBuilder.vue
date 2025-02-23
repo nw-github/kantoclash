@@ -79,7 +79,7 @@
                   icon="material-symbols:add-2"
                   variant="ghost"
                   color="gray"
-                  :disabled="props.team.pokemon.length >= 6"
+                  :disabled="team.pokemon.length >= 6"
                   @click="addPokemon"
                 />
               </UTooltip>
@@ -88,7 +88,7 @@
                   icon="material-symbols:delete-outline"
                   color="red"
                   variant="ghost"
-                  :disabled="props.team.pokemon.length < 2"
+                  :disabled="team.pokemon.length < 2"
                   @click="deletePokemon(index)"
                 />
               </UTooltip>
@@ -139,9 +139,9 @@
             <div class="grid items-center grid-cols-[auto,1fr,auto,auto,auto,auto] gap-1">
               <template v-for="stat in statKeys" :key="stat">
                 <span class="px-1.5">{{ statName[stat] }}</span>
-                <URange v-model="item.poke.evs[stat]" :min="0" :max="255" color="green" />
+                <URange v-model="item.evProxy[stat]" :min="0" :max="255" color="green" />
                 <span class="text-center px-1.5 min-w-8 text-xs">
-                  {{ item.poke.evs[stat] }}
+                  {{ item.evProxy[stat] }}
                 </span>
                 <NumericInput
                   v-if="stat === 'hp'"
@@ -220,16 +220,25 @@ const statName: Record<keyof Stats, string> = {
   spe: "Spe",
 };
 
-const props = defineProps<{ team: Team }>();
+const { team } = defineProps<{ team: Team }>();
 const toast = useToast();
 const items = computed(() => {
-  const pokemon = props.team.pokemon.map((poke, i) => ({
+  return team.pokemon.map((poke, i) => ({
     label: poke.name ?? "",
     poke,
     teamIndex: i,
     species: (speciesList as Record<string, Species>)[poke.species],
+    evProxy: reactive(
+      new Proxy(poke.evs, {
+        get(target, prop) {
+          return target[prop as keyof Stats] ?? 255;
+        },
+        set(target, prop, val) {
+          return (target[prop as keyof Stats] = val);
+        },
+      }),
+    ),
   }));
-  return pokemon;
 });
 const textAreaText = ref("");
 const selectedPoke = ref(0);
@@ -237,17 +246,13 @@ const selectedTab = ref(0);
 
 watch([selectedPoke, selectedTab], ([_, tab]) => {
   if (tab === 1) {
-    textAreaText.value = descToString(props.team.pokemon[selectedPoke.value]);
+    textAreaText.value = descToString(team.pokemon[selectedPoke.value]);
   }
 });
 
-for (const poke of props.team.pokemon) {
+for (const poke of team.pokemon) {
   for (let i = poke.moves.length; i < 4; i++) {
     poke.moves.push("");
-  }
-
-  for (const key of statKeys) {
-    poke.evs[key] ??= 255;
   }
 }
 
@@ -275,28 +280,28 @@ const calcPokeStat = (stat: keyof Stats, poke: PokemonDesc) => {
 };
 
 const deletePokemon = (i: number) => {
-  if (props.team.pokemon.length <= 1) {
+  if (team.pokemon.length <= 1) {
     return;
   }
 
-  const [poke] = props.team.pokemon.splice(i, 1);
-  if (selectedPoke.value >= props.team.pokemon.length) {
-    selectedPoke.value = props.team.pokemon.length - 1;
+  const [poke] = team.pokemon.splice(i, 1);
+  if (selectedPoke.value >= team.pokemon.length) {
+    selectedPoke.value = team.pokemon.length - 1;
   }
 
   const name = poke.name || speciesList[poke.species as SpeciesId]?.name || `Pokemon ${i + 1}`;
   toast.add({
     title: `${name} deleted!`,
-    actions: [{ label: "Undo", click: () => props.team.pokemon.splice(i, 0, poke) }],
+    actions: [{ label: "Undo", click: () => team.pokemon.splice(i, 0, poke) }],
   });
 };
 
 const addPokemon = async () => {
-  if (props.team.pokemon.length >= 6) {
+  if (team.pokemon.length >= 6) {
     return;
   }
 
-  const length = props.team.pokemon.push(parsePokemon(""));
+  const length = team.pokemon.push(parsePokemon(""));
   await nextTick();
   selectedPoke.value = length - 1;
 };
