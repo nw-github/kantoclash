@@ -35,7 +35,10 @@ export interface ClientMessage {
   enterMatchmaking: (
     team: Gen1PokemonDesc[] | undefined,
     format: FormatId,
-    ack: (err?: "must_login" | "invalid_team" | "too_many", problems?: TeamProblems) => void,
+    ack: (
+      err?: "must_login" | "invalid_team" | "too_many" | "maintenance",
+      problems?: TeamProblems,
+    ) => void,
   ) => void;
   exitMatchmaking: (ack: () => void) => void;
 
@@ -62,6 +65,9 @@ export interface ClientMessage {
     room: string,
     ack: (resp?: "bad_room" | "not_in_room" | "not_in_battle" | "already_on") => void,
   ) => void;
+
+  getMaintenance: (ack: (state: boolean) => void) => void;
+  setMaintenance: (state: boolean, ack: (ok: boolean) => void) => void;
 }
 
 export interface ServerMessage {
@@ -70,6 +76,8 @@ export interface ServerMessage {
   nextTurn: (room: string, turn: Turn, options?: Options, timer?: BattleTimer) => void;
   timerStart: (room: string, who: string, timer: BattleTimer) => void;
   info: (room: string, message: InfoMessage, turn: number) => void;
+
+  maintenanceState: (state: boolean) => void;
 }
 
 export type InfoRecord = Record<number, InfoMessage[]>;
@@ -88,6 +96,7 @@ const TURN_DECISION_TIME_MS = 45 * 1000;
 type Account = {
   id: string;
   name: string;
+  admin?: boolean;
   matchmaking?: FormatId;
   userRoom: string;
   activeBattles: Set<Room>;
@@ -246,8 +255,9 @@ class Room {
 
 export class GameServer extends SocketIoServer<ClientMessage, ServerMessage> {
   private accounts = new Map<string, Account>();
-  private mmWaiting: Partial<Record<FormatId, [Player, Account]>> = {};
+  private mmWaiting: Partial<Record<FormatId, Player>> = {};
   private rooms = new Map<string, Room>();
+  private maintenance = false;
 
   constructor(server?: any) {
     super(server);
@@ -265,6 +275,7 @@ export class GameServer extends SocketIoServer<ClientMessage, ServerMessage> {
         const account: Account = {
           id: user.id,
           name: user.name,
+          admin: user.admin,
           userRoom: `user:${user.id}`,
           activeBattles: new Set(),
         };
@@ -277,6 +288,10 @@ export class GameServer extends SocketIoServer<ClientMessage, ServerMessage> {
     }
 
     socket.on("enterMatchmaking", (team, format, ack) => {
+      if (this.maintenance) {
+        return ack("maintenance");
+      }
+
       const account = socket.account;
       if (!account) {
         return ack("must_login");
@@ -449,6 +464,21 @@ export class GameServer extends SocketIoServer<ClientMessage, ServerMessage> {
         // this.accounts.delete(account.id);
       }
     });
+    socket.on("getMaintenance", ack => ack(this.maintenance));
+    socket.on("setMaintenance", (state, ack) => {
+      if (!socket.account?.admin) {
+        return ack(false);
+      }
+
+      this.emit("maintenanceState", (this.maintenance = state));
+      for (const format in this.mmWaiting) {
+        const player = this.mmWaiting[format as FormatId];
+        if (player) {
+          this.leaveMatchmaking(this.accounts.get(player.id)!);
+        }
+      }
+      ack(this.maintenance);
+    });
   }
 
   private enterMatchmaking(account: Account, format: FormatId, team?: any) {
@@ -465,24 +495,27 @@ export class GameServer extends SocketIoServer<ClientMessage, ServerMessage> {
     }
 
     // highly advanced matchmaking algorithm
-    const mm = this.mmWaiting[format];
-    if (mm) {
-      const [opponent, opponentAcc] = mm;
+    const opponent = this.mmWaiting[format];
+    if (opponent) {
       const [battle, turn0] = Battle.start(player, opponent, formatDescs[format].chooseLead);
       const room = new Room(uuid(), battle, turn0, format, this);
       this.rooms.set(room.id, room);
 
       this.onFoundMatch(room, account);
-      this.onFoundMatch(room, opponentAcc);
+      this.onFoundMatch(room, this.accounts.get(opponent.id)!);
     } else {
-      this.mmWaiting[format] = [player, account];
+      this.mmWaiting[format] = player;
       account.matchmaking = format;
     }
   }
 
   private leaveMatchmaking(account: Account) {
     const format = account.matchmaking;
-    if (format && this.mmWaiting[format]?.[1] === account) {
+    if (
+      format &&
+      this.mmWaiting[format] &&
+      this.accounts.get(this.mmWaiting[format].id) === account
+    ) {
       // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
       delete this.mmWaiting[format];
     }

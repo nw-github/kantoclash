@@ -7,7 +7,10 @@
             <template #default="{ link, isActive }">
               <UTooltip
                 :text="link.vs"
-                :class="[link.vs && 'lg:inline-block', link.vs && links.length > 5 && 'hidden']"
+                :class="[
+                  link.vs && 'lg:inline-block',
+                  link.vs && links.length > nLinks + 3 && 'hidden',
+                ]"
               >
                 <div
                   class="text-ellipsis whitespace-nowrap overflow-hidden"
@@ -103,6 +106,7 @@
     </UCard>
   </UContainer>
 
+  <UModals />
   <UNotifications />
   <MusicController />
 </template>
@@ -118,11 +122,15 @@
 <script setup lang="ts">
 import { provideSSRWidth } from "@vueuse/core";
 import type { RoomDescriptor } from "./server/utils/gameServer";
+import type { WatchStopHandle } from "vue";
+import AlertModal from "./components/AlertModal.vue";
 
 provideSSRWidth(768);
 
 const { $conn } = useNuxtApp();
-const { user } = useUserSession();
+const { user, fetch } = useUserSession();
+const route = useRoute();
+const modal = useModal();
 const musicVol = useMusicVolume();
 const sfxVol = useSfxVolume();
 const currentTrack = useCurrentTrack();
@@ -145,6 +153,21 @@ const links = ref([
     to: "/builder",
   },
 ]);
+const nLinks = ref(2);
+
+watchImmediate(user, user => {
+  if (user?.admin) {
+    links.value.push({
+      label: "Admin Panel",
+      icon: "material-symbols:settings-outline",
+      to: "/admin",
+    });
+    nLinks.value = 3;
+  } else {
+    links.value.splice(2, 1);
+    nLinks.value = 2;
+  }
+});
 
 const roomToLink = (room: RoomDescriptor) => {
   return {
@@ -157,12 +180,12 @@ const roomToLink = (room: RoomDescriptor) => {
 
 const fetchMyRooms = () => {
   if (!user.value) {
-    links.value.splice(2, links.value.length - 2);
+    links.value.splice(nLinks.value, links.value.length - nLinks.value);
     return;
   }
 
   $conn.emit("getPlayerRooms", user.value.id, rooms => {
-    links.value.splice(2, links.value.length - 2);
+    links.value.splice(nLinks.value, links.value.length - nLinks.value);
     if (rooms !== "bad_player") {
       links.value.push(...rooms.map(roomToLink));
     }
@@ -170,7 +193,7 @@ const fetchMyRooms = () => {
 };
 
 watch(
-  () => useRoute().path,
+  () => route.path,
   path => {
     fetchMyRooms();
 
@@ -179,6 +202,8 @@ watch(
     }
   },
 );
+
+let cancelModalWatch: WatchStopHandle | undefined;
 
 onMounted(() => {
   $conn.on("connect", () => (connected.value = true));
@@ -192,7 +217,36 @@ onMounted(() => {
 
     navigateTo(`/room/${roomId}`);
   });
+  $conn.on("maintenanceState", enabled => {
+    if (route.path.startsWith("/admin")) {
+      return;
+    }
+
+    const props = {
+      title: "Maintenance Mode",
+      icon: "material-symbols:info-outline-rounded",
+      description: enabled
+        ? "The server will be going down for maintenance shortly. The ability to start new battles is now disabled."
+        : "Maintenance mode has been cancelled. The ability to start battles has been enabled.",
+      preventClose: true,
+      actions: [{ variant: "solid", color: "primary", label: "OK", click: () => modal.close() }],
+    };
+
+    if (modal.isOpen.value) {
+      if (cancelModalWatch) {
+        cancelModalWatch();
+      }
+
+      cancelModalWatch = watchOnce(modal.isOpen, () => {
+        modal.open(AlertModal, props);
+        cancelModalWatch = undefined;
+      });
+    } else {
+      modal.open(AlertModal, props);
+    }
+  });
 
   watchImmediate(user, fetchMyRooms);
+  fetch();
 });
 </script>

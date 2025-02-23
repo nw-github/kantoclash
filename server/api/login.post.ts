@@ -4,11 +4,12 @@ declare module "#auth-utils" {
   interface User {
     name: string;
     id: string;
+    admin?: boolean;
   }
 }
 
-export const USERS = new Map<string, { password: string; id: string }>([
-  ["admin", { password: "", id: "0" }],
+export const USERS = new Map<string, { password: string; id: string; admin?: boolean }>([
+  ["admin", { password: "", id: "0", admin: true }],
   ["user", { password: "", id: "1" }],
 ]);
 
@@ -22,6 +23,6 @@ export default defineEventHandler(async event => {
     throw createError({ statusCode: 401, message: "Bad credentials" });
   }
 
-  await setUserSession(event, { user: { name: username, id: user.id } });
+  await setUserSession(event, { user: { name: username, id: user.id, admin: user.admin } });
   return {};
 });

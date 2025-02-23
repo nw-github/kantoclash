@@ -70,6 +70,12 @@ export async function startBot(format: FormatId = "randoms", botFunction: BotFun
       }
     });
 
+    $conn.on("maintenanceState", enabled => {
+      if (!enabled) {
+        findMatch(format);
+      }
+    });
+
     findMatch(format);
   });
 
