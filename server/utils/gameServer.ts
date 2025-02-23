@@ -28,7 +28,9 @@ export type RoomDescriptor = {
 };
 
 export interface ClientMessage {
+  getRoom: (id: string, ack: (resp: "bad_room" | RoomDescriptor) => void) => void;
   getRooms: (ack: (rooms: RoomDescriptor[]) => void) => void;
+  getPlayerRooms: (player: string, ack: (resp: "bad_player" | RoomDescriptor[]) => void) => void;
 
   enterMatchmaking: (
     team: Gen1PokemonDesc[] | undefined,
@@ -88,7 +90,7 @@ type Account = {
   name: string;
   matchmaking?: FormatId;
   userRoom: string;
-  nActiveBattles: number;
+  activeBattles: Set<Room>;
 };
 
 class Room {
@@ -171,9 +173,12 @@ class Room {
         this.server
           .to(account.userRoom)
           .emit("nextTurn", this.id, result, player?.options, this.timerInfo(account));
-        if (this.battle.victor) {
-          account.nActiveBattles--;
-        }
+      }
+    }
+
+    if (this.battle.victor) {
+      for (const player of this.battle.players) {
+        this.server.onBattleEnded(player.id, this);
       }
     }
 
@@ -212,6 +217,14 @@ class Room {
       });
     }
     this.accounts.add(socket.account);
+  }
+
+  makeDescriptor() {
+    return {
+      id: this.id,
+      battlers: this.server.getBattlers(this),
+      format: this.format,
+    } satisfies RoomDescriptor;
   }
 
   async onSocketLeave(socket: Socket, server: GameServer, sockets?: Socket[]) {
@@ -253,7 +266,7 @@ export class GameServer extends SocketIoServer<ClientMessage, ServerMessage> {
           id: user.id,
           name: user.name,
           userRoom: `user:${user.id}`,
-          nActiveBattles: 0,
+          activeBattles: new Set(),
         };
         this.accounts.set(user.id, account);
         socket.account = account;
@@ -273,7 +286,7 @@ export class GameServer extends SocketIoServer<ClientMessage, ServerMessage> {
         this.leaveMatchmaking(account);
       }
 
-      if (account.nActiveBattles >= 5) {
+      if (account.activeBattles.size >= 5) {
         return ack("too_many");
       }
 
@@ -382,19 +395,37 @@ export class GameServer extends SocketIoServer<ClientMessage, ServerMessage> {
       ack();
       room.sendMessage({ type: "chat", message, id: socket.account.id });
     });
-    socket.on("getRooms", ack =>
+    socket.on("getRoom", (id, ack) => {
+      const room = this.rooms.get(id);
+      if (!room) {
+        return ack("bad_room");
+      }
+
+      return ack(room.makeDescriptor());
+    });
+    socket.on("getRooms", ack => {
       ack(
         this.rooms
-          .entries()
-          .filter(([, room]) => !room.battle.victor)
-          .map(([id, room]) => ({
-            id,
-            battlers: this.getBattlers(room),
-            format: room.format,
-          }))
+          .values()
+          .filter(room => !room.battle.victor)
+          .map(room => room.makeDescriptor())
           .toArray(),
-      ),
-    );
+      );
+    });
+    socket.on("getPlayerRooms", (player, ack) => {
+      const account = this.accounts.get(player);
+      if (!account) {
+        return ack("bad_player");
+      }
+
+      ack(
+        account.activeBattles
+          .values()
+          .filter(room => !room.battle.victor)
+          .map(room => room.makeDescriptor())
+          .toArray(),
+      );
+    });
     socket.on("disconnecting", async () => {
       const account = socket.account;
       if (!account) {
@@ -476,17 +507,21 @@ export class GameServer extends SocketIoServer<ClientMessage, ServerMessage> {
     return [player, room] as const;
   }
 
-  private getBattlers(room: Room) {
+  private onFoundMatch(room: Room, account: Account) {
+    account.activeBattles.add(room);
+    this.to(account.userRoom).emit("foundMatch", room.id);
+    this.leaveMatchmaking(account);
+  }
+
+  getBattlers(room: Room) {
     return room.battle.players.map(pl => {
       const acc = this.accounts.get(pl.id)!;
       return { name: acc.name, id: acc.id, nPokemon: pl.originalTeam.length };
     });
   }
 
-  private onFoundMatch(room: Room, account: Account) {
-    account.nActiveBattles++;
-    this.to(account.userRoom).emit("foundMatch", room.id);
-    this.leaveMatchmaking(account);
+  onBattleEnded(player: string, room: Room) {
+    this.accounts.get(player)!.activeBattles.delete(room);
   }
 
   destroyRoom(room: Room) {

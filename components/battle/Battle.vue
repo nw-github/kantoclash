@@ -93,7 +93,7 @@
 
       <UDivider class="pb-2" />
 
-      <div class="w-full">
+      <div class="w-full pb-2">
         <template v-if="options && !selectionText.length && !isRunningTurn">
           <div class="grid gap-2 sm:grid-cols-[1fr,1.5fr] h-min">
             <div class="flex flex-col gap-1 sm:gap-2">

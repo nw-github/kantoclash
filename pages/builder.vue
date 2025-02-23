@@ -134,7 +134,7 @@ const filteredTeams = computed(() => {
     .filter(team => !f.length || f.includes(team.format));
 });
 
-useTitle("Team Builder");
+onMounted(() => useTitle("Team Builder"));
 
 const dropdownItems = (team: Team) => [
   {

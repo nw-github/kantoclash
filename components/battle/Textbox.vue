@@ -128,7 +128,7 @@
     <UAlert
       title="Are you sure?"
       description="You are about to forfeit the match."
-      icon="iconamoon:attention-circle"
+      icon="material-symbols:error-circle-rounded-outline-sharp"
       :actions="[
         {
           variant: 'solid',

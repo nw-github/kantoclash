@@ -1,5 +1,5 @@
 <template>
-  <div class="grid grid-rows-2 sm:grid-cols-2">
+  <div class="grid grid-rows-2 md:grid-cols-2 h-full overflow-y-auto">
     <div class="space-y-2 px-5">
       <h1 class="text-center">
         {{ user ? `Welcome ${user.name}!` : "You must first log in to find a battle" }}
@@ -125,7 +125,7 @@ const filteredRooms = computed(() => {
     .filter(room => !f.length || f.includes(room.format));
 });
 
-useTitle("Standoff");
+onMounted(() => useTitle("Standoff"));
 
 watch(format, () => (selectedTeam.value = validTeams.value[0]));
 

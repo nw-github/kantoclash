@@ -1,13 +1,10 @@
 <template>
   <div class="w-full h-full">
-    <template v-if="status === 'loading'">
+    <template v-if="loading">
       <div class="flex gap-2">
         <UIcon name="line-md:loading-loop" class="size-6" />
         <span class="text-xl">Loading...</span>
       </div>
-    </template>
-    <template v-else-if="status === 'notfound'">
-      <h1>Room not found.</h1>
     </template>
 
     <Battle
@@ -27,7 +24,14 @@
       @timer="startTimer"
     />
 
-    <MusicController />
+    <UModal v-model="modalOpen" prevent-close>
+      <UAlert
+        title="Invalid Room"
+        description="This room does not exist or has expired."
+        icon="material-symbols:error-circle-rounded-outline-sharp"
+        :actions="[{ label: 'Go Home', to: '/', icon: 'heroicons:home', variant: 'solid' }]"
+      />
+    </UModal>
   </div>
 </template>
 
@@ -46,7 +50,7 @@ const route = useRoute();
 const mounted = useMounted();
 const currentTrack = useCurrentTrack();
 const battle = ref<InstanceType<typeof Battle>>();
-const status = ref<"loading" | "battle" | "notfound">("loading");
+const loading = ref(true);
 const players = reactive<Record<string, ClientPlayer>>({});
 const battlers = ref<string[]>([]);
 const turns = ref<Turn[]>([]);
@@ -54,6 +58,7 @@ const options = ref<Options>();
 const chats = reactive<InfoRecord>({});
 const team = ref<Pokemon[]>();
 const timer = ref<BattleTimer>();
+const modalOpen = ref(false);
 const room = `${route.params.id}`;
 
 let sequenceNo = 0;
@@ -77,8 +82,6 @@ onUnmounted(() => {
   $conn.off("nextTurn", onNextTurn);
   $conn.off("info", onInfo);
   $conn.off("timerStart", onTimerStart);
-
-  currentTrack.value = undefined;
 
   if ($conn.connected) {
     $conn.emit("leaveRoom", room, () => {});
@@ -172,8 +175,8 @@ const onJoinRoom = (resp: JoinRoomResponse | "bad_room") => {
   };
 
   if (resp === "bad_room") {
-    status.value = "notfound";
-    title.value = battlers.value.join("Room not found");
+    modalOpen.value = true;
+    loading.value = false;
     return;
   } else if (!mounted.value) {
     $conn.emit("leaveRoom", room, () => {});
@@ -215,8 +218,9 @@ const onJoinRoom = (resp: JoinRoomResponse | "bad_room") => {
     }
   }
 
-  status.value = "battle";
-  title.value = battlers.value.map(id => players[id].name).join(" vs. ");
+  loading.value = false;
+  title.value =
+    battlers.value.map(id => players[id].name).join(" vs. ") + " - " + formatInfo[resp.format].name;
   if (needsFreshStart) {
     battle.value!.onConnect();
   } else {
@@ -227,7 +231,7 @@ const onJoinRoom = (resp: JoinRoomResponse | "bad_room") => {
 };
 
 const onConnect = () => {
-  status.value = "loading";
+  loading.value = true;
   options.value = undefined;
   timer.value = undefined;
 

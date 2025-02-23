@@ -53,7 +53,7 @@
               :species="species"
               :substitute="poke?.flags.substitute"
               :kind="back ? 'back' : 'front'"
-              :scale="breakpoints.isSmallerOrEqual('sm') ? 1 : 2"
+              :scale="lessThanSm ? 1 : 2"
             />
           </div>
 
@@ -149,7 +149,8 @@ const maxSpe = computed(
   () => props.poke && calcStat(false, species.value!.stats.spe, props.poke.level, 15, 65535),
 );
 const hp = computed(() => props.poke?.hpPercent ?? 0);
-const breakpoints = useBreakpoints(breakpointsTailwind);
+const breakpoint = useBreakpoints(breakpointsTailwind);
+const lessThanSm = breakpoint.smaller("sm");
 
 const sprite = ref<HTMLDivElement>();
 const pokeBall = ref<HTMLDivElement>();
