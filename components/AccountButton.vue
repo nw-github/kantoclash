@@ -11,7 +11,7 @@
             </div>
             <UDivider class="py-2" />
             <div class="space-y-2">
-              <UCheckbox label="Announce presence when spectating" />
+              <UCheckbox v-model="filter" label="Enable profanity filter" />
               <UButton
                 :label="!loading ? 'Log out' : 'Logging out...'"
                 :loading="loading"
@@ -33,6 +33,7 @@ import { UButton } from "#components";
 
 const { $conn } = useNuxtApp();
 const { clear } = useUserSession();
+const filter = useChatCensorEnabled();
 const loading = ref(false);
 const model = defineModel<{ open: boolean }>();
 

@@ -20,3 +20,5 @@ export const useSfxVolume = () => useLocalStorage("sfxVolume", 0.4);
 export const useMusicVolume = () => useLocalStorage("musicVolume", 0.4);
 
 export const useMutedPlayerIds = () => useLocalStorage<string[]>("mutedPlayers", []);
+
+export const useChatCensorEnabled = () => useLocalStorage<boolean>("profanity", true);

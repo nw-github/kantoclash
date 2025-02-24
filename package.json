@@ -25,6 +25,7 @@
     "@types/uuid": "^10.0.0",
     "@vueuse/core": "^12.5.0",
     "@vueuse/nuxt": "^12.5.0",
+    "obscenity": "^0.4.3",
     "random": "^5.1.1",
     "socket.io": "^4.8.1",
     "socket.io-client": "^4.8.1",

@@ -83,7 +83,12 @@
           <p v-for="chat in chats[i] ?? []" :key="JSON.stringify(chat)">
             <span v-if="chat.type === 'chat' && !mutedPlayers.includes(chat.id)">
               <b>{{ players[chat.id]?.name ?? "???" }}</b
-              >: {{ chat.message }}
+              >:
+              {{
+                censorEnabled
+                  ? censor.applyTo(chat.message, profanityMatcher.getAllMatches(chat.message))
+                  : chat.message
+              }}
             </span>
             <span
               v-else-if="chat.type === 'userJoin' && !mutedPlayers.includes(chat.id)"
@@ -186,6 +191,7 @@
 </style>
 
 <script setup lang="ts">
+import { TextCensor } from "obscenity";
 import { useMutedPlayerIds } from "~/composables/states";
 import type { InfoRecord } from "~/server/utils/gameServer";
 
@@ -203,9 +209,12 @@ const emit = defineEmits<{
 }>();
 const myId = useMyId();
 const mutedPlayers = useMutedPlayerIds();
+const censorEnabled = useChatCensorEnabled();
 const message = ref("");
 const scrollPoint = ref<HTMLDivElement>();
 const forfeitModalOpen = ref(false);
+const censor = new TextCensor();
+censor.setStrategy(ctx => "*".repeat(ctx.matchLength));
 
 onMounted(async () => {
   await nextTick();
