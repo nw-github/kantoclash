@@ -146,6 +146,25 @@ const dropdownItems = (team: Team) => [
     },
   },
   {
+    label: "Duplicate",
+    icon: "material-symbols:file-copy-outline",
+    click() {
+      const newTeam: Team = JSON.parse(JSON.stringify(team));
+      const teamNames = new Set(
+        myTeams.value.filter(team => team.name.startsWith(newTeam.name)).map(team => team.name),
+      );
+      for (let i = 1; ; i++) {
+        const name = newTeam.name + ` (${i})`;
+        if (!teamNames.has(name)) {
+          newTeam.name = name;
+          break;
+        }
+      }
+
+      myTeams.value.splice(myTeams.value.indexOf(team) + 1, 0, newTeam);
+    },
+  },
+  {
     label: "Edit",
     icon: "material-symbols:edit-square-outline",
     click() {

@@ -15,8 +15,8 @@ export const musicTrackName = (track: string) => {
   return track.slice(track.lastIndexOf("/") + 1, track.lastIndexOf("."));
 };
 
-export const useSfxVolume = () => useLocalStorage("sfxVolume", 0.7);
+export const useSfxVolume = () => useLocalStorage("sfxVolume", 0.4);
 
-export const useMusicVolume = () => useLocalStorage("musicVolume", 0.5);
+export const useMusicVolume = () => useLocalStorage("musicVolume", 0.4);
 
 export const useMutedPlayerIds = () => useLocalStorage<string[]>("mutedPlayers", []);

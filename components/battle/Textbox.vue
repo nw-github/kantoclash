@@ -55,8 +55,8 @@
                     variant="ghost"
                     :icon="
                       mutedPlayers.includes(id)
-                        ? 'heroicons-outline:speaker-x-mark'
-                        : 'heroicons-outline:speaker-wave'
+                        ? 'material-symbols:volume-off-outline-rounded'
+                        : 'material-symbols:volume-up-outline-rounded'
                     "
                     @click="toggleMute(id)"
                   />

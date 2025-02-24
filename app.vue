@@ -68,8 +68,8 @@
                 <UButton
                   :icon="
                     musicVol === 0
-                      ? 'heroicons-outline:speaker-x-mark'
-                      : 'heroicons-outline:speaker-wave'
+                      ? 'material-symbols:volume-off-outline-rounded'
+                      : 'material-symbols:volume-up-outline-rounded'
                   "
                   variant="ghost"
                   color="gray"

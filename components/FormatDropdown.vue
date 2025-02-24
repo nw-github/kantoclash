@@ -1,5 +1,5 @@
 <template>
-  <USelectMenu :options="formats" v-bind="$props" value-attribute="id" />
+  <USelectMenu :options="formats" v-bind="$attrs" value-attribute="id" />
 </template>
 
 <script setup lang="ts">
