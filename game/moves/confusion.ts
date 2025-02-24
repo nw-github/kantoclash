@@ -1,6 +1,6 @@
 import type { ActivePokemon, Battle } from "../battle";
 import { Move } from "./move";
-import { type Type } from "../utils";
+import type { Type } from "../utils";
 
 export class ConfusionMove extends Move {
   constructor({ name, pp, type, acc }: { name: string; pp: number; type: Type; acc?: number }) {

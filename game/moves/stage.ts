@@ -1,6 +1,6 @@
 import type { ActivePokemon, Battle } from "../battle";
 import { Move } from "./move";
-import { type Stages, type Type } from "../utils";
+import type { Stages, Type } from "../utils";
 
 export class StageMove extends Move {
   readonly stages: [Stages, number][];

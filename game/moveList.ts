@@ -1,4 +1,4 @@
-import { ActivePokemon, Battle } from "./battle";
+import type { ActivePokemon, Battle } from "./battle";
 import {
   Move,
   VolatileFlagMove,

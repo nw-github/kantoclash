@@ -1,6 +1,6 @@
 import { moveList, type MoveId } from "./moveList";
 import { speciesList, type SpeciesId } from "./species";
-import { type StageStats, type Stats } from "./utils";
+import type { StageStats, Stats } from "./utils";
 
 export type Status = "psn" | "par" | "slp" | "frz" | "tox" | "brn";
 

@@ -1,14 +1,7 @@
 import type { ActivePokemon, Battle } from "../battle";
 import { Move } from "./move";
 import type { Status } from "../pokemon";
-import {
-  floatTo255,
-  getEffectiveness,
-  isSpecial,
-  calcDamage,
-  type Type,
-  type Stages,
-} from "../utils";
+import { getEffectiveness, isSpecial, calcDamage, type Type, type Stages } from "../utils";
 import type { Random } from "random";
 
 type Effect = Status | [Stages, number][] | "confusion" | "flinch";
@@ -146,6 +139,7 @@ export class DamagingMove extends Move {
     }
 
     const hadSub = target.v.substitute !== 0;
+    // eslint-disable-next-line prefer-const
     let { dealt, brokeSub, dead, event } = target.damage(
       dmg,
       user,
