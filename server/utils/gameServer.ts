@@ -14,6 +14,7 @@ export type JoinRoomResponse = {
   chats: InfoRecord;
   format: FormatId;
   timer?: BattleTimer;
+  finished: boolean;
   battlers: { id: string; name: string; nPokemon: number }[];
 };
 
@@ -337,6 +338,7 @@ export class GameServer extends SocketIoServer<ClientMessage, ServerMessage> {
         chats: room.chats,
         format: room.format,
         timer: socket.account && room.timerInfo(socket.account),
+        finished: !!room.battle.victor,
         battlers: this.getBattlers(room),
       });
     });

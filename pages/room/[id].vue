@@ -16,6 +16,7 @@
       :chats
       :battlers
       :timer
+      :finished
       @chat="sendChat"
       @forfeit="() => makeChoice('forfeit')"
       @move="i => makeChoice('move', i)"
@@ -44,6 +45,7 @@ import type { BattleTimer, InfoRecord, JoinRoomResponse } from "~/server/utils/g
 import type { InfoMessage } from "~/server/utils/info";
 
 const { $conn } = useNuxtApp();
+const { user } = useUserSession();
 const title = useTitle("Battle");
 const toast = useToast();
 const route = useRoute();
@@ -60,9 +62,11 @@ const team = ref<Pokemon[]>();
 const timer = ref<BattleTimer>();
 const modalOpen = ref(false);
 const room = `${route.params.id}`;
+const finished = ref(false);
 
 let sequenceNo = 0;
 let needsFreshStart = true;
+let firstConnect = true;
 
 onMounted(() => {
   if ($conn.connected) {
@@ -221,12 +225,24 @@ const onJoinRoom = (resp: JoinRoomResponse | "bad_room") => {
   loading.value = false;
   title.value =
     battlers.value.map(id => players[id].name).join(" vs. ") + " - " + formatInfo[resp.format].name;
+  finished.value = resp.finished;
+
+  let isFirstConnect = firstConnect;
+  if (
+    (firstConnect &&
+      !!user.value &&
+      battlers.value.includes(user.value.id) &&
+      turns.value.length === 1) ||
+    resp.finished
+  ) {
+    isFirstConnect = false;
+  }
+
+  firstConnect = false;
   if (needsFreshStart) {
-    battle.value!.onConnect();
+    battle.value!.onConnect(isFirstConnect ? resp.turns.length : undefined);
   } else {
-    for (let i = 0; i < resp.turns.length; i++) {
-      battle.value!.onTurnReceived();
-    }
+    battle.value!.onTurnsReceived(resp.turns.length);
   }
 };
 
@@ -249,7 +265,7 @@ const onNextTurn = (roomId: string, turn: Turn, opts?: Options, tmr?: BattleTime
     turns.value.push(turn);
     options.value = opts || undefined;
     sequenceNo++;
-    battle.value!.onTurnReceived();
+    battle.value!.onTurnsReceived(1);
   }
 };
 

@@ -9,28 +9,34 @@
     <template #header>
       <div class="flex justify-between items-center">
         <div>
-          <UTooltip v-if="closable" text="Close" :popper="{ placement: 'top' }">
-            <UButton
-              icon="material-symbols:close"
-              variant="link"
-              color="gray"
-              size="lg"
-              @click="$emit('close')"
-            />
-          </UTooltip>
-          <UTooltip text="Forfeit" :popper="{ placement: 'top' }">
-            <UButton
-              icon="material-symbols:flag-rounded"
-              variant="link"
-              color="red"
-              size="lg"
-              :disabled="!players[myId] || players[myId].isSpectator || !!victor"
-              @click="forfeitModalOpen = true"
-            />
-          </UTooltip>
-          <UTooltip text="Open Calculator" :popper="{ placement: 'top' }">
-            <UButton icon="iconamoon:calculator-light" variant="ghost" color="gray" size="lg" />
-          </UTooltip>
+          <TooltipButton
+            v-if="closable"
+            text="Close"
+            :popper="{ placement: 'top' }"
+            icon="material-symbols:close"
+            variant="link"
+            color="gray"
+            size="lg"
+            @click="$emit('close')"
+          />
+          <TooltipButton
+            text="Forfeit"
+            :popper="{ placement: 'top' }"
+            icon="material-symbols:flag-rounded"
+            variant="link"
+            color="red"
+            size="lg"
+            :disabled="!players[myId] || players[myId].isSpectator || !!victor"
+            @click="forfeitModalOpen = true"
+          />
+          <TooltipButton
+            text="Open Calculator"
+            :popper="{ placement: 'top' }"
+            icon="iconamoon:calculator-light"
+            variant="ghost"
+            color="gray"
+            size="lg"
+          />
         </div>
 
         <UPopover mode="hover" :popper="{ placement: 'bottom-start' }">
@@ -49,18 +55,17 @@
                 class="text-left"
               >
                 <span class="px-2">{{ playerInfo(player, id) }}</span>
-                <UTooltip :text="`${mutedPlayers.includes(id) ? 'Unmute' : 'Mute'} this player`">
-                  <UButton
-                    color="gray"
-                    variant="ghost"
-                    :icon="
-                      mutedPlayers.includes(id)
-                        ? 'material-symbols:volume-off-outline-rounded'
-                        : 'material-symbols:volume-up-outline-rounded'
-                    "
-                    @click="toggleMute(id)"
-                  />
-                </UTooltip>
+                <TooltipButton
+                  :text="`${mutedPlayers.includes(id) ? 'Unmute' : 'Mute'} this player`"
+                  color="gray"
+                  variant="ghost"
+                  :icon="
+                    mutedPlayers.includes(id)
+                      ? 'material-symbols:volume-off-outline-rounded'
+                      : 'material-symbols:volume-up-outline-rounded'
+                  "
+                  @click="toggleMute(id)"
+                />
               </UChip>
             </div>
           </template>
@@ -190,6 +195,7 @@ const props = defineProps<{
   chats: InfoRecord;
   victor?: string;
   closable?: boolean;
+  smoothScroll?: boolean;
 }>();
 const emit = defineEmits<{
   (e: "chat", message: string): void;
@@ -213,7 +219,7 @@ onMounted(async () => {
 watch([props.chats, props.turns], async () => {
   await nextTick();
   scrollPoint.value?.scrollIntoView({
-    behavior: "smooth",
+    behavior: props.smoothScroll ? "smooth" : "instant",
     block: "center",
     inline: "center",
   });

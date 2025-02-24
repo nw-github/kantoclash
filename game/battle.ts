@@ -478,6 +478,7 @@ export class ActivePokemon {
       this.lastDamage = Math.min(this.base.hp, dmg);
     }
 
+    const shouldRage = why === "attacked" || why === "trap";
     if (this.v.substitute !== 0 && !direct) {
       const hpBefore = this.v.substitute;
       this.v.substitute = Math.max(this.v.substitute - dmg, 0);
@@ -489,7 +490,7 @@ export class ActivePokemon {
         confusion: why === "confusion",
         eff,
       });
-      if (why === "attacked") {
+      if (shouldRage) {
         this.handleRage(battle);
       }
       return {
@@ -514,7 +515,7 @@ export class ActivePokemon {
         eff,
         isCrit,
       });
-      if (why === "attacked") {
+      if (shouldRage) {
         this.handleRage(battle);
       }
 

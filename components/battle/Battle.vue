@@ -6,9 +6,9 @@
       <div class="flex w-full relative">
         <div
           class="rounded-md bg-gray-300 dark:bg-gray-700 flex justify-center py-0.5 px-1"
-          :class="[!runningTurn && 'invisible']"
+          :class="[!currentTurnNo && 'invisible']"
         >
-          <span class="text-lg font-medium">Turn {{ runningTurn }}</span>
+          <span class="text-lg font-medium">Turn {{ currentTurnNo }}</span>
         </div>
 
         <TeamDisplay
@@ -57,19 +57,14 @@
               :text="timer === undefined ? 'Start Timer' : 'Timer is on'"
               :popper="{ placement: 'top' }"
             >
-              {{
-                (updateMarker,
-                void (timeLeft = timer
-                  ? Math.floor((timer.startedAt + timer.duration - Date.now()) / 1000)
-                  : 1000))
-              }}
               <UButton
+                :key="updateMarker"
                 class="my-1"
-                leading-icon="material-symbols:alarm-add-outline"
+                leading-icon="material-symbols:alarm-outline"
                 variant="ghost"
-                :color="timeLeft <= 10 ? 'red' : 'gray'"
+                :color="timeLeft() <= 10 ? 'red' : 'gray'"
                 :disabled="!players[myId] || players[myId].isSpectator || !!victor || !!timer"
-                :label="timer && !options ? '--' : timer ? `${Math.max(timeLeft, 0)}` : ''"
+                :label="timer && !options ? '--' : timer ? `${Math.max(timeLeft(), 0)}` : ''"
                 @click="$emit('timer')"
               />
             </UTooltip>
@@ -120,35 +115,68 @@
             </div>
           </div>
         </template>
-        <div v-else-if="options && !isRunningTurn" class="cancel">
+        <div v-else-if="options && !isRunningTurn">
           <div class="italic">{{ selectionText }}...</div>
-          <UButton color="red" @click="cancelMove">Cancel</UButton>
+          <TooltipButton icon="material-symbols:cancel" label="Cancel" @click="cancelMove" />
         </div>
-        <template v-else-if="!victor">
-          <div v-if="isBattler && !isRunningTurn" class="italic">Waiting for opponent...</div>
-          <div v-else class="flex space-x-2 flex-wrap">
-            <UButton v-if="!isBattler" icon="mi:switch" @click="chosenPerspective = opponent">
-              Switch Sides
-            </UButton>
-            <UButton
-              v-if="isRunningTurn"
+        <div v-else-if="!isBattleOver && isBattler && !isRunningTurn" class="italic">
+          Waiting for opponent...
+        </div>
+        <div v-else class="flex flex-wrap gap-0.5">
+          <template v-if="!isBattler || isBattleOver">
+            <TooltipButton
+              icon="heroicons:home"
+              variant="ghost"
+              color="gray"
+              text="Go Home"
+              to="/"
+            />
+            <TooltipButton
+              icon="mi:switch"
+              variant="ghost"
+              color="gray"
+              text="Switch Sides"
+              @click="chosenPerspective = opponent"
+            />
+            <TooltipButton
+              icon="material-symbols:fast-rewind-outline"
+              text="First Turn"
+              variant="ghost"
+              color="gray"
+              @click="skipTo(0)"
+            />
+            <TooltipButton
+              icon="material-symbols:skip-previous"
+              text="Previous Turn"
+              variant="ghost"
+              color="gray"
+              @click="skipTo(turnNoToIndex(currentTurnNo - 1))"
+            />
+            <TooltipButton
+              v-if="isBattleOver"
+              :icon="paused ? 'material-symbols:play-arrow' : 'material-symbols:pause'"
+              :text="paused ? 'Play' : 'Pause'"
+              variant="ghost"
+              color="gray"
+              @click="paused = !paused"
+            />
+          </template>
+          <template v-if="isBattleOver || isRunningTurn">
+            <TooltipButton
               icon="material-symbols:skip-next"
-              @click="skippingTurn = true"
-            >
-              Skip
-            </UButton>
-            <UButton
-              v-if="isRunningTurn"
+              text="Skip Turn"
+              variant="ghost"
+              color="gray"
+              @click="skipTo(turnNoToIndex(currentTurnNo + 1))"
+            />
+            <TooltipButton
               icon="material-symbols:fast-forward"
-              @click="skippingToTurn = turns.length"
-            >
-              Skip All
-            </UButton>
-          </div>
-        </template>
-        <div v-else>
-          <div>{{ victor === myId ? "You" : players[victor].name }} won!</div>
-          <UButton to="/" icon="heroicons:home">Go Home</UButton>
+              text="Skip All"
+              variant="ghost"
+              color="gray"
+              @click="skipTo(turns.length)"
+            />
+          </template>
         </div>
       </div>
     </div>
@@ -159,6 +187,7 @@
         :chats
         :victor
         :turns="htmlTurns"
+        :smooth-scroll="smoothScroll"
         @chat="message => $emit('chat', message)"
         @forfeit="$emit('forfeit')"
       />
@@ -170,6 +199,7 @@
         :chats
         :victor
         :turns="htmlTurns"
+        :smooth-scroll="smoothScroll"
         closable
         @chat="message => $emit('chat', message)"
         @forfeit="$emit('forfeit')"
@@ -236,15 +266,12 @@ import type { BattleTimer, InfoRecord } from "~/server/utils/gameServer";
 import type { ActivePokemon } from "#build/components";
 import type { AnimationType } from "./ActivePokemon.vue";
 
-// eslint-disable-next-line
-let timeLeft = 0;
-
 const emit = defineEmits<{
   (e: "chat", message: string): void;
   (e: "forfeit" | "timer" | "cancel"): void;
   (e: "move" | "switch", index: number): void;
 }>();
-const { team, options, players, turns, chats, battlers, timer } = defineProps<{
+const { team, options, players, turns, chats, battlers, timer, finished } = defineProps<{
   team?: Pokemon[];
   options?: Options;
   players: Record<string, ClientPlayer>;
@@ -252,6 +279,7 @@ const { team, options, players, turns, chats, battlers, timer } = defineProps<{
   chats: InfoRecord;
   battlers: string[];
   timer?: BattleTimer;
+  finished: boolean;
 }>();
 const myId = useMyId();
 const sfxVol = useSfxVolume();
@@ -261,10 +289,11 @@ const isMenuVisible = useElementVisibility(menuButton);
 const unseen = ref(0);
 const slideoverOpen = ref(false);
 const isRunningTurn = ref(false);
-const skippingTurn = ref(false);
+const smoothScroll = ref(true);
 const skippingToTurn = ref(0);
 const updateMarker = ref(0);
-const runningTurn = ref(0);
+const currentTurnNo = ref(0);
+const paused = ref(false);
 
 const backPokemon = ref<InstanceType<typeof ActivePokemon>>();
 const frontPokemon = ref<InstanceType<typeof ActivePokemon>>();
@@ -272,6 +301,7 @@ const frontPokemon = ref<InstanceType<typeof ActivePokemon>>();
 const activeIndex = ref(-1);
 const activeInTeam = computed(() => (isBattler.value ? team?.[activeIndex.value] : undefined));
 
+const isBattleOver = computed(() => finished || !!victor.value);
 const isBattler = computed(() => battlers.includes(myId.value));
 const chosenPerspective = ref("");
 const perspective = computed(() => (isBattler.value ? myId.value : chosenPerspective.value));
@@ -288,14 +318,14 @@ onUnmounted(() => audioContext && audioContext.close(), (audioContext = undefine
 
 useIntervalFn(() => {
   liveEvents.value = liveEvents.value.filter(ev => Date.now() - ev[1] < 1400);
-  updateMarker.value++;
 }, 400);
+useIntervalFn(() => updateMarker.value++, 1000);
 
 watch(
   () => options,
-  newOptions => {
-    if (newOptions && players[myId.value]?.active && !players[myId.value].active?.transformed) {
-      for (const { pp, indexInMoves } of newOptions.moves) {
+  options => {
+    if (options && players[myId.value]?.active && !players[myId.value].active?.transformed) {
+      for (const { pp, indexInMoves } of options.moves) {
         if (indexInMoves !== undefined && pp !== undefined) {
           activeInTeam.value!.pp[indexInMoves] = pp;
         }
@@ -313,21 +343,12 @@ watch(
   },
 );
 
-watch([skippingTurn, skippingToTurn], () => {
-  if (frontPokemon.value) {
-    frontPokemon.value.skipAnimation();
-  }
-  if (backPokemon.value) {
-    backPokemon.value.skipAnimation();
-  }
-  // TODO: mute current sounds
-  liveEvents.value.length = 0;
-});
-
 watch(perspective, () => {
   liveEvents.value.length = 0;
   onConnect();
 });
+
+watch(paused, paused => !paused && onTurnsReceived(Math.max(turns.length - currentTurn, 0)));
 
 watchImmediate(battlers, () => (chosenPerspective.value = randChoice(battlers)));
 
@@ -357,8 +378,12 @@ const cancelMove = () => {
   emit("cancel");
 };
 
-const runTurn = async (turn: Turn, live: boolean, turnNo: number) => {
-  const isLive = () => live && !skippingTurn.value && skippingToTurn.value <= turnNo;
+const timeLeft = () => {
+  return timer ? Math.floor((timer.startedAt + timer.duration - Date.now()) / 1000) : 1000;
+};
+
+const runTurn = async (live: boolean, turnNo: number) => {
+  const isLive = () => live && skippingToTurn.value <= turnNo;
 
   const playSound = async (path: string, pitchDown = false) => {
     if (!isLive() || !audioContext) {
@@ -605,21 +630,19 @@ const runTurn = async (turn: Turn, live: boolean, turnNo: number) => {
     }
   };
 
-  isRunningTurn.value = true;
   liveEvents.value.length = 0;
   selectionText.value = "";
+  smoothScroll.value = isLive();
 
+  const turn = turns[turnNo];
   if (!turn.switchTurn) {
-    runningTurn.value++;
+    currentTurnNo.value++;
   }
 
-  htmlTurns.value.push([[], turn.switchTurn, runningTurn.value]);
+  htmlTurns.value.push([[], turn.switchTurn, currentTurnNo.value]);
   for (const e of turn.events) {
     await handleEvent(e);
   }
-
-  skippingTurn.value = false;
-  isRunningTurn.value = false;
 };
 
 const htmlForEvent = (e: BattleEvent) => {
@@ -849,11 +872,40 @@ const htmlForEvent = (e: BattleEvent) => {
   return res;
 };
 
-let currentTurnPromise: Promise<void> | undefined;
 let reconnecting = false;
 let currentTurn = 0;
+let turnQueue = 0;
 
-const onTurnReceived = async () => {
+const turnNoToIndex = (turn: number) => {
+  let index = 0;
+  for (let turnNo = -(turn === 1); index < turns.length; index++) {
+    if (!turns[index].switchTurn && ++turnNo >= turn) {
+      break;
+    }
+  }
+  console.log(`turnNoToIndex() | Turn NO: ${turn} -> Turn IDX: ${index}`);
+  return index;
+};
+
+const skipTo = (index: number) => {
+  console.log(`skipTo() | index: ${index} currentTurn: ${currentTurn}`);
+
+  frontPokemon.value!.skipAnimation();
+  backPokemon.value!.skipAnimation();
+  // TODO: mute current sounds
+
+  if (index < currentTurn) {
+    skippingToTurn.value = currentTurn + 1;
+    onConnect(index);
+  } else {
+    skippingToTurn.value = index;
+    liveEvents.value.length = 0;
+    smoothScroll.value = false;
+  }
+};
+
+const onTurnsReceived = async (count: number) => {
+  console.log("onTurnsReceived() | count:" + count);
   if (reconnecting) {
     return;
   }
@@ -861,42 +913,64 @@ const onTurnReceived = async () => {
   // hack to make sure turns.value is updated
   await nextTick();
 
-  const turnNo = currentTurn++;
-  const turn = turns[turnNo];
-  const task = () => runTurn(turn, true, turnNo);
+  if (turnQueue) {
+    turnQueue += count;
+    return;
+  }
 
-  currentTurnPromise = currentTurnPromise ? currentTurnPromise.then(task) : task();
+  turnQueue += count;
+  isRunningTurn.value = true;
+  while (turnQueue) {
+    if (currentTurn >= turns.length) {
+      turnQueue = 0;
+      break;
+    }
+
+    await runTurn(true, currentTurn++);
+    turnQueue--;
+
+    if (paused.value) {
+      turnQueue = 0;
+      break;
+    }
+  }
+  isRunningTurn.value = false;
+  smoothScroll.value = true;
 };
 
-const onConnect = async () => {
+const onConnect = async (startAt?: number) => {
+  console.log(`onConnect() | startAt=${startAt} currentTurn=${currentTurn}`);
+  currentTurn = startAt ?? currentTurn;
   if (reconnecting) {
     return;
   }
 
   reconnecting = true;
-  if (currentTurnPromise) {
-    await currentTurnPromise;
+  turnQueue = 0;
+  if (isRunningTurn.value) {
+    await new Promise(resolve => watchOnce(isRunningTurn, resolve));
   }
 
   // hack to make sure turns.value is updated
   await nextTick();
 
   htmlTurns.value.length = 0;
+  currentTurnNo.value = 0;
+  skippingToTurn.value = 0;
   for (const k in players) {
     players[k].nFainted = 0;
+    players[k].active = undefined;
   }
 
+  isRunningTurn.value = true;
   for (let i = 0; i < currentTurn; i++) {
-    await runTurn(turns[i], false, i);
+    await runTurn(false, i);
   }
+  isRunningTurn.value = false;
 
   reconnecting = false;
-  // do not inline, currentTurn changes
-  const amount = turns.length - currentTurn;
-  for (let i = 0; i < amount; i++) {
-    onTurnReceived();
-  }
+  onTurnsReceived(turns.length - currentTurn);
 };
 
-defineExpose({ onTurnReceived, onConnect });
+defineExpose({ onTurnsReceived, onConnect });
 </script>

@@ -3,26 +3,30 @@
     <template #header>
       <div class="flex space-x-1">
         <FormatDropdown v-model="team.format" class="w-1/2" placeholder="Format" team-only />
-        <UInput v-model="team.name" :trailing="false" placeholder="Team name" class="w-full" />
+        <UInput
+          v-model="team.name"
+          :trailing="false"
+          placeholder="Team name"
+          class="w-full"
+          autofocus
+        />
 
         <div class="flex space-x-0.5">
           <!-- <UButton icon="material-symbols:save-outline" color="gray" variant="ghost" /> -->
-          <UTooltip text="Delete Team">
-            <UButton
-              icon="material-symbols:delete-outline"
-              color="red"
-              variant="ghost"
-              @click="$emit('delete')"
-            />
-          </UTooltip>
-          <UTooltip text="Close">
-            <UButton
-              icon="material-symbols:close"
-              color="red"
-              variant="ghost"
-              @click="$emit('close')"
-            />
-          </UTooltip>
+          <TooltipButton
+            text="Delete Team"
+            icon="material-symbols:delete-outline"
+            color="red"
+            variant="ghost"
+            @click="$emit('delete')"
+          />
+          <TooltipButton
+            text="Close"
+            icon="material-symbols:close"
+            color="red"
+            variant="ghost"
+            @click="$emit('close')"
+          />
         </div>
       </div>
     </template>
@@ -74,24 +78,22 @@
             </div>
 
             <div class="flex items-center">
-              <UTooltip text="Add Pokemon">
-                <UButton
-                  icon="material-symbols:add-2"
-                  variant="ghost"
-                  color="gray"
-                  :disabled="team.pokemon.length >= 6"
-                  @click="addPokemon"
-                />
-              </UTooltip>
-              <UTooltip text="Delete Pokemon">
-                <UButton
-                  icon="material-symbols:delete-outline"
-                  color="red"
-                  variant="ghost"
-                  :disabled="team.pokemon.length < 2"
-                  @click="deletePokemon(index)"
-                />
-              </UTooltip>
+              <TooltipButton
+                text="Add Pokemon"
+                icon="material-symbols:add-2"
+                variant="ghost"
+                color="gray"
+                :disabled="team.pokemon.length >= 6"
+                @click="addPokemon"
+              />
+              <TooltipButton
+                text="Delete Pokemon"
+                icon="material-symbols:delete-outline"
+                color="red"
+                variant="ghost"
+                :disabled="team.pokemon.length < 2"
+                @click="deletePokemon(index)"
+              />
             </div>
           </div>
 

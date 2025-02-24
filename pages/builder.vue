@@ -14,17 +14,20 @@
           />
         </div>
         <div class="flex space-x-1">
-          <UTooltip text="Import">
-            <UButton
-              color="green"
-              icon="heroicons:arrow-down-tray-20-solid"
-              variant="soft"
-              @click="importTeam"
-            />
-          </UTooltip>
-          <UTooltip text="New">
-            <UButton color="green" icon="heroicons:plus-20-solid" variant="soft" @click="newTeam" />
-          </UTooltip>
+          <TooltipButton
+            text="Import"
+            color="green"
+            icon="heroicons:arrow-down-tray-20-solid"
+            variant="soft"
+            @click="importTeam"
+          />
+          <TooltipButton
+            text="New"
+            color="green"
+            icon="heroicons:plus-20-solid"
+            variant="soft"
+            @click="newTeam"
+          />
         </div>
       </div>
     </template>
@@ -69,18 +72,15 @@
               </div>
             </div>
             <div>
-              <UTooltip
+              <TooltipButton
                 v-for="({ icon, click, color, label }, j) in dropdownItems(team)"
                 :key="j"
                 :text="label"
-              >
-                <UButton
-                  :icon="icon"
-                  variant="ghost"
-                  :color="color as any ?? 'gray'"
-                  @click="click"
-                />
-              </UTooltip>
+                :icon="icon"
+                :color="color as any ?? 'gray'"
+                variant="ghost"
+                @click="click"
+              />
             </div>
           </div>
           <div class="flex justify-center">
