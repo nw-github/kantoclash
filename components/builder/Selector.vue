@@ -81,6 +81,8 @@ watch(open, async value => {
 
 onKeyStroke("ArrowDown", () => trySetHovered(1));
 onKeyStroke("ArrowUp", () => trySetHovered(-1));
+onKeyStroke("Home", () => trySetHovered(-items.length));
+onKeyStroke("End", () => trySetHovered(items.length));
 onKeyStroke("Enter", () => select(hovered.value));
 onClickOutside(container, () => (open.value = false));
 
@@ -93,12 +95,12 @@ const trySetHovered = (offset: number) => {
 
   if (offset < 0) {
     if (hovered.value === -1) {
-      hovered.value = filteredItems.value.length - 1;
+      hovered.value = filteredItems.value.length + offset;
     }
 
-    hovered.value = Math.max(0, hovered.value - 1);
+    hovered.value = Math.max(0, hovered.value + offset);
   } else {
-    hovered.value = Math.min(filteredItems.value.length - 1, hovered.value + 1);
+    hovered.value = Math.min(filteredItems.value.length - 1, hovered.value + offset);
   }
 
   nextTick(() => {

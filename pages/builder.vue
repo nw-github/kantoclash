@@ -14,20 +14,17 @@
           />
         </div>
         <div class="flex space-x-1">
-          <TooltipButton
-            text="Import"
-            color="green"
-            icon="heroicons:arrow-down-tray-20-solid"
-            variant="soft"
-            @click="importTeam"
-          />
-          <TooltipButton
-            text="New"
-            color="green"
-            icon="heroicons:plus-20-solid"
-            variant="soft"
-            @click="newTeam"
-          />
+          <UTooltip text="Import">
+            <UButton
+              color="green"
+              icon="heroicons:arrow-down-tray-20-solid"
+              variant="soft"
+              @click="importTeam"
+            />
+          </UTooltip>
+          <UTooltip text="New">
+            <UButton color="green" icon="heroicons:plus-20-solid" variant="soft" @click="newTeam" />
+          </UTooltip>
         </div>
       </div>
     </template>
@@ -38,7 +35,7 @@
           v-if="!filteredTeams.length"
           class="flex flex-col items-center justify-center flex-1 px-6 py-14 sm:px-14"
         >
-          <template v-if="!filterFormats.length && !query">
+          <template v-if="!formats.length && !query">
             <UIcon
               name="i-heroicons:circle-stack-20-solid"
               class="size-6 mx-auto text-gray-400 dark:text-gray-500 mb-4"
@@ -64,7 +61,7 @@
           class="space-y-1 py-1 divide-y divide-gray-200 dark:divide-gray-800"
         >
           <div class="flex justify-between items-end">
-            <div class="">
+            <div>
               <span class="text-sm">{{ team.name }}</span>
               <div class="flex items-center space-x-1 text-xs">
                 <UIcon :name="formatInfo[team.format as FormatId].icon" class="size-3" />
@@ -73,14 +70,37 @@
             </div>
             <div>
               <TooltipButton
-                v-for="({ icon, click, color, label }, j) in dropdownItems(team)"
-                :key="j"
-                :text="label"
-                :icon="icon"
-                :color="color as any ?? 'gray'"
+                text="Copy"
+                icon="material-symbols:content-copy-outline"
+                color="gray"
                 variant="ghost"
-                @click="click"
+                @click="copyTeam(team)"
               />
+              <TooltipButton
+                text="Duplicate"
+                icon="material-symbols:file-copy-outline"
+                color="gray"
+                variant="ghost"
+                @click="duplicateTeam(team)"
+              />
+              <TooltipButton
+                text="Edit"
+                icon="material-symbols:edit-square-outline"
+                color="gray"
+                variant="ghost"
+                @click="editingTeam = team"
+              />
+              <TooltipButton
+                text="Delete"
+                icon="material-symbols:delete-outline"
+                color="red"
+                variant="ghost"
+                @click="deleteTeam(team)"
+              />
+
+              <!-- <UTooltip text="Delete">
+                <UButton icon="material-symbols:delete-outline" color="red" variant="ghost" />
+              </UTooltip> -->
             </div>
           </div>
           <div class="flex justify-center">
@@ -110,7 +130,6 @@
 <script setup lang="ts">
 import { speciesList, type Species } from "~/game/species";
 
-const formats = ref<string[]>([]);
 const toast = useToast();
 const myTeams = useMyTeams();
 const editingTeam = ref<Team>();
@@ -125,59 +144,16 @@ const open = computed({
 const isXS = useMediaQuery("(max-width: 480px)");
 
 const query = ref("");
-const filterFormats = ref<string[]>([]);
+const formats = ref<string[]>([]);
 const filteredTeams = computed(() => {
   const q = query.value;
-  const f = filterFormats.value;
+  const f = formats.value;
   return myTeams.value
     .filter(team => !q || team.name.toLowerCase().includes(q.toLowerCase()))
     .filter(team => !f.length || f.includes(team.format));
 });
 
 onMounted(() => useTitle("Team Builder"));
-
-const dropdownItems = (team: Team) => [
-  {
-    label: "Copy",
-    icon: "material-symbols:content-copy-outline",
-    async click() {
-      await navigator.clipboard.writeText(serializeTeam(team));
-      toast.add({ title: `'${team.name}' copied to clipboard!` });
-    },
-  },
-  {
-    label: "Duplicate",
-    icon: "material-symbols:file-copy-outline",
-    click() {
-      const newTeam: Team = JSON.parse(JSON.stringify(team));
-      const teamNames = new Set(
-        myTeams.value.filter(team => team.name.startsWith(newTeam.name)).map(team => team.name),
-      );
-      for (let i = 1; ; i++) {
-        const name = newTeam.name + ` (${i})`;
-        if (!teamNames.has(name)) {
-          newTeam.name = name;
-          break;
-        }
-      }
-
-      myTeams.value.splice(myTeams.value.indexOf(team) + 1, 0, newTeam);
-    },
-  },
-  {
-    label: "Edit",
-    icon: "material-symbols:edit-square-outline",
-    click() {
-      editingTeam.value = team;
-    },
-  },
-  {
-    label: "Delete",
-    icon: "material-symbols:delete-outline",
-    color: "red",
-    click: () => deleteTeam(team),
-  },
-];
 
 const importTeam = async () => {
   const clipboard = await navigator.clipboard.readText();
@@ -216,5 +192,26 @@ const newTeam = () => {
     pokemon: [parsePokemon("")],
   });
   editingTeam.value = myTeams.value[len - 1];
+};
+
+const copyTeam = async (team: Team) => {
+  await navigator.clipboard.writeText(serializeTeam(team));
+  toast.add({ title: `'${team.name}' copied to clipboard!` });
+};
+
+const duplicateTeam = (team: Team) => {
+  const newTeam: Team = JSON.parse(JSON.stringify(team));
+  const teamNames = new Set(
+    myTeams.value.filter(team => team.name.startsWith(newTeam.name)).map(team => team.name),
+  );
+  for (let i = 1; ; i++) {
+    const name = newTeam.name + ` (${i})`;
+    if (!teamNames.has(name)) {
+      newTeam.name = name;
+      break;
+    }
+  }
+
+  myTeams.value.splice(myTeams.value.indexOf(team) + 1, 0, newTeam);
 };
 </script>

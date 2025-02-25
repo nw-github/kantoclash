@@ -25,7 +25,11 @@
           />
         </div>
       </ClientOnly>
-      <UButton :color="findingMatch ? 'red' : 'primary'" @click="enterMatchmaking">
+      <UButton
+        :color="findingMatch ? 'red' : 'primary'"
+        icon="heroicons:magnifying-glass-20-solid"
+        @click="enterMatchmaking"
+      >
         {{ cancelling ? "Cancelling..." : findingMatch ? "Cancel" : "Find Match" }}
 
         <template v-if="findingMatch || cancelling" #leading>
@@ -50,7 +54,8 @@
           placeholder="Search..."
           class="w-full"
         />
-        <UButton
+        <TooltipButton
+          text="Refresh"
           icon="material-symbols:refresh"
           :loading="loadingRooms"
           variant="ghost"

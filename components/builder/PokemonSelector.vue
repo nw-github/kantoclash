@@ -9,7 +9,11 @@
     @chose="onChoose"
   >
     <div class="w-full h-full flex items-center justify-center">
-      <div class="w-[128px] h-[117px] cursor-pointer flex items-center justify-center">
+      <div
+        class="w-[128px] h-[117px] cursor-pointer flex items-center justify-center rounded-md hover:bg-gray-200 focus:bg-gray-200 hover:dark:bg-gray-600 focus:dark:bg-gray-600"
+        tabindex="0"
+        @focus="open = true"
+      >
         <Sprite
           :species="speciesList[model as SpeciesId]"
           :scale="2"
