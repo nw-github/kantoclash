@@ -41,7 +41,7 @@ import type { Battle } from "#components";
 import type { Socket } from "socket.io-client";
 import type { Options, Turn } from "~/game/battle";
 import type { Pokemon } from "~/game/pokemon";
-import type { BattleTimer, InfoRecord, JoinRoomResponse } from "~/server/utils/gameServer";
+import type { BattleTimer, InfoRecord, JoinRoomResponse } from "~/server/gameServer";
 import type { InfoMessage } from "~/server/utils/info";
 
 const { $conn } = useNuxtApp();

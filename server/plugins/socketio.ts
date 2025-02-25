@@ -1,6 +1,6 @@
 import { Server as Engine } from "engine.io";
 import { defineEventHandler } from "h3";
-import { GameServer } from "../utils/gameServer";
+import { GameServer } from "../gameServer";
 import { startBot } from "../bot";
 
 export default defineNitroPlugin(nitro => {

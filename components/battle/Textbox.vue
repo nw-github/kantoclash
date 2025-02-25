@@ -193,7 +193,7 @@
 <script setup lang="ts">
 import { TextCensor } from "obscenity";
 import { useMutedPlayerIds } from "~/composables/states";
-import type { InfoRecord } from "~/server/utils/gameServer";
+import type { InfoRecord } from "~/server/gameServer";
 
 const props = defineProps<{
   turns: [VNode[], boolean, number][];

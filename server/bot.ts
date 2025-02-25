@@ -1,5 +1,5 @@
 import { io, type Socket } from "socket.io-client";
-import type { JoinRoomResponse } from "./utils/gameServer";
+import type { ClientMessage, JoinRoomResponse, ServerMessage } from "./gameServer";
 import type { BattleEvent } from "../game/events";
 import type { Options, Turn } from "../game/battle";
 import type { FormatId } from "~/utils/formats";

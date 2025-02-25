@@ -262,7 +262,7 @@ import { clamp, hpPercentExact } from "@/game/utils";
 import { moveList, type MoveId } from "@/game/moveList";
 import { stageTable, type VNode } from "#imports";
 import type { ClientVolatileFlag } from "~/utils";
-import type { BattleTimer, InfoRecord } from "~/server/utils/gameServer";
+import type { BattleTimer, InfoRecord } from "~/server/gameServer";
 import type { ActivePokemon } from "#build/components";
 import type { AnimationType } from "./ActivePokemon.vue";
 

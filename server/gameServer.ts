@@ -1,11 +1,11 @@
 import { v4 as uuid } from "uuid";
 import { Server as SocketIoServer, type Socket as SocketIoClient } from "socket.io";
-import type { Pokemon } from "../../game/pokemon";
-import { Battle, type Options, Player, type Turn } from "../../game/battle";
-import { type FormatId, type TeamProblems, formatDescs } from "../../utils/formats";
+import type { Pokemon } from "../game/pokemon";
+import { Battle, type Options, Player, type Turn } from "../game/battle";
+import { type FormatId, type TeamProblems, formatDescs } from "../utils/formats";
 import type { User } from "#auth-utils";
 import type { Gen1PokemonDesc } from "~/utils/pokemon";
-import type { InfoMessage } from "./info";
+import type { InfoMessage } from "./utils/info";
 
 export type JoinRoomResponse = {
   team?: Pokemon[];

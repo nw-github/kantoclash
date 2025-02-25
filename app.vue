@@ -121,7 +121,7 @@
 
 <script setup lang="ts">
 import { provideSSRWidth } from "@vueuse/core";
-import type { RoomDescriptor } from "./server/utils/gameServer";
+import type { RoomDescriptor } from "./server/gameServer";
 import type { WatchStopHandle } from "vue";
 import AlertModal from "./components/AlertModal.vue";
 
