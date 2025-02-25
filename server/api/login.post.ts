@@ -1,4 +1,6 @@
 import { userSchema } from "~/utils/schema";
+import { users } from "../db/schema";
+import { eq } from "drizzle-orm";
 
 declare module "#auth-utils" {
   interface User {
@@ -8,21 +10,15 @@ declare module "#auth-utils" {
   }
 }
 
-export const USERS = new Map<string, { password: string; id: string; admin?: boolean }>([
-  ["admin", { password: "", id: "0", admin: true }],
-  ["user", { password: "", id: "1" }],
-]);
-
-hashPassword("123").then(pw => (USERS.get("admin")!.password = pw));
-hashPassword("123").then(pw => (USERS.get("user")!.password = pw));
-
 export default defineEventHandler(async event => {
+  const db = useDrizzle();
   const { username, password } = await readValidatedBody(event, userSchema.parse);
-  const user = USERS.get(username);
-  if (!user || !(await verifyPassword(user.password, password))) {
+  const [user] = await db.select().from(users).where(eq(users.username, username));
+
+  if (!(await verifyPassword(user?.password, password))) {
     throw createError({ statusCode: 401, message: "Bad credentials" });
   }
 
-  await setUserSession(event, { user: { name: username, id: user.id, admin: user.admin } });
+  await setUserSession(event, { user: { name: username, id: String(user.id), admin: user.admin } });
   return {};
 });

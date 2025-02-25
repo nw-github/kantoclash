@@ -14,6 +14,11 @@ export default defineNuxtConfig({
     experimental: {
       websocket: true,
     },
+    esbuild: {
+      options: {
+        target: "es2022",
+      },
+    },
   },
   anime: {
     composables: true,

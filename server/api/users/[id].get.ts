@@ -1,10 +1,15 @@
-import { USERS } from "../login.post";
+import { eq } from "drizzle-orm";
+import { users } from "~/server/db/schema";
 
 export default defineEventHandler(async event => {
+  const db = useDrizzle();
   const id = getRouterParam(event, "id");
-  const res = USERS.entries().find(([_, user]) => id === user.id);
-  if (!res) {
-    throw createError({ statusCode: 404, message: "No user by this ID could be found" });
+  if (id) {
+    const [user] = await db.select().from(users).where(eq(users.id, +id));
+    if (user) {
+      return { name: user.username };
+    }
   }
-  return { name: res[0] };
+
+  throw createError({ statusCode: 404, message: "No user by this ID could be found" });
 });
