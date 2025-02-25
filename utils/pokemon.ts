@@ -27,7 +27,7 @@ export type Team = {
   format: FormatId;
 };
 
-export const serializeTeam = (team: Team) => team.pokemon.map(descToString).join("\n");
+export const serializeTeam = (pokemon: PokemonDesc[]) => pokemon.map(descToString).join("\n");
 
 export const descToString = (poke: PokemonDesc) => {
   const stats = (stats: Partial<Stats>, def: number, name: string) => {

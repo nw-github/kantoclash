@@ -2,7 +2,7 @@
   <Selector
     v-model:open="open"
     class="grow"
-    base="w-[31rem] max-h-60 left-[-7rem]"
+    base="w-80 sm:w-[31rem] max-h-60 sm:left-[-6rem]"
     :items
     searchable
     :filter
@@ -26,14 +26,19 @@
     <template #item="{ item: [, species] }">
       <div class="flex items-center gap-1">
         <Sprite :species="species" kind="box" :scale="1" />
-        <span class="text-xs">{{ species.name }}</span>
+        <span
+          class="text-xs sm:text-sm text-ellipsis whitespace-nowrap overflow-hidden"
+          :class="[isIllegal(species) && 'text-red-500']"
+        >
+          {{ species.name }}
+        </span>
       </div>
 
       <div class="flex items-center gap-2">
         <img
           v-for="type in species.types"
           :key="type"
-          class="size-[24px]"
+          class="size-[20px] sm:size-[24px]"
           :src="`/sprites/type/${type}.png`"
           :alt="type"
         />
@@ -42,14 +47,17 @@
             v-for="stat in statKeys"
             :key="stat"
             color="white"
-            class="w-11"
+            class="w-6 sm:w-11"
             size="xs"
             :ui="{ rounded: 'rounded-lg' }"
           >
-            <span class="text-[0.6rem] grow" :class="baseStatColor(species.stats[stat])">
+            <span
+              class="text-[0.5rem] text-center sm:text-left sm:text-[0.6rem] grow"
+              :class="baseStatColor(species.stats[stat])"
+            >
               {{ species.stats[stat] }}
             </span>
-            <span class="text-[0.5rem]">{{ toTitleCase(stat) }}</span>
+            <span class="text-[0.5rem] hidden sm:block">{{ toTitleCase(stat) }}</span>
           </UBadge>
         </div>
       </div>
@@ -72,9 +80,16 @@ const filter = (species: typeof items, query: string) => {
   const q = normalizeName(query);
   const all = species.filter(([id, _]) => id.includes(q));
   const currentSpecies = team.pokemon.map(p => normalizeName(p.species));
-  const subset = all.filter(([id, _]) => !currentSpecies.includes(id));
+  let subset = all.filter(([id, _]) => !currentSpecies.includes(id));
+  if (team.format === "nfe") {
+    subset = subset.filter(([_, species]) => species.evolves);
+  }
   return subset.length ? subset : all;
 };
 
 const onChoose = ([id, _]: [string, Species]) => (model.value = id);
+
+const isIllegal = (species: Species) => {
+  return team.format === "nfe" ? !species.evolves : false;
+};
 </script>

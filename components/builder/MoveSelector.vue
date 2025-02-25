@@ -22,7 +22,7 @@
 
       <div class="flex justify-end space-x-2">
         <div class="flex items-center">
-          <TypeBadge :type="move.type" />
+          <img class="size-[24px]" :src="`/sprites/type/${move.type}.png`" :alt="move.type" />
         </div>
         <div class="flex items-center">
           <img :src="category[move.category]" :width="24" :height="24" />

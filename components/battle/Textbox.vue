@@ -29,14 +29,14 @@
             :disabled="!players[myId] || players[myId].isSpectator || !!victor"
             @click="forfeitModalOpen = true"
           />
-          <TooltipButton
+          <!-- <TooltipButton
             text="Open Calculator"
             :popper="{ placement: 'top' }"
             icon="iconamoon:calculator-light"
             variant="ghost"
             color="gray"
             size="lg"
-          />
+          /> -->
         </div>
 
         <UPopover mode="hover" :popper="{ placement: 'bottom-start' }">

@@ -69,19 +69,21 @@
               />
             </UTooltip>
 
-            <div ref="menuDiv" class="min-[900px]:hidden p-2 flex justify-end items-start">
-              <UTooltip text="Open Chat" :popper="{ placement: 'top' }">
-                <UChip :show="unseen !== 0" :text="unseen" size="xl">
-                  <UButton
-                    ref="menuButton"
-                    icon="material-symbols:chat-outline"
-                    variant="link"
-                    color="gray"
-                    @click="(slideoverOpen = true), (unseen = 0)"
-                  />
-                </UChip>
-              </UTooltip>
-            </div>
+            <UTooltip
+              text="Open Chat"
+              :popper="{ placement: 'top' }"
+              class="min-[900px]:hidden px-2"
+            >
+              <UChip :show="unseen !== 0" :text="unseen" size="xl">
+                <UButton
+                  ref="menuButton"
+                  icon="material-symbols:chat-outline"
+                  variant="link"
+                  color="gray"
+                  @click="(slideoverOpen = true), (unseen = 0)"
+                />
+              </UChip>
+            </UTooltip>
           </div>
         </div>
       </div>
@@ -139,7 +141,7 @@
               @click="chosenPerspective = opponent"
             />
             <TooltipButton
-              icon="material-symbols:fast-rewind-outline"
+              icon="material-symbols:fast-rewind"
               text="First Turn"
               variant="ghost"
               color="gray"

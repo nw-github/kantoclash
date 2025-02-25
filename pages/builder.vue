@@ -157,20 +157,29 @@ onMounted(() => useTitle("Team Builder"));
 
 const importTeam = async () => {
   const clipboard = await navigator.clipboard.readText();
-  const team = clipboard
+  const res = clipboard
     .split("\n\n")
     .map(t => t.trim())
-    .filter(t => t.length)
-    .map(parsePokemon);
+    .filter(t => t.length);
+  let name = "New Team";
+  let format: FormatId = "standard";
+  let start = 0;
+
+  const match = res[0].match(/^===\s*(?:\[(.+)\])?\s*(.+?)\s*===$/);
+  if (match) {
+    start = 1;
+    name = match[2];
+    if (match[1] && (battleFormats as readonly string[]).includes(match[1])) {
+      format = match[1] as FormatId;
+    }
+  }
+
+  const team = res.slice(start).map(parsePokemon);
   if (!team.length) {
     return;
   }
 
-  const len = myTeams.value.push({
-    name: "New Team",
-    pokemon: team,
-    format: "standard",
-  });
+  const len = myTeams.value.push({ name, pokemon: team, format });
   editingTeam.value = myTeams.value[len - 1];
 };
 
@@ -194,9 +203,9 @@ const newTeam = () => {
   editingTeam.value = myTeams.value[len - 1];
 };
 
-const copyTeam = async (team: Team) => {
-  await navigator.clipboard.writeText(serializeTeam(team));
-  toast.add({ title: `'${team.name}' copied to clipboard!` });
+const copyTeam = async ({ name, format, pokemon }: Team) => {
+  await navigator.clipboard.writeText(`=== [${format}] ${name} ===\n\n` + serializeTeam(pokemon));
+  toast.add({ title: `'${name}' copied to clipboard!` });
 };
 
 const duplicateTeam = (team: Team) => {
