@@ -8,8 +8,8 @@
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
-    "migrate": "drizzle-kit generate && drizzle-kit migrate",
-    "migrate-dbg": "drizzle-kit generate && deno --unstable-sloppy-imports --env -A ./server/db/migrate.ts --seed"
+    "migrate": "drizzle-kit generate --config drizzle-prod.config.ts && drizzle-kit migrate --config drizzle-prod.config.ts",
+    "migrate-dbg": "drizzle-kit generate && drizzle-kit migrate"
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.2.17",
