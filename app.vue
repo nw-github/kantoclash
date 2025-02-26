@@ -12,10 +12,7 @@
                   link.vs && links.length > nLinks + 3 && 'hidden',
                 ]"
               >
-                <div
-                  class="text-ellipsis whitespace-nowrap overflow-hidden"
-                  :class="[link.vs && 'max-w-10 md:max-w-20 lg:max-w-36']"
-                >
+                <div class="truncate" :class="[link.vs && 'max-w-10 md:max-w-20 lg:max-w-36']">
                   <span
                     class="text-gray-500 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
                     :class="[isActive && 'text-gray-900 dark:text-white']"
@@ -56,7 +53,7 @@
                 color="gray"
                 variant="ghost"
                 :icon="
-                  $colorMode.value === 'dark'
+                  $colorMode.preference === 'dark' || $colorMode.value === 'dark'
                     ? 'material-symbols:dark-mode'
                     : 'material-symbols:light-mode'
                 "

@@ -26,10 +26,7 @@
     <template #item="{ item: [, species] }">
       <div class="flex items-center gap-1">
         <Sprite :species="species" kind="box" :scale="1" />
-        <span
-          class="text-xs sm:text-sm text-ellipsis whitespace-nowrap overflow-hidden"
-          :class="[isIllegal(species) && 'text-red-500']"
-        >
+        <span class="text-xs sm:text-sm truncate" :class="[isIllegal(species) && 'text-red-500']">
           {{ species.name }}
         </span>
       </div>

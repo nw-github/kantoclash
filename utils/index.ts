@@ -16,6 +16,7 @@ export const clientVolatiles = [...volatileFlags, "substitute", "confused", "dis
 export type ClientVolatileFlag = (typeof clientVolatiles)[number];
 
 export type ClientActivePokemon = {
+  hidden?: boolean;
   speciesId: SpeciesId;
   name: string;
   fainted: boolean;

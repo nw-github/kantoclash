@@ -10,9 +10,7 @@
         <div class="pl-0.5 pr-1">
           <img class="size-[24px]" :src="`/sprites/type/${move.type}.png`" :alt="move.type" />
         </div>
-        <span class="text-sm sm:text-base text-ellipsis whitespace-nowrap overflow-hidden">
-          {{ move.name }}
-        </span>
+        <span class="text-sm sm:text-base truncate">{{ move.name }}</span>
       </div>
       <span class="text-xs">{{ option.pp !== undefined ? option.pp : "--" }}/{{ move.pp }}</span>
     </UButton>

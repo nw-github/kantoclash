@@ -19,7 +19,7 @@
               color="green"
               icon="heroicons:arrow-down-tray-20-solid"
               variant="soft"
-              @click="importTeam"
+              @click="importOpen = true"
             />
           </UTooltip>
           <UTooltip text="New">
@@ -62,7 +62,7 @@
         >
           <div class="flex justify-between items-end">
             <div>
-              <span class="text-sm">{{ team.name }}</span>
+              <span class="text-sm truncate">{{ team.name }}</span>
               <div class="flex items-center space-x-1 text-xs">
                 <UIcon :name="formatInfo[team.format as FormatId].icon" class="size-3" />
                 <span>{{ formatInfo[team.format as FormatId].name }}</span>
@@ -124,6 +124,25 @@
         @close="editingTeam = undefined"
       />
     </UModal>
+
+    <UModal v-model="importOpen">
+      <UTextarea
+        v-model="importText"
+        :ui="{ base: 'h-full min-h-[23.5rem]', rounded: 'rounded-lg' }"
+        placeholder="Paste your team(s) here..."
+        variant="none"
+      >
+        <TooltipButton
+          text="Import"
+          :popper="{ placement: 'bottom-end', offsetDistance: 40 }"
+          class="absolute top-2 right-2"
+          icon="heroicons:arrow-down-tray-20-solid"
+          variant="ghost"
+          color="gray"
+          @click="importTeams()"
+        />
+      </UTextarea>
+    </UModal>
   </UCard>
 </template>
 
@@ -133,6 +152,7 @@ import { speciesList, type Species } from "~/game/species";
 const toast = useToast();
 const myTeams = useMyTeams();
 const editingTeam = ref<Team>();
+const importText = ref("");
 const open = computed({
   get() {
     return !!editingTeam.value;
@@ -141,6 +161,7 @@ const open = computed({
     editingTeam.value = undefined;
   },
 });
+const importOpen = ref(false);
 const isXS = useMediaQuery("(max-width: 480px)");
 
 const query = ref("");
@@ -155,32 +176,19 @@ const filteredTeams = computed(() => {
 
 onMounted(() => useTitle("Team Builder"));
 
-const importTeam = async () => {
-  const clipboard = await navigator.clipboard.readText();
-  const res = clipboard
-    .split("\n\n")
-    .map(t => t.trim())
-    .filter(t => t.length);
-  let name = "New Team";
-  let format: FormatId = "standard";
-  let start = 0;
-
-  const match = res[0].match(/^===\s*(?:\[(.+)\])?\s*(.+?)\s*===$/);
-  if (match) {
-    start = 1;
-    name = match[2];
-    if (match[1] && (battleFormats as readonly string[]).includes(match[1])) {
-      format = match[1] as FormatId;
-    }
+const importTeams = async () => {
+  importOpen.value = false;
+  const teams = parseTeams(importText.value);
+  importText.value = "";
+  myTeams.value.unshift(...teams);
+  if (teams.length === 1) {
+    editingTeam.value = myTeams.value.at(-1);
+  } else if (!teams.length) {
+    toast.add({
+      title: "Malformed Input!",
+      icon: "material-symbols:error-circle-rounded-outline-sharp",
+    });
   }
-
-  const team = res.slice(start).map(parsePokemon);
-  if (!team.length) {
-    return;
-  }
-
-  const len = myTeams.value.push({ name, pokemon: team, format });
-  editingTeam.value = myTeams.value[len - 1];
 };
 
 const deleteTeam = (team: Team) => {
@@ -195,17 +203,17 @@ const deleteTeam = (team: Team) => {
 };
 
 const newTeam = () => {
-  const len = myTeams.value.push({
+  myTeams.value.unshift({
     name: "New Team",
     format: "standard",
     pokemon: [parsePokemon("")],
   });
-  editingTeam.value = myTeams.value[len - 1];
+  editingTeam.value = myTeams.value[0];
 };
 
-const copyTeam = async ({ name, format, pokemon }: Team) => {
-  await navigator.clipboard.writeText(`=== [${format}] ${name} ===\n\n` + serializeTeam(pokemon));
-  toast.add({ title: `'${name}' copied to clipboard!` });
+const copyTeam = async (team: Team) => {
+  await navigator.clipboard.writeText(teamToString(team));
+  toast.add({ title: `'${team.name}' copied to clipboard!` });
 };
 
 const duplicateTeam = (team: Team) => {

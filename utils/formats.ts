@@ -58,7 +58,7 @@ const isBadMove = (move: Move, id: MoveId) => {
   return badMoves.has(id) || move instanceof AlwaysFailMove;
 };
 
-const randoms = (validSpecies: (s: Species, id: SpeciesId) => boolean, level = 100) => {
+export const randoms = (validSpecies: (s: Species, id: SpeciesId) => boolean, level = 100) => {
   return getRandomPokemon(6, validSpecies, (s, id) => {
     const moves = getRandomMoves(4, s.moves, (move, id) => !isBadMove(move, id));
     const stab = s.moves.filter(m => {

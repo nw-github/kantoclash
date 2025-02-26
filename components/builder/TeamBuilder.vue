@@ -14,6 +14,18 @@
         <div class="flex space-x-0.5">
           <!-- <UButton icon="material-symbols:save-outline" color="gray" variant="ghost" /> -->
           <TooltipButton
+            :key="+teamPokepaste"
+            :text="teamPokepaste ? 'Team Edit' : 'Team PokePaste'"
+            :icon="
+              teamPokepaste
+                ? 'material-symbols:edit-square-outline'
+                : 'material-symbols:content-paste'
+            "
+            color="gray"
+            variant="ghost"
+            @click="teamPokepaste = !teamPokepaste"
+          />
+          <TooltipButton
             text="Delete Team"
             icon="material-symbols:delete-outline"
             color="red"
@@ -31,7 +43,7 @@
       </div>
     </template>
 
-    <div class="w-full h-full flex flex-col sm:flex-row">
+    <div v-if="!teamPokepaste" class="w-full h-full flex flex-col sm:flex-row">
       <div class="hidden sm:block">
         <UTabs
           v-model="selectedPokeIdx"
@@ -137,17 +149,11 @@
           <div class="flex space-x-2">
             <div class="flex flex-col">
               <PokemonSelector v-model="selectedPoke.data.species" :team="team" />
-              <UInput
+              <InputWithMax
                 v-model="selectedPoke.data.name"
                 :maxlength="24"
                 :placeholder="selectedPoke.species?.name ?? ''"
-              >
-                <template #trailing>
-                  <span class="text-xs text-gray-500 dark:text-gray-400">
-                    {{ selectedPoke.data.name?.length ?? 0 }}/24
-                  </span>
-                </template>
-              </UInput>
+              />
             </div>
             <div class="flex flex-col justify-between gap-1">
               <div class="flex justify-between items-center">
@@ -190,7 +196,7 @@
                 :max="31"
               />
 
-              <template v-if="selectedPoke.data.species">
+              <template v-if="selectedPoke.species">
                 <span
                   v-if="selectedPoke.data.species"
                   class="text-center px-1.5 min-w-10 text-gray-500"
@@ -199,9 +205,9 @@
                 </span>
                 <span
                   class="text-center px-1.5 min-w-8 text-xs"
-                  :class="baseStatColor(selectedPoke.species.stats[stat])"
+                  :class="baseStatColor(selectedPoke.species.stats[stat] ?? 0)"
                 >
-                  {{ selectedPoke.species.stats[stat] }}
+                  {{ selectedPoke.species.stats[stat] ?? 0 }}
                 </span>
               </template>
               <template v-else>
@@ -213,20 +219,44 @@
         </UCard>
         <UTextarea
           v-else
-          v-model="textAreaText"
+          v-model="currentPokeText"
           class="grow"
           :ui="{ base: 'h-full min-h-[23.5rem]', rounded: 'rounded-lg' }"
-          @change="team.pokemon[selectedPokeIdx] = parsePokemon(textAreaText.trim())"
+          autofocus
+          @change="team.pokemon[selectedPokeIdx] = parsePokemon(currentPokeText.trim())"
         >
-          <UButton
+          <TooltipButton
+            text="Copy"
+            :popper="{ placement: 'bottom-end', offsetDistance: 40 }"
             class="absolute top-2 right-2"
             icon="material-symbols:content-copy-outline"
             variant="ghost"
             color="gray"
-            @click="copyTextArea"
+            @click="copyTextArea(currentPokeText)"
           />
         </UTextarea>
       </div>
+    </div>
+    <div v-else class="w-full h-[27.35rem] p-2">
+      <UTextarea
+        v-model="teamText"
+        class="h-full"
+        :ui="{ base: 'h-full', rounded: 'rounded-lg' }"
+        placeholder="Paste your team here..."
+        variant="none"
+        autofocus
+        @change="teamTextChange"
+      >
+        <TooltipButton
+          text="Copy"
+          :popper="{ placement: 'bottom-end', offsetDistance: 40 }"
+          class="absolute top-1 right-2"
+          icon="material-symbols:content-copy-outline"
+          variant="ghost"
+          color="gray"
+          @click="copyTextArea(teamText)"
+        />
+      </UTextarea>
     </div>
   </UCard>
 </template>
@@ -252,11 +282,14 @@ const toast = useToast();
 const items = computed(() => {
   return team.pokemon.map(poke => ({ label: poke.name ?? "", species: poke.species }));
 });
-const textAreaText = ref("");
+const teamText = ref("");
+const currentPokeText = ref("");
 const selectedPokeIdx = ref(0);
 const selectedPoke = computed(() => ({
   data: team.pokemon[selectedPokeIdx.value],
-  species: speciesList[team.pokemon[selectedPokeIdx.value].species as SpeciesId],
+  species: speciesList[team.pokemon[selectedPokeIdx.value].species as SpeciesId] as
+    | Species
+    | undefined,
   evProxy: reactive(
     new Proxy(team.pokemon[selectedPokeIdx.value].evs, {
       get(target, prop) {
@@ -269,10 +302,17 @@ const selectedPoke = computed(() => ({
   ),
 }));
 const selectedTab = ref(0);
+const teamPokepaste = ref(false);
 
 watch([selectedPokeIdx, selectedTab], ([_, tab]) => {
   if (tab === 1) {
-    textAreaText.value = descToString(team.pokemon[selectedPokeIdx.value]);
+    currentPokeText.value = descToString(team.pokemon[selectedPokeIdx.value]);
+  }
+});
+
+watch(teamPokepaste, v => {
+  if (v) {
+    teamText.value = teamToString(team);
   }
 });
 
@@ -282,8 +322,8 @@ for (const poke of team.pokemon) {
   }
 }
 
-const copyTextArea = () => {
-  navigator.clipboard.writeText(textAreaText.value);
+const copyTextArea = (text: string) => {
+  navigator.clipboard.writeText(text);
   toast.add({ title: `Copied to clipboard!` });
 };
 
@@ -330,5 +370,20 @@ const addPokemon = async () => {
   const length = team.pokemon.push(parsePokemon(""));
   await nextTick();
   selectedPokeIdx.value = length - 1;
+};
+
+const teamTextChange = () => {
+  const [parsed] = parseTeams(teamText.value);
+  if (!parsed) {
+    return;
+  }
+
+  if (parsed.pokemon.length === 0) {
+    parsed.pokemon.push(parsePokemon(""));
+  }
+
+  team.format = parsed.format;
+  team.name = parsed.name;
+  team.pokemon = parsed.pokemon;
 };
 </script>

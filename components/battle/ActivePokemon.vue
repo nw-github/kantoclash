@@ -2,7 +2,7 @@
   <div class="w-full flex flex-col items-center">
     <div
       class="w-11/12 sm:w-3/4 flex flex-col gap-0.5 sm:gap-1 text-sm z-30"
-      :class="{ invisible: !poke }"
+      :class="{ invisible: !poke || poke.hidden }"
     >
       <div class="flex justify-between flex-col sm:flex-row">
         <span class="font-bold">{{ poke?.name ?? "--" }}</span>
@@ -47,7 +47,7 @@
 
     <div class="flex flex-col items-center">
       <div class="w-[128px] h-[117px] sm:w-[256px] sm:h-[234px] items-center justify-center flex">
-        <UPopover mode="hover" :popper="{ placement: 'top', offsetDistance: 0 }">
+        <UPopover mode="hover" :popper="{ placement: 'top' }">
           <div ref="sprite" class="sprite z-20" :class="{ back, front: !back, invisible: !poke }">
             <Sprite
               :species="species"
@@ -300,13 +300,12 @@ const playAnimation = (anim: AnimationType, name?: string, cb?: () => void) => {
       const pbRect = pokeBall.value.getBoundingClientRect();
       const gRect = ground.value!.getBoundingClientRect();
 
-      const isSmall = window.innerWidth < remToPx(40);
       const [x, y] = relativePos(
         pbRect,
         gRect.left + gRect.width / 2,
-        gRect.top + remToPx(isSmall ? 3 : 0),
+        gRect.top + remToPx(lessThanSm.value ? 3 : 0),
       );
-      const [_, sprY] = relativePos(sprRect, 0, gRect.top - remToPx(isSmall ? 1.2 : 2.8));
+      const [_, sprY] = relativePos(sprRect, 0, gRect.top - remToPx(lessThanSm.value ? 1.2 : 2.8));
 
       pbRow.value = 10;
 

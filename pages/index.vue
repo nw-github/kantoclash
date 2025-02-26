@@ -22,7 +22,24 @@
             :options="validTeams"
             :disabled="!formatInfo[format].needsTeam || findingMatch"
             option-attribute="name"
-          />
+            :ui-menu="{ option: { container: 'w-full justify-between' } }"
+            selected-icon=""
+            clear-search-on-close
+          >
+            <template #option="{ option: team }">
+              <span class="truncate text-xs sm:text-base">{{ team.name }}</span>
+
+              <div class="flex justify-center">
+                <Sprite
+                  v-for="(poke, i) in team.pokemon"
+                  :key="i"
+                  :species="(speciesList as Record<string, Species>)[poke.species]"
+                  :scale="lessThanSm ? 1 : 1.2"
+                  kind="box"
+                />
+              </div>
+            </template>
+          </USelectMenu>
         </div>
       </ClientOnly>
       <UButton
@@ -102,7 +119,8 @@
 </template>
 
 <script setup lang="ts">
-import { speciesList } from "~/game/species";
+import { breakpointsTailwind } from "@vueuse/core";
+import { speciesList, type Species } from "~/game/species";
 
 const emit = defineEmits<{ (e: "requestLogin"): void }>();
 
@@ -129,6 +147,8 @@ const filteredRooms = computed(() => {
     .filter(room => !q || room.name.toLowerCase().includes(q.toLowerCase()))
     .filter(room => !f.length || f.includes(room.format));
 });
+const breakpoint = useBreakpoints(breakpointsTailwind);
+const lessThanSm = breakpoint.smaller("sm");
 
 onMounted(() => useTitle("Standoff"));
 

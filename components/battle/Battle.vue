@@ -391,7 +391,7 @@ const runTurn = async (live: boolean, turnNo: number) => {
 
   const playCry = (speciesId: SpeciesId, pitchDown = false) => {
     const sprite = speciesList[speciesId].dexId.toString().padStart(3, "0");
-    return sound.play("cries", { sprite, volume: sfxVol.value, detune: pitchDown ? -450 : 0 });
+    return sound.play("cries", { sprite, volume: sfxVol.value, detune: pitchDown ? -350 : 0 });
   };
 
   const playDmg = (eff: number) => {
@@ -442,6 +442,17 @@ const runTurn = async (live: boolean, turnNo: number) => {
 
         // preload the image
         player.active!.speciesId = e.speciesId;
+      } else {
+        player.active = {
+          speciesId: e.speciesId,
+          hidden: true,
+          stages: {},
+          flags: {},
+          fainted: true,
+          name: "",
+          hpPercent: 0,
+          level: 100,
+        };
       }
 
       pushHtml(html);
@@ -912,6 +923,10 @@ const onTurnsReceived = async (count: number) => {
     if (paused.value) {
       turnQueue = 0;
       break;
+    }
+
+    if (turnQueue && skippingToTurn.value <= currentTurn - 1 && isBattleOver.value) {
+      await delay(200);
     }
   }
   isRunningTurn.value = false;

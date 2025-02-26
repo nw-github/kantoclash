@@ -2,6 +2,7 @@ import { moveList, type MoveId } from "~/game/moveList";
 import type { Move } from "~/game/moves";
 import { speciesList, type SpeciesId } from "~/game/species";
 import { statKeys, type Stats } from "~/game/utils";
+import { battleFormats } from "~/utils/formats";
 
 export type Gen1PokemonDesc = {
   dvs: Partial<Stats>;
@@ -27,7 +28,9 @@ export type Team = {
   format: FormatId;
 };
 
-export const serializeTeam = (pokemon: PokemonDesc[]) => pokemon.map(descToString).join("\n");
+export const teamToString = ({ name, pokemon, format }: Team) => {
+  return `=== [${format}] ${name} ===\n\n` + pokemon.map(descToString).join("\n");
+};
 
 export const descToString = (poke: PokemonDesc) => {
   const stats = (stats: Partial<Stats>, def: number, name: string) => {
@@ -74,6 +77,7 @@ const ivsRegex = /^IVs:\s*(\d+\s+\w+\s*\/?\s*)+/i;
 const moveRegex = /^\s*-\s*(.+)\s*/;
 const statRegex = /\s*(\d+)\s+(\w+)\s*/g;
 const ignoreChars = /(\s|-)+/g;
+const teamRegex = /^===\s*(?:\[(.+)\])?\s*(.+?)\s*===$/;
 
 export const parsePokemon = (src: string): PokemonDesc => {
   const moves: string[] = [];
@@ -117,6 +121,43 @@ export const parsePokemon = (src: string): PokemonDesc => {
     }
   }
   return { species: speciesName, evs, ivs, level, moves, name };
+};
+
+export const parseTeams = (src: string) => {
+  const res = src
+    .split("\n\n")
+    .map(t => t.trim())
+    .filter(t => t.length);
+  const teams: Team[] = [];
+  for (let i = 0; i < res.length; i++) {
+    let name = "New Team";
+    let format: FormatId = "standard";
+
+    const match = res[i].match(teamRegex);
+    if (match) {
+      name = match[2];
+      if (match[1] && (battleFormats as readonly string[]).includes(match[1])) {
+        format = match[1] as FormatId;
+      }
+
+      if (match[1] === "gen1ou") {
+        format = "standard";
+      }
+      ++i;
+    }
+
+    const pokemon = [];
+    for (; i < res.length; i++) {
+      if (res[i].match(teamRegex) || pokemon.length >= 6) {
+        --i;
+        break;
+      }
+
+      pokemon.push(parsePokemon(res[i]));
+    }
+    teams.push({ name, pokemon, format });
+  }
+  return teams;
 };
 
 export const convertDesc = (desc: PokemonDesc): Gen1PokemonDesc => {

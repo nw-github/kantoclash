@@ -39,5 +39,7 @@ export default defineNitroPlugin(nitro => {
   if (import.meta.dev) {
     startBot("randoms");
     startBot("randoms_nfe");
+    startBot("standard");
+    startBot("nfe");
   }
 });

@@ -9,7 +9,7 @@
       <div class="w-full space-y-0.5">
         <div class="flex items-center gap-1 w-full justify-start">
           <Sprite kind="box" :species="species" />
-          <span class="text-ellipsis whitespace-nowrap overflow-hidden">{{ poke.name }}</span>
+          <span class="truncate">{{ poke.name }}</span>
           <StatusOrFaint :poke="poke" size="xs" class="ml-auto" />
         </div>
         <UProgress :max="poke.stats.hp" :value="poke.hp" :color="colorForHp" class="w-full h-1" />
