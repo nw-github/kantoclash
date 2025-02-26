@@ -267,6 +267,7 @@ import type { ClientVolatileFlag } from "~/utils";
 import type { BattleTimer, InfoRecord } from "~/server/gameServer";
 import type { ActivePokemon } from "#build/components";
 import type { AnimationType } from "./ActivePokemon.vue";
+import criesSpritesheet from "~/public/effects/cries.json";
 
 const emit = defineEmits<{
   (e: "chat", message: string): void;
@@ -312,11 +313,12 @@ const victor = ref<string>();
 const htmlTurns = ref<[VNode[], boolean, number][]>([]);
 const liveEvents = ref<[VNode[], number][]>([]);
 
-const savedAudio: Record<string, AudioBuffer> = {};
-let audioContext: AudioContext | undefined;
-
-onMounted(() => (audioContext = new AudioContext()));
-onUnmounted(() => audioContext && audioContext.close(), (audioContext = undefined));
+const sound = useAudio({
+  cries: { src: "/effects/cries.wav", sprites: criesSpritesheet },
+  supereffective: { src: "/effects/supereffective.mp3" },
+  ineffective: { src: "/effects/ineffective.mp3" },
+  neutral: { src: "/effects/neutral.mp3" },
+});
 
 useIntervalFn(() => {
   liveEvents.value = liveEvents.value.filter(ev => Date.now() - ev[1] < 1400);
@@ -387,38 +389,14 @@ const timeLeft = () => {
 const runTurn = async (live: boolean, turnNo: number) => {
   const isLive = () => live && skippingToTurn.value <= turnNo;
 
-  const playSound = async (path: string, pitchDown = false) => {
-    if (!isLive() || !audioContext) {
-      return;
-    }
-
-    if (!savedAudio[path]) {
-      const sound = await $fetch<Blob>(path, { method: "GET" });
-      savedAudio[path] = await audioContext.decodeAudioData(await sound.arrayBuffer());
-    }
-    const source = audioContext.createBufferSource();
-    source.buffer = savedAudio[path];
-
-    const gain = audioContext.createGain();
-    gain.gain.value = sfxVol.value;
-    gain.connect(audioContext.destination);
-
-    source.connect(gain);
-    source.detune.value = pitchDown ? -350 : 0;
-    return new Promise(resolve => {
-      source.onended = resolve;
-      source.start();
-    });
-  };
-
   const playCry = (speciesId: SpeciesId, pitchDown = false) => {
-    const track = speciesList[speciesId].dexId.toString().padStart(3, "0");
-    return playSound(`/effects/cries/${track}.wav`, pitchDown);
+    const sprite = speciesList[speciesId].dexId.toString().padStart(3, "0");
+    return sound.play("cries", { sprite, volume: sfxVol.value, detune: pitchDown ? -450 : 0 });
   };
 
   const playDmg = (eff: number) => {
-    const track = eff > 1 ? "supereffective" : eff < 1 ? "ineffective" : "neutral";
-    return playSound(`/effects/${track}.mp3`);
+    const name = eff > 1 ? "supereffective" : eff < 1 ? "ineffective" : "neutral";
+    return sound.play(name, { volume: sfxVol.value });
   };
 
   const playAnimation = async (id: string, anim: AnimationType, name?: string, cb?: () => void) => {
