@@ -89,7 +89,7 @@ export const moveList = Object.freeze({
       target.v.disabled = { indexInMoves, turns: battle.rng.int(1, 8) };
       battle.event({
         type: "disable",
-        id: target.owner.id,
+        src: target.owner.id,
         move: target.base.moves[indexInMoves],
       });
       target.handleRage(battle);
@@ -183,7 +183,7 @@ export const moveList = Object.freeze({
         move: battle.rng.choice(target.base.moves)!,
       };
 
-      battle.event({ type: "mimic", id: user.owner.id, move: user.v.mimic.move });
+      battle.event({ type: "mimic", src: user.owner.id, move: user.v.mimic.move });
       return false;
     },
   }),

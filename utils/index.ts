@@ -89,7 +89,7 @@ const descriptions: Partial<Record<MoveId, string>> = {
     "for both the user and the target. Also turns bad poison into regular poison for the " +
     "user, and removes any non-volatile status for the target.",
   leechseed:
-    "Plants a seed on the target. After the target attacks, it will lose 1/16 of their max " +
+    "Plants a seed on the target. After the target attacks, it will lose 1/16 of its max " +
     "HP, and it will be restored to the user. Ends if the target switches out.",
   metronome: "Selects any move except Struggle for the user to use at random.",
   mirrormove: "Uses the last move targeted at the user by a pokemon still on the field.",

@@ -233,7 +233,7 @@ export class Battle {
   }
 
   info(src: ActivePokemon, why: InfoReason) {
-    return this.event({ type: "info", id: src.owner.id, why });
+    return this.event({ type: "info", src: src.owner.id, why });
   }
 
   opponentOf(player: Player): Player {
@@ -333,7 +333,7 @@ export class Battle {
 
   forfeit(player: Player, timer: boolean) {
     this._victor = this.opponentOf(player);
-    this.event({ type: "info", id: player.id, why: timer ? "forfeit_timer" : "forfeit" });
+    this.event({ type: "info", src: player.id, why: timer ? "forfeit_timer" : "forfeit" });
     this.event({ type: "end", victor: this._victor.id });
     for (const player of this.players) {
       player.options = undefined;
@@ -346,7 +346,7 @@ export class Battle {
     this._victor = this.players[0];
     for (const player of this.players) {
       if (timer) {
-        this.event({ type: "info", id: player.id, why: "forfeit_timer" });
+        this.event({ type: "info", src: player.id, why: "forfeit_timer" });
       }
       player.options = undefined;
     }
@@ -437,7 +437,7 @@ export class Battle {
         result[i] = { ...e, hpBefore: undefined, hpAfter: undefined };
       } else if (e.type === "switch" && e.src !== player?.id) {
         result[i] = { ...e, hp: undefined, indexInTeam: -1 };
-      } else if ((e.type === "stages" || e.type === "status") && e.id !== player?.id) {
+      } else if ((e.type === "stages" || e.type === "status") && e.src !== player?.id) {
         // FIXME: this might not be accurate if two status moves were used in the same turn.
         result[i] = {
           ...e,
@@ -614,7 +614,7 @@ export class ActivePokemon {
     this.applyStatusDebuff();
     battle.event({
       type: "status",
-      id: this.owner.id,
+      src: this.owner.id,
       status,
       stats: { ...this.v.stats },
     });
@@ -640,7 +640,7 @@ export class ActivePokemon {
     if (mods.length) {
       battle.event({
         type: "stages",
-        id: this.owner.id,
+        src: this.owner.id,
         stages: mods,
         stats: { ...this.v.stats },
       });

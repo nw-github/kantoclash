@@ -72,7 +72,7 @@ export class DamagingMove extends Move {
     }
 
     if ((this.flag === "charge" || this.flag === "charge_invuln") && user.v.charging !== this) {
-      battle.event({ type: "charge", id: user.owner.id, move: battle.moveIdOf(this)! });
+      battle.event({ type: "charge", src: user.owner.id, move: battle.moveIdOf(this)! });
       user.v.charging = this;
       user.v.invuln = this.flag === "charge_invuln" || user.v.invuln;
       return false;

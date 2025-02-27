@@ -161,14 +161,14 @@ export async function startBot(format: FormatId = "randoms", botFunction: BotFun
         // if (e.why === "substitute") {
         // }
       } else if (e.type === "status") {
-        players[e.id].active!.status = e.status;
-        if (e.id === myId) {
-          players[e.id].active!.stats = e.stats;
+        players[e.src].active!.status = e.status;
+        if (e.src === myId) {
+          players[e.src].active!.stats = e.stats;
           team![activeIndex].status = e.status;
         }
       } else if (e.type === "stages") {
         players[myId].active!.stats = e.stats;
-        const active = players[e.id].active!;
+        const active = players[e.src].active!;
         for (const [stat, val] of e.stages) {
           active.stages[stat] = clamp((active.stages[stat] ?? 0) + val, -6, 6);
         }
@@ -185,9 +185,9 @@ export async function startBot(format: FormatId = "randoms", botFunction: BotFun
               continue;
             }
 
-            if (player === e.id && active.status === "tox") {
+            if (player === e.src && active.status === "tox") {
               active.status = "psn";
-            } else if (player !== e.id) {
+            } else if (player !== e.src) {
               active.status = undefined;
             }
 
@@ -196,7 +196,7 @@ export async function startBot(format: FormatId = "randoms", botFunction: BotFun
 
           players[myId].active!.stats = undefined;
         } else if (e.why === "wake" || e.why === "thaw") {
-          players[e.id].active!.status = undefined;
+          players[e.src].active!.status = undefined;
         }
       } else if (e.type === "conversion") {
         players[e.user].active!.conversion = e.types;

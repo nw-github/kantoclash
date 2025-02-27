@@ -1,4 +1,4 @@
 :root {
-  --stat-up: rgb(19, 192, 19);
-  --stat-down: #ff0800;
+  --stat-up: theme("colors.green.600");
+  --stat-down: theme("colors.red.600");
 }

@@ -79,7 +79,10 @@
           <h2 class="text-xl font-bold">Turn {{ turnNo }}</h2>
         </div>
         <div class="events p-1">
-          <component :is="() => turn" v-if="i > 0" />
+          <template v-if="i > 0">
+            <!-- eslint-disable-next-line vue/valid-v-for -->
+            <Event v-for="e of turn" :key="perspective" :e :my-id :players :perspective />
+          </template>
           <p v-for="chat in chats[i] ?? []" :key="JSON.stringify(chat)">
             <span v-if="chat.type === 'chat' && !mutedPlayers.includes(chat.id)">
               <b>{{ players[chat.id]?.name ?? "???" }}</b
@@ -107,7 +110,10 @@
               >.
             </span>
           </p>
-          <component :is="() => turn" v-if="i === 0" />
+          <template v-if="i === 0">
+            <!-- eslint-disable-next-line vue/valid-v-for -->
+            <Event v-for="e of turn" :key="perspective" :e :my-id :players :perspective />
+          </template>
         </div>
       </template>
       <div ref="scrollPoint" />
@@ -158,32 +164,14 @@
 </template>
 
 <style>
-@import "@/assets/colors.css";
 .events {
-  .red {
-    color: var(--stat-down);
-    @apply text-sm;
-  }
-
-  .green {
-    color: green;
-    @apply text-sm;
-  }
-
-  > * {
-    padding: 0 0.25rem;
-  }
-
   .move,
   .confused {
     padding-top: 0.5rem;
   }
 
   .move + .move,
-  .move:first-child {
-    padding-top: 0;
-  }
-
+  .move:first-child,
   .confused + .move {
     padding-top: 0;
   }
@@ -196,8 +184,9 @@ import { useMutedPlayerIds } from "~/composables/states";
 import type { InfoRecord } from "~/server/gameServer";
 
 const props = defineProps<{
-  turns: [VNode[], boolean, number][];
+  turns: [UIBattleEvent[], boolean, number][];
   players: Record<string, ClientPlayer>;
+  perspective: string;
   chats: InfoRecord;
   victor?: string;
   closable?: boolean;

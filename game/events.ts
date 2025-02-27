@@ -107,14 +107,14 @@ type VictoryEvent = {
 
 type StatusEvent = {
   type: "status";
-  id: PlayerId;
+  src: PlayerId;
   status: Status;
   stats: VolatileStats;
 };
 
 type StagesEvent = {
   type: "stages";
-  id: PlayerId;
+  src: PlayerId;
   stages: [Stages, number][];
   stats: VolatileStats;
 };
@@ -154,7 +154,7 @@ export type InfoReason =
 
 type InfoEvent = {
   type: "info";
-  id: PlayerId;
+  src: PlayerId;
   why: InfoReason;
 };
 
@@ -166,19 +166,19 @@ type TransformEvent = {
 
 type DisableEvent = {
   type: "disable";
-  id: PlayerId;
+  src: PlayerId;
   move: MoveId;
 };
 
 type ChargeEvent = {
   type: "charge";
-  id: PlayerId;
+  src: PlayerId;
   move: MoveId;
 };
 
 type MimicEvent = {
   type: "mimic";
-  id: PlayerId;
+  src: PlayerId;
   move: MoveId;
 };
 
