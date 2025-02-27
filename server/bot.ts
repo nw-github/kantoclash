@@ -255,7 +255,7 @@ export async function startBot(format: FormatId = "randoms", botFunction: BotFun
       for (const event of turn.events) {
         handleEvent(event);
 
-        if (event.type === "victory") {
+        if (event.type === "end") {
           done = true;
         }
       }
