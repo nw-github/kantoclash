@@ -9,7 +9,18 @@
         <UPopover mode="hover">
           <UButton icon="material-symbols:info-outline-rounded" color="gray" variant="ghost" />
           <template #panel>
-            <span class="p-1">{{ formatInfo[selectedFormat].desc }}</span>
+            <div class="flex flex-col gap-2 p-1">
+              <span>{{ formatInfo[selectedFormat].desc }}</span>
+
+              <div class="flex flex-col">
+                <span class="font-semibold">Mods:</span>
+                <template v-for="(val, mod) in formatInfo[selectedFormat].mods" :key="mod">
+                  <span v-if="val" class="text-xs text-gray-600 dark:text-gray-400">
+                    {{ modNames[mod].name }}: {{ modNames[mod].desc }}
+                  </span>
+                </template>
+              </div>
+            </div>
           </template>
         </UPopover>
       </div>

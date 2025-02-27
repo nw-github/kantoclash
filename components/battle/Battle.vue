@@ -790,6 +790,7 @@ const htmlForEvent = (e: BattleEvent) => {
       cant_substitute: "{} doesn't have enough HP to create a substitute!",
       has_substitute: "{} already has a substitute!",
       fail_generic: "But it failed!",
+      fail_sleep_clause: "But it failed!",
       whirlwind: "But it failed!",
       flinch: "{} flinched!",
       splash: "No effect!",
@@ -833,6 +834,10 @@ const htmlForEvent = (e: BattleEvent) => {
           clazz[e.why],
         ),
       );
+
+      if (e.why === "fail_sleep_clause") {
+        res.push(text("(Sleep Clause Mod: Only one Pokémon may be put to sleep at a time)"));
+      }
     }
   } else if (e.type === "transform") {
     res.push(text(`${pname(e.src)} transformed into ${pname(e.target, false)}!`));

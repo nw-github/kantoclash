@@ -122,6 +122,7 @@ export type FailReason =
   | "immune"
   | "miss"
   | "fail_generic"
+  | "fail_sleep_clause"
   | "has_substitute"
   | "cant_substitute"
   | "flinch"

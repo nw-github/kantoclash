@@ -1,21 +1,12 @@
-import { Pokemon } from "../game/pokemon";
-import { moveList, type MoveId } from "../game/moveList";
-import { speciesList, type Species, type SpeciesId } from "../game/species";
-import { AlwaysFailMove, type Move } from "../game/moves";
+import { Pokemon } from "../../game/pokemon";
+import { moveList, type MoveId } from "../../game/moveList";
+import { speciesList, type Species, type SpeciesId } from "../../game/species";
+import { AlwaysFailMove, StageMove, type Move } from "../../game/moves";
 import random from "random";
 import { statKeys } from "~/game/utils";
 import { z } from "zod";
-
-export const battleFormats = [
-  "standard",
-  "nfe",
-  "randoms",
-  "randoms_nfe",
-  "truly_randoms",
-  "metronome",
-] as const;
-
-export type FormatId = (typeof battleFormats)[number];
+import type { FormatId } from "~/utils/data";
+import type { Gen1PokemonDesc } from "~/utils/pokemon";
 
 export type TeamProblems = { path: (string | number)[]; message: string }[];
 
@@ -55,6 +46,13 @@ const getRandomMoves = (
 };
 
 const isBadMove = (move: Move, id: MoveId) => {
+  if (
+    move instanceof StageMove &&
+    move.stages.some(stages => stages[0] === "acc" || stages[0] === "eva")
+  ) {
+    return true;
+  }
+
   return badMoves.has(id) || move instanceof AlwaysFailMove;
 };
 

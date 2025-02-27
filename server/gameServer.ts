@@ -2,10 +2,12 @@ import { v4 as uuid } from "uuid";
 import { Server as SocketIoServer, type Socket as SocketIoClient } from "socket.io";
 import type { Pokemon } from "../game/pokemon";
 import { Battle, type Options, Player, type Turn } from "../game/battle";
-import { type FormatId, type TeamProblems, formatDescs } from "../utils/formats";
+import { type TeamProblems, formatDescs } from "./utils/formats";
 import type { User } from "#auth-utils";
 import type { Gen1PokemonDesc } from "~/utils/pokemon";
 import type { InfoMessage } from "./utils/info";
+import { formatInfo } from "~/utils";
+import type { FormatId } from "~/utils/data";
 
 export type JoinRoomResponse = {
   team?: Pokemon[];
@@ -620,7 +622,12 @@ export class GameServer extends SocketIoServer<ClientMessage, ServerMessage> {
   }
 
   private setupRoom(player: Player, opponent: Player, format: FormatId) {
-    const [battle, turn0] = Battle.start(player, opponent, formatDescs[format].chooseLead);
+    const [battle, turn0] = Battle.start(
+      player,
+      opponent,
+      formatDescs[format].chooseLead,
+      formatInfo[format].mods,
+    );
     const room = new Room(uuid(), battle, turn0, format, this);
     this.rooms.set(room.id, room);
 

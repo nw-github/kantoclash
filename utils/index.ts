@@ -7,7 +7,7 @@ import {
   AlwaysFailMove,
   RecoveryMove,
 } from "../game/moves";
-import type { VolatileStats } from "../game/battle";
+import type { Mods, VolatileStats } from "../game/battle";
 import { moveList, type MoveId } from "../game/moveList";
 import type { SpeciesId } from "../game/species";
 import { volatileFlags, type Stages, type Type } from "../game/utils";
@@ -141,6 +141,7 @@ type FormatInfo = {
   icon: string;
   needsTeam: boolean;
   desc: string;
+  mods: Mods;
 };
 
 export const formatInfo: Record<FormatId, FormatInfo> = {
@@ -149,36 +150,57 @@ export const formatInfo: Record<FormatId, FormatInfo> = {
     icon: "akar-icons:sword",
     desc: "A standard battle allowing all Pokémon. Bring your own team.",
     needsTeam: true,
+    mods: { sleepClause: true, freezeClause: true },
   },
   nfe: {
     name: "Standard Battle (NFE)",
     icon: "mingcute:mickeymouse-line",
     desc: "A standard battle allowing only Pokémon that have not fully evoled. Bring your own team.",
     needsTeam: true,
+    mods: { sleepClause: true, freezeClause: true },
   },
   randoms: {
     name: "Random Battle",
     icon: "mdi:dice-3-outline",
     desc: "A standard Pokémon battle, but your team and sets will be randomly generated.",
     needsTeam: false,
+    mods: { sleepClause: true, freezeClause: true },
   },
   metronome: {
     name: "Random Metronome Battle",
     icon: "mdi:metronome",
     desc: "A random battle where all Pokémon only know the move Metronome.",
     needsTeam: false,
+    mods: {},
   },
   truly_randoms: {
     name: "Truly Random Battle",
     icon: "mdi:dice-5-outline",
     desc: "A random battle with no limits on the generated move sets.",
     needsTeam: false,
+    mods: { sleepClause: true, freezeClause: true },
   },
   randoms_nfe: {
     name: "Random Battle (NFE)",
     icon: "mdi:dice-1-outline",
     desc: "A random battle where only Pokémon that are not fully evolved are included.",
     needsTeam: false,
+    mods: { sleepClause: true, freezeClause: true },
+  },
+};
+
+export const modNames: Record<keyof Mods, { name: string; desc: string }> = {
+  sleepClause: {
+    name: "Sleep Clause",
+    desc: "Only one enemy Pokémon can be put to sleep at a time.",
+  },
+  freezeClause: {
+    name: "Freeze Clause",
+    desc: "Only one Pokémon can be frozen at a time.",
+  },
+  endlessBattle: {
+    name: "Endless Battle Clause",
+    desc: "Battles that cannot end naturally or exceed 1000 turns will result in a draw.",
   },
 };
 

@@ -64,6 +64,7 @@ export class Player {
   readonly originalTeam: Pokemon[];
   choice?: ChosenMove;
   options?: { canSwitch: boolean; moves: MoveOption[] };
+  sleepClausePoke?: Pokemon;
 
   constructor(readonly id: PlayerId, readonly team: Pokemon[]) {
     this.active = new ActivePokemon(team[0], this);
@@ -179,6 +180,12 @@ export class Player {
   }
 }
 
+export type Mods = {
+  sleepClause?: boolean;
+  freezeClause?: boolean;
+  endlessBattle?: boolean;
+};
+
 export class Battle {
   readonly players: [Player, Player];
   private readonly events: BattleEvent[] = [];
@@ -188,7 +195,12 @@ export class Battle {
   readonly rng: Random;
   leadTurn = true;
 
-  private constructor(player1: Player, player2: Player, seed?: SeedOrRNG) {
+  private constructor(
+    player1: Player,
+    player2: Player,
+    readonly mods: Mods = {},
+    seed?: SeedOrRNG,
+  ) {
     this.players = [player1, player2];
     this.moveListToId = new Map<Move, MoveId>();
     this.rng = new Random(seed);
@@ -197,8 +209,8 @@ export class Battle {
     }
   }
 
-  static start(player1: Player, player2: Player, chooseLead?: boolean) {
-    const self = new Battle(player1, player2);
+  static start(player1: Player, player2: Player, chooseLead?: boolean, mods: Mods = {}) {
+    const self = new Battle(player1, player2, mods);
 
     player1.updateOptions(self);
     player2.updateOptions(self);
@@ -338,6 +350,10 @@ export class Battle {
       const done = --user.base.sleepTurns === 0;
       if (done) {
         user.base.status = undefined;
+        const opp = this.opponentOf(user.owner);
+        if (opp.sleepClausePoke === user.base) {
+          opp.sleepClausePoke = undefined;
+        }
       }
 
       this.info(user, done ? "wake" : "sleep");
@@ -554,10 +570,29 @@ export class ActivePokemon {
     }
 
     if (status === "slp") {
+      const opp = battle.opponentOf(this.owner);
+      if (opp.sleepClausePoke && battle.mods.sleepClause) {
+        battle.info(this, "fail_sleep_clause");
+        return true;
+      }
+
+      // https://www.smogon.com/forums/threads/outdated-new-rby-sleep-mechanics-discovery.3745689/
+      let rng = battle.rng.int(0, 255);
+      let sleepTurns = rng & 7;
+      while (!sleepTurns) {
+        rng = (rng * 5 + 1) & 255;
+        sleepTurns = rng & 7;
+      }
+
       this.v.recharge = undefined;
-      this.base.sleepTurns = battle.rng.int(1, 7);
+      this.base.sleepTurns = sleepTurns;
+      opp.sleepClausePoke = this.base;
     } else if (status === "tox") {
       this.v.counter = 1;
+    } else if (status === "frz" && battle.mods.freezeClause) {
+      if (this.owner.team.some(poke => poke.status === "frz")) {
+        return true;
+      }
     }
 
     this.base.status = status;

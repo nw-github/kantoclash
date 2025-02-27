@@ -2,7 +2,7 @@ import { moveList, type MoveId } from "~/game/moveList";
 import type { Move } from "~/game/moves";
 import { speciesList, type SpeciesId } from "~/game/species";
 import { statKeys, type Stats } from "~/game/utils";
-import { battleFormats } from "~/utils/formats";
+import { battleFormats } from "./data";
 
 export type Gen1PokemonDesc = {
   dvs: Partial<Stats>;

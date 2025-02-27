@@ -2,12 +2,13 @@ import { io, type Socket } from "socket.io-client";
 import type { ClientMessage, JoinRoomResponse, ServerMessage } from "./gameServer";
 import type { BattleEvent } from "../game/events";
 import type { Options, Turn } from "../game/battle";
-import { randoms, type FormatId } from "~/utils/formats";
+import { randoms } from "~/server/utils/formats";
 import { formatInfo, type ClientPlayer } from "~/utils";
 import type { Pokemon } from "~/game/pokemon";
 import { clamp } from "../game/utils";
 import random from "random";
 import { convertDesc, parseTeams } from "~/utils/pokemon";
+import type { FormatId } from "~/utils/data";
 
 export type BotFunction = (
   team: Pokemon[],
