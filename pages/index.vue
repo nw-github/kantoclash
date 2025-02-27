@@ -1,6 +1,6 @@
 <template>
-  <div class="grid grid-rows-2 md:grid-cols-2 h-full overflow-y-auto">
-    <div class="space-y-2 px-5">
+  <div class="flex flex-col gap-4 md:gap-0 md:grid md:grid-cols-2 h-full overflow-y-auto">
+    <div class="space-y-2 px-5 md:overflow-y-auto">
       <h1 class="text-center">
         {{ user ? `Welcome ${user.name}!` : "You must first log in to find a battle" }}
       </h1>

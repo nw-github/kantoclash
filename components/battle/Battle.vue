@@ -62,7 +62,7 @@
                 class="my-1"
                 leading-icon="material-symbols:alarm-outline"
                 variant="ghost"
-                :color="timeLeft() <= 10 ? 'red' : 'gray'"
+                :color="options && timeLeft() <= 10 ? 'red' : 'gray'"
                 :disabled="!players[myId] || players[myId].isSpectator || !!victor || !!timer"
                 :label="timer && !options ? '--' : timer ? `${Math.max(timeLeft(), 0)}` : ''"
                 @click="$emit('timer')"
