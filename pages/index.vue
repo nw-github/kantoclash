@@ -5,54 +5,72 @@
         {{ user ? `Welcome ${user.name}!` : "You must first log in to find a battle" }}
       </h1>
       <div class="flex items-center gap-2">
-        <FormatDropdown v-model="format" :disabled="findingMatch" class="grow" />
+        <FormatDropdown v-model="selectedFormat" :disabled="findingMatch" class="grow" />
         <UPopover mode="hover">
           <UButton icon="material-symbols:info-outline-rounded" color="gray" variant="ghost" />
           <template #panel>
-            <span class="p-1">{{ formatInfo[format].desc }}</span>
+            <span class="p-1">{{ formatInfo[selectedFormat].desc }}</span>
           </template>
         </UPopover>
       </div>
       <ClientOnly>
-        <div ref="selectTeamMenu">
-          <USelectMenu
-            v-model="selectedTeam"
-            searchable
-            placeholder="Select Team..."
-            :options="validTeams"
-            :disabled="!formatInfo[format].needsTeam || findingMatch"
-            option-attribute="name"
-            :ui-menu="{ option: { container: 'w-full justify-between' } }"
-            selected-icon=""
-            clear-search-on-close
-          >
-            <template #option="{ option: team }">
-              <span class="truncate text-xs sm:text-base">{{ team.name }}</span>
-
-              <div class="flex justify-center">
-                <Sprite
-                  v-for="(poke, i) in team.pokemon"
-                  :key="i"
-                  :species="(speciesList as Record<string, Species>)[poke.species]"
-                  :scale="lessThanSm ? 1 : 1.2"
-                  kind="box"
-                />
-              </div>
-            </template>
-          </USelectMenu>
-        </div>
+        <TeamSelector
+          ref="selectTeamMenu"
+          v-model="selectedTeam"
+          :format="selectedFormat"
+          :disabled="findingMatch"
+        />
       </ClientOnly>
+      <div class="relative">
+        <USelectMenu
+          v-model="challengeUser"
+          placeholder="Challenge a user..."
+          :searchable="searchUsers"
+          option-attribute="name"
+          :loading="loading"
+          by="name"
+          :disabled="findingMatch || cancelling"
+        >
+        </USelectMenu>
+        <UButton
+          class="absolute top-0 right-8"
+          icon="material-symbols:close"
+          variant="link"
+          color="gray"
+          :disabled="!challengeUser"
+          @click="challengeUser = undefined"
+        />
+      </div>
+
       <UButton
         :color="findingMatch ? 'red' : 'primary'"
+        :disabled="acceptingChallenge"
         icon="heroicons:magnifying-glass-20-solid"
         @click="enterMatchmaking"
       >
-        {{ cancelling ? "Cancelling..." : findingMatch ? "Cancel" : "Find Match" }}
+        {{
+          cancelling
+            ? "Cancelling..."
+            : findingMatch
+            ? "Cancel"
+            : challengeUser
+            ? "Send Challenge"
+            : "Find Match"
+        }}
 
         <template v-if="findingMatch || cancelling" #leading>
           <UIcon name="heroicons:arrow-path-20-solid" class="animate-spin size-5" />
         </template>
       </UButton>
+
+      <Challenge
+        v-for="challenge of challenges"
+        :key="challenge.from.id"
+        :challenge
+        :disabled="findingMatch || cancelling || acceptingChallenge"
+        @accept="team => respondToChallenge(true, challenge, team)"
+        @reject="respondToChallenge(false, challenge)"
+      />
     </div>
 
     <div class="space-y-2 px-5">
@@ -119,27 +137,31 @@
 </template>
 
 <script setup lang="ts">
-import { breakpointsTailwind } from "@vueuse/core";
-import { speciesList, type Species } from "~/game/species";
+import type { TeamSelector } from "#components";
+import { speciesList } from "~/game/species";
+import type { Battler, Challenge, MMError } from "~/server/gameServer";
 
 const emit = defineEmits<{ (e: "requestLogin"): void }>();
 
 const { $conn } = useNuxtApp();
 const { user } = useUserSession();
 const toast = useToast();
+
 const findingMatch = ref(false);
 const cancelling = ref(false);
 const loadingRooms = ref(false);
-const rooms = ref<{ to: string; name: string; format: FormatId }[]>([]);
-const format = useLocalStorage<FormatId>("lastFormat", () => "randoms");
-const selectedTeam = ref<Team | undefined>();
-const myTeams = useMyTeams();
-const validTeams = computed(() => myTeams.value.filter(team => team.format === format.value));
+const acceptingChallenge = ref(false);
 const modalOpen = ref(false);
+const selectedFormat = useLocalStorage<FormatId>("lastFormat", () => "randoms");
+const selectedTeam = ref<Team | undefined>();
 const errors = ref<Record<number, [string, string[]]>>({});
-const selectTeamMenu = ref<HTMLDivElement>();
+const selectTeamMenu = ref<InstanceType<typeof TeamSelector>>();
+
+const rooms = ref<{ to: string; name: string; format: FormatId }[]>([]);
 const filterFormats = ref<string[]>([]);
-const battleQuery = ref<string>("");
+const battleQuery = ref("");
+const challengeUser = ref<Battler>();
+const challenges = useChallenges();
 const filteredRooms = computed(() => {
   const q = battleQuery.value;
   const f = filterFormats.value;
@@ -147,12 +169,6 @@ const filteredRooms = computed(() => {
     .filter(room => !q || room.name.toLowerCase().includes(q.toLowerCase()))
     .filter(room => !f.length || f.includes(room.format));
 });
-const breakpoint = useBreakpoints(breakpointsTailwind);
-const lessThanSm = breakpoint.smaller("sm");
-
-onMounted(() => useTitle("Standoff"));
-
-watch(format, () => (selectedTeam.value = validTeams.value[0]));
 
 const roomsCols = [
   { key: "type", label: "Type" },
@@ -172,19 +188,19 @@ const emptyState = computed(() => {
     : emptyStateEmpty;
 });
 
-const onMaintenanceMode = (state: boolean) => {
-  if (state) {
-    findingMatch.value = false;
-  }
-};
+const onMaintenanceMode = (state: boolean) => state && (findingMatch.value = false);
+const onChallengeRejected = () => (findingMatch.value = false);
 
 onMounted(() => {
+  useTitle("Standoff");
   loadRooms();
   $conn.on("maintenanceState", onMaintenanceMode);
+  $conn.on("challengeRejected", onChallengeRejected);
 });
 
 onUnmounted(() => {
   $conn.off("maintenanceState", onMaintenanceMode);
+  $conn.off("challengeRejected", onChallengeRejected);
   if (findingMatch.value) {
     $conn.emit("exitMatchmaking", () => {});
     findingMatch.value = false;
@@ -196,8 +212,8 @@ const enterMatchmaking = () => {
     return emit("requestLogin");
   }
 
-  if (formatInfo[format.value].needsTeam && !selectedTeam.value) {
-    selectTeamMenu.value!.querySelector("button")?.click();
+  if (formatInfo[selectedFormat.value].needsTeam && !selectedTeam.value) {
+    selectTeamMenu.value!.raise();
     return;
   }
 
@@ -211,63 +227,27 @@ const enterMatchmaking = () => {
   findingMatch.value = true;
 
   const team = selectedTeam.value ? selectedTeam.value.pokemon.map(convertDesc) : undefined;
-  $conn.emit("enterMatchmaking", team, format.value, (err, problems) => {
-    if (!err) {
-      return;
+  $conn.emit(
+    "enterMatchmaking",
+    team,
+    selectedFormat.value,
+    challengeUser.value?.id,
+    (err, problems) => enterMMCallback(team, err, problems),
+  );
+};
+
+const respondToChallenge = (accept: boolean, challenge: Challenge, selected?: Team) => {
+  acceptingChallenge.value = true;
+
+  const team = accept && selected ? selected.pokemon.map(convertDesc) : undefined;
+  $conn.emit("respondToChallenge", challenge.from.id, accept, team, (err, problems) => {
+    acceptingChallenge.value = false;
+    let idx;
+    if (!err && (idx = challenges.value.indexOf(challenge)) !== -1) {
+      challenges.value.splice(idx);
     }
 
-    findingMatch.value = false;
-    if (err === "must_login") {
-      return toast.add({
-        title: "Matchmaking failed!",
-        description: "Try logging back in.",
-        icon: "material-symbols:error-circle-rounded-outline-sharp",
-      });
-    } else if (err === "too_many") {
-      return toast.add({
-        title: "Matchmaking failed!",
-        description: "You're already in too many battles.",
-        icon: "material-symbols:error-circle-rounded-outline-sharp",
-      });
-    } else if (err === "maintenance") {
-      return toast.add({
-        title: "Matchmaking failed!",
-        description: "Cannot start a new battle right now, maintenance mode is enabled.",
-        icon: "material-symbols:error-circle-rounded-outline-sharp",
-      });
-    } else if (!problems) {
-      return toast.add({
-        title: "Matchmaking failed for an unknown reason.",
-        icon: "material-symbols:error-circle-rounded-outline-sharp",
-      });
-    }
-
-    const issues: Record<number, [string, string[]]> = {};
-    for (const { path, message } of problems) {
-      const [pokemon, category, index] = path as [number, string, number | string];
-      const name =
-        team![pokemon]?.name ||
-        speciesList[team![pokemon]?.species]?.name ||
-        (pokemon !== undefined && `Pokemon ${pokemon + 1}`) ||
-        "General";
-      const arr = (issues[pokemon] ??= [name, []]);
-      if (category === "moves") {
-        if (index) {
-          arr[1].push(`Move '${team![pokemon].moves[index as number]}' is invalid: ${message}`);
-        } else {
-          arr[1].push(`Moves are invalid: ${message}`);
-        }
-      } else if (category === "statexp") {
-        arr[1].push(`'${toTitleCase(index as string)}' EV is invalid: ${message}`);
-      } else if (category === "dv") {
-        arr[1].push(`'${toTitleCase(index as string)}' IV is invalid: ${message}`);
-      } else {
-        arr[1].push(`${message}`);
-      }
-    }
-
-    errors.value = issues;
-    modalOpen.value = true;
+    enterMMCallback(team, err, problems);
   });
 };
 
@@ -284,5 +264,83 @@ const loadRooms = () => {
     );
     loadingRooms.value = false;
   });
+};
+
+const loading = ref(false);
+
+const searchUsers = async (q: string) => {
+  loading.value = true;
+
+  return new Promise<Battler[]>(resolve => {
+    $conn.emit("getOnlineUsers", q, res => {
+      loading.value = false;
+      resolve(res);
+    });
+  });
+};
+
+const enterMMCallback = (team?: Gen1PokemonDesc[], err?: MMError, problems?: TeamProblems) => {
+  if (!err) {
+    return;
+  }
+
+  findingMatch.value = false;
+  if (err === "must_login") {
+    return toast.add({
+      title: "Matchmaking failed!",
+      description: "Try logging back in.",
+      icon: "material-symbols:error-circle-rounded-outline-sharp",
+    });
+  } else if (err === "too_many") {
+    return toast.add({
+      title: "Matchmaking failed!",
+      description: "You're already in too many battles.",
+      icon: "material-symbols:error-circle-rounded-outline-sharp",
+    });
+  } else if (err === "maintenance") {
+    return toast.add({
+      title: "Matchmaking failed!",
+      description: "Cannot start a new battle right now, maintenance mode is enabled.",
+      icon: "material-symbols:error-circle-rounded-outline-sharp",
+    });
+  } else if (err === "bad_user") {
+    return toast.add({
+      title: "Matchmaking failed!",
+      description: "User is offline or does not exist.",
+      icon: "material-symbols:error-circle-rounded-outline-sharp",
+    });
+  } else if (!problems) {
+    return toast.add({
+      title: "Matchmaking failed for an unknown reason.",
+      icon: "material-symbols:error-circle-rounded-outline-sharp",
+    });
+  }
+
+  const issues: Record<number, [string, string[]]> = {};
+  for (const { path, message } of problems) {
+    const [pokemon, category, index] = path as [number, string, number | string];
+    const name =
+      team![pokemon]?.name ||
+      speciesList[team![pokemon]?.species]?.name ||
+      (pokemon !== undefined && `Pokemon ${pokemon + 1}`) ||
+      "General";
+    const arr = (issues[pokemon] ??= [name, []]);
+    if (category === "moves") {
+      if (index) {
+        arr[1].push(`Move '${team![pokemon].moves[index as number]}' is invalid: ${message}`);
+      } else {
+        arr[1].push(`Moves are invalid: ${message}`);
+      }
+    } else if (category === "statexp") {
+      arr[1].push(`'${toTitleCase(index as string)}' EV is invalid: ${message}`);
+    } else if (category === "dv") {
+      arr[1].push(`'${toTitleCase(index as string)}' IV is invalid: ${message}`);
+    } else {
+      arr[1].push(`${message}`);
+    }
+  }
+
+  errors.value = issues;
+  modalOpen.value = true;
 };
 </script>

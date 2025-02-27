@@ -1,3 +1,4 @@
+import type { Challenge } from "~/server/gameServer";
 import type { Team } from "~/utils/pokemon";
 
 export const useMyId = () => {
@@ -22,3 +23,7 @@ export const useMusicVolume = () => useLocalStorage("musicVolume", 0.4);
 export const useMutedPlayerIds = () => useLocalStorage<string[]>("mutedPlayers", []);
 
 export const useChatCensorEnabled = () => useLocalStorage<boolean>("profanity", true);
+
+export const useIgnoreChallenges = () => useLocalStorage<boolean>("ignoreChallenges", false);
+
+export const useChallenges = () => useState<Challenge[]>("challenges", () => []);

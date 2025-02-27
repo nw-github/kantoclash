@@ -131,6 +131,10 @@ const modal = useModal();
 const musicVol = useMusicVolume();
 const sfxVol = useSfxVolume();
 const currentTrack = useCurrentTrack();
+const challenges = useChallenges();
+const ignoreChallenges = useIgnoreChallenges();
+const ignoredPlayers = ref<string[]>([]);
+const toast = useToast();
 const musicTrackItems = allMusicTracks.map(track => ({
   label: musicTrackName(track),
   value: track,
@@ -203,7 +207,10 @@ watch(
 let cancelModalWatch: WatchStopHandle | undefined;
 
 onMounted(() => {
-  $conn.on("connect", () => (connected.value = true));
+  $conn.on("connect", () => {
+    $conn.emit("getChallenges", resp => (challenges.value = resp));
+    connected.value = true;
+  });
   $conn.on("disconnect", () => (connected.value = false));
   $conn.on("foundMatch", roomId => {
     $conn.emit("getRoom", roomId, room => {
@@ -242,8 +249,69 @@ onMounted(() => {
       modal.open(AlertModal, props);
     }
   });
+  $conn.on("challengeReceived", ch => {
+    if (ignoreChallenges.value || ignoredPlayers.value.includes(ch.from.id)) {
+      $conn.emit("respondToChallenge", ch.from.id, false, undefined, () => {});
+      return;
+    }
 
-  watchImmediate(user, fetchMyRooms);
+    challenges.value.push(ch);
+    toast.add({
+      title: `New Challenge from ${ch.from.name}!`,
+      description: `You were challenged to a ${formatInfo[ch.format].name}!`,
+      icon: "material-symbols:info-outline-rounded",
+      actions: [
+        { label: "Go Home", icon: "heroicons:home", click: () => navigateTo("/") },
+        {
+          label: "Block This User",
+          icon: "material-symbols:block",
+          variant: "solid",
+          color: "red",
+          click() {
+            ignoredPlayers.value.push(ch.from.id);
+            const index = challenges.value.indexOf(ch);
+            if (index !== -1) {
+              challenges.value.splice(index, 1);
+            }
+
+            $conn.emit("respondToChallenge", ch.from.id, false, undefined, () => {});
+            toast.add({ title: `Blocked ${ch.from.name} for the rest of this session!` });
+          },
+        },
+      ],
+    });
+  });
+  $conn.on("challengeRetracted", battler => {
+    const index = challenges.value.findIndex(c => c.from.id === battler.id);
+    if (index !== -1) {
+      challenges.value.splice(index, 1);
+    }
+  });
+  $conn.on("challengeRejected", battler => {
+    toast.add({
+      title: "Challenge Rejected!",
+      description: `Your challenge to user '${battler.name}' was rejected!`,
+      icon: "material-symbols:info-outline-rounded",
+    });
+  });
+
+  watchImmediate(user, () => {
+    if (!user.value) {
+      challenges.value.length = 0;
+    }
+
+    fetchMyRooms();
+  });
   fetch();
+});
+
+onUnmounted(() => {
+  $conn.off("connect");
+  $conn.off("disconnect");
+  $conn.off("foundMatch");
+  $conn.off("maintenanceState");
+  $conn.off("challengeReceived");
+  $conn.off("challengeRetracted");
+  $conn.off("challengeRejected");
 });
 </script>

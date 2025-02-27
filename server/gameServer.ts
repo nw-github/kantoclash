@@ -22,26 +22,37 @@ export type BattleTimer = { startedAt: number; duration: number };
 
 export type ChoiceError = "invalid_choice" | "bad_room" | "not_in_battle" | "too_late";
 
+export type Battler = { name: string; id: string };
+
+export type Challenge = { from: Battler; format: FormatId };
+
 export type RoomDescriptor = {
   id: string;
-  battlers: { name: string; id: string }[];
+  battlers: Battler[];
   format: FormatId;
 };
+export type MMError = "must_login" | "invalid_team" | "too_many" | "maintenance" | "bad_user";
 
 export interface ClientMessage {
   getRoom: (id: string, ack: (resp: "bad_room" | RoomDescriptor) => void) => void;
   getRooms: (ack: (rooms: RoomDescriptor[]) => void) => void;
   getPlayerRooms: (player: string, ack: (resp: "bad_player" | RoomDescriptor[]) => void) => void;
+  getOnlineUsers: (q: string, ack: (resp: Battler[]) => void) => void;
 
   enterMatchmaking: (
     team: Gen1PokemonDesc[] | undefined,
     format: FormatId,
-    ack: (
-      err?: "must_login" | "invalid_team" | "too_many" | "maintenance",
-      problems?: TeamProblems,
-    ) => void,
+    challengeId: string | undefined,
+    ack: (err?: MMError, problems?: TeamProblems) => void,
   ) => void;
   exitMatchmaking: (ack: () => void) => void;
+  respondToChallenge: (
+    id: string,
+    accept: boolean,
+    team: Gen1PokemonDesc[] | undefined,
+    ack: (err?: MMError, problems?: TeamProblems) => void,
+  ) => void;
+  getChallenges: (ack: (resp: Challenge[]) => void) => void;
 
   joinRoom: (
     room: string,
@@ -73,6 +84,9 @@ export interface ClientMessage {
 
 export interface ServerMessage {
   foundMatch: (room: string) => void;
+  challengeReceived: (challenge: Challenge) => void;
+  challengeRetracted: (by: Battler) => void;
+  challengeRejected: (by: Battler) => void;
 
   nextTurn: (room: string, turn: Turn, options?: Options, timer?: BattleTimer) => void;
   timerStart: (room: string, who: string, timer: BattleTimer) => void;
@@ -98,9 +112,11 @@ type Account = {
   id: string;
   name: string;
   admin?: boolean;
-  matchmaking?: FormatId;
+  offline: boolean;
+  matchmaking?: { format: FormatId } | { challenged: Account };
   userRoom: string;
   activeBattles: Set<Room>;
+  challenges: { format: FormatId; from: Account; player: Player }[];
 };
 
 class Room {
@@ -277,18 +293,21 @@ export class GameServer extends SocketIoServer<ClientMessage, ServerMessage> {
           id: user.id,
           name: user.name,
           admin: user.admin,
+          offline: false,
           userRoom: `user:${user.id}`,
           activeBattles: new Set(),
+          challenges: [],
         };
         this.accounts.set(user.id, account);
         socket.account = account;
       }
+      socket.account.offline = false;
       socket.join(socket.account.userRoom);
     } else {
       console.log(`new connection: ${socket.id}`);
     }
 
-    socket.on("enterMatchmaking", (team, format, ack) => {
+    socket.on("enterMatchmaking", (team, format, challenge, ack) => {
       if (this.maintenance) {
         return ack("maintenance");
       }
@@ -306,12 +325,75 @@ export class GameServer extends SocketIoServer<ClientMessage, ServerMessage> {
         return ack("too_many");
       }
 
-      const problems = this.enterMatchmaking(account, format, team);
-      if (problems) {
-        ack("invalid_team", problems);
-      } else {
-        ack();
+      const player = this.getPlayer(account, format, team);
+      if (Array.isArray(player)) {
+        return ack("invalid_team", player);
       }
+
+      if (challenge) {
+        const challenged = this.accounts.get(challenge);
+        if (!challenged || challenged.offline) {
+          return ack("bad_user");
+        }
+
+        challenged.challenges.push({ format, from: account, player });
+        account.matchmaking = { challenged };
+
+        this.to(challenged.userRoom).emit("challengeReceived", {
+          format,
+          from: { name: account.name, id: account.id },
+        });
+        return ack();
+      }
+
+      // highly advanced matchmaking algorithm
+      const opponent = this.mmWaiting[format];
+      if (opponent) {
+        this.setupRoom(player, opponent, format);
+      } else {
+        this.mmWaiting[format] = player;
+        account.matchmaking = { format };
+      }
+
+      ack();
+    });
+    socket.on("respondToChallenge", (id, accept, team, ack) => {
+      if (this.maintenance) {
+        return ack("maintenance");
+      }
+
+      const account = socket.account;
+      if (!account) {
+        return ack("must_login");
+      }
+
+      const idx = account.challenges.findIndex(acc => acc.from.id === id);
+      if (idx === -1) {
+        return ack("bad_user");
+      } else if (!accept) {
+        const [c] = account.challenges.splice(idx, 1);
+        delete c.from.matchmaking;
+        this.to(c.from.userRoom).emit("challengeRejected", { name: account.name, id: account.id });
+        return ack();
+      }
+
+      if (account.matchmaking) {
+        this.leaveMatchmaking(account);
+      }
+
+      if (account.activeBattles.size >= 5) {
+        return ack("too_many");
+      }
+
+      const player = this.getPlayer(account, account.challenges[idx].format, team);
+      if (Array.isArray(player)) {
+        return ack("invalid_team", player);
+      }
+
+      const [c] = account.challenges.splice(idx, 1);
+      delete c.from.matchmaking;
+      this.setupRoom(player, c.player, c.format);
+      ack();
     });
     socket.on("exitMatchmaking", ack => {
       if (socket.account) {
@@ -443,6 +525,32 @@ export class GameServer extends SocketIoServer<ClientMessage, ServerMessage> {
           .toArray(),
       );
     });
+    socket.on("getOnlineUsers", (q: string, ack) => {
+      return ack(
+        this.accounts
+          .values()
+          .filter(
+            acc =>
+              socket.account?.id !== acc.id &&
+              !acc.offline &&
+              acc.name.toLowerCase().includes(q.toLowerCase()),
+          )
+          .map(acc => ({ name: acc.name, id: acc.id }))
+          .toArray(),
+      );
+    });
+    socket.on("getChallenges", ack => {
+      if (!socket.account) {
+        return ack([]);
+      }
+
+      return ack(
+        socket.account.challenges.map(c => ({
+          from: { name: c.from.name, id: c.from.id },
+          format: c.format,
+        })),
+      );
+    });
     socket.on("disconnecting", async () => {
       const account = socket.account;
       if (!account) {
@@ -463,6 +571,8 @@ export class GameServer extends SocketIoServer<ClientMessage, ServerMessage> {
 
       if (!sockets.length) {
         this.leaveMatchmaking(account);
+        account.offline = true;
+        // FIXME: Account memory leak
         // this.accounts.delete(account.id);
       }
     });
@@ -483,45 +593,39 @@ export class GameServer extends SocketIoServer<ClientMessage, ServerMessage> {
     });
   }
 
-  private enterMatchmaking(account: Account, format: FormatId, team?: any) {
-    let player;
-    if (formatDescs[format].validate) {
-      const [success, result] = formatDescs[format].validate(team);
-      if (!success) {
-        return result;
+  private leaveMatchmaking(account: Account) {
+    const res = account.matchmaking;
+    if (!res) {
+      return;
+    }
+
+    if ("format" in res) {
+      const waiting = this.mmWaiting[res.format];
+      if (waiting && this.accounts.get(waiting.id) === account) {
+        // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+        delete this.mmWaiting[res.format];
       }
-
-      player = new Player(account.id, result);
     } else {
-      player = new Player(account.id, formatDescs[format].generate!());
+      const idx = res.challenged.challenges.findIndex(c => c.from.id === account.id);
+      if (idx !== -1) {
+        const [c] = res.challenged.challenges.splice(idx, 1);
+        this.to(res.challenged.userRoom).emit("challengeRetracted", {
+          name: c.from.name,
+          id: c.from.id,
+        });
+      }
     }
 
-    // highly advanced matchmaking algorithm
-    const opponent = this.mmWaiting[format];
-    if (opponent) {
-      const [battle, turn0] = Battle.start(player, opponent, formatDescs[format].chooseLead);
-      const room = new Room(uuid(), battle, turn0, format, this);
-      this.rooms.set(room.id, room);
-
-      this.onFoundMatch(room, account);
-      this.onFoundMatch(room, this.accounts.get(opponent.id)!);
-    } else {
-      this.mmWaiting[format] = player;
-      account.matchmaking = format;
-    }
+    delete account.matchmaking;
   }
 
-  private leaveMatchmaking(account: Account) {
-    const format = account.matchmaking;
-    if (
-      format &&
-      this.mmWaiting[format] &&
-      this.accounts.get(this.mmWaiting[format].id) === account
-    ) {
-      // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-      delete this.mmWaiting[format];
-    }
-    delete account.matchmaking;
+  private setupRoom(player: Player, opponent: Player, format: FormatId) {
+    const [battle, turn0] = Battle.start(player, opponent, formatDescs[format].chooseLead);
+    const room = new Room(uuid(), battle, turn0, format, this);
+    this.rooms.set(room.id, room);
+
+    this.onFoundMatch(room, this.accounts.get(player.id)!);
+    this.onFoundMatch(room, this.accounts.get(opponent.id)!);
   }
 
   private validatePlayer(socket: Socket, roomId: string, sequenceNo: number) {
@@ -546,6 +650,21 @@ export class GameServer extends SocketIoServer<ClientMessage, ServerMessage> {
     account.activeBattles.add(room);
     this.to(account.userRoom).emit("foundMatch", room.id);
     this.leaveMatchmaking(account);
+  }
+
+  private getPlayer(account: Account, format: FormatId, team?: any) {
+    let player;
+    if (formatDescs[format].validate) {
+      const [success, result] = formatDescs[format].validate(team);
+      if (!success) {
+        return result;
+      }
+
+      player = new Player(account.id, result);
+    } else {
+      player = new Player(account.id, formatDescs[format].generate!());
+    }
+    return player;
   }
 
   getBattlers(room: Room) {

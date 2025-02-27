@@ -73,7 +73,7 @@ export async function startBot(format: FormatId = "randoms", botFunction: BotFun
 
           // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
           delete games[roomId];
-          findMatch(resp.format);
+          findMatch();
         });
       });
     });
@@ -86,14 +86,18 @@ export async function startBot(format: FormatId = "randoms", botFunction: BotFun
 
     $conn.on("maintenanceState", enabled => {
       if (!enabled) {
-        findMatch(format);
+        findMatch();
       }
     });
 
-    findMatch(format);
+    $conn.on("challengeReceived", ({ format, from }) => {
+      $conn.emit("respondToChallenge", from.id, true, getTeam(format), () => {});
+    });
+
+    findMatch();
   });
 
-  function findMatch(format: FormatId) {
+  function getTeam(format: FormatId) {
     let team = undefined;
     if (formatInfo[format].needsTeam) {
       if (format === "standard") {
@@ -104,9 +108,12 @@ export async function startBot(format: FormatId = "randoms", botFunction: BotFun
         });
       }
     }
+    return team;
+  }
 
+  function findMatch() {
     console.log(`[${name}] queueing for a ${format}`);
-    $conn.emit("enterMatchmaking", team, format, (err, problems) => {
+    $conn.emit("enterMatchmaking", getTeam(format), format, undefined, (err, problems) => {
       if (err) {
         console.error(`[${name}] enter matchmaking failed: '${err}', `, problems);
       }
