@@ -308,7 +308,7 @@ export class Battle {
     }
 
     if (this.victor) {
-      this.event({ type: "victory", id: this.victor.id });
+      this.event({ type: "end", victor: this.victor.id });
     }
 
     for (const player of this.players) {
@@ -334,10 +334,24 @@ export class Battle {
   forfeit(player: Player, timer: boolean) {
     this._victor = this.opponentOf(player);
     this.event({ type: "info", id: player.id, why: timer ? "forfeit_timer" : "forfeit" });
-    this.event({ type: "victory", id: this._victor.id });
+    this.event({ type: "end", victor: this._victor.id });
     for (const player of this.players) {
-      player.updateOptions(this);
+      player.options = undefined;
     }
+    return { events: this.events.splice(0), switchTurn: false };
+  }
+
+  draw(timer: boolean) {
+    // just set victor to somebody since elsewhere victor is used to tell if the game is over
+    this._victor = this.players[0];
+    for (const player of this.players) {
+      if (timer) {
+        this.event({ type: "info", id: player.id, why: "forfeit_timer" });
+      }
+      player.options = undefined;
+    }
+
+    this.event({ type: "end" });
     return { events: this.events.splice(0), switchTurn: false };
   }
 

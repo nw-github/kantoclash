@@ -162,11 +162,17 @@ class Room {
         return;
       }
 
+      let badPlayer;
       for (const player of this.battle.players) {
         if (!player.choice && player.options) {
-          this.broadcastTurn(this.battle.forfeit(player, true));
-          return;
+          badPlayer = badPlayer ? undefined : player;
         }
+      }
+
+      if (badPlayer) {
+        this.broadcastTurn(this.battle.forfeit(badPlayer, true));
+      } else {
+        this.broadcastTurn(this.battle.draw(true));
       }
     }, 1000);
 
@@ -479,7 +485,7 @@ export class GameServer extends SocketIoServer<ClientMessage, ServerMessage> {
         return ack("not_in_battle");
       }
 
-      ack(room.startTimer(socket.account) ? "already_on" : undefined);
+      ack(!room.startTimer(socket.account) ? "already_on" : undefined);
     });
     socket.on("chat", (roomId, message, ack) => {
       message = message.trim();

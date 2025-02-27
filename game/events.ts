@@ -100,8 +100,9 @@ type UseMoveEvent = {
 };
 
 type VictoryEvent = {
-  type: "victory";
-  id: PlayerId;
+  type: "end";
+  /// If victor is undefined, the battle is a draw
+  victor?: PlayerId;
 };
 
 type StatusEvent = {

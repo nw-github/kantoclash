@@ -594,8 +594,8 @@ const runTurn = async (live: boolean, turnNo: number) => {
       }
     } else if (e.type === "conversion") {
       players[e.user].active!.conversion = e.types;
-    } else if (e.type === "victory") {
-      victor.value = e.id;
+    } else if (e.type === "end") {
+      victor.value = e.victor ?? "draw";
     } else if (e.type === "hit_sub") {
       await playAnimation(e.src, "bodyslam", undefined, () => {
         pushHtml(html, 1);
@@ -740,11 +740,13 @@ const htmlForEvent = (e: BattleEvent) => {
     } else {
       res.push(text([`${pname(e.src)} used `, bold(moveList[e.move].name), "!"], "move"));
     }
-  } else if (e.type === "victory") {
-    if (e.id === myId.value) {
+  } else if (e.type === "end") {
+    if (e.victor === myId.value) {
       res.push(text("You win!"));
+    } else if (e.victor) {
+      res.push(text(`${players[e.victor].name} wins!`));
     } else {
-      res.push(text(`${players[e.id].name} wins!`));
+      res.push(text(`It's a draw!`));
     }
   } else if (e.type === "hit_sub") {
     if (e.confusion) {
