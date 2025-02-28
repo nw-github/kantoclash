@@ -1,6 +1,6 @@
 <template>
   <UCard
-    class="card h-full w-full flex flex-col"
+    class="h-full w-full flex flex-col"
     :ui="{
       body: { base: 'grow overflow-auto', padding: 'p-0 sm:p-0' },
       header: { padding: 'p-1 sm:p-1' },
@@ -83,33 +83,12 @@
             <!-- eslint-disable-next-line vue/valid-v-for -->
             <Event v-for="e of turn" :key="perspective" :e :my-id :players :perspective />
           </template>
-          <p v-for="chat in chats[i] ?? []" :key="JSON.stringify(chat)">
-            <span v-if="chat.type === 'chat' && !mutedPlayers.includes(chat.id)">
-              <b>{{ players[chat.id]?.name ?? "???" }}</b
-              >:
-              {{
-                censorEnabled
-                  ? censor.applyTo(chat.message, profanityMatcher.getAllMatches(chat.message))
-                  : chat.message
-              }}
-            </span>
-            <span
-              v-else-if="chat.type === 'userJoin' && !mutedPlayers.includes(chat.id)"
-              class="text-sm text-gray-600 dark:text-gray-400"
-            >
-              <b>{{ players[chat.id]?.name ?? "???" }}</b> joined the room.
-            </span>
-            <span
-              v-else-if="chat.type === 'userLeave' && !mutedPlayers.includes(chat.id)"
-              class="text-sm text-gray-600 dark:text-gray-400"
-            >
-              <b>{{ players[chat.id]?.name ?? "???" }}</b> left the room.
-            </span>
-            <span v-else-if="chat.type === 'timerStart'">
-              The timer was started by <b>{{ players[chat.id]?.name ?? "???" }}</b
-              >.
-            </span>
-          </p>
+          <ChatMessage
+            v-for="(chat, j) in chats[i] ?? []"
+            :key="JSON.stringify({ chat, j })"
+            :chat
+            :players
+          />
           <template v-if="i === 0">
             <!-- eslint-disable-next-line vue/valid-v-for -->
             <Event v-for="e of turn" :key="perspective" :e :my-id :players :perspective />
@@ -179,7 +158,6 @@
 </style>
 
 <script setup lang="ts">
-import { TextCensor } from "obscenity";
 import { useMutedPlayerIds } from "~/composables/states";
 import type { InfoRecord } from "~/server/gameServer";
 
@@ -198,12 +176,9 @@ const emit = defineEmits<{
 }>();
 const myId = useMyId();
 const mutedPlayers = useMutedPlayerIds();
-const censorEnabled = useChatCensorEnabled();
 const message = ref("");
 const scrollPoint = ref<HTMLDivElement>();
 const forfeitModalOpen = ref(false);
-const censor = new TextCensor();
-censor.setStrategy(ctx => "*".repeat(ctx.matchLength));
 
 onMounted(async () => {
   await nextTick();

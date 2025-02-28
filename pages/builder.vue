@@ -19,7 +19,15 @@
               color="green"
               icon="heroicons:arrow-down-tray-20-solid"
               variant="soft"
-              @click="importOpen = true"
+              @click="onImportClick"
+            />
+          </UTooltip>
+          <UTooltip text="Export">
+            <UButton
+              color="green"
+              icon="heroicons:arrow-up-tray-20-solid"
+              variant="soft"
+              @click="onExportClick"
             />
           </UTooltip>
           <UTooltip text="New">
@@ -30,31 +38,29 @@
     </template>
 
     <div class="flex justify-center h-full">
-      <div class="w-max">
-        <div
-          v-if="!filteredTeams.length"
-          class="flex flex-col items-center justify-center flex-1 px-6 py-14 sm:px-14"
-        >
-          <template v-if="!formats.length && !query">
-            <UIcon
-              name="i-heroicons:circle-stack-20-solid"
-              class="size-6 mx-auto text-gray-400 dark:text-gray-500 mb-4"
-            />
-            <p class="text-sm text-center text-gray-900 dark:text-white">
-              You don't have any teams.
-            </p>
-          </template>
-          <template v-else>
-            <UIcon
-              name="i-heroicons:circle-stack-20-solid"
-              class="size-6 mx-auto text-gray-400 dark:text-gray-500 mb-4"
-            />
-            <p class="text-sm text-center text-gray-900 dark:text-white">
-              No teams match this query.
-            </p>
-          </template>
-        </div>
+      <div
+        v-if="!filteredTeams.length"
+        class="flex flex-col items-center justify-center flex-1 px-6 py-14 sm:px-14"
+      >
+        <template v-if="!formats.length && !query">
+          <UIcon
+            name="i-heroicons:circle-stack-20-solid"
+            class="size-6 mx-auto text-gray-400 dark:text-gray-500 mb-4"
+          />
+          <p class="text-sm text-center text-gray-900 dark:text-white">You don't have any teams.</p>
+        </template>
+        <template v-else>
+          <UIcon
+            name="i-heroicons:circle-stack-20-solid"
+            class="size-6 mx-auto text-gray-400 dark:text-gray-500 mb-4"
+          />
+          <p class="text-sm text-center text-gray-900 dark:text-white">
+            No teams match this query.
+          </p>
+        </template>
+      </div>
 
+      <div class="w-max lg:grid lg:grid-cols-2 lg:gap-x-10">
         <div
           v-for="(team, i) in filteredTeams"
           :key="i"
@@ -129,17 +135,28 @@
       <UTextarea
         v-model="importText"
         :ui="{ base: 'h-full min-h-[23.5rem]', rounded: 'rounded-lg' }"
-        placeholder="Paste your team(s) here..."
+        :placeholder="exportMode ? undefined : 'Paste your team(s) here...'"
         variant="none"
       >
         <TooltipButton
+          v-if="!exportMode"
           text="Import"
           :popper="{ placement: 'bottom-end', offsetDistance: 40 }"
           class="absolute top-2 right-2"
           icon="heroicons:arrow-down-tray-20-solid"
           variant="ghost"
           color="gray"
-          @click="importTeams()"
+          @click="importOrCopy"
+        />
+        <TooltipButton
+          v-else
+          text="Copy"
+          :popper="{ placement: 'bottom-end', offsetDistance: 40 }"
+          class="absolute top-2 right-2"
+          icon="material-symbols:content-copy-outline"
+          variant="ghost"
+          color="gray"
+          @click="importOrCopy"
         />
       </UTextarea>
     </UModal>
@@ -162,6 +179,7 @@ const open = computed({
   },
 });
 const importOpen = ref(false);
+const exportMode = ref(false);
 const isXS = useMediaQuery("(max-width: 480px)");
 
 const query = ref("");
@@ -174,10 +192,24 @@ const filteredTeams = computed(() => {
     .filter(team => !f.length || f.includes(team.format));
 });
 
-onMounted(() => useTitle("Team Builder"));
+onMounted(() => {
+  useTitle("Team Builder");
 
-const importTeams = async () => {
+  const format = String(useRoute().query.new_team);
+  useRouter().replace({ query: {} });
+  if ((battleFormats as readonly string[]).includes(format)) {
+    newTeam(format as FormatId);
+  }
+});
+
+const importOrCopy = async () => {
   importOpen.value = false;
+  if (exportMode.value) {
+    await navigator.clipboard.writeText(importText.value);
+    toast.add({ title: `Copied to clipboard!` });
+    return;
+  }
+
   const teams = parseTeams(importText.value);
   importText.value = "";
   myTeams.value.unshift(...teams);
@@ -202,10 +234,10 @@ const deleteTeam = (team: Team) => {
   });
 };
 
-const newTeam = () => {
+const newTeam = (format?: FormatId) => {
   myTeams.value.unshift({
     name: "New Team",
-    format: "standard",
+    format: format ?? "standard",
     pokemon: [parsePokemon("")],
   });
   editingTeam.value = myTeams.value[0];
@@ -230,5 +262,16 @@ const duplicateTeam = (team: Team) => {
   }
 
   myTeams.value.splice(myTeams.value.indexOf(team) + 1, 0, newTeam);
+};
+
+const onImportClick = () => {
+  importOpen.value = true;
+  exportMode.value = false;
+  importText.value = "";
+};
+
+const onExportClick = () => {
+  importOpen.value = exportMode.value = true;
+  importText.value = myTeams.value.map(teamToString).join("\n");
 };
 </script>

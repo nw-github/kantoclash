@@ -138,7 +138,7 @@
               variant="ghost"
               color="gray"
               text="Switch Sides"
-              @click="chosenPerspective = opponent"
+              @click="perspective = opponent"
             />
             <TooltipButton
               icon="material-symbols:fast-rewind"
@@ -285,8 +285,7 @@ const activeInTeam = computed(() => (isBattler.value ? team?.[activeIndex.value]
 
 const isBattleOver = computed(() => finished || !!victor.value);
 const isBattler = computed(() => battlers.includes(myId.value));
-const chosenPerspective = ref("");
-const perspective = computed(() => (isBattler.value ? myId.value : chosenPerspective.value));
+const perspective = ref("");
 const opponent = computed(() => battlers.find(v => v != perspective.value) ?? "");
 const victor = ref<string>();
 const htmlTurns = ref<[UIBattleEvent[], boolean, number][]>([]);
@@ -328,7 +327,25 @@ watch(
 
 watch(paused, paused => !paused && onTurnsReceived(Math.max(turns.length - currentTurn, 0)));
 
-watchImmediate(battlers, () => (chosenPerspective.value = randChoice(battlers)));
+watchImmediate([battlers, myId], () => {
+  if (battlers.includes(myId.value)) {
+    perspective.value = myId.value;
+  } else {
+    perspective.value = randChoice(battlers) ?? "";
+  }
+});
+
+watch(perspective, () => {
+  const back = players[perspective.value]?.active;
+  if (backPokemon.value && back) {
+    backPokemon.value.reset(back.hpPercent !== 0);
+  }
+
+  const front = players[opponent.value]?.active;
+  if (frontPokemon.value && front) {
+    frontPokemon.value.reset(front.hpPercent !== 0);
+  }
+});
 
 const selectMove = (index: number) => {
   selectionText.value = `${players[myId.value].active!.name} will use ${
@@ -360,8 +377,8 @@ const timeLeft = () => {
   return timer ? Math.floor((timer.startedAt + timer.duration - Date.now()) / 1000) : 1000;
 };
 
-const runTurn = async (live: boolean, turnNo: number) => {
-  const isLive = () => live && skippingToTurn.value <= turnNo;
+const runTurn = async (live: boolean, turnIdx: number) => {
+  const isLive = () => live && skippingToTurn.value <= turnIdx;
 
   const playCry = (speciesId: SpeciesId, pitchDown = false) => {
     if (isLive()) {
@@ -612,7 +629,7 @@ const runTurn = async (live: boolean, turnNo: number) => {
   selectionText.value = "";
   smoothScroll.value = isLive();
 
-  const turn = turns[turnNo];
+  const turn = turns[turnIdx];
   if (!turn.switchTurn) {
     currentTurnNo.value++;
   }
@@ -720,11 +737,9 @@ const onConnect = async (startAt?: number) => {
     players[k].active = undefined;
   }
 
-  isRunningTurn.value = true;
   for (let i = 0; i < currentTurn; i++) {
     await runTurn(false, i);
   }
-  isRunningTurn.value = false;
 
   reconnecting = false;
   onTurnsReceived(turns.length - currentTurn);

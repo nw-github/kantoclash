@@ -27,9 +27,9 @@
 
       <template #empty>
         <span>
-          You don't have any teams.
+          You don't have any teams for this format.
           <ULink
-            to="/builder"
+            :to="`/builder?new_team=${format}`"
             active-class="text-primary"
             inactive-class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
           >
@@ -54,11 +54,6 @@ const validTeams = computed(() => myTeams.value.filter(team => team.format === f
 
 const breakpoint = useBreakpoints(breakpointsTailwind);
 const lessThanSm = breakpoint.smaller("sm");
-
-watch(
-  () => format,
-  () => (model.value = validTeams.value[0]),
-);
 
 const raise = () => {
   if (selectTeamMenu.value) {
