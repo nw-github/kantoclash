@@ -1,7 +1,7 @@
 <template>
   <UCard :ui="{ header: { padding: 'p-4 sm:p-4' }, body: { padding: 'p-0 sm:p-0' } }">
     <template #header>
-      <div class="flex space-x-1">
+      <div class="flex gap-1">
         <FormatDropdown v-model="team.format" class="w-1/2" placeholder="Format" team-only />
         <UInput
           v-model.trim="team.name"
@@ -11,7 +11,7 @@
           autofocus
         />
 
-        <div class="flex space-x-0.5">
+        <div class="flex gap-0.5">
           <!-- <UButton icon="material-symbols:save-outline" color="gray" variant="ghost" /> -->
           <TooltipButton
             :key="+teamPokepaste"
@@ -146,7 +146,7 @@
             body: { base: 'flex flex-col gap-2 grow justify-between', padding: 'p-2 sm:p-2' },
           }"
         >
-          <div class="flex space-x-2">
+          <div class="flex gap-2">
             <div class="flex flex-col">
               <PokemonSelector v-model="selectedPoke.data.species" :team="team" />
               <InputWithMax

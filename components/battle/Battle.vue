@@ -1,6 +1,6 @@
 <template>
   <div
-    class="flex h-full flex-col sm:flex-row p-4 overflow-auto rounded-lg dark:divide-gray-800 ring-1 ring-gray-200 dark:ring-gray-800 shadow space-x-4"
+    class="flex h-full flex-col sm:flex-row p-4 overflow-auto rounded-lg gap-4 dark:divide-gray-800 ring-1 ring-gray-200 dark:ring-gray-800 shadow"
   >
     <div class="flex flex-col w-full items-center">
       <div class="flex w-full relative">
@@ -19,23 +19,18 @@
       </div>
 
       <div class="flex">
-        <div class="order-2">
-          <ActivePokemon ref="frontPokemon" :poke="players[opponent]?.active" />
-        </div>
-
-        <div class="pb-2 sm:pb-0">
-          <div class="h-10 sm:h-14" />
-          <ActivePokemon
-            ref="backPokemon"
-            :poke="players[perspective]?.active"
-            :base="perspective === myId ? activeInTeam : undefined"
-            back
-          />
-        </div>
+        <ActivePokemon ref="frontPokemon" class="order-2" :poke="players[opponent]?.active" />
+        <ActivePokemon
+          ref="backPokemon"
+          class="pt-10 sm:pt-14 pb-2 sm:pb-0"
+          :poke="players[perspective]?.active"
+          :base="perspective === myId ? activeInTeam : undefined"
+          back
+        />
       </div>
 
-      <div class="relative w-full z-30">
-        <div class="events absolute w-full flex flex-col bottom-1 space-y-0.5">
+      <div class="relative w-full">
+        <div class="absolute w-full flex flex-col bottom-1 gap-0.5 z-30">
           <TransitionGroup name="list">
             <div
               v-for="e in liveEvents"
@@ -46,10 +41,11 @@
             </div>
           </TransitionGroup>
         </div>
-      </div>
 
-      <div v-if="players[perspective]" class="w-full relative">
-        <div class="absolute bottom-0 z-0 flex flex-row justify-between w-full p-0.5 items-end">
+        <div
+          v-if="players[perspective]"
+          class="absolute bottom-0 z-0 flex flex-row justify-between w-full p-0.5 items-end"
+        >
           <TeamDisplay :player="players[perspective]" class="self-end flex-col sm:flex-row" />
 
           <div class="flex flex-row">
@@ -95,12 +91,7 @@
           <div class="grid gap-2 sm:grid-cols-[1fr,1.5fr] h-min">
             <div class="flex flex-col gap-1 sm:gap-2">
               <template v-for="(option, i) in options.moves">
-                <MoveButton
-                  v-if="option.display"
-                  :key="i"
-                  :option="option"
-                  @click="selectMove(i)"
-                />
+                <MoveButton v-if="option.display" :key="i" :option @click="selectMove(i)" />
               </template>
               <div v-if="!options.moves.length && activeIndex === -1">Choose your lead</div>
             </div>
@@ -109,7 +100,7 @@
               <SwitchButton
                 v-for="(poke, i) in team"
                 :key="i"
-                :poke="poke"
+                :poke
                 :disabled="i === activeIndex || !options.canSwitch"
                 :active="i === activeIndex"
                 @click="selectSwitch(i)"
@@ -140,7 +131,7 @@
               text="Switch Sides"
               @click="perspective = opponent"
             />
-            <TooltipButton
+            <!-- <TooltipButton
               icon="material-symbols:fast-rewind"
               text="First Turn"
               variant="ghost"
@@ -153,7 +144,7 @@
               variant="ghost"
               color="gray"
               @click="skipTo(turnNoToIndex(currentTurnNo - 1))"
-            />
+            /> -->
             <TooltipButton
               v-if="isBattleOver"
               :icon="paused ? 'material-symbols:play-arrow' : 'material-symbols:pause'"
@@ -654,12 +645,12 @@ const turnNoToIndex = (turn: number) => {
       break;
     }
   }
-  console.log(`turnNoToIndex() | Turn NO: ${turn} -> Turn IDX: ${index}`);
+  // console.log(`turnNoToIndex() | Turn NO: ${turn} -> Turn IDX: ${index}`);
   return index;
 };
 
 const skipTo = (index: number) => {
-  console.log(`skipTo() | index: ${index} currentTurn: ${currentTurn}`);
+  // console.log(`skipTo() | index: ${index} currentTurn: ${currentTurn}`);
 
   frontPokemon.value!.skipAnimation();
   backPokemon.value!.skipAnimation();
@@ -676,7 +667,7 @@ const skipTo = (index: number) => {
 };
 
 const onTurnsReceived = async (count: number) => {
-  console.log("onTurnsReceived() | count:" + count);
+  // console.log("onTurnsReceived() | count:" + count);
   if (reconnecting) {
     return;
   }
@@ -714,7 +705,7 @@ const onTurnsReceived = async (count: number) => {
 };
 
 const onConnect = async (startAt?: number) => {
-  console.log(`onConnect() | startAt=${startAt} currentTurn=${currentTurn}`);
+  // console.log(`onConnect() | startAt=${startAt} currentTurn=${currentTurn}`);
   currentTurn = startAt ?? currentTurn;
   if (reconnecting) {
     return;

@@ -5,7 +5,7 @@
       <div class="p-4">
         <AuthState v-slot="{ user }">
           <div v-if="user">
-            <div class="flex items-center space-x-2">
+            <div class="flex items-center gap-2">
               <UIcon name="material-symbols:account-circle-full" class="size-5" />
               <h2>{{ user.name }}</h2>
             </div>

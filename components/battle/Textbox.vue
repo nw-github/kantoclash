@@ -47,7 +47,7 @@
             trailing-icon="heroicons:chevron-down-20-solid"
           />
           <template #panel>
-            <div class="p-2 space-y-1 flex flex-col">
+            <div class="p-2 gap-1 flex flex-col">
               <UChip
                 v-for="(player, id) in players"
                 :key="id"

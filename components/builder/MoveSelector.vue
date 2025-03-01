@@ -20,12 +20,12 @@
     <template #item="{ item: [id, move] }">
       <span class="text-sm" :class="[isIllegal(id) && 'text-red-500']">{{ move.name }}</span>
 
-      <div class="flex justify-end space-x-2">
+      <div class="flex justify-end gap-2">
         <div class="flex items-center">
-          <img class="size-[24px]" :src="`/sprites/type/${move.type}.png`" :alt="move.type" />
+          <TypeBadge :type="move.type" image />
         </div>
         <div class="flex items-center">
-          <img :src="category[move.category]" :width="24" :height="24" />
+          <MoveCategory :category="move.category" image />
         </div>
         <div class="flex flex-col w-8">
           <span class="text-[0.6rem] text-center text-gray-400">Power</span>
@@ -51,12 +51,6 @@ import { moveListEntries as items } from "#imports";
 const query = defineModel<string>({ default: "" });
 const { poke } = defineProps<{ poke?: PokemonDesc }>();
 const open = ref(false);
-
-const category = {
-  physical: "/sprites/misc/move-physical.png",
-  special: "/sprites/misc/move-special.png",
-  status: "/sprites/misc/move-status.png",
-};
 const species = computed<Species | undefined>(() => speciesList[poke?.species as SpeciesId]);
 
 const filter = (moves: typeof items, query: string) => {

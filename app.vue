@@ -41,7 +41,7 @@
             </template>
           </UPopover>
 
-          <div class="flex items-center space-x-3">
+          <div class="flex items-center gap-3">
             <UTooltip v-if="!connected" text="Disconnected from server">
               <UIcon
                 name="fluent:plug-disconnected-16-regular"

@@ -2,8 +2,8 @@
   <UCard class="h-full flex flex-col" :ui="{ body: { base: 'grow overflow-auto' } }">
     <template #header>
       <h1 class="text-2xl text-center pb-5">Your Teams</h1>
-      <div class="flex flex-col space-y-1 sm:space-y-0 sm:flex-row sm:space-x-2">
-        <div class="flex space-x-1 w-full">
+      <div class="flex flex-col sm:flex-row gap-1">
+        <div class="flex gap-1 w-full">
           <FormatDropdown v-model="formats" team-only multiple class="w-1/2" placeholder="Format" />
           <UInput
             v-model="query"
@@ -13,7 +13,7 @@
             class="w-full"
           />
         </div>
-        <div class="flex space-x-1">
+        <div class="flex gap-1">
           <UTooltip text="Import">
             <UButton
               color="green"
@@ -69,7 +69,7 @@
           <div class="flex justify-between items-end">
             <div>
               <span class="text-sm truncate">{{ team.name }}</span>
-              <div class="flex items-center space-x-1 text-xs">
+              <div class="flex items-center gap-1 text-xs">
                 <UIcon :name="formatInfo[team.format as FormatId].icon" class="size-3" />
                 <span>{{ formatInfo[team.format as FormatId].name }}</span>
               </div>

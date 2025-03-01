@@ -1,15 +1,15 @@
 <template>
-  <div class="flex flex-col space-y-1.5 p-2 text-sm sm:text-md">
-    <div class="flex justify-between space-x-4">
+  <div class="flex flex-col gap-1.5 p-2 text-sm sm:text-md">
+    <div class="flex justify-between items-center gap-4">
       <span>{{ species.name }}</span>
 
-      <div class="flex space-x-1">
+      <div class="flex gap-1">
         <TypeBadge v-for="type in species.types" :key="type" :type="type" />
       </div>
     </div>
 
     <UProgress :max="poke.stats.hp" :value="poke.hp" />
-    <div class="flex justify-between space-x-4">
+    <div class="flex justify-between gap-4">
       <span>
         {{ poke.hp }}/{{ poke.stats.hp }} HP ({{
           roundTo(hpPercentExact(poke.hp, poke.stats.hp), 2)
@@ -19,7 +19,7 @@
       <StatusOrFaint :poke="poke" faint />
     </div>
 
-    <div class="flex space-x-1">
+    <div class="flex gap-1">
       <template v-for="(val, stat) in poke.stats">
         <template v-if="stat !== 'hp'">
           <UBadge :key="stat" color="black" :class="statClass(stat)">

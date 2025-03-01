@@ -6,7 +6,7 @@
     >
       <div class="flex justify-between flex-col sm:flex-row">
         <span class="font-bold">{{ poke?.name ?? "--" }}</span>
-        <span v-if="poke" class="text-[0.75rem] sm:text-sm">Lv. {{ poke.level }}</span>
+        <span class="text-[0.75rem] sm:text-sm">Lv. {{ poke?.level ?? 100 }}</span>
       </div>
       <div class="relative overflow-hidden rounded-md bg-[#333] flex">
         <div class="hp-fill absolute h-full rounded-md" />
@@ -45,53 +45,47 @@
       </div>
     </div>
 
-    <div class="flex flex-col items-center">
+    <div class="flex flex-col items-center relative">
       <div class="w-[128px] h-[117px] sm:w-[256px] sm:h-[234px] items-center justify-center flex">
         <UPopover mode="hover" :popper="{ placement: 'top' }">
           <div ref="sprite" class="sprite z-20" :class="{ back, front: !back, invisible: !poke }">
             <Sprite
-              :species="species"
+              :species
               :substitute="poke?.flags.substitute"
               :kind="back ? 'back' : 'front'"
               :scale="lessThanSm ? 1 : 2"
             />
           </div>
 
-          <template v-if="poke" #panel>
+          <template v-if="poke && !poke.hidden" #panel>
             <div class="p-2">
-              <template v-if="base && !poke.transformed">
-                <PokemonTTContent :poke="base" :active="poke" />
-              </template>
-              <template v-else>
-                <div class="flex flex-col gap-5">
-                  <div class="flex justify-between space-x-4">
-                    <span>
-                      {{ species!.name }}
-                      <span v-if="poke.transformed">
-                        (Was: {{ speciesList[poke.speciesId].name }})
-                      </span>
+              <PokemonTTContent v-if="base && !poke.transformed" :poke="base" :active="poke" />
+              <div v-else class="flex flex-col gap-5">
+                <div class="flex gap-4">
+                  <span>
+                    {{ species!.name }}
+                    <span v-if="poke.transformed">
+                      (Was: {{ speciesList[poke.speciesId].name }})
                     </span>
-                    <div class="flex space-x-1">
-                      <TypeBadge v-for="type in species!.types" :key="type" :type="type" />
-                    </div>
+                  </span>
+                  <div class="flex gap-1">
+                    <TypeBadge v-for="type in species!.types" :key="type" :type />
                   </div>
-
-                  <span class="italic text-center">{{ minSpe }} to {{ maxSpe }} Spe</span>
                 </div>
-              </template>
+
+                <span class="italic text-center">{{ minSpe }} to {{ maxSpe }} Spe</span>
+              </div>
             </div>
           </template>
         </UPopover>
       </div>
 
-      <div class="relative flex justify-center">
-        <div
-          ref="ground"
-          class="absolute bottom-4 sm:bottom-8 bg-gray-200 dark:bg-gray-600 h-10 w-20 sm:h-16 sm:w-40 rounded-[100%]"
-        />
-      </div>
+      <div
+        ref="ground"
+        class="absolute bottom-4 sm:bottom-8 bg-gray-200 dark:bg-gray-600 h-10 w-20 sm:h-16 sm:w-40 rounded-[100%]"
+      />
 
-      <div ref="pokeBall" class="pokeball absolute w-[42px] h-[42px] z-10 opacity-0" />
+      <div ref="pokeBall" class="pokeball absolute size-[42px] z-10 opacity-0" />
     </div>
   </div>
 </template>
@@ -219,10 +213,9 @@ const flagInfo = {
 
 export type AnimationType = "faint" | "sendin" | "retract" | "get_sub" | "lose_sub" | MoveId;
 
-const remToPx = (rem: number) =>
-  parseFloat(getComputedStyle(document.documentElement).fontSize) * rem;
+const rem = (rem: number) => parseFloat(getComputedStyle(document.documentElement).fontSize) * rem;
 
-let timeline: anime.AnimeTimelineInstance;
+let timeline: anime.AnimeTimelineInstance | undefined;
 const playAnimation = (anim: AnimationType, name?: string, cb?: () => void) => {
   return new Promise<void>(resolve => {
     const other = document.querySelector(`.sprite${props.back ? ".front" : ".back"}`)!;
@@ -240,27 +233,25 @@ const playAnimation = (anim: AnimationType, name?: string, cb?: () => void) => {
       timeline.add({
         targets: sprite.value,
         duration: 250,
-        translateY: { value: remToPx(8), duration: 250 },
+        translateY: { value: rem(7), duration: 250 },
         easing: "easeInExpo",
         opacity: 0,
         complete: () => {
-          useAnime.set(sprite.value!, { translateX: 0, translateY: 0, scale: 0 });
+          useAnime.set(sprite.value!, { translateX: 0, translateY: 0, scale: 1 });
           resolve();
         },
       });
     } else if (anim === "sendin") {
-      useAnime.set(sprite.value, { opacity: 0, translateX: 0, translateY: 0, scale: 0 });
+      reset(false);
       useAnime.set(pokeBall.value, { translateX: 0, translateY: 0, rotateZ: 0 });
 
       const pbRect = pokeBall.value.getBoundingClientRect();
       const sprRect = sprite.value.getBoundingClientRect();
+      const gRect = ground.value!.getBoundingClientRect();
       const myCenterX = sprRect.left + sprRect.width / 2;
       const myCenterY = sprRect.top + sprRect.height / 2;
       const [x, y] = relativePos(pbRect, myCenterX, myCenterY);
-
-      const startX = props.back
-        ? relativePos(pbRect, sprRect.left - 80, 0)[0]
-        : relativePos(pbRect, sprRect.right + 40, 0)[0];
+      const startX = relativePos(pbRect, props.back ? gRect.left - rem(1.25) : gRect.right, 0)[0];
       const endX = props.back ? x - 15 : x - 10;
 
       pbRow.value = 0;
@@ -303,9 +294,9 @@ const playAnimation = (anim: AnimationType, name?: string, cb?: () => void) => {
       const [x, y] = relativePos(
         pbRect,
         gRect.left + gRect.width / 2,
-        gRect.top + remToPx(lessThanSm.value ? 3 : 0),
+        gRect.top + rem(lessThanSm.value ? 3 : 0),
       );
-      const [_, sprY] = relativePos(sprRect, 0, gRect.top - remToPx(lessThanSm.value ? 1.2 : 2.8));
+      const [_, sprY] = relativePos(sprRect, 0, gRect.top - rem(lessThanSm.value ? 1.2 : 2.8));
 
       pbRow.value = 10;
 
@@ -352,7 +343,7 @@ const playAnimation = (anim: AnimationType, name?: string, cb?: () => void) => {
         targets: sprite.value,
         duration: 250,
         translateY: [
-          { value: -remToPx(8), duration: 0 },
+          { value: -rem(8), duration: 0 },
           { value: sprY, duration: 250 },
         ],
         easing: "easeOutBounce",
@@ -419,6 +410,7 @@ const reset = (visible: boolean) => {
 const skipAnimation = () => {
   if (timeline && !timeline.paused) {
     timeline.seek(timeline.duration);
+    timeline = undefined;
   }
 };
 

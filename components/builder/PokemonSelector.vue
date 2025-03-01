@@ -25,20 +25,14 @@
 
     <template #item="{ item: [, species] }">
       <div class="flex items-center gap-1">
-        <Sprite :species="species" kind="box" :scale="1" />
+        <Sprite :species kind="box" :scale="1" />
         <span class="text-xs sm:text-sm truncate" :class="[isIllegal(species) && 'text-red-500']">
           {{ species.name }}
         </span>
       </div>
 
       <div class="flex items-center gap-2">
-        <img
-          v-for="type in species.types"
-          :key="type"
-          class="size-[20px] sm:size-[24px]"
-          :src="`/sprites/type/${type}.png`"
-          :alt="type"
-        />
+        <TypeBadge v-for="type in species.types" :key="type" :type image />
         <div class="flex items-center gap-0.5">
           <UBadge
             v-for="stat in statKeys"

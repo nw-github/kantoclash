@@ -91,7 +91,7 @@
 
     <div class="space-y-2 px-5">
       <h1 class="text-center">Battles</h1>
-      <div class="flex space-x-2">
+      <div class="flex gap-2">
         <FormatDropdown
           v-model="filterFormats"
           multiple
@@ -120,7 +120,7 @@
         </template>
 
         <template #type-data="{ row }">
-          <div class="flex items-center space-x-1">
+          <div class="flex items-center gap-1">
             <UIcon :name="formatInfo[row.format as FormatId].icon" class="size-5" />
             <span>{{ formatInfo[row.format as FormatId].name }}</span>
           </div>

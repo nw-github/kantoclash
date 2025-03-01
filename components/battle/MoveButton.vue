@@ -8,7 +8,7 @@
     >
       <div class="flex items-center">
         <div class="pl-0.5 pr-1">
-          <img class="size-[24px]" :src="`/sprites/type/${move.type}.png`" :alt="move.type" />
+          <TypeBadge :type="move.type" :alt="move.type" image />
         </div>
         <span class="text-sm sm:text-base truncate">{{ move.name }}</span>
       </div>
@@ -18,23 +18,23 @@
     <template #panel>
       <ul class="list-none p-2 m-0 w-max max-w-[300px]">
         <li>
-          <h4 class="mb-number">{{ move.power ?? "--" }}</h4>
+          <h4 class="inline-block w-8 text-center">{{ move.power ?? "--" }}</h4>
           Power
         </li>
         <li>
-          <h4 class="mb-number">{{ move.acc ?? "--" }}</h4>
+          <h4 class="inline-block w-8 text-center">{{ move.acc ?? "--" }}</h4>
           Accuracy
         </li>
         <li v-if="move.priority">
-          <h4 class="mb-number">
+          <h4 class="inline-block w-8 text-center">
             {{ move.priority > 0 ? `+${move.priority}` : move.priority }}
           </h4>
           Priority
         </li>
         <li class="pt-3">{{ describeMove(option.move) }}</li>
-        <li class="pt-3 space-x-1">
+        <li class="pt-3 space-x-1 flex">
           <TypeBadge :type="move.type" />
-          <UBadge :color="categoryColor[category]">{{ toTitleCase(category) }}</UBadge>
+          <MoveCategory :category="move.category" />
         </li>
       </ul>
     </template>
@@ -44,25 +44,9 @@
 <script setup lang="ts">
 import type { MoveOption } from "@/game/battle";
 import { moveList } from "@/game/moveList";
-import { isSpecial } from "@/game/utils";
 
 defineEmits<{ (e: "click"): void }>();
 
 const props = defineProps<{ option: MoveOption }>();
 const move = computed(() => moveList[props.option.move]);
-const category = computed(() => {
-  return move.value.power ? (isSpecial(move.value.type) ? "special" : "physical") : "status";
-});
-
-const categoryColor = { physical: "red", special: "gray", status: "gray" } as const;
 </script>
-
-<style scoped>
-.mb-number {
-  display: inline-block;
-  width: 30px;
-  padding: 0px;
-  margin: 0px;
-  text-align: center;
-}
-</style>
