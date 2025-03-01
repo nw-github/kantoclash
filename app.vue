@@ -211,7 +211,10 @@ onMounted(() => {
     $conn.emit("getChallenges", resp => (challenges.value = resp));
     connected.value = true;
   });
-  $conn.on("disconnect", () => (connected.value = false));
+  $conn.on("disconnect", () => {
+    connected.value = false;
+    $conn.connect();
+  });
   $conn.on("foundMatch", roomId => {
     $conn.emit("getRoom", roomId, room => {
       if (room !== "bad_room") {

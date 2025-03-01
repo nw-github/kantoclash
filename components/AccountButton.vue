@@ -41,6 +41,6 @@ const model = defineModel<{ open: boolean }>();
 
 const logout = async () => {
   await clear();
-  $conn.disconnect().connect();
+  $conn.disconnect();
 };
 </script>

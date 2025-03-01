@@ -72,14 +72,14 @@ export const randoms = (validSpecies: (s: Species, id: SpeciesId) => boolean, le
 
 const teamValidator = z
   .object({
-    name: z.string().trim().max(24).optional(),
-    level: z.number().min(0).max(100),
+    name: z.string().trim().max(24, "Name must be at most 24 characters").optional(),
+    level: z.number().min(1).max(100),
     species: z.string().refine(s => (speciesList as any)[s] !== undefined, "Species is invalid"),
     moves: z
       .string()
       .refine(m => (moveList as any)[m] !== undefined, "Move does not exist")
       .array()
-      .nonempty()
+      .nonempty("Must have at least one move")
       .refine(arr => new Set(arr).size === arr.length, "Duplicate moves are not allowed"),
     dvs: z.record(z.enum(statKeys), z.number().min(0).max(15)),
     statexp: z.record(z.enum(statKeys), z.number().min(0).max(65535)),
@@ -97,7 +97,7 @@ const teamValidator = z
     }
   })
   .array()
-  .max(6)
+  .max(6, "Team must have between 1 and 6 pokemon")
   .nonempty("Team must have between 1 and 6 pokemon")
   .refine(
     team => new Set(team.map(p => p.species)).size === team.length,

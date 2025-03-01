@@ -55,6 +55,8 @@ const validTeams = computed(() => myTeams.value.filter(team => team.format === f
 const breakpoint = useBreakpoints(breakpointsTailwind);
 const lessThanSm = breakpoint.smaller("sm");
 
+watch(validTeams, () => (model.value = undefined));
+
 const raise = () => {
   if (selectTeamMenu.value) {
     selectTeamMenu.value.querySelector("button")?.click();

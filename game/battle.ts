@@ -203,14 +203,23 @@ export class Battle {
   ) {
     this.players = [player1, player2];
     this.moveListToId = new Map<Move, MoveId>();
+    seed ??= crypto.randomUUID();
+    console.log(`${player1.id} vs ${player2.id}, seed: ${seed}`);
+
     this.rng = new Random(seed);
     for (const k in moveList) {
       this.moveListToId.set(moveList[k as MoveId], k as MoveId);
     }
   }
 
-  static start(player1: Player, player2: Player, chooseLead?: boolean, mods: Mods = {}) {
-    const self = new Battle(player1, player2, mods);
+  static start(
+    player1: Player,
+    player2: Player,
+    chooseLead?: boolean,
+    mods: Mods = {},
+    seed?: SeedOrRNG,
+  ) {
+    const self = new Battle(player1, player2, mods, seed);
 
     player1.updateOptions(self);
     player2.updateOptions(self);
@@ -585,7 +594,7 @@ export class ActivePokemon {
 
     if (status === "slp") {
       const opp = battle.opponentOf(this.owner);
-      if (opp.sleepClausePoke && battle.mods.sleepClause) {
+      if (opp.sleepClausePoke?.hp && battle.mods.sleepClause) {
         battle.info(this, "fail_sleep_clause");
         return true;
       }

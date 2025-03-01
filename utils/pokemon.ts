@@ -136,11 +136,11 @@ export const parseTeams = (src: string) => {
     const match = res[i].match(teamRegex);
     if (match) {
       name = match[2];
-      if (match[1] && (battleFormats as readonly string[]).includes(match[1])) {
-        format = match[1] as FormatId;
-      }
 
-      if (match[1] === "gen1ou") {
+      const fmt = match[1]?.trim();
+      if (fmt && (battleFormats as readonly string[]).includes(fmt)) {
+        format = fmt as FormatId;
+      } else if (fmt === "gen1ou") {
         format = "standard";
       }
       ++i;

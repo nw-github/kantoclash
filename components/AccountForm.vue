@@ -10,7 +10,7 @@
     >
       <div class="after:w-full after:border-1 space-y-2">
         <UFormGroup label="Username" name="username" required>
-          <UInput v-model="state.username" autofocus />
+          <UInput v-model.trim="state.username" autofocus />
         </UFormGroup>
         <UFormGroup label="Password" name="password" required>
           <UInput v-model="state.password" type="password" />
@@ -84,7 +84,7 @@ const submit = async (event: FormSubmitEvent<Schema>) => {
     state.password = undefined;
     state.confirmPassword = undefined;
 
-    $conn.disconnect().connect();
+    $conn.disconnect();
   } catch (err: any) {
     form.value!.setErrors([
       {

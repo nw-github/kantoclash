@@ -1,5 +1,4 @@
-import { v4 as uuid } from "uuid";
-import { Server as SocketIoServer, type Socket as SocketIoClient } from "socket.io";
+import { type ServerOptions, Server, type Socket as SocketIoClient } from "socket.io";
 import type { Pokemon } from "../game/pokemon";
 import { Battle, type Options, Player, type Turn } from "../game/battle";
 import { type TeamProblems, formatDescs } from "./utils/formats";
@@ -278,14 +277,14 @@ class Room {
   }
 }
 
-export class GameServer extends SocketIoServer<ClientMessage, ServerMessage> {
+export class GameServer extends Server<ClientMessage, ServerMessage> {
   private accounts = new Map<string, Account>();
   private mmWaiting: Partial<Record<FormatId, Player>> = {};
   private rooms = new Map<string, Room>();
   private maintenance = false;
 
-  constructor(server?: any) {
-    super(server);
+  constructor(opts?: Partial<ServerOptions>) {
+    super(opts);
     this.on("connection", socket => this.newConnection(socket));
     this.on("error", console.error);
     this.on("close", () => console.log("game server has closed..."));
@@ -634,7 +633,7 @@ export class GameServer extends SocketIoServer<ClientMessage, ServerMessage> {
       formatDescs[format].chooseLead,
       formatInfo[format].mods,
     );
-    const room = new Room(uuid(), battle, turn0, format, this);
+    const room = new Room(crypto.randomUUID(), battle, turn0, format, this);
     this.rooms.set(room.id, room);
 
     this.onFoundMatch(room, this.accounts.get(player.id)!);

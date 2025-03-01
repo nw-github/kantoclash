@@ -4,7 +4,7 @@
       <div class="flex space-x-1">
         <FormatDropdown v-model="team.format" class="w-1/2" placeholder="Format" team-only />
         <UInput
-          v-model="team.name"
+          v-model.trim="team.name"
           :trailing="false"
           placeholder="Team name"
           class="w-full"
@@ -150,7 +150,7 @@
             <div class="flex flex-col">
               <PokemonSelector v-model="selectedPoke.data.species" :team="team" />
               <InputWithMax
-                v-model="selectedPoke.data.name"
+                v-model.trim="selectedPoke.data.name"
                 :maxlength="24"
                 :placeholder="selectedPoke.species?.name ?? ''"
               />

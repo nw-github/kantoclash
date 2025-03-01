@@ -22,6 +22,8 @@ watch(currentTrack, value => {
     });
     if (musicController.value) {
       musicController.value.play().catch(_err => {});
+    } else {
+      watchOnce(musicController, v => v!.play().catch(_err => {}));
     }
   }
 });

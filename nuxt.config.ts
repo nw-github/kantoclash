@@ -24,4 +24,10 @@ export default defineNuxtConfig({
     composables: true,
   },
   components: [{ path: "~/components", pathPrefix: false }],
+  runtimeConfig: {
+    session: {
+      maxAge: 60 * 60 * 24 * 7, // 1 week
+      password: process.env.NUXT_SESSION_PASSWORD || "",
+    },
+  },
 });
