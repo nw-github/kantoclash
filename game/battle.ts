@@ -1,4 +1,4 @@
-import { Random, type SeedOrRNG } from "random";
+import { Random } from "random";
 import type {
   HitSubstituteEvent,
   BattleEvent,
@@ -110,7 +110,7 @@ export class Player {
 
   updateOptions(battle: Battle) {
     const { active } = this;
-    if (battle.victor || (!battle.opponentOf(this).active.base.hp && active.base.hp)) {
+    if (battle.finished || (!battle.opponentOf(this).active.base.hp && active.base.hp)) {
       this.options = undefined;
       return;
     }
@@ -189,23 +189,15 @@ export type Mods = {
 export class Battle {
   readonly players: [Player, Player];
   private readonly events: BattleEvent[] = [];
-  private readonly moveListToId;
+  private readonly moveListToId = new Map<Move, MoveId>();
   private switchTurn = true;
   private _victor?: Player;
   readonly rng: Random;
+  finished = false;
   leadTurn = true;
 
-  private constructor(
-    player1: Player,
-    player2: Player,
-    readonly mods: Mods = {},
-    seed?: SeedOrRNG,
-  ) {
-    this.players = [player1, player2];
-    this.moveListToId = new Map<Move, MoveId>();
-    seed ??= crypto.randomUUID();
-    console.log(`${player1.id} vs ${player2.id}, seed: ${seed}`);
-
+  private constructor(p1: Player, p2: Player, readonly mods: Mods, readonly seed: string) {
+    this.players = [p1, p2];
     this.rng = new Random(seed);
     for (const k in moveList) {
       this.moveListToId.set(moveList[k as MoveId], k as MoveId);
@@ -217,9 +209,10 @@ export class Battle {
     player2: Player,
     chooseLead?: boolean,
     mods: Mods = {},
-    seed?: SeedOrRNG,
+    seed: string = crypto.randomUUID(),
   ) {
     const self = new Battle(player1, player2, mods, seed);
+    console.log(`${player1.id} vs ${player2.id}, seed: ${seed}`);
 
     player1.updateOptions(self);
     player2.updateOptions(self);
@@ -232,8 +225,13 @@ export class Battle {
     return [self, self.nextTurn()!] as const;
   }
 
-  get victor() {
+  get victor(): Player | undefined {
     return this._victor;
+  }
+
+  private set victor(value: Player) {
+    this._victor = value;
+    this.finished = true;
   }
 
   event<T extends BattleEvent>(event: T) {
@@ -292,11 +290,11 @@ export class Battle {
 
       const target = this.opponentOf(choice.user.owner).active;
       if (this.tryUseMove(choice, target) || choice.user.handleRecurrentDamage(this)) {
-        if (!this._victor) {
+        if (!this.victor) {
           if (target.owner.areAllDead()) {
-            this._victor = choice.user.owner;
+            this.victor = choice.user.owner;
           } else if (choice.user.owner.areAllDead()) {
-            this._victor = target.owner;
+            this.victor = target.owner;
           }
         }
 
@@ -309,7 +307,7 @@ export class Battle {
       for (const { user } of choices) {
         if (user.handleStatusDamage(this)) {
           if (user.owner.areAllDead()) {
-            this._victor = this.opponentOf(user.owner);
+            this.victor = this.opponentOf(user.owner);
           }
           break;
         }
@@ -341,9 +339,9 @@ export class Battle {
   }
 
   forfeit(player: Player, timer: boolean) {
-    this._victor = this.opponentOf(player);
+    this.victor = this.opponentOf(player);
     this.event({ type: "info", src: player.id, why: timer ? "forfeit_timer" : "forfeit" });
-    this.event({ type: "end", victor: this._victor.id });
+    this.event({ type: "end", victor: this.victor.id });
     for (const player of this.players) {
       player.options = undefined;
     }
@@ -351,8 +349,7 @@ export class Battle {
   }
 
   draw(timer: boolean) {
-    // just set victor to somebody since elsewhere victor is used to tell if the game is over
-    this._victor = this.players[0];
+    this.finished = true;
     for (const player of this.players) {
       if (timer) {
         this.event({ type: "info", src: player.id, why: "forfeit_timer" });

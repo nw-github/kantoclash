@@ -2,10 +2,23 @@ import { Server as Engine } from "engine.io";
 import { defineEventHandler } from "h3";
 import { GameServer } from "../gameServer";
 import { startBot } from "../bot";
+import { battles } from "../db/schema";
 
 export default defineNitroPlugin(nitro => {
   const engine = new Engine({ pingInterval: 5000, pingTimeout: 5000 });
-  const io = new GameServer();
+  const io = new GameServer(undefined, {
+    async onBattleComplete(format, battle) {
+      const battlers = battle.players.map(pl => pl.id);
+      await useDrizzle()
+        .insert(battles)
+        .values({
+          format,
+          player1: +battlers[0],
+          player2: +battlers[1],
+          winner: battle.victor ? +battle.victor.id : null,
+        });
+    },
+  });
   io.bind(engine);
 
   nitro.router.use(

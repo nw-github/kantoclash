@@ -251,7 +251,11 @@ const playAnimation = (anim: AnimationType, name?: string, cb?: () => void) => {
       const myCenterX = sprRect.left + sprRect.width / 2;
       const myCenterY = sprRect.top + sprRect.height / 2;
       const [x, y] = relativePos(pbRect, myCenterX, myCenterY);
-      const startX = relativePos(pbRect, props.back ? gRect.left - rem(1.25) : gRect.right, 0)[0];
+      const startX = relativePos(
+        pbRect,
+        props.back ? gRect.left - rem(1.25) : gRect.right + rem(1),
+        0,
+      )[0];
       const endX = props.back ? x - 15 : x - 10;
 
       pbRow.value = 0;

@@ -141,7 +141,7 @@ class Room {
   }
 
   resetTimerState() {
-    if (this.battle.victor) {
+    if (this.battle.finished) {
       clearInterval(this.timer);
       this.timer = undefined;
       setTimeout(() => this.server.destroyRoom(this), ROOM_CLEANUP_DELAY_MS);
@@ -152,12 +152,12 @@ class Room {
   }
 
   startTimer(initiator: Account) {
-    if (this.timer || this.battle.victor) {
+    if (this.timer || this.battle.finished) {
       return false;
     }
 
     this.timer = setInterval(() => {
-      if (Date.now() - this.lastTurn < TURN_DECISION_TIME_MS || this.battle.victor) {
+      if (Date.now() - this.lastTurn < TURN_DECISION_TIME_MS || this.battle.finished) {
         return;
       }
 
@@ -189,7 +189,7 @@ class Room {
 
   timerInfo(_account: Account) {
     // TODO: per-player timer duration
-    return this.timer && !this.battle.victor
+    return this.timer && !this.battle.finished
       ? ({ startedAt: this.lastTurn, duration: TURN_DECISION_TIME_MS } satisfies BattleTimer)
       : undefined;
   }
@@ -209,10 +209,12 @@ class Room {
       }
     }
 
-    if (this.battle.victor) {
+    if (this.battle.finished) {
       for (const player of this.battle.players) {
         this.server.onBattleEnded(player.id, this);
       }
+
+      this.server.telemetry?.onBattleComplete(this.format, this.battle);
     }
 
     this.server.to(this.spectatorRoom).emit("nextTurn", this.id, {
@@ -277,13 +279,17 @@ class Room {
   }
 }
 
+export type Telemetry = {
+  onBattleComplete(format: FormatId, battle: Battle): void;
+};
+
 export class GameServer extends Server<ClientMessage, ServerMessage> {
   private accounts = new Map<string, Account>();
   private mmWaiting: Partial<Record<FormatId, Player>> = {};
   private rooms = new Map<string, Room>();
   private maintenance = false;
 
-  constructor(opts?: Partial<ServerOptions>) {
+  constructor(opts?: Partial<ServerOptions>, public telemetry?: Telemetry) {
     super(opts);
     this.on("connection", socket => this.newConnection(socket));
     this.on("error", console.error);
@@ -427,7 +433,7 @@ export class GameServer extends Server<ClientMessage, ServerMessage> {
         chats: room.chats,
         format: room.format,
         timer: socket.account && room.timerInfo(socket.account),
-        finished: !!room.battle.victor,
+        finished: !!room.battle.finished,
         battlers: this.getBattlers(room),
       });
     });
@@ -513,7 +519,7 @@ export class GameServer extends Server<ClientMessage, ServerMessage> {
       ack(
         this.rooms
           .values()
-          .filter(room => !room.battle.victor)
+          .filter(room => !room.battle.finished)
           .map(room => room.makeDescriptor())
           .toArray(),
       );
@@ -527,7 +533,7 @@ export class GameServer extends Server<ClientMessage, ServerMessage> {
       ack(
         account.activeBattles
           .values()
-          .filter(room => !room.battle.victor)
+          .filter(room => !room.battle.finished)
           .map(room => room.makeDescriptor())
           .toArray(),
       );
