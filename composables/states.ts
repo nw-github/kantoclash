@@ -26,4 +26,6 @@ export const useChatCensorEnabled = () => useLocalStorage<boolean>("profanity", 
 
 export const useIgnoreChallenges = () => useLocalStorage<boolean>("ignoreChallenges", false);
 
+export const useAutoMuteMusic = () => useLocalStorage<boolean>("autoMuteMusic", false);
+
 export const useChallenges = () => useState<Challenge[]>("challenges", () => []);

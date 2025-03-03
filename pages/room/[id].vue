@@ -17,6 +17,7 @@
       :battlers
       :timer
       :finished
+      :format
       @chat="sendChat"
       @forfeit="() => makeChoice('forfeit')"
       @move="i => makeChoice('move', i)"
@@ -63,6 +64,7 @@ const timer = ref<BattleTimer>();
 const modalOpen = ref(false);
 const room = `${route.params.id}`;
 const finished = ref(false);
+const format = ref<FormatId>("standard");
 
 let sequenceNo = 0;
 let needsFreshStart = true;
@@ -211,6 +213,7 @@ const onJoinRoom = (resp: JoinRoomResponse | "bad_room") => {
 
   options.value = resp.options;
   timer.value = resp.timer;
+  format.value = resp.format;
 
   clearObj(chats);
   for (const k in resp.chats) {

@@ -69,7 +69,7 @@
                     </span>
                   </span>
                   <div class="flex gap-1">
-                    <TypeBadge v-for="type in species!.types" :key="type" :type />
+                    <TypeBadge v-for="type in species!.types" :key="type" :type image />
                   </div>
                 </div>
 

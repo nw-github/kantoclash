@@ -6,28 +6,7 @@
       </h1>
       <div class="flex items-center gap-2">
         <FormatDropdown v-model="selectedFormat" :disabled="findingMatch" class="grow" />
-        <UPopover mode="hover">
-          <UButton icon="material-symbols:info-outline-rounded" color="gray" variant="ghost" />
-          <template #panel>
-            <div class="flex flex-col gap-2 p-1 max-w-96">
-              <h1 class="text-xl">{{ formatInfo[selectedFormat].name }}</h1>
-
-              <span>{{ formatInfo[selectedFormat].desc }}</span>
-
-              <div class="flex flex-col">
-                <span class="font-semibold">Mods:</span>
-                <template v-for="(val, mod) in formatInfo[selectedFormat].mods" :key="mod">
-                  <span v-if="val" class="text-xs text-gray-600 dark:text-gray-400">
-                    {{ modNames[mod].name }}: {{ modNames[mod].desc }}
-                  </span>
-                </template>
-                <span v-if="Object.values(formatInfo[selectedFormat].mods).every(v => !v)">
-                  None
-                </span>
-              </div>
-            </div>
-          </template>
-        </UPopover>
+        <FormatInfoButton :format="selectedFormat" />
       </div>
       <ClientOnly>
         <TeamSelector

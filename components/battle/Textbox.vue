@@ -8,7 +8,7 @@
   >
     <template #header>
       <div class="flex justify-between items-center">
-        <div>
+        <div class="flex items-center">
           <TooltipButton
             v-if="closable"
             text="Close"
@@ -37,6 +37,7 @@
             color="gray"
             size="lg"
           /> -->
+          <FormatInfoButton :format />
         </div>
 
         <UPopover mode="hover" :popper="{ placement: 'bottom-start' }">
@@ -169,6 +170,7 @@ const props = defineProps<{
   victor?: string;
   closable?: boolean;
   smoothScroll?: boolean;
+  format: FormatId;
 }>();
 const emit = defineEmits<{
   (e: "chat", message: string): void;

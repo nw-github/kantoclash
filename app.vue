@@ -89,6 +89,7 @@
                       searchable
                       :options="musicTrackItems"
                       value-attribute="value"
+                      :popper="{ strategy: 'fixed' }"
                     />
                   </div>
                 </div>

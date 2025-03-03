@@ -180,6 +180,7 @@
         :chats
         :victor
         :perspective
+        :format
         :turns="htmlTurns"
         :smooth-scroll="smoothScroll"
         @chat="message => $emit('chat', message)"
@@ -193,6 +194,7 @@
         :chats
         :victor
         :perspective
+        :format
         :turns="htmlTurns"
         :smooth-scroll="smoothScroll"
         closable
@@ -253,9 +255,11 @@ const { team, options, players, turns, chats, battlers, timer, finished } = defi
   battlers: string[];
   timer?: BattleTimer;
   finished: boolean;
+  format: FormatId;
 }>();
 const myId = useMyId();
 const sfxVol = useSfxVolume();
+const currentTrack = useCurrentTrack();
 const selectionText = ref("");
 const menuButton = ref<HTMLElement>();
 const isMenuVisible = useElementVisibility(menuButton);
@@ -631,6 +635,10 @@ const runTurn = async (live: boolean, turnIdx: number) => {
     if (isLive()) {
       await delay(250);
     }
+  }
+
+  if (isBattleOver.value && currentTrack.value && useAutoMuteMusic().value) {
+    currentTrack.value = undefined;
   }
 };
 

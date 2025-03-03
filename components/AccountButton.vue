@@ -13,6 +13,7 @@
             <div class="space-y-2">
               <UCheckbox v-model="filter" label="Enable profanity filter" />
               <UCheckbox v-model="challenges" label="Ignore challenges" />
+              <UCheckbox v-model="autoMute" label="Mute music at the end of a battle" />
               <UButton
                 :label="!loading ? 'Log out' : 'Logging out...'"
                 :loading="loading"
@@ -36,6 +37,7 @@ const { $conn } = useNuxtApp();
 const { clear } = useUserSession();
 const filter = useChatCensorEnabled();
 const challenges = useIgnoreChallenges();
+const autoMute = useAutoMuteMusic();
 const loading = ref(false);
 const model = defineModel<{ open: boolean }>();
 

@@ -31,7 +31,12 @@
             />
           </UTooltip>
           <UTooltip text="New">
-            <UButton color="green" icon="heroicons:plus-20-solid" variant="soft" @click="newTeam" />
+            <UButton
+              color="green"
+              icon="heroicons:plus-20-solid"
+              variant="soft"
+              @click="newTeam()"
+            />
           </UTooltip>
         </div>
       </div>
@@ -234,10 +239,10 @@ const deleteTeam = (team: Team) => {
   });
 };
 
-const newTeam = (format?: FormatId) => {
+const newTeam = (format: FormatId = "standard") => {
   myTeams.value.unshift({
     name: "New Team",
-    format: format ?? "standard",
+    format,
     pokemon: [parsePokemon("")],
   });
   editingTeam.value = myTeams.value[0];
