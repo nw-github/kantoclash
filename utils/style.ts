@@ -2,28 +2,37 @@ import type { Status } from "~/game/pokemon";
 import type { Type } from "~/game/utils";
 
 export const typeColor: Record<Type, string> = {
-    normal: "#ACAC7B",
-    rock: "#BDA439",
-    ground: "#E6C56A",
-    ghost: "#735A9C",
-    poison: "#A441A4",
-    bug: "#ACBD20",
-    flying: "#AC94F6",
-    fight: "#C53129",
-    water: "#6A94F6",
-    grass: "#7BCD52",
-    fire: "#F68331",
-    electric: "#FFD531",
-    ice: "#9CDEDE",
-    psychic: "#FF5A8B",
-    dragon: "#7339FF",
+  normal: "#8F98A0",
+  rock: "#C6B68A",
+  ground: "#D87646",
+  ghost: "#5168AB",
+  poison: "#AA69C7",
+  bug: "#8FC02B",
+  flying: "#8EA7DC",
+  fight: "#CD4068",
+  water: "#4D8FD4",
+  grass: "#62BA5A",
+  fire: "#FF9B53",
+  electric: "#F3D13B",
+  ice: "#73CDBF",
+  psychic: "#F97075",
+  dragon: "#096CC3",
 };
 
 export const statusColor: Record<Status, string> = {
-    psn: "#c562c5",
-    tox: "#c562c5",
-    brn: "#e67352",
-    frz: "#8bb4e6",
-    slp: "#a4a48b",
-    par: "#bebe18",
+  psn: "#E879F9",
+  tox: "#E879F9",
+  brn: "#FB923C",
+  frz: "#8bb4e6",
+  slp: "#a4a48b",
+  par: "#F59E0B",
+};
+
+export const baseStatColor = (stat: number) => {
+  // TODO: blend between colors
+  return [
+    stat < 70 && "text-red-400",
+    stat < 100 && "text-amber-300",
+    stat >= 100 && "text-lime-400",
+  ];
 };
