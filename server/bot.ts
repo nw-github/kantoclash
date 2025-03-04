@@ -4,19 +4,24 @@ import type { BattleEvent } from "../game/events";
 import type { Options, Turn } from "../game/battle";
 import { randoms } from "~/server/utils/formats";
 import { formatInfo, type ClientPlayer } from "~/utils";
-import type { Pokemon } from "~/game/pokemon";
-import { clamp } from "../game/utils";
+import { Pokemon } from "~/game/pokemon";
+import { clamp, getEffectiveness, type Type } from "../game/utils";
 import random from "random";
 import { convertDesc, parseTeams, type Team } from "~/utils/pokemon";
 import type { FormatId } from "~/utils/data";
+import { type MoveId, moveList } from "~/game/moveList";
+import { ConfusionMove, RecoveryMove, StageMove, StatusMove } from "~/game/moves";
 
-export type BotFunction = (
-  team: Pokemon[],
-  options: Options,
-  players: Record<string, ClientPlayer>,
-  me: string,
-  activePokemon: number,
-) => readonly [number, "switch" | "move"];
+export type BotParams = {
+  team: Pokemon[];
+  options: Options;
+  players: Record<string, ClientPlayer>;
+  me: string;
+  activePokemon: number;
+  opponent: string;
+};
+
+export type BotFunction = (params: BotParams) => readonly [number, "switch" | "move"];
 
 type S = Socket<ServerMessage, ClientMessage>;
 
@@ -39,7 +44,7 @@ export async function startBot(format?: FormatId, botFunction: BotFunction = ran
           return;
         }
 
-        // $conn.emit("startTimer", roomId, () => {});
+        $conn.emit("startTimer", roomId, () => {});
 
         console.log(`[${name}] found a match for '${resp.format}': ${roomId}`);
         playGame(roomId, resp, botFunction, () => {
@@ -123,8 +128,9 @@ export async function startBot(format?: FormatId, botFunction: BotFunction = ran
     gameOver: () => void,
   ) {
     const players: Record<string, ClientPlayer> = {};
-    let activeIndex = -1;
+    let activePokemon = -1;
     let turnNo = 0;
+    let opponent = "";
 
     const handleEvent = (e: BattleEvent) => {
       // TODO: unify this and Battle.vue:handleEvent
@@ -132,17 +138,17 @@ export async function startBot(format?: FormatId, botFunction: BotFunction = ran
         const player = players[e.src];
         player.active = { ...e, stages: {}, flags: {}, fainted: false };
         if (e.src === myId) {
-          if (team?.[activeIndex]?.status === "tox") {
-            team[activeIndex].status = "psn";
+          if (team?.[activePokemon]?.status === "tox") {
+            team[activePokemon].status = "psn";
           }
 
-          activeIndex = e.indexInTeam;
+          activePokemon = e.indexInTeam;
           player.active.stats = undefined;
         }
       } else if (e.type === "damage" || e.type === "recover") {
         players[e.target].active!.hpPercent = e.hpPercentAfter;
         if (e.target === myId) {
-          team![activeIndex].hp = e.hpAfter!;
+          team![activePokemon].hp = e.hpAfter!;
         }
 
         if (e.dead) {
@@ -159,7 +165,7 @@ export async function startBot(format?: FormatId, botFunction: BotFunction = ran
         players[e.src].active!.status = e.status;
         if (e.src === myId) {
           players[e.src].active!.stats = e.stats;
-          team![activeIndex].status = e.status;
+          team![activePokemon].status = e.status;
         }
       } else if (e.type === "stages") {
         players[myId].active!.stats = e.stats;
@@ -211,13 +217,13 @@ export async function startBot(format?: FormatId, botFunction: BotFunction = ran
         return;
       }
 
-      const [idx, opt] = ai(team!, options, players, myId, activeIndex);
+      const [idx, opt] = ai({ team: team!, options, players, me: myId, activePokemon, opponent });
       $conn.emit("choose", room, idx, opt, turnNo, err => {
         if (err) {
           if (opt === "switch") {
-            console.error(`[${name}] bad switch '${err}' (to:`, team?.[idx], ")");
+            console.error(`[${name}] bad switch '${err}' (to: ${idx}|`, team?.[idx], ")");
           } else {
-            console.error(`[${name}] bad move: ${err} (was:`, options.moves?.[idx], ")");
+            console.error(`[${name}] bad move: ${err} (was: ${idx}|`, options.moves?.[idx], ")");
           }
           makeDecision(options, tries - 1);
         }
@@ -241,6 +247,9 @@ export async function startBot(format?: FormatId, botFunction: BotFunction = ran
 
     for (const { id, name, nPokemon } of battlers) {
       players[id] = { name, isSpectator: false, connected: false, nPokemon, nFainted: 0 };
+      if (id !== myId) {
+        opponent = id;
+      }
     }
 
     games[room] = (turn: Turn, options?: Options) => {
@@ -289,22 +298,14 @@ export function createBotTeam(format: FormatId) {
       team = random.choice(ouTeams)!.pokemon.map(convertDesc);
     } else {
       team = randoms(s => (format === "g1_nfe") === s.evolves).map(
-        ({ moves, speciesId, level }) => {
-          return { dvs: {}, statexp: {}, level, species: speciesId, moves };
-        },
+        ({ moves, speciesId: species, level }) => ({ dvs: {}, statexp: {}, level, species, moves }),
       );
     }
   }
   return team;
 }
 
-export function randomBot(
-  team: Pokemon[],
-  options: Options,
-  _players: Record<string, ClientPlayer>,
-  _me: string,
-  activePokemon: number,
-) {
+export function randomBot({ team, options, activePokemon }: BotParams) {
   const validSwitches = team!.filter((poke, i) => poke.hp !== 0 && i !== activePokemon);
   const validMoves = options.moves.filter(move => move.valid);
   const switchRandomly = random.int(0, 11) === 1;
@@ -313,6 +314,83 @@ export function randomBot(
   } else {
     return [options.moves.indexOf(random.choice(validMoves)!), "move"] as const;
   }
+}
+
+export function rankBot({ team, options, players, activePokemon, opponent: id, me }: BotParams) {
+  const rank = <T>(arr: T[], sort: (t: T, i: number) => number) => {
+    const result = arr
+      .map((item, i) => ({ score: sort(item, i), i }))
+      .sort((a, b) => b.score - a.score)
+      .filter((move, _, arr) => move.score >= 0 && move.score === arr[0].score);
+    return result.length ? random.choice(result)! : { score: -1, i: -1 };
+  };
+
+  const rankMove = ({ move: id, valid }: { move: MoveId; valid: boolean }) => {
+    if (!valid) {
+      return -1;
+    }
+
+    const opponentPoke = new Pokemon(opponentActive.speciesId, {}, {}, opponentActive.level, []);
+    opponentPoke.hp *= opponentActive.hpPercent / 100;
+
+    const move = moveList[id];
+    if ((move.power ?? 0) > 1) {
+      const eff = getEffectiveness(move.type, opponentPoke.species.types);
+      if (eff > 1) {
+        return 15;
+      } else if (eff < 1) {
+        return 5;
+      } else if (eff === 0) {
+        return 0;
+      }
+    } else if (move instanceof RecoveryMove) {
+      if (self.hpPercent === 100) {
+        return 0;
+      } else if (self.hpPercent <= 25) {
+        return 20;
+      } else {
+        return 5;
+      }
+    } else {
+      // prettier-ignore
+      const useless = (move instanceof ConfusionMove && opponentActive.flags.confused) ||
+        (move instanceof StatusMove && opponentActive.status) ||
+        (id === "leechseed" && (opponentActive.flags.seeded || (opponentPoke.species.types as Type[]).includes("grass"))) ||
+        (id === "substitute" && self.flags.substitute) ||
+        (move instanceof StageMove && move.acc && opponentActive.flags.substitute);
+      if (useless) {
+        return 0;
+      }
+    }
+
+    return 10;
+  };
+
+  const self = players[me].active!;
+  const opponentActive = players[id].active!;
+  // const selfPoke = team[activePokemon];
+
+  const { score, i: bestMove } = rank(options.moves, rankMove);
+  if ((bestMove !== -1 && score > 5) || !options.canSwitch) {
+    return [bestMove, "move"] as const;
+  }
+
+  const { i: bestSwitch } = rank(team, (poke, i) => {
+    if (poke.hp === 0 || i === activePokemon) {
+      return -1;
+    } else if (!opponentActive) {
+      return 10;
+    } else if (poke.status === "frz" || poke.status === "slp") {
+      return 0;
+    }
+
+    return Math.max(...poke.moves.map(move => rankMove({ move, valid: true })));
+  });
+  if (bestSwitch === -1) {
+    return [bestMove, "move"] as const;
+  }
+
+  return [bestSwitch, "switch"] as const;
 }
 
 /// From: https://gist.github.com/scheibo/7c9172f3379bbf795a5e61a802caf2f0
@@ -470,39 +548,6 @@ Alakazam
 - Thunder Wave
 - Reflect
 - Recover
-
-
-=== [gen1ou] GGFan 2006 ===
-
-Jynx
-- Lovely Kiss
-- Blizzard
-- Psychic
-- Body Slam
-
-Gengar
-- Confuse Ray
-- Thunderbolt
-- Mega Drain
-- Explosion
-
-Tauros
-- Blizzard
-- Body Slam
-- Earthquake
-- Hyper Beam
-
-Snorlax
-- Body Slam
-- Earthquake
-- Hyper Beam
-- Selfdestruct
-
-Exeggutor
-- Psychic
-- Sleep Powder
-- Explosion
-- Stun Spore
 
 
 === [gen1ou] GGFan 2007 ===
