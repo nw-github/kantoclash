@@ -187,7 +187,7 @@ const onMaintenanceMode = (state: boolean) => state && (findingMatch.value = fal
 const onChallengeRejected = () => (findingMatch.value = false);
 
 onMounted(() => {
-  useTitle("Standoff");
+  useTitle("Kanto Clash");
   loadRooms();
   $conn.on("maintenanceState", onMaintenanceMode);
   $conn.on("challengeRejected", onChallengeRejected);

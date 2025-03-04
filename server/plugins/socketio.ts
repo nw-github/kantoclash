@@ -1,7 +1,7 @@
 import { Server as Engine } from "engine.io";
 import { defineEventHandler } from "h3";
 import { GameServer } from "../gameServer";
-import { startBot } from "../bot";
+import { rankBot, startBot } from "../bot";
 import { battles } from "../db/schema";
 
 export default defineNitroPlugin(nitro => {
@@ -49,5 +49,5 @@ export default defineNitroPlugin(nitro => {
   );
 
   console.log("initialized game server!");
-  startBot().then(() => startBot());
+  startBot().then(() => startBot(undefined, rankBot));
 });
