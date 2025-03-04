@@ -118,17 +118,17 @@ const displayErrorToast = (err?: string) => {
     });
   } else if (err === "too_late") {
     toast.add({
-      title: "Your choice was too late, the next turn has started",
+      title: "Your choice was too late, the next turn has started.",
       icon: "material-symbols:error-circle-rounded-outline-sharp",
     });
   } else if (err === "bad_room") {
     toast.add({
-      title: "This room has expired",
+      title: "This room has expired.",
       icon: "material-symbols:error-circle-rounded-outline-sharp",
     });
   } else if (err === "bad_message") {
     toast.add({
-      title: "Your message has been blocked",
+      title: "Your message has been blocked!",
       icon: "material-symbols:chat-error-outline-rounded",
     });
   } else if (err === "not_in_room") {
@@ -138,7 +138,12 @@ const displayErrorToast = (err?: string) => {
     });
   } else if (err === "already_on") {
     toast.add({
-      title: "The timer is already on",
+      title: "The timer is already on.",
+      icon: "material-symbols:error-circle-rounded-outline-sharp",
+    });
+  } else if (err === "finished") {
+    toast.add({
+      title: "This battle is already over.",
       icon: "material-symbols:error-circle-rounded-outline-sharp",
     });
   } else {

@@ -5,8 +5,9 @@ import { type TeamProblems, formatDescs } from "./utils/formats";
 import type { User } from "#auth-utils";
 import type { Gen1PokemonDesc } from "~/utils/pokemon";
 import type { InfoMessage } from "./utils/info";
-import { formatInfo } from "~/utils";
+import { formatInfo, randChoice } from "~/utils";
 import type { FormatId } from "~/utils/data";
+import { activeBots, createBotTeam } from "./bot";
 
 export type JoinRoomResponse = {
   team?: Pokemon[];
@@ -21,7 +22,7 @@ export type JoinRoomResponse = {
 
 export type BattleTimer = { startedAt: number; duration: number };
 
-export type ChoiceError = "invalid_choice" | "bad_room" | "not_in_battle" | "too_late";
+export type ChoiceError = "invalid_choice" | "bad_room" | "not_in_battle" | "too_late" | "finished";
 
 export type Battler = { name: string; id: string };
 
@@ -79,8 +80,8 @@ export interface ClientMessage {
     ack: (resp?: "bad_room" | "not_in_room" | "not_in_battle" | "already_on") => void,
   ) => void;
 
-  getMaintenance: (ack: (state: boolean) => void) => void;
-  setMaintenance: (state: boolean, ack: (ok: boolean) => void) => void;
+  getConfig: (ack: (state: ServerConfig | false) => void) => void;
+  setConfig: (state: ServerConfig, ack: (ok: boolean) => void) => void;
 }
 
 export interface ServerMessage {
@@ -278,11 +279,16 @@ export type Telemetry = {
   onBattleComplete(format: FormatId, battle: Battle): void;
 };
 
+export type ServerConfig = {
+  maintenance?: boolean;
+  botMatchmaking?: boolean;
+};
+
 export class GameServer extends Server<ClientMessage, ServerMessage> {
   private accounts = new Map<string, Account>();
   private mmWaiting: Partial<Record<FormatId, Player>> = {};
   private rooms = new Map<string, Room>();
-  private maintenance = false;
+  private config: ServerConfig = { botMatchmaking: true };
 
   constructor(opts?: Partial<ServerOptions>, public telemetry?: Telemetry) {
     super(opts);
@@ -295,7 +301,7 @@ export class GameServer extends Server<ClientMessage, ServerMessage> {
     // @ts-expect-error property does not exist
     const user: User | undefined = socket.request.__SOCKETIO_USER__;
     if (user) {
-      console.log(`new connection: ${socket.id} from user: '${user.name}' (${user.id})`);
+      console.log(`new connection: ${socket.id} from '${user.name}':${user.id}`);
       if (!(socket.account = this.accounts.get(user.id))) {
         const account: Account = {
           id: user.id,
@@ -316,7 +322,7 @@ export class GameServer extends Server<ClientMessage, ServerMessage> {
     }
 
     socket.on("enterMatchmaking", (team, format, challenge, ack) => {
-      if (this.maintenance) {
+      if (this.config.maintenance) {
         return ack("maintenance");
       }
 
@@ -361,12 +367,14 @@ export class GameServer extends Server<ClientMessage, ServerMessage> {
       } else {
         this.mmWaiting[format] = player;
         account.matchmaking = { format };
+
+        this.scheduleBotMatch(format, player);
       }
 
       ack();
     });
     socket.on("respondToChallenge", (id, accept, team, ack) => {
-      if (this.maintenance) {
+      if (this.config.maintenance) {
         return ack("maintenance");
       }
 
@@ -458,6 +466,8 @@ export class GameServer extends Server<ClientMessage, ServerMessage> {
         }
       } else if (type !== "forfeit") {
         return ack("invalid_choice");
+      } else if (room.battle.finished) {
+        return ack("finished");
       }
 
       ack();
@@ -562,9 +572,11 @@ export class GameServer extends Server<ClientMessage, ServerMessage> {
     socket.on("disconnecting", async () => {
       const account = socket.account;
       if (!account) {
+        console.log(`lost connection: ${socket.id}`);
         return;
       }
 
+      console.log(`lost connection: ${socket.id} (was '${account.name}':${account.id})`);
       socket.leave(account.userRoom);
 
       const rooms = [...socket.rooms];
@@ -584,21 +596,53 @@ export class GameServer extends Server<ClientMessage, ServerMessage> {
         // this.accounts.delete(account.id);
       }
     });
-    socket.on("getMaintenance", ack => ack(this.maintenance));
-    socket.on("setMaintenance", (state, ack) => {
+    socket.on("getConfig", ack => {
       if (!socket.account?.admin) {
         return ack(false);
       }
 
-      this.emit("maintenanceState", (this.maintenance = state));
-      for (const format in this.mmWaiting) {
-        const player = this.mmWaiting[format as FormatId];
-        if (player) {
-          this.leaveMatchmaking(this.accounts.get(player.id)!);
+      return ack(this.config);
+    });
+    socket.on("setConfig", (state, ack) => {
+      if (!socket.account?.admin) {
+        return ack(false);
+      }
+
+      if (!!this.config.maintenance !== !!state.maintenance) {
+        this.emit("maintenanceState", !!state.maintenance);
+
+        if (!state.maintenance) {
+          for (const format in this.mmWaiting) {
+            const player = this.mmWaiting[format as FormatId];
+            if (player) {
+              this.leaveMatchmaking(this.accounts.get(player.id)!);
+            }
+          }
         }
       }
-      ack(this.maintenance);
+
+      this.config = state;
+      ack(true);
     });
+  }
+
+  private scheduleBotMatch(format: FormatId, player: Player) {
+    if (!activeBots.length || activeBots.includes(player.id) || !this.config.botMatchmaking) {
+      return;
+    }
+
+    setTimeout(() => {
+      if (this.mmWaiting[format] !== player) {
+        return;
+      }
+
+      const bot = this.accounts.get(randChoice(activeBots))!;
+      let botPlayer;
+      while (!(botPlayer instanceof Player)) {
+        botPlayer = this.getPlayer(bot, format, createBotTeam(format));
+      }
+      this.setupRoom(this.mmWaiting[format], botPlayer, format);
+    }, 1000 * 5);
   }
 
   private leaveMatchmaking(account: Account) {
@@ -628,6 +672,12 @@ export class GameServer extends Server<ClientMessage, ServerMessage> {
   }
 
   private setupRoom(player: Player, opponent: Player, format: FormatId) {
+    const onFoundMatch = (room: Room, account: Account) => {
+      account.activeBattles.add(room);
+      this.to(account.userRoom).emit("foundMatch", room.id);
+      this.leaveMatchmaking(account);
+    };
+
     const [battle, turn0] = Battle.start(
       player,
       opponent,
@@ -637,8 +687,8 @@ export class GameServer extends Server<ClientMessage, ServerMessage> {
     const room = new Room(crypto.randomUUID(), battle, turn0, format, this);
     this.rooms.set(room.id, room);
 
-    this.onFoundMatch(room, this.accounts.get(player.id)!);
-    this.onFoundMatch(room, this.accounts.get(opponent.id)!);
+    onFoundMatch(room, this.accounts.get(player.id)!);
+    onFoundMatch(room, this.accounts.get(opponent.id)!);
   }
 
   private validatePlayer(socket: Socket, roomId: string, sequenceNo: number) {
@@ -657,12 +707,6 @@ export class GameServer extends Server<ClientMessage, ServerMessage> {
     }
 
     return [player, room] as const;
-  }
-
-  private onFoundMatch(room: Room, account: Account) {
-    account.activeBattles.add(room);
-    this.to(account.userRoom).emit("foundMatch", room.id);
-    this.leaveMatchmaking(account);
   }
 
   private getPlayer(account: Account, format: FormatId, team?: any) {

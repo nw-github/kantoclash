@@ -7,7 +7,7 @@ import { formatInfo, type ClientPlayer } from "~/utils";
 import type { Pokemon } from "~/game/pokemon";
 import { clamp } from "../game/utils";
 import random from "random";
-import { convertDesc, parseTeams } from "~/utils/pokemon";
+import { convertDesc, parseTeams, type Team } from "~/utils/pokemon";
 import type { FormatId } from "~/utils/data";
 
 export type BotFunction = (
@@ -22,20 +22,16 @@ type S = Socket<ServerMessage, ClientMessage>;
 
 let nBots = 0;
 
-export async function startBot(
-  format: FormatId = "g1_randoms",
-  botFunction: BotFunction = randomBot,
-) {
-  const ouTeams = parseTeams(teams);
+export const activeBots: string[] = [];
+
+export async function startBot(format?: FormatId, botFunction: BotFunction = randomBot) {
   const { cookie, myId, name } = await login();
+  activeBots.push(myId);
 
-  console.log(`[${name}] Logged in! My ID: ${myId}`);
-
-  const $conn: S = io("ws://localhost:3000", { extraHeaders: { cookie } });
+  const url = import.meta.dev ? "http://localhost:3000" : "https://localhost:80";
+  const $conn: S = io(url, { extraHeaders: { cookie }, secure: !import.meta.dev });
   const games: Record<string, (turn: Turn, opts?: Options) => void> = {};
   $conn.on("connect", () => {
-    console.log(`[${name}] Connected!`);
-
     $conn.on("foundMatch", roomId => {
       $conn.emit("joinRoom", roomId, 0, resp => {
         if (resp === "bad_room") {
@@ -70,7 +66,7 @@ export async function startBot(
     });
 
     $conn.on("challengeReceived", ({ format, from }) => {
-      $conn.emit("respondToChallenge", from.id, true, getTeam(format), () => {});
+      $conn.emit("respondToChallenge", from.id, true, createBotTeam(format), () => {});
     });
 
     findMatch();
@@ -107,25 +103,13 @@ export async function startBot(
     }
   }
 
-  function getTeam(format: FormatId) {
-    let team = undefined;
-    if (formatInfo[format].needsTeam) {
-      if (format === "g1_standard") {
-        team = random.choice(ouTeams)!.pokemon.map(convertDesc);
-      } else {
-        team = randoms(s => (format === "g1_nfe") === s.evolves).map(
-          ({ moves, speciesId, level }) => {
-            return { dvs: {}, statexp: {}, level, species: speciesId, moves };
-          },
-        );
-      }
-    }
-    return team;
-  }
-
   function findMatch() {
+    if (!format) {
+      return;
+    }
+
     console.log(`[${name}] queueing for a ${format}`);
-    $conn.emit("enterMatchmaking", getTeam(format), format, undefined, (err, problems) => {
+    $conn.emit("enterMatchmaking", createBotTeam(format), format, undefined, (err, problems) => {
       if (err) {
         console.error(`[${name}] enter matchmaking failed: '${err}', `, problems);
       }
@@ -291,6 +275,27 @@ export async function startBot(
       games[room](turns[i], i + 1 === turns.length ? options : undefined);
     }
   }
+}
+
+let ouTeams: Team[] = [];
+export function createBotTeam(format: FormatId) {
+  if (!ouTeams.length) {
+    ouTeams = parseTeams(teams);
+  }
+
+  let team = undefined;
+  if (formatInfo[format].needsTeam) {
+    if (format === "g1_standard") {
+      team = random.choice(ouTeams)!.pokemon.map(convertDesc);
+    } else {
+      team = randoms(s => (format === "g1_nfe") === s.evolves).map(
+        ({ moves, speciesId, level }) => {
+          return { dvs: {}, statexp: {}, level, species: speciesId, moves };
+        },
+      );
+    }
+  }
+  return team;
 }
 
 export function randomBot(
