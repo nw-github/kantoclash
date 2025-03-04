@@ -50,9 +50,6 @@ export default defineNitroPlugin(nitro => {
 
   console.log("initialized game server!");
   if (import.meta.dev) {
-    startBot("randoms");
-    startBot("randoms_nfe");
-    startBot("standard");
-    startBot("nfe");
+    startBot("g1_randoms");
   }
 });

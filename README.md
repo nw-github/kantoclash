@@ -1,59 +1,29 @@
 # Standoff
 
-Standoff is a Pokemon battle simulator for the Generation 1 (Pokemon Red, Blue, and Yellow) games.
+Standoff is a web-based Pokémon battle simulator for the Generation 1 (Pokémon Red, Blue, and Yellow) games.
 
 ![Alt text](game.png "an battle between two players")
 
 ## Setup
 
-First, install the dependencies
+Prerequisites:
+- pnpm
+- postgres (only in production preview)
+
+Before running the server, make sure to copy `.env.example` to `.env` and insert the appropriate values.
+
+Install dependencies with pnpm:
 ```bash
-# npm
-npm install
-# pnpm
+# Install dependencies
 pnpm install
-# yarn
-yarn install
-# bun
-bun install
+```
+
+Apply the database migrations with drizzle
+```bash
+pnpm drizzle-kit migrate
 ```
 
 Start the development server on `http://localhost:3000`:
 ```bash
-# npm
-npm run dev
-# pnpm
 pnpm run dev
-# yarn
-yarn dev
-# bun
-bun run dev
-```
-
-## Production
-
-Build the application for production:
-
-```bash
-# npm
-npm run build
-# pnpm
-pnpm run build
-# yarn
-yarn build
-# bun
-bun run build
-```
-
-Locally preview production build:
-
-```bash
-# npm
-npm run preview
-# pnpm
-pnpm run preview
-# yarn
-yarn preview
-# bun
-bun run preview
 ```

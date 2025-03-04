@@ -51,6 +51,8 @@
   <div v-else-if="e.type === 'end'">
     <template v-if="e.victor === myId">You win!</template>
     <template v-else-if="e.victor">{{ players[e.victor].name }} wins!</template>
+    <template v-else-if="e.why === 'too_long'">It's a draw! (Turn limit reached!)</template>
+    <template v-else-if="e.why === 'endless'">It's a draw! (Endless battle detected!)</template>
     <template v-else>It's a draw!</template>
   </div>
   <div v-else-if="e.type === 'hit_sub'">
@@ -66,7 +68,7 @@
     </p>
   </div>
   <div v-else-if="e.type === 'info'" :class="{ confused: e.why === 'confused', move: e.why === 'sleep' || e.why === 'disable_end' || e.why === 'wake' }">
-    <p v-if="e.why === 'forfeit' || e.why === 'forfeit_timer'">
+    <p v-if="e.why === 'ff' || e.why === 'ff_timer'">
       {{ infoMessage[e.why].replace("{}", players[e.src].name) }}
     </p>
     <p v-else>

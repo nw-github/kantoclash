@@ -64,7 +64,7 @@ const timer = ref<BattleTimer>();
 const modalOpen = ref(false);
 const room = `${route.params.id}`;
 const finished = ref(false);
-const format = ref<FormatId>("standard");
+const format = ref<FormatId>("g1_standard");
 
 let sequenceNo = 0;
 let needsFreshStart = true;

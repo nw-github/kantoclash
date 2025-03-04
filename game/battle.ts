@@ -7,6 +7,7 @@ import type {
   PlayerId,
   RecoveryReason,
   InfoReason,
+  VictoryEvent,
 } from "./events";
 import { moveList, type MoveId } from "./moveList";
 import { DamagingMove, Move } from "./moves";
@@ -109,74 +110,11 @@ export class Player {
   }
 
   updateOptions(battle: Battle) {
-    const { active } = this;
-    if (battle.finished || (!battle.opponentOf(this).active.base.hp && active.base.hp)) {
-      this.options = undefined;
-      return;
-    }
-
-    if (battle.leadTurn) {
-      this.options = { canSwitch: true, moves: [] };
-      return;
-    }
-
-    // send all moves so PP can be updated
-    const moves: MoveOption[] = active.base.moves.map((m, i) => {
-      const move = active.v.mimic?.indexInMoves === i ? active.v.mimic?.move : m;
-      return {
-        move,
-        pp: active.base.pp[i],
-        valid: this.isValidMove(move, i),
-        indexInMoves: i,
-        display: true,
-      };
-    });
-
-    const lockedIn = active.v.lockedIn();
-    if (!active.base.hp) {
-      for (const move of moves) {
-        move.valid = false;
-      }
-    } else if (moves.every(move => !move.valid)) {
-      // Two-turn moves, thrashing moves, and recharging skip the normal move selection menu
-      moves.forEach(move => (move.display = false));
-      moves.push({
-        move: lockedIn ? battle.moveIdOf(lockedIn)! : "struggle",
-        valid: true,
-        display: true,
-      });
-    }
-
-    const moveLocked = !!(active.v.bide || active.v.trapping);
-    this.options = {
-      canSwitch: !lockedIn || moveLocked || active.base.hp === 0,
-      moves,
-    };
+    this.options = this.active.getOptions(battle);
   }
 
   areAllDead() {
     return this.team.every(poke => poke.hp === 0);
-  }
-
-  private isValidMove(move: MoveId, i: number) {
-    if (this.active.v.lockedIn() && this.active.v.lockedIn() !== moveList[move]) {
-      return false;
-    } else if (this.active.base.status === "frz" || this.active.base.status === "slp") {
-      // https://bulbapedia.bulbagarden.net/wiki/List_of_battle_glitches_(Generation_I)#Defrost_move_forcing
-      // XXX: Gen 1 doesn't let you pick your move when frozen, so if you are defrosted
-      // before your turn, the game can desync. The logic we implement follows with what the
-      // opponent player's game would do :shrug:
-
-      // This also implements the bug in which pokemon who are frozen/put to sleep on the turn
-      // they use a modified priority move retain that priority until they wake up/thaw.
-      return (this.active.v.lastMoveIndex ?? 0) === i;
-    } else if (i === this.active.v.disabled?.indexInMoves) {
-      return false;
-    } else if (this.active.base.pp[i] === 0) {
-      return false;
-    }
-
-    return true;
   }
 }
 
@@ -195,6 +133,7 @@ export class Battle {
   readonly rng: Random;
   finished = false;
   leadTurn = true;
+  turn = 0;
 
   private constructor(p1: Player, p2: Player, readonly mods: Mods, readonly seed: string) {
     this.players = [p1, p2];
@@ -212,8 +151,6 @@ export class Battle {
     seed: string = crypto.randomUUID(),
   ) {
     const self = new Battle(player1, player2, mods, seed);
-    console.log(`${player1.id} vs ${player2.id}, seed: ${seed}`);
-
     player1.updateOptions(self);
     player2.updateOptions(self);
     if (chooseLead) {
@@ -254,6 +191,10 @@ export class Battle {
   nextTurn() {
     if (!this.players.every(player => !player.options || player.choice)) {
       return;
+    }
+
+    if (!this.switchTurn) {
+      this.turn++;
     }
 
     const choices = this.players
@@ -329,6 +270,10 @@ export class Battle {
       player.updateOptions(this);
     }
 
+    if (this.turn >= 1000 && this.mods.endlessBattle) {
+      return this.draw("too_long");
+    }
+
     const switchTurn = this.switchTurn;
     this.switchTurn = this.players.some(pl => pl.active.base.hp === 0);
     return { events: this.events.splice(0), switchTurn };
@@ -340,7 +285,7 @@ export class Battle {
 
   forfeit(player: Player, timer: boolean) {
     this.victor = this.opponentOf(player);
-    this.event({ type: "info", src: player.id, why: timer ? "forfeit_timer" : "forfeit" });
+    this.event({ type: "info", src: player.id, why: timer ? "ff_timer" : "ff" });
     this.event({ type: "end", victor: this.victor.id });
     for (const player of this.players) {
       player.options = undefined;
@@ -348,16 +293,16 @@ export class Battle {
     return { events: this.events.splice(0), switchTurn: false };
   }
 
-  draw(timer: boolean) {
+  draw(why: VictoryEvent["why"]) {
     this.finished = true;
     for (const player of this.players) {
-      if (timer) {
-        this.event({ type: "info", src: player.id, why: "forfeit_timer" });
+      if (why === "timer") {
+        this.event({ type: "info", src: player.id, why: "ff_timer" });
       }
       player.options = undefined;
     }
 
-    this.event({ type: "end" });
+    this.event({ type: "end", why });
     return { events: this.events.splice(0), switchTurn: false };
   }
 
@@ -756,6 +701,75 @@ export class ActivePokemon {
     } else {
       this.v.stats[stat] = clamp(this.v.stats[stat], 1, 999);
     }
+  }
+
+  getOptions(battle: Battle): Options | undefined {
+    if (battle.finished || (!battle.opponentOf(this.owner).active.base.hp && this.base.hp)) {
+      return;
+    }
+
+    if (battle.leadTurn) {
+      return { canSwitch: true, moves: [] };
+    }
+
+    // send all moves so PP can be updated
+    const moves = this.base.moves.map((m, i) => {
+      const move = this.v.mimic?.indexInMoves === i ? this.v.mimic?.move : m;
+      return {
+        move,
+        pp: this.base.pp[i],
+        valid: this.isValidMove(move, i),
+        indexInMoves: i,
+        display: true,
+      } as MoveOption;
+    });
+
+    const lockedIn = this.v.lockedIn();
+    if (!this.base.hp) {
+      moves.forEach(move => (move.valid = false));
+    } else if (moves.every(move => !move.valid)) {
+      // Two-turn moves, thrashing moves, and recharging skip the normal move selection menu
+      moves.forEach(move => (move.display = false));
+      moves.push({
+        move: lockedIn ? battle.moveIdOf(lockedIn)! : "struggle",
+        valid: true,
+        display: true,
+      });
+    }
+
+    if (this.base instanceof TransformedPokemon) {
+      const original = this.base.base;
+      original.moves.forEach((move, i) => {
+        moves.push({ move, pp: original.pp[i], valid: false, display: false, indexInMoves: i });
+      });
+    }
+
+    const moveLocked = !!(this.v.bide || this.v.trapping);
+    return {
+      canSwitch: !lockedIn || moveLocked || this.base.hp === 0,
+      moves,
+    };
+  }
+
+  private isValidMove(move: MoveId, i: number) {
+    if (this.v.lockedIn() && this.v.lockedIn() !== moveList[move]) {
+      return false;
+    } else if (this.base.status === "frz" || this.base.status === "slp") {
+      // https://bulbapedia.bulbagarden.net/wiki/List_of_battle_glitches_(Generation_I)#Defrost_move_forcing
+      // XXX: Gen 1 doesn't let you pick your move when frozen, so if you are defrosted
+      // before your turn, the game can desync. The logic we implement follows with what the
+      // opponent player's game would do :shrug:
+
+      // This also implements the bug in which pokemon who are frozen/put to sleep on the turn
+      // they use a modified priority move retain that priority until they wake up/thaw.
+      return (this.v.lastMoveIndex ?? 0) === i;
+    } else if (i === this.v.disabled?.indexInMoves) {
+      return false;
+    } else if (this.base.pp[i] === 0) {
+      return false;
+    }
+
+    return true;
   }
 }
 

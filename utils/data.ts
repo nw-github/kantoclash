@@ -5,12 +5,12 @@ export const speciesListEntries = Object.entries(speciesList);
 export const moveListEntries = Object.entries(moveList);
 
 export const battleFormats = [
-  "standard",
-  "nfe",
-  "randoms",
-  "randoms_nfe",
-  "truly_randoms",
-  "metronome",
+  "g1_standard",
+  "g1_nfe",
+  "g1_randoms",
+  "g1_randoms_nfe",
+  "g1_truly_randoms",
+  "g1_metronome",
 ] as const;
 
 export type FormatId = (typeof battleFormats)[number];

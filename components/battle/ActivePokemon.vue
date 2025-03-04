@@ -60,8 +60,8 @@
           <template v-if="poke && !poke.hidden" #panel>
             <div class="p-2">
               <PokemonTTContent v-if="base && !poke.transformed" :poke="base" :active="poke" />
-              <div v-else class="flex flex-col gap-5">
-                <div class="flex gap-4">
+              <div v-else class="flex flex-col gap-5 items-center">
+                <div class="flex gap-10">
                   <span>
                     {{ species!.name }}
                     <span v-if="poke.transformed">

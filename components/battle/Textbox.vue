@@ -100,23 +100,24 @@
     </template>
 
     <template #footer>
-      <UInput
-        v-model="message"
-        placeholder="Send a message..."
-        :disabled="!myId"
-        @keyup.enter="sendMessage"
-      >
-        <template #trailing>
-          <UButton
-            v-show="message !== ''"
-            icon="material-symbols:send"
-            variant="link"
-            color="gray"
-            :padded="false"
-            @click="sendMessage"
-          />
-        </template>
-      </UInput>
+      <div class="relative">
+        <UInput
+          v-model="message"
+          placeholder="Send a message..."
+          :disabled="!myId"
+          @keyup.enter="sendMessage"
+        />
+
+        <UButton
+          class="absolute top-1/2 right-2 -translate-y-1/2"
+          icon="material-symbols:send"
+          variant="link"
+          color="gray"
+          :padded="false"
+          :disabled="message === ''"
+          @click="sendMessage"
+        />
+      </div>
     </template>
   </UCard>
 

@@ -99,10 +99,11 @@ type UseMoveEvent = {
   thrashing?: true;
 };
 
-type VictoryEvent = {
+export type VictoryEvent = {
   type: "end";
   /// If victor is undefined, the battle is a draw
   victor?: PlayerId;
+  why?: "endless" | "too_long" | "timer";
 };
 
 type StatusEvent = {
@@ -149,8 +150,8 @@ export type InfoReason =
   | "disable_end"
   | "bide"
   | "trapped"
-  | "forfeit"
-  | "forfeit_timer";
+  | "ff"
+  | "ff_timer";
 
 type InfoEvent = {
   type: "info";

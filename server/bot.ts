@@ -22,35 +22,13 @@ type S = Socket<ServerMessage, ClientMessage>;
 
 let nBots = 0;
 
-export async function startBot(format: FormatId = "randoms", botFunction: BotFunction = randomBot) {
-  nBots++;
-
-  const name = "BOT " + nBots;
+export async function startBot(
+  format: FormatId = "g1_randoms",
+  botFunction: BotFunction = randomBot,
+) {
   const ouTeams = parseTeams(teams);
-  console.log(`[${name}] initializing bot...`);
+  const { cookie, myId, name } = await login();
 
-  await $fetch("/api/_auth/session", { method: "DELETE" }).catch(() => {});
-  let resp;
-  try {
-    resp = await $fetch.raw("/api/register", {
-      method: "POST",
-      body: { username: name, password: process.env.BOT_PASSWORD },
-    });
-  } catch {
-    resp = await $fetch.raw("/api/login", {
-      method: "POST",
-      body: { username: name, password: process.env.BOT_PASSWORD },
-    });
-  }
-
-  const cookie = resp.headers.getSetCookie().at(-1)!.split(";")[0];
-  const { user } = await $fetch("/api/_auth/session", { method: "GET", headers: { cookie } });
-  if (!user) {
-    console.log(`[${name}] Login failed!...`);
-    return;
-  }
-
-  const myId = user!.id;
   console.log(`[${name}] Logged in! My ID: ${myId}`);
 
   const $conn: S = io("ws://localhost:3000", { extraHeaders: { cookie } });
@@ -65,7 +43,7 @@ export async function startBot(format: FormatId = "randoms", botFunction: BotFun
           return;
         }
 
-        $conn.emit("startTimer", roomId, () => {});
+        // $conn.emit("startTimer", roomId, () => {});
 
         console.log(`[${name}] found a match for '${resp.format}': ${roomId}`);
         playGame(roomId, resp, botFunction, () => {
@@ -98,15 +76,48 @@ export async function startBot(format: FormatId = "randoms", botFunction: BotFun
     findMatch();
   });
 
+  async function login() {
+    while (true) {
+      const name = "BOT " + ++nBots;
+      await $fetch("/api/_auth/session", { method: "DELETE" }).catch(() => {});
+      let resp;
+      try {
+        resp = await $fetch.raw("/api/register", {
+          method: "POST",
+          body: { username: name, password: process.env.BOT_PASSWORD },
+        });
+      } catch {
+        try {
+          resp = await $fetch.raw("/api/login", {
+            method: "POST",
+            body: { username: name, password: process.env.BOT_PASSWORD },
+          });
+        } catch {
+          continue;
+        }
+      }
+
+      const cookie = resp.headers.getSetCookie().at(-1)!.split(";")[0];
+      const { user } = await $fetch("/api/_auth/session", { method: "GET", headers: { cookie } });
+      if (user) {
+        return { cookie, myId: user.id, name };
+      }
+
+      console.log(`[${name}] Login failed!...`);
+    }
+  }
+
   function getTeam(format: FormatId) {
     let team = undefined;
     if (formatInfo[format].needsTeam) {
-      if (format === "standard") {
+      if (format === "g1_standard") {
         team = random.choice(ouTeams)!.pokemon.map(convertDesc);
       } else {
-        team = randoms(s => (format === "nfe") === s.evolves).map(({ moves, speciesId, level }) => {
-          return { dvs: {}, statexp: {}, level, species: speciesId, moves };
-        });
+        team = randoms(s => (format === "g1_nfe") === s.evolves).map(
+          ({ moves, speciesId, level }) => {
+            return { dvs: {}, statexp: {}, level, species: speciesId, moves };
+          },
+        );
       }
     }
     return team;
@@ -208,8 +219,8 @@ export async function startBot(format: FormatId = "randoms", botFunction: BotFun
 
     const makeDecision = (options: Options, tries = 3) => {
       if (tries === 0) {
-        console.error(`[${name}] Couldn't make a valid move after 3 tries, abandoning game.`);
-        $conn.emit("chat", room, "Sorry, I couldn't figure out a move and must forfeit!", () => {});
+        console.error(`[${name}] Couldn't make a valid move after 3 tries, abandoning ${room}.`);
+        // $conn.emit("chat", room, "Sorry, I couldn't figure out a move and must forfeit!", () => {});
         $conn.emit("choose", room, 0, "forfeit", turnNo, () => {});
 
         gameOver();
@@ -291,7 +302,7 @@ export function randomBot(
 ) {
   const validSwitches = team!.filter((poke, i) => poke.hp !== 0 && i !== activePokemon);
   const validMoves = options.moves.filter(move => move.valid);
-  const switchRandomly = random.int(0, 10) === 1;
+  const switchRandomly = random.int(0, 11) === 1;
   if (!validMoves.length || (options.canSwitch && validSwitches.length && switchRandomly)) {
     return [team.indexOf(random.choice(validSwitches)!), "switch"] as const;
   } else {

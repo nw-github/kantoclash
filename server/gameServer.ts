@@ -161,18 +161,13 @@ class Room {
         return;
       }
 
-      let badPlayer;
+      let loser;
       for (const player of this.battle.players) {
         if (!player.choice && player.options) {
-          badPlayer = badPlayer ? undefined : player;
+          loser = loser ? undefined : player;
         }
       }
-
-      if (badPlayer) {
-        this.broadcastTurn(this.battle.forfeit(badPlayer, true));
-      } else {
-        this.broadcastTurn(this.battle.draw(true));
-      }
+      this.broadcastTurn(loser ? this.battle.forfeit(loser, true) : this.battle.draw("timer"));
     }, 1000);
 
     this.resetTimerState();

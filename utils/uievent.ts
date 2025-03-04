@@ -85,6 +85,6 @@ export const infoMessage: Record<InfoReason, string> = {
   disable_end: "{}'s disabled no more!",
   bide: "{} unleashed energy!",
   trapped: "{} can't move!",
-  forfeit: "{} forfeit the match.",
-  forfeit_timer: "{} ran out of time.",
+  ff: "{} forfeit the match.",
+  ff_timer: "{} ran out of time.",
 };

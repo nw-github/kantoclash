@@ -127,13 +127,13 @@ const validateTeam = (team: any, onPoke?: (poke: Pokemon, add: (s: string) => vo
 };
 
 export const formatDescs: Record<FormatId, FormatDesc> = {
-  standard: {
+  g1_standard: {
     chooseLead: true,
     validate(team) {
       return validateTeam(team);
     },
   },
-  nfe: {
+  g1_nfe: {
     chooseLead: true,
     validate(team) {
       return validateTeam(team, (poke, addProblem) => {
@@ -143,7 +143,7 @@ export const formatDescs: Record<FormatId, FormatDesc> = {
       });
     },
   },
-  truly_randoms: {
+  g1_truly_randoms: {
     generate() {
       return getRandomPokemon(
         6,
@@ -163,17 +163,17 @@ export const formatDescs: Record<FormatId, FormatDesc> = {
       );
     },
   },
-  randoms: {
+  g1_randoms: {
     generate() {
       return randoms(s => !s.evolves);
     },
   },
-  randoms_nfe: {
+  g1_randoms_nfe: {
     generate() {
       return randoms((s, id) => s.evolves && !uselessNfe.has(id));
     },
   },
-  metronome: {
+  g1_metronome: {
     generate() {
       return getRandomPokemon(
         6,

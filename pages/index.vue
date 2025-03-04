@@ -147,7 +147,7 @@ const cancelling = ref(false);
 const loadingRooms = ref(false);
 const acceptingChallenge = ref(false);
 const modalOpen = ref(false);
-const selectedFormat = useLocalStorage<FormatId>("lastFormat", () => "randoms");
+const selectedFormat = useLocalStorage<FormatId>("lastFormat", () => "g1_randoms");
 const selectedTeam = ref<Team | undefined>();
 const errors = ref<Record<number, [string, string[]]>>({});
 const selectTeamMenu = ref<InstanceType<typeof TeamSelector>>();

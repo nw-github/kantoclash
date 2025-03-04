@@ -239,7 +239,7 @@ const deleteTeam = (team: Team) => {
   });
 };
 
-const newTeam = (format: FormatId = "standard") => {
+const newTeam = (format: FormatId = "g1_standard") => {
   myTeams.value.unshift({
     name: "New Team",
     format,

@@ -301,10 +301,10 @@ useIntervalFn(() => updateMarker.value++, 1000);
 watch(
   () => options,
   options => {
-    if (options && players[myId.value]?.active && !players[myId.value].active?.transformed) {
+    if (options && activeInTeam.value) {
       for (const { pp, indexInMoves } of options.moves) {
         if (indexInMoves !== undefined && pp !== undefined) {
-          activeInTeam.value!.pp[indexInMoves] = pp;
+          activeInTeam.value.pp[indexInMoves] = pp;
         }
       }
     }

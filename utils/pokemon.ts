@@ -131,7 +131,7 @@ export const parseTeams = (src: string) => {
   const teams: Team[] = [];
   for (let i = 0; i < res.length; i++) {
     let name = "New Team";
-    let format: FormatId = "standard";
+    let format: FormatId = "g1_standard";
 
     const match = res[i].match(teamRegex);
     if (match) {
@@ -141,7 +141,7 @@ export const parseTeams = (src: string) => {
       if (fmt && (battleFormats as readonly string[]).includes(fmt)) {
         format = fmt as FormatId;
       } else if (fmt === "gen1ou") {
-        format = "standard";
+        format = "g1_standard";
       }
       ++i;
     }

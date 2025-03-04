@@ -6,12 +6,8 @@ export class TransformedPokemon {
   readonly stats: Stats;
   readonly moves: MoveId[];
   readonly pp: number[];
-  readonly base: Pokemon;
-  readonly transformed: Pokemon;
 
-  constructor(base: Pokemon, transformed: Pokemon) {
-    this.base = base;
-    this.transformed = transformed;
+  constructor(readonly base: Pokemon, readonly transformed: Pokemon) {
     this.moves = [...transformed.moves];
     this.pp = transformed.pp.map(_ => 5);
     this.stats = { ...this.transformed.stats, hp: base.stats.hp };

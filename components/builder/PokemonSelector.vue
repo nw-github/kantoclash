@@ -72,7 +72,7 @@ const filter = (species: typeof items, query: string) => {
   const all = species.filter(([id, _]) => id.includes(q));
   const currentSpecies = team.pokemon.map(p => normalizeName(p.species));
   let subset = all.filter(([id, _]) => !currentSpecies.includes(id));
-  if (team.format === "nfe") {
+  if (team.format === "g1_nfe") {
     subset = subset.filter(([_, species]) => species.evolves);
   }
   return subset.length ? subset : all;
@@ -81,6 +81,6 @@ const filter = (species: typeof items, query: string) => {
 const onChoose = ([id, _]: [string, Species]) => (model.value = id);
 
 const isIllegal = (species: Species) => {
-  return team.format === "nfe" ? !species.evolves : false;
+  return team.format === "g1_nfe" ? !species.evolves : false;
 };
 </script>
