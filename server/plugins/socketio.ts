@@ -48,6 +48,6 @@ export default defineNitroPlugin(nitro => {
     }),
   );
 
-  console.log("initialized game server!");
+  console.log("initialized game server on port " + process.env.PORT || 3000);
   startBot().then(() => startBot(undefined, rankBot));
 });

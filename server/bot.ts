@@ -30,10 +30,16 @@ let nBots = 0;
 export const activeBots: string[] = [];
 
 export async function startBot(format?: FormatId, botFunction: BotFunction = randomBot) {
-  const { cookie, myId, name } = await login();
+  const result = await login();
+  if (!result) {
+    console.log("Failed 3 times, not starting bot!");
+    return;
+  }
+
+  const { cookie, myId, name } = result;
   activeBots.push(myId);
 
-  const url = import.meta.dev ? "http://localhost:3000" : "https://localhost:80";
+  const url = import.meta.dev ? "http://localhost:3000" : `https://localhost:${process.env.PORT}`;
   const $conn: S = io(url, { extraHeaders: { cookie }, secure: !import.meta.dev });
   const games: Record<string, (turn: Turn, opts?: Options) => void> = {};
   $conn.on("connect", () => {
@@ -78,7 +84,8 @@ export async function startBot(format?: FormatId, botFunction: BotFunction = ran
   });
 
   async function login() {
-    while (true) {
+    let attempts = 3;
+    while (attempts--) {
       const name = "BOT " + ++nBots;
       await $fetch("/api/_auth/session", { method: "DELETE" }).catch(() => {});
       let resp;
@@ -94,6 +101,7 @@ export async function startBot(format?: FormatId, botFunction: BotFunction = ran
             body: { username: name, password: process.env.BOT_PASSWORD },
           });
         } catch {
+          console.log(`[${name}] Login failed!...`);
           continue;
         }
       }

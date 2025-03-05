@@ -17,9 +17,7 @@
 <script setup lang="ts">
 import type { ServerConfig } from "~/server/gameServer";
 
-definePageMeta({
-  middleware: ["admin"],
-});
+definePageMeta({ middleware: ["admin"] });
 
 const { $conn } = useNuxtApp();
 const toast = useToast();
@@ -27,12 +25,11 @@ const config = ref<ServerConfig>({});
 const loading = ref(true);
 
 onMounted(() => {
-  $conn.emit("getConfig", state => {
-    if (state) {
-      config.value = state;
-      loading.value = false;
-    }
-  });
+  if (!$conn.connected) {
+    $conn.once("connect", getConfig);
+  } else {
+    getConfig();
+  }
 });
 
 const toggle = (key: keyof ServerConfig) => {
@@ -45,6 +42,17 @@ const toggle = (key: keyof ServerConfig) => {
       return;
     }
     config.value = state;
+  });
+};
+
+const getConfig = () => {
+  $conn.emit("getConfig", state => {
+    if (state) {
+      config.value = state;
+      loading.value = false;
+    } else {
+      toast.add({ title: "Getting config failed!" });
+    }
   });
 };
 </script>
