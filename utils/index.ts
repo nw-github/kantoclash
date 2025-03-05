@@ -53,6 +53,10 @@ export const randChoice = <T>(arr: T[]) => arr[Math.floor(Math.random() * arr.le
 
 export const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
+export const musicTrackName = (track: string) => {
+  return track.slice(track.lastIndexOf("/") + 1, track.lastIndexOf("."));
+};
+
 const dmgStatusTable: Record<Status, string> = {
   brn: "burn the target. ",
   par: "paralyze the target. ",

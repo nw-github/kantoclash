@@ -8,17 +8,16 @@ export const useMyId = () => {
 
 export const useMyTeams = () => useLocalStorage<Team[]>("myTeams", () => []);
 
-export const useCurrentTrack = () => useState<string | undefined>("currentTrack", () => undefined);
-
 export const allMusicTracks = Object.keys(import.meta.glob("/public/music/**/*.{mp3,wav}"));
-
-export const musicTrackName = (track: string) => {
-  return track.slice(track.lastIndexOf("/") + 1, track.lastIndexOf("."));
-};
 
 export const useSfxVolume = () => useLocalStorage("sfxVolume", 0.4);
 
-export const useMusicVolume = () => useLocalStorage("musicVolume", 0.4);
+export const useBGMusic = () => {
+  return {
+    volume: useLocalStorage("musicVolume", 0.4),
+    track: useState<string | undefined>("currentTrack", () => undefined),
+  };
+};
 
 export const useMutedPlayerIds = () => useLocalStorage<string[]>("mutedPlayers", []);
 

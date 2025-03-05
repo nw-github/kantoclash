@@ -259,7 +259,7 @@ const { team, options, players, turns, chats, battlers, timer, finished } = defi
 }>();
 const myId = useMyId();
 const sfxVol = useSfxVolume();
-const currentTrack = useCurrentTrack();
+const { track: currentTrack } = useBGMusic();
 const selectionText = ref("");
 const menuButton = ref<HTMLElement>();
 const isMenuVisible = useElementVisibility(menuButton);

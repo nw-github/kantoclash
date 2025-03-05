@@ -106,7 +106,7 @@
 
   <UModals />
   <UNotifications />
-  <MusicController />
+  <BackgroundMusic />
 </template>
 
 <style>
@@ -129,17 +129,13 @@ const { $conn } = useNuxtApp();
 const { user, fetch } = useUserSession();
 const route = useRoute();
 const modal = useModal();
-const musicVol = useMusicVolume();
+const { volume: musicVol, track: currentTrack } = useBGMusic();
 const sfxVol = useSfxVolume();
-const currentTrack = useCurrentTrack();
 const challenges = useChallenges();
 const ignoreChallenges = useIgnoreChallenges();
 const ignoredPlayers = ref<string[]>([]);
 const toast = useToast();
-const musicTrackItems = allMusicTracks.map(track => ({
-  label: musicTrackName(track),
-  value: track,
-}));
+const musicTrackItems = allMusicTracks.map(value => ({ label: musicTrackName(value), value }));
 const connected = ref($conn.connected);
 const accountOpen = ref(false);
 
