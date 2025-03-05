@@ -270,7 +270,6 @@ const smoothScroll = ref(true);
 const skippingToTurn = ref(0);
 const updateMarker = ref(0);
 const currentTurnNo = ref(0);
-const paused = ref(false);
 
 const backPokemon = ref<InstanceType<typeof ActivePokemon>>();
 const frontPokemon = ref<InstanceType<typeof ActivePokemon>>();
@@ -278,13 +277,14 @@ const frontPokemon = ref<InstanceType<typeof ActivePokemon>>();
 const activeIndex = ref(-1);
 const activeInTeam = computed(() => (isBattler.value ? team?.[activeIndex.value] : undefined));
 
+const victor = ref<string>();
 const isBattleOver = computed(() => finished || !!victor.value);
 const isBattler = computed(() => battlers.includes(myId.value));
 const perspective = ref("");
 const opponent = computed(() => battlers.find(v => v != perspective.value) ?? "");
-const victor = ref<string>();
 const htmlTurns = ref<[UIBattleEvent[], boolean, number][]>([]);
 const liveEvents = ref<UIBattleEvent[]>([]);
+const paused = ref(isBattleOver.value);
 
 const sound = useAudio({
   cries: { src: "/effects/cries.wav", sprites: criesSpritesheet },

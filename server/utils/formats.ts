@@ -165,7 +165,7 @@ export const formatDescs: Record<FormatId, FormatDesc> = {
   },
   g1_randoms: {
     generate() {
-      return randoms(s => !s.evolves);
+      return randoms((s, id) => !s.evolves && id !== "mewtwo");
     },
   },
   g1_randoms_nfe: {

@@ -37,12 +37,15 @@ export async function startBot(format?: FormatId, botFunction: BotFunction = ran
   }
 
   const { cookie, myId, name } = result;
-  activeBots.push(myId);
 
-  const url = import.meta.dev ? "http://localhost:3000" : `https://localhost:${process.env.PORT}`;
+  const url = import.meta.dev
+    ? "http://localhost:3000"
+    : process.env.SELF_URL || `https://localhost:${process.env.PORT}`;
   const $conn: S = io(url, { extraHeaders: { cookie }, secure: !import.meta.dev });
   const games: Record<string, (turn: Turn, opts?: Options) => void> = {};
   $conn.on("connect", () => {
+    activeBots.push(myId);
+
     $conn.on("foundMatch", roomId => {
       $conn.emit("joinRoom", roomId, 0, resp => {
         if (resp === "bad_room") {

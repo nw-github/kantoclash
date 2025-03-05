@@ -295,7 +295,8 @@ const enterMMCallback = (team?: Gen1PokemonDesc[], err?: MMError, problems?: Tea
   } else if (err === "maintenance") {
     return toast.add({
       title: "Matchmaking failed!",
-      description: "Cannot start a new battle right now, maintenance mode is enabled.",
+      description:
+        "Cannot start a new battle right now, the server will soon be going down for maintenance.",
       icon: "material-symbols:error-circle-rounded-outline-sharp",
     });
   } else if (err === "bad_user") {

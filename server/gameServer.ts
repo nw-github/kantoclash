@@ -128,7 +128,6 @@ class Room {
   timer?: NodeJS.Timeout;
   lastTurn: number = Date.now();
   spectatorRoom: string;
-  isBeingDestroyed = false;
 
   constructor(
     public id: string,
@@ -205,6 +204,11 @@ class Room {
       }
     }
 
+    this.server.to(this.spectatorRoom).emit("nextTurn", this.id, {
+      switchTurn,
+      events: Battle.censorEvents(events),
+    });
+
     if (this.battle.finished) {
       for (const player of this.battle.players) {
         this.server.onBattleEnded(player.id, this);
@@ -212,11 +216,6 @@ class Room {
 
       this.server.telemetry?.onBattleComplete(this.format, this.battle);
     }
-
-    this.server.to(this.spectatorRoom).emit("nextTurn", this.id, {
-      switchTurn,
-      events: Battle.censorEvents(events),
-    });
   }
 
   sendMessage(message: InfoMessage) {
@@ -237,8 +236,8 @@ class Room {
       return;
     }
 
+    const player = this.battle.findPlayer(socket.account.id);
     if (notifyJoin) {
-      const player = this.battle.findPlayer(socket.account.id);
       this.sendMessage({
         type: "userJoin",
         id: socket.account.id,
@@ -248,6 +247,9 @@ class Room {
       });
     }
     this.accounts.add(socket.account);
+    if (!player) {
+      socket.join(this.spectatorRoom);
+    }
   }
 
   makeDescriptor() {
@@ -419,7 +421,7 @@ export class GameServer extends Server<ClientMessage, ServerMessage> {
     });
     socket.on("joinRoom", (roomId, turn, ack) => {
       const room = this.rooms.get(roomId);
-      if (!room || room.isBeingDestroyed) {
+      if (!room) {
         return ack("bad_room");
       }
 
@@ -736,15 +738,7 @@ export class GameServer extends Server<ClientMessage, ServerMessage> {
   }
 
   destroyRoom(room: Room) {
-    room.isBeingDestroyed = true;
+    this.socketsLeave([room.spectatorRoom, room.id]);
     this.rooms.delete(room.id);
-    return Promise.allSettled(
-      room.accounts.keys().map(async acc => {
-        for (const socket of await this.in(acc.userRoom).fetchSockets()) {
-          socket.leave(room.id);
-          socket.leave(room.spectatorRoom);
-        }
-      }),
-    );
   }
 }

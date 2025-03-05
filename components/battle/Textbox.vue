@@ -106,7 +106,11 @@
           placeholder="Send a message..."
           :disabled="!myId"
           @keyup.enter="sendMessage"
-        />
+        >
+          <template #trailing>
+            <div class="w-3" />
+          </template>
+        </UInput>
 
         <UButton
           class="absolute top-1/2 right-2 -translate-y-1/2"
@@ -114,7 +118,7 @@
           variant="link"
           color="gray"
           :padded="false"
-          :disabled="message === ''"
+          :disabled="!message"
           @click="sendMessage"
         />
       </div>
