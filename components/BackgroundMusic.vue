@@ -47,8 +47,8 @@ const stop = async () => {
   }
 
   const src = source;
-  gain!.gain.exponentialRampToValueAtTime(0.01, context!.currentTime + 2);
-  await delay(2000);
+  gain!.gain.linearRampToValueAtTime(0.01, context!.currentTime + 3);
+  await delay(3000);
 
   if (navigator.mediaSession) {
     navigator.mediaSession.playbackState = "none";
@@ -95,12 +95,6 @@ const play = async (next: string) => {
 
   await context.resume();
   showToast();
-};
-
-const toSeconds = (pos: string) => {
-  const [m, sms] = pos.split(":");
-  const [s, ms] = sms.split(".").map(Number);
-  return +m * 60 + s + ms / 1000;
 };
 
 const trackToPath = (tr: string) => "/" + tr.split("/").slice(2).map(encodeURIComponent).join("/");

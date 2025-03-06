@@ -65,6 +65,8 @@ import {
   type Type,
 } from "~/game/utils";
 
+definePageMeta({ middleware: ["admin"] });
+
 const allMoves = Object.keys(moveList) as MoveId[];
 const allSpecies = Object.keys(speciesList) as MoveId[];
 

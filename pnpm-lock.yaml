@@ -39,7 +39,19 @@ importers:
       '@hypernym/nuxt-anime':
         specifier: ^2.1.1
         version: 2.1.1
+      '@iconify-json/akar-icons':
+        specifier: ^1.2.2
+        version: 1.2.2
+      '@iconify-json/famicons':
+        specifier: ^1.2.0
+        version: 1.2.0
+      '@iconify-json/fluent':
+        specifier: ^1.2.15
+        version: 1.2.15
       '@iconify-json/heroicons':
+        specifier: ^1.2.2
+        version: 1.2.2
+      '@iconify-json/ic':
         specifier: ^1.2.2
         version: 1.2.2
       '@iconify-json/material-symbols':
@@ -48,6 +60,9 @@ importers:
       '@iconify-json/mdi':
         specifier: ^1.2.3
         version: 1.2.3
+      '@iconify-json/tabler':
+        specifier: ^1.2.16
+        version: 1.2.16
       '@nuxt/devtools':
         specifier: ^2.0.0
         version: 2.1.0(vite@6.2.0(@types/node@22.13.5)(jiti@2.4.2)(terser@5.39.0)(tsx@4.19.3)(yaml@2.7.0))(vue@3.5.13(typescript@5.7.3))
@@ -955,14 +970,29 @@ packages:
   '@hypernym/nuxt-anime@2.1.1':
     resolution: {integrity: sha512-M0PfitJcjOZ96vmmFghCDq0RY7sN2iJTUDZEJEgwzB/1/gqxDZkQMcRmEhNqysX8sQcDBDDlkECgN+Yf+TBhIQ==}
 
+  '@iconify-json/akar-icons@1.2.2':
+    resolution: {integrity: sha512-PoUMM4FKQ6NumbSUjoM4lsulJ0GPpj979nLjZS8MGwk99MuZc80LV6AP51lfLcF4jvZFmC5G1gDIymQOi66Sqg==}
+
+  '@iconify-json/famicons@1.2.0':
+    resolution: {integrity: sha512-2L67IwXVSejgkYiWWveLAdXE52nw+po+gqGdSngvC5xekWn/IERhpYsdaYGHTIi0uGtTsl5MR8A0VwaLzz1w8g==}
+
+  '@iconify-json/fluent@1.2.15':
+    resolution: {integrity: sha512-Xxbq0c7y+nGim6zgv+ZRh9MAAEsjXAYqUOvAZnwcTdXTdplGleLVM1d/xAuAje9CKFdbQN6zlfcfqJ26X39MPA==}
+
   '@iconify-json/heroicons@1.2.2':
     resolution: {integrity: sha512-qoW4pXr5kTTL6juEjgTs83OJIwpePu7q1tdtKVEdj+i0zyyVHgg/dd9grsXJQnpTpBt6/VwNjrXBvFjRsKPENg==}
+
+  '@iconify-json/ic@1.2.2':
+    resolution: {integrity: sha512-QmjwS3lYiOmVWgTCEOTFyGODaR/+689+ajep/VsrCcsUN0Gdle5PmIcibDsdmRyrOsW/E77G41UUijdbjQUofw==}
 
   '@iconify-json/material-symbols@1.2.14':
     resolution: {integrity: sha512-S0AAFFQPVr8Dkrprspz/otNjxdD3rJRXDGZjbO8a8zn8ZR5mO8jAF81lVoTfUWxPH6SCtH2lK1JQGXHGPxld7g==}
 
   '@iconify-json/mdi@1.2.3':
     resolution: {integrity: sha512-O3cLwbDOK7NNDf2ihaQOH5F9JglnulNDFV7WprU2dSoZu3h3cWH//h74uQAB87brHmvFVxIOkuBX2sZSzYhScg==}
+
+  '@iconify-json/tabler@1.2.16':
+    resolution: {integrity: sha512-gjvKz38+aOxfZtRvycYrASYipCsHRbCZ/Df49T0tfPntT0ur+qsgJ7PxCM4JF/Xs6+n3JkaFdiUz/N4ZZxDKdQ==}
 
   '@iconify/collections@1.0.521':
     resolution: {integrity: sha512-fryCall7fKZsBwsg5cA+2n+qBrFyFpJoGdIrdtznX9smwA2djSd4iRwClpmvkWk9xk1M/uPnu1PYUjiSnOiaeQ==}
@@ -5833,7 +5863,23 @@ snapshots:
       '@types/animejs': 3.1.13
       animejs: 3.2.2
 
+  '@iconify-json/akar-icons@1.2.2':
+    dependencies:
+      '@iconify/types': 2.0.0
+
+  '@iconify-json/famicons@1.2.0':
+    dependencies:
+      '@iconify/types': 2.0.0
+
+  '@iconify-json/fluent@1.2.15':
+    dependencies:
+      '@iconify/types': 2.0.0
+
   '@iconify-json/heroicons@1.2.2':
+    dependencies:
+      '@iconify/types': 2.0.0
+
+  '@iconify-json/ic@1.2.2':
     dependencies:
       '@iconify/types': 2.0.0
 
@@ -5842,6 +5888,10 @@ snapshots:
       '@iconify/types': 2.0.0
 
   '@iconify-json/mdi@1.2.3':
+    dependencies:
+      '@iconify/types': 2.0.0
+
+  '@iconify-json/tabler@1.2.16':
     dependencies:
       '@iconify/types': 2.0.0
 

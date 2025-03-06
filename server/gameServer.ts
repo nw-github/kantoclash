@@ -5,9 +5,10 @@ import { type TeamProblems, formatDescs } from "./utils/formats";
 import type { User } from "#auth-utils";
 import type { Gen1PokemonDesc } from "~/utils/pokemon";
 import type { InfoMessage } from "./utils/info";
-import { formatInfo, randChoice } from "~/utils";
+import { formatInfo } from "~/utils/shared";
 import type { FormatId } from "~/utils/data";
 import { activeBots, createBotTeam } from "./bot";
+import random from "random";
 
 export type JoinRoomResponse = {
   team?: Pokemon[];
@@ -638,7 +639,7 @@ export class GameServer extends Server<ClientMessage, ServerMessage> {
         return;
       }
 
-      const bot = this.accounts.get(randChoice(activeBots))!;
+      const bot = this.accounts.get(random.choice(activeBots)!)!;
       let botPlayer;
       while (!(botPlayer instanceof Player)) {
         botPlayer = this.getPlayer(bot, format, createBotTeam(format));

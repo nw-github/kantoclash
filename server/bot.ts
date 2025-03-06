@@ -3,7 +3,7 @@ import type { ClientMessage, JoinRoomResponse, ServerMessage } from "./gameServe
 import type { BattleEvent } from "../game/events";
 import type { Options, Turn } from "../game/battle";
 import { randoms } from "~/server/utils/formats";
-import { formatInfo, type ClientPlayer } from "~/utils";
+import { formatInfo, type ClientPlayer } from "~/utils/shared";
 import { Pokemon } from "~/game/pokemon";
 import { clamp, getEffectiveness, type Type } from "../game/utils";
 import random from "random";
