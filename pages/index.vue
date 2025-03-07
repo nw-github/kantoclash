@@ -73,6 +73,7 @@
       <div class="flex gap-2">
         <FormatDropdown
           v-model="filterFormats"
+          no-icons
           multiple
           class="w-1/2"
           placeholder="Filter by format..."

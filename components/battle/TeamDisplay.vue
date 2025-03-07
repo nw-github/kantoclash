@@ -1,5 +1,5 @@
 <template>
-  <div class="flex p-2">
+  <div class="flex">
     <!-- player.nPokemon - player.nFainted | i < players[id].nPokemon | Icon ternary keeps causing problems -->
     <UIcon
       v-for="i in player.nPokemon - player.nFainted"

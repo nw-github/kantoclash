@@ -1,6 +1,6 @@
 <template>
   <UPopover mode="hover">
-    <UButton icon="material-symbols:info-outline-rounded" color="gray" variant="ghost" />
+    <UButton :icon="formatInfo[format].icon" color="gray" variant="ghost" />
     <template #panel>
       <div class="flex flex-col gap-2 p-1 max-w-96">
         <h1 class="text-xl">{{ formatInfo[format].name }}</h1>
@@ -14,7 +14,7 @@
               {{ modNames[mod].name }}: {{ modNames[mod].desc }}
             </span>
           </template>
-          <span v-if="Object.values(formatInfo[format].mods).every(v => !v)"> None </span>
+          <span v-if="Object.values(formatInfo[format].mods).every(v => !v)">None</span>
         </div>
       </div>
     </template>

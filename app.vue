@@ -169,7 +169,7 @@ watchImmediate(user, user => {
 
 const roomToLink = (room: RoomDescriptor) => {
   return {
-    label: formatInfo[room.format].name,
+    label: `vs. ${room.battlers.find(b => b.id !== useMyId().value)!.name}`,
     icon: formatInfo[room.format].icon,
     to: "/room/" + room.id,
     vs: room.battlers.map(pl => pl.name).join(" vs. ") + " - " + formatInfo[room.format].name,

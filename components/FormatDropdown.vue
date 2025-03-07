@@ -3,13 +3,13 @@
 </template>
 
 <script setup lang="ts">
-const props = defineProps<{ teamOnly?: boolean }>();
+const { teamOnly, noIcons } = defineProps<{ teamOnly?: boolean; noIcons?: boolean }>();
 
 const formats = battleFormats
-  .filter(id => !props.teamOnly || formatInfo[id].needsTeam)
+  .filter(id => !teamOnly || formatInfo[id].needsTeam)
   .map(id => ({
     id,
     label: formatInfo[id].name,
-    icon: formatInfo[id].icon,
+    icon: noIcons ? "" : formatInfo[id].icon,
   }));
 </script>

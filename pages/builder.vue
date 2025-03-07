@@ -67,7 +67,7 @@
 
       <div class="w-max lg:grid lg:grid-cols-2 lg:gap-x-10">
         <div
-          v-for="(team, i) in filteredTeams"
+          v-for="(team, i) in filteredTeams.slice((page - 1) * pageCount, page * pageCount)"
           :key="i"
           class="space-y-1 py-1 divide-y divide-gray-200 dark:divide-gray-800"
         >
@@ -127,6 +127,12 @@
       </div>
     </div>
 
+    <template #footer>
+      <div class="flex justify-center">
+        <UPagination v-model="page" :page-count :total="filteredTeams.length" />
+      </div>
+    </template>
+
     <UModal v-model="open">
       <TeamBuilder
         v-if="editingTeam"
@@ -169,6 +175,7 @@
 </template>
 
 <script setup lang="ts">
+import { breakpointsTailwind } from "@vueuse/core";
 import { speciesList, type Species } from "~/game/species";
 
 const toast = useToast();
@@ -186,9 +193,12 @@ const open = computed({
 const importOpen = ref(false);
 const exportMode = ref(false);
 const isXS = useMediaQuery("(max-width: 480px)");
-
+const breakpoints = useBreakpoints(breakpointsTailwind);
+const isLgOrGreater = breakpoints.greaterOrEqual("lg");
 const query = ref("");
 const formats = ref<string[]>([]);
+const pageCount = computed(() => (isLgOrGreater.value ? 10 : 5));
+const page = ref(1);
 const filteredTeams = computed(() => {
   const q = query.value;
   const f = formats.value;
@@ -196,6 +206,7 @@ const filteredTeams = computed(() => {
     .filter(team => !q || team.name.toLowerCase().includes(q.toLowerCase()))
     .filter(team => !f.length || f.includes(team.format));
 });
+watch([pageCount, filteredTeams], () => (page.value = 1));
 
 onMounted(() => {
   useTitle("Team Builder");

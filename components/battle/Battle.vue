@@ -3,19 +3,22 @@
     class="flex h-full flex-col sm:flex-row p-4 overflow-auto rounded-lg gap-4 dark:divide-gray-800 ring-1 ring-gray-200 dark:ring-gray-800 shadow"
   >
     <div class="flex flex-col w-full items-center">
-      <div class="flex w-full relative">
-        <div
-          class="rounded-md bg-gray-300 dark:bg-gray-700 flex justify-center py-0.5 px-1"
-          :class="[!currentTurnNo && 'invisible']"
-        >
-          <span class="text-lg font-medium">Turn {{ currentTurnNo }}</span>
+      <div class="flex w-full relative justify-between">
+        <div>
+          <div
+            class="rounded-md bg-gray-300 dark:bg-gray-700 flex justify-center py-0.5 px-1"
+            :class="[!currentTurnNo && 'invisible']"
+          >
+            <span class="text-lg font-medium">Turn {{ currentTurnNo }}</span>
+          </div>
         </div>
 
-        <TeamDisplay
-          v-if="opponent"
-          :player="players[opponent]"
-          class="absolute right-0 flex-col sm:flex-row"
-        />
+        <div v-if="opponent" class="absolute sm:static right-0 flex flex-col items-end gap-1">
+          <span class="text-xs pr-0.5 pb-1 sm:order-1 font-semibold">
+            {{ players[opponent].name }}
+          </span>
+          <TeamDisplay :player="players[opponent]" class="flex-col sm:flex-row" />
+        </div>
       </div>
 
       <div class="flex">
@@ -46,7 +49,7 @@
           v-if="players[perspective]"
           class="absolute bottom-0 z-0 flex flex-row justify-between w-full p-0.5 items-end"
         >
-          <TeamDisplay :player="players[perspective]" class="self-end flex-col sm:flex-row" />
+          <TeamDisplay :player="players[perspective]" class="self-end flex-col sm:flex-row p-2" />
 
           <div class="flex flex-row">
             <UTooltip
