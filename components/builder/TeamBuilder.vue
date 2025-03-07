@@ -205,7 +205,7 @@
                 </span>
                 <span
                   class="text-center px-1.5 min-w-8 text-xs"
-                  :class="baseStatColor(selectedPoke.species.stats[stat] ?? 0)"
+                  :style="{ color: baseStatColor(selectedPoke.species.stats[stat] ?? 0) }"
                 >
                   {{ selectedPoke.species.stats[stat] ?? 0 }}
                 </span>

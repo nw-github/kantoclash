@@ -44,7 +44,7 @@
           >
             <span
               class="text-[0.5rem] text-center sm:text-left sm:text-[0.6rem] grow"
-              :class="baseStatColor(species.stats[stat])"
+              :style="{ color: baseStatColor(species.stats[stat]) }"
             >
               {{ species.stats[stat] }}
             </span>

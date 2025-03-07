@@ -129,20 +129,19 @@ import { stageMultipliers } from "@/game/utils";
 import { calcStat, type Pokemon } from "@/game/pokemon";
 import { speciesList } from "@/game/species";
 import { moveList, type MoveId } from "@/game/moveList";
-import tailwindColors from "tailwindcss/colors";
 import { breakpointsTailwind } from "@vueuse/core";
 
-const props = defineProps<{ poke?: ClientActivePokemon; base?: Pokemon; back?: boolean }>();
-const species = computed(
-  () => props.poke && speciesList[props.poke.transformed ?? props.poke.speciesId],
-);
-const minSpe = computed(
-  () => props.poke && calcStat(false, species.value!.stats.spe, props.poke.level, 0, 0),
-);
+const { poke, base, back } = defineProps<{
+  poke?: ClientActivePokemon;
+  base?: Pokemon;
+  back?: boolean;
+}>();
+const species = computed(() => poke && speciesList[poke.transformed ?? poke.speciesId]);
+const minSpe = computed(() => poke && calcStat(false, species.value!.stats.spe, poke.level, 0, 0));
 const maxSpe = computed(
-  () => props.poke && calcStat(false, species.value!.stats.spe, props.poke.level, 15, 65535),
+  () => poke && calcStat(false, species.value!.stats.spe, poke.level, 15, 65535),
 );
-const hp = computed(() => props.poke?.hpPercent ?? 0);
+const hp = computed(() => poke?.hpPercent ?? 0);
 const breakpoint = useBreakpoints(breakpointsTailwind);
 const lessThanSm = breakpoint.smaller("sm");
 
@@ -151,52 +150,6 @@ const pokeBall = ref<HTMLDivElement>();
 const ground = ref<HTMLDivElement>();
 const pbRow = ref(0);
 const pbCol = ref(3);
-
-const hpColor = (percent: number) => {
-  const lerp = (a: number, b: number, t: number) => a * (1 - t) + b * t;
-
-  // https://stackoverflow.com/questions/8022885/rgb-to-hsv-color-in-javascript/54070620#54070620
-  const rgb2hsv = (r: number, g: number, b: number) => {
-    const v = Math.max(r, g, b);
-    const c = v - Math.min(r, g, b);
-    const h = c && (v == r ? (g - b) / c : v == g ? 2 + (b - r) / c : 4 + (r - g) / c);
-    return { h: 60 * (h < 0 ? h + 6 : h), s: v && c / v, v };
-  };
-
-  const hsv2rgb = (h: number, s: number, v: number) => {
-    const f = (n: number, k = (n + h / 60) % 6) => v - v * s * Math.max(Math.min(k, 4 - k, 1), 0);
-    return [f(5), f(3), f(1)];
-  };
-
-  const hexrgb2hsv = (hex: string) => {
-    hex = hex.slice(1);
-    return rgb2hsv(
-      parseInt(hex.slice(0, 2), 16),
-      parseInt(hex.slice(2, 4), 16),
-      parseInt(hex.slice(4), 16),
-    );
-  };
-
-  const red = hexrgb2hsv(tailwindColors.red[800]);
-  const yellow = hexrgb2hsv(tailwindColors.yellow[600]);
-  const green = hexrgb2hsv(tailwindColors.lime[700]);
-  const div = 50;
-  if (percent >= div) {
-    const [r, g, b] = hsv2rgb(
-      lerp(yellow.h, green.h, (percent - div) / (100 - div)),
-      lerp(yellow.s, green.s, (percent - div) / (100 - div)),
-      lerp(yellow.v, green.v, (percent - div) / (100 - div)),
-    );
-    return `rgb(${r}, ${g}, ${b})`;
-  } else {
-    const [r, g, b] = hsv2rgb(
-      lerp(red.h, yellow.h, percent / div),
-      lerp(red.s, yellow.s, percent / div),
-      lerp(red.v, yellow.v, percent / div),
-    );
-    return `rgb(${r}, ${g}, ${b})`;
-  }
-};
 
 const offsX = (number: number) => `-${number * 42 - number}px`;
 const offsY = (number: number) => `-${number * 42 - number * 2}px`;
@@ -218,7 +171,7 @@ const rem = (rem: number) => parseFloat(getComputedStyle(document.documentElemen
 let timeline: anime.AnimeTimelineInstance | undefined;
 const playAnimation = (anim: AnimationType, name?: string, cb?: () => void) => {
   return new Promise<void>(resolve => {
-    const other = document.querySelector(`.sprite${props.back ? ".front" : ".back"}`)!;
+    const other = document.querySelector(`.sprite${back ? ".front" : ".back"}`)!;
     if (!sprite.value || !pokeBall.value) {
       return;
     }
@@ -253,10 +206,10 @@ const playAnimation = (anim: AnimationType, name?: string, cb?: () => void) => {
       const [x, y] = relativePos(pbRect, myCenterX, myCenterY);
       const startX = relativePos(
         pbRect,
-        props.back ? gRect.left - rem(1.25) : gRect.right + rem(1),
+        back ? gRect.left - rem(1.25) : gRect.right + rem(1),
         0,
       )[0];
-      const endX = props.back ? x - 15 : x - 10;
+      const endX = back ? x - 15 : x - 10;
 
       pbRow.value = 0;
       timeline.add({
@@ -270,7 +223,7 @@ const playAnimation = (anim: AnimationType, name?: string, cb?: () => void) => {
           { value: y - 60, duration: 450, easing: "easeOutQuad" },
           { value: y, duration: 250, easing: "easeInQuad" },
         ],
-        rotateZ: { value: 360 * 4 * (props.back ? 1 : -1), duration: 800, easing: "linear" },
+        rotateZ: { value: 360 * 4 * (back ? 1 : -1), duration: 800, easing: "linear" },
         opacity: [
           { value: 100, duration: 800 },
           { value: 0, duration: 0 },
@@ -286,7 +239,7 @@ const playAnimation = (anim: AnimationType, name?: string, cb?: () => void) => {
         complete: () => resolve(),
       });
     } else if (anim === "retract") {
-      if (!props.poke?.flags.substitute) {
+      if (!poke?.flags.substitute) {
         reset(true);
       }
       useAnime.set(pokeBall.value, { translateX: 0, translateY: 0, opacity: 1 });
@@ -331,6 +284,10 @@ const playAnimation = (anim: AnimationType, name?: string, cb?: () => void) => {
         complete: () => resolve(),
       });
     } else if (anim === "get_sub") {
+      // preload the substitute graphic
+      const img = new Image();
+      img.src = `/sprites/battle/${back ? "back/" : ""}substitute.gif`;
+
       const sprRect = sprite.value.getBoundingClientRect();
       const groundRect = ground.value!.getBoundingClientRect();
       const [_, sprY] = relativePos(sprRect, 0, groundRect.top - sprRect.height / 2);
