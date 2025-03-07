@@ -94,7 +94,12 @@
           @click="loadRooms"
         />
       </div>
+      <UCheckbox v-model="recentlyPlayed" label="Recently Played" />
       <UTable :rows="filteredRooms" :columns="roomsCols" :empty-state="emptyState">
+        <template #live-data="{ row }">
+          <UCheckbox :value="!row.finished" />
+        </template>
+
         <template #name-data="{ row }">
           <UButton :to="row.to">{{ row.name }}</UButton>
         </template>
@@ -148,12 +153,13 @@ const cancelling = ref(false);
 const loadingRooms = ref(false);
 const acceptingChallenge = ref(false);
 const modalOpen = ref(false);
+const recentlyPlayed = useLocalStorage("showRecentlyPlayed", true);
 const selectedFormat = useLocalStorage<FormatId>("lastFormat", () => "g1_randoms");
 const selectedTeam = ref<Team | undefined>();
 const errors = ref<Record<number, [string, string[]]>>({});
 const selectTeamMenu = ref<InstanceType<typeof TeamSelector>>();
 
-const rooms = ref<{ to: string; name: string; format: FormatId }[]>([]);
+const rooms = ref<{ to: string; name: string; format: FormatId; finished: boolean }[]>([]);
 const filterFormats = ref<string[]>([]);
 const battleQuery = ref("");
 const challengeUser = ref<Battler>();
@@ -163,10 +169,12 @@ const filteredRooms = computed(() => {
   const f = filterFormats.value;
   return rooms.value
     .filter(room => !q || room.name.toLowerCase().includes(q.toLowerCase()))
-    .filter(room => !f.length || f.includes(room.format));
+    .filter(room => !f.length || f.includes(room.format))
+    .filter(room => recentlyPlayed.value || !room.finished);
 });
 
 const roomsCols = [
+  { key: "live", label: "Live" },
   { key: "type", label: "Type" },
   { key: "name", label: "Players" },
 ];
@@ -256,6 +264,7 @@ const loadRooms = () => {
         name: room.battlers.map(pl => pl.name).join(" vs. "),
         to: "/room/" + room.id,
         format: room.format,
+        finished: room.finished,
       })),
     );
     loadingRooms.value = false;

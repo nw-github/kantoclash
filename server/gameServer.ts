@@ -33,6 +33,7 @@ export type RoomDescriptor = {
   id: string;
   battlers: Battler[];
   format: FormatId;
+  finished: boolean;
 };
 export type MMError = "must_login" | "invalid_team" | "too_many" | "maintenance" | "bad_user";
 
@@ -258,6 +259,7 @@ class Room {
       id: this.id,
       battlers: this.server.getBattlers(this),
       format: this.format,
+      finished: this.battle.finished,
     } satisfies RoomDescriptor;
   }
 
@@ -527,7 +529,6 @@ export class GameServer extends Server<ClientMessage, ServerMessage> {
       ack(
         this.rooms
           .values()
-          .filter(room => !room.battle.finished)
           .map(room => room.makeDescriptor())
           .toArray(),
       );
