@@ -12,10 +12,14 @@ export const allMusicTracks = Object.keys(import.meta.glob("/public/music/**/*.{
 
 export const useSfxVolume = () => useLocalStorage("sfxVolume", 0.4);
 
+const fadeOutRequested = ref(false);
+
 export const useBGMusic = () => {
   return {
     volume: useLocalStorage("musicVolume", 0.4),
     track: useState<string | undefined>("currentTrack", () => undefined),
+    fadeOutRequested,
+    fadeOut: () => void (fadeOutRequested.value = true),
   };
 };
 

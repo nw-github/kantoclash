@@ -7,7 +7,7 @@
 import loops from "@/public/music/loops.json";
 
 const toast = useToast();
-const { volume, track } = useBGMusic();
+const { volume, track, fadeOutRequested } = useBGMusic();
 const musicController = ref<HTMLAudioElement>();
 
 let notified = false;
@@ -39,26 +39,44 @@ onMounted(() => {
 let source: AudioBufferSourceNode | undefined;
 let gain: GainNode | undefined;
 watch(volume, value => gain && (gain.gain.value = value));
-watch(track, value => (value ? play(value) : stop()));
+watch(track, value => (value ? play(value) : stop(false)));
+watch(fadeOutRequested, async req => {
+  if (req) {
+    await stop(true);
+    fadeOutRequested.value = false;
+    track.value = undefined;
+  }
+});
 
-const stop = async () => {
+const stop = async (fade: boolean) => {
   if (!context || !source) {
     return;
   }
 
   const src = source;
-  gain!.gain.linearRampToValueAtTime(0.01, context!.currentTime + 3);
-  await delay(3000);
+  if (fade) {
+    await new Promise(resolve => {
+      useAnime({
+        targets: gain!.gain,
+        value: 0,
+        easing: "easeOutCubic",
+        duration: 3000,
+        complete: resolve,
+      });
+    });
+  }
 
   if (navigator.mediaSession) {
     navigator.mediaSession.playbackState = "none";
     navigator.mediaSession.metadata = null;
   }
 
-  src.stop();
-  source = undefined;
-  gain = undefined;
-  context.suspend();
+  if (source === src) {
+    src.stop();
+    source = undefined;
+    gain = undefined;
+    context.suspend();
+  }
 };
 
 const play = async (next: string) => {
@@ -68,7 +86,7 @@ const play = async (next: string) => {
     return;
   }
 
-  const stopping = stop();
+  const stopping = stop(true);
 
   const blob = await $fetch<Blob>(trackToPath(next));
   const loop = (loops as Loops)[next.slice(next.lastIndexOf("/") + 1)];
@@ -91,7 +109,7 @@ const play = async (next: string) => {
   source.loopEnd = toSeconds(loop.end);
   source.loop = true;
   source.connect(gain);
-  source.start(/*0, source.buffer.duration - 5*/);
+  source.start();
 
   await context.resume();
   showToast();

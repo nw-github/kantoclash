@@ -235,7 +235,6 @@ import type { BattleEvent, InfoReason } from "@/game/events";
 import { speciesList, type SpeciesId } from "@/game/species";
 import { clamp } from "@/game/utils";
 import { moveList } from "@/game/moveList";
-import type { ClientVolatileFlag } from "~/utils";
 import type { BattleTimer, InfoRecord } from "~/server/gameServer";
 import type { ActivePokemon } from "#build/components";
 import type { AnimationType } from "./ActivePokemon.vue";
@@ -259,7 +258,7 @@ const { team, options, players, turns, chats, battlers, timer, finished } = defi
 }>();
 const myId = useMyId();
 const sfxVol = useSfxVolume();
-const { track: currentTrack } = useBGMusic();
+const { fadeOut } = useBGMusic();
 const selectionText = ref("");
 const menuButton = ref<HTMLElement>();
 const isMenuVisible = useElementVisibility(menuButton);
@@ -637,8 +636,8 @@ const runTurn = async (live: boolean, turnIdx: number) => {
     }
   }
 
-  if (isBattleOver.value && currentTrack.value && useAutoMuteMusic().value) {
-    currentTrack.value = undefined;
+  if (isBattleOver.value && turnIdx === turns.length - 1 && useAutoMuteMusic().value) {
+    fadeOut();
   }
 };
 
