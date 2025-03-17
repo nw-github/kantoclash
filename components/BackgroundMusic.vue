@@ -9,29 +9,11 @@ import loops from "@/public/music/loops.json";
 const toast = useToast();
 const { volume, track, fadeOutRequested } = useBGMusic();
 const musicController = ref<HTMLAudioElement>();
+const context = useAudioContext();
 
 let notified = false;
-let context: AudioContext;
 onMounted(() => {
-  const unlock = () => {
-    document.removeEventListener("touchstart", unlock, true);
-    document.removeEventListener("touchend", unlock, true);
-    document.removeEventListener("click", unlock, true);
-    document.removeEventListener("keydown", unlock, true);
-
-    context
-      .resume()
-      .then(showToast)
-      .catch(() => {});
-  };
-
-  document.addEventListener("touchstart", unlock, true);
-  document.addEventListener("touchend", unlock, true);
-  document.addEventListener("click", unlock, true);
-  document.addEventListener("keydown", unlock, true);
-
-  context = new AudioContext();
-  context.suspend();
+  context!.addEventListener("statechange", showToast);
 
   musicController.value!.volume = 0;
 });
@@ -112,13 +94,12 @@ const play = async (next: string) => {
   source.start();
 
   await context.resume();
-  showToast();
 };
 
 const trackToPath = (tr: string) => "/" + tr.split("/").slice(2).map(encodeURIComponent).join("/");
 
 const showToast = () => {
-  if (context.state === "running" && track.value && !notified) {
+  if (context?.state === "running" && track.value && !notified) {
     const name = musicTrackName(track.value);
     toast.add({
       title: `Now Playing: ${name}`,

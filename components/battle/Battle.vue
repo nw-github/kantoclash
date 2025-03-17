@@ -262,6 +262,7 @@ const { team, options, players, turns, chats, battlers, timer, finished } = defi
 const myId = useMyId();
 const sfxVol = useSfxVolume();
 const { fadeOut } = useBGMusic();
+const isMounted = useMounted();
 const selectionText = ref("");
 const menuButton = ref<HTMLElement>();
 const isMenuVisible = useElementVisibility(menuButton);
@@ -375,7 +376,7 @@ const timeLeft = () => {
 };
 
 const runTurn = async (live: boolean, turnIdx: number) => {
-  const isLive = () => live && skippingToTurn.value <= turnIdx;
+  const isLive = () => live && skippingToTurn.value <= turnIdx && isMounted.value;
 
   const playCry = (speciesId: SpeciesId, pitchDown = false) => {
     if (isLive()) {
@@ -693,7 +694,7 @@ const onTurnsReceived = async (count: number) => {
   turnQueue += count;
   isRunningTurn.value = true;
   while (turnQueue) {
-    if (currentTurn >= turns.length) {
+    if (currentTurn >= turns.length || !isMounted.value) {
       turnQueue = 0;
       break;
     }
