@@ -12,9 +12,7 @@ export type Species = {
 
 export type SpeciesId = keyof typeof speciesList;
 
-const createSpeciesList = <T extends Record<string, Species>>(t: T) => Object.freeze(t);
-
-export const speciesList = createSpeciesList({
+export const speciesList = Object.freeze({
   bulbasaur: {
     dexId: 1,
     name: "Bulbasaur",
@@ -5299,4 +5297,4 @@ export const speciesList = createSpeciesList({
     ],
     evolves: false,
   },
-});
+} satisfies Record<string, Species>);

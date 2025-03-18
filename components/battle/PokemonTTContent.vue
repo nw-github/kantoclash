@@ -42,13 +42,13 @@
 import type { Pokemon } from "~/game/pokemon";
 import { speciesList } from "~/game/species";
 import { moveList, getMaxPP } from "~/game/moves";
-import { hpPercentExact } from "~/game/utils";
+import { hpPercentExact, type StatStages } from "~/game/utils";
 import "assets/colors.css";
 
 const props = defineProps<{ active?: ClientActivePokemon; poke: Pokemon }>();
 const species = computed(() => speciesList[props.poke.speciesId]);
 
-const statClass = (stat: "atk" | "def" | "spe" | "spc") => {
+const statClass = (stat: StatStages) => {
   if (!props.active?.stats || props.poke.stats[stat] === props.active.stats[stat]) {
     return "";
   }

@@ -19,6 +19,7 @@ import {
   hpPercent,
   scaleAccuracy255,
   stageMultipliers,
+  stageStatKeys,
   type Stages,
   type Type,
   type VolatileFlag,
@@ -613,7 +614,7 @@ export class ActivePokemon {
     for (const [stat, count] of mods) {
       this.v.stages[stat] = clamp(this.v.stages[stat] + count, -6, 6);
 
-      if (stat === "atk" || stat === "def" || stat == "spc" || stat === "spe") {
+      if (stageStatKeys.includes(stat)) {
         this.applyStages(stat, count < 0);
       }
 

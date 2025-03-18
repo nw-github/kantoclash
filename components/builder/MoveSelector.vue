@@ -60,7 +60,7 @@ const filter = (moves: typeof items, query: string) => {
 
     let subset = all.filter(([id, _]) => !currentMoves.includes(id));
     if (species.value) {
-      subset = subset.filter(([id, _]) => (species.value!.moves as string[]).includes(id));
+      subset = subset.filter(([id, _]) => species.value!.moves.includes(id));
     }
 
     if (subset.length) {

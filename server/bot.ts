@@ -5,7 +5,7 @@ import type { Options, Turn } from "../game/battle";
 import { randoms } from "~/server/utils/formats";
 import { formatInfo, type ClientPlayer } from "~/utils/shared";
 import { Pokemon } from "~/game/pokemon";
-import { clamp, getEffectiveness, type Type } from "../game/utils";
+import { clamp, getEffectiveness } from "../game/utils";
 import random from "random";
 import { convertDesc, parseTeams, type Team } from "~/utils/pokemon";
 import type { FormatId } from "~/utils/data";
@@ -367,7 +367,7 @@ export function rankBot({ team, options, players, activePokemon, opponent: id, m
       // prettier-ignore
       const useless = (move.kind === "confuse" && opponentActive.flags.confused) ||
         (move.kind === "status" && opponentActive.status) ||
-        (id === "leechseed" && (opponentActive.flags.seeded || (opponentPoke.species.types as Type[]).includes("grass"))) ||
+        (id === "leechseed" && (opponentActive.flags.seeded || opponentPoke.species.types.includes("grass"))) ||
         (id === "substitute" && self.flags.substitute) ||
         (move.kind === "stage" && move.acc && opponentActive.flags.substitute);
       if (useless) {

@@ -56,14 +56,7 @@
 import { getCategory, moveList, type MoveId } from "~/game/moves";
 import { Pokemon } from "~/game/pokemon";
 import { type SpeciesId, speciesList } from "~/game/species";
-import {
-  calcDamage,
-  getEffectiveness,
-  hpPercentExact,
-  isSpecial,
-  type Stats,
-  type Type,
-} from "~/game/utils";
+import { calcDamage, getEffectiveness, hpPercentExact, isSpecial, type Stats } from "~/game/utils";
 
 definePageMeta({ middleware: ["admin"] });
 
@@ -145,7 +138,7 @@ const getRolls = (id: MoveId) => {
     def = Math.max(Math.floor(def / 2), 1);
   }
 
-  const isStab = (speciesList[user.value.speciesId].types as Type[]).includes(move.type);
+  const isStab = speciesList[user.value.speciesId].types.includes(move.type);
   const rolls = [];
   for (let rand = 217; rand <= 255; rand++) {
     rolls.push(

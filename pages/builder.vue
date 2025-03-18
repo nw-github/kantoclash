@@ -213,8 +213,8 @@ onMounted(() => {
 
   const format = String(useRoute().query.new_team);
   useRouter().replace({ query: {} });
-  if ((battleFormats as readonly string[]).includes(format)) {
-    newTeam(format as FormatId);
+  if (battleFormats.includes(format)) {
+    newTeam(format);
   }
 });
 

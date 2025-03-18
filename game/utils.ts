@@ -18,8 +18,10 @@ export type Type =
   | "psychic"
   | "dragon";
 export type Stages = (typeof stageKeys)[number];
+export type StatStages = (typeof stageStatKeys)[number];
+
 export type Stats = Record<(typeof statKeys)[number], number>;
-export type StageStats = Record<(typeof stageStatKeys)[number], number>;
+export type StageStats = Record<StatStages, number>;
 
 export const stageStatKeys = ["atk", "def", "spc", "spe"] as const;
 export const statKeys = ["hp", ...stageStatKeys] as const;
@@ -192,3 +194,13 @@ export const typeChart: Record<Type, Partial<Record<Type, number>>> = {
   psychic: { poison: 2, fight: 2, psychic: 0.5 },
   dragon: { dragon: 2 },
 };
+
+declare global {
+  interface ReadonlyArray<T> {
+    includes(x: any): x is T;
+  }
+
+  interface Array<T> {
+    includes(x: any): x is T;
+  }
+}

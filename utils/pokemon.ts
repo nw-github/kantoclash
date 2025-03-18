@@ -105,14 +105,14 @@ export const parsePokemon = (src: string): PokemonDesc => {
       for (const [, v, s] of match[1].matchAll(statRegex)) {
         const value = +v;
         const stat = s.toLowerCase();
-        if (!(statKeys as readonly string[]).includes(stat)) {
+        if (!statKeys.includes(stat)) {
           continue;
         }
 
         if (isEvs) {
-          evs[stat as keyof Stats] = value;
+          evs[stat] = value;
         } else {
-          ivs[stat as keyof Stats] = value;
+          ivs[stat] = value;
         }
       }
     } else if ((match = line.match(moveRegex))) {
@@ -137,8 +137,8 @@ export const parseTeams = (src: string) => {
       name = match[2];
 
       const fmt = match[1]?.trim();
-      if (fmt && (battleFormats as readonly string[]).includes(fmt)) {
-        format = fmt as FormatId;
+      if (fmt && battleFormats.includes(fmt)) {
+        format = fmt;
       } else if (fmt === "gen1ou") {
         format = "g1_standard";
       }
