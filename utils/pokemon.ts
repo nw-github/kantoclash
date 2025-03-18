@@ -1,5 +1,4 @@
-import { moveList, type MoveId } from "~/game/moveList";
-import type { Move } from "~/game/moves";
+import { moveList, type MoveId, type Move } from "~/game/moves";
 import { speciesList, type SpeciesId } from "~/game/species";
 import { statKeys, type Stats } from "~/game/utils";
 import { battleFormats } from "./data";

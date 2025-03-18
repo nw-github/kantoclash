@@ -1,5 +1,5 @@
 import type { BattleEvent, DamageEvent, InfoReason, RecoverEvent } from "~/game/events";
-import type { MoveId } from "~/game/moveList";
+import type { MoveId } from "~/game/moves";
 import type { Status } from "~/game/pokemon";
 
 export type RawUIBattleEvent =

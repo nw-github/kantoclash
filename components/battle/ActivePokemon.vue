@@ -125,10 +125,10 @@
 </style>
 
 <script setup lang="ts">
-import { stageMultipliers } from "@/game/utils";
-import { calcStat, type Pokemon } from "@/game/pokemon";
-import { speciesList } from "@/game/species";
-import { moveList, type MoveId } from "@/game/moveList";
+import { stageMultipliers } from "~/game/utils";
+import { calcStat, type Pokemon } from "~/game/pokemon";
+import { speciesList } from "~/game/species";
+import { moveList, type MoveId } from "~/game/moves";
 import { breakpointsTailwind } from "@vueuse/core";
 
 const { poke, base, back } = defineProps<{

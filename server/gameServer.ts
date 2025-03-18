@@ -441,7 +441,7 @@ export class GameServer extends Server<ClientMessage, ServerMessage> {
         chats: room.chats,
         format: room.format,
         timer: socket.account && room.timerInfo(socket.account),
-        finished: !!room.battle.finished,
+        finished: room.battle.finished,
         battlers: this.getBattlers(room),
       });
     });

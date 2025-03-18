@@ -1,15 +1,7 @@
 import type { Mods } from "~/game/battle";
-import {
-  AlwaysFailMove,
-  ConfusionMove,
-  DamagingMove,
-  RecoveryMove,
-  StageMove,
-  StatusMove,
-} from "~/game/moves";
 import type { Status } from "../game/pokemon";
-import { moveList, type MoveId } from "../game/moveList";
 import type { Stages } from "../game/utils";
+import { moveList, type DamagingMove, type MoveId } from "~/game/moves";
 
 export const randChoice = <T>(arr: T[]) => arr[Math.floor(Math.random() * arr.length)];
 
@@ -138,7 +130,7 @@ const flagDesc: Record<NonNullable<DamagingMove["flag"]>, string> = {
 
 export const describeMove = (id: MoveId) => {
   const move = moveList[id];
-  if (move instanceof DamagingMove) {
+  if (move.kind === "damage") {
     let buf = move.flag && move.flag in flagDesc ? flagDesc[move.flag] : "";
     if (move.effect) {
       const [chance, effect] = move.effect;
@@ -164,18 +156,18 @@ export const describeMove = (id: MoveId) => {
     }
 
     return buf.length ? buf : "No additional effects.";
-  } else if (move instanceof StatusMove) {
+  } else if (move.kind === "status") {
     return statusTable[move.status] + ". ";
-  } else if (move instanceof StageMove) {
+  } else if (move.kind === "stage") {
     const [stat, count] = move.stages[0];
     const target = move.acc ? "target" : "user";
     const raise = count < 0 ? "Drops" : "Raises";
     return `${raise} the ${target}'s ${stageTable[stat]} by ${Math.abs(count)} stage(s). `;
-  } else if (move instanceof ConfusionMove) {
+  } else if (move.kind === "confuse") {
     return "Confuses the target. ";
-  } else if (move instanceof AlwaysFailMove) {
+  } else if (move.kind === "fail") {
     return "Has no effect. ";
-  } else if (move instanceof RecoveryMove) {
+  } else if (move.kind === "recover") {
     if (move.why === "rest") {
       return "The user goes to sleep for two turns, recovering HP and curing status conditions. ";
     } else {

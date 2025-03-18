@@ -25,7 +25,7 @@
           <TypeBadge :type="move.type" image />
         </div>
         <div class="flex items-center">
-          <MoveCategory :category="move.category" image />
+          <MoveCategory :category="getCategory(move)" image />
         </div>
         <div class="flex flex-col w-8">
           <span class="text-[0.6rem] text-center text-gray-400">Power</span>
@@ -43,9 +43,8 @@
 </template>
 
 <script setup lang="ts">
-import type { MoveId } from "@/game/moveList";
-import { speciesList, type Species, type SpeciesId } from "@/game/species";
-import type { Move } from "@/game/moves";
+import { speciesList, type Species, type SpeciesId } from "~/game/species";
+import { getCategory, type Move, type MoveId } from "~/game/moves";
 import { moveListEntries as items } from "#imports";
 
 const query = defineModel<string>({ default: "" });

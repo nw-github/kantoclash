@@ -96,7 +96,7 @@ div {
 </style>
 
 <script setup lang="ts">
-import { moveList } from "~/game/moveList";
+import { moveList } from "~/game/moves";
 import { hpPercentExact } from "~/game/utils";
 
 const { perspective, players, myId, e } = defineProps<{

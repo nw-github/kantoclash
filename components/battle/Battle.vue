@@ -232,12 +232,12 @@
 </style>
 
 <script setup lang="ts">
-import type { Options, Turn } from "@/game/battle";
-import type { Pokemon } from "@/game/pokemon";
-import type { BattleEvent, InfoReason } from "@/game/events";
-import { speciesList, type SpeciesId } from "@/game/species";
-import { clamp } from "@/game/utils";
-import { moveList } from "@/game/moveList";
+import type { Options, Turn } from "~/game/battle";
+import type { Pokemon } from "~/game/pokemon";
+import type { BattleEvent, InfoReason } from "~/game/events";
+import { speciesList, type SpeciesId } from "~/game/species";
+import { clamp } from "~/game/utils";
+import { moveList } from "~/game/moves";
 import type { BattleTimer, InfoRecord } from "~/server/gameServer";
 import type { ActivePokemon } from "#build/components";
 import type { AnimationType } from "./ActivePokemon.vue";

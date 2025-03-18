@@ -38,7 +38,7 @@
 
     <div v-for="[id, move, rolls, min, max] in moves.map(getRolls)" :key="id" class="py-5">
       <div>
-        {{ id }} ({{ move.power ?? 0 }}), {{ move.type }}, {{ move.category }} | {{ min }}% -
+        {{ id }} ({{ move.power ?? 0 }}), {{ move.type }}, {{ getCategory(move) }} | {{ min }}% -
         {{ max }}%
       </div>
       <code class="text-sm">
@@ -53,7 +53,7 @@
 </template>
 
 <script setup lang="ts">
-import { moveList, type MoveId } from "~/game/moveList";
+import { getCategory, moveList, type MoveId } from "~/game/moves";
 import { Pokemon } from "~/game/pokemon";
 import { type SpeciesId, speciesList } from "~/game/species";
 import {

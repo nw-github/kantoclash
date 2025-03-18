@@ -140,6 +140,22 @@ export const stageMultipliers: Record<number, number> = {
   6: 400,
 };
 
+export const randChoiceWeighted = <T>(rng: Random, arr: T[], weights: number[]) => {
+  let i;
+  for (i = 1; i < weights.length; i++) {
+    weights[i] += weights[i - 1];
+  }
+
+  const random = rng.float() * weights.at(-1)!;
+  for (i = 0; i < weights.length; i++) {
+    if (weights[i] > random) {
+      break;
+    }
+  }
+
+  return arr[i];
+};
+
 export const typeChart: Record<Type, Partial<Record<Type, number>>> = {
   normal: { ghost: 0, rock: 0.5 },
   rock: { bug: 2, fire: 2, flying: 2, ice: 2, fight: 0.5, ground: 0.5 },

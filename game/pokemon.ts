@@ -1,4 +1,4 @@
-import { moveList, type MoveId } from "./moveList";
+import { getMaxPP, moveList, type MoveId } from "./moves";
 import { speciesList, type SpeciesId } from "./species";
 import type { StageStats, Stats } from "./utils";
 
@@ -40,7 +40,7 @@ export class Pokemon {
     this.speciesId = speciesId;
     this.name = name || this.species.name;
     this.moves = moves;
-    this.pp = moves.map(move => moveList[move].pp);
+    this.pp = moves.map(move => getMaxPP(moveList[move]));
     this.level = level;
     // https://bulbapedia.bulbagarden.net/wiki/Individual_values#Usage
     this.stats = {

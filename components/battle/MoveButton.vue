@@ -12,7 +12,9 @@
         </div>
         <span class="text-sm sm:text-base truncate">{{ move.name }}</span>
       </div>
-      <span class="text-xs">{{ option.pp !== undefined ? option.pp : "--" }}/{{ move.pp }}</span>
+      <span class="text-xs">
+        {{ option.pp !== undefined ? option.pp : "--" }}/{{ getMaxPP(move) }}
+      </span>
     </UButton>
 
     <template #panel>
@@ -34,7 +36,7 @@
         <li class="pt-3">{{ describeMove(option.move) }}</li>
         <li class="pt-3 space-x-1 flex">
           <TypeBadge :type="move.type" />
-          <MoveCategory :category="move.category" />
+          <MoveCategory :category="getCategory(move)" />
         </li>
       </ul>
     </template>
@@ -42,8 +44,8 @@
 </template>
 
 <script setup lang="ts">
-import type { MoveOption } from "@/game/battle";
-import { moveList } from "@/game/moveList";
+import type { MoveOption } from "~/game/battle";
+import { getCategory, getMaxPP, moveList } from "~/game/moves";
 
 defineEmits<{ (e: "click"): void }>();
 

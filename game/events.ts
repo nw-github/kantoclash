@@ -1,5 +1,5 @@
 import type { VolatileStats } from "./battle";
-import type { MoveId } from "./moveList";
+import type { MoveId } from "./moves";
 import type { Status } from "./pokemon";
 import type { SpeciesId } from "./species";
 import type { Stages, Type, VolatileFlag } from "./utils";

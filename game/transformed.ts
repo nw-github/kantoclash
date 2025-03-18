@@ -1,4 +1,4 @@
-import type { MoveId } from "./moveList";
+import type { MoveId } from "./moves";
 import type { Pokemon } from "./pokemon";
 import type { Stats } from "./utils";
 

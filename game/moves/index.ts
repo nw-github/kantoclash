@@ -1,9 +1,76 @@
-export * from "./unique";
-export * from "./bflag";
-export * from "./confusion";
+import type { ActivePokemon, Battle } from "../battle";
+import type { FailReason, RecoveryReason } from "../events";
+import type { Pokemon, Status } from "../pokemon";
+import type { Stages, Type, VolatileFlag } from "../utils";
+import type { DamagingMove } from "./damaging";
+
 export * from "./damaging";
-export * from "./fail";
-export * from "./recovery";
-export * from "./stage";
-export * from "./status";
-export * from "./move";
+export * from "./functions";
+export * from "./moveList";
+
+export interface BaseMove {
+  readonly name: string;
+  readonly pp: number;
+  readonly type: Type;
+  readonly acc?: number;
+  readonly priority?: number;
+  readonly power?: number;
+}
+
+export interface DefaultMove extends BaseMove {
+  readonly kind: "default";
+}
+
+export interface CustomMove extends BaseMove {
+  readonly kind?: never;
+
+  use?(battle: Battle, user: ActivePokemon, target: ActivePokemon, moveIndex?: number): boolean;
+  exec(battle: Battle, user: ActivePokemon, target: ActivePokemon, moveIndex?: number): boolean;
+}
+
+export interface VolatileFlagMove extends BaseMove {
+  readonly kind: "volatile";
+  readonly flag: VolatileFlag;
+}
+
+export interface ConfuseMove extends BaseMove {
+  readonly kind: "confuse";
+}
+
+export interface RecoveryMove extends BaseMove {
+  readonly kind: "recover";
+  readonly why: RecoveryReason;
+}
+
+export interface StageMove extends BaseMove {
+  readonly kind: "stage";
+  readonly stages: [Stages, number][];
+}
+
+export interface StatusMove extends BaseMove {
+  readonly kind: "status";
+  readonly status: Status;
+}
+
+export interface SwitchMove extends BaseMove {
+  readonly kind: "switch";
+  readonly poke: Pokemon;
+  readonly priority: 2;
+}
+
+export interface FailMove extends BaseMove {
+  readonly kind: "fail";
+  readonly why: FailReason;
+}
+
+export type Move =
+  | CustomMove
+  | VolatileFlagMove
+  | ConfuseMove
+  | DamagingMove
+  | RecoveryMove
+  | StageMove
+  | StatusMove
+  | SwitchMove
+  | FailMove
+  | DefaultMove;

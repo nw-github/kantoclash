@@ -9,8 +9,7 @@ import { clamp, getEffectiveness, type Type } from "../game/utils";
 import random from "random";
 import { convertDesc, parseTeams, type Team } from "~/utils/pokemon";
 import type { FormatId } from "~/utils/data";
-import { type MoveId, moveList } from "~/game/moveList";
-import { ConfusionMove, RecoveryMove, StageMove, StatusMove } from "~/game/moves";
+import { type MoveId, moveList } from "~/game/moves";
 
 export type BotParams = {
   team: Pokemon[];
@@ -53,7 +52,9 @@ export async function startBot(format?: FormatId, botFunction: BotFunction = ran
           return;
         }
 
-        $conn.emit("startTimer", roomId, () => {});
+        if (!import.meta.dev) {
+          $conn.emit("startTimer", roomId, () => {});
+        }
 
         console.log(`[${name}] found a match for '${resp.format}': ${roomId}`);
         playGame(roomId, resp, botFunction, () => {
@@ -354,7 +355,7 @@ export function rankBot({ team, options, players, activePokemon, opponent: id, m
       } else if (eff === 0) {
         return 0;
       }
-    } else if (move instanceof RecoveryMove) {
+    } else if (move.kind === "recover") {
       if (self.hpPercent === 100) {
         return 0;
       } else if (self.hpPercent <= 25) {
@@ -364,11 +365,11 @@ export function rankBot({ team, options, players, activePokemon, opponent: id, m
       }
     } else {
       // prettier-ignore
-      const useless = (move instanceof ConfusionMove && opponentActive.flags.confused) ||
-        (move instanceof StatusMove && opponentActive.status) ||
+      const useless = (move.kind === "confuse" && opponentActive.flags.confused) ||
+        (move.kind === "status" && opponentActive.status) ||
         (id === "leechseed" && (opponentActive.flags.seeded || (opponentPoke.species.types as Type[]).includes("grass"))) ||
         (id === "substitute" && self.flags.substitute) ||
-        (move instanceof StageMove && move.acc && opponentActive.flags.substitute);
+        (move.kind === "stage" && move.acc && opponentActive.flags.substitute);
       if (useless) {
         return 0;
       }

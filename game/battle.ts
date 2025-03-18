@@ -9,8 +9,7 @@ import type {
   InfoReason,
   VictoryEvent,
 } from "./events";
-import { moveList, type MoveId } from "./moveList";
-import { DamagingMove, Move } from "./moves";
+import { moveList, type MoveId, type Move } from "./moves";
 import type { Pokemon, Status } from "./pokemon";
 import { TransformedPokemon } from "./transformed";
 import {
@@ -18,11 +17,14 @@ import {
   clamp,
   floatTo255,
   hpPercent,
+  scaleAccuracy255,
   stageMultipliers,
   type Stages,
   type Type,
   type VolatileFlag,
 } from "./utils";
+import { getDamageVariables } from "./moves/damaging";
+import { moveFunctions } from "./moves/functions";
 
 export type MoveOption = {
   move: MoveId;
@@ -37,21 +39,6 @@ type ChosenMove = {
   indexInMoves?: number;
   user: ActivePokemon;
 };
-
-class SwitchMove extends Move {
-  constructor(readonly poke: Pokemon) {
-    super("", 0, "normal", undefined, +2);
-  }
-
-  override use(battle: Battle, user: ActivePokemon) {
-    return this.execute(battle, user);
-  }
-
-  override execute(battle: Battle, user: ActivePokemon) {
-    user.switchTo(this.poke, battle);
-    return false;
-  }
-}
 
 export type Options = NonNullable<Player["options"]>;
 
@@ -105,7 +92,17 @@ export class Player {
       }
     }
 
-    this.choice = { move: new SwitchMove(poke), user: this.active };
+    this.choice = {
+      move: {
+        kind: "switch",
+        type: "normal",
+        name: "",
+        pp: 0,
+        priority: 2,
+        poke,
+      },
+      user: this.active,
+    };
     return true;
   }
 
@@ -224,8 +221,8 @@ export class Battle {
 
     let skipEnd = false;
     for (const choice of choices) {
-      if (choice.move instanceof SwitchMove) {
-        choice.move.use(this, choice.user);
+      if (choice.move.kind === "switch") {
+        this.callUseMove(choice.move, choice.user, choice.user);
         continue;
       }
 
@@ -306,6 +303,23 @@ export class Battle {
     return { events: this.events.splice(0), switchTurn: false };
   }
 
+  callUseMove(move: Move, user: ActivePokemon, target: ActivePokemon, moveIndex?: number) {
+    if (!move.kind && move.use) {
+      return move.use(this, user, target, moveIndex);
+    } else {
+      const use = (move.kind && moveFunctions[move.kind].use) ?? moveFunctions.default.use;
+      return use!.call(move, this, user, target, moveIndex);
+    }
+  }
+
+  callExecMove(move: Move, user: ActivePokemon, target: ActivePokemon, moveIndex?: number) {
+    if (!move.kind) {
+      return move.exec(this, user, target, moveIndex);
+    } else {
+      return moveFunctions[move.kind].exec.call(move, this, user, target, moveIndex);
+    }
+  }
+
   private tryUseMove({ move, user, indexInMoves }: ChosenMove, target: ActivePokemon) {
     // Order of events comes from here:
     //  https://www.smogon.com/forums/threads/past-gens-research-thread.3506992/#post-5878612
@@ -373,11 +387,30 @@ export class Battle {
       return false;
     }
 
-    return move.use(this, user, target, indexInMoves);
+    return this.callUseMove(move, user, target, indexInMoves);
   }
 
   rand255(num: number) {
     return this.rng.int(0, 255) < Math.min(num, 255);
+  }
+
+  checkAccuracy(move: Move, user: ActivePokemon, target: ActivePokemon) {
+    if (!move.acc) {
+      return true;
+    }
+
+    const chance = scaleAccuracy255(user.v.thrashing?.acc ?? floatTo255(move.acc), user, target);
+    // https://www.smogon.com/dex/rb/moves/petal-dance/
+    // https://www.youtube.com/watch?v=NC5gbJeExbs
+    if (user.v.thrashing) {
+      user.v.thrashing.acc = chance;
+    }
+
+    if (target.v.invuln || !this.rand255(chance)) {
+      this.info(user, "miss");
+      return false;
+    }
+    return true;
   }
 
   static censorEvents(events: BattleEvent[], player?: Player) {
@@ -660,7 +693,7 @@ export class ActivePokemon {
   }
 
   handleConfusionDamage(battle: Battle, target: ActivePokemon) {
-    const [atk, def] = DamagingMove.getDamageVariables(false, target, target, false);
+    const [atk, def] = getDamageVariables(false, target, target, false);
     const dmg = calcDamage({
       lvl: this.base.level,
       pow: 40,

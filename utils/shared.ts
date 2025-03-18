@@ -2,7 +2,7 @@ import type { Status } from "~/game/pokemon";
 import type { Mods, VolatileStats } from "../game/battle";
 import type { SpeciesId } from "../game/species";
 import { volatileFlags, type Stages, type Type } from "../game/utils";
-import type { MoveId } from "~/game/moveList";
+import type { MoveId } from "~/game/moves";
 
 export const clientVolatiles = [...volatileFlags, "substitute", "confused", "disabled"] as const;
 export type ClientVolatileFlag = (typeof clientVolatiles)[number];

@@ -1,4 +1,4 @@
-import type { MoveId } from "./moveList";
+import type { MoveId } from "./moves";
 import type { Stats, Type } from "./utils";
 
 export type Species = {

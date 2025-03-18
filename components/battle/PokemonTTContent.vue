@@ -32,17 +32,17 @@
 
     <ul class="pl-10 list-disc">
       <li v-for="(move, i) in poke.moves" :key="move">
-        {{ moveList[move].name }} ({{ poke.pp[i] }}/{{ moveList[move].pp }})
+        {{ moveList[move].name }} ({{ poke.pp[i] }}/{{ getMaxPP(moveList[move]) }})
       </li>
     </ul>
   </div>
 </template>
 
 <script setup lang="ts">
-import type { Pokemon } from "../../game/pokemon";
-import { speciesList } from "../../game/species";
-import { moveList } from "../../game/moveList";
-import { hpPercentExact } from "../../game/utils";
+import type { Pokemon } from "~/game/pokemon";
+import { speciesList } from "~/game/species";
+import { moveList, getMaxPP } from "~/game/moves";
+import { hpPercentExact } from "~/game/utils";
 import "assets/colors.css";
 
 const props = defineProps<{ active?: ClientActivePokemon; poke: Pokemon }>();
