@@ -935,7 +935,7 @@
     ],
     "evolvesFrom": "sandshrew"
   },
-  "nidoranf": {
+  "nidoran-f": {
     "dexId": 29,
     "name": "Nidoran♀️",
     "types": ["poison"],
@@ -1053,7 +1053,7 @@
     ],
     "evolvesFrom": "nidorina"
   },
-  "nidoranm": {
+  "nidoran-m": {
     "dexId": 32,
     "name": "Nidoran♂️",
     "types": ["poison"],
@@ -4390,7 +4390,7 @@
     ],
     "evolvesFrom": "staryu"
   },
-  "mrmime": {
+  "mr-mime": {
     "dexId": 122,
     "name": "Mr. Mime",
     "types": ["psychic"],
@@ -5762,7 +5762,7 @@
     "genderRatio": 100
   },
   "happiny": { "evolvesTo": "chansey" },
-  "mimejr": { "evolvesTo": "mrmime" },
+  "mime-jr": { "evolvesTo": "mr-mime" },
   "smoochum": {
     "evolvesTo": "jynx",
     "dexId": 238,

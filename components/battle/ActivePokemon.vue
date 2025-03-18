@@ -50,10 +50,10 @@
         <UPopover mode="hover" :popper="{ placement: 'top' }">
           <div ref="sprite" class="sprite z-20" :class="{ back, front: !back, invisible: !poke }">
             <Sprite
-              :species
+              :species="poke?.transformed ?? poke?.speciesId"
               :substitute="poke?.flags.substitute"
-              :kind="back ? 'back' : 'front'"
               :scale="lessThanSm ? 1 : 2"
+              :back
             />
           </div>
 

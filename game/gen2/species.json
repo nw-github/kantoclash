@@ -1308,7 +1308,7 @@
     ],
     "genderRatio": 50
   },
-  "nidoranf": {
+  "nidoran-f": {
     "stats": { "hp": 55, "atk": 47, "def": 52, "spa": 40, "spd": 40, "spe": 41 },
     "moves": [
       "scratch",
@@ -1486,7 +1486,7 @@
       "furyswipes"
     ]
   },
-  "nidoranm": {
+  "nidoran-m": {
     "stats": { "hp": 46, "atk": 57, "def": 40, "spa": 40, "spd": 40, "spe": 50 },
     "moves": [
       "doublekick",
@@ -6359,7 +6359,7 @@
       "hydropump"
     ]
   },
-  "mrmime": {
+  "mr-mime": {
     "stats": { "hp": 40, "atk": 45, "def": 65, "spa": 100, "spd": 120, "spe": 90 },
     "moves": [
       "doubleslap",
@@ -6425,7 +6425,7 @@
       "futuresight"
     ],
     "genderRatio": 50,
-    "evolvesFrom": "mimejr"
+    "evolvesFrom": "mime-jr"
   },
   "scyther": {
     "stats": { "hp": 70, "atk": 110, "def": 80, "spa": 55, "spd": 80, "spe": 105 },

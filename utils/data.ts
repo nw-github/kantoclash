@@ -1,8 +1,8 @@
-import { moveList } from "~/game/moves";
-import { speciesList } from "~/game/species";
+import { moveList, type Move, type MoveId } from "~/game/moves";
+import { speciesList, type Species, type SpeciesId } from "~/game/species";
 
-export const speciesListEntries = Object.entries(speciesList);
-export const moveListEntries = Object.entries(moveList);
+export const speciesListEntries = Object.entries(speciesList) as [SpeciesId, Species][];
+export const moveListEntries = Object.entries(moveList) as [MoveId, Move][];
 
 export const battleFormats = [
   "g1_standard",

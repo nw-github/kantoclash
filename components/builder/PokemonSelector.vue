@@ -14,18 +14,13 @@
         tabindex="0"
         @focus="open = true"
       >
-        <Sprite
-          :species="speciesList[model as SpeciesId]"
-          :scale="2"
-          kind="front"
-          @click="open = true"
-        />
+        <Sprite :species="(model as SpeciesId)" :scale="2" @click="open = true" />
       </div>
     </div>
 
-    <template #item="{ item: [, species] }">
+    <template #item="{ item: [id, species] }">
       <div class="flex items-center gap-1">
-        <Sprite :species kind="box" :scale="1" />
+        <BoxSprite :species="id" />
         <span class="text-xs sm:text-sm truncate" :class="[isIllegal(species) && 'text-red-500']">
           {{ species.name }}
         </span>
@@ -59,7 +54,7 @@
 </template>
 
 <script setup lang="ts">
-import { speciesList, type Species, type SpeciesId } from "@/game/species";
+import type { Species, SpeciesId } from "@/game/species";
 import { gen1StatKeys } from "@/game/utils";
 import { speciesListEntries as items } from "#imports";
 
@@ -72,15 +67,23 @@ const filter = (species: typeof items, query: string) => {
   const all = species.filter(([id, _]) => id.includes(q));
   const currentSpecies = team.pokemon.map(p => normalizeName(p.species));
   let subset = all.filter(([id, _]) => !currentSpecies.includes(id));
+  if (team.format.startsWith("g1")) {
+    subset = subset.filter(([_, species]) => species.dexId <= 151);
+  }
   if (team.format === "g1_nfe") {
     subset = subset.filter(([_, species]) => species.evolvesTo);
   }
   return subset.length ? subset : all;
 };
 
-const onChoose = ([id, _]: [string, Species]) => (model.value = id);
+const onChoose = ([id, _]: [SpeciesId, Species]) => (model.value = id);
 
 const isIllegal = (species: Species) => {
-  return team.format === "g1_nfe" ? !species.evolvesTo : false;
+  if (team.format.startsWith("g1") && species.dexId > 151) {
+    return true;
+  } else if (team.format === "g1_nfe") {
+    return !species.evolvesTo;
+  }
+  return false;
 };
 </script>

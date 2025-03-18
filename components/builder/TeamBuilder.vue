@@ -60,12 +60,8 @@
           }"
         >
           <template #default="{ item }">
-            <div class="size-[48px] m-1">
-              <Sprite
-                :species="(speciesList as Record<string, Species>)[item.species]"
-                :scale="2"
-                kind="box"
-              />
+            <div class="size-[64px] m-1">
+              <BoxSprite :species="item.species" :scale="2" />
             </div>
           </template>
         </UTabs>
@@ -80,11 +76,7 @@
         >
           <template #default="{ item }">
             <div class="size-[32px] m-1 flex items-center">
-              <Sprite
-                :species="(speciesList as Record<string, Species>)[item.species]"
-                :scale="1"
-                kind="box"
-              />
+              <BoxSprite :species="item.species" />
             </div>
           </template>
         </UTabs>

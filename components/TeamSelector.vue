@@ -13,13 +13,12 @@
         <div>
           <span class="truncate text-xs sm:text-base">{{ team.name }}</span>
 
-          <div class="flex justify-center">
-            <Sprite
+          <div class="flex justify-center pb-1">
+            <BoxSprite
               v-for="(poke, i) in team.pokemon"
               :key="i"
-              :species="(speciesList as Record<string, Species>)[poke.species]"
+              :species="poke.species"
               :scale="lessThanSm ? 1 : 1.2"
-              kind="box"
             />
           </div>
         </div>
@@ -43,7 +42,6 @@
 
 <script setup lang="ts">
 import { breakpointsTailwind } from "@vueuse/core";
-import { speciesList, type Species } from "~/game/species";
 
 const selectTeamMenu = ref<HTMLDivElement>();
 const model = defineModel<Team | undefined>();

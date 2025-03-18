@@ -115,12 +115,11 @@
             </div>
           </div>
           <div class="flex justify-center">
-            <Sprite
+            <BoxSprite
               v-for="(poke, j) in team.pokemon"
               :key="j"
-              :species="(speciesList as Record<string, Species>)[poke.species]"
+              :species="(poke.species as SpeciesId)"
               :scale="isXS ? 1.5 : 2"
-              kind="box"
             />
           </div>
         </div>
@@ -176,7 +175,7 @@
 
 <script setup lang="ts">
 import { breakpointsTailwind } from "@vueuse/core";
-import { speciesList, type Species } from "~/game/species";
+import type { SpeciesId } from "~/game/species";
 
 const toast = useToast();
 const myTeams = useMyTeams();
