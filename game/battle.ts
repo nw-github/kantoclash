@@ -9,7 +9,7 @@ import type {
   InfoReason,
   VictoryEvent,
 } from "./events";
-import { moveList, type MoveId, type Move } from "./moves";
+import { moveList, type MoveId, type Move, getDamageVariables, moveFunctions } from "./moves";
 import type { Pokemon, Status } from "./pokemon";
 import { TransformedPokemon } from "./transformed";
 import {
@@ -25,8 +25,6 @@ import {
   type Type,
   type VolatileFlag,
 } from "./utils";
-import { getDamageVariables } from "./moves/damaging";
-import { moveFunctions } from "./moves/functions";
 
 export type MoveOption = {
   move: MoveId;

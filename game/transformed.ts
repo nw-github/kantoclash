@@ -52,4 +52,12 @@ export class TransformedPokemon {
   get species() {
     return this.base.species;
   }
+
+  get shiny() {
+    return this.base.shiny;
+  }
+
+  get gender() {
+    return this.base.gender;
+  }
 }

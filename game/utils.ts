@@ -16,7 +16,9 @@ export type Type =
   | "electric"
   | "ice"
   | "psychic"
-  | "dragon";
+  | "dragon"
+  | "dark"
+  | "steel";
 export type Stages = (typeof stageKeys)[number];
 export type StatStages = (typeof stageStatKeys)[number];
 
@@ -100,7 +102,7 @@ export const calcDamage = ({
   return idiv(dmg * r, 255);
 };
 
-export const getEffectiveness = (atk: Type, def: Type[]) => {
+export const getEffectiveness = (atk: Type, def: readonly Type[]) => {
   return def.reduce((eff, def) => eff * (typeChart[atk][def] ?? 1), 1);
 };
 
@@ -114,6 +116,7 @@ export const isSpecial = (atk: Type) => {
     case "bug":
     case "flying":
     case "fight":
+    case "steel":
       return false;
     case "water":
     case "grass":
@@ -122,6 +125,7 @@ export const isSpecial = (atk: Type) => {
     case "ice":
     case "psychic":
     case "dragon":
+    case "dark":
       return true;
   }
 };
@@ -144,7 +148,7 @@ export const stageMultipliers: Record<number, number> = {
   6: 400,
 };
 
-export const randChoiceWeighted = <T>(rng: Random, arr: T[], weights: number[]) => {
+export const randChoiceWeighted = <T>(rng: Random, arr: readonly T[], weights: number[]) => {
   let i;
   for (i = 1; i < weights.length; i++) {
     weights[i] += weights[i - 1];
@@ -160,14 +164,41 @@ export const randChoiceWeighted = <T>(rng: Random, arr: T[], weights: number[]) 
   return arr[i];
 };
 
+// TODO: better typing
+export const mergeObjects = <T extends Record<any, any>>(
+  base: T,
+  patch: Record<any, any>,
+  deep: boolean,
+) => {
+  const output: Partial<T> = {};
+  for (const k in base) {
+    if (!deep || !patch[k] || typeof patch[k] !== "object") {
+      output[k] = patch[k] ?? base[k];
+    } else {
+      output[k] = mergeObjects(patch[k], base[k], true);
+    }
+  }
+  return output as T;
+};
+
 export const typeChart: Record<Type, Partial<Record<Type, number>>> = {
-  normal: { ghost: 0, rock: 0.5 },
-  rock: { bug: 2, fire: 2, flying: 2, ice: 2, fight: 0.5, ground: 0.5 },
-  ground: { rock: 2, poison: 2, bug: 0.5, flying: 0, grass: 0.5, fire: 2, electric: 2 },
-  ghost: { normal: 0, ghost: 2, psychic: 0 },
-  poison: { rock: 0.5, ground: 0.5, ghost: 0.5, grass: 2, bug: 2, poison: 0.5 },
-  bug: { ghost: 0.5, flying: 0.5, fight: 0.5, grass: 2, fire: 0.5, psychic: 2, poison: 2 },
-  flying: { rock: 0.5, bug: 2, fight: 2, grass: 2, electric: 0.5 },
+  normal: { ghost: 0, rock: 0.5, steel: 0.5 },
+  rock: { bug: 2, fire: 2, flying: 2, ice: 2, fight: 0.5, ground: 0.5, steel: 0.5 },
+  ground: { rock: 2, poison: 2, bug: 0.5, flying: 0, grass: 0.5, fire: 2, electric: 2, steel: 2 },
+  ghost: { normal: 0, ghost: 2, psychic: 0, dark: 0.5, steel: 0.5 },
+  poison: { rock: 0.5, ground: 0.5, ghost: 0.5, grass: 2, bug: 2, poison: 0.5, steel: 0 },
+  bug: {
+    ghost: 0.5,
+    flying: 0.5,
+    fight: 0.5,
+    grass: 2,
+    fire: 0.5,
+    psychic: 2,
+    poison: 2,
+    dark: 2,
+    steel: 0.5,
+  },
+  flying: { rock: 0.5, bug: 2, fight: 2, grass: 2, electric: 0.5, steel: 0.5 },
   fight: {
     normal: 2,
     rock: 2,
@@ -177,6 +208,8 @@ export const typeChart: Record<Type, Partial<Record<Type, number>>> = {
     flying: 0.5,
     ice: 2,
     psychic: 0.5,
+    dark: 2,
+    steel: 2,
   },
   water: { rock: 2, ground: 2, water: 0.5, grass: 0.5, fire: 2, dragon: 0.5 },
   grass: {
@@ -189,12 +222,15 @@ export const typeChart: Record<Type, Partial<Record<Type, number>>> = {
     fire: 0.5,
     dragon: 0.5,
     grass: 0.5,
+    steel: 0.5,
   },
-  fire: { rock: 0.5, bug: 2, water: 0.5, grass: 2, fire: 0.5, ice: 2, dragon: 0.5 },
+  fire: { rock: 0.5, bug: 2, water: 0.5, grass: 2, fire: 0.5, ice: 2, dragon: 0.5, steel: 2 },
   electric: { ground: 0, flying: 2, water: 2, grass: 0.5, electric: 0.5, dragon: 0.5 },
-  ice: { ground: 2, flying: 2, water: 0.5, grass: 2, ice: 0.5, dragon: 2 },
-  psychic: { poison: 2, fight: 2, psychic: 0.5 },
-  dragon: { dragon: 2 },
+  ice: { ground: 2, flying: 2, water: 0.5, grass: 2, ice: 0.5, dragon: 2, steel: 0.5 },
+  psychic: { poison: 2, fight: 2, psychic: 0.5, steel: 0.5, dark: 0 },
+  dragon: { dragon: 2, steel: 0.5 },
+  dark: { ghost: 2, fight: 0.5, psychic: 2, dark: 0.5, steel: 0.5 },
+  steel: { rock: 2, water: 0.5, fire: 0.5, electric: 0.5, ice: 2, steel: 0.5 },
 };
 
 declare global {

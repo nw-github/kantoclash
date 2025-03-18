@@ -35,7 +35,7 @@ const getRandomPokemon = (
 
 const getRandomMoves = (
   count: number,
-  moves: MoveId[],
+  moves: readonly MoveId[],
   validMove: (m: Move, id: MoveId) => boolean,
 ) => {
   return moves
@@ -136,7 +136,7 @@ export const formatDescs: Record<FormatId, FormatDesc> = {
     chooseLead: true,
     validate(team) {
       return validateTeam(team, (poke, addProblem) => {
-        if (!poke.species.evolves) {
+        if (!poke.species.evolvesTo) {
           addProblem(`'${poke.species.name}' cannot be used in NFE format (it does not evolve)`);
         }
       });
@@ -146,7 +146,7 @@ export const formatDescs: Record<FormatId, FormatDesc> = {
     generate() {
       return getRandomPokemon(
         6,
-        s => !s.evolves,
+        s => !s.evolvesTo,
         (_, id) =>
           new Pokemon(
             id,
@@ -164,19 +164,19 @@ export const formatDescs: Record<FormatId, FormatDesc> = {
   },
   g1_randoms: {
     generate() {
-      return randoms((s, id) => !s.evolves && id !== "mewtwo");
+      return randoms((s, id) => !s.evolvesTo && id !== "mewtwo");
     },
   },
   g1_randoms_nfe: {
     generate() {
-      return randoms((s, id) => s.evolves && !uselessNfe.has(id));
+      return randoms((s, id) => !!s.evolvesTo && !uselessNfe.has(id));
     },
   },
   g1_metronome: {
     generate() {
       return getRandomPokemon(
         6,
-        s => !s.evolves,
+        s => !s.evolvesTo,
         (_, id) => new Pokemon(id, {}, {}, 100, ["metronome"]),
       );
     },

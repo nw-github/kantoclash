@@ -1,5 +1,26 @@
 <template>
   <div class="overflow-y-auto h-full overflow-x-hidden p-2">
+    <code>
+      {{ getHiddenPower(dvs) }}
+    </code>
+
+    <div class="pb-10 flex gap-1">
+      <UFormGroup label="Atk">
+        <NumericInput v-model="dvs.atk" :min="0" :max="15" />
+      </UFormGroup>
+      <UFormGroup label="Def">
+        <NumericInput v-model="dvs.def" :min="0" :max="15" />
+      </UFormGroup>
+
+      <UFormGroup label="Spa">
+        <NumericInput v-model="dvs.spa" :min="0" :max="15" />
+      </UFormGroup>
+
+      <UFormGroup label="Spe">
+        <NumericInput v-model="dvs.spe" :min="0" :max="15" />
+      </UFormGroup>
+    </div>
+
     <div class="flex justify-between gap-2">
       <USelectMenu
         v-model="userSpecies"
@@ -54,11 +75,20 @@
 
 <script setup lang="ts">
 import { getCategory, moveList, type MoveId } from "~/game/moves";
-import { Pokemon } from "~/game/pokemon";
+import { getHiddenPower, Pokemon } from "~/game/pokemon";
 import { type SpeciesId, speciesList } from "~/game/species";
-import { calcDamage, getEffectiveness, hpPercentExact, isSpecial, type Stats } from "~/game/utils";
+import {
+  calcDamage,
+  getEffectiveness,
+  hpPercentExact,
+  isSpecial,
+  type StageStats,
+  type Stats,
+} from "~/game/utils";
 
 definePageMeta({ middleware: ["admin"] });
+
+const dvs = reactive<Partial<StageStats>>({ atk: 15, def: 15, spa: 15, spe: 15 });
 
 const allMoves = Object.keys(moveList) as MoveId[];
 const allSpecies = Object.keys(speciesList) as MoveId[];

@@ -309,7 +309,7 @@ export function createBotTeam(format: FormatId) {
     if (format === "g1_standard") {
       team = random.choice(ouTeams)!.pokemon.map(convertDesc);
     } else {
-      team = randoms(s => (format === "g1_nfe") === s.evolves).map(
+      team = randoms(s => (format === "g1_nfe") === s.evolvesTo).map(
         ({ moves, speciesId: species, level }) => ({ dvs: {}, statexp: {}, level, species, moves }),
       );
     }
