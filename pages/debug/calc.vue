@@ -126,8 +126,8 @@ const getRolls = (id: MoveId) => {
   }
 
   const eff = getEffectiveness(move.type, speciesList[target.value.speciesId].types);
-  let atk = getStat(user.value, isSpecial(move.type) ? "spc" : "atk");
-  let def = getStat(target.value, isSpecial(move.type) ? "spc" : "def");
+  let atk = getStat(user.value, isSpecial(move.type) ? "spa" : "atk");
+  let def = getStat(target.value, isSpecial(move.type) ? "spa" : "def");
   if (atk >= 256 || def >= 256) {
     atk = Math.max(Math.floor(atk / 4) % 256, 1);
     // defense doesn't get capped here on cart, potentially causing divide by 0

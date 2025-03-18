@@ -21,6 +21,7 @@ import {
   stageMultipliers,
   stageStatKeys,
   type Stages,
+  type StatStages,
   type Type,
   type VolatileFlag,
 } from "./utils";
@@ -426,7 +427,7 @@ export class Battle {
         // FIXME: this might not be accurate if two status moves were used in the same turn.
         result[i] = {
           ...e,
-          stats: player ? { ...player.active.v.stats } : { atk: 0, def: 0, spc: 0, spe: 0 },
+          stats: player ? { ...player.active.v.stats } : { atk: 0, def: 0, spa: 0, spd: 0, spe: 0 },
         };
       }
     }
@@ -810,8 +811,8 @@ export class ActivePokemon {
 export type VolatileStats = Volatiles["stats"];
 
 class Volatiles {
-  readonly stages = { atk: 0, def: 0, spc: 0, spe: 0, acc: 0, eva: 0 };
-  stats;
+  readonly stages = { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0 };
+  stats: Record<StatStages, number>;
   types: Type[];
   flags: Partial<Record<VolatileFlag, boolean>> = {};
   substitute = 0;
@@ -837,7 +838,8 @@ class Volatiles {
     this.stats = {
       atk: base.stats.atk,
       def: base.stats.def,
-      spc: base.stats.spc,
+      spa: base.stats.spa,
+      spd: base.stats.spd,
       spe: base.stats.spe,
     };
   }

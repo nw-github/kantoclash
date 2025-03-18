@@ -303,9 +303,9 @@ export function getDamageVariables(
   target: ActivePokemon,
   isCrit: boolean,
 ) {
-  const [atks, defs] = special ? (["spc", "spc"] as const) : (["atk", "def"] as const);
+  const [atks, defs] = special ? (["spa", "spa"] as const) : (["atk", "def"] as const);
 
-  const ls = atks === "spc" && target.v.flags.light_screen;
+  const ls = atks === "spa" && target.v.flags.light_screen;
   const reflect = atks === "atk" && target.v.flags.reflect;
 
   let atk = user.getStat(atks, isCrit);

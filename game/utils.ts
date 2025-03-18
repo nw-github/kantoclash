@@ -23,9 +23,11 @@ export type StatStages = (typeof stageStatKeys)[number];
 export type Stats = Record<(typeof statKeys)[number], number>;
 export type StageStats = Record<StatStages, number>;
 
-export const stageStatKeys = ["atk", "def", "spc", "spe"] as const;
+export const stageStatKeys = ["atk", "def", "spa", "spd", "spe"] as const;
 export const statKeys = ["hp", ...stageStatKeys] as const;
 export const stageKeys = [...stageStatKeys, "acc", "eva"] as const;
+
+export const gen1StatKeys = statKeys.filter(k => k !== "spd");
 
 export type VolatileFlag = (typeof volatileFlags)[number];
 

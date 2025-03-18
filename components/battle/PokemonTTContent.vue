@@ -21,10 +21,10 @@
 
     <div class="flex gap-1">
       <template v-for="(val, stat) in poke.stats">
-        <template v-if="stat !== 'hp'">
+        <template v-if="stat !== 'hp' && stat !== 'spd'">
           <UBadge :key="stat" color="black" :class="statClass(stat)">
             <span>{{ active?.stats?.[stat] ?? val }}</span>
-            {{ toTitleCase(stat) }}
+            {{ statShortName[stat] }}
           </UBadge>
         </template>
       </template>

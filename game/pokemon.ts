@@ -23,10 +23,6 @@ export class Pokemon {
     moves: MoveId[],
     name?: string,
   ) {
-    dvs.atk ??= 15;
-    dvs.def ??= 15;
-    dvs.spc ??= 15;
-    dvs.spe ??= 15;
     const calcStatBase = (stat: keyof Stats) => {
       return calcStat(
         stat === "hp",
@@ -47,7 +43,8 @@ export class Pokemon {
       hp: calcStatBase("hp"),
       atk: calcStatBase("atk"),
       def: calcStatBase("def"),
-      spc: calcStatBase("spc"),
+      spa: calcStatBase("spa"),
+      spd: calcStatBase("spd"),
       spe: calcStatBase("spe"),
     };
     this.hp = this.stats.hp;
@@ -77,7 +74,7 @@ export const getHpDv = (dvs: Partial<StageStats>) => {
   return (
     (((dvs.atk ?? 15) & 1) << 3) |
     (((dvs.def ?? 15) & 1) << 2) |
-    (((dvs.spc ?? 15) & 1) << 1) |
+    (((dvs.spa ?? 15) & 1) << 1) |
     ((dvs.spe ?? 15) & 1)
   );
 };

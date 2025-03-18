@@ -17,7 +17,7 @@ export const speciesList = Object.freeze({
     dexId: 1,
     name: "Bulbasaur",
     types: ["grass", "poison"],
-    stats: { hp: 45, atk: 49, def: 49, spc: 65, spe: 45 },
+    stats: { hp: 45, atk: 49, def: 49, spa: 65, spd: 0, spe: 45 },
     moves: [
       "swordsdance",
       "cut",
@@ -49,7 +49,7 @@ export const speciesList = Object.freeze({
     dexId: 2,
     name: "Ivysaur",
     types: ["grass", "poison"],
-    stats: { hp: 60, atk: 62, def: 63, spc: 80, spe: 60 },
+    stats: { hp: 60, atk: 62, def: 63, spa: 80, spd: 0, spe: 60 },
     moves: [
       "swordsdance",
       "cut",
@@ -81,7 +81,7 @@ export const speciesList = Object.freeze({
     dexId: 3,
     name: "Venusaur",
     types: ["grass", "poison"],
-    stats: { hp: 80, atk: 82, def: 83, spc: 100, spe: 80 },
+    stats: { hp: 80, atk: 82, def: 83, spa: 100, spd: 0, spe: 80 },
     moves: [
       "swordsdance",
       "cut",
@@ -114,7 +114,7 @@ export const speciesList = Object.freeze({
     dexId: 4,
     name: "Charmander",
     types: ["fire"],
-    stats: { hp: 39, atk: 52, def: 43, spc: 50, spe: 65 },
+    stats: { hp: 39, atk: 52, def: 43, spa: 50, spd: 0, spe: 65 },
     moves: [
       "megapunch",
       "scratch",
@@ -154,7 +154,7 @@ export const speciesList = Object.freeze({
     dexId: 5,
     name: "Charmeleon",
     types: ["fire"],
-    stats: { hp: 58, atk: 64, def: 58, spc: 65, spe: 80 },
+    stats: { hp: 58, atk: 64, def: 58, spa: 65, spd: 0, spe: 80 },
     moves: [
       "megapunch",
       "scratch",
@@ -194,7 +194,7 @@ export const speciesList = Object.freeze({
     dexId: 6,
     name: "Charizard",
     types: ["fire", "flying"],
-    stats: { hp: 78, atk: 84, def: 78, spc: 85, spe: 100 },
+    stats: { hp: 78, atk: 84, def: 78, spa: 85, spd: 0, spe: 100 },
     moves: [
       "megapunch",
       "scratch",
@@ -238,7 +238,7 @@ export const speciesList = Object.freeze({
     dexId: 7,
     name: "Squirtle",
     types: ["water"],
-    stats: { hp: 44, atk: 48, def: 65, spc: 50, spe: 43 },
+    stats: { hp: 44, atk: 48, def: 65, spa: 50, spd: 0, spe: 43 },
     moves: [
       "megapunch",
       "megakick",
@@ -277,7 +277,7 @@ export const speciesList = Object.freeze({
     dexId: 8,
     name: "Wartortle",
     types: ["water"],
-    stats: { hp: 59, atk: 63, def: 80, spc: 65, spe: 58 },
+    stats: { hp: 59, atk: 63, def: 80, spa: 65, spd: 0, spe: 58 },
     moves: [
       "megapunch",
       "megakick",
@@ -316,7 +316,7 @@ export const speciesList = Object.freeze({
     dexId: 9,
     name: "Blastoise",
     types: ["water"],
-    stats: { hp: 79, atk: 83, def: 100, spc: 85, spe: 78 },
+    stats: { hp: 79, atk: 83, def: 100, spa: 85, spd: 0, spe: 78 },
     moves: [
       "megapunch",
       "megakick",
@@ -358,7 +358,7 @@ export const speciesList = Object.freeze({
     dexId: 10,
     name: "Caterpie",
     types: ["bug"],
-    stats: { hp: 45, atk: 30, def: 35, spc: 20, spe: 45 },
+    stats: { hp: 45, atk: 30, def: 35, spa: 20, spd: 0, spe: 45 },
     moves: ["tackle", "stringshot"],
     evolves: true,
   },
@@ -366,7 +366,7 @@ export const speciesList = Object.freeze({
     dexId: 11,
     name: "Metapod",
     types: ["bug"],
-    stats: { hp: 50, atk: 20, def: 55, spc: 25, spe: 30 },
+    stats: { hp: 50, atk: 20, def: 55, spa: 25, spd: 0, spe: 30 },
     moves: ["tackle", "stringshot", "harden"],
     evolves: true,
   },
@@ -374,7 +374,7 @@ export const speciesList = Object.freeze({
     dexId: 12,
     name: "Butterfree",
     types: ["bug", "flying"],
-    stats: { hp: 60, atk: 45, def: 50, spc: 80, spe: 70 },
+    stats: { hp: 60, atk: 45, def: 50, spa: 80, spd: 0, spe: 70 },
     moves: [
       "tackle",
       "stringshot",
@@ -413,7 +413,7 @@ export const speciesList = Object.freeze({
     dexId: 13,
     name: "Weedle",
     types: ["bug", "poison"],
-    stats: { hp: 40, atk: 35, def: 30, spc: 20, spe: 50 },
+    stats: { hp: 40, atk: 35, def: 30, spa: 20, spd: 0, spe: 50 },
     moves: ["poisonsting", "stringshot"],
     evolves: true,
   },
@@ -421,7 +421,7 @@ export const speciesList = Object.freeze({
     dexId: 14,
     name: "Kakuna",
     types: ["bug", "poison"],
-    stats: { hp: 45, atk: 25, def: 50, spc: 25, spe: 35 },
+    stats: { hp: 45, atk: 25, def: 50, spa: 25, spd: 0, spe: 35 },
     moves: ["poisonsting", "stringshot", "harden"],
     evolves: true,
   },
@@ -429,7 +429,7 @@ export const speciesList = Object.freeze({
     dexId: 15,
     name: "Beedrill",
     types: ["bug", "poison"],
-    stats: { hp: 65, atk: 90, def: 40, spc: 45, spe: 75 },
+    stats: { hp: 65, atk: 90, def: 40, spa: 45, spd: 0, spe: 75 },
     moves: [
       "poisonsting",
       "stringshot",
@@ -462,7 +462,7 @@ export const speciesList = Object.freeze({
     dexId: 16,
     name: "Pidgey",
     types: ["normal", "flying"],
-    stats: { hp: 40, atk: 45, def: 40, spc: 35, spe: 56 },
+    stats: { hp: 40, atk: 45, def: 40, spa: 35, spd: 0, spe: 56 },
     moves: [
       "razorwind",
       "gust",
@@ -492,7 +492,7 @@ export const speciesList = Object.freeze({
     dexId: 17,
     name: "Pidgeotto",
     types: ["normal", "flying"],
-    stats: { hp: 63, atk: 60, def: 55, spc: 50, spe: 71 },
+    stats: { hp: 63, atk: 60, def: 55, spa: 50, spd: 0, spe: 71 },
     moves: [
       "razorwind",
       "gust",
@@ -522,7 +522,7 @@ export const speciesList = Object.freeze({
     dexId: 18,
     name: "Pidgeot",
     types: ["normal", "flying"],
-    stats: { hp: 83, atk: 80, def: 75, spc: 70, spe: 101 },
+    stats: { hp: 83, atk: 80, def: 75, spa: 70, spd: 0, spe: 101 },
     moves: [
       "razorwind",
       "gust",
@@ -553,7 +553,7 @@ export const speciesList = Object.freeze({
     dexId: 19,
     name: "Rattata",
     types: ["normal"],
-    stats: { hp: 30, atk: 56, def: 35, spc: 25, spe: 72 },
+    stats: { hp: 30, atk: 56, def: 35, spa: 25, spd: 0, spe: 72 },
     moves: [
       "tackle",
       "bodyslam",
@@ -586,7 +586,7 @@ export const speciesList = Object.freeze({
     dexId: 20,
     name: "Raticate",
     types: ["normal"],
-    stats: { hp: 55, atk: 81, def: 60, spc: 50, spe: 97 },
+    stats: { hp: 55, atk: 81, def: 60, spa: 50, spd: 0, spe: 97 },
     moves: [
       "tackle",
       "bodyslam",
@@ -621,7 +621,7 @@ export const speciesList = Object.freeze({
     dexId: 21,
     name: "Spearow",
     types: ["normal", "flying"],
-    stats: { hp: 40, atk: 60, def: 30, spc: 31, spe: 70 },
+    stats: { hp: 40, atk: 60, def: 30, spa: 31, spd: 0, spe: 70 },
     moves: [
       "razorwind",
       "whirlwind",
@@ -651,7 +651,7 @@ export const speciesList = Object.freeze({
     dexId: 22,
     name: "Fearow",
     types: ["normal", "flying"],
-    stats: { hp: 65, atk: 90, def: 65, spc: 61, spe: 100 },
+    stats: { hp: 65, atk: 90, def: 65, spa: 61, spd: 0, spe: 100 },
     moves: [
       "razorwind",
       "whirlwind",
@@ -682,7 +682,7 @@ export const speciesList = Object.freeze({
     dexId: 23,
     name: "Ekans",
     types: ["poison"],
-    stats: { hp: 35, atk: 60, def: 44, spc: 40, spe: 55 },
+    stats: { hp: 35, atk: 60, def: 44, spa: 40, spd: 0, spe: 55 },
     moves: [
       "bodyslam",
       "wrap",
@@ -715,7 +715,7 @@ export const speciesList = Object.freeze({
     dexId: 24,
     name: "Arbok",
     types: ["poison"],
-    stats: { hp: 60, atk: 95, def: 69, spc: 65, spe: 80 },
+    stats: { hp: 60, atk: 95, def: 69, spa: 65, spd: 0, spe: 80 },
     moves: [
       "bodyslam",
       "wrap",
@@ -749,7 +749,7 @@ export const speciesList = Object.freeze({
     dexId: 25,
     name: "Pikachu",
     types: ["electric"],
-    stats: { hp: 35, atk: 55, def: 40, spc: 50, spe: 90 },
+    stats: { hp: 35, atk: 55, def: 40, spa: 50, spd: 0, spe: 90 },
     moves: [
       "megapunch",
       "payday",
@@ -788,7 +788,7 @@ export const speciesList = Object.freeze({
     dexId: 26,
     name: "Raichu",
     types: ["electric"],
-    stats: { hp: 60, atk: 90, def: 55, spc: 90, spe: 110 },
+    stats: { hp: 60, atk: 90, def: 55, spa: 90, spd: 0, spe: 110 },
     moves: [
       "slam",
       "tailwhip",
@@ -828,7 +828,7 @@ export const speciesList = Object.freeze({
     dexId: 27,
     name: "Sandshrew",
     types: ["ground"],
-    stats: { hp: 50, atk: 75, def: 85, spc: 30, spe: 40 },
+    stats: { hp: 50, atk: 75, def: 85, spa: 30, spd: 0, spe: 40 },
     moves: [
       "scratch",
       "swordsdance",
@@ -863,7 +863,7 @@ export const speciesList = Object.freeze({
     dexId: 28,
     name: "Sandslash",
     types: ["ground"],
-    stats: { hp: 75, atk: 100, def: 110, spc: 55, spe: 65 },
+    stats: { hp: 75, atk: 100, def: 110, spa: 55, spd: 0, spe: 65 },
     moves: [
       "scratch",
       "swordsdance",
@@ -899,7 +899,7 @@ export const speciesList = Object.freeze({
     dexId: 29,
     name: "Nidoran♀️",
     types: ["poison"],
-    stats: { hp: 55, atk: 47, def: 52, spc: 40, spe: 41 },
+    stats: { hp: 55, atk: 47, def: 52, spa: 40, spd: 0, spe: 41 },
     moves: [
       "scratch",
       "doublekick",
@@ -931,7 +931,7 @@ export const speciesList = Object.freeze({
     dexId: 30,
     name: "Nidorina",
     types: ["poison"],
-    stats: { hp: 70, atk: 62, def: 67, spc: 55, spe: 56 },
+    stats: { hp: 70, atk: 62, def: 67, spa: 55, spd: 0, spe: 56 },
     moves: [
       "scratch",
       "doublekick",
@@ -967,7 +967,7 @@ export const speciesList = Object.freeze({
     dexId: 31,
     name: "Nidoqueen",
     types: ["poison", "ground"],
-    stats: { hp: 90, atk: 92, def: 87, spc: 75, spe: 76 },
+    stats: { hp: 90, atk: 92, def: 87, spa: 75, spd: 0, spe: 76 },
     moves: [
       "bite",
       "growl",
@@ -1016,7 +1016,7 @@ export const speciesList = Object.freeze({
     dexId: 32,
     name: "Nidoran♂️",
     types: ["poison"],
-    stats: { hp: 46, atk: 57, def: 40, spc: 40, spe: 50 },
+    stats: { hp: 46, atk: 57, def: 40, spa: 40, spd: 0, spe: 50 },
     moves: [
       "doublekick",
       "hornattack",
@@ -1048,7 +1048,7 @@ export const speciesList = Object.freeze({
     dexId: 33,
     name: "Nidorino",
     types: ["poison"],
-    stats: { hp: 61, atk: 72, def: 57, spc: 55, spe: 65 },
+    stats: { hp: 61, atk: 72, def: 57, spa: 55, spd: 0, spe: 65 },
     moves: [
       "doublekick",
       "hornattack",
@@ -1083,7 +1083,7 @@ export const speciesList = Object.freeze({
     dexId: 34,
     name: "Nidoking",
     types: ["poison", "ground"],
-    stats: { hp: 81, atk: 102, def: 77, spc: 75, spe: 85 },
+    stats: { hp: 81, atk: 102, def: 77, spa: 75, spd: 0, spe: 85 },
     moves: [
       "furyattack",
       "leer",
@@ -1132,7 +1132,7 @@ export const speciesList = Object.freeze({
     dexId: 35,
     name: "Clefairy",
     types: ["normal"],
-    stats: { hp: 70, atk: 45, def: 48, spc: 60, spe: 35 },
+    stats: { hp: 70, atk: 45, def: 48, spa: 60, spd: 0, spe: 35 },
     moves: [
       "pound",
       "doubleslap",
@@ -1181,7 +1181,7 @@ export const speciesList = Object.freeze({
     dexId: 36,
     name: "Clefable",
     types: ["normal"],
-    stats: { hp: 95, atk: 70, def: 73, spc: 85, spe: 60 },
+    stats: { hp: 95, atk: 70, def: 73, spa: 85, spd: 0, spe: 60 },
     moves: [
       "pound",
       "growl",
@@ -1231,7 +1231,7 @@ export const speciesList = Object.freeze({
     dexId: 37,
     name: "Vulpix",
     types: ["fire"],
-    stats: { hp: 38, atk: 41, def: 40, spc: 65, spe: 65 },
+    stats: { hp: 38, atk: 41, def: 40, spa: 65, spd: 0, spe: 65 },
     moves: [
       "bodyslam",
       "takedown",
@@ -1262,7 +1262,7 @@ export const speciesList = Object.freeze({
     dexId: 38,
     name: "Ninetales",
     types: ["fire"],
-    stats: { hp: 73, atk: 76, def: 75, spc: 100, spe: 100 },
+    stats: { hp: 73, atk: 76, def: 75, spa: 100, spd: 0, spe: 100 },
     moves: [
       "flamethrower",
       "firespin",
@@ -1294,7 +1294,7 @@ export const speciesList = Object.freeze({
     dexId: 39,
     name: "Jigglypuff",
     types: ["normal"],
-    stats: { hp: 115, atk: 45, def: 20, spc: 25, spe: 20 },
+    stats: { hp: 115, atk: 45, def: 20, spa: 25, spd: 0, spe: 20 },
     moves: [
       "pound",
       "doubleslap",
@@ -1340,7 +1340,7 @@ export const speciesList = Object.freeze({
     dexId: 40,
     name: "Wigglytuff",
     types: ["normal"],
-    stats: { hp: 140, atk: 70, def: 45, spc: 50, spe: 45 },
+    stats: { hp: 140, atk: 70, def: 45, spa: 50, spd: 0, spe: 45 },
     moves: [
       "pound",
       "doubleslap",
@@ -1387,7 +1387,7 @@ export const speciesList = Object.freeze({
     dexId: 41,
     name: "Zubat",
     types: ["poison", "flying"],
-    stats: { hp: 40, atk: 45, def: 35, spc: 40, spe: 55 },
+    stats: { hp: 40, atk: 45, def: 35, spa: 40, spd: 0, spe: 55 },
     moves: [
       "razorwind",
       "wingattack",
@@ -1415,7 +1415,7 @@ export const speciesList = Object.freeze({
     dexId: 42,
     name: "Golbat",
     types: ["poison", "flying"],
-    stats: { hp: 75, atk: 80, def: 70, spc: 75, spe: 90 },
+    stats: { hp: 75, atk: 80, def: 70, spa: 75, spd: 0, spe: 90 },
     moves: [
       "razorwind",
       "wingattack",
@@ -1445,7 +1445,7 @@ export const speciesList = Object.freeze({
     dexId: 43,
     name: "Oddish",
     types: ["grass", "poison"],
-    stats: { hp: 45, atk: 50, def: 55, spc: 75, spe: 30 },
+    stats: { hp: 45, atk: 50, def: 55, spa: 75, spd: 0, spe: 30 },
     moves: [
       "swordsdance",
       "cut",
@@ -1474,7 +1474,7 @@ export const speciesList = Object.freeze({
     dexId: 44,
     name: "Gloom",
     types: ["grass", "poison"],
-    stats: { hp: 60, atk: 65, def: 70, spc: 85, spe: 40 },
+    stats: { hp: 60, atk: 65, def: 70, spa: 85, spd: 0, spe: 40 },
     moves: [
       "swordsdance",
       "cut",
@@ -1503,7 +1503,7 @@ export const speciesList = Object.freeze({
     dexId: 45,
     name: "Vileplume",
     types: ["grass", "poison"],
-    stats: { hp: 75, atk: 80, def: 85, spc: 100, spe: 50 },
+    stats: { hp: 75, atk: 80, def: 85, spa: 100, spd: 0, spe: 50 },
     moves: [
       "absorb",
       "swordsdance",
@@ -1534,7 +1534,7 @@ export const speciesList = Object.freeze({
     dexId: 46,
     name: "Paras",
     types: ["bug", "grass"],
-    stats: { hp: 35, atk: 70, def: 55, spc: 55, spe: 25 },
+    stats: { hp: 35, atk: 70, def: 55, spa: 55, spd: 0, spe: 25 },
     moves: [
       "scratch",
       "swordsdance",
@@ -1566,7 +1566,7 @@ export const speciesList = Object.freeze({
     dexId: 47,
     name: "Parasect",
     types: ["bug", "grass"],
-    stats: { hp: 60, atk: 95, def: 80, spc: 80, spe: 30 },
+    stats: { hp: 60, atk: 95, def: 80, spa: 80, spd: 0, spe: 30 },
     moves: [
       "scratch",
       "swordsdance",
@@ -1599,7 +1599,7 @@ export const speciesList = Object.freeze({
     dexId: 48,
     name: "Venonat",
     types: ["bug", "poison"],
-    stats: { hp: 60, atk: 55, def: 50, spc: 40, spe: 45 },
+    stats: { hp: 60, atk: 55, def: 50, spa: 40, spd: 0, spe: 45 },
     moves: [
       "tackle",
       "takedown",
@@ -1632,7 +1632,7 @@ export const speciesList = Object.freeze({
     dexId: 49,
     name: "Venomoth",
     types: ["bug", "poison"],
-    stats: { hp: 70, atk: 65, def: 60, spc: 90, spe: 90 },
+    stats: { hp: 70, atk: 65, def: 60, spa: 90, spd: 0, spe: 90 },
     moves: [
       "razorwind",
       "whirlwind",
@@ -1670,7 +1670,7 @@ export const speciesList = Object.freeze({
     dexId: 50,
     name: "Diglett",
     types: ["ground"],
-    stats: { hp: 10, atk: 55, def: 25, spc: 45, spe: 95 },
+    stats: { hp: 10, atk: 55, def: 25, spa: 45, spd: 0, spe: 95 },
     moves: [
       "scratch",
       "cut",
@@ -1698,7 +1698,7 @@ export const speciesList = Object.freeze({
     dexId: 51,
     name: "Dugtrio",
     types: ["ground"],
-    stats: { hp: 35, atk: 100, def: 50, spc: 70, spe: 120 },
+    stats: { hp: 35, atk: 100, def: 50, spa: 70, spd: 0, spe: 120 },
     moves: [
       "scratch",
       "cut",
@@ -1727,7 +1727,7 @@ export const speciesList = Object.freeze({
     dexId: 52,
     name: "Meowth",
     types: ["normal"],
-    stats: { hp: 40, atk: 45, def: 35, spc: 40, spe: 90 },
+    stats: { hp: 40, atk: 45, def: 35, spa: 40, spd: 0, spe: 90 },
     moves: [
       "payday",
       "scratch",
@@ -1759,7 +1759,7 @@ export const speciesList = Object.freeze({
     dexId: 53,
     name: "Persian",
     types: ["normal"],
-    stats: { hp: 65, atk: 70, def: 60, spc: 65, spe: 115 },
+    stats: { hp: 65, atk: 70, def: 60, spa: 65, spd: 0, spe: 115 },
     moves: [
       "payday",
       "scratch",
@@ -1792,7 +1792,7 @@ export const speciesList = Object.freeze({
     dexId: 54,
     name: "Psyduck",
     types: ["water"],
-    stats: { hp: 50, atk: 52, def: 48, spc: 50, spe: 55 },
+    stats: { hp: 50, atk: 52, def: 48, spa: 50, spd: 0, spe: 55 },
     moves: [
       "megapunch",
       "payday",
@@ -1832,7 +1832,7 @@ export const speciesList = Object.freeze({
     dexId: 55,
     name: "Golduck",
     types: ["water"],
-    stats: { hp: 80, atk: 82, def: 78, spc: 80, spe: 85 },
+    stats: { hp: 80, atk: 82, def: 78, spa: 80, spd: 0, spe: 85 },
     moves: [
       "megapunch",
       "payday",
@@ -1873,7 +1873,7 @@ export const speciesList = Object.freeze({
     dexId: 56,
     name: "Mankey",
     types: ["fight"],
-    stats: { hp: 40, atk: 80, def: 35, spc: 35, spe: 70 },
+    stats: { hp: 40, atk: 80, def: 35, spa: 35, spd: 0, spe: 70 },
     moves: [
       "karatechop",
       "megapunch",
@@ -1914,7 +1914,7 @@ export const speciesList = Object.freeze({
     dexId: 57,
     name: "Primeape",
     types: ["fight"],
-    stats: { hp: 65, atk: 105, def: 60, spc: 60, spe: 95 },
+    stats: { hp: 65, atk: 105, def: 60, spa: 60, spd: 0, spe: 95 },
     moves: [
       "karatechop",
       "megapunch",
@@ -1956,7 +1956,7 @@ export const speciesList = Object.freeze({
     dexId: 58,
     name: "Growlithe",
     types: ["fire"],
-    stats: { hp: 55, atk: 70, def: 45, spc: 50, spe: 60 },
+    stats: { hp: 55, atk: 70, def: 45, spa: 50, spd: 0, spe: 60 },
     moves: [
       "bodyslam",
       "takedown",
@@ -1987,7 +1987,7 @@ export const speciesList = Object.freeze({
     dexId: 59,
     name: "Arcanine",
     types: ["fire"],
-    stats: { hp: 90, atk: 110, def: 80, spc: 80, spe: 95 },
+    stats: { hp: 90, atk: 110, def: 80, spa: 80, spd: 0, spe: 95 },
     moves: [
       "bite",
       "flamethrower",
@@ -2020,7 +2020,7 @@ export const speciesList = Object.freeze({
     dexId: 60,
     name: "Poliwag",
     types: ["water"],
-    stats: { hp: 40, atk: 50, def: 40, spc: 40, spe: 90 },
+    stats: { hp: 40, atk: 50, def: 40, spa: 40, spd: 0, spe: 90 },
     moves: [
       "doubleslap",
       "bodyslam",
@@ -2052,7 +2052,7 @@ export const speciesList = Object.freeze({
     dexId: 61,
     name: "Poliwhirl",
     types: ["water"],
-    stats: { hp: 65, atk: 65, def: 65, spc: 50, spe: 90 },
+    stats: { hp: 65, atk: 65, def: 65, spa: 50, spd: 0, spe: 90 },
     moves: [
       "doubleslap",
       "megapunch",
@@ -2093,7 +2093,7 @@ export const speciesList = Object.freeze({
     dexId: 62,
     name: "Poliwrath",
     types: ["water", "fight"],
-    stats: { hp: 90, atk: 95, def: 95, spc: 70, spe: 70 },
+    stats: { hp: 90, atk: 95, def: 95, spa: 70, spd: 0, spe: 70 },
     moves: [
       "hydropump",
       "amnesia",
@@ -2135,7 +2135,7 @@ export const speciesList = Object.freeze({
     dexId: 63,
     name: "Abra",
     types: ["psychic"],
-    stats: { hp: 25, atk: 20, def: 15, spc: 105, spe: 90 },
+    stats: { hp: 25, atk: 20, def: 15, spa: 105, spd: 0, spe: 90 },
     moves: [
       "megapunch",
       "megakick",
@@ -2168,7 +2168,7 @@ export const speciesList = Object.freeze({
     dexId: 64,
     name: "Kadabra",
     types: ["psychic"],
-    stats: { hp: 40, atk: 35, def: 30, spc: 120, spe: 105 },
+    stats: { hp: 40, atk: 35, def: 30, spa: 120, spd: 0, spe: 105 },
     moves: [
       "megapunch",
       "megakick",
@@ -2207,7 +2207,7 @@ export const speciesList = Object.freeze({
     dexId: 65,
     name: "Alakazam",
     types: ["psychic"],
-    stats: { hp: 55, atk: 50, def: 45, spc: 135, spe: 120 },
+    stats: { hp: 55, atk: 50, def: 45, spa: 135, spd: 0, spe: 120 },
     moves: [
       "megapunch",
       "megakick",
@@ -2247,7 +2247,7 @@ export const speciesList = Object.freeze({
     dexId: 66,
     name: "Machop",
     types: ["fight"],
-    stats: { hp: 70, atk: 80, def: 50, spc: 35, spe: 35 },
+    stats: { hp: 70, atk: 80, def: 50, spa: 35, spd: 0, spe: 35 },
     moves: [
       "karatechop",
       "megapunch",
@@ -2283,7 +2283,7 @@ export const speciesList = Object.freeze({
     dexId: 67,
     name: "Machoke",
     types: ["fight"],
-    stats: { hp: 80, atk: 100, def: 70, spc: 50, spe: 45 },
+    stats: { hp: 80, atk: 100, def: 70, spa: 50, spd: 0, spe: 45 },
     moves: [
       "karatechop",
       "megapunch",
@@ -2319,7 +2319,7 @@ export const speciesList = Object.freeze({
     dexId: 68,
     name: "Machamp",
     types: ["fight"],
-    stats: { hp: 90, atk: 130, def: 80, spc: 65, spe: 55 },
+    stats: { hp: 90, atk: 130, def: 80, spa: 65, spd: 0, spe: 55 },
     moves: [
       "karatechop",
       "megapunch",
@@ -2356,7 +2356,7 @@ export const speciesList = Object.freeze({
     dexId: 69,
     name: "Bellsprout",
     types: ["grass", "poison"],
-    stats: { hp: 50, atk: 75, def: 35, spc: 70, spe: 40 },
+    stats: { hp: 50, atk: 75, def: 35, spa: 70, spd: 0, spe: 40 },
     moves: [
       "swordsdance",
       "cut",
@@ -2388,7 +2388,7 @@ export const speciesList = Object.freeze({
     dexId: 70,
     name: "Weepinbell",
     types: ["grass", "poison"],
-    stats: { hp: 65, atk: 90, def: 50, spc: 85, spe: 55 },
+    stats: { hp: 65, atk: 90, def: 50, spa: 85, spd: 0, spe: 55 },
     moves: [
       "swordsdance",
       "cut",
@@ -2420,7 +2420,7 @@ export const speciesList = Object.freeze({
     dexId: 71,
     name: "Victreebel",
     types: ["grass", "poison"],
-    stats: { hp: 80, atk: 105, def: 65, spc: 100, spe: 70 },
+    stats: { hp: 80, atk: 105, def: 65, spa: 100, spd: 0, spe: 70 },
     moves: [
       "slam",
       "vinewhip",
@@ -2454,7 +2454,7 @@ export const speciesList = Object.freeze({
     dexId: 72,
     name: "Tentacool",
     types: ["water", "poison"],
-    stats: { hp: 40, atk: 40, def: 35, spc: 100, spe: 70 },
+    stats: { hp: 40, atk: 40, def: 35, spa: 100, spd: 0, spe: 70 },
     moves: [
       "swordsdance",
       "cut",
@@ -2490,7 +2490,7 @@ export const speciesList = Object.freeze({
     dexId: 73,
     name: "Tentacruel",
     types: ["water", "poison"],
-    stats: { hp: 80, atk: 70, def: 65, spc: 120, spe: 100 },
+    stats: { hp: 80, atk: 70, def: 65, spa: 120, spd: 0, spe: 100 },
     moves: [
       "swordsdance",
       "cut",
@@ -2527,7 +2527,7 @@ export const speciesList = Object.freeze({
     dexId: 74,
     name: "Geodude",
     types: ["rock", "ground"],
-    stats: { hp: 40, atk: 80, def: 100, spc: 30, spe: 20 },
+    stats: { hp: 40, atk: 80, def: 100, spa: 30, spd: 0, spe: 20 },
     moves: [
       "megapunch",
       "tackle",
@@ -2563,7 +2563,7 @@ export const speciesList = Object.freeze({
     dexId: 75,
     name: "Graveler",
     types: ["rock", "ground"],
-    stats: { hp: 55, atk: 95, def: 115, spc: 45, spe: 35 },
+    stats: { hp: 55, atk: 95, def: 115, spa: 45, spd: 0, spe: 35 },
     moves: [
       "megapunch",
       "tackle",
@@ -2599,7 +2599,7 @@ export const speciesList = Object.freeze({
     dexId: 76,
     name: "Golem",
     types: ["rock", "ground"],
-    stats: { hp: 80, atk: 120, def: 130, spc: 55, spe: 45 },
+    stats: { hp: 80, atk: 120, def: 130, spa: 55, spd: 0, spe: 45 },
     moves: [
       "megapunch",
       "megakick",
@@ -2637,7 +2637,7 @@ export const speciesList = Object.freeze({
     dexId: 77,
     name: "Ponyta",
     types: ["fire"],
-    stats: { hp: 50, atk: 85, def: 55, spc: 65, spe: 90 },
+    stats: { hp: 50, atk: 85, def: 55, spa: 65, spd: 0, spe: 90 },
     moves: [
       "stomp",
       "horndrill",
@@ -2667,7 +2667,7 @@ export const speciesList = Object.freeze({
     dexId: 78,
     name: "Rapidash",
     types: ["fire"],
-    stats: { hp: 65, atk: 100, def: 70, spc: 80, spe: 105 },
+    stats: { hp: 65, atk: 100, def: 70, spa: 80, spd: 0, spe: 105 },
     moves: [
       "stomp",
       "horndrill",
@@ -2698,7 +2698,7 @@ export const speciesList = Object.freeze({
     dexId: 79,
     name: "Slowpoke",
     types: ["water", "psychic"],
-    stats: { hp: 90, atk: 65, def: 65, spc: 40, spe: 15 },
+    stats: { hp: 90, atk: 65, def: 65, spa: 40, spd: 0, spe: 15 },
     moves: [
       "payday",
       "headbutt",
@@ -2742,7 +2742,7 @@ export const speciesList = Object.freeze({
     dexId: 80,
     name: "Slowbro",
     types: ["water", "psychic"],
-    stats: { hp: 95, atk: 75, def: 110, spc: 80, spe: 30 },
+    stats: { hp: 95, atk: 75, def: 110, spa: 80, spd: 0, spe: 30 },
     moves: [
       "megapunch",
       "payday",
@@ -2793,7 +2793,7 @@ export const speciesList = Object.freeze({
     dexId: 81,
     name: "Magnemite",
     types: ["electric"],
-    stats: { hp: 25, atk: 35, def: 70, spc: 95, spe: 45 },
+    stats: { hp: 25, atk: 35, def: 70, spa: 95, spd: 0, spe: 45 },
     moves: [
       "tackle",
       "takedown",
@@ -2823,7 +2823,7 @@ export const speciesList = Object.freeze({
     dexId: 82,
     name: "Magneton",
     types: ["electric"],
-    stats: { hp: 50, atk: 60, def: 95, spc: 120, spe: 70 },
+    stats: { hp: 50, atk: 60, def: 95, spa: 120, spd: 0, spe: 70 },
     moves: [
       "tackle",
       "takedown",
@@ -2854,7 +2854,7 @@ export const speciesList = Object.freeze({
     dexId: 83,
     name: "Farfetch'd",
     types: ["normal", "flying"],
-    stats: { hp: 52, atk: 90, def: 55, spc: 58, spe: 60 },
+    stats: { hp: 52, atk: 90, def: 55, spa: 58, spd: 0, spe: 60 },
     moves: [
       "razorwind",
       "swordsdance",
@@ -2887,7 +2887,7 @@ export const speciesList = Object.freeze({
     dexId: 84,
     name: "Doduo",
     types: ["normal", "flying"],
-    stats: { hp: 35, atk: 85, def: 45, spc: 35, spe: 75 },
+    stats: { hp: 35, atk: 85, def: 45, spa: 35, spd: 0, spe: 75 },
     moves: [
       "whirlwind",
       "fly",
@@ -2917,7 +2917,7 @@ export const speciesList = Object.freeze({
     dexId: 85,
     name: "Dodrio",
     types: ["normal", "flying"],
-    stats: { hp: 60, atk: 110, def: 70, spc: 60, spe: 110 },
+    stats: { hp: 60, atk: 110, def: 70, spa: 60, spd: 0, spe: 110 },
     moves: [
       "whirlwind",
       "fly",
@@ -2948,7 +2948,7 @@ export const speciesList = Object.freeze({
     dexId: 86,
     name: "Seel",
     types: ["water"],
-    stats: { hp: 65, atk: 45, def: 55, spc: 70, spe: 45 },
+    stats: { hp: 65, atk: 45, def: 55, spa: 70, spd: 0, spe: 45 },
     moves: [
       "payday",
       "headbutt",
@@ -2979,7 +2979,7 @@ export const speciesList = Object.freeze({
     dexId: 87,
     name: "Dewgong",
     types: ["water", "ice"],
-    stats: { hp: 90, atk: 70, def: 80, spc: 95, spe: 70 },
+    stats: { hp: 90, atk: 70, def: 80, spa: 95, spd: 0, spe: 70 },
     moves: [
       "payday",
       "headbutt",
@@ -3011,7 +3011,7 @@ export const speciesList = Object.freeze({
     dexId: 88,
     name: "Grimer",
     types: ["poison"],
-    stats: { hp: 80, atk: 80, def: 50, spc: 40, spe: 25 },
+    stats: { hp: 80, atk: 80, def: 50, spa: 40, spd: 0, spe: 25 },
     moves: [
       "pound",
       "bodyslam",
@@ -3042,7 +3042,7 @@ export const speciesList = Object.freeze({
     dexId: 89,
     name: "Muk",
     types: ["poison"],
-    stats: { hp: 105, atk: 105, def: 75, spc: 65, spe: 50 },
+    stats: { hp: 105, atk: 105, def: 75, spa: 65, spd: 0, spe: 50 },
     moves: [
       "pound",
       "bodyslam",
@@ -3074,7 +3074,7 @@ export const speciesList = Object.freeze({
     dexId: 90,
     name: "Shellder",
     types: ["water"],
-    stats: { hp: 30, atk: 65, def: 100, spc: 45, spe: 40 },
+    stats: { hp: 30, atk: 65, def: 100, spa: 45, spd: 0, spe: 40 },
     moves: [
       "tackle",
       "takedown",
@@ -3109,7 +3109,7 @@ export const speciesList = Object.freeze({
     dexId: 91,
     name: "Cloyster",
     types: ["water", "ice"],
-    stats: { hp: 50, atk: 95, def: 180, spc: 85, spe: 70 },
+    stats: { hp: 50, atk: 95, def: 180, spa: 85, spd: 0, spe: 70 },
     moves: [
       "tackle",
       "leer",
@@ -3146,7 +3146,7 @@ export const speciesList = Object.freeze({
     dexId: 92,
     name: "Gastly",
     types: ["ghost", "poison"],
-    stats: { hp: 30, atk: 35, def: 30, spc: 100, spe: 80 },
+    stats: { hp: 30, atk: 35, def: 30, spa: 100, spd: 0, spe: 80 },
     moves: [
       "megadrain",
       "thunderbolt",
@@ -3174,7 +3174,7 @@ export const speciesList = Object.freeze({
     dexId: 93,
     name: "Haunter",
     types: ["ghost", "poison"],
-    stats: { hp: 45, atk: 50, def: 45, spc: 115, spe: 95 },
+    stats: { hp: 45, atk: 50, def: 45, spa: 115, spd: 0, spe: 95 },
     moves: [
       "megadrain",
       "thunderbolt",
@@ -3202,7 +3202,7 @@ export const speciesList = Object.freeze({
     dexId: 94,
     name: "Gengar",
     types: ["ghost", "poison"],
-    stats: { hp: 60, atk: 65, def: 60, spc: 130, spe: 110 },
+    stats: { hp: 60, atk: 65, def: 60, spa: 130, spd: 0, spe: 110 },
     moves: [
       "megapunch",
       "megakick",
@@ -3242,7 +3242,7 @@ export const speciesList = Object.freeze({
     dexId: 95,
     name: "Onix",
     types: ["rock", "ground"],
-    stats: { hp: 35, atk: 45, def: 160, spc: 30, spe: 70 },
+    stats: { hp: 35, atk: 45, def: 160, spa: 30, spd: 0, spe: 70 },
     moves: [
       "bind",
       "slam",
@@ -3275,7 +3275,7 @@ export const speciesList = Object.freeze({
     dexId: 96,
     name: "Drowzee",
     types: ["psychic"],
-    stats: { hp: 60, atk: 48, def: 45, spc: 90, spe: 42 },
+    stats: { hp: 60, atk: 48, def: 45, spa: 90, spd: 0, spe: 42 },
     moves: [
       "pound",
       "megapunch",
@@ -3316,7 +3316,7 @@ export const speciesList = Object.freeze({
     dexId: 97,
     name: "Hypno",
     types: ["psychic"],
-    stats: { hp: 85, atk: 73, def: 70, spc: 115, spe: 67 },
+    stats: { hp: 85, atk: 73, def: 70, spa: 115, spd: 0, spe: 67 },
     moves: [
       "pound",
       "megapunch",
@@ -3358,7 +3358,7 @@ export const speciesList = Object.freeze({
     dexId: 98,
     name: "Krabby",
     types: ["water"],
-    stats: { hp: 30, atk: 105, def: 90, spc: 25, spe: 50 },
+    stats: { hp: 30, atk: 105, def: 90, spa: 25, spd: 0, spe: 50 },
     moves: [
       "vicegrip",
       "guillotine",
@@ -3392,7 +3392,7 @@ export const speciesList = Object.freeze({
     dexId: 99,
     name: "Kingler",
     types: ["water"],
-    stats: { hp: 55, atk: 130, def: 115, spc: 50, spe: 75 },
+    stats: { hp: 55, atk: 130, def: 115, spa: 50, spd: 0, spe: 75 },
     moves: [
       "vicegrip",
       "guillotine",
@@ -3427,7 +3427,7 @@ export const speciesList = Object.freeze({
     dexId: 100,
     name: "Voltorb",
     types: ["electric"],
-    stats: { hp: 40, atk: 30, def: 50, spc: 55, spe: 100 },
+    stats: { hp: 40, atk: 30, def: 50, spa: 55, spd: 0, spe: 100 },
     moves: [
       "tackle",
       "takedown",
@@ -3457,7 +3457,7 @@ export const speciesList = Object.freeze({
     dexId: 101,
     name: "Electrode",
     types: ["electric"],
-    stats: { hp: 60, atk: 50, def: 70, spc: 80, spe: 150 },
+    stats: { hp: 60, atk: 50, def: 70, spa: 80, spd: 0, spe: 150 },
     moves: [
       "tackle",
       "takedown",
@@ -3489,7 +3489,7 @@ export const speciesList = Object.freeze({
     dexId: 102,
     name: "Exeggcute",
     types: ["grass", "psychic"],
-    stats: { hp: 60, atk: 40, def: 80, spc: 60, spe: 40 },
+    stats: { hp: 60, atk: 40, def: 80, spa: 60, spd: 0, spe: 40 },
     moves: [
       "takedown",
       "doubleedge",
@@ -3521,7 +3521,7 @@ export const speciesList = Object.freeze({
     dexId: 103,
     name: "Exeggutor",
     types: ["grass", "psychic"],
-    stats: { hp: 95, atk: 95, def: 85, spc: 125, spe: 55 },
+    stats: { hp: 95, atk: 95, def: 85, spa: 125, spd: 0, spe: 55 },
     moves: [
       "stomp",
       "takedown",
@@ -3557,7 +3557,7 @@ export const speciesList = Object.freeze({
     dexId: 104,
     name: "Cubone",
     types: ["ground"],
-    stats: { hp: 50, atk: 50, def: 95, spc: 40, spe: 35 },
+    stats: { hp: 50, atk: 50, def: 95, spa: 40, spd: 0, spe: 35 },
     moves: [
       "megapunch",
       "megakick",
@@ -3599,7 +3599,7 @@ export const speciesList = Object.freeze({
     dexId: 105,
     name: "Marowak",
     types: ["ground"],
-    stats: { hp: 60, atk: 80, def: 110, spc: 50, spe: 45 },
+    stats: { hp: 60, atk: 80, def: 110, spa: 50, spd: 0, spe: 45 },
     moves: [
       "megapunch",
       "megakick",
@@ -3642,7 +3642,7 @@ export const speciesList = Object.freeze({
     dexId: 106,
     name: "Hitmonlee",
     types: ["fight"],
-    stats: { hp: 50, atk: 120, def: 53, spc: 35, spe: 87 },
+    stats: { hp: 50, atk: 120, def: 53, spa: 35, spd: 0, spe: 87 },
     moves: [
       "megapunch",
       "doublekick",
@@ -3676,7 +3676,7 @@ export const speciesList = Object.freeze({
     dexId: 107,
     name: "Hitmonchan",
     types: ["fight"],
-    stats: { hp: 50, atk: 105, def: 79, spc: 35, spe: 76 },
+    stats: { hp: 50, atk: 105, def: 79, spa: 35, spd: 0, spe: 76 },
     moves: [
       "cometpunch",
       "megapunch",
@@ -3709,7 +3709,7 @@ export const speciesList = Object.freeze({
     dexId: 108,
     name: "Lickitung",
     types: ["normal"],
-    stats: { hp: 90, atk: 55, def: 75, spc: 60, spe: 30 },
+    stats: { hp: 90, atk: 55, def: 75, spa: 60, spd: 0, spe: 30 },
     moves: [
       "megapunch",
       "swordsdance",
@@ -3755,7 +3755,7 @@ export const speciesList = Object.freeze({
     dexId: 109,
     name: "Koffing",
     types: ["poison"],
-    stats: { hp: 40, atk: 65, def: 95, spc: 60, spe: 35 },
+    stats: { hp: 40, atk: 65, def: 95, spa: 60, spd: 0, spe: 35 },
     moves: [
       "tackle",
       "thunderbolt",
@@ -3781,7 +3781,7 @@ export const speciesList = Object.freeze({
     dexId: 110,
     name: "Weezing",
     types: ["poison"],
-    stats: { hp: 65, atk: 90, def: 120, spc: 85, spe: 60 },
+    stats: { hp: 65, atk: 90, def: 120, spa: 85, spd: 0, spe: 60 },
     moves: [
       "tackle",
       "hyperbeam",
@@ -3808,7 +3808,7 @@ export const speciesList = Object.freeze({
     dexId: 111,
     name: "Rhyhorn",
     types: ["ground", "rock"],
-    stats: { hp: 80, atk: 85, def: 95, spc: 30, spe: 25 },
+    stats: { hp: 80, atk: 85, def: 95, spa: 30, spd: 0, spe: 25 },
     moves: [
       "stomp",
       "hornattack",
@@ -3842,7 +3842,7 @@ export const speciesList = Object.freeze({
     dexId: 112,
     name: "Rhydon",
     types: ["ground", "rock"],
-    stats: { hp: 105, atk: 130, def: 120, spc: 45, spe: 40 },
+    stats: { hp: 105, atk: 130, def: 120, spa: 45, spd: 0, spe: 40 },
     moves: [
       "megapunch",
       "payday",
@@ -3888,7 +3888,7 @@ export const speciesList = Object.freeze({
     dexId: 113,
     name: "Chansey",
     types: ["normal"],
-    stats: { hp: 250, atk: 5, def: 5, spc: 105, spe: 50 },
+    stats: { hp: 250, atk: 5, def: 5, spa: 105, spd: 0, spe: 50 },
     moves: [
       "pound",
       "doubleslap",
@@ -3941,7 +3941,7 @@ export const speciesList = Object.freeze({
     dexId: 114,
     name: "Tangela",
     types: ["grass"],
-    stats: { hp: 65, atk: 55, def: 115, spc: 100, spe: 60 },
+    stats: { hp: 65, atk: 55, def: 115, spa: 100, spd: 0, spe: 60 },
     moves: [
       "swordsdance",
       "cut",
@@ -3975,7 +3975,7 @@ export const speciesList = Object.freeze({
     dexId: 115,
     name: "Kangaskhan",
     types: ["normal"],
-    stats: { hp: 105, atk: 95, def: 80, spc: 40, spe: 90 },
+    stats: { hp: 105, atk: 95, def: 80, spa: 40, spd: 0, spe: 90 },
     moves: [
       "cometpunch",
       "megapunch",
@@ -4018,7 +4018,7 @@ export const speciesList = Object.freeze({
     dexId: 116,
     name: "Horsea",
     types: ["water"],
-    stats: { hp: 30, atk: 40, def: 70, spc: 70, spe: 60 },
+    stats: { hp: 30, atk: 40, def: 70, spa: 70, spd: 0, spe: 60 },
     moves: [
       "takedown",
       "doubleedge",
@@ -4048,7 +4048,7 @@ export const speciesList = Object.freeze({
     dexId: 117,
     name: "Seadra",
     types: ["water"],
-    stats: { hp: 55, atk: 65, def: 95, spc: 95, spe: 85 },
+    stats: { hp: 55, atk: 65, def: 95, spa: 95, spd: 0, spe: 85 },
     moves: [
       "takedown",
       "doubleedge",
@@ -4079,7 +4079,7 @@ export const speciesList = Object.freeze({
     dexId: 118,
     name: "Goldeen",
     types: ["water"],
-    stats: { hp: 45, atk: 67, def: 60, spc: 50, spe: 63 },
+    stats: { hp: 45, atk: 67, def: 60, spa: 50, spd: 0, spe: 63 },
     moves: [
       "hornattack",
       "furyattack",
@@ -4112,7 +4112,7 @@ export const speciesList = Object.freeze({
     dexId: 119,
     name: "Seaking",
     types: ["water"],
-    stats: { hp: 80, atk: 92, def: 65, spc: 80, spe: 68 },
+    stats: { hp: 80, atk: 92, def: 65, spa: 80, spd: 0, spe: 68 },
     moves: [
       "hornattack",
       "furyattack",
@@ -4146,7 +4146,7 @@ export const speciesList = Object.freeze({
     dexId: 120,
     name: "Staryu",
     types: ["water"],
-    stats: { hp: 30, atk: 45, def: 55, spc: 70, spe: 85 },
+    stats: { hp: 30, atk: 45, def: 55, spa: 70, spd: 0, spe: 85 },
     moves: [
       "tackle",
       "takedown",
@@ -4186,7 +4186,7 @@ export const speciesList = Object.freeze({
     dexId: 121,
     name: "Starmie",
     types: ["water", "psychic"],
-    stats: { hp: 60, atk: 75, def: 85, spc: 100, spe: 115 },
+    stats: { hp: 60, atk: 75, def: 85, spa: 100, spd: 0, spe: 115 },
     moves: [
       "tackle",
       "takedown",
@@ -4227,7 +4227,7 @@ export const speciesList = Object.freeze({
     dexId: 122,
     name: "Mr. Mime",
     types: ["psychic"],
-    stats: { hp: 40, atk: 45, def: 65, spc: 100, spe: 90 },
+    stats: { hp: 40, atk: 45, def: 65, spa: 100, spd: 0, spe: 90 },
     moves: [
       "doubleslap",
       "megapunch",
@@ -4268,7 +4268,7 @@ export const speciesList = Object.freeze({
     dexId: 123,
     name: "Scyther",
     types: ["bug", "flying"],
-    stats: { hp: 70, atk: 110, def: 80, spc: 55, spe: 105 },
+    stats: { hp: 70, atk: 110, def: 80, spa: 55, spd: 0, spe: 105 },
     moves: [
       "swordsdance",
       "cut",
@@ -4297,7 +4297,7 @@ export const speciesList = Object.freeze({
     dexId: 124,
     name: "Jynx",
     types: ["ice", "psychic"],
-    stats: { hp: 65, atk: 50, def: 35, spc: 95, spe: 95 },
+    stats: { hp: 65, atk: 50, def: 35, spa: 95, spd: 0, spe: 95 },
     moves: [
       "pound",
       "doubleslap",
@@ -4338,7 +4338,7 @@ export const speciesList = Object.freeze({
     dexId: 125,
     name: "Electabuzz",
     types: ["electric"],
-    stats: { hp: 65, atk: 83, def: 57, spc: 85, spe: 105 },
+    stats: { hp: 65, atk: 83, def: 57, spa: 85, spd: 0, spe: 105 },
     moves: [
       "megapunch",
       "thunderpunch",
@@ -4381,7 +4381,7 @@ export const speciesList = Object.freeze({
     dexId: 126,
     name: "Magmar",
     types: ["fire"],
-    stats: { hp: 65, atk: 95, def: 57, spc: 85, spe: 93 },
+    stats: { hp: 65, atk: 95, def: 57, spa: 85, spd: 0, spe: 93 },
     moves: [
       "megapunch",
       "firepunch",
@@ -4420,7 +4420,7 @@ export const speciesList = Object.freeze({
     dexId: 127,
     name: "Pinsir",
     types: ["bug"],
-    stats: { hp: 65, atk: 125, def: 100, spc: 55, spe: 85 },
+    stats: { hp: 65, atk: 125, def: 100, spa: 55, spd: 0, spe: 85 },
     moves: [
       "vicegrip",
       "guillotine",
@@ -4451,7 +4451,7 @@ export const speciesList = Object.freeze({
     dexId: 128,
     name: "Tauros",
     types: ["normal"],
-    stats: { hp: 75, atk: 100, def: 95, spc: 70, spe: 110 },
+    stats: { hp: 75, atk: 100, def: 95, spa: 70, spd: 0, spe: 110 },
     moves: [
       "stomp",
       "horndrill",
@@ -4485,7 +4485,7 @@ export const speciesList = Object.freeze({
     dexId: 129,
     name: "Magikarp",
     types: ["water"],
-    stats: { hp: 20, atk: 10, def: 55, spc: 20, spe: 80 },
+    stats: { hp: 20, atk: 10, def: 55, spa: 20, spd: 0, spe: 80 },
     moves: ["tackle", "splash"],
     evolves: true,
   },
@@ -4493,7 +4493,7 @@ export const speciesList = Object.freeze({
     dexId: 130,
     name: "Gyarados",
     types: ["water", "flying"],
-    stats: { hp: 95, atk: 125, def: 79, spc: 100, spe: 81 },
+    stats: { hp: 95, atk: 125, def: 79, spa: 100, spd: 0, spe: 81 },
     moves: [
       "tackle",
       "splash",
@@ -4530,7 +4530,7 @@ export const speciesList = Object.freeze({
     dexId: 131,
     name: "Lapras",
     types: ["water", "ice"],
-    stats: { hp: 130, atk: 85, def: 80, spc: 95, spe: 60 },
+    stats: { hp: 130, atk: 85, def: 80, spa: 95, spd: 0, spe: 60 },
     moves: [
       "horndrill",
       "bodyslam",
@@ -4570,7 +4570,7 @@ export const speciesList = Object.freeze({
     dexId: 132,
     name: "Ditto",
     types: ["normal"],
-    stats: { hp: 48, atk: 48, def: 48, spc: 48, spe: 48 },
+    stats: { hp: 48, atk: 48, def: 48, spa: 48, spd: 0, spe: 48 },
     moves: ["transform"],
     evolves: false,
   },
@@ -4578,7 +4578,7 @@ export const speciesList = Object.freeze({
     dexId: 133,
     name: "Eevee",
     types: ["normal"],
-    stats: { hp: 55, atk: 55, def: 50, spc: 65, spe: 55 },
+    stats: { hp: 55, atk: 55, def: 50, spa: 65, spd: 0, spe: 55 },
     moves: [
       "sandattack",
       "tackle",
@@ -4607,7 +4607,7 @@ export const speciesList = Object.freeze({
     dexId: 134,
     name: "Vaporeon",
     types: ["water"],
-    stats: { hp: 130, atk: 65, def: 60, spc: 110, spe: 65 },
+    stats: { hp: 130, atk: 65, def: 60, spa: 110, spd: 0, spe: 65 },
     moves: [
       "growl",
       "focusenergy",
@@ -4647,7 +4647,7 @@ export const speciesList = Object.freeze({
     dexId: 135,
     name: "Jolteon",
     types: ["electric"],
-    stats: { hp: 65, atk: 65, def: 60, spc: 110, spe: 130 },
+    stats: { hp: 65, atk: 65, def: 60, spa: 110, spd: 0, spe: 130 },
     moves: [
       "bite",
       "growl",
@@ -4685,7 +4685,7 @@ export const speciesList = Object.freeze({
     dexId: 136,
     name: "Flareon",
     types: ["fire"],
-    stats: { hp: 65, atk: 130, def: 60, spc: 110, spe: 65 },
+    stats: { hp: 65, atk: 130, def: 60, spa: 110, spd: 0, spe: 65 },
     moves: [
       "growl",
       "focusenergy",
@@ -4721,7 +4721,7 @@ export const speciesList = Object.freeze({
     dexId: 137,
     name: "Porygon",
     types: ["normal"],
-    stats: { hp: 65, atk: 60, def: 70, spc: 75, spe: 40 },
+    stats: { hp: 65, atk: 60, def: 70, spa: 75, spd: 0, spe: 40 },
     moves: [
       "tackle",
       "takedown",
@@ -4759,7 +4759,7 @@ export const speciesList = Object.freeze({
     dexId: 138,
     name: "Omanyte",
     types: ["rock", "water"],
-    stats: { hp: 35, atk: 40, def: 100, spc: 90, spe: 35 },
+    stats: { hp: 35, atk: 40, def: 100, spa: 90, spd: 0, spe: 35 },
     moves: [
       "hornattack",
       "bodyslam",
@@ -4789,7 +4789,7 @@ export const speciesList = Object.freeze({
     dexId: 139,
     name: "Omastar",
     types: ["rock", "water"],
-    stats: { hp: 70, atk: 60, def: 125, spc: 115, spe: 55 },
+    stats: { hp: 70, atk: 60, def: 125, spa: 115, spd: 0, spe: 55 },
     moves: [
       "hornattack",
       "horndrill",
@@ -4824,7 +4824,7 @@ export const speciesList = Object.freeze({
     dexId: 140,
     name: "Kabuto",
     types: ["rock", "water"],
-    stats: { hp: 30, atk: 80, def: 90, spc: 45, spe: 55 },
+    stats: { hp: 30, atk: 80, def: 90, spa: 45, spd: 0, spe: 55 },
     moves: [
       "scratch",
       "bodyslam",
@@ -4855,7 +4855,7 @@ export const speciesList = Object.freeze({
     dexId: 141,
     name: "Kabutops",
     types: ["rock", "water"],
-    stats: { hp: 60, atk: 115, def: 105, spc: 70, spe: 80 },
+    stats: { hp: 60, atk: 115, def: 105, spa: 70, spd: 0, spe: 80 },
     moves: [
       "scratch",
       "razorwind",
@@ -4894,7 +4894,7 @@ export const speciesList = Object.freeze({
     dexId: 142,
     name: "Aerodactyl",
     types: ["rock", "flying"],
-    stats: { hp: 80, atk: 105, def: 65, spc: 60, spe: 130 },
+    stats: { hp: 80, atk: 105, def: 65, spa: 60, spd: 0, spe: 130 },
     moves: [
       "razorwind",
       "wingattack",
@@ -4925,7 +4925,7 @@ export const speciesList = Object.freeze({
     dexId: 143,
     name: "Snorlax",
     types: ["normal"],
-    stats: { hp: 160, atk: 110, def: 65, spc: 65, spe: 30 },
+    stats: { hp: 160, atk: 110, def: 65, spa: 65, spd: 0, spe: 30 },
     moves: [
       "megapunch",
       "payday",
@@ -4973,7 +4973,7 @@ export const speciesList = Object.freeze({
     dexId: 144,
     name: "Articuno",
     types: ["ice", "flying"],
-    stats: { hp: 90, atk: 85, def: 100, spc: 125, spe: 85 },
+    stats: { hp: 90, atk: 85, def: 100, spa: 125, spd: 0, spe: 85 },
     moves: [
       "razorwind",
       "whirlwind",
@@ -5005,7 +5005,7 @@ export const speciesList = Object.freeze({
     dexId: 145,
     name: "Zapdos",
     types: ["electric", "flying"],
-    stats: { hp: 90, atk: 90, def: 85, spc: 125, spe: 100 },
+    stats: { hp: 90, atk: 90, def: 85, spa: 125, spd: 0, spe: 100 },
     moves: [
       "razorwind",
       "whirlwind",
@@ -5038,7 +5038,7 @@ export const speciesList = Object.freeze({
     dexId: 146,
     name: "Moltres",
     types: ["fire", "flying"],
-    stats: { hp: 90, atk: 100, def: 90, spc: 125, spe: 90 },
+    stats: { hp: 90, atk: 100, def: 90, spa: 125, spd: 0, spe: 90 },
     moves: [
       "razorwind",
       "whirlwind",
@@ -5068,7 +5068,7 @@ export const speciesList = Object.freeze({
     dexId: 147,
     name: "Dratini",
     types: ["dragon"],
-    stats: { hp: 41, atk: 64, def: 45, spc: 50, spe: 50 },
+    stats: { hp: 41, atk: 64, def: 45, spa: 50, spd: 0, spe: 50 },
     moves: [
       "slam",
       "bodyslam",
@@ -5105,7 +5105,7 @@ export const speciesList = Object.freeze({
     dexId: 148,
     name: "Dragonair",
     types: ["dragon"],
-    stats: { hp: 61, atk: 84, def: 65, spc: 70, spe: 70 },
+    stats: { hp: 61, atk: 84, def: 65, spa: 70, spd: 0, spe: 70 },
     moves: [
       "slam",
       "horndrill",
@@ -5143,7 +5143,7 @@ export const speciesList = Object.freeze({
     dexId: 149,
     name: "Dragonite",
     types: ["dragon", "flying"],
-    stats: { hp: 91, atk: 134, def: 95, spc: 100, spe: 80 },
+    stats: { hp: 91, atk: 134, def: 95, spa: 100, spd: 0, spe: 80 },
     moves: [
       "razorwind",
       "slam",
@@ -5183,7 +5183,7 @@ export const speciesList = Object.freeze({
     dexId: 150,
     name: "Mewtwo",
     types: ["psychic"],
-    stats: { hp: 106, atk: 110, def: 90, spc: 154, spe: 130 },
+    stats: { hp: 106, atk: 110, def: 90, spa: 154, spd: 0, spe: 130 },
     moves: [
       "megapunch",
       "payday",
@@ -5235,7 +5235,7 @@ export const speciesList = Object.freeze({
     dexId: 151,
     name: "Mew",
     types: ["psychic"],
-    stats: { hp: 100, atk: 100, def: 100, spc: 100, spe: 100 },
+    stats: { hp: 100, atk: 100, def: 100, spa: 100, spd: 0, spe: 100 },
     moves: [
       "pound",
       "megapunch",

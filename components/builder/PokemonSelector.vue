@@ -35,7 +35,7 @@
         <TypeBadge v-for="type in species.types" :key="type" :type image />
         <div class="flex items-center gap-0.5">
           <UBadge
-            v-for="stat in statKeys"
+            v-for="stat in gen1StatKeys"
             :key="stat"
             color="white"
             class="w-6 sm:w-11"
@@ -60,7 +60,7 @@
 
 <script setup lang="ts">
 import { speciesList, type Species, type SpeciesId } from "@/game/species";
-import { statKeys } from "@/game/utils";
+import { gen1StatKeys } from "@/game/utils";
 import { speciesListEntries as items } from "#imports";
 
 const model = defineModel<string>();

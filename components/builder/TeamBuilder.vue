@@ -175,8 +175,8 @@
             </div>
           </div>
           <div class="grid items-center grid-cols-[auto,1fr,auto,auto,auto,auto] gap-1">
-            <template v-for="stat in statKeys" :key="stat">
-              <span class="px-1.5">{{ statName[stat] }}</span>
+            <template v-for="stat in gen1StatKeys" :key="stat">
+              <span class="px-1.5">{{ statShortName[stat] }}</span>
               <URange v-model="selectedPoke.evProxy[stat]" :min="0" :max="255" color="green" />
               <span class="text-center px-1.5 min-w-8 text-xs">
                 {{ selectedPoke.evProxy[stat] }}
@@ -264,18 +264,10 @@
 <script setup lang="ts">
 import { calcStat, getHpDv } from "@/game/pokemon";
 import { speciesList, type Species, type SpeciesId } from "@/game/species";
-import { statKeys, type Stats } from "@/game/utils";
+import { gen1StatKeys, type Stats } from "@/game/utils";
 import { evToStatexp, ivToDv } from "~/utils/pokemon";
 
 defineEmits<{ (e: "delete" | "close"): void }>();
-
-const statName: Record<keyof Stats, string> = {
-  hp: "HP",
-  atk: "Atk",
-  def: "Def",
-  spc: "Spc",
-  spe: "Spe",
-};
 
 const { team } = defineProps<{ team: Team }>();
 const toast = useToast();
@@ -329,7 +321,7 @@ const copyTextArea = (text: string) => {
 
 const getHpDvFromEvs = (poke: PokemonDesc) => {
   const dvs: Partial<Stats> = {};
-  for (const stat of statKeys) {
+  for (const stat of gen1StatKeys) {
     dvs[stat] = ivToDv(poke.ivs[stat]);
   }
   return getHpDv(dvs);

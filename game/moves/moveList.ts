@@ -222,7 +222,7 @@ const internalMoveList = Object.freeze({
 
       for (const k of stageKeys) {
         user.v.stages[k] = target.v.stages[k];
-        if (k === "atk" || k === "def" || k == "spc" || k === "spe") {
+        if (k === "atk" || k === "def" || k == "spa" || k === "spe") {
           user.applyStages(k, false);
         }
       }
@@ -407,7 +407,7 @@ const internalMoveList = Object.freeze({
     name: "Amnesia",
     pp: 20,
     type: "psychic",
-    stages: [["spc", 2]],
+    stages: [["spa", 2]],
   },
   barrier: {
     kind: "stage",
@@ -451,7 +451,7 @@ const internalMoveList = Object.freeze({
     name: "Growth",
     pp: 40,
     type: "normal",
-    stages: [["spc", 1]],
+    stages: [["spa", 1]],
   },
   harden: {
     kind: "stage",
@@ -567,7 +567,7 @@ const internalMoveList = Object.freeze({
     type: "poison",
     power: 40,
     acc: 100,
-    effect: [33.21 /* 85/256 */, [["spc", -1]]],
+    effect: [33.21 /* 85/256 */, [["spa", -1]]],
   },
   aurorabeam: {
     kind: "damage",
@@ -1140,7 +1140,7 @@ const internalMoveList = Object.freeze({
     type: "psychic",
     power: 90,
     acc: 100,
-    effect: [33.21 /* 85/256 */, [["spc", -1]]],
+    effect: [33.21 /* 85/256 */, [["spa", -1]]],
   },
   psywave: {
     kind: "damage",

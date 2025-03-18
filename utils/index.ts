@@ -1,6 +1,6 @@
 import type { Mods } from "~/game/battle";
 import type { Status } from "../game/pokemon";
-import type { Stages } from "../game/utils";
+import type { Stages, Stats } from "../game/utils";
 import { moveList, type DamagingMove, type MoveId } from "~/game/moves";
 
 export const randChoice = <T>(arr: T[]) => arr[Math.floor(Math.random() * arr.length)];
@@ -66,10 +66,20 @@ const statusTable: Record<Status, string> = {
 export const stageTable: Record<Stages, string> = {
   atk: "Attack",
   def: "Defense",
-  spc: "Special",
+  spa: "Special",
+  spd: "Special Defense",
   spe: "Speed",
   acc: "Acccuracy",
   eva: "Evasion",
+};
+
+export const statShortName: Record<keyof Stats, string> = {
+  hp: "HP",
+  atk: "Atk",
+  def: "Def",
+  spa: "Spc",
+  spd: "Spd",
+  spe: "Spe",
 };
 
 const descriptions: Partial<Record<MoveId, string>> = {
