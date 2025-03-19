@@ -36,6 +36,7 @@
   },
   "dependencies": {
     "@vueuse/core": "^12.5.0",
+    "defu": "^6.1.4",
     "drizzle-orm": "^0.39.3",
     "obscenity": "^0.4.3",
     "postgres": "^3.4.5",

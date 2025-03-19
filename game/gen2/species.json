@@ -5489,7 +5489,7 @@
       "metronome",
       "swift",
       "skullbash",
-      "highjump-kick",
+      "hijumpkick",
       "rest",
       "substitute",
       "thief",
@@ -6424,8 +6424,7 @@
       "shadowball",
       "futuresight"
     ],
-    "genderRatio": 50,
-    "evolvesFrom": "mime-jr"
+    "genderRatio": 50
   },
   "scyther": {
     "stats": { "hp": 70, "atk": 110, "def": 80, "spa": 55, "spd": 80, "spe": 105 },

@@ -1,4 +1,4 @@
-import type { MoveId } from "./moves";
+import { getMaxPP, moveList, type MoveId } from "./moves";
 import type { Pokemon } from "./pokemon";
 import type { Stats } from "./utils";
 
@@ -9,7 +9,7 @@ export class TransformedPokemon {
 
   constructor(readonly base: Pokemon, readonly transformed: Pokemon) {
     this.moves = [...transformed.moves];
-    this.pp = transformed.pp.map(_ => 5);
+    this.pp = transformed.moves.map(move => Math.min(getMaxPP(moveList[move]), 5));
     this.stats = { ...this.transformed.stats, hp: base.stats.hp };
   }
 
@@ -54,10 +54,18 @@ export class TransformedPokemon {
   }
 
   get shiny() {
-    return this.base.shiny;
+    return this.transformed.shiny;
   }
 
   get gender() {
     return this.base.gender;
+  }
+
+  get dvs() {
+    return this.base.dvs;
+  }
+
+  get friendship() {
+    return this.base.friendship;
   }
 }

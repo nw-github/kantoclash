@@ -1,6 +1,6 @@
 import type { Mods } from "~/game/battle";
 import type { Status } from "../game/pokemon";
-import type { Stages, Stats } from "../game/utils";
+import type { Stages } from "../game/utils";
 import { moveList, type DamagingMove, type MoveId } from "~/game/moves";
 
 export const randChoice = <T>(arr: T[]) => arr[Math.floor(Math.random() * arr.length)];
@@ -73,13 +73,15 @@ export const stageTable: Record<Stages, string> = {
   eva: "Evasion",
 };
 
-export const statShortName: Record<keyof Stats, string> = {
+export const statShortName = {
   hp: "HP",
   atk: "Atk",
   def: "Def",
   spa: "Spc",
   spd: "Spd",
   spe: "Spe",
+  acc: "Acc",
+  eva: "Eva",
 };
 
 const descriptions: Partial<Record<MoveId, string>> = {
@@ -121,6 +123,9 @@ const flagDesc: Record<NonNullable<DamagingMove["flag"]>, string> = {
   dream_eater: "The user recovers 1/2 the damage dealt. Only works on sleeping targets. ",
   payday: "",
   charge: "The user charges on the first turn, and attacks on the second. ",
+  charge_sun:
+    "The user charges on the first turn, and attacks on the second. Skips the charging " +
+    "turn if sun is active.",
   charge_invuln:
     "The user charges on the first turn, and attacks on the second. While charging, the user " +
     "can only be hit by moves that do not check accuracy.",
@@ -136,6 +141,12 @@ const flagDesc: Record<NonNullable<DamagingMove["flag"]>, string> = {
   counter: "Deals 2x the last move's damage if it was normal or fighting type. ",
   super_fang: "Deals damage equal to 1/2 the target's current HP. ",
   psywave: "Damages the target for a random amount between 1 HP and 1.5x the user's level. ",
+  frustration: "Higher power the lower the user's friendship is. ",
+  return: "Higher power the higher the user's friendship is. ",
+  flail: "Higher power the lower the user's HP is. ",
+  hidden_power: "Power and type of this move are determined by the user's DVs. ",
+  magnitude: "Power is determined randomly. ",
+  false_swipe: "Always leaves the target with at least 1HP. ",
 };
 
 export const describeMove = (id: MoveId) => {

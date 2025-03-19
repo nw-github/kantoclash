@@ -18,6 +18,7 @@
     <p v-else-if="e.why === 'confusion'">It hurt itself in its confusion!</p>
     <p v-else-if="e.why === 'ohko'">It's a one-hit KO!</p>
     <p v-else-if="e.why === 'trap'">{{ pn(e.src) }}'s attack continues!</p>
+    <p v-else-if="e.why === 'sandstorm'">{{ pn(e.src) }} is buffeted by the sandstorm!</p>
 
     <p v-if="e.why === 'attacked' && e.hitCount === undefined && (e.eff ?? 1) !== 1" class="italic">
       {{ eff(e.eff) }}
@@ -84,6 +85,8 @@
   <div v-else-if="e.type === 'charge'">{{ chargeMessage[e.move]?.replace("{}", pn(e.src)) }}</div>
   <div v-else-if="e.type === 'mimic'">{{ pn(e.src) }} learned {{ moveList[e.move].name }}!</div>
   <div v-else-if="e.type === 'conversion'">Converted type to match {{ pn(e.target, false) }}!</div>
+  <div v-else-if="e.type === 'magnitude'">Magnitude {{ e.magnitude }}!</div>
+  <div v-else-if="e.type === 'weather'">{{ weatherMessage[e.kind][e.weather] }}</div>
   <div v-else>Unknown event: <code>{{ e }}</code></div>
 </template>
 

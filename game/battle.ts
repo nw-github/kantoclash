@@ -9,22 +9,24 @@ import type {
   InfoReason,
   VictoryEvent,
 } from "./events";
-import { moveList, type MoveId, type Move, getDamageVariables, moveFunctions } from "./moves";
+import { type MoveId, type Move, moveFunctions } from "./moves";
 import type { Pokemon, Status } from "./pokemon";
 import { TransformedPokemon } from "./transformed";
 import {
-  calcDamage,
   clamp,
   floatTo255,
+  getEffectiveness,
   hpPercent,
-  scaleAccuracy255,
   stageMultipliers,
   stageStatKeys,
   type Stages,
   type StatStages,
   type Type,
   type VolatileFlag,
+  type Weather,
 } from "./utils";
+import type { Generation } from "./gen1";
+import { GENERATION2 } from "./gen2";
 
 export type MoveOption = {
   move: MoveId;
@@ -54,6 +56,10 @@ export class Player {
   options?: { canSwitch: boolean; moves: MoveOption[] };
   sleepClausePoke?: Pokemon;
 
+  light_screen = 0;
+  reflect = 0;
+  spikes = false;
+
   constructor(readonly id: PlayerId, readonly team: Pokemon[]) {
     this.active = new ActivePokemon(team[0], this);
     this.originalTeam = structuredClone(team);
@@ -63,7 +69,7 @@ export class Player {
     this.choice = undefined;
   }
 
-  chooseMove(index: number) {
+  chooseMove(battle: Battle, index: number) {
     const choice = this.options?.moves[index];
     if (!choice?.valid) {
       return false;
@@ -71,13 +77,13 @@ export class Player {
 
     this.choice = {
       indexInMoves: choice.indexInMoves,
-      move: moveList[choice.move],
+      move: battle.gen.moveList[choice.move],
       user: this.active,
     };
     return true;
   }
 
-  chooseSwitch(index: number, battle: Battle) {
+  chooseSwitch(battle: Battle, index: number) {
     if (!this.options?.canSwitch) {
       return false;
     }
@@ -128,6 +134,8 @@ export class Battle {
   private switchTurn = true;
   private _victor?: Player;
   readonly rng: Random;
+  readonly gen: Generation;
+  weather?: { kind: Weather; turns: number };
   finished = false;
   leadTurn = true;
   turn = 0;
@@ -135,8 +143,9 @@ export class Battle {
   private constructor(p1: Player, p2: Player, readonly mods: Mods, readonly seed: string) {
     this.players = [p1, p2];
     this.rng = new Random(seed);
-    for (const k in moveList) {
-      this.moveListToId.set(moveList[k as MoveId], k as MoveId);
+    this.gen = GENERATION2;
+    for (const k in this.gen.moveList) {
+      this.moveListToId.set(this.gen.moveList[k as MoveId], k as MoveId);
     }
   }
 
@@ -154,8 +163,8 @@ export class Battle {
       return [self, { events: [], switchTurn: true } satisfies Turn] as const;
     }
 
-    player1.chooseSwitch(0, self);
-    player2.chooseSwitch(0, self);
+    player1.chooseSwitch(self, 0);
+    player2.chooseSwitch(self, 0);
     return [self, self.nextTurn()!] as const;
   }
 
@@ -320,6 +329,10 @@ export class Battle {
     }
   }
 
+  getEffectiveness(atk: Type, def: readonly Type[]) {
+    return getEffectiveness(this.gen.typeChart, atk, def);
+  }
+
   private tryUseMove({ move, user, indexInMoves }: ChosenMove, target: ActivePokemon) {
     // Order of events comes from here:
     //  https://www.smogon.com/forums/threads/past-gens-research-thread.3506992/#post-5878612
@@ -394,23 +407,12 @@ export class Battle {
     return this.rng.int(0, 255) < Math.min(num, 255);
   }
 
+  rand255Good(num: number) {
+    return this.rng.int(0, 255) <= Math.min(num, 255);
+  }
+
   checkAccuracy(move: Move, user: ActivePokemon, target: ActivePokemon) {
-    if (!move.acc) {
-      return true;
-    }
-
-    const chance = scaleAccuracy255(user.v.thrashing?.acc ?? floatTo255(move.acc), user, target);
-    // https://www.smogon.com/dex/rb/moves/petal-dance/
-    // https://www.youtube.com/watch?v=NC5gbJeExbs
-    if (user.v.thrashing) {
-      user.v.thrashing.acc = chance;
-    }
-
-    if (target.v.invuln || !this.rand255(chance)) {
-      this.info(user, "miss");
-      return false;
-    }
-    return true;
+    return this.gen.checkAccuracy(move, this, user, target);
   }
 
   static censorEvents(events: BattleEvent[], player?: Player) {
@@ -678,7 +680,11 @@ export class ActivePokemon {
   }
 
   handleRage(battle: Battle) {
-    if (this.base.hp && this.v.thrashing?.move === moveList.rage && this.v.stages.atk < 6) {
+    if (
+      this.base.hp &&
+      this.v.thrashing?.move === battle.gen.moveList.rage &&
+      this.v.stages.atk < 6
+    ) {
       battle.info(this, "rage");
       this.modStages(this.owner, [["atk", +1]], battle);
     }
@@ -693,8 +699,8 @@ export class ActivePokemon {
   }
 
   handleConfusionDamage(battle: Battle, target: ActivePokemon) {
-    const [atk, def] = getDamageVariables(false, target, target, false);
-    const dmg = calcDamage({
+    const [atk, def] = battle.gen.getDamageVariables(false, target, target, false);
+    const dmg = battle.gen.calcDamage({
       lvl: this.base.level,
       pow: 40,
       def,
@@ -751,7 +757,7 @@ export class ActivePokemon {
       return {
         move,
         pp: this.base.pp[i],
-        valid: this.isValidMove(move, i),
+        valid: this.isValidMove(battle, move, i),
         indexInMoves: i,
         display: true,
       } as MoveOption;
@@ -784,8 +790,8 @@ export class ActivePokemon {
     };
   }
 
-  private isValidMove(move: MoveId, i: number) {
-    if (this.v.lockedIn() && this.v.lockedIn() !== moveList[move]) {
+  private isValidMove(battle: Battle, move: MoveId, i: number) {
+    if (this.v.lockedIn() && this.v.lockedIn() !== battle.gen.moveList[move]) {
       return false;
     } else if (this.base.status === "frz" || this.base.status === "slp") {
       // https://bulbapedia.bulbagarden.net/wiki/List_of_battle_glitches_(Generation_I)#Defrost_move_forcing

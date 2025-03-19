@@ -5729,7 +5729,7 @@
     "evolvesTo": "hitmontop",
     "dexId": 236,
     "name": "Tyrogue",
-    "types": ["fighting"],
+    "types": ["fight"],
     "stats": { "hp": 35, "atk": 35, "def": 35, "spa": 35, "spd": 35, "spe": 35 },
     "moves": [
       "headbutt",
@@ -5738,7 +5738,7 @@
       "toxic",
       "doubleteam",
       "swift",
-      "highjump-kick",
+      "hijumpkick",
       "rest",
       "thief",
       "mindreader",
@@ -5761,8 +5761,6 @@
     ],
     "genderRatio": 100
   },
-  "happiny": { "evolvesTo": "chansey" },
-  "mime-jr": { "evolvesTo": "mr-mime" },
   "smoochum": {
     "evolvesTo": "jynx",
     "dexId": 238,
@@ -5902,7 +5900,6 @@
     ],
     "genderRatio": 75
   },
-  "munchlax": { "evolvesTo": "snorlax" },
   "chikorita": {
     "dexId": 152,
     "name": "Chikorita",
@@ -7311,7 +7308,6 @@
     "evolvesFrom": "azurill",
     "evolvesTo": "azumarill"
   },
-  "azurill": { "evolvesTo": "marill" },
   "azumarill": {
     "dexId": 184,
     "name": "Azumarill",
@@ -7413,7 +7409,6 @@
     "genderRatio": 50,
     "evolvesFrom": "bonsly"
   },
-  "bonsly": { "evolvesTo": "sudowoodo" },
   "politoed": {
     "dexId": 186,
     "name": "Politoed",
@@ -8132,7 +8127,6 @@
     "genderRatio": 50,
     "evolvesFrom": "wynaut"
   },
-  "wynaut": { "evolvesTo": "wobbuffet" },
   "girafarig": {
     "dexId": 203,
     "name": "Girafarig",
@@ -8668,7 +8662,7 @@
   "heracross": {
     "dexId": 214,
     "name": "Heracross",
-    "types": ["bug", "fighting"],
+    "types": ["bug", "fight"],
     "stats": { "hp": 80, "atk": 125, "def": 75, "spa": 40, "spd": 95, "spe": 85 },
     "moves": [
       "cut",
@@ -9267,7 +9261,6 @@
     "genderRatio": 50,
     "evolvesFrom": "mantyke"
   },
-  "mantyke": { "evolvesTo": "mantine" },
   "skarmory": {
     "dexId": 227,
     "name": "Skarmory",
@@ -9649,7 +9642,7 @@
   "hitmontop": {
     "dexId": 237,
     "name": "Hitmontop",
-    "types": ["fighting"],
+    "types": ["fight"],
     "stats": { "hp": 50, "atk": 95, "def": 95, "spa": 35, "spd": 110, "spe": 70 },
     "moves": [
       "headbutt",
@@ -9658,7 +9651,7 @@
       "toxic",
       "doubleteam",
       "swift",
-      "highjump-kick",
+      "hijumpkick",
       "rest",
       "thief",
       "mindreader",
@@ -10151,9 +10144,9 @@
       "whirlpool"
     ]
   },
-  "hooh": {
+  "ho-oh": {
     "dexId": 250,
-    "name": "Hooh",
+    "name": "Ho-oh",
     "types": ["fire", "flying"],
     "stats": { "hp": 106, "atk": 130, "def": 90, "spa": 110, "spd": 154, "spe": 90 },
     "moves": [

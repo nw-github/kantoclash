@@ -20,7 +20,7 @@
     <template #panel>
       <ul class="list-none p-2 m-0 w-max max-w-[300px]">
         <li>
-          <h4 class="inline-block w-8 text-center">{{ move.power ?? "--" }}</h4>
+          <h4 class="inline-block w-8 text-center">{{ move.power || "--" }}</h4>
           Power
         </li>
         <li>

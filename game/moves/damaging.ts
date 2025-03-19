@@ -1,10 +1,12 @@
 import type { ActivePokemon, Battle } from "../battle";
 import { moveFunctions, type BaseMove } from "./index";
-import type { Status } from "../pokemon";
-import { getEffectiveness, isSpecial, calcDamage, type Stages, randChoiceWeighted } from "../utils";
+import { getHiddenPower, type Status } from "../pokemon";
+import { isSpecial, type Stages, randChoiceWeighted, idiv, hpPercentExact } from "../utils";
 import type { Random } from "random";
+import type { CalcDamageParams } from "../gen1";
 
 type Effect = Status | [Stages, number][] | "confusion" | "flinch";
+
 type Flag =
   | "high_crit"
   | "drain"
@@ -16,6 +18,7 @@ type Flag =
   | "dream_eater"
   | "payday"
   | "charge"
+  | "charge_sun"
   | "charge_invuln"
   | "multi_turn"
   | "rage"
@@ -24,15 +27,23 @@ type Flag =
   | "ohko"
   | "counter"
   | "super_fang"
-  | "psywave";
+  | "psywave"
+  | "frustration"
+  | "return"
+  | "flail"
+  | "hidden_power"
+  | "magnitude"
+  | "false_swipe";
 
 export interface DamagingMove extends BaseMove {
   readonly kind: "damage";
   readonly power: number;
   readonly flag?: Flag;
   readonly effect?: [number, Effect];
+  readonly effect_self?: boolean;
   readonly recoil?: number;
   readonly dmg?: number;
+  readonly punish?: boolean;
 }
 
 export function use(
@@ -50,11 +61,16 @@ export function use(
     return dead;
   }
 
-  if ((this.flag === "charge" || this.flag === "charge_invuln") && user.v.charging !== this) {
-    battle.event({ type: "charge", src: user.owner.id, move: battle.moveIdOf(this)! });
-    user.v.charging = this;
-    user.v.invuln = this.flag === "charge_invuln" || user.v.invuln;
-    return false;
+  if (
+    (this.flag === "charge" || this.flag === "charge_sun" || this.flag === "charge_invuln") &&
+    user.v.charging !== this
+  ) {
+    if (!(this.flag === "charge_sun" && battle.weather?.kind === "sun")) {
+      battle.event({ type: "charge", src: user.owner.id, move: battle.moveIdOf(this)! });
+      user.v.charging = this;
+      user.v.invuln = this.flag === "charge_invuln" || user.v.invuln;
+      return false;
+    }
   }
 
   user.v.charging = undefined;
@@ -227,8 +243,14 @@ export function exec(
 }
 
 function getDamage(self: DamagingMove, battle: Battle, user: ActivePokemon, target: ActivePokemon) {
+  let pow = self.power;
+  let type = self.type;
+  if (self.flag === "hidden_power") {
+    [type, pow] = getHiddenPower(user.base.dvs);
+  }
+
   // https://bulbapedia.bulbagarden.net/wiki/Damage#Generation_I
-  const eff = getEffectiveness(self.type, target.v.types);
+  const eff = battle.getEffectiveness(type, target.v.types);
   if (self.flag === "dream_eater" && target.base.status !== "slp") {
     return { dmg: 0, isCrit: false, eff: 1 };
   } else if (self.flag === "level") {
@@ -238,7 +260,7 @@ function getDamage(self: DamagingMove, battle: Battle, user: ActivePokemon, targ
     return {
       dmg: targetIsFaster || eff === 0 ? 0 : 65535,
       isCrit: false,
-      eff,
+      eff: eff === 0 ? 0 : 1,
     };
   } else if (self.flag === "counter") {
     // https://www.youtube.com/watch?v=ftTalHMjPRY
@@ -268,54 +290,70 @@ function getDamage(self: DamagingMove, battle: Battle, user: ActivePokemon, targ
     return { dmg: self.dmg, isCrit: false, eff: 1 };
   }
 
-  const baseSpe = user.base.species.stats.spe;
-  let chance;
-  if (self.flag === "high_crit") {
-    chance = user.v.flags.focus ? 4 * Math.floor(baseSpe / 4) : 8 * Math.floor(baseSpe / 2);
-  } else {
-    chance = Math.floor(user.v.flags.focus ? baseSpe / 8 : baseSpe / 2);
+  let isCrit = battle.rand255(battle.gen.getCritChance(user, self.flag === "high_crit"));
+  let rand: number | false | Random = battle.rng;
+  if (self.flag === "frustration") {
+    pow = idiv(255 - user.base.friendship, 2.5);
+  } else if (self.flag === "return") {
+    pow = idiv(user.base.friendship, 2.5);
+  } else if (self.flag === "flail") {
+    const percent = hpPercentExact(user.base.hp, user.base.stats.hp);
+    if (percent >= 68.8) {
+      pow = 20;
+    } else if (percent >= 35.4) {
+      pow = 40;
+    } else if (percent >= 20.8) {
+      pow = 80;
+    } else if (percent >= 10.4) {
+      pow = 100;
+    } else if (percent >= 4.2) {
+      pow = 150;
+    } else {
+      pow = 200;
+    }
+    isCrit = false;
+    rand = false;
+  } else if (self.flag === "magnitude") {
+    const magnitude = battle.rng.int(4, 10);
+    pow = [10, 30, 50, 70, 90, 110, 150][magnitude - 4];
+    battle.event({ type: "magnitude", magnitude });
   }
 
-  const isCrit = battle.rand255(chance);
+  let weather: CalcDamageParams["weather"];
+  if (battle.weather?.kind === "rain") {
+    weather =
+      self.type === "fire" || self.flag === "charge_sun"
+        ? "penalty"
+        : self.type === "water"
+        ? "bonus"
+        : undefined;
+  } else if (battle.weather?.kind === "sun") {
+    weather = self.type === "fire" ? "bonus" : self.type === "water" ? "penalty" : undefined;
+  }
+
   const explosion = self.flag === "explosion" ? 2 : 1;
-  const [atk, def] = getDamageVariables(isSpecial(self.type), user, target, isCrit);
-  const dmg = calcDamage({
+  const [atk, def] = battle.gen.getDamageVariables(isSpecial(self.type), user, target, isCrit);
+  let dmg = battle.gen.calcDamage({
     lvl: user.base.level,
-    pow: self.power!,
+    pow,
     atk,
     def: Math.max(Math.floor(def / explosion), 1),
     isCrit,
     isStab: user.v.types.includes(self.type),
-    rand: battle.rng,
+    rand,
     eff,
+    weather,
   });
+
+  if (self.flag === "false_swipe" && dmg >= target.base.hp && !target.v.substitute) {
+    dmg = target.base.hp - 1;
+  }
   return { dmg, isCrit, eff };
 }
 
 function trapTarget(self: DamagingMove, rng: Random, user: ActivePokemon, target: ActivePokemon) {
   target.v.trapped = true;
   user.v.trapping = { move: self, turns: multiHitCount(rng) - 1 };
-}
-
-export function getDamageVariables(
-  special: boolean,
-  user: ActivePokemon,
-  target: ActivePokemon,
-  isCrit: boolean,
-) {
-  const [atks, defs] = special ? (["spa", "spa"] as const) : (["atk", "def"] as const);
-
-  const ls = atks === "spa" && target.v.flags.light_screen;
-  const reflect = atks === "atk" && target.v.flags.reflect;
-
-  let atk = user.getStat(atks, isCrit);
-  let def = target.getStat(defs, isCrit, true, ls || reflect);
-  if (atk >= 256 || def >= 256) {
-    atk = Math.max(Math.floor(atk / 4) % 256, 1);
-    // defense doesn't get capped here on cart, potentially causing divide by 0
-    def = Math.max(Math.floor(def / 4) % 256, 1);
-  }
-  return [atk, def] as const;
 }
 
 function multiHitCount(rng: Random) {

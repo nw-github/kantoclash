@@ -5,7 +5,7 @@ import type { Options, Turn } from "../game/battle";
 import { randoms } from "~/server/utils/formats";
 import { formatInfo, type ClientPlayer } from "~/utils/shared";
 import { Pokemon } from "~/game/pokemon";
-import { clamp, getEffectiveness } from "../game/utils";
+import { clamp } from "../game/utils";
 import random from "random";
 import { convertDesc, parseTeams, type Team } from "~/utils/pokemon";
 import type { FormatId } from "~/utils/data";
@@ -309,7 +309,7 @@ export function createBotTeam(format: FormatId) {
     if (format === "g1_standard") {
       team = random.choice(ouTeams)!.pokemon.map(convertDesc);
     } else {
-      team = randoms(s => (format === "g1_nfe") === s.evolvesTo).map(
+      team = randoms(s => (format === "g1_nfe") === !!s.evolvesTo).map(
         ({ moves, speciesId: species, level }) => ({ dvs: {}, statexp: {}, level, species, moves }),
       );
     }
@@ -347,19 +347,20 @@ export function rankBot({ team, options, players, activePokemon, opponent: id, m
 
     const move = moveList[id];
     if ((move.power ?? 0) > 1) {
-      const eff = getEffectiveness(move.type, opponentPoke.species.types);
-      if (eff > 1) {
-        return 15;
-      } else if (eff < 1) {
-        return 5;
-      } else if (eff === 0) {
-        return 0;
-      }
+      // const eff = getEffectiveness(move.type, opponentPoke.species.types);
+      // if (eff > 1) {
+      //   return 15;
+      // } else if (eff < 1) {
+      //   return 5;
+      // } else if (eff === 0) {
+      //   return 0;
+      // }
+      return 10;
     } else if (move.kind === "recover") {
       if (self.hpPercent === 100) {
         return 0;
       } else if (self.hpPercent <= 25) {
-        return 20;
+        return 15;
       } else {
         return 5;
       }

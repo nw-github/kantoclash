@@ -97,7 +97,7 @@
       <UCheckbox v-model="recentlyPlayed" label="Recently Played" />
       <UTable :rows="filteredRooms" :columns="roomsCols" :empty-state="emptyState">
         <template #live-data="{ row }">
-          <UCheckbox :value="!row.finished" />
+          <UCheckbox v-model="row.live" disabled />
         </template>
 
         <template #name-data="{ row }">
@@ -159,7 +159,7 @@ const selectedTeam = ref<Team | undefined>();
 const errors = ref<Record<number, [string, string[]]>>({});
 const selectTeamMenu = ref<InstanceType<typeof TeamSelector>>();
 
-const rooms = ref<{ to: string; name: string; format: FormatId; finished: boolean }[]>([]);
+const rooms = ref<{ to: string; name: string; format: FormatId; live: boolean }[]>([]);
 const filterFormats = ref<string[]>([]);
 const battleQuery = ref("");
 const challengeUser = ref<Battler>();
@@ -170,7 +170,7 @@ const filteredRooms = computed(() => {
   return rooms.value
     .filter(room => !q || room.name.toLowerCase().includes(q.toLowerCase()))
     .filter(room => !f.length || f.includes(room.format))
-    .filter(room => recentlyPlayed.value || !room.finished);
+    .filter(room => recentlyPlayed.value || room.live);
 });
 
 const roomsCols = [
@@ -264,7 +264,7 @@ const loadRooms = () => {
         name: room.battlers.map(pl => pl.name).join(" vs. "),
         to: "/room/" + room.id,
         format: room.format,
-        finished: room.finished,
+        live: !room.finished,
       })),
     );
     loadingRooms.value = false;

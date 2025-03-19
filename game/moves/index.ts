@@ -1,7 +1,7 @@
 import type { ActivePokemon, Battle } from "../battle";
 import type { FailReason, RecoveryReason } from "../events";
 import type { Pokemon, Status } from "../pokemon";
-import type { Stages, Type, VolatileFlag } from "../utils";
+import type { Stages, Type, VolatileFlag, Weather } from "../utils";
 import type { DamagingMove } from "./damaging";
 
 export * from "./damaging";
@@ -15,6 +15,11 @@ export interface BaseMove {
   readonly acc?: number;
   readonly priority?: number;
   readonly power?: number;
+  readonly sleepOnly?: boolean;
+  /** 50% accurate in sun, -- in rain */
+  readonly rainAcc?: boolean;
+  /** Hits users in the semi-invuln state of these moves */
+  readonly ignore?: string[] /* MoveId[] */;
 }
 
 export interface DefaultMove extends BaseMove {
@@ -63,6 +68,11 @@ export interface FailMove extends BaseMove {
   readonly why: FailReason;
 }
 
+export interface WeatherMove extends BaseMove {
+  readonly kind: "weather";
+  readonly weather: Weather;
+}
+
 export type Move =
   | CustomMove
   | VolatileFlagMove
@@ -73,4 +83,5 @@ export type Move =
   | StatusMove
   | SwitchMove
   | FailMove
-  | DefaultMove;
+  | DefaultMove
+  | WeatherMove;

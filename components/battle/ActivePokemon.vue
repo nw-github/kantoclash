@@ -38,7 +38,7 @@
 
           <template v-for="(val, stage) in poke.stages">
             <UBadge v-if="val" :key="stage" :class="val > 0 ? 'up' : 'down'">
-              {{ roundTo(stageMultipliers[val] / 100, 2) }}x {{ toTitleCase(stage) }}
+              {{ roundTo(stageMultipliers[val] / 100, 2) }}x {{ statShortName[stage] }}
             </UBadge>
           </template>
         </div>
@@ -329,7 +329,7 @@ const playAnimation = (anim: AnimationType, name?: string, cb?: () => void) => {
         opacity: 1,
         complete: () => resolve(),
       });
-    } else if (!moveList[anim].power) {
+    } else if (moveList[anim].kind !== "damage") {
       return resolve();
     } else {
       const sprRect = sprite.value.getBoundingClientRect();

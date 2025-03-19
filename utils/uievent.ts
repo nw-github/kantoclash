@@ -1,6 +1,13 @@
-import type { BattleEvent, DamageEvent, InfoReason, RecoverEvent } from "~/game/events";
+import type {
+  BattleEvent,
+  DamageEvent,
+  InfoReason,
+  RecoverEvent,
+  WeatherEvent,
+} from "~/game/events";
 import type { MoveId } from "~/game/moves";
 import type { Status } from "~/game/pokemon";
+import type { Weather } from "~/game/utils";
 
 export type RawUIBattleEvent =
   | BattleEvent
@@ -87,4 +94,22 @@ export const infoMessage: Record<InfoReason, string> = {
   trapped: "{} can't move!",
   ff: "{} forfeit the match.",
   ff_timer: "{} ran out of time.",
+};
+
+export const weatherMessage: Record<Weather, Record<WeatherEvent["kind"], string>> = {
+  rain: {
+    start: "A downpour started!",
+    continue: "Rain continues to fall.",
+    end: "The rain stopped.",
+  },
+  sun: {
+    start: "The sunlight got bright!",
+    continue: "The sunlight is strong.",
+    end: "The sunlight faded.",
+  },
+  sand: {
+    start: "A sandstorm brewed!",
+    continue: "The sandstorm rages.",
+    end: "The sandstorm subsided.",
+  },
 };

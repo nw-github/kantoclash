@@ -160,7 +160,9 @@ export const parseTeams = (src: string) => {
 };
 
 export const convertDesc = (desc: PokemonDesc): Gen1PokemonDesc => {
-  const species = normalizeName(desc.species) as SpeciesId;
+  const normalizeName2 = (v: string) => v.trim().toLowerCase().replaceAll(/\s+/g, "");
+
+  const species = normalizeName2(desc.species) as SpeciesId;
   const moves: MoveId[] = [];
   for (const move of desc.moves) {
     if (move.trim()) {

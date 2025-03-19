@@ -17,6 +17,8 @@ export class Pokemon {
   status?: Status;
   sleepTurns: number = 0;
   shiny: boolean;
+  friendship: number;
+  dvs: Stats;
 
   constructor(
     speciesId: SpeciesId,
@@ -25,6 +27,7 @@ export class Pokemon {
     level: number,
     moves: MoveId[],
     name?: string,
+    friendship?: number,
   ) {
     const calcStatBase = (stat: keyof Stats) => {
       // Gen 2 uses the Spc IV for SpA and SpD
@@ -32,11 +35,19 @@ export class Pokemon {
         stat === "hp",
         this.species.stats[stat],
         level,
-        stat === "hp" ? getHpDv(dvs) : dvs[stat === "spd" ? "spa" : stat],
+        this.dvs[stat === "spd" ? "spa" : stat],
         statexp[stat],
       );
     };
 
+    this.dvs = {
+      hp: getHpDv(dvs),
+      atk: dvs.atk ?? 15,
+      def: dvs.def ?? 15,
+      spa: dvs.spa ?? 15,
+      spd: dvs.spd ?? 15,
+      spe: dvs.spe ?? 15,
+    };
     this.speciesId = speciesId;
     this.name = name || this.species.name;
     this.moves = moves;
@@ -54,7 +65,7 @@ export class Pokemon {
     this.hp = this.stats.hp;
     if (this.species.genderRatio) {
       this.gender =
-        (dvs.atk ?? 15) < 15 - Math.floor(this.species.genderRatio * 15) ? "female" : "male";
+        this.dvs.atk < 15 - Math.floor(this.species.genderRatio * 15) ? "female" : "male";
     } else if (this.species.genderRatio === 0) {
       this.gender = "female";
     }
@@ -63,6 +74,7 @@ export class Pokemon {
       dvs.spe === 10 &&
       dvs.spa === 10 &&
       [2, 3, 6, 7, 10, 11, 14, 15].includes(dvs.atk);
+    this.friendship = friendship ?? 255;
 
     // const c2 = (iv?: number) => ((iv ?? 15) >> 1) & 0b11;
     // const unownLetter = idiv(
@@ -123,8 +135,8 @@ export const getHiddenPower = (dvs: Partial<StageStats>) => {
 
   const x = msb(dvs.spa) | (msb(dvs.spe) << 1) | (msb(dvs.def) << 2) | (msb(dvs.atk) << 3);
   const y = (dvs.spa ?? 15) & 0b11;
-  return {
-    type: hpTypes[(((dvs.atk ?? 15) & 0b11) << 2) | ((dvs.def ?? 15) & 0b11)],
-    power: idiv(5 * x + y, 2) + 31,
-  };
+  return [
+    hpTypes[(((dvs.atk ?? 15) & 0b11) << 2) | ((dvs.def ?? 15) & 0b11)],
+    idiv(5 * x + y, 2) + 31,
+  ] as const;
 };

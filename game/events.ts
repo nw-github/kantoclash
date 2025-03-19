@@ -2,7 +2,7 @@ import type { VolatileStats } from "./battle";
 import type { MoveId } from "./moves";
 import type { Status } from "./pokemon";
 import type { SpeciesId } from "./species";
-import type { Stages, Type, VolatileFlag } from "./utils";
+import type { Stages, Type, VolatileFlag, Weather } from "./utils";
 
 export type BattleEvent =
   | SwitchEvent
@@ -18,7 +18,9 @@ export type BattleEvent =
   | DisableEvent
   | ChargeEvent
   | MimicEvent
-  | ConversionEvent;
+  | ConversionEvent
+  | MagnitudeEvent
+  | WeatherEvent;
 
 export type PlayerId = string;
 
@@ -45,7 +47,8 @@ export type DamageReason =
   | "psn"
   | "brn"
   | "confusion"
-  | "trap";
+  | "trap"
+  | "sandstorm";
 
 export type RecoveryReason = "drain" | "recover" | "rest" | "seeder";
 
@@ -188,4 +191,15 @@ type ConversionEvent = {
   user: PlayerId;
   target: PlayerId;
   types: Type[];
+};
+
+type MagnitudeEvent = {
+  type: "magnitude";
+  magnitude: number;
+};
+
+export type WeatherEvent = {
+  type: "weather";
+  kind: "start" | "end" | "continue";
+  weather: Weather;
 };

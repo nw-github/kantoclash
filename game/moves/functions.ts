@@ -11,8 +11,9 @@ import type {
   StatusMove,
   SwitchMove,
   VolatileFlagMove,
+  WeatherMove,
 } from "./index";
-import { getEffectiveness, isSpecial } from "../utils";
+import { isSpecial } from "../utils";
 import { exec as execDamagingMove, use as useDamagingMove } from "./damaging";
 
 type KindToType = {
@@ -25,6 +26,7 @@ type KindToType = {
   switch: SwitchMove;
   fail: FailMove;
   default: DefaultMove;
+  weather: WeatherMove;
 };
 
 type MoveKind = Required<Move>["kind"];
@@ -151,7 +153,7 @@ export const moveFunctions: Record<MoveKind, MoveFunctions> = {
         battle.info(target, "fail_generic");
         return false;
       } else if (
-        (this.type === "electric" && getEffectiveness(this.type, target.v.types) === 0) ||
+        (this.type === "electric" && battle.getEffectiveness(this.type, target.v.types) === 0) ||
         (this.type === "poison" && target.v.types.includes("poison"))
       ) {
         battle.info(target, "immune");
@@ -180,6 +182,13 @@ export const moveFunctions: Record<MoveKind, MoveFunctions> = {
   fail: {
     exec(battle, user) {
       battle.info(user, this.why);
+      return false;
+    },
+  },
+  weather: {
+    exec(battle) {
+      battle.event({ type: "weather", kind: "start", weather: this.weather });
+      battle.weather = { turns: 5, kind: this.weather };
       return false;
     },
   },

@@ -462,11 +462,11 @@ export class GameServer extends Server<ClientMessage, ServerMessage> {
 
       const [player, room] = info;
       if (type === "move") {
-        if (!player.chooseMove(index)) {
+        if (!player.chooseMove(room.battle, index)) {
           return ack("invalid_choice");
         }
       } else if (type === "switch") {
-        if (!player.chooseSwitch(index, room.battle)) {
+        if (!player.chooseSwitch(room.battle, index)) {
           return ack("invalid_choice");
         }
       } else if (type !== "forfeit") {

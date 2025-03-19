@@ -64,11 +64,11 @@ const open = ref(false);
 
 const filter = (species: typeof items, query: string) => {
   const q = normalizeName(query);
-  const all = species.filter(([id, _]) => id.includes(q));
+  const all = species.filter(([id, _]) => normalizeName(id).includes(q));
   const currentSpecies = team.pokemon.map(p => normalizeName(p.species));
   let subset = all.filter(([id, _]) => !currentSpecies.includes(id));
   if (team.format.startsWith("g1")) {
-    subset = subset.filter(([_, species]) => species.dexId <= 151);
+    // subset = subset.filter(([_, species]) => species.dexId <= 151);
   }
   if (team.format === "g1_nfe") {
     subset = subset.filter(([_, species]) => species.evolvesTo);
