@@ -82,7 +82,7 @@
         <div class="events p-1">
           <template v-if="i > 0">
             <!-- eslint-disable-next-line vue/valid-v-for -->
-            <Event v-for="e of turn" :key="perspective" :e :my-id :players :perspective />
+            <Event v-for="e of turn" :key="perspective" :e :my-id :players :perspective :gen />
           </template>
           <ChatMessage
             v-for="(chat, j) in chats[i] ?? []"
@@ -92,7 +92,7 @@
           />
           <template v-if="i === 0">
             <!-- eslint-disable-next-line vue/valid-v-for -->
-            <Event v-for="e of turn" :key="perspective" :e :my-id :players :perspective />
+            <Event v-for="e of turn" :key="perspective" :e :my-id :players :perspective :gen />
           </template>
         </div>
       </template>
@@ -165,6 +165,7 @@
 
 <script setup lang="ts">
 import { useMutedPlayerIds } from "~/composables/states";
+import { GENERATIONS } from "~/game/gen";
 import type { InfoRecord } from "~/server/gameServer";
 
 const props = defineProps<{
@@ -186,6 +187,7 @@ const mutedPlayers = useMutedPlayerIds();
 const message = ref("");
 const scrollPoint = ref<HTMLDivElement>();
 const forfeitModalOpen = ref(false);
+const gen = computed(() => GENERATIONS[formatInfo[props.format].generation]!);
 
 onMounted(async () => {
   await nextTick();

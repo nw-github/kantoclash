@@ -1,9 +1,9 @@
 import type { ActivePokemon, Battle } from "../battle";
 import { moveFunctions, type BaseMove } from "./index";
-import { getHiddenPower, type Status } from "../pokemon";
+import { getHiddenPower, type Pokemon, type Status } from "../pokemon";
 import { isSpecial, type Stages, randChoiceWeighted, idiv, hpPercentExact } from "../utils";
 import type { Random } from "random";
-import type { CalcDamageParams } from "../gen1";
+import type { CalcDamageParams } from "../gen";
 
 type Effect = Status | [Stages, number][] | "confusion" | "flinch";
 
@@ -243,11 +243,8 @@ export function exec(
 }
 
 function getDamage(self: DamagingMove, battle: Battle, user: ActivePokemon, target: ActivePokemon) {
-  let pow = self.power;
-  let type = self.type;
-  if (self.flag === "hidden_power") {
-    [type, pow] = getHiddenPower(user.base.dvs);
-  }
+  // eslint-disable-next-line prefer-const
+  let [type, pow] = getMovePower(self, user.base);
 
   // https://bulbapedia.bulbagarden.net/wiki/Damage#Generation_I
   const eff = battle.getEffectiveness(type, target.v.types);
@@ -292,25 +289,7 @@ function getDamage(self: DamagingMove, battle: Battle, user: ActivePokemon, targ
 
   let isCrit = battle.rand255(battle.gen.getCritChance(user, self.flag === "high_crit"));
   let rand: number | false | Random = battle.rng;
-  if (self.flag === "frustration") {
-    pow = idiv(255 - user.base.friendship, 2.5);
-  } else if (self.flag === "return") {
-    pow = idiv(user.base.friendship, 2.5);
-  } else if (self.flag === "flail") {
-    const percent = hpPercentExact(user.base.hp, user.base.stats.hp);
-    if (percent >= 68.8) {
-      pow = 20;
-    } else if (percent >= 35.4) {
-      pow = 40;
-    } else if (percent >= 20.8) {
-      pow = 80;
-    } else if (percent >= 10.4) {
-      pow = 100;
-    } else if (percent >= 4.2) {
-      pow = 150;
-    } else {
-      pow = 200;
-    }
+  if (self.flag === "flail") {
     isCrit = false;
     rand = false;
   } else if (self.flag === "magnitude") {
@@ -322,24 +301,24 @@ function getDamage(self: DamagingMove, battle: Battle, user: ActivePokemon, targ
   let weather: CalcDamageParams["weather"];
   if (battle.weather?.kind === "rain") {
     weather =
-      self.type === "fire" || self.flag === "charge_sun"
+      type === "fire" || self.flag === "charge_sun"
         ? "penalty"
-        : self.type === "water"
+        : type === "water"
         ? "bonus"
         : undefined;
   } else if (battle.weather?.kind === "sun") {
-    weather = self.type === "fire" ? "bonus" : self.type === "water" ? "penalty" : undefined;
+    weather = type === "fire" ? "bonus" : type === "water" ? "penalty" : undefined;
   }
 
   const explosion = self.flag === "explosion" ? 2 : 1;
-  const [atk, def] = battle.gen.getDamageVariables(isSpecial(self.type), user, target, isCrit);
+  const [atk, def] = battle.gen.getDamageVariables(isSpecial(type), user, target, isCrit);
   let dmg = battle.gen.calcDamage({
     lvl: user.base.level,
     pow,
     atk,
     def: Math.max(Math.floor(def / explosion), 1),
     isCrit,
-    isStab: user.v.types.includes(self.type),
+    isStab: user.v.types.includes(type),
     rand,
     eff,
     weather,
@@ -358,4 +337,35 @@ function trapTarget(self: DamagingMove, rng: Random, user: ActivePokemon, target
 
 function multiHitCount(rng: Random) {
   return randChoiceWeighted(rng, [2, 3, 4, 5], [37.5, 37.5, 12.5, 12.5]);
+}
+
+export function getMovePower(self: DamagingMove, user: Pokemon) {
+  let pow = self.power;
+  let type = self.type;
+  if (self.flag === "hidden_power") {
+    [type, pow] = getHiddenPower(user.dvs);
+  }
+
+  if (self.flag === "frustration") {
+    pow = idiv(255 - user.friendship, 2.5);
+  } else if (self.flag === "return") {
+    pow = idiv(user.friendship, 2.5);
+  } else if (self.flag === "flail") {
+    const percent = hpPercentExact(user.hp, user.stats.hp);
+    if (percent >= 68.8) {
+      pow = 20;
+    } else if (percent >= 35.4) {
+      pow = 40;
+    } else if (percent >= 20.8) {
+      pow = 80;
+    } else if (percent >= 10.4) {
+      pow = 100;
+    } else if (percent >= 4.2) {
+      pow = 150;
+    } else {
+      pow = 200;
+    }
+  }
+
+  return [type, pow] as const;
 }

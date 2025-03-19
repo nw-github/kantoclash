@@ -1,17 +1,17 @@
 import { type ServerOptions, Server, type Socket as SocketIoClient } from "socket.io";
-import type { Pokemon } from "../game/pokemon";
-import { Battle, type Options, Player, type Turn } from "../game/battle";
+import type { PokemonDesc, ValidatedPokemonDesc } from "../game/pokemon";
+import { Battle, type PlayerParams, type Options, type Turn } from "../game/battle";
 import { type TeamProblems, formatDescs } from "./utils/formats";
 import type { User } from "#auth-utils";
-import type { Gen1PokemonDesc } from "~/utils/pokemon";
 import type { InfoMessage } from "./utils/info";
 import { formatInfo } from "~/utils/shared";
-import type { FormatId } from "~/utils/data";
+import type { FormatId } from "~/utils/shared";
 import { activeBots, createBotTeam } from "./bot";
 import random from "random";
+import { GENERATIONS } from "~/game/gen";
 
 export type JoinRoomResponse = {
-  team?: Pokemon[];
+  team?: ValidatedPokemonDesc[];
   options?: Options;
   turns: Turn[];
   chats: InfoRecord;
@@ -44,7 +44,7 @@ export interface ClientMessage {
   getOnlineUsers: (q: string, ack: (resp: Battler[]) => void) => void;
 
   enterMatchmaking: (
-    team: Gen1PokemonDesc[] | undefined,
+    team: PokemonDesc[] | undefined,
     format: FormatId,
     challengeId: string | undefined,
     ack: (err?: MMError, problems?: TeamProblems) => void,
@@ -53,7 +53,7 @@ export interface ClientMessage {
   respondToChallenge: (
     id: string,
     accept: boolean,
-    team: Gen1PokemonDesc[] | undefined,
+    team: PokemonDesc[] | undefined,
     ack: (err?: MMError, problems?: TeamProblems) => void,
   ) => void;
   getChallenges: (ack: (resp: Challenge[]) => void) => void;
@@ -120,7 +120,7 @@ type Account = {
   matchmaking?: { format: FormatId } | { challenged: Account };
   userRoom: string;
   activeBattles: Set<Room>;
-  challenges: { format: FormatId; from: Account; player: Player }[];
+  challenges: { format: FormatId; from: Account; player: PlayerParams }[];
 };
 
 class Room {
@@ -291,7 +291,7 @@ export type ServerConfig = {
 
 export class GameServer extends Server<ClientMessage, ServerMessage> {
   private accounts = new Map<string, Account>();
-  private mmWaiting: Partial<Record<FormatId, Player>> = {};
+  private mmWaiting: Partial<Record<FormatId, PlayerParams>> = {};
   private rooms = new Map<string, Room>();
   private config: ServerConfig = { botMatchmaking: true };
 
@@ -432,7 +432,7 @@ export class GameServer extends Server<ClientMessage, ServerMessage> {
 
       const player = socket.account && room.battle.findPlayer(socket.account.id);
       return ack({
-        team: player?.originalTeam,
+        team: player?.teamDesc,
         options: player?.options,
         turns: room.turns.slice(turn).map(({ events, switchTurn }) => ({
           events: Battle.censorEvents(events, player),
@@ -455,7 +455,7 @@ export class GameServer extends Server<ClientMessage, ServerMessage> {
       return ack();
     });
     socket.on("choose", (roomId, index, type, sequenceNo, ack) => {
-      const info = this.validatePlayer(socket, roomId, sequenceNo);
+      const info = this.validateMove(socket, roomId, sequenceNo);
       if (typeof info === "string") {
         return ack(info);
       }
@@ -482,7 +482,7 @@ export class GameServer extends Server<ClientMessage, ServerMessage> {
       }
     });
     socket.on("cancel", (roomId, sequenceNo, ack) => {
-      const info = this.validatePlayer(socket, roomId, sequenceNo);
+      const info = this.validateMove(socket, roomId, sequenceNo);
       if (typeof info === "string") {
         return ack(info);
       }
@@ -630,7 +630,7 @@ export class GameServer extends Server<ClientMessage, ServerMessage> {
     });
   }
 
-  private scheduleBotMatch(format: FormatId, player: Player) {
+  private scheduleBotMatch(format: FormatId, player: PlayerParams) {
     if (!activeBots.length || activeBots.includes(player.id) || !this.config.botMatchmaking) {
       return;
     }
@@ -642,7 +642,7 @@ export class GameServer extends Server<ClientMessage, ServerMessage> {
 
       const bot = this.accounts.get(random.choice(activeBots)!)!;
       let botPlayer;
-      while (!(botPlayer instanceof Player)) {
+      while (!botPlayer || Array.isArray(botPlayer)) {
         botPlayer = this.getPlayer(bot, format, createBotTeam(format));
       }
       this.setupRoom(this.mmWaiting[format], botPlayer, format);
@@ -675,18 +675,20 @@ export class GameServer extends Server<ClientMessage, ServerMessage> {
     delete account.matchmaking;
   }
 
-  private setupRoom(player: Player, opponent: Player, format: FormatId) {
+  private setupRoom(player: PlayerParams, opponent: PlayerParams, format: FormatId) {
     const onFoundMatch = (room: Room, account: Account) => {
       account.activeBattles.add(room);
       this.to(account.userRoom).emit("foundMatch", room.id);
       this.leaveMatchmaking(account);
     };
 
+    const fmt = formatInfo[format];
     const [battle, turn0] = Battle.start(
+      GENERATIONS[fmt.generation]!,
       player,
       opponent,
-      formatDescs[format].chooseLead,
-      formatInfo[format].mods,
+      fmt.chooseLead ?? false,
+      fmt.mods,
     );
     const room = new Room(crypto.randomUUID(), battle, turn0, format, this);
     this.rooms.set(room.id, room);
@@ -695,7 +697,7 @@ export class GameServer extends Server<ClientMessage, ServerMessage> {
     onFoundMatch(room, this.accounts.get(opponent.id)!);
   }
 
-  private validatePlayer(socket: Socket, roomId: string, sequenceNo: number) {
+  private validateMove(socket: Socket, roomId: string, sequenceNo: number) {
     const room = this.rooms.get(roomId);
     if (!room) {
       return "bad_room";
@@ -714,24 +716,22 @@ export class GameServer extends Server<ClientMessage, ServerMessage> {
   }
 
   private getPlayer(account: Account, format: FormatId, team?: any) {
-    let player;
     if (formatDescs[format].validate) {
       const [success, result] = formatDescs[format].validate(team);
       if (!success) {
         return result;
       }
 
-      player = new Player(account.id, result);
+      return { id: account.id, team: result };
     } else {
-      player = new Player(account.id, formatDescs[format].generate!());
+      return { id: account.id, team: formatDescs[format].generate!() };
     }
-    return player;
   }
 
   getBattlers(room: Room) {
     return room.battle.players.map(pl => {
       const acc = this.accounts.get(pl.id)!;
-      return { name: acc.name, id: acc.id, nPokemon: pl.originalTeam.length };
+      return { name: acc.name, id: acc.id, nPokemon: pl.teamDesc.length };
     });
   }
 

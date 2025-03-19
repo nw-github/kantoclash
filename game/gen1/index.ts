@@ -1,8 +1,8 @@
 import type { Random } from "random";
-import type { ActivePokemon, Battle } from "./battle";
-import { moveList, type Move } from "./moves";
-import { speciesList } from "./species";
-import { floatTo255, idiv, scaleAccuracy255, type Type } from "./utils";
+import type { ActivePokemon, Battle } from "../battle";
+import { moveList, type Move } from "../moves";
+import { speciesList, type Species } from "../species";
+import { floatTo255, idiv, scaleAccuracy255, type Type } from "../utils";
 
 export type TypeChart = Record<Type, Partial<Record<Type, number>>>;
 
@@ -138,7 +138,7 @@ const calcDamage = ({ lvl, pow, atk, def, eff, isCrit, isStab, rand }: CalcDamag
   return idiv(dmg * r, 255);
 };
 
-export function getDamageVariables(
+function getDamageVariables(
   special: boolean,
   user: ActivePokemon,
   target: ActivePokemon,
@@ -159,8 +159,9 @@ export function getDamageVariables(
   return [atk, def] as const;
 }
 
-export const createGeneration = () => {
+const createGeneration = () => {
   return {
+    id: 1,
     speciesList,
     moveList,
     typeChart,
@@ -168,9 +169,11 @@ export const createGeneration = () => {
     checkAccuracy,
     calcDamage,
     getDamageVariables,
+    validSpecies: (species: Species) => species.dexId <= 151,
+    getMaxPP: (move: Move) => (move.pp === 1 ? 1 : Math.min(Math.floor((move.pp * 8) / 5), 61)),
   };
 };
 
-export type Generation = ReturnType<typeof createGeneration>;
-
 export const GENERATION1 = createGeneration();
+
+export type Generation = typeof GENERATION1;

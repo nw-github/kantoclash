@@ -18,6 +18,8 @@ export const typeColor: Record<Type, string> = {
   ice: "#73CDBF",
   psychic: "#F97075",
   dragon: "#096CC3",
+  dark: "#595265",
+  steel: "#598DA0",
 };
 
 export const statusColor: Record<Status, string> = {

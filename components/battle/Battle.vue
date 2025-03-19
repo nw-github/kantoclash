@@ -22,12 +22,13 @@
       </div>
 
       <div class="flex">
-        <ActivePokemon ref="frontPokemon" class="order-2" :poke="players[opponent]?.active" />
+        <ActivePokemon ref="frontPokemon" class="order-2" :poke="players[opponent]?.active" :gen />
         <ActivePokemon
           ref="backPokemon"
           class="pt-10 sm:pt-14 pb-2 sm:pb-0"
           :poke="players[perspective]?.active"
           :base="perspective === myId ? activeInTeam : undefined"
+          :gen
           back
         />
       </div>
@@ -40,7 +41,7 @@
               :key="e.time"
               class="w-full bg-gray-300/90 dark:bg-gray-700/95 rounded-lg px-2 pb-0.5"
             >
-              <Event :e :my-id :players :perspective class="first:pt-0" />
+              <Event class="first:pt-0" :e :my-id :players :perspective :gen />
             </div>
           </TransitionGroup>
         </div>
@@ -94,7 +95,14 @@
           <div class="grid gap-2 sm:grid-cols-[1fr,1.5fr] h-min">
             <div class="flex flex-col gap-1 sm:gap-2">
               <template v-for="(option, i) in options.moves">
-                <MoveButton v-if="option.display" :key="i" :option @click="selectMove(i)" />
+                <MoveButton
+                  v-if="option.display"
+                  :key="i"
+                  :option
+                  :gen
+                  :poke="activeInTeam"
+                  @click="selectMove(i)"
+                />
               </template>
               <div v-if="!options.moves.length && activeIndex === -1">Choose your lead</div>
             </div>
@@ -235,20 +243,20 @@
 import type { Options, Turn } from "~/game/battle";
 import type { Pokemon } from "~/game/pokemon";
 import type { BattleEvent, InfoReason } from "~/game/events";
-import { speciesList, type SpeciesId } from "~/game/species";
+import type { SpeciesId } from "~/game/species";
 import { clamp } from "~/game/utils";
-import { moveList } from "~/game/moves";
 import type { BattleTimer, InfoRecord } from "~/server/gameServer";
 import type { ActivePokemon } from "#build/components";
 import type { AnimationType } from "./ActivePokemon.vue";
 import criesSpritesheet from "~/public/effects/cries.json";
+import { GENERATIONS } from "~/game/gen";
 
 const emit = defineEmits<{
   (e: "chat", message: string): void;
   (e: "forfeit" | "timer" | "cancel"): void;
   (e: "move" | "switch", index: number): void;
 }>();
-const { team, options, players, turns, chats, battlers, timer, finished } = defineProps<{
+const { team, options, players, turns, chats, battlers, timer, finished, format } = defineProps<{
   team?: Pokemon[];
   options?: Options;
   players: Record<string, ClientPlayer>;
@@ -263,6 +271,7 @@ const myId = useMyId();
 const sfxVol = useSfxVolume();
 const { fadeOut } = useBGMusic();
 const isMounted = useMounted();
+const gen = computed(() => GENERATIONS[formatInfo[format].generation]!);
 const selectionText = ref("");
 const menuButton = ref<HTMLElement>();
 const isMenuVisible = useElementVisibility(menuButton);
@@ -347,7 +356,7 @@ watch(perspective, () => {
 
 const selectMove = (index: number) => {
   selectionText.value = `${players[myId.value].active!.name} will use ${
-    moveList[options!.moves[index].move].name
+    gen.value.moveList[options!.moves[index].move].name
   }`;
 
   emit("move", index);
@@ -380,7 +389,7 @@ const runTurn = async (live: boolean, turnIdx: number) => {
 
   const playCry = (speciesId: SpeciesId, pitchDown = false) => {
     if (isLive()) {
-      const sprite = speciesList[speciesId].dexId.toString().padStart(3, "0");
+      const sprite = gen.value.speciesList[speciesId].dexId.toString().padStart(3, "0");
       return sound.play("cries", { sprite, volume: sfxVol.value, detune: pitchDown ? -350 : 0 });
     }
   };

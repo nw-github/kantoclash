@@ -139,7 +139,8 @@
 
 <script setup lang="ts">
 import type { TeamSelector } from "#components";
-import { speciesList } from "~/game/species";
+import type { PokemonDesc } from "~/game/pokemon";
+import { speciesList, type SpeciesId } from "~/game/species";
 import type { Battler, Challenge, MMError } from "~/server/gameServer";
 
 const emit = defineEmits<{ (e: "requestLogin"): void }>();
@@ -284,7 +285,7 @@ const searchUsers = async (q: string) => {
   });
 };
 
-const enterMMCallback = (team?: Gen1PokemonDesc[], err?: MMError, problems?: TeamProblems) => {
+const enterMMCallback = (team?: PokemonDesc[], err?: MMError, problems?: TeamProblems) => {
   if (!err) {
     return;
   }
@@ -325,9 +326,10 @@ const enterMMCallback = (team?: Gen1PokemonDesc[], err?: MMError, problems?: Tea
   const issues: Record<number, [string, string[]]> = {};
   for (const { path, message } of problems) {
     const [pokemon, category, index] = path as [number, string, number | string];
+    // We're just getting name, fine to use generic speciesList here
     const name =
       team![pokemon]?.name ||
-      speciesList[team![pokemon]?.species]?.name ||
+      speciesList[team![pokemon]?.species as SpeciesId]?.name ||
       (pokemon !== undefined && `Pokemon ${pokemon + 1}`) ||
       "General";
     const arr = (issues[pokemon] ??= [name, []]);

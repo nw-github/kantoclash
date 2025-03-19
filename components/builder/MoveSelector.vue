@@ -43,16 +43,18 @@
 </template>
 
 <script setup lang="ts">
-import { speciesList, type Species, type SpeciesId } from "~/game/species";
-import { getCategory, type Move, type MoveId } from "~/game/moves";
-import { moveListEntries as items } from "#imports";
+import type { Species, SpeciesId } from "~/game/species";
+import type { Move, MoveId } from "~/game/moves";
+import type { PokemonDesc } from "~/game/pokemon";
+import type { Generation } from "~/game/gen";
 
 const query = defineModel<string>({ default: "" });
-const { poke } = defineProps<{ poke?: PokemonDesc }>();
+const { poke, gen } = defineProps<{ poke?: PokemonDesc; gen: Generation }>();
 const open = ref(false);
-const species = computed<Species | undefined>(() => speciesList[poke?.species as SpeciesId]);
+const species = computed<Species | undefined>(() => gen.speciesList[poke?.species as SpeciesId]);
+const items = computed(() => Object.entries(gen.moveList) as [MoveId, Move][]);
 
-const filter = (moves: typeof items, query: string) => {
+const filter = (moves: [MoveId, Move][], query: string) => {
   const q = normalizeName(query);
   const all = moves.filter(([id, _]) => id.includes(q));
   if (poke) {

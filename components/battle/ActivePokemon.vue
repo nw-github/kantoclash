@@ -18,8 +18,8 @@
 
           <TypeBadge
             v-if="poke.charging"
-            :type="moveList[poke.charging].type"
-            :label="moveList[poke.charging].name"
+            :type="gen.moveList[poke.charging].type"
+            :label="gen.moveList[poke.charging].name"
           />
 
           <template v-if="!species!.types.every((ty, i) => ty === poke!.conversion?.[i])">
@@ -65,7 +65,7 @@
                   <span>
                     {{ species!.name }}
                     <span v-if="poke.transformed">
-                      (Was: {{ speciesList[poke.speciesId].name }})
+                      (Was: {{ gen.speciesList[poke.speciesId].name }})
                     </span>
                   </span>
                   <div class="flex gap-1">
@@ -127,21 +127,26 @@
 <script setup lang="ts">
 import { stageMultipliers } from "~/game/utils";
 import { calcStat, type Pokemon } from "~/game/pokemon";
-import { speciesList } from "~/game/species";
-import { moveList, type MoveId } from "~/game/moves";
+import type { MoveId } from "~/game/moves";
 import { breakpointsTailwind } from "@vueuse/core";
+import type { Generation } from "~/game/gen1";
 
-const { poke, base, back } = defineProps<{
+const { poke, base, back, gen } = defineProps<{
   poke?: ClientActivePokemon;
   base?: Pokemon;
   back?: boolean;
+  gen: Generation;
 }>();
-const species = computed(() => poke && speciesList[poke.transformed ?? poke.speciesId]);
-const minSpe = computed(() => poke && calcStat(false, species.value!.stats.spe, poke.level, 0, 0));
+const species = computed(() => poke && gen.speciesList[poke.transformed ?? poke.speciesId]);
+const minSpe = computed(
+  () => poke && calcStat("spe", species.value!.stats, poke.level, { spe: 0 }, { spe: 0 }),
+);
 const maxSpe = computed(
-  () => poke && calcStat(false, species.value!.stats.spe, poke.level, 15, 65535),
+  () => poke && calcStat("spe", species.value!.stats, poke.level, { spe: 15 }, { spe: 65535 }),
 );
 const hp = computed(() => poke?.hpPercent ?? 0);
+const statShortName = computed(() => ({ ...getStatKeys(gen), acc: "Acc", eva: "Eva" }));
+
 const breakpoint = useBreakpoints(breakpointsTailwind);
 const lessThanSm = breakpoint.smaller("sm");
 
@@ -329,7 +334,7 @@ const playAnimation = (anim: AnimationType, name?: string, cb?: () => void) => {
         opacity: 1,
         complete: () => resolve(),
       });
-    } else if (moveList[anim].kind !== "damage") {
+    } else if (gen.moveList[anim].kind !== "damage") {
       return resolve();
     } else {
       const sprRect = sprite.value.getBoundingClientRect();

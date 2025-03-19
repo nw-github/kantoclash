@@ -46,8 +46,8 @@
   </div>
   <div v-else-if="e.type === 'move'" class="move">
     <template v-if="e.thrashing && e.move !== 'rage'">{{ pn(e.src) }}'s thrashing about!</template>
-    <template v-else-if="e.disabled">{{ pn(e.src) }}'s {{ moveList[e.move].name }} is disabled!</template>
-    <template v-else>{{ pn(e.src) }} used <b>{{ moveList[e.move].name }}</b>!</template>
+    <template v-else-if="e.disabled">{{ pn(e.src) }}'s {{ gen.moveList[e.move].name }} is disabled!</template>
+    <template v-else>{{ pn(e.src) }} used <b>{{ gen.moveList[e.move].name }}</b>!</template>
   </div>
   <div v-else-if="e.type === 'end'">
     <template v-if="e.victor === myId">You win!</template>
@@ -65,7 +65,7 @@
   <div v-else-if="e.type === 'status'">{{ pn(e.src) }} {{ statusTable[e.status] }}!</div>
   <div v-else-if="e.type === 'stages'">
     <p v-for="[stage, amount] of e.stages" :key="stage">
-      {{ pn(e.src) }}'s {{ stageTable[stage] }} {{ amount > 0 ? "rose" : "fell" }}{{ Math.abs(amount) > 1 ? " sharply" : "" }}!
+      {{ pn(e.src) }}'s {{ getStageTable(gen)[stage] }} {{ amount > 0 ? "rose" : "fell" }}{{ Math.abs(amount) > 1 ? " sharply" : "" }}!
     </p>
   </div>
   <div v-else-if="e.type === 'info'" :class="{ confused: e.why === 'confused', move: e.why === 'sleep' || e.why === 'disable_end' || e.why === 'wake' }">
@@ -81,12 +81,12 @@
     </p>
   </div>
   <div v-else-if="e.type === 'transform'">{{ pn(e.src) }} transformed into {{ pn(e.target, false) }}!</div>
-  <div v-else-if="e.type === 'disable'">{{ pn(e.src) }}'s {{ moveList[e.move].name }} was disabled!</div>
+  <div v-else-if="e.type === 'disable'">{{ pn(e.src) }}'s {{ gen.moveList[e.move].name }} was disabled!</div>
   <div v-else-if="e.type === 'charge'">{{ chargeMessage[e.move]?.replace("{}", pn(e.src)) }}</div>
-  <div v-else-if="e.type === 'mimic'">{{ pn(e.src) }} learned {{ moveList[e.move].name }}!</div>
+  <div v-else-if="e.type === 'mimic'">{{ pn(e.src) }} learned {{ gen.moveList[e.move].name }}!</div>
   <div v-else-if="e.type === 'conversion'">Converted type to match {{ pn(e.target, false) }}!</div>
   <div v-else-if="e.type === 'magnitude'">Magnitude {{ e.magnitude }}!</div>
-  <div v-else-if="e.type === 'weather'">{{ weatherMessage[e.kind][e.weather] }}</div>
+  <div v-else-if="e.type === 'weather'">{{ weatherMessage[e.weather][e.kind] }}</div>
   <div v-else>Unknown event: <code>{{ e }}</code></div>
 </template>
 
@@ -99,14 +99,15 @@ div {
 </style>
 
 <script setup lang="ts">
-import { moveList } from "~/game/moves";
 import { hpPercentExact } from "~/game/utils";
+import type { Generation } from "~/game/gen";
 
 const { perspective, players, myId, e } = defineProps<{
   e: UIBattleEvent;
   players: Record<string, ClientPlayer>;
   perspective: string;
   myId: string;
+  gen: Generation;
 }>();
 
 const pn = (id: string, title = true) => {

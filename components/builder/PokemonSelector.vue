@@ -30,7 +30,7 @@
         <TypeBadge v-for="type in species.types" :key="type" :type image />
         <div class="flex items-center gap-0.5">
           <UBadge
-            v-for="stat in gen1StatKeys"
+            v-for="(name, stat) in statKeys"
             :key="stat"
             color="white"
             class="w-6 sm:w-11"
@@ -43,7 +43,7 @@
             >
               {{ species.stats[stat] }}
             </span>
-            <span class="text-[0.5rem] hidden sm:block">{{ toTitleCase(stat) }}</span>
+            <span class="text-[0.5rem] hidden sm:block">{{ name }}</span>
           </UBadge>
         </div>
       </div>
@@ -55,14 +55,15 @@
 
 <script setup lang="ts">
 import type { Species, SpeciesId } from "@/game/species";
-import { gen1StatKeys } from "@/game/utils";
-import { speciesListEntries as items } from "#imports";
+import type { Generation } from "~/game/gen1";
 
 const model = defineModel<string>();
-const { team } = defineProps<{ team: Team }>();
+const { team, gen } = defineProps<{ team: Team; gen: Generation }>();
 const open = ref(false);
+const items = computed(() => Object.entries(gen.speciesList) as [SpeciesId, Species][]);
+const statKeys = computed(() => getStatKeys(gen));
 
-const filter = (species: typeof items, query: string) => {
+const filter = (species: [SpeciesId, Species][], query: string) => {
   const q = normalizeName(query);
   const all = species.filter(([id, _]) => normalizeName(id).includes(q));
   const currentSpecies = team.pokemon.map(p => normalizeName(p.species));

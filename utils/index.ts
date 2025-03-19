@@ -1,7 +1,8 @@
 import type { Mods } from "~/game/battle";
 import type { Status } from "../game/pokemon";
-import type { Stages } from "../game/utils";
-import { moveList, type DamagingMove, type MoveId } from "~/game/moves";
+import { isSpecial, type Stages, type Type } from "../game/utils";
+import type { DamagingMove, Move, MoveId } from "~/game/moves";
+import type { Generation } from "~/game/gen1";
 
 export const randChoice = <T>(arr: T[]) => arr[Math.floor(Math.random() * arr.length)];
 
@@ -63,7 +64,7 @@ const statusTable: Record<Status, string> = {
   slp: "Puts the target to sleep",
 };
 
-export const stageTable: Record<Stages, string> = {
+const stageTable: Record<Stages, string> = {
   atk: "Attack",
   def: "Defense",
   spa: "Special",
@@ -73,15 +74,30 @@ export const stageTable: Record<Stages, string> = {
   eva: "Evasion",
 };
 
-export const statShortName = {
-  hp: "HP",
-  atk: "Atk",
-  def: "Def",
-  spa: "Spc",
-  spd: "Spd",
-  spe: "Spe",
-  acc: "Acc",
-  eva: "Eva",
+const statKeys = { hp: "HP", atk: "Atk", def: "Def", spa: "Spc", spd: "SpD", spe: "Spe" };
+
+export const getStageTable = (gen: Generation) => {
+  if (gen.id === 1) {
+    return stageTable;
+  } else {
+    return { ...stageTable, spa: "Special Attack" };
+  }
+};
+
+export const getStatKeys = (gen: Generation) => {
+  if (gen.id === 1) {
+    return statKeys;
+  } else {
+    return { ...statKeys, spa: "SpA" };
+  }
+};
+
+export const getCategory = (move: Move, type?: Type) => {
+  return move.kind === "damage"
+    ? isSpecial(type ?? move.type)
+      ? "special"
+      : "physical"
+    : "status";
 };
 
 const descriptions: Partial<Record<MoveId, string>> = {
@@ -149,8 +165,8 @@ const flagDesc: Record<NonNullable<DamagingMove["flag"]>, string> = {
   false_swipe: "Always leaves the target with at least 1HP. ",
 };
 
-export const describeMove = (id: MoveId) => {
-  const move = moveList[id];
+export const describeMove = (gen: Generation, id: MoveId) => {
+  const move = gen.moveList[id];
   if (move.kind === "damage") {
     let buf = move.flag && move.flag in flagDesc ? flagDesc[move.flag] : "";
     if (move.effect) {

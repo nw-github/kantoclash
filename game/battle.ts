@@ -10,8 +10,7 @@ import type {
   VictoryEvent,
 } from "./events";
 import { type MoveId, type Move, moveFunctions } from "./moves";
-import type { Pokemon, Status } from "./pokemon";
-import { TransformedPokemon } from "./transformed";
+import { Pokemon, type Status, type ValidatedPokemonDesc } from "./pokemon";
 import {
   clamp,
   floatTo255,
@@ -25,8 +24,7 @@ import {
   type VolatileFlag,
   type Weather,
 } from "./utils";
-import type { Generation } from "./gen1";
-import { GENERATION2 } from "./gen2";
+import type { Generation } from "./gen";
 
 export type MoveOption = {
   move: MoveId;
@@ -49,9 +47,16 @@ export type Turn = {
   switchTurn: boolean;
 };
 
-export class Player {
+export type PlayerParams = {
+  readonly id: PlayerId;
+  readonly team: ValidatedPokemonDesc[];
+};
+
+class Player {
+  readonly id: PlayerId;
   readonly active: ActivePokemon;
-  readonly originalTeam: Pokemon[];
+  readonly team: Pokemon[];
+  readonly teamDesc: ValidatedPokemonDesc[];
   choice?: ChosenMove;
   options?: { canSwitch: boolean; moves: MoveOption[] };
   sleepClausePoke?: Pokemon;
@@ -60,9 +65,11 @@ export class Player {
   reflect = 0;
   spikes = false;
 
-  constructor(readonly id: PlayerId, readonly team: Pokemon[]) {
-    this.active = new ActivePokemon(team[0], this);
-    this.originalTeam = structuredClone(team);
+  constructor(gen: Generation, { id, team }: PlayerParams) {
+    this.id = id;
+    this.team = team.map(p => new Pokemon(gen, p));
+    this.teamDesc = team;
+    this.active = new ActivePokemon(this.team[0], this);
   }
 
   cancel() {
@@ -91,9 +98,7 @@ export class Player {
     const poke = this.team[index];
     if (!battle.leadTurn) {
       const current = this.active.base;
-      if (!poke || poke === current || !poke.hp) {
-        return false;
-      } else if (current instanceof TransformedPokemon && poke === current.base) {
+      if (!poke || poke === current || !poke.hp || poke === current.real) {
         return false;
       }
     }
@@ -133,38 +138,41 @@ export class Battle {
   private readonly moveListToId = new Map<Move, MoveId>();
   private switchTurn = true;
   private _victor?: Player;
-  readonly rng: Random;
-  readonly gen: Generation;
   weather?: { kind: Weather; turns: number };
   finished = false;
   leadTurn = true;
   turn = 0;
 
-  private constructor(p1: Player, p2: Player, readonly mods: Mods, readonly seed: string) {
-    this.players = [p1, p2];
-    this.rng = new Random(seed);
-    this.gen = GENERATION2;
+  private constructor(
+    readonly gen: Generation,
+    p1: PlayerParams,
+    p2: PlayerParams,
+    readonly mods: Mods,
+    readonly rng: Random,
+  ) {
+    this.players = [new Player(gen, p1), new Player(gen, p2)];
     for (const k in this.gen.moveList) {
       this.moveListToId.set(this.gen.moveList[k as MoveId], k as MoveId);
     }
   }
 
   static start(
-    player1: Player,
-    player2: Player,
+    gen: Generation,
+    player1: PlayerParams,
+    player2: PlayerParams,
     chooseLead?: boolean,
     mods: Mods = {},
     seed: string = crypto.randomUUID(),
   ) {
-    const self = new Battle(player1, player2, mods, seed);
-    player1.updateOptions(self);
-    player2.updateOptions(self);
+    const self = new Battle(gen, player1, player2, mods, new Random(seed));
+    self.players[0].updateOptions(self);
+    self.players[1].updateOptions(self);
     if (chooseLead) {
       return [self, { events: [], switchTurn: true } satisfies Turn] as const;
     }
 
-    player1.chooseSwitch(self, 0);
-    player2.chooseSwitch(self, 0);
+    self.players[0].chooseSwitch(self, 0);
+    self.players[1].chooseSwitch(self, 0);
     return [self, self.nextTurn()!] as const;
   }
 
@@ -470,8 +478,8 @@ export class ActivePokemon {
   }
 
   getStat(stat: keyof VolatileStats, isCrit?: boolean, def?: boolean, screen?: boolean) {
-    if (!def && isCrit && this.base instanceof TransformedPokemon) {
-      return this.base.base.stats[stat];
+    if (!def && isCrit && this.base.transformed) {
+      return this.base.real.stats[stat];
     } else if (isCrit) {
       return this.base.stats[stat];
     } else if (screen) {
@@ -776,8 +784,8 @@ export class ActivePokemon {
       });
     }
 
-    if (this.base instanceof TransformedPokemon) {
-      const original = this.base.base;
+    if (this.base.transformed) {
+      const original = this.base.real;
       original.moves.forEach((move, i) => {
         moves.push({ move, pp: original.pp[i], valid: false, display: false, indexInMoves: i });
       });

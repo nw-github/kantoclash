@@ -35,25 +35,52 @@ export type ClientPlayer = {
 type FormatInfo = {
   name: string;
   icon: string;
-  needsTeam: boolean;
+  needsTeam?: boolean;
   desc: string;
   mods: Mods;
+  chooseLead?: boolean;
+  generation: number;
 };
 
+export const battleFormats = [
+  "g2_standard",
+  "g1_standard",
+  "g1_nfe",
+  "g1_randoms",
+  "g1_randoms_nfe",
+  "g1_truly_randoms",
+  "g1_metronome",
+] as const;
+
+export type FormatId = (typeof battleFormats)[number];
+
 export const formatInfo: Record<FormatId, FormatInfo> = {
+  g2_standard: {
+    name: "[Gen 2] Standard Battle",
+    icon: "akar-icons:sword",
+    desc: "A standard battle allowing all Pokémon.",
+    needsTeam: true,
+    chooseLead: true,
+    mods: { sleepClause: true, freezeClause: true, endlessBattle: true },
+    generation: 2,
+  },
   g1_standard: {
     name: "Standard Battle",
     icon: "akar-icons:sword",
     desc: "A standard battle allowing all Pokémon.",
     needsTeam: true,
+    chooseLead: true,
     mods: { sleepClause: true, freezeClause: true, endlessBattle: true },
+    generation: 1,
   },
   g1_nfe: {
     name: "Standard Battle (NFE)",
     icon: "mingcute:mickeymouse-line",
     desc: "A standard battle allowing only Pokémon that have not fully evoled.",
     needsTeam: true,
+    chooseLead: true,
     mods: { sleepClause: true, freezeClause: true, endlessBattle: true },
+    generation: 1,
   },
   g1_randoms: {
     name: "Random Battle",
@@ -61,6 +88,7 @@ export const formatInfo: Record<FormatId, FormatInfo> = {
     desc: "A standard Pokémon battle, but your team and sets are randomly generated.",
     needsTeam: false,
     mods: { sleepClause: true, freezeClause: true, endlessBattle: true },
+    generation: 1,
   },
   g1_metronome: {
     name: "Random Metronome Battle",
@@ -68,6 +96,7 @@ export const formatInfo: Record<FormatId, FormatInfo> = {
     desc: "A random battle where all Pokémon only know the move Metronome.",
     needsTeam: false,
     mods: {},
+    generation: 1,
   },
   g1_truly_randoms: {
     name: "Truly Random Battle",
@@ -75,6 +104,7 @@ export const formatInfo: Record<FormatId, FormatInfo> = {
     desc: "A random battle with no limits on the generated move sets.",
     needsTeam: false,
     mods: { sleepClause: true, freezeClause: true, endlessBattle: true },
+    generation: 1,
   },
   g1_randoms_nfe: {
     name: "Random Battle (NFE)",
@@ -82,5 +112,6 @@ export const formatInfo: Record<FormatId, FormatInfo> = {
     desc: "A random battle where only Pokémon that are not fully evolved are included.",
     needsTeam: false,
     mods: { sleepClause: true, freezeClause: true, endlessBattle: true },
+    generation: 1,
   },
 };

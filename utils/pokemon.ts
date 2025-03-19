@@ -1,29 +1,16 @@
 import { moveList, type MoveId, type Move } from "~/game/moves";
 import { speciesList, type SpeciesId } from "~/game/species";
 import { statKeys, type Stats } from "~/game/utils";
-import { battleFormats } from "./data";
+import { battleFormats } from "./shared";
+import type { PokemonDesc } from "~/game/pokemon";
 
-export type Gen1PokemonDesc = {
-  dvs: Partial<Stats>;
-  statexp: Partial<Stats>;
-  level: number;
-  name?: string;
-  species: SpeciesId;
-  moves: MoveId[];
-};
+type WithRequired<T, K extends keyof T> = T & { [P in K]-?: T[P] };
 
-export type PokemonDesc = {
-  evs: Partial<Stats>;
-  ivs: Partial<Stats>;
-  level?: number;
-  name?: string;
-  species: string;
-  moves: string[];
-};
+export type TeamPokemonDesc = WithRequired<PokemonDesc, "evs" | "ivs">;
 
 export type Team = {
   name: string;
-  pokemon: PokemonDesc[];
+  pokemon: TeamPokemonDesc[];
   format: FormatId;
 };
 
@@ -56,8 +43,8 @@ export const descToString = (poke: PokemonDesc) => {
     result += `Level: ${poke.level}\n`;
   }
 
-  result += stats(poke.evs, 255, "EVs");
-  result += stats(poke.ivs, 31, "IVs");
+  result += poke.evs ? stats(poke.evs, 255, "EVs") : "";
+  result += poke.ivs ? stats(poke.ivs, 31, "IVs") : "";
   for (const move of poke.moves) {
     const id = normalizeName(move);
     if ((moveList as Record<string, Move>)[id]) {
@@ -78,7 +65,7 @@ const statRegex = /\s*(\d+)\s+(\w+)\s*/g;
 const ignoreChars = /(\s|-)+/g;
 const teamRegex = /^===\s*(?:\[(.+)\])?\s*(.+?)\s*===$/;
 
-export const parsePokemon = (src: string): PokemonDesc => {
+export const parsePokemon = (src: string): TeamPokemonDesc => {
   const moves: string[] = [];
   const ivs: Partial<Stats> = {};
   const evs: Partial<Stats> = {};
@@ -159,24 +146,28 @@ export const parseTeams = (src: string) => {
   return teams;
 };
 
-export const convertDesc = (desc: PokemonDesc): Gen1PokemonDesc => {
+export const convertDesc = (desc: PokemonDesc): PokemonDesc => {
   const normalizeName2 = (v: string) => v.trim().toLowerCase().replaceAll(/\s+/g, "");
 
-  const species = normalizeName2(desc.species) as SpeciesId;
-  const moves: MoveId[] = [];
+  const species = normalizeName2(desc.species);
+  const moves: string[] = [];
   for (const move of desc.moves) {
     if (move.trim()) {
-      moves.push(normalizeName(move) as MoveId);
+      moves.push(normalizeName(move));
     }
   }
 
-  const statexp: Partial<Stats> = {};
-  const dvs: Partial<Stats> = {};
+  const evs: Partial<Stats> = {};
+  const ivs: Partial<Stats> = {};
   for (const stat of statKeys) {
-    statexp[stat] = evToStatexp(desc.evs[stat]);
-    dvs[stat] = ivToDv(desc.ivs[stat]);
+    if (desc.evs) {
+      evs[stat] = evToStatexp(desc.evs[stat]);
+    }
+    if (desc.ivs) {
+      ivs[stat] = ivToDv(desc.ivs[stat]);
+    }
   }
-  return { statexp, dvs, moves, level: desc.level ?? 100, name: desc.name, species };
+  return { evs, ivs, moves, level: desc.level ?? 100, name: desc.name, species };
 };
 
 export const normalizeName = (v: string) => v.trim().toLowerCase().replaceAll(ignoreChars, "");

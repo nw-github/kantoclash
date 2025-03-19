@@ -1,5 +1,5 @@
 import defu from "defu";
-import { type CalcDamageParams, type Generation, typeChart as baseTypeChart } from "../gen1";
+import { GENERATION1, type CalcDamageParams, type Generation } from "../gen1";
 import { moveList as baseMoveList } from "../moves";
 import { speciesList as baseSpeciesList, type Species, type SpeciesId } from "../species";
 import { floatTo255, clamp, scaleAccuracy255, idiv, imul } from "../utils";
@@ -8,7 +8,7 @@ import __speciesPatches from "./species.json";
 
 const speciesPatches = __speciesPatches as Partial<Record<SpeciesId, Partial<Species>>>;
 
-const typeChartPatch: Partial<typeof baseTypeChart> = {
+const typeChartPatch: Partial<typeof GENERATION1.typeChart> = {
   ghost: { psychic: 2 },
   poison: { bug: 1 },
   bug: { poison: 0.5 },
@@ -59,12 +59,13 @@ const calcDamage = ({
   return idiv(dmg * r, 255) * (doubleDmg ? 2 : 1);
 };
 
-export const createGeneration = (): Generation => {
+const createGeneration = (): Generation => {
   const speciesList = defu(speciesPatches, baseSpeciesList) as typeof baseSpeciesList;
   const moveList = defu(movePatches, baseMoveList) as typeof baseMoveList;
-  const typeChart = defu(typeChartPatch, baseTypeChart) as typeof baseTypeChart;
+  const typeChart = defu(typeChartPatch, GENERATION1.typeChart) as typeof GENERATION1.typeChart;
 
   return {
+    id: 2,
     speciesList,
     moveList,
     typeChart,
@@ -123,6 +124,8 @@ export const createGeneration = (): Generation => {
       }
       return [atk, def] as const;
     },
+    validSpecies: species => species.dexId <= 251,
+    getMaxPP: GENERATION1.getMaxPP,
   };
 };
 

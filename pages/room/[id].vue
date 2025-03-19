@@ -41,7 +41,8 @@
 import type { Battle } from "#components";
 import type { Socket } from "socket.io-client";
 import type { Options, Turn } from "~/game/battle";
-import type { Pokemon } from "~/game/pokemon";
+import { GENERATIONS } from "~/game/gen";
+import { Pokemon } from "~/game/pokemon";
 import type { BattleTimer, InfoRecord, JoinRoomResponse } from "~/server/gameServer";
 import type { InfoMessage } from "~/server/utils/info";
 
@@ -208,9 +209,11 @@ const onJoinRoom = (resp: JoinRoomResponse | "bad_room") => {
   }
 
   if (needsFreshStart) {
+    const gen = GENERATIONS[formatInfo[resp.format].generation]!;
+
     sequenceNo = resp.turns.length;
     turns.value = resp.turns;
-    team.value = resp.team;
+    team.value = resp.team?.map(poke => new Pokemon(gen, poke));
   } else {
     sequenceNo += resp.turns.length;
     turns.value.push(...resp.turns);

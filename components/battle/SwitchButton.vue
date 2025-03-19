@@ -8,7 +8,7 @@
     >
       <div class="w-full space-y-0.5">
         <div class="flex items-center gap-1 w-full justify-start">
-          <BoxSprite :species="props.poke.speciesId" />
+          <BoxSprite :species="poke.speciesId" />
           <span class="truncate">{{ poke.name }}</span>
           <StatusOrFaint :poke="poke" size="xs" class="ml-auto" />
         </div>
@@ -17,7 +17,7 @@
     </UButton>
 
     <template #panel>
-      <PokemonTTContent :poke="poke" />
+      <PokemonTTContent :poke />
     </template>
   </UPopover>
 </template>
@@ -26,11 +26,12 @@
 import type { Pokemon } from "@/game/pokemon";
 
 defineEmits<{ (e: "click"): void }>();
-const props = defineProps<{ poke: Pokemon; disabled: boolean; active: boolean }>();
+const { poke } = defineProps<{ poke: Pokemon; disabled: boolean; active: boolean }>();
+
 const colorForHp = computed(() => {
-  if (props.poke.stats.hp / props.poke.hp < 0.1) {
+  if (poke.stats.hp / poke.hp < 0.1) {
     return "red";
-  } else if (props.poke.stats.hp / props.poke.hp < 0.3) {
+  } else if (poke.stats.hp / poke.hp < 0.3) {
     return "amber";
   } else {
     return "green";

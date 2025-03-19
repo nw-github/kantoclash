@@ -140,7 +140,7 @@
         >
           <div class="flex gap-2">
             <div class="flex flex-col">
-              <PokemonSelector v-model="selectedPoke.data.species" :team="team" />
+              <PokemonSelector v-model="selectedPoke.data.species" :team :gen />
               <InputWithMax
                 v-model.trim="selectedPoke.data.name"
                 :maxlength="24"
@@ -163,12 +163,13 @@
                 :key="i"
                 v-model="selectedPoke.data.moves[i]"
                 :poke="selectedPoke.data"
+                :gen
               />
             </div>
           </div>
           <div class="grid items-center grid-cols-[auto,1fr,auto,auto,auto,auto] gap-1">
-            <template v-for="stat in gen1StatKeys" :key="stat">
-              <span class="px-1.5">{{ statShortName[stat] }}</span>
+            <template v-for="(name, stat) in statKeys" :key="stat">
+              <span class="px-1.5">{{ name }}</span>
               <URange v-model="selectedPoke.evProxy[stat]" :min="0" :max="255" color="green" />
               <span class="text-center px-1.5 min-w-8 text-xs">
                 {{ selectedPoke.evProxy[stat] }}
@@ -177,15 +178,16 @@
                 v-if="stat === 'hp'"
                 class="w-10"
                 disabled
-                :placeholder="String(dvToIv(getHpDvFromEvs(selectedPoke.data)))"
+                :placeholder="String(dvToIv(getHpDv(ivsToDvs(selectedPoke.data))))"
               />
               <NumericInput
                 v-else
-                v-model="selectedPoke.data.ivs[stat]"
+                v-model="selectedPoke.data.ivs[stat === 'spd' ? 'spa' : stat]"
                 class="w-10"
                 placeholder="31"
                 :min="0"
                 :max="31"
+                :disabled="stat === 'spd'"
               />
 
               <template v-if="selectedPoke.species">
@@ -254,10 +256,11 @@
 </template>
 
 <script setup lang="ts">
-import { calcStat, getHpDv } from "@/game/pokemon";
-import { speciesList, type Species, type SpeciesId } from "@/game/species";
-import { gen1StatKeys, type Stats } from "@/game/utils";
-import { evToStatexp, ivToDv } from "~/utils/pokemon";
+import { calcStat, getHpDv } from "~/game/pokemon";
+import type { Species, SpeciesId } from "~/game/species";
+import type { Stats } from "~/game/utils";
+import { GENERATIONS } from "~/game/gen";
+import { evToStatexp, ivToDv, type TeamPokemonDesc } from "~/utils/pokemon";
 
 defineEmits<{ (e: "delete" | "close"): void }>();
 
@@ -269,9 +272,12 @@ const items = computed(() => {
 const teamText = ref("");
 const currentPokeText = ref("");
 const selectedPokeIdx = ref(0);
+const gen = computed(() => GENERATIONS[formatInfo[team.format].generation]!);
+const statKeys = computed(() => getStatKeys(gen.value));
+
 const selectedPoke = computed(() => ({
   data: team.pokemon[selectedPokeIdx.value],
-  species: speciesList[team.pokemon[selectedPokeIdx.value].species as SpeciesId] as
+  species: gen.value.speciesList[team.pokemon[selectedPokeIdx.value].species as SpeciesId] as
     | Species
     | undefined,
   evProxy: reactive(
@@ -280,7 +286,8 @@ const selectedPoke = computed(() => ({
         return target[prop as keyof Stats] ?? 255;
       },
       set(target, prop, val) {
-        return (target[prop as keyof Stats] = val);
+        target[prop as keyof Stats] = val;
+        return true;
       },
     }),
   ),
@@ -311,21 +318,21 @@ const copyTextArea = (text: string) => {
   toast.add({ title: `Copied to clipboard!` });
 };
 
-const getHpDvFromEvs = (poke: PokemonDesc) => {
+const ivsToDvs = (poke: TeamPokemonDesc) => {
   const dvs: Partial<Stats> = {};
-  for (const stat of gen1StatKeys) {
-    dvs[stat] = ivToDv(poke.ivs[stat]);
+  for (const stat in statKeys) {
+    dvs[stat as keyof Stats] = ivToDv(poke.ivs[stat as keyof Stats]);
   }
-  return getHpDv(dvs);
+  return dvs;
 };
 
-const calcPokeStat = (stat: keyof Stats, poke: PokemonDesc) => {
+const calcPokeStat = (stat: keyof Stats, poke: TeamPokemonDesc) => {
   return calcStat(
-    stat === "hp",
-    speciesList[poke.species as SpeciesId].stats[stat],
+    stat,
+    gen.value.speciesList[poke.species as SpeciesId].stats,
     poke.level ?? 100,
-    stat === "hp" ? getHpDvFromEvs(poke) : ivToDv(poke.ivs[stat]),
-    evToStatexp(poke.evs[stat]),
+    ivsToDvs(poke),
+    { [stat]: evToStatexp(poke.evs[stat]) },
   );
 };
 
@@ -339,7 +346,8 @@ const deletePokemon = (i: number) => {
     selectedPokeIdx.value = team.pokemon.length - 1;
   }
 
-  const name = poke.name || speciesList[poke.species as SpeciesId]?.name || `Pokemon ${i + 1}`;
+  const name =
+    poke.name || gen.value.speciesList[poke.species as SpeciesId]?.name || `Pokemon ${i + 1}`;
   toast.add({
     title: `${name} deleted!`,
     actions: [{ label: "Undo", click: () => team.pokemon.splice(i, 0, poke) }],

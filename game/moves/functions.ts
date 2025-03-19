@@ -1,5 +1,4 @@
 import type {
-  BaseMove,
   ConfuseMove,
   CustomMove,
   DamagingMove,
@@ -13,7 +12,6 @@ import type {
   VolatileFlagMove,
   WeatherMove,
 } from "./index";
-import { isSpecial } from "../utils";
 import { exec as execDamagingMove, use as useDamagingMove } from "./damaging";
 
 type KindToType = {
@@ -193,11 +191,3 @@ export const moveFunctions: Record<MoveKind, MoveFunctions> = {
     },
   },
 } satisfies MM;
-
-export function getMaxPP(move: BaseMove) {
-  return Math.min(Math.floor((move.pp * 8) / 5), 61);
-}
-
-export function getCategory(move: BaseMove) {
-  return move.power ? (isSpecial(move.type) ? "special" : "physical") : "status";
-}

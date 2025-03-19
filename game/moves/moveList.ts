@@ -1,5 +1,5 @@
 import { moveFunctions, type Move } from "./index";
-import { TransformedPokemon } from "../transformed";
+import { transform } from "../pokemon";
 import { stageKeys, volatileFlags } from "../utils";
 
 export type MoveId = keyof typeof internalMoveList;
@@ -207,11 +207,7 @@ const internalMoveList = Object.freeze({
     type: "normal",
     exec(battle, user, target) {
       target.lastDamage = 0;
-      if (user.base instanceof TransformedPokemon) {
-        user.base = new TransformedPokemon(user.base.base, target.base);
-      } else {
-        user.base = new TransformedPokemon(user.base, target.base);
-      }
+      user.base = transform(user.base.real, target.base);
 
       for (const k of stageKeys) {
         user.v.stages[k] = target.v.stages[k];
@@ -1734,6 +1730,7 @@ const internalMoveList = Object.freeze({
     pp: 15,
     type: "normal",
     power: 0,
+    acc: 100,
     flag: "flail",
   },
   flamewheel: {
@@ -1751,6 +1748,7 @@ const internalMoveList = Object.freeze({
     pp: 15,
     type: "normal",
     power: 0,
+    acc: 100,
     flag: "frustration",
   },
   gigadrain: {
@@ -1879,6 +1877,7 @@ const internalMoveList = Object.freeze({
     pp: 20,
     type: "normal",
     power: 0,
+    acc: 100,
     flag: "return",
   },
   reversal: {
@@ -1887,6 +1886,7 @@ const internalMoveList = Object.freeze({
     pp: 15,
     type: "fight",
     power: 0,
+    acc: 100,
     flag: "flail",
   },
   rocksmash: {
