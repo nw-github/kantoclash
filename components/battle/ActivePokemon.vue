@@ -169,7 +169,14 @@ const flagInfo = {
   seeded: { color: "lime", name: "Leech Seed" },
 } as const;
 
-export type AnimationType = "faint" | "sendin" | "retract" | "get_sub" | "lose_sub" | MoveId;
+export type AnimationType =
+  | "faint"
+  | "sendin"
+  | "retract"
+  | "get_sub"
+  | "lose_sub"
+  | "phaze"
+  | MoveId;
 
 const rem = (rem: number) => parseFloat(getComputedStyle(document.documentElement).fontSize) * rem;
 
@@ -333,6 +340,17 @@ const playAnimation = (anim: AnimationType, name?: string, cb?: () => void) => {
         easing: "easeInExpo",
         opacity: 1,
         complete: () => resolve(),
+      });
+    } else if (anim === "phaze") {
+      timeline.add({
+        targets: sprite.value,
+        duration: 450,
+        translateX: [{ value: back ? -120 : 120, easing: "easeOutQuart" }],
+        opacity: [{ value: 0, easing: "easeOutExpo" }],
+        complete: () => {
+          useAnime.set(sprite.value!, { translateX: 0, translateY: 0, scale: 1 });
+          resolve();
+        },
       });
     } else if (gen.moveList[anim].kind !== "damage") {
       return resolve();

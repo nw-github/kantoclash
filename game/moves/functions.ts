@@ -5,7 +5,9 @@ import type {
   DefaultMove,
   FailMove,
   Move,
+  PhazingMove,
   RecoveryMove,
+  ScreenMove,
   StageMove,
   StatusMove,
   SwitchMove,
@@ -25,6 +27,8 @@ type KindToType = {
   fail: FailMove;
   default: DefaultMove;
   weather: WeatherMove;
+  screen: ScreenMove;
+  phaze: PhazingMove;
 };
 
 type MoveKind = Required<Move>["kind"];
@@ -187,6 +191,32 @@ export const moveFunctions: Record<MoveKind, MoveFunctions> = {
     exec(battle) {
       battle.event({ type: "weather", kind: "start", weather: this.weather });
       battle.weather = { turns: 5, kind: this.weather };
+      return false;
+    },
+  },
+  screen: {
+    exec(battle, user) {
+      if (user.owner.screens[this.screen]) {
+        battle.info(user, "fail_generic");
+        return false;
+      }
+
+      user.owner.screens[this.screen] = 5;
+      battle.event({ type: "screen", screen: this.screen, kind: "start", src: user.owner.id });
+      return false;
+    },
+  },
+  phaze: {
+    exec(battle, user, target) {
+      const next = battle.rng.choice(target.owner.team.filter(p => p.hp && p != target.base.real));
+      if (!next || !target.movedThisTurn) {
+        battle.info(user, "fail_generic");
+        return false;
+      } else if (!battle.checkAccuracy(this, user, target)) {
+        return false;
+      }
+
+      target.switchTo(next, battle, "phaze");
       return false;
     },
   },

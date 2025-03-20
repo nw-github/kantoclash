@@ -163,6 +163,9 @@ const flagDesc: Record<NonNullable<DamagingMove["flag"]>, string> = {
   hidden_power: "Power and type of this move are determined by the user's DVs. ",
   magnitude: "Power is determined randomly. ",
   false_swipe: "Always leaves the target with at least 1HP. ",
+  tri_attack:
+    "Has a 1/5 chance to burn, paralyze, or freeze the target, and a 1/3 chance to thaw the " +
+    "target if it is frozen. ",
 };
 
 export const describeMove = (gen: Generation, id: MoveId) => {
@@ -210,6 +213,8 @@ export const describeMove = (gen: Generation, id: MoveId) => {
     } else {
       return "The user recovers 1/2 its max HP. ";
     }
+  } else if (move.kind === "phaze") {
+    return "Forces the target to switch to a different Pokémon. Fails if the target has no other living Pokémon, or if the move is used before the target attacks. ";
   } else if (id in descriptions) {
     return descriptions[id];
   }

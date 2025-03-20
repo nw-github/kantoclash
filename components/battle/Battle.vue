@@ -423,7 +423,7 @@ const runTurn = async (live: boolean, turnIdx: number) => {
     if ("src" in ev) {
       ev[ev.src] = players[ev.src].active!.name;
     }
-    if ("target" in ev) {
+    if ("target" in ev && ev.target) {
       ev[ev.target] = players[ev.target].active!.name;
     }
 
@@ -438,8 +438,10 @@ const runTurn = async (live: boolean, turnIdx: number) => {
       const player = players[e.src];
       if (player.active) {
         if (!player.active.fainted) {
-          pushEvent({ type: "retract", src: e.src, name: player.active.name });
-          await playAnimation(e.src, "retract", player.active.name);
+          if (e.why !== "phaze") {
+            pushEvent({ type: "retract", src: e.src, name: player.active.name });
+          }
+          await playAnimation(e.src, e.why === "phaze" ? "phaze" : "retract", player.active.name);
         }
 
         // preload the image

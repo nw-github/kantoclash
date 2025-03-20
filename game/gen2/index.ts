@@ -112,8 +112,8 @@ const createGeneration = (): Generation => {
     getDamageVariables(special, user, target, isCrit) {
       const [atks, defs] = special ? (["spa", "spd"] as const) : (["atk", "def"] as const);
 
-      const ls = special && !!target.owner.light_screen;
-      const reflect = !special && !!target.owner.reflect;
+      const ls = special && !!target.owner.screens.light_screen;
+      const reflect = !special && !!target.owner.screens.reflect;
 
       let atk = user.getStat(atks, isCrit);
       // Crits ignore defensive boosts but not drops

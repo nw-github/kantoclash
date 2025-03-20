@@ -1,4 +1,4 @@
-import type { VolatileStats } from "./battle";
+import type { Screen, VolatileStats } from "./battle";
 import type { MoveId } from "./moves";
 import type { Status } from "./pokemon";
 import type { SpeciesId } from "./species";
@@ -20,7 +20,8 @@ export type BattleEvent =
   | MimicEvent
   | ConversionEvent
   | MagnitudeEvent
-  | WeatherEvent;
+  | WeatherEvent
+  | ScreenEvent;
 
 export type PlayerId = string;
 
@@ -34,6 +35,7 @@ type SwitchEvent = {
   name: string;
   indexInTeam: number;
   status?: Status;
+  why?: "phaze";
 };
 
 export type DamageReason =
@@ -189,13 +191,20 @@ type MimicEvent = {
 type ConversionEvent = {
   type: "conversion";
   user: PlayerId;
-  target: PlayerId;
+  target?: PlayerId;
   types: Type[];
 };
 
 type MagnitudeEvent = {
   type: "magnitude";
   magnitude: number;
+};
+
+type ScreenEvent = {
+  type: "screen";
+  kind: "start" | "end";
+  screen: Screen;
+  src: PlayerId;
 };
 
 export type WeatherEvent = {

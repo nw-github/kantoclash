@@ -5,7 +5,8 @@
     <template v-else>{{ players[e.src].name }} withdrew {{ e.name }}!</template>
   </div>
   <div v-else-if="e.type === 'switch'" class="switch">
-    <template v-if="e.src === perspective">Go! <b>{{ e.name }}</b>!</template>
+    <template v-if="e.why === 'phaze'"><b>{{ e.name }}</b> was dragged out!</template>
+    <template v-else-if="e.src === perspective">Go! <b>{{ e.name }}</b>!</template>
     <template v-else>{{ players[e.src].name }} sent in <b>{{ e.name }}</b>!</template>
   </div>
   <div v-else-if="e.type === 'damage'">
@@ -84,9 +85,24 @@
   <div v-else-if="e.type === 'disable'">{{ pn(e.src) }}'s {{ gen.moveList[e.move].name }} was disabled!</div>
   <div v-else-if="e.type === 'charge'">{{ chargeMessage[e.move]?.replace("{}", pn(e.src)) }}</div>
   <div v-else-if="e.type === 'mimic'">{{ pn(e.src) }} learned {{ gen.moveList[e.move].name }}!</div>
-  <div v-else-if="e.type === 'conversion'">Converted type to match {{ pn(e.target, false) }}!</div>
+  <div v-else-if="e.type === 'conversion'">
+    <template v-if="e.target">
+      Converted type to match {{ pn(e.target, false) }}!
+    </template>
+    <template v-else>
+      {{ pn(e.src) }} converted into the {{ toTitleCase(e.types[0]) }} type!
+    </template>
+  </div>
   <div v-else-if="e.type === 'magnitude'">Magnitude {{ e.magnitude }}!</div>
   <div v-else-if="e.type === 'weather'">{{ weatherMessage[e.weather][e.kind] }}</div>
+  <div v-else-if="e.type === 'screen'">
+    <template v-if="e.screen === 'light_screen'">
+      Light Screen raised {{ e.src === myId ? "your team" : "the opposing team" }}'s Special Defense!
+    </template>
+    <template v-else>
+      Reflect raised {{ e.src === myId ? "your team" : "the opposing team" }}'s Defense!
+    </template>
+  </div>
   <div v-else>Unknown event: <code>{{ e }}</code></div>
 </template>
 

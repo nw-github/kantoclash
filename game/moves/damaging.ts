@@ -33,14 +33,15 @@ type Flag =
   | "flail"
   | "hidden_power"
   | "magnitude"
-  | "false_swipe";
+  | "false_swipe"
+  | "tri_attack";
 
 export interface DamagingMove extends BaseMove {
   readonly kind: "damage";
   readonly power: number;
   readonly flag?: Flag;
   readonly effect?: [number, Effect];
-  readonly effect_self?: boolean;
+  readonly effect_self?: boolean | "charge";
   readonly recoil?: number;
   readonly dmg?: number;
   readonly punish?: boolean;
@@ -215,7 +216,7 @@ export function exec(
       return dead;
     }
 
-    if (battle.rng.int(1, 256) > Math.floor((chance / 100) * 256)) {
+    if (!battle.rand100(chance)) {
       return dead;
     }
 
@@ -236,6 +237,17 @@ export function exec(
       }
 
       target.status(effect, battle);
+    }
+  } else if (this.flag === "tri_attack") {
+    const choice = battle.rng.choice(["brn", "par", "frz"] as const)!;
+    if (target.base.status === "frz" && choice === "brn") {
+      target.base.status = undefined;
+      target.v.hazed = true;
+      battle.info(target, "thaw");
+      return dead;
+    } else if (!target.base.status && battle.rand100(20)) {
+      // In Gen 2, tri attack can burn fire types and freeze ice types
+      target.status(choice, battle);
     }
   }
 

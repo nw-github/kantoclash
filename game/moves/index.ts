@@ -1,4 +1,4 @@
-import type { ActivePokemon, Battle } from "../battle";
+import type { ActivePokemon, Battle, Screen } from "../battle";
 import type { FailReason, RecoveryReason } from "../events";
 import type { Pokemon, Status } from "../pokemon";
 import type { Stages, Type, VolatileFlag, Weather } from "../utils";
@@ -73,6 +73,15 @@ export interface WeatherMove extends BaseMove {
   readonly weather: Weather;
 }
 
+export interface ScreenMove extends BaseMove {
+  readonly kind: "screen";
+  readonly screen: Screen;
+}
+
+export interface PhazingMove extends BaseMove {
+  readonly kind: "phaze";
+}
+
 export type Move =
   | CustomMove
   | VolatileFlagMove
@@ -84,4 +93,6 @@ export type Move =
   | SwitchMove
   | FailMove
   | DefaultMove
-  | WeatherMove;
+  | WeatherMove
+  | ScreenMove
+  | PhazingMove;

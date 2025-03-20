@@ -52,6 +52,8 @@ export type PlayerParams = {
   readonly team: ValidatedPokemonDesc[];
 };
 
+export type Screen = "light_screen" | "reflect";
+
 class Player {
   readonly id: PlayerId;
   readonly active: ActivePokemon;
@@ -61,8 +63,7 @@ class Player {
   options?: { canSwitch: boolean; moves: MoveOption[] };
   sleepClausePoke?: Pokemon;
 
-  light_screen = 0;
-  reflect = 0;
+  screens: Partial<Record<Screen, number>> = {};
   spikes = false;
 
   constructor(gen: Generation, { id, team }: PlayerParams) {
@@ -230,14 +231,15 @@ export class Battle {
       });
 
     if (this.leadTurn) {
-      // Randomize choices to avoid leaking speed. Not sure what determines the order of lead
-      // switch in Gen 1
+      // Randomize choices to avoid leaking speed. The player always sees their pokemon switch in
+      // first in a link battle on console.
       choices.sort(() => (this.rng.bool() ? -1 : 1));
       this.leadTurn = false;
     }
 
     let skipEnd = false;
     for (const choice of choices) {
+      choice.user.movedThisTurn = true;
       if (choice.move.kind === "switch") {
         this.callUseMove(choice.move, choice.user, choice.user);
         continue;
@@ -278,6 +280,7 @@ export class Battle {
       player.active.v.handledStatus = false;
       player.active.v.hazed = false;
       player.active.v.flinch = false;
+      player.active.movedThisTurn = false;
       if (player.active.v.trapped && !this.opponentOf(player).active.v.trapping) {
         player.active.v.trapped = false;
       }
@@ -419,6 +422,10 @@ export class Battle {
     return this.rng.int(0, 255) <= Math.min(num, 255);
   }
 
+  rand100(num: number) {
+    return this.rng.int(1, 256) <= Math.floor((num / 100) * 256);
+  }
+
   checkAccuracy(move: Move, user: ActivePokemon, target: ActivePokemon) {
     return this.gen.checkAccuracy(move, this, user, target);
   }
@@ -448,6 +455,7 @@ export class ActivePokemon {
   v: Volatiles;
   lastChosenMove?: Move;
   lastDamage = 0;
+  movedThisTurn = false;
 
   constructor(public base: Pokemon, public readonly owner: Player) {
     this.base = base;
@@ -455,7 +463,7 @@ export class ActivePokemon {
     this.v = new Volatiles(base);
   }
 
-  switchTo(next: Pokemon, battle: Battle) {
+  switchTo(next: Pokemon, battle: Battle, why?: "phaze") {
     if (this.base.status === "tox") {
       this.base.status = "psn";
     }
@@ -470,6 +478,7 @@ export class ActivePokemon {
       name: next.name,
       level: next.level,
       indexInTeam: this.owner.team.indexOf(next),
+      why,
     });
 
     this.base = next;

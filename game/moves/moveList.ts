@@ -481,7 +481,7 @@ const internalMoveList = Object.freeze({
   },
   sandattack: {
     kind: "stage",
-    name: "Sand Attack",
+    name: "Sand-Attack",
     pp: 15,
     type: "normal",
     acc: 100,
@@ -610,6 +610,7 @@ const internalMoveList = Object.freeze({
     type: "water",
     power: 20,
     acc: 100,
+    effect: [33.21 /* 85/256 */, [["spe", -1]]],
   },
   bubblebeam: {
     kind: "damage",
@@ -1024,7 +1025,7 @@ const internalMoveList = Object.freeze({
     pp: 20,
     type: "fight",
     power: 50,
-    acc: 100,
+    acc: 90,
     effect: [30.1 /* 77/256 */, "flinch"],
   },
   megadrain: {
@@ -1190,7 +1191,7 @@ const internalMoveList = Object.freeze({
     pp: 15,
     type: "rock",
     power: 50,
-    acc: 90,
+    acc: 65,
   },
   rollingkick: {
     kind: "damage",
@@ -1372,7 +1373,7 @@ const internalMoveList = Object.freeze({
     pp: 35,
     type: "normal",
     power: 35,
-    acc: 100,
+    acc: 95,
   },
   takedown: {
     kind: "damage",
@@ -1451,7 +1452,7 @@ const internalMoveList = Object.freeze({
     name: "Vine Whip",
     pp: 10,
     type: "grass",
-    power: 45,
+    power: 35,
     acc: 100,
   },
   vicegrip: {
@@ -1522,7 +1523,7 @@ const internalMoveList = Object.freeze({
     kind: "fail",
     name: "Whirlwind",
     pp: 20,
-    acc: 100,
+    acc: 85,
     type: "normal",
     why: "whirlwind",
   },
@@ -1706,7 +1707,7 @@ const internalMoveList = Object.freeze({
     type: "normal",
     power: 80,
     acc: 100,
-    priority: +2,
+    priority: +1,
   },
   falseswipe: {
     kind: "damage",
