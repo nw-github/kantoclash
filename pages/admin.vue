@@ -15,11 +15,11 @@
 </template>
 
 <script setup lang="ts">
-import type { ServerConfig } from "~/server/gameServer";
+import type {ServerConfig} from "~/server/gameServer";
 
-definePageMeta({ middleware: ["admin"] });
+definePageMeta({middleware: ["admin"]});
 
-const { $conn } = useNuxtApp();
+const {$conn} = useNuxtApp();
 const toast = useToast();
 const config = ref<ServerConfig>({});
 const loading = ref(true);
@@ -33,12 +33,12 @@ onMounted(() => {
 });
 
 const toggle = (key: keyof ServerConfig) => {
-  const state = { ...config.value, [key]: !config.value[key] };
+  const state = {...config.value, [key]: !config.value[key]};
   loading.value = true;
   $conn.emit("setConfig", state, worked => {
     loading.value = false;
     if (!worked) {
-      toast.add({ title: "Setting maintenance mode failed!" });
+      toast.add({title: "Setting maintenance mode failed!"});
       return;
     }
     config.value = state;
@@ -51,7 +51,7 @@ const getConfig = () => {
       config.value = state;
       loading.value = false;
     } else {
-      toast.add({ title: "Getting config failed!" });
+      toast.add({title: "Getting config failed!"});
     }
   });
 };

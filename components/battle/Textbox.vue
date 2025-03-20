@@ -2,8 +2,8 @@
   <UCard
     class="h-full w-full flex flex-col"
     :ui="{
-      body: { base: 'grow overflow-auto', padding: 'p-0 sm:p-0' },
-      header: { padding: 'p-1 sm:p-1' },
+      body: {base: 'grow overflow-auto', padding: 'p-0 sm:p-0'},
+      header: {padding: 'p-1 sm:p-1'},
     }"
   >
     <template #header>
@@ -12,7 +12,7 @@
           <TooltipButton
             v-if="closable"
             text="Close"
-            :popper="{ placement: 'top' }"
+            :popper="{placement: 'top'}"
             icon="material-symbols:close"
             variant="link"
             color="gray"
@@ -21,7 +21,7 @@
           />
           <TooltipButton
             text="Forfeit"
-            :popper="{ placement: 'top' }"
+            :popper="{placement: 'top'}"
             icon="material-symbols:flag-rounded"
             variant="link"
             color="red"
@@ -40,7 +40,7 @@
           <FormatInfoButton :format />
         </div>
 
-        <UPopover mode="hover" :popper="{ placement: 'bottom-start' }">
+        <UPopover mode="hover" :popper="{placement: 'bottom-start'}">
           <UButton
             color="white"
             variant="ghost"
@@ -86,7 +86,7 @@
           </template>
           <ChatMessage
             v-for="(chat, j) in chats[i] ?? []"
-            :key="JSON.stringify({ chat, j })"
+            :key="JSON.stringify({chat, j})"
             :chat
             :players
           />
@@ -164,9 +164,9 @@
 </style>
 
 <script setup lang="ts">
-import { useMutedPlayerIds } from "~/composables/states";
-import { GENERATIONS } from "~/game/gen";
-import type { InfoRecord } from "~/server/gameServer";
+import {useMutedPlayerIds} from "~/composables/states";
+import {GENERATIONS} from "~/game/gen";
+import type {InfoRecord} from "~/server/gameServer";
 
 const props = defineProps<{
   turns: [UIBattleEvent[], boolean, number][];
@@ -178,10 +178,7 @@ const props = defineProps<{
   smoothScroll?: boolean;
   format: FormatId;
 }>();
-const emit = defineEmits<{
-  (e: "chat", message: string): void;
-  (e: "forfeit" | "close"): void;
-}>();
+const emit = defineEmits<{(e: "chat", message: string): void; (e: "forfeit" | "close"): void}>();
 const myId = useMyId();
 const mutedPlayers = useMutedPlayerIds();
 const message = ref("");

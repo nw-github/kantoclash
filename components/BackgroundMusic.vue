@@ -7,7 +7,7 @@
 import loops from "@/public/music/loops.json";
 
 const toast = useToast();
-const { volume, track, fadeOutRequested } = useBGMusic();
+const {volume, track, fadeOutRequested} = useBGMusic();
 const musicController = ref<HTMLAudioElement>();
 const context = useAudioContext();
 
@@ -62,7 +62,7 @@ const stop = async (fade: boolean) => {
 };
 
 const play = async (next: string) => {
-  type Loops = Record<string, { start: string; end: string }>;
+  type Loops = Record<string, {start: string; end: string}>;
 
   if (!context) {
     return;
@@ -101,10 +101,7 @@ const trackToPath = (tr: string) => "/" + tr.split("/").slice(2).map(encodeURICo
 const showToast = () => {
   if (context?.state === "running" && track.value && !notified) {
     const name = musicTrackName(track.value);
-    toast.add({
-      title: `Now Playing: ${name}`,
-      icon: "heroicons-outline:speaker-wave",
-    });
+    toast.add({title: `Now Playing: ${name}`, icon: "heroicons-outline:speaker-wave"});
     notified = true;
 
     if (!navigator.mediaSession) {
@@ -113,9 +110,9 @@ const showToast = () => {
 
     const [title, game] = name.split("(").map(s => s.trim());
     const artist = game.split(")")[0];
-    navigator.mediaSession.metadata = new MediaMetadata({ title, artist });
+    navigator.mediaSession.metadata = new MediaMetadata({title, artist});
     navigator.mediaSession.playbackState = "playing";
-    navigator.mediaSession.setPositionState({ duration: 0, playbackRate: 1, position: 0 });
+    navigator.mediaSession.setPositionState({duration: 0, playbackRate: 1, position: 0});
   }
 };
 </script>

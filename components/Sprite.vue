@@ -17,7 +17,7 @@ img {
 </style>
 
 <script setup lang="ts">
-import { speciesList, type SpeciesId } from "~/game/species";
+import {speciesList, type SpeciesId} from "~/game/species";
 
 const props = defineProps<{
   species?: SpeciesId;
@@ -27,7 +27,7 @@ const props = defineProps<{
   shiny?: boolean;
 }>();
 const sprite = computed(() => {
-  const scale = 1 / (props.substitute && props.back ? (props.scale ?? 1) / 2 : props.scale ?? 1);
+  const scale = 1 / (props.substitute && props.back ? (props.scale ?? 1) / 2 : (props.scale ?? 1));
   if (!props.species) {
     return `/sprites/battle/unknown.png ${scale}x`;
   }

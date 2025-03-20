@@ -1,5 +1,5 @@
 <template>
-  <UCard class="h-full flex flex-col" :ui="{ body: { base: 'grow overflow-auto' } }">
+  <UCard class="h-full flex flex-col" :ui="{body: {base: 'grow overflow-auto'}}">
     <template #header>
       <h1 class="text-2xl text-center pb-5">Your Teams</h1>
       <div class="flex flex-col sm:flex-row gap-1">
@@ -118,7 +118,7 @@
             <BoxSprite
               v-for="(poke, j) in team.pokemon"
               :key="j"
-              :species="(poke.species as SpeciesId)"
+              :species="poke.species as SpeciesId"
               :scale="isXS ? 1.5 : 2"
             />
           </div>
@@ -144,14 +144,14 @@
     <UModal v-model="importOpen">
       <UTextarea
         v-model="importText"
-        :ui="{ base: 'h-full min-h-[23.5rem]', rounded: 'rounded-lg' }"
+        :ui="{base: 'h-full min-h-[23.5rem]', rounded: 'rounded-lg'}"
         :placeholder="exportMode ? undefined : 'Paste your team(s) here...'"
         variant="none"
       >
         <TooltipButton
           v-if="!exportMode"
           text="Import"
-          :popper="{ placement: 'bottom-end', offsetDistance: 40 }"
+          :popper="{placement: 'bottom-end', offsetDistance: 40}"
           class="absolute top-2 right-2"
           icon="heroicons:arrow-down-tray-20-solid"
           variant="ghost"
@@ -161,7 +161,7 @@
         <TooltipButton
           v-else
           text="Copy"
-          :popper="{ placement: 'bottom-end', offsetDistance: 40 }"
+          :popper="{placement: 'bottom-end', offsetDistance: 40}"
           class="absolute top-2 right-2"
           icon="material-symbols:content-copy-outline"
           variant="ghost"
@@ -174,8 +174,8 @@
 </template>
 
 <script setup lang="ts">
-import { breakpointsTailwind } from "@vueuse/core";
-import type { SpeciesId } from "~/game/species";
+import {breakpointsTailwind} from "@vueuse/core";
+import type {SpeciesId} from "~/game/species";
 
 const toast = useToast();
 const myTeams = useMyTeams();
@@ -211,7 +211,7 @@ onMounted(() => {
   useTitle("Team Builder");
 
   const format = String(useRoute().query.new_team);
-  useRouter().replace({ query: {} });
+  useRouter().replace({query: {}});
   if (battleFormats.includes(format)) {
     newTeam(format);
   }
@@ -221,7 +221,7 @@ const importOrCopy = async () => {
   importOpen.value = false;
   if (exportMode.value) {
     await navigator.clipboard.writeText(importText.value);
-    toast.add({ title: `Copied to clipboard!` });
+    toast.add({title: `Copied to clipboard!`});
     return;
   }
 
@@ -245,22 +245,18 @@ const deleteTeam = (team: Team) => {
   const [removed] = myTeams.value.splice(idx, 1);
   toast.add({
     title: `'${team.name}' deleted!`,
-    actions: [{ label: "Undo", click: () => myTeams.value.splice(idx, 0, removed) }],
+    actions: [{label: "Undo", click: () => myTeams.value.splice(idx, 0, removed)}],
   });
 };
 
 const newTeam = (format: FormatId = "g1_standard") => {
-  myTeams.value.unshift({
-    name: "New Team",
-    format,
-    pokemon: [parsePokemon("")],
-  });
+  myTeams.value.unshift({name: "New Team", format, pokemon: [parsePokemon("")]});
   editingTeam.value = myTeams.value[0];
 };
 
 const copyTeam = async (team: Team) => {
   await navigator.clipboard.writeText(teamToString(team));
-  toast.add({ title: `'${team.name}' copied to clipboard!` });
+  toast.add({title: `'${team.name}' copied to clipboard!`});
 };
 
 const duplicateTeam = (team: Team) => {

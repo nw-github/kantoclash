@@ -47,10 +47,10 @@
           cancelling
             ? "Cancelling..."
             : findingMatch
-            ? "Cancel"
-            : challengeUser
-            ? "Send Challenge"
-            : "Find Match"
+              ? "Cancel"
+              : challengeUser
+                ? "Send Challenge"
+                : "Find Match"
         }}
 
         <template v-if="findingMatch || cancelling" #leading>
@@ -96,15 +96,15 @@
       </div>
       <UCheckbox v-model="recentlyPlayed" label="Recently Played" />
       <UTable :rows="filteredRooms" :columns="roomsCols" :empty-state="emptyState">
-        <template #live-data="{ row }">
+        <template #live-data="{row}">
           <UCheckbox v-model="row.live" disabled />
         </template>
 
-        <template #name-data="{ row }">
+        <template #name-data="{row}">
           <UButton :to="row.to">{{ row.name }}</UButton>
         </template>
 
-        <template #type-data="{ row }">
+        <template #type-data="{row}">
           <div class="flex items-center gap-1">
             <UIcon :name="formatInfo[row.format as FormatId].icon" class="size-5" />
             <span>{{ formatInfo[row.format as FormatId].name }}</span>
@@ -119,7 +119,7 @@
         :actions="[
           // Bring user to teambuilder
           // { variant: 'solid', color: 'primary', label: 'Fix', click: () =>  },
-          { variant: 'solid', color: 'primary', label: 'OK', click: () => (modalOpen = false) },
+          {variant: 'solid', color: 'primary', label: 'OK', click: () => (modalOpen = false)},
         ]"
       >
         <template #description>
@@ -138,15 +138,15 @@
 </template>
 
 <script setup lang="ts">
-import type { TeamSelector } from "#components";
-import type { PokemonDesc } from "~/game/pokemon";
-import { speciesList, type SpeciesId } from "~/game/species";
-import type { Battler, Challenge, MMError } from "~/server/gameServer";
+import type {TeamSelector} from "#components";
+import type {PokemonDesc} from "~/game/pokemon";
+import {speciesList, type SpeciesId} from "~/game/species";
+import type {Battler, Challenge, MMError} from "~/server/gameServer";
 
-const emit = defineEmits<{ (e: "requestLogin"): void }>();
+const emit = defineEmits<{(e: "requestLogin"): void}>();
 
-const { $conn } = useNuxtApp();
-const { user } = useUserSession();
+const {$conn} = useNuxtApp();
+const {user} = useUserSession();
 const toast = useToast();
 
 const findingMatch = ref(false);
@@ -160,7 +160,7 @@ const selectedTeam = ref<Team | undefined>();
 const errors = ref<Record<number, [string, string[]]>>({});
 const selectTeamMenu = ref<InstanceType<typeof TeamSelector>>();
 
-const rooms = ref<{ to: string; name: string; format: FormatId; live: boolean }[]>([]);
+const rooms = ref<{to: string; name: string; format: FormatId; live: boolean}[]>([]);
 const filterFormats = ref<string[]>([]);
 const battleQuery = ref("");
 const challengeUser = ref<Battler>();
@@ -175,9 +175,9 @@ const filteredRooms = computed(() => {
 });
 
 const roomsCols = [
-  { key: "live", label: "Live" },
-  { key: "type", label: "Type" },
-  { key: "name", label: "Players" },
+  {key: "live", label: "Live"},
+  {key: "type", label: "Type"},
+  {key: "name", label: "Players"},
 ];
 const emptyStateEmpty = {
   label: "There are currently no active battles. Be the first!",
@@ -324,7 +324,7 @@ const enterMMCallback = (team?: PokemonDesc[], err?: MMError, problems?: TeamPro
   }
 
   const issues: Record<number, [string, string[]]> = {};
-  for (const { path, message } of problems) {
+  for (const {path, message} of problems) {
     const [pokemon, category, index] = path as [number, string, number | string];
     // We're just getting name, fine to use generic speciesList here
     const name =

@@ -9,8 +9,8 @@
 </template>
 
 <script setup lang="ts">
-const model = defineModel<number | undefined>({ default: undefined });
-const { min, max } = defineProps<{ min?: number; max?: number }>();
+const model = defineModel<number | undefined>({default: undefined});
+const {min, max} = defineProps<{min?: number; max?: number}>();
 
 const text = computed({
   get: () => (model.value === undefined ? "" : model.value),

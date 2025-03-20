@@ -2,7 +2,7 @@
   <div class="w-full flex flex-col items-center">
     <div
       class="w-11/12 sm:w-3/4 flex flex-col gap-0.5 sm:gap-1 text-sm z-30"
-      :class="{ invisible: !poke || poke.hidden }"
+      :class="{invisible: !poke || poke.hidden}"
     >
       <div class="flex justify-between flex-col sm:flex-row">
         <span class="font-bold">{{ poke?.name ?? "--" }}</span>
@@ -26,7 +26,7 @@
             <TypeBadge v-for="type in poke.v.conversion" :key="type" :type="type" />
           </template>
 
-          <UBadge v-if="poke.v.status" :style="{ backgroundColor: statusColor[poke.v.status] }">
+          <UBadge v-if="poke.v.status" :style="{backgroundColor: statusColor[poke.v.status]}">
             {{ poke.v.status.toUpperCase() }}
           </UBadge>
 
@@ -51,8 +51,8 @@
 
     <div class="flex flex-col items-center relative">
       <div class="w-[128px] h-[117px] sm:w-[256px] sm:h-[234px] items-center justify-center flex">
-        <UPopover mode="hover" :popper="{ placement: 'top' }">
-          <div ref="sprite" class="sprite z-20" :class="{ back, front: !back, invisible: !poke }">
+        <UPopover mode="hover" :popper="{placement: 'top'}">
+          <div ref="sprite" class="sprite z-20" :class="{back, front: !back, invisible: !poke}">
             <Sprite
               :species="poke?.transformed ?? poke?.speciesId"
               :substitute="poke?.v.substitute"
@@ -100,7 +100,9 @@
 .hp-fill {
   width: v-bind("hp + '%'");
   background-color: v-bind("hpColor(hp)");
-  transition: width 0.5s, background-color 0.5s;
+  transition:
+    width 0.5s,
+    background-color 0.5s;
 }
 
 .status {
@@ -129,13 +131,13 @@
 </style>
 
 <script setup lang="ts">
-import { stageMultipliers } from "~/game/utils";
-import { calcStat, type Pokemon } from "~/game/pokemon";
-import type { MoveId } from "~/game/moves";
-import { breakpointsTailwind } from "@vueuse/core";
-import type { Generation } from "~/game/gen1";
+import {stageMultipliers} from "~/game/utils";
+import {calcStat, type Pokemon} from "~/game/pokemon";
+import type {MoveId} from "~/game/moves";
+import {breakpointsTailwind} from "@vueuse/core";
+import type {Generation} from "~/game/gen1";
 
-const { poke, base, back, gen } = defineProps<{
+const {poke, base, back, gen} = defineProps<{
   poke?: ClientActivePokemon;
   base?: Pokemon;
   back?: boolean;
@@ -143,13 +145,13 @@ const { poke, base, back, gen } = defineProps<{
 }>();
 const species = computed(() => poke && gen.speciesList[poke.transformed ?? poke.speciesId]);
 const minSpe = computed(
-  () => poke && calcStat("spe", species.value!.stats, poke.level, { spe: 0 }, { spe: 0 }),
+  () => poke && calcStat("spe", species.value!.stats, poke.level, {spe: 0}, {spe: 0}),
 );
 const maxSpe = computed(
-  () => poke && calcStat("spe", species.value!.stats, poke.level, { spe: 15 }, { spe: 65535 }),
+  () => poke && calcStat("spe", species.value!.stats, poke.level, {spe: 15}, {spe: 65535}),
 );
 const hp = computed(() => poke?.hpPercent ?? 0);
-const statShortName = computed(() => ({ ...getStatKeys(gen), acc: "Acc", eva: "Eva" }));
+const statShortName = computed(() => ({...getStatKeys(gen), acc: "Acc", eva: "Eva"}));
 
 const breakpoint = useBreakpoints(breakpointsTailwind);
 const lessThanSm = breakpoint.smaller("sm");
@@ -164,13 +166,13 @@ const offsX = (number: number) => `-${number * 42 - number}px`;
 const offsY = (number: number) => `-${number * 42 - number * 2}px`;
 
 const flagInfo = {
-  confused: { color: "red", name: "Confused" },
-  disabled: { color: "red", name: "Disable" },
-  focus: { color: "emerald", name: "Focus Energy" },
-  light_screen: { color: "pink", name: "Light Screen" },
-  reflect: { color: "pink", name: "Reflect" },
-  mist: { color: "teal", name: "Mist" },
-  seeded: { color: "lime", name: "Leech Seed" },
+  confused: {color: "red", name: "Confused"},
+  disabled: {color: "red", name: "Disable"},
+  focus: {color: "emerald", name: "Focus Energy"},
+  light_screen: {color: "pink", name: "Light Screen"},
+  reflect: {color: "pink", name: "Reflect"},
+  mist: {color: "teal", name: "Mist"},
+  seeded: {color: "lime", name: "Leech Seed"},
 } as const;
 
 export type AnimationType =
@@ -202,17 +204,17 @@ const playAnimation = (anim: AnimationType, name?: string, cb?: () => void) => {
       timeline.add({
         targets: sprite.value,
         duration: 250,
-        translateY: { value: rem(7), duration: 250 },
+        translateY: {value: rem(7), duration: 250},
         easing: "easeInExpo",
         opacity: 0,
         complete: () => {
-          useAnime.set(sprite.value!, { translateX: 0, translateY: 0, scale: 1 });
+          useAnime.set(sprite.value!, {translateX: 0, translateY: 0, scale: 1});
           resolve();
         },
       });
     } else if (anim === "sendin") {
       reset(false);
-      useAnime.set(pokeBall.value, { translateX: 0, translateY: 0, rotateZ: 0 });
+      useAnime.set(pokeBall.value, {translateX: 0, translateY: 0, rotateZ: 0});
 
       const pbRect = pokeBall.value.getBoundingClientRect();
       const sprRect = sprite.value.getBoundingClientRect();
@@ -231,18 +233,18 @@ const playAnimation = (anim: AnimationType, name?: string, cb?: () => void) => {
       timeline.add({
         targets: pokeBall.value,
         translateX: [
-          { value: startX, duration: 0 },
-          { value: endX, duration: 700, easing: "linear" },
+          {value: startX, duration: 0},
+          {value: endX, duration: 700, easing: "linear"},
         ],
         translateY: [
-          { value: y - 10, duration: 0 },
-          { value: y - 60, duration: 450, easing: "easeOutQuad" },
-          { value: y, duration: 250, easing: "easeInQuad" },
+          {value: y - 10, duration: 0},
+          {value: y - 60, duration: 450, easing: "easeOutQuad"},
+          {value: y, duration: 250, easing: "easeInQuad"},
         ],
-        rotateZ: { value: 360 * 4 * (back ? 1 : -1), duration: 800, easing: "linear" },
+        rotateZ: {value: 360 * 4 * (back ? 1 : -1), duration: 800, easing: "linear"},
         opacity: [
-          { value: 100, duration: 800 },
-          { value: 0, duration: 0 },
+          {value: 100, duration: 800},
+          {value: 0, duration: 0},
         ],
         complete: cb,
       });
@@ -250,7 +252,7 @@ const playAnimation = (anim: AnimationType, name?: string, cb?: () => void) => {
         targets: sprite.value,
         easing: "easeOutExpo",
         opacity: 1,
-        scale: [{ value: 0, duration: 0 }, { value: 1 }],
+        scale: [{value: 0, duration: 0}, {value: 1}],
         duration: 800,
         complete: () => resolve(),
       });
@@ -258,7 +260,7 @@ const playAnimation = (anim: AnimationType, name?: string, cb?: () => void) => {
       if (!poke?.v.substitute) {
         reset(true);
       }
-      useAnime.set(pokeBall.value, { translateX: 0, translateY: 0, opacity: 1 });
+      useAnime.set(pokeBall.value, {translateX: 0, translateY: 0, opacity: 1});
 
       const sprRect = sprite.value.getBoundingClientRect();
       const pbRect = pokeBall.value.getBoundingClientRect();
@@ -276,8 +278,8 @@ const playAnimation = (anim: AnimationType, name?: string, cb?: () => void) => {
       timeline.add({
         targets: pokeBall.value,
         easing: "steps(2)",
-        translateX: [{ value: x - pbRect.width / 2, duration: 0 }],
-        translateY: [{ value: y, duration: 0 }],
+        translateX: [{value: x - pbRect.width / 2, duration: 0}],
+        translateY: [{value: y, duration: 0}],
         duration: 800,
       });
       timeline.add(
@@ -285,7 +287,7 @@ const playAnimation = (anim: AnimationType, name?: string, cb?: () => void) => {
           targets: sprite.value,
           easing: "easeOutQuart",
           scale: 0.45,
-          opacity: [{ value: 0, easing: "easeInCubic" }],
+          opacity: [{value: 0, easing: "easeInCubic"}],
           translateY: sprY,
           duration: 550,
         },
@@ -313,18 +315,18 @@ const playAnimation = (anim: AnimationType, name?: string, cb?: () => void) => {
         duration: 1000,
         easing: "easeInExpo",
         opacity: 0,
-        translateY: [{ value: 0, duration: 500 }],
+        translateY: [{value: 0, duration: 500}],
         complete: cb,
       });
       timeline.add({
         targets: sprite.value,
         duration: 250,
         translateY: [
-          { value: -rem(8), duration: 0 },
-          { value: sprY, duration: 250 },
+          {value: -rem(8), duration: 0},
+          {value: sprY, duration: 250},
         ],
         easing: "easeOutBounce",
-        opacity: { value: 1, duration: 0 },
+        opacity: {value: 1, duration: 0},
         complete: () => resolve(),
       });
     } else if (anim === "lose_sub") {
@@ -335,7 +337,7 @@ const playAnimation = (anim: AnimationType, name?: string, cb?: () => void) => {
         opacity: 0,
         complete: () => {
           cb!();
-          useAnime.set(sprite.value!, { translateY: 0 });
+          useAnime.set(sprite.value!, {translateY: 0});
         },
       });
       timeline.add({
@@ -349,10 +351,10 @@ const playAnimation = (anim: AnimationType, name?: string, cb?: () => void) => {
       timeline.add({
         targets: sprite.value,
         duration: 450,
-        translateX: [{ value: back ? -120 : 120, easing: "easeOutQuart" }],
-        opacity: [{ value: 0, easing: "easeOutExpo" }],
+        translateX: [{value: back ? -120 : 120, easing: "easeOutQuart"}],
+        opacity: [{value: 0, easing: "easeOutExpo"}],
         complete: () => {
-          useAnime.set(sprite.value!, { translateX: 0, translateY: 0, scale: 1 });
+          useAnime.set(sprite.value!, {translateX: 0, translateY: 0, scale: 1});
           resolve();
         },
       });
@@ -369,10 +371,10 @@ const playAnimation = (anim: AnimationType, name?: string, cb?: () => void) => {
       timeline.direction = "alternate";
       timeline.add({
         targets: sprite.value,
-        translateX: { value: x, duration, easing: "linear" },
+        translateX: {value: x, duration, easing: "linear"},
         translateY: [
-          { value: midYRel, duration: duration * (3 / 4), easing: "easeOutQuart" },
-          { value: y, duration: duration * (1 / 4), easing: "easeInQuart" },
+          {value: midYRel, duration: duration * (3 / 4), easing: "easeOutQuart"},
+          {value: y, duration: duration * (1 / 4), easing: "easeInQuart"},
         ],
         loopComplete: () => {
           if (!ran && cb) {
@@ -391,7 +393,7 @@ const playAnimation = (anim: AnimationType, name?: string, cb?: () => void) => {
 
 const reset = (visible: boolean) => {
   if (sprite.value) {
-    useAnime.set(sprite.value, { opacity: +visible, translateX: 0, translateY: 0, scale: 1 });
+    useAnime.set(sprite.value, {opacity: +visible, translateX: 0, translateY: 0, scale: 1});
   }
 };
 
@@ -402,5 +404,5 @@ const skipAnimation = () => {
   }
 };
 
-defineExpose({ playAnimation, skipAnimation, reset });
+defineExpose({playAnimation, skipAnimation, reset});
 </script>

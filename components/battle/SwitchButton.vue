@@ -1,5 +1,5 @@
 <template>
-  <UPopover mode="hover" :popper="{ placement: 'auto' }">
+  <UPopover mode="hover" :popper="{placement: 'auto'}">
     <UButton
       class="w-full"
       :disabled="disabled || !poke.hp"
@@ -23,10 +23,10 @@
 </template>
 
 <script setup lang="ts">
-import type { Pokemon } from "@/game/pokemon";
+import type {Pokemon} from "@/game/pokemon";
 
-defineEmits<{ (e: "click"): void }>();
-const { poke } = defineProps<{ poke: Pokemon; disabled: boolean; active: boolean }>();
+defineEmits<{(e: "click"): void}>();
+const {poke} = defineProps<{poke: Pokemon; disabled: boolean; active: boolean}>();
 
 const colorForHp = computed(() => {
   if (poke.stats.hp / poke.hp < 0.1) {

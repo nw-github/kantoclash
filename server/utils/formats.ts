@@ -1,14 +1,14 @@
-import type { ValidatedPokemonDesc } from "~/game/pokemon";
-import { moveList, type MoveId, type Move } from "~/game/moves";
-import { speciesList, type Species, type SpeciesId } from "~/game/species";
-import { statKeys } from "~/game/utils";
+import type {ValidatedPokemonDesc} from "~/game/pokemon";
+import {moveList, type MoveId, type Move} from "~/game/moves";
+import {speciesList, type Species, type SpeciesId} from "~/game/species";
+import {statKeys} from "~/game/utils";
 import random from "random";
-import { z } from "zod";
-import type { FormatId } from "~/utils/shared";
-import { type Generation, GENERATION1 } from "~/game/gen";
-import { GENERATION2 } from "~/game/gen2";
+import {z} from "zod";
+import type {FormatId} from "~/utils/shared";
+import {type Generation, GENERATION1} from "~/game/gen";
+import {GENERATION2} from "~/game/gen2";
 
-export type TeamProblems = { path: (string | number)[]; message: string }[];
+export type TeamProblems = {path: (string | number)[]; message: string}[];
 
 interface FormatFunctions {
   generate?(): ValidatedPokemonDesc[];
@@ -70,7 +70,7 @@ export const randoms = (
     if (stab.length) {
       moves[0] = random.choice(stab)!;
     }
-    return { species: id, level, moves };
+    return {species: id, level, moves};
   });
 };
 
@@ -100,7 +100,7 @@ const createValidator = (gen: Generation) => {
 
       for (let i = 0; i < desc.moves.length; i++) {
         if (!learnset.includes(desc.moves[i])) {
-          ctx.addIssue({ path: ["moves", i], message: "Does not learn this move", code: "custom" });
+          ctx.addIssue({path: ["moves", i], message: "Does not learn this move", code: "custom"});
         }
       }
     })
@@ -129,9 +129,7 @@ const validateTeam = (
   const problems: TeamProblems = [];
   for (const desc of parsed.data) {
     if (onPoke) {
-      onPoke(desc as ValidatedPokemonDesc, message =>
-        problems.push({ path: ["unknown"], message }),
-      );
+      onPoke(desc as ValidatedPokemonDesc, message => problems.push({path: ["unknown"], message}));
     }
   }
 
@@ -143,12 +141,8 @@ const validateTeam = (
 };
 
 export const formatDescs: Record<FormatId, FormatFunctions> = {
-  g2_standard: {
-    validate: team => validateTeam(VALIDATOR_GEN2, team),
-  },
-  g1_standard: {
-    validate: team => validateTeam(VALIDATOR_GEN1, team),
-  },
+  g2_standard: {validate: team => validateTeam(VALIDATOR_GEN2, team)},
+  g1_standard: {validate: team => validateTeam(VALIDATOR_GEN1, team)},
   g1_nfe: {
     validate(team) {
       return validateTeam(VALIDATOR_GEN1, team, (poke, addProblem) => {
@@ -192,7 +186,7 @@ export const formatDescs: Record<FormatId, FormatFunctions> = {
         GENERATION1,
         6,
         s => !s.evolvesTo,
-        (_, species) => ({ species, moves: ["metronome"] }),
+        (_, species) => ({species, moves: ["metronome"]}),
       );
     },
   },

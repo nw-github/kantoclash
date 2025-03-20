@@ -5,7 +5,7 @@
 </template>
 
 <script setup lang="ts">
-import type { UButton, UTooltip } from "#components";
+import type {UButton, UTooltip} from "#components";
 
 type ButtonProps = InstanceType<typeof UButton>["$props"];
 type TooltipProps = InstanceType<typeof UTooltip>["$props"];
@@ -16,5 +16,5 @@ interface Props extends /* @vue-ignore */ ButtonProps {
 }
 
 defineProps<Props>();
-defineEmits<{ (e: "click"): void }>();
+defineEmits<{(e: "click"): void}>();
 </script>

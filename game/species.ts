@@ -1,5 +1,5 @@
-import type { MoveId } from "./moves";
-import type { Stats, Type } from "./utils";
+import type {MoveId} from "./moves";
+import type {Stats, Type} from "./utils";
 import __speciesList from "./species.json";
 
 export type Species = {

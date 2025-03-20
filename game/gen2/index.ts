@@ -1,18 +1,18 @@
 import defu from "defu";
-import { GENERATION1, type CalcDamageParams, type Generation } from "../gen1";
-import { moveList as baseMoveList } from "../moves";
-import { speciesList as baseSpeciesList, type Species, type SpeciesId } from "../species";
-import { floatTo255, clamp, scaleAccuracy255, idiv, imul } from "../utils";
-import { movePatches } from "./moves";
+import {GENERATION1, type CalcDamageParams, type Generation} from "../gen1";
+import {moveList as baseMoveList} from "../moves";
+import {speciesList as baseSpeciesList, type Species, type SpeciesId} from "../species";
+import {floatTo255, clamp, scaleAccuracy255, idiv, imul} from "../utils";
+import {movePatches} from "./moves";
 import __speciesPatches from "./species.json";
 
 const speciesPatches = __speciesPatches as Partial<Record<SpeciesId, Partial<Species>>>;
 
 const typeChartPatch: Partial<typeof GENERATION1.typeChart> = {
-  ghost: { psychic: 2 },
-  poison: { bug: 1 },
-  bug: { poison: 0.5 },
-  ice: { fire: 0.5 },
+  ghost: {psychic: 2},
+  poison: {bug: 1},
+  bug: {poison: 0.5},
+  ice: {fire: 0.5},
 };
 
 const critStages: Record<number, number> = {

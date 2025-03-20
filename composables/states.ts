@@ -1,8 +1,8 @@
-import type { Challenge } from "~/server/gameServer";
-import type { Team } from "~/utils/pokemon";
+import type {Challenge} from "~/server/gameServer";
+import type {Team} from "~/utils/pokemon";
 
 export const useMyId = () => {
-  const { user } = useUserSession();
+  const {user} = useUserSession();
   return computed(() => user.value?.id ?? "");
 };
 

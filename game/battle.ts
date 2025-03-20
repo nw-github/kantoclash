@@ -1,4 +1,4 @@
-import { Random } from "random";
+import {Random} from "random";
 import type {
   HitSubstituteEvent,
   BattleEvent,
@@ -10,8 +10,8 @@ import type {
   VictoryEvent,
   ChangedVolatiles,
 } from "./events";
-import { type MoveId, type Move, moveFunctions } from "./moves";
-import { Pokemon, type Status, type ValidatedPokemonDesc } from "./pokemon";
+import {type MoveId, type Move, moveFunctions} from "./moves";
+import {Pokemon, type Status, type ValidatedPokemonDesc} from "./pokemon";
 import {
   arraysEqual,
   clamp,
@@ -26,7 +26,7 @@ import {
   type VolatileFlag,
   type Weather,
 } from "./utils";
-import type { Generation } from "./gen";
+import type {Generation} from "./gen";
 
 export type MoveOption = {
   move: MoveId;
@@ -36,23 +36,13 @@ export type MoveOption = {
   indexInMoves?: number;
 };
 
-type ChosenMove = {
-  move: Move;
-  indexInMoves?: number;
-  user: ActivePokemon;
-};
+type ChosenMove = {move: Move; indexInMoves?: number; user: ActivePokemon};
 
 export type Options = NonNullable<Player["options"]>;
 
-export type Turn = {
-  events: BattleEvent[];
-  switchTurn: boolean;
-};
+export type Turn = {events: BattleEvent[]; switchTurn: boolean};
 
-export type PlayerParams = {
-  readonly id: PlayerId;
-  readonly team: ValidatedPokemonDesc[];
-};
+export type PlayerParams = {readonly id: PlayerId; readonly team: ValidatedPokemonDesc[]};
 
 export type Screen = "light_screen" | "reflect";
 
@@ -62,13 +52,13 @@ class Player {
   readonly team: Pokemon[];
   readonly teamDesc: ValidatedPokemonDesc[];
   choice?: ChosenMove;
-  options?: { canSwitch: boolean; moves: MoveOption[] };
+  options?: {canSwitch: boolean; moves: MoveOption[]};
   sleepClausePoke?: Pokemon;
 
   screens: Partial<Record<Screen, number>> = {};
   spikes = false;
 
-  constructor(gen: Generation, { id, team }: PlayerParams) {
+  constructor(gen: Generation, {id, team}: PlayerParams) {
     this.id = id;
     this.team = team.map(p => new Pokemon(gen, p));
     this.teamDesc = team;
@@ -107,14 +97,7 @@ class Player {
     }
 
     this.choice = {
-      move: {
-        kind: "switch",
-        type: "normal",
-        name: "",
-        pp: 0,
-        priority: 2,
-        poke,
-      },
+      move: {kind: "switch", type: "normal", name: "", pp: 0, priority: 2, poke},
       user: this.active,
     };
     return true;
@@ -129,11 +112,7 @@ class Player {
   }
 }
 
-export type Mods = {
-  sleepClause?: boolean;
-  freezeClause?: boolean;
-  endlessBattle?: boolean;
-};
+export type Mods = {sleepClause?: boolean; freezeClause?: boolean; endlessBattle?: boolean};
 
 export class Battle {
   readonly players: [Player, Player];
@@ -141,7 +120,7 @@ export class Battle {
   private readonly moveListToId = new Map<Move, MoveId>();
   private switchTurn = true;
   private _victor?: Player;
-  weather?: { kind: Weather; turns: number };
+  weather?: {kind: Weather; turns: number};
   finished = false;
   leadTurn = true;
   turn = 0;
@@ -171,7 +150,7 @@ export class Battle {
     self.players[0].updateOptions(self);
     self.players[1].updateOptions(self);
     if (chooseLead) {
-      return [self, { events: [], switchTurn: true } satisfies Turn] as const;
+      return [self, {events: [], switchTurn: true} satisfies Turn] as const;
     }
 
     self.players[0].chooseSwitch(self, 0);
@@ -194,7 +173,7 @@ export class Battle {
   }
 
   info(src: ActivePokemon, why: InfoReason, volatiles?: ChangedVolatiles) {
-    return this.event({ type: "info", src: src.owner.id, why, volatiles });
+    return this.event({type: "info", src: src.owner.id, why, volatiles});
   }
 
   opponentOf(player: Player): Player {
@@ -215,7 +194,7 @@ export class Battle {
     }
 
     const choices = this.players
-      .flatMap(({ choice }) => (choice ? [choice] : []))
+      .flatMap(({choice}) => (choice ? [choice] : []))
       .sort((a, b) => {
         const aPri = a.move.priority ?? 0,
           bPri = b.move.priority ?? 0;
@@ -263,7 +242,7 @@ export class Battle {
     }
 
     if (!skipEnd && !this.switchTurn) {
-      for (const { user } of choices) {
+      for (const {user} of choices) {
         if (user.handleStatusDamage(this)) {
           if (user.owner.areAllDead()) {
             this.victor = this.opponentOf(user.owner);
@@ -274,7 +253,7 @@ export class Battle {
     }
 
     if (this.victor) {
-      this.event({ type: "end", victor: this.victor.id });
+      this.event({type: "end", victor: this.victor.id});
     }
 
     for (const player of this.players) {
@@ -295,7 +274,7 @@ export class Battle {
 
     const switchTurn = this.switchTurn;
     this.switchTurn = this.players.some(pl => pl.active.base.hp === 0);
-    return { events: this.events.splice(0), switchTurn };
+    return {events: this.events.splice(0), switchTurn};
   }
 
   findPlayer(id: string) {
@@ -304,25 +283,25 @@ export class Battle {
 
   forfeit(player: Player, timer: boolean) {
     this.victor = this.opponentOf(player);
-    this.event({ type: "info", src: player.id, why: timer ? "ff_timer" : "ff" });
-    this.event({ type: "end", victor: this.victor.id });
+    this.event({type: "info", src: player.id, why: timer ? "ff_timer" : "ff"});
+    this.event({type: "end", victor: this.victor.id});
     for (const player of this.players) {
       player.options = undefined;
     }
-    return { events: this.events.splice(0), switchTurn: false };
+    return {events: this.events.splice(0), switchTurn: false};
   }
 
   draw(why: VictoryEvent["why"]) {
     this.finished = true;
     for (const player of this.players) {
       if (why === "timer") {
-        this.event({ type: "info", src: player.id, why: "ff_timer" });
+        this.event({type: "info", src: player.id, why: "ff_timer"});
       }
       player.options = undefined;
     }
 
-    this.event({ type: "end", why });
-    return { events: this.events.splice(0), switchTurn: false };
+    this.event({type: "end", why});
+    return {events: this.events.splice(0), switchTurn: false};
   }
 
   callUseMove(move: Move, user: ActivePokemon, target: ActivePokemon, moveIndex?: number) {
@@ -346,7 +325,7 @@ export class Battle {
     return getEffectiveness(this.gen.typeChart, atk, def);
   }
 
-  private tryUseMove({ move, user, indexInMoves }: ChosenMove, target: ActivePokemon) {
+  private tryUseMove({move, user, indexInMoves}: ChosenMove, target: ActivePokemon) {
     // Order of events comes from here:
     //  https://www.smogon.com/forums/threads/past-gens-research-thread.3506992/#post-5878612
     if (user.v.hazed) {
@@ -387,12 +366,12 @@ export class Battle {
 
     if (user.v.disabled && --user.v.disabled.turns === 0) {
       user.v.disabled = undefined;
-      this.info(user, "disable_end", [{ id: user.owner.id, v: { disabled: false } }]);
+      this.info(user, "disable_end", [{id: user.owner.id, v: {disabled: false}}]);
     }
 
     if (user.v.confusion) {
       if (--user.v.confusion === 0) {
-        this.info(user, "confused_end", [{ id: user.owner.id, v: { confused: false } }]);
+        this.info(user, "confused_end", [{id: user.owner.id, v: {confused: false}}]);
       } else {
         this.info(user, "confused");
       }
@@ -441,9 +420,9 @@ export class Battle {
     for (let i = 0; i < result.length; i++) {
       const e = result[i];
       if ((e.type === "damage" || e.type === "recover") && e.target !== player?.id) {
-        result[i] = { ...e, hpBefore: undefined, hpAfter: undefined };
+        result[i] = {...e, hpBefore: undefined, hpAfter: undefined};
       } else if (e.type === "switch" && e.src !== player?.id) {
-        result[i] = { ...e, hp: undefined, indexInTeam: -1 };
+        result[i] = {...e, hp: undefined, indexInTeam: -1};
       }
 
       if (e.volatiles) {
@@ -469,7 +448,10 @@ export class ActivePokemon {
   lastDamage = 0;
   movedThisTurn = false;
 
-  constructor(public base: Pokemon, public readonly owner: Player) {
+  constructor(
+    public base: Pokemon,
+    public readonly owner: Player,
+  ) {
     this.base = base;
     this.owner = owner;
     this.v = new Volatiles(base);
@@ -495,7 +477,7 @@ export class ActivePokemon {
       level: next.level,
       indexInTeam: this.owner.team.indexOf(next),
       why,
-      volatiles: [{ id: this.owner.id, v: this.v.toClientVolatiles(next, battle) }],
+      volatiles: [{id: this.owner.id, v: this.v.toClientVolatiles(next, battle)}],
     });
   }
 
@@ -565,12 +547,7 @@ export class ActivePokemon {
         this.handleRage(battle);
       }
 
-      return {
-        event,
-        dealt: hpBefore - this.base.hp,
-        brokeSub: false,
-        dead: this.base.hp === 0,
-      };
+      return {event, dealt: hpBefore - this.base.hp, brokeSub: false, dead: this.base.hp === 0};
     }
   }
 
@@ -591,7 +568,7 @@ export class ActivePokemon {
       hpAfter: this.base.hp,
       dead: false,
       why,
-      volatiles: [{ id: this.owner.id, v: { status: this.base.status || null } }],
+      volatiles: [{id: this.owner.id, v: {status: this.base.status || null}}],
     });
   }
 
@@ -633,7 +610,7 @@ export class ActivePokemon {
       type: "status",
       src: this.owner.id,
       status,
-      volatiles: [{ id: this.owner.id, v: { stats: { ...this.v.stats }, status } }],
+      volatiles: [{id: this.owner.id, v: {stats: {...this.v.stats}, status}}],
     });
 
     return true;
@@ -659,8 +636,8 @@ export class ActivePokemon {
         stat,
         count,
         volatiles: [
-          { id: this.owner.id, v: { stats: { ...this.v.stats }, stages: { ...this.v.stages } } },
-          { id: opponent.owner.id, v: { stats: { ...opponent.v.stats } } },
+          {id: this.owner.id, v: {stats: {...this.v.stats}, stages: {...this.v.stages}}},
+          {id: opponent.owner.id, v: {stats: {...opponent.v.stats}}},
         ],
       });
     }
@@ -674,7 +651,7 @@ export class ActivePokemon {
 
     this.v.confusion = battle.rng.int(2, 5);
     if (!thrashing) {
-      battle.info(this, "became_confused", [{ id: this.owner.id, v: { confused: true } }]);
+      battle.info(this, "became_confused", [{id: this.owner.id, v: {confused: true}}]);
     }
     return true;
   }
@@ -682,7 +659,7 @@ export class ActivePokemon {
   tickCounter(battle: Battle, why: DamageReason) {
     const multiplier = this.base.status === "psn" && why === "psn" ? 1 : this.v.counter;
     const dmg = Math.max(Math.floor((multiplier * this.base.stats.hp) / 16), 1);
-    const { dead } = this.damage(dmg, this, battle, false, why, true);
+    const {dead} = this.damage(dmg, this, battle, false, why, true);
     const opponent = battle.opponentOf(this.owner).active;
     if (why === "seeded" && opponent.base.hp < opponent.base.stats.hp) {
       opponent.recover(dmg, this, battle, "seeder");
@@ -780,7 +757,7 @@ export class ActivePokemon {
     }
 
     if (battle.leadTurn) {
-      return { canSwitch: true, moves: [] };
+      return {canSwitch: true, moves: []};
     }
 
     // send all moves so PP can be updated
@@ -811,15 +788,12 @@ export class ActivePokemon {
     if (this.base.transformed) {
       const original = this.base.real;
       original.moves.forEach((move, i) => {
-        moves.push({ move, pp: original.pp[i], valid: false, display: false, indexInMoves: i });
+        moves.push({move, pp: original.pp[i], valid: false, display: false, indexInMoves: i});
       });
     }
 
     const moveLocked = !!(this.v.bide || this.v.trapping);
-    return {
-      canSwitch: !lockedIn || moveLocked || this.base.hp === 0,
-      moves,
-    };
+    return {canSwitch: !lockedIn || moveLocked || this.base.hp === 0, moves};
   }
 
   private isValidMove(battle: Battle, move: MoveId, i: number) {
@@ -847,7 +821,7 @@ export class ActivePokemon {
 export type VolatileStats = Volatiles["stats"];
 
 class Volatiles {
-  readonly stages = { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0 };
+  readonly stages = {atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0};
   stats: Record<StatStages, number>;
   types: Type[];
   flags: Partial<Record<VolatileFlag, boolean>> = {};
@@ -863,11 +837,11 @@ class Volatiles {
   lastMoveIndex?: number;
   charging?: Move;
   recharge?: Move;
-  thrashing?: { move: Move; turns: number; acc?: number };
-  bide?: { move: Move; turns: number; dmg: number };
-  disabled?: { turns: number; indexInMoves: number };
-  mimic?: { move: MoveId; indexInMoves: number };
-  trapping?: { move: Move; turns: number };
+  thrashing?: {move: Move; turns: number; acc?: number};
+  bide?: {move: Move; turns: number; dmg: number};
+  disabled?: {turns: number; indexInMoves: number};
+  mimic?: {move: MoveId; indexInMoves: number};
+  trapping?: {move: Move; turns: number};
 
   constructor(base: Pokemon) {
     this.types = [...base.species.types];
@@ -893,8 +867,8 @@ class Volatiles {
   toClientVolatiles(base: Pokemon, battle: Battle): ChangedVolatiles[number]["v"] {
     return {
       status: base.status || null,
-      stages: { ...this.stages },
-      stats: { ...this.stats },
+      stages: {...this.stages},
+      stats: {...this.stats},
       charging: this.charging ? battle.moveIdOf(this.charging) : undefined,
       conversion: !arraysEqual(this.types, base.species.types) ? [...this.types] : undefined,
       disabled: !!this.disabled,

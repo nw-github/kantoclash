@@ -22,14 +22,11 @@
 </template>
 
 <script setup lang="ts">
-import type { TeamSelector } from "#components";
-import type { Challenge } from "~/server/gameServer";
+import type {TeamSelector} from "#components";
+import type {Challenge} from "~/server/gameServer";
 
-const { challenge } = defineProps<{ challenge: Challenge; disabled?: boolean }>();
-const emit = defineEmits<{
-  (e: "reject"): void;
-  (e: "accept", team?: Team): void;
-}>();
+const {challenge} = defineProps<{challenge: Challenge; disabled?: boolean}>();
+const emit = defineEmits<{(e: "reject"): void; (e: "accept", team?: Team): void}>();
 
 const team = ref<Team>();
 const selectTeamMenu = ref<InstanceType<typeof TeamSelector>>();

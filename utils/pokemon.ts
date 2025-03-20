@@ -1,20 +1,16 @@
-import { moveList, type MoveId, type Move } from "~/game/moves";
-import { speciesList, type SpeciesId } from "~/game/species";
-import { statKeys, type Stats } from "~/game/utils";
-import { battleFormats } from "./shared";
-import type { PokemonDesc } from "~/game/pokemon";
+import {moveList, type MoveId, type Move} from "~/game/moves";
+import {speciesList, type SpeciesId} from "~/game/species";
+import {statKeys, type Stats} from "~/game/utils";
+import {battleFormats} from "./shared";
+import type {PokemonDesc} from "~/game/pokemon";
 
-type WithRequired<T, K extends keyof T> = T & { [P in K]-?: T[P] };
+type WithRequired<T, K extends keyof T> = T & {[P in K]-?: T[P]};
 
 export type TeamPokemonDesc = WithRequired<PokemonDesc, "evs" | "ivs">;
 
-export type Team = {
-  name: string;
-  pokemon: TeamPokemonDesc[];
-  format: FormatId;
-};
+export type Team = {name: string; pokemon: TeamPokemonDesc[]; format: FormatId};
 
-export const teamToString = ({ name, pokemon, format }: Team) => {
+export const teamToString = ({name, pokemon, format}: Team) => {
   return `=== [${format}] ${name} ===\n\n` + pokemon.map(descToString).join("\n");
 };
 
@@ -106,7 +102,7 @@ export const parsePokemon = (src: string): TeamPokemonDesc => {
       moves.push(match[1]);
     }
   }
-  return { species: speciesName, evs, ivs, level, moves, name };
+  return {species: speciesName, evs, ivs, level, moves, name};
 };
 
 export const parseTeams = (src: string) => {
@@ -141,7 +137,7 @@ export const parseTeams = (src: string) => {
 
       pokemon.push(parsePokemon(res[i]));
     }
-    teams.push({ name, pokemon, format });
+    teams.push({name, pokemon, format});
   }
   return teams;
 };
@@ -167,7 +163,7 @@ export const convertDesc = (desc: PokemonDesc): PokemonDesc => {
       ivs[stat] = ivToDv(desc.ivs[stat]);
     }
   }
-  return { evs, ivs, moves, level: desc.level ?? 100, name: desc.name, species };
+  return {evs, ivs, moves, level: desc.level ?? 100, name: desc.name, species};
 };
 
 export const normalizeName = (v: string) => v.trim().toLowerCase().replaceAll(ignoreChars, "");

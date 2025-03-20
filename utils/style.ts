@@ -1,6 +1,6 @@
 import tailwindColors from "tailwindcss/colors";
-import type { Status } from "~/game/pokemon";
-import type { Type } from "~/game/utils";
+import type {Status} from "~/game/pokemon";
+import type {Type} from "~/game/utils";
 
 export const typeColor: Record<Type, string> = {
   normal: "#8F98A0",
@@ -43,7 +43,7 @@ export const colorInterp = (
     const v = Math.max(r, g, b);
     const c = v - Math.min(r, g, b);
     const h = c && (v == r ? (g - b) / c : v == g ? 2 + (b - r) / c : 4 + (r - g) / c);
-    return { h: 60 * (h < 0 ? h + 6 : h), s: v && c / v, v };
+    return {h: 60 * (h < 0 ? h + 6 : h), s: v && c / v, v};
   };
 
   const hsv2rgb = (h: number, s: number, v: number) => {

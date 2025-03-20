@@ -14,11 +14,11 @@
         tabindex="0"
         @focus="open = true"
       >
-        <Sprite :species="(model as SpeciesId)" :scale="2" @click="open = true" />
+        <Sprite :species="model as SpeciesId" :scale="2" @click="open = true" />
       </div>
     </div>
 
-    <template #item="{ item: [id, species] }">
+    <template #item="{item: [id, species]}">
       <div class="flex items-center gap-1">
         <BoxSprite :species="id" />
         <span class="text-xs sm:text-sm truncate" :class="[isIllegal(species) && 'text-red-500']">
@@ -35,11 +35,11 @@
             color="white"
             class="w-6 sm:w-11"
             size="xs"
-            :ui="{ rounded: 'rounded-lg' }"
+            :ui="{rounded: 'rounded-lg'}"
           >
             <span
               class="text-[0.5rem] text-center sm:text-left sm:text-[0.6rem] grow"
-              :style="{ color: baseStatColor(species.stats[stat]) }"
+              :style="{color: baseStatColor(species.stats[stat])}"
             >
               {{ species.stats[stat] }}
             </span>
@@ -54,11 +54,11 @@
 </template>
 
 <script setup lang="ts">
-import type { Species, SpeciesId } from "@/game/species";
-import type { Generation } from "~/game/gen1";
+import type {Species, SpeciesId} from "@/game/species";
+import type {Generation} from "~/game/gen1";
 
 const model = defineModel<string>();
-const { team, gen } = defineProps<{ team: Team; gen: Generation }>();
+const {team, gen} = defineProps<{team: Team; gen: Generation}>();
 const open = ref(false);
 const items = computed(() => Object.entries(gen.speciesList) as [SpeciesId, Species][]);
 const statKeys = computed(() => getStatKeys(gen));

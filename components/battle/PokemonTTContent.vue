@@ -41,11 +41,11 @@
 </template>
 
 <script setup lang="ts">
-import type { Pokemon } from "~/game/pokemon";
-import { hpPercentExact, type StatStages } from "~/game/utils";
+import type {Pokemon} from "~/game/pokemon";
+import {hpPercentExact, type StatStages} from "~/game/utils";
 import "assets/colors.css";
 
-const { active, poke } = defineProps<{ active?: ClientActivePokemon; poke: Pokemon }>();
+const {active, poke} = defineProps<{active?: ClientActivePokemon; poke: Pokemon}>();
 const statKeys = computed(() => getStatKeys(poke.gen));
 
 const statClass = (stat: StatStages) => {

@@ -1,17 +1,17 @@
-import type { Random } from "random";
-import type { ActivePokemon, Battle } from "../battle";
-import { moveList, type Move } from "../moves";
-import { speciesList, type Species } from "../species";
-import { floatTo255, idiv, scaleAccuracy255, type Type } from "../utils";
+import type {Random} from "random";
+import type {ActivePokemon, Battle} from "../battle";
+import {moveList, type Move} from "../moves";
+import {speciesList, type Species} from "../species";
+import {floatTo255, idiv, scaleAccuracy255, type Type} from "../utils";
 
 export type TypeChart = Record<Type, Partial<Record<Type, number>>>;
 
 export const typeChart: TypeChart = {
-  normal: { ghost: 0, rock: 0.5, steel: 0.5 },
-  rock: { bug: 2, fire: 2, flying: 2, ice: 2, fight: 0.5, ground: 0.5, steel: 0.5 },
-  ground: { rock: 2, poison: 2, bug: 0.5, flying: 0, grass: 0.5, fire: 2, electric: 2, steel: 2 },
-  ghost: { normal: 0, ghost: 2, psychic: 0, dark: 0.5, steel: 0.5 },
-  poison: { rock: 0.5, ground: 0.5, ghost: 0.5, grass: 2, bug: 2, poison: 0.5, steel: 0 },
+  normal: {ghost: 0, rock: 0.5, steel: 0.5},
+  rock: {bug: 2, fire: 2, flying: 2, ice: 2, fight: 0.5, ground: 0.5, steel: 0.5},
+  ground: {rock: 2, poison: 2, bug: 0.5, flying: 0, grass: 0.5, fire: 2, electric: 2, steel: 2},
+  ghost: {normal: 0, ghost: 2, psychic: 0, dark: 0.5, steel: 0.5},
+  poison: {rock: 0.5, ground: 0.5, ghost: 0.5, grass: 2, bug: 2, poison: 0.5, steel: 0},
   bug: {
     ghost: 0.5,
     flying: 0.5,
@@ -23,7 +23,7 @@ export const typeChart: TypeChart = {
     dark: 2,
     steel: 0.5,
   },
-  flying: { rock: 0.5, bug: 2, fight: 2, grass: 2, electric: 0.5, steel: 0.5 },
+  flying: {rock: 0.5, bug: 2, fight: 2, grass: 2, electric: 0.5, steel: 0.5},
   fight: {
     normal: 2,
     rock: 2,
@@ -36,7 +36,7 @@ export const typeChart: TypeChart = {
     dark: 2,
     steel: 2,
   },
-  water: { rock: 2, ground: 2, water: 0.5, grass: 0.5, fire: 2, dragon: 0.5 },
+  water: {rock: 2, ground: 2, water: 0.5, grass: 0.5, fire: 2, dragon: 0.5},
   grass: {
     rock: 2,
     ground: 2,
@@ -49,13 +49,13 @@ export const typeChart: TypeChart = {
     grass: 0.5,
     steel: 0.5,
   },
-  fire: { rock: 0.5, bug: 2, water: 0.5, grass: 2, fire: 0.5, ice: 2, dragon: 0.5, steel: 2 },
-  electric: { ground: 0, flying: 2, water: 2, grass: 0.5, electric: 0.5, dragon: 0.5 },
-  ice: { ground: 2, flying: 2, water: 0.5, grass: 2, ice: 0.5, dragon: 2, steel: 0.5 },
-  psychic: { poison: 2, fight: 2, psychic: 0.5, steel: 0.5, dark: 0 },
-  dragon: { dragon: 2, steel: 0.5 },
-  dark: { ghost: 2, fight: 0.5, psychic: 2, dark: 0.5, steel: 0.5 },
-  steel: { rock: 2, water: 0.5, fire: 0.5, electric: 0.5, ice: 2, steel: 0.5 },
+  fire: {rock: 0.5, bug: 2, water: 0.5, grass: 2, fire: 0.5, ice: 2, dragon: 0.5, steel: 2},
+  electric: {ground: 0, flying: 2, water: 2, grass: 0.5, electric: 0.5, dragon: 0.5},
+  ice: {ground: 2, flying: 2, water: 0.5, grass: 2, ice: 0.5, dragon: 2, steel: 0.5},
+  psychic: {poison: 2, fight: 2, psychic: 0.5, steel: 0.5, dark: 0},
+  dragon: {dragon: 2, steel: 0.5},
+  dark: {ghost: 2, fight: 0.5, psychic: 2, dark: 0.5, steel: 0.5},
+  steel: {rock: 2, water: 0.5, fire: 0.5, electric: 0.5, ice: 2, steel: 0.5},
 };
 
 const checkAccuracy = (move: Move, battle: Battle, user: ActivePokemon, target: ActivePokemon) => {
@@ -112,7 +112,7 @@ export type CalcDamageParams = {
   doubleDmg?: boolean;
 };
 
-const calcDamage = ({ lvl, pow, atk, def, eff, isCrit, isStab, rand }: CalcDamageParams) => {
+const calcDamage = ({lvl, pow, atk, def, eff, isCrit, isStab, rand}: CalcDamageParams) => {
   if (eff === 0) {
     return 0;
   }

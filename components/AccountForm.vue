@@ -46,20 +46,20 @@
 </template>
 
 <script setup lang="ts">
-import { z } from "zod";
-import type { Form, FormSubmitEvent } from "#ui/types";
+import {z} from "zod";
+import type {Form, FormSubmitEvent} from "#ui/types";
 
 const items = [
-  { label: "Log in", icon: "material-symbols:login" },
-  { label: "Sign up", icon: "material-symbols:person-add" },
+  {label: "Log in", icon: "material-symbols:login"},
+  {label: "Sign up", icon: "material-symbols:person-add"},
 ];
 
-const { $conn } = useNuxtApp();
+const {$conn} = useNuxtApp();
 const form = ref<Form<Schema>>();
-const state = reactive({ username: undefined, password: undefined, confirmPassword: undefined });
+const state = reactive({username: undefined, password: undefined, confirmPassword: undefined});
 const loading = ref(false);
 const currentTab = ref(0);
-const { fetch: refresh } = useUserSession();
+const {fetch: refresh} = useUserSession();
 
 const schema = userSchema.extend({
   confirmPassword: z
@@ -75,9 +75,9 @@ const submit = async (event: FormSubmitEvent<Schema>) => {
 
   loading.value = true;
   try {
-    const body = { username: event.data.username, password: event.data.password };
+    const body = {username: event.data.username, password: event.data.password};
 
-    await $fetch(currentTab.value === 1 ? "/api/register" : "/api/login", { method: "POST", body });
+    await $fetch(currentTab.value === 1 ? "/api/register" : "/api/login", {method: "POST", body});
     await refresh();
 
     state.username = undefined;

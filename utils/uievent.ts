@@ -1,13 +1,7 @@
-import type {
-  BattleEvent,
-  DamageEvent,
-  InfoReason,
-  RecoverEvent,
-  WeatherEvent,
-} from "~/game/events";
-import type { MoveId } from "~/game/moves";
-import type { Status } from "~/game/pokemon";
-import type { Weather } from "~/game/utils";
+import type {BattleEvent, DamageEvent, InfoReason, RecoverEvent, WeatherEvent} from "~/game/events";
+import type {MoveId} from "~/game/moves";
+import type {Status} from "~/game/pokemon";
+import type {Weather} from "~/game/utils";
 
 export type RawUIBattleEvent =
   | BattleEvent
@@ -17,31 +11,18 @@ export type RawUIBattleEvent =
   | GetSubstitute
   | UIDamageEvent
   | UIRecoverEvent;
-export type UIBattleEvent = RawUIBattleEvent & { time: number } & { [id: string]: string };
+export type UIBattleEvent = RawUIBattleEvent & {time: number} & {[id: string]: string};
 
-export type RetractEvent = {
-  type: "retract";
-  src: string;
-  name: string;
-};
+export type RetractEvent = {type: "retract"; src: string; name: string};
 
-export type SubBroke = {
-  type: "sub_break";
-  target: string;
-};
+export type SubBroke = {type: "sub_break"; target: string};
 
-export type FaintEvent = {
-  type: "faint";
-  src: string;
-};
+export type FaintEvent = {type: "faint"; src: string};
 
-export type GetSubstitute = {
-  type: "get_sub";
-  src: string;
-};
+export type GetSubstitute = {type: "get_sub"; src: string};
 
-export type UIDamageEvent = DamageEvent & { maxHp?: number };
-export type UIRecoverEvent = RecoverEvent & { maxHp?: number };
+export type UIDamageEvent = DamageEvent & {maxHp?: number};
+export type UIRecoverEvent = RecoverEvent & {maxHp?: number};
 
 export const statusTable: Record<Status, string> = {
   psn: "was poisoned",

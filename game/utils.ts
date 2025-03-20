@@ -1,6 +1,6 @@
-import type { Random } from "random";
-import type { ActivePokemon } from "./battle";
-import type { TypeChart } from "./gen";
+import type {Random} from "random";
+import type {ActivePokemon} from "./battle";
+import type {TypeChart} from "./gen";
 
 export type Weather = "rain" | "sun" | "sand";
 

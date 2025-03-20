@@ -14,7 +14,7 @@ import type {
   VolatileFlagMove,
   WeatherMove,
 } from "./index";
-import { exec as execDamagingMove, use as useDamagingMove } from "./damaging";
+import {exec as execDamagingMove, use as useDamagingMove} from "./damaging";
 
 type KindToType = {
   volatile: VolatileFlagMove;
@@ -52,7 +52,7 @@ export const moveFunctions: Record<MoveKind, MoveFunctions> = {
     use(battle, user, target, moveIndex) {
       const move = battle.moveIdOf(this)!;
       if (move === user.base.moves[user.v.disabled?.indexInMoves ?? -1]) {
-        battle.event({ move, type: "move", src: user.owner.id, disabled: true });
+        battle.event({move, type: "move", src: user.owner.id, disabled: true});
         user.v.charging = undefined;
         return false;
       }
@@ -84,7 +84,7 @@ export const moveFunctions: Record<MoveKind, MoveFunctions> = {
         battle.info(user, "fail_generic");
       } else {
         user.v.flags[this.flag] = true;
-        battle.info(user, this.flag, [{ id: user.owner.id, v: { [this.flag]: true } }]);
+        battle.info(user, this.flag, [{id: user.owner.id, v: {[this.flag]: true}}]);
       }
       return false;
     },
@@ -104,10 +104,7 @@ export const moveFunctions: Record<MoveKind, MoveFunctions> = {
       return false;
     },
   },
-  damage: {
-    use: useDamagingMove,
-    exec: execDamagingMove,
-  },
+  damage: {use: useDamagingMove, exec: execDamagingMove},
   recover: {
     exec(battle, user) {
       const diff = user.base.stats.hp - user.base.hp;
@@ -189,8 +186,8 @@ export const moveFunctions: Record<MoveKind, MoveFunctions> = {
   },
   weather: {
     exec(battle) {
-      battle.event({ type: "weather", kind: "start", weather: this.weather });
-      battle.weather = { turns: 5, kind: this.weather };
+      battle.event({type: "weather", kind: "start", weather: this.weather});
+      battle.weather = {turns: 5, kind: this.weather};
       return false;
     },
   },
@@ -202,7 +199,7 @@ export const moveFunctions: Record<MoveKind, MoveFunctions> = {
       }
 
       user.owner.screens[this.screen] = 5;
-      battle.event({ type: "screen", screen: this.screen, kind: "start", src: user.owner.id });
+      battle.event({type: "screen", screen: this.screen, kind: "start", src: user.owner.id});
       return false;
     },
   },

@@ -20,7 +20,7 @@ span {
 </style>
 
 <script setup lang="ts">
-import type { SpeciesId } from "~/game/species";
+import type {SpeciesId} from "~/game/species";
 
-defineProps<{ species?: SpeciesId; scale?: number; shiny?: boolean }>();
+defineProps<{species?: SpeciesId; scale?: number; shiny?: boolean}>();
 </script>

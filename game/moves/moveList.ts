@@ -1,6 +1,6 @@
-import { moveFunctions, type Move } from "./index";
-import { transform } from "../pokemon";
-import { stageKeys, volatileFlags } from "../utils";
+import {moveFunctions, type Move} from "./index";
+import {transform} from "../pokemon";
+import {stageKeys, volatileFlags} from "../utils";
 
 export type MoveId = keyof typeof internalMoveList;
 
@@ -34,7 +34,7 @@ const internalMoveList = Object.freeze({
     },
     exec(battle, user, target) {
       target.lastDamage = 0;
-      user.v.bide = { move: this, turns: battle.rng.int(2, 3), dmg: 0 };
+      user.v.bide = {move: this, turns: battle.rng.int(2, 3), dmg: 0};
       return false;
     },
   },
@@ -49,7 +49,7 @@ const internalMoveList = Object.freeze({
         user: user.owner.id,
         target: target.owner.id,
         types: [...user.v.types],
-        volatiles: [{ id: user.owner.id, v: { conversion: [...user.v.types] } }],
+        volatiles: [{id: user.owner.id, v: {conversion: [...user.v.types]}}],
       });
 
       return false;
@@ -74,12 +74,12 @@ const internalMoveList = Object.freeze({
       }
 
       const indexInMoves = battle.rng.choice(options)!;
-      target.v.disabled = { indexInMoves, turns: battle.rng.int(1, 8) };
+      target.v.disabled = {indexInMoves, turns: battle.rng.int(1, 8)};
       battle.event({
         type: "disable",
         src: target.owner.id,
         move: target.base.moves[indexInMoves],
-        volatiles: [{ id: target.owner.id, v: { disabled: true } }],
+        volatiles: [{id: target.owner.id, v: {disabled: true}}],
       });
       target.handleRage(battle);
       return false;
@@ -101,8 +101,8 @@ const internalMoveList = Object.freeze({
       user.v.counter = target.v.counter = 0;
       user.v.confusion = target.v.confusion = 0;
       user.v.disabled = target.v.disabled = undefined;
-      user.v.stats = { ...user.base.stats };
-      target.v.stats = { ...target.base.stats };
+      user.v.stats = {...user.base.stats};
+      target.v.stats = {...target.base.stats};
 
       if (user.base.status === "tox") {
         user.base.status = "psn";
@@ -117,8 +117,8 @@ const internalMoveList = Object.freeze({
       target.base.status = undefined;
 
       battle.info(user, "haze", [
-        { id: user.owner.id, v: user.v.toClientVolatiles(user.base, battle) },
-        { id: target.owner.id, v: target.v.toClientVolatiles(target.base, battle) },
+        {id: user.owner.id, v: user.v.toClientVolatiles(user.base, battle)},
+        {id: target.owner.id, v: target.v.toClientVolatiles(target.base, battle)},
       ]);
       return false;
     },
@@ -140,7 +140,7 @@ const internalMoveList = Object.freeze({
       }
 
       target.v.flags.seeded = true;
-      battle.info(target, "seeded", [{ id: target.owner.id, v: { seeded: true } }]);
+      battle.info(target, "seeded", [{id: target.owner.id, v: {seeded: true}}]);
       return false;
     },
   },
@@ -168,7 +168,7 @@ const internalMoveList = Object.freeze({
         move: battle.rng.choice(target.base.moves)!,
       };
 
-      battle.event({ type: "mimic", src: user.owner.id, move: user.v.mimic.move });
+      battle.event({type: "mimic", src: user.owner.id, move: user.v.mimic.move});
       return false;
     },
   },
@@ -201,7 +201,7 @@ const internalMoveList = Object.freeze({
         return false;
       }
 
-      const { dead } = user.damage(hp, user, battle, false, "substitute");
+      const {dead} = user.damage(hp, user, battle, false, "substitute");
       user.v.substitute = hp + 1;
       return dead;
     },
@@ -226,19 +226,13 @@ const internalMoveList = Object.freeze({
         type: "transform",
         src: user.owner.id,
         target: target.owner.id,
-        volatiles: [{ id: user.owner.id, v: user.v.toClientVolatiles(user.base, battle) }],
+        volatiles: [{id: user.owner.id, v: user.v.toClientVolatiles(user.base, battle)}],
       });
       return false;
     },
   },
   // --
-  focusenergy: {
-    kind: "volatile",
-    name: "Focus Energy",
-    pp: 30,
-    type: "normal",
-    flag: "focus",
-  },
+  focusenergy: {kind: "volatile", name: "Focus Energy", pp: 30, type: "normal", flag: "focus"},
   lightscreen: {
     kind: "volatile",
     name: "Light Screen",
@@ -246,90 +240,20 @@ const internalMoveList = Object.freeze({
     type: "psychic",
     flag: "light_screen",
   },
-  mist: {
-    kind: "volatile",
-    name: "Mist",
-    pp: 30,
-    type: "ice",
-    flag: "mist",
-  },
-  reflect: {
-    kind: "volatile",
-    name: "Reflect",
-    pp: 20,
-    type: "psychic",
-    flag: "reflect",
-  },
+  mist: {kind: "volatile", name: "Mist", pp: 30, type: "ice", flag: "mist"},
+  reflect: {kind: "volatile", name: "Reflect", pp: 20, type: "psychic", flag: "reflect"},
   // --
-  recover: {
-    kind: "recover",
-    name: "Recover",
-    pp: 20,
-    type: "normal",
-    why: "recover",
-  },
-  rest: {
-    kind: "recover",
-    name: "Rest",
-    pp: 10,
-    type: "psychic",
-    why: "rest",
-  },
-  softboiled: {
-    kind: "recover",
-    name: "Softboiled",
-    pp: 10,
-    type: "normal",
-    why: "recover",
-  },
+  recover: {kind: "recover", name: "Recover", pp: 20, type: "normal", why: "recover"},
+  rest: {kind: "recover", name: "Rest", pp: 10, type: "psychic", why: "rest"},
+  softboiled: {kind: "recover", name: "Softboiled", pp: 10, type: "normal", why: "recover"},
   // --
-  confuseray: {
-    kind: "confuse",
-    name: "Confuse Ray",
-    pp: 10,
-    type: "ghost",
-    acc: 100,
-  },
-  supersonic: {
-    kind: "confuse",
-    name: "Supersonic",
-    pp: 20,
-    type: "normal",
-    acc: 55,
-  },
+  confuseray: {kind: "confuse", name: "Confuse Ray", pp: 10, type: "ghost", acc: 100},
+  supersonic: {kind: "confuse", name: "Supersonic", pp: 20, type: "normal", acc: 55},
   // --
-  glare: {
-    kind: "status",
-    name: "Glare",
-    pp: 30,
-    type: "normal",
-    acc: 75,
-    status: "par",
-  },
-  hypnosis: {
-    kind: "status",
-    name: "Hypnosis",
-    pp: 20,
-    type: "psychic",
-    acc: 60,
-    status: "slp",
-  },
-  lovelykiss: {
-    kind: "status",
-    name: "Lovely Kiss",
-    pp: 10,
-    type: "normal",
-    acc: 75,
-    status: "slp",
-  },
-  poisongas: {
-    kind: "status",
-    name: "Poison Gas",
-    pp: 40,
-    type: "poison",
-    acc: 55,
-    status: "psn",
-  },
+  glare: {kind: "status", name: "Glare", pp: 30, type: "normal", acc: 75, status: "par"},
+  hypnosis: {kind: "status", name: "Hypnosis", pp: 20, type: "psychic", acc: 60, status: "slp"},
+  lovelykiss: {kind: "status", name: "Lovely Kiss", pp: 10, type: "normal", acc: 75, status: "slp"},
+  poisongas: {kind: "status", name: "Poison Gas", pp: 40, type: "poison", acc: 55, status: "psn"},
   poisonpowder: {
     kind: "status",
     name: "Poison Powder",
@@ -338,14 +262,7 @@ const internalMoveList = Object.freeze({
     acc: 75,
     status: "psn",
   },
-  sing: {
-    kind: "status",
-    name: "Sing",
-    pp: 15,
-    type: "normal",
-    acc: 55,
-    status: "slp",
-  },
+  sing: {kind: "status", name: "Sing", pp: 15, type: "normal", acc: 55, status: "slp"},
   sleeppowder: {
     kind: "status",
     name: "Sleep Powder",
@@ -354,22 +271,8 @@ const internalMoveList = Object.freeze({
     acc: 75,
     status: "slp",
   },
-  spore: {
-    kind: "status",
-    name: "Spore",
-    pp: 15,
-    type: "grass",
-    acc: 100,
-    status: "slp",
-  },
-  stunspore: {
-    kind: "status",
-    name: "Stun Spore",
-    pp: 30,
-    type: "grass",
-    acc: 75,
-    status: "par",
-  },
+  spore: {kind: "status", name: "Spore", pp: 15, type: "grass", acc: 100, status: "slp"},
+  stunspore: {kind: "status", name: "Stun Spore", pp: 30, type: "grass", acc: 75, status: "par"},
   thunderwave: {
     kind: "status",
     name: "Thunder Wave",
@@ -378,87 +281,18 @@ const internalMoveList = Object.freeze({
     acc: 100,
     status: "par",
   },
-  toxic: {
-    kind: "status",
-    name: "Toxic",
-    pp: 15,
-    type: "poison",
-    acc: 85,
-    status: "tox",
-  },
+  toxic: {kind: "status", name: "Toxic", pp: 15, type: "poison", acc: 85, status: "tox"},
   // --
-  acidarmor: {
-    kind: "stage",
-    name: "Acid Armor",
-    pp: 40,
-    type: "poison",
-    stages: [["def", 2]],
-  },
-  agility: {
-    kind: "stage",
-    name: "Agility",
-    pp: 30,
-    type: "psychic",
-    stages: [["spe", 2]],
-  },
-  amnesia: {
-    kind: "stage",
-    name: "Amnesia",
-    pp: 20,
-    type: "psychic",
-    stages: [["spa", 2]],
-  },
-  barrier: {
-    kind: "stage",
-    name: "Barrier",
-    pp: 30,
-    type: "psychic",
-    stages: [["def", 2]],
-  },
-  defensecurl: {
-    kind: "stage",
-    name: "Defense Curl",
-    pp: 40,
-    type: "normal",
-    stages: [["def", 1]],
-  },
-  doubleteam: {
-    kind: "stage",
-    name: "Double Team",
-    pp: 15,
-    type: "normal",
-    stages: [["eva", 1]],
-  },
-  flash: {
-    kind: "stage",
-    name: "Flash",
-    pp: 20,
-    type: "normal",
-    acc: 70,
-    stages: [["acc", -1]],
-  },
-  growl: {
-    kind: "stage",
-    name: "Growl",
-    pp: 40,
-    type: "normal",
-    acc: 100,
-    stages: [["atk", -1]],
-  },
-  growth: {
-    kind: "stage",
-    name: "Growth",
-    pp: 40,
-    type: "normal",
-    stages: [["spa", 1]],
-  },
-  harden: {
-    kind: "stage",
-    name: "Harden",
-    pp: 30,
-    type: "normal",
-    stages: [["def", 1]],
-  },
+  acidarmor: {kind: "stage", name: "Acid Armor", pp: 40, type: "poison", stages: [["def", 2]]},
+  agility: {kind: "stage", name: "Agility", pp: 30, type: "psychic", stages: [["spe", 2]]},
+  amnesia: {kind: "stage", name: "Amnesia", pp: 20, type: "psychic", stages: [["spa", 2]]},
+  barrier: {kind: "stage", name: "Barrier", pp: 30, type: "psychic", stages: [["def", 2]]},
+  defensecurl: {kind: "stage", name: "Defense Curl", pp: 40, type: "normal", stages: [["def", 1]]},
+  doubleteam: {kind: "stage", name: "Double Team", pp: 15, type: "normal", stages: [["eva", 1]]},
+  flash: {kind: "stage", name: "Flash", pp: 20, type: "normal", acc: 70, stages: [["acc", -1]]},
+  growl: {kind: "stage", name: "Growl", pp: 40, type: "normal", acc: 100, stages: [["atk", -1]]},
+  growth: {kind: "stage", name: "Growth", pp: 40, type: "normal", stages: [["spa", 1]]},
+  harden: {kind: "stage", name: "Harden", pp: 30, type: "normal", stages: [["def", 1]]},
   kinesis: {
     kind: "stage",
     name: "Kinesis",
@@ -467,28 +301,9 @@ const internalMoveList = Object.freeze({
     acc: 80,
     stages: [["acc", -1]],
   },
-  leer: {
-    kind: "stage",
-    name: "Leer",
-    pp: 30,
-    type: "normal",
-    acc: 100,
-    stages: [["def", -1]],
-  },
-  meditate: {
-    kind: "stage",
-    name: "Meditate",
-    pp: 40,
-    type: "psychic",
-    stages: [["atk", 1]],
-  },
-  minimize: {
-    kind: "stage",
-    name: "Minimize",
-    pp: 15,
-    type: "normal",
-    stages: [["eva", +1]],
-  },
+  leer: {kind: "stage", name: "Leer", pp: 30, type: "normal", acc: 100, stages: [["def", -1]]},
+  meditate: {kind: "stage", name: "Meditate", pp: 40, type: "psychic", stages: [["atk", 1]]},
+  minimize: {kind: "stage", name: "Minimize", pp: 15, type: "normal", stages: [["eva", +1]]},
   sandattack: {
     kind: "stage",
     name: "Sand-Attack",
@@ -497,21 +312,8 @@ const internalMoveList = Object.freeze({
     acc: 100,
     stages: [["acc", -1]],
   },
-  screech: {
-    kind: "stage",
-    name: "Screech",
-    pp: 40,
-    type: "normal",
-    acc: 85,
-    stages: [["def", -2]],
-  },
-  sharpen: {
-    kind: "stage",
-    name: "Sharpen",
-    pp: 30,
-    type: "normal",
-    stages: [["atk", 1]],
-  },
+  screech: {kind: "stage", name: "Screech", pp: 40, type: "normal", acc: 85, stages: [["def", -2]]},
+  sharpen: {kind: "stage", name: "Sharpen", pp: 30, type: "normal", stages: [["atk", 1]]},
   smokescreen: {
     kind: "stage",
     name: "Smokescreen",
@@ -528,13 +330,7 @@ const internalMoveList = Object.freeze({
     acc: 95,
     stages: [["spe", -1]],
   },
-  swordsdance: {
-    kind: "stage",
-    name: "Swords Dance",
-    pp: 30,
-    type: "normal",
-    stages: [["atk", 2]],
-  },
+  swordsdance: {kind: "stage", name: "Swords Dance", pp: 30, type: "normal", stages: [["atk", 2]]},
   tailwhip: {
     kind: "stage",
     name: "Tail Whip",
@@ -543,22 +339,9 @@ const internalMoveList = Object.freeze({
     acc: 100,
     stages: [["def", -1]],
   },
-  withdraw: {
-    kind: "stage",
-    name: "Withdraw",
-    pp: 40,
-    type: "water",
-    stages: [["def", 1]],
-  },
+  withdraw: {kind: "stage", name: "Withdraw", pp: 40, type: "water", stages: [["def", 1]]},
   // --
-  absorb: {
-    kind: "damage",
-    name: "Absorb",
-    pp: 20,
-    type: "grass",
-    power: 20,
-    acc: 100,
-  },
+  absorb: {kind: "damage", name: "Absorb", pp: 20, type: "grass", power: 20, acc: 100},
   acid: {
     kind: "damage",
     name: "Acid",
@@ -586,15 +369,7 @@ const internalMoveList = Object.freeze({
     acc: 85,
     flag: "multi",
   },
-  bind: {
-    kind: "damage",
-    name: "Bind",
-    pp: 20,
-    type: "normal",
-    acc: 75,
-    power: 15,
-    flag: "trap",
-  },
+  bind: {kind: "damage", name: "Bind", pp: 20, type: "normal", acc: 75, power: 15, flag: "trap"},
   bodyslam: {
     kind: "damage",
     name: "Body Slam",
@@ -658,15 +433,7 @@ const internalMoveList = Object.freeze({
     acc: 85,
     effect: [10.2 /* 26/256 */, "flinch"],
   },
-  clamp: {
-    kind: "damage",
-    name: "Clamp",
-    pp: 10,
-    type: "water",
-    acc: 75,
-    power: 35,
-    flag: "trap",
-  },
+  clamp: {kind: "damage", name: "Clamp", pp: 10, type: "water", acc: 75, power: 35, flag: "trap"},
   cometpunch: {
     kind: "damage",
     name: "Comet Punch",
@@ -713,14 +480,7 @@ const internalMoveList = Object.freeze({
     acc: 85,
     flag: "high_crit",
   },
-  cut: {
-    kind: "damage",
-    name: "Cut",
-    pp: 30,
-    type: "normal",
-    power: 50,
-    acc: 95,
-  },
+  cut: {kind: "damage", name: "Cut", pp: 30, type: "normal", power: 50, acc: 95},
   dig: {
     kind: "damage",
     name: "Dig",
@@ -730,14 +490,7 @@ const internalMoveList = Object.freeze({
     acc: 100,
     flag: "charge_invuln",
   },
-  dizzypunch: {
-    kind: "damage",
-    name: "Dizzy Punch",
-    pp: 10,
-    type: "normal",
-    power: 70,
-    acc: 100,
-  },
+  dizzypunch: {kind: "damage", name: "Dizzy Punch", pp: 10, type: "normal", power: 70, acc: 100},
   doubleedge: {
     kind: "damage",
     name: "Double Edge",
@@ -783,30 +536,9 @@ const internalMoveList = Object.freeze({
     acc: 100,
     flag: "dream_eater",
   },
-  drillpeck: {
-    kind: "damage",
-    name: "Drill Peck",
-    pp: 20,
-    type: "flying",
-    power: 80,
-    acc: 100,
-  },
-  eggbomb: {
-    kind: "damage",
-    name: "Egg Bomb",
-    pp: 10,
-    type: "normal",
-    power: 100,
-    acc: 75,
-  },
-  earthquake: {
-    kind: "damage",
-    name: "Earthquake",
-    pp: 10,
-    type: "ground",
-    power: 100,
-    acc: 100,
-  },
+  drillpeck: {kind: "damage", name: "Drill Peck", pp: 20, type: "flying", power: 80, acc: 100},
+  eggbomb: {kind: "damage", name: "Egg Bomb", pp: 10, type: "normal", power: 100, acc: 75},
+  earthquake: {kind: "damage", name: "Earthquake", pp: 10, type: "ground", power: 100, acc: 100},
   ember: {
     kind: "damage",
     name: "Ember",
@@ -906,14 +638,7 @@ const internalMoveList = Object.freeze({
     power: 1,
     flag: "ohko",
   },
-  gust: {
-    kind: "damage",
-    name: "Gust",
-    pp: 35,
-    type: "normal",
-    power: 40,
-    acc: 100,
-  },
+  gust: {kind: "damage", name: "Gust", pp: 35, type: "normal", power: 40, acc: 100},
   headbutt: {
     kind: "damage",
     name: "Headbutt",
@@ -932,14 +657,7 @@ const internalMoveList = Object.freeze({
     acc: 90,
     flag: "crash",
   },
-  hornattack: {
-    kind: "damage",
-    name: "Horn Attack",
-    pp: 25,
-    type: "normal",
-    power: 65,
-    acc: 100,
-  },
+  hornattack: {kind: "damage", name: "Horn Attack", pp: 25, type: "normal", power: 65, acc: 100},
   horndrill: {
     kind: "damage",
     name: "Horn Drill",
@@ -949,14 +667,7 @@ const internalMoveList = Object.freeze({
     power: 1,
     flag: "ohko",
   },
-  hydropump: {
-    kind: "damage",
-    name: "Hydro Pump",
-    pp: 5,
-    type: "water",
-    power: 120,
-    acc: 80,
-  },
+  hydropump: {kind: "damage", name: "Hydro Pump", pp: 5, type: "water", power: 120, acc: 80},
   hyperbeam: {
     kind: "damage",
     name: "Hyper Beam",
@@ -1047,22 +758,8 @@ const internalMoveList = Object.freeze({
     acc: 100,
     flag: "drain",
   },
-  megakick: {
-    kind: "damage",
-    name: "Mega Kick",
-    pp: 5,
-    type: "normal",
-    power: 120,
-    acc: 75,
-  },
-  megapunch: {
-    kind: "damage",
-    name: "Mega Punch",
-    pp: 20,
-    type: "normal",
-    power: 80,
-    acc: 85,
-  },
+  megakick: {kind: "damage", name: "Mega Kick", pp: 5, type: "normal", power: 120, acc: 75},
+  megapunch: {kind: "damage", name: "Mega Punch", pp: 20, type: "normal", power: 80, acc: 85},
   nightshade: {
     kind: "damage",
     name: "Night Shade",
@@ -1081,14 +778,7 @@ const internalMoveList = Object.freeze({
     acc: 100,
     flag: "payday",
   },
-  peck: {
-    kind: "damage",
-    name: "Peck",
-    pp: 35,
-    type: "flying",
-    power: 35,
-    acc: 100,
-  },
+  peck: {kind: "damage", name: "Peck", pp: 35, type: "flying", power: 35, acc: 100},
   petaldance: {
     kind: "damage",
     name: "Petal Dance",
@@ -1116,14 +806,7 @@ const internalMoveList = Object.freeze({
     acc: 100,
     effect: [20.4 /* 52/256 */, "psn"],
   },
-  pound: {
-    kind: "damage",
-    name: "Pound",
-    pp: 35,
-    type: "normal",
-    power: 40,
-    acc: 100,
-  },
+  pound: {kind: "damage", name: "Pound", pp: 35, type: "normal", power: 40, acc: 100},
   psybeam: {
     kind: "damage",
     name: "Psybeam",
@@ -1160,15 +843,7 @@ const internalMoveList = Object.freeze({
     acc: 100,
     priority: +1,
   },
-  rage: {
-    kind: "damage",
-    name: "Rage",
-    pp: 20,
-    type: "normal",
-    acc: 100,
-    power: 20,
-    flag: "rage",
-  },
+  rage: {kind: "damage", name: "Rage", pp: 20, type: "normal", acc: 100, power: 20, flag: "rage"},
   razorleaf: {
     kind: "damage",
     name: "Razor Leaf",
@@ -1187,22 +862,8 @@ const internalMoveList = Object.freeze({
     acc: 75,
     flag: "charge",
   },
-  rockslide: {
-    kind: "damage",
-    name: "Rock Slide",
-    pp: 10,
-    type: "rock",
-    power: 75,
-    acc: 90,
-  },
-  rockthrow: {
-    kind: "damage",
-    name: "Rock Throw",
-    pp: 15,
-    type: "rock",
-    power: 50,
-    acc: 65,
-  },
+  rockslide: {kind: "damage", name: "Rock Slide", pp: 10, type: "rock", power: 75, acc: 90},
+  rockthrow: {kind: "damage", name: "Rock Throw", pp: 15, type: "rock", power: 50, acc: 65},
   rollingkick: {
     kind: "damage",
     name: "Rolling Kick",
@@ -1221,14 +882,7 @@ const internalMoveList = Object.freeze({
     acc: 100,
     flag: "explosion",
   },
-  scratch: {
-    kind: "damage",
-    name: "Scratch",
-    pp: 35,
-    type: "normal",
-    power: 40,
-    acc: 100,
-  },
+  scratch: {kind: "damage", name: "Scratch", pp: 35, type: "normal", power: 40, acc: 100},
   seismictoss: {
     kind: "damage",
     name: "Seismic Toss",
@@ -1256,14 +910,7 @@ const internalMoveList = Object.freeze({
     acc: 90,
     flag: "charge",
   },
-  slam: {
-    kind: "damage",
-    name: "Slam",
-    pp: 20,
-    type: "normal",
-    power: 80,
-    acc: 75,
-  },
+  slam: {kind: "damage", name: "Slam", pp: 20, type: "normal", power: 80, acc: 75},
   slash: {
     kind: "damage",
     name: "Slash",
@@ -1327,14 +974,7 @@ const internalMoveList = Object.freeze({
     acc: 100,
     effect: [30.1 /* 77/256 */, "flinch"],
   },
-  strength: {
-    kind: "damage",
-    name: "Strength",
-    pp: 15,
-    type: "normal",
-    power: 80,
-    acc: 100,
-  },
+  strength: {kind: "damage", name: "Strength", pp: 15, type: "normal", power: 80, acc: 100},
   struggle: {
     kind: "damage",
     name: "Struggle",
@@ -1362,29 +1002,9 @@ const internalMoveList = Object.freeze({
     power: 1,
     flag: "super_fang",
   },
-  surf: {
-    kind: "damage",
-    name: "Surf",
-    pp: 15,
-    type: "water",
-    power: 95,
-    acc: 100,
-  },
-  swift: {
-    kind: "damage",
-    name: "Swift",
-    pp: 20,
-    type: "normal",
-    power: 60,
-  },
-  tackle: {
-    kind: "damage",
-    name: "Tackle",
-    pp: 35,
-    type: "normal",
-    power: 35,
-    acc: 95,
-  },
+  surf: {kind: "damage", name: "Surf", pp: 15, type: "water", power: 95, acc: 100},
+  swift: {kind: "damage", name: "Swift", pp: 20, type: "normal", power: 60},
+  tackle: {kind: "damage", name: "Tackle", pp: 35, type: "normal", power: 35, acc: 95},
   takedown: {
     kind: "damage",
     name: "Take Down",
@@ -1439,14 +1059,7 @@ const internalMoveList = Object.freeze({
     acc: 100,
     effect: [10.2 /* 26/256 */, "par"],
   },
-  triattack: {
-    kind: "damage",
-    name: "Tri Attack",
-    pp: 10,
-    type: "normal",
-    power: 80,
-    acc: 100,
-  },
+  triattack: {kind: "damage", name: "Tri Attack", pp: 10, type: "normal", power: 80, acc: 100},
   twineedle: {
     kind: "damage",
     name: "Twineedle",
@@ -1457,86 +1070,17 @@ const internalMoveList = Object.freeze({
     flag: "double",
     effect: [20 /* 51/256 [citation needed] */, "psn"],
   },
-  vinewhip: {
-    kind: "damage",
-    name: "Vine Whip",
-    pp: 10,
-    type: "grass",
-    power: 35,
-    acc: 100,
-  },
-  vicegrip: {
-    kind: "damage",
-    name: "Vice Grip",
-    pp: 30,
-    type: "normal",
-    power: 55,
-    acc: 100,
-  },
-  watergun: {
-    kind: "damage",
-    name: "Water Gun",
-    pp: 25,
-    type: "water",
-    power: 40,
-    acc: 100,
-  },
-  waterfall: {
-    kind: "damage",
-    name: "Waterfall",
-    pp: 15,
-    type: "water",
-    power: 80,
-    acc: 100,
-  },
-  wingattack: {
-    kind: "damage",
-    name: "Wing Attack",
-    pp: 35,
-    type: "flying",
-    power: 35,
-    acc: 100,
-  },
-  wrap: {
-    kind: "damage",
-    name: "Wrap",
-    pp: 20,
-    type: "normal",
-    acc: 85,
-    power: 15,
-    flag: "trap",
-  },
+  vinewhip: {kind: "damage", name: "Vine Whip", pp: 10, type: "grass", power: 35, acc: 100},
+  vicegrip: {kind: "damage", name: "Vice Grip", pp: 30, type: "normal", power: 55, acc: 100},
+  watergun: {kind: "damage", name: "Water Gun", pp: 25, type: "water", power: 40, acc: 100},
+  waterfall: {kind: "damage", name: "Waterfall", pp: 15, type: "water", power: 80, acc: 100},
+  wingattack: {kind: "damage", name: "Wing Attack", pp: 35, type: "flying", power: 35, acc: 100},
+  wrap: {kind: "damage", name: "Wrap", pp: 20, type: "normal", acc: 85, power: 15, flag: "trap"},
   // --
-  roar: {
-    kind: "fail",
-    name: "Roar",
-    pp: 20,
-    acc: 100,
-    type: "normal",
-    why: "whirlwind",
-  },
-  splash: {
-    kind: "fail",
-    name: "Splash",
-    pp: 40,
-    type: "normal",
-    why: "splash",
-  },
-  teleport: {
-    kind: "fail",
-    name: "Teleport",
-    pp: 20,
-    type: "psychic",
-    why: "fail_generic",
-  },
-  whirlwind: {
-    kind: "fail",
-    name: "Whirlwind",
-    pp: 20,
-    acc: 85,
-    type: "normal",
-    why: "whirlwind",
-  },
+  roar: {kind: "fail", name: "Roar", pp: 20, acc: 100, type: "normal", why: "whirlwind"},
+  splash: {kind: "fail", name: "Splash", pp: 40, type: "normal", why: "splash"},
+  teleport: {kind: "fail", name: "Teleport", pp: 20, type: "psychic", why: "fail_generic"},
+  whirlwind: {kind: "fail", name: "Whirlwind", pp: 20, acc: 85, type: "normal", why: "whirlwind"},
   // >== Generation 2
   // attract: {},
   // batonpass: {},
@@ -1575,52 +1119,15 @@ const internalMoveList = Object.freeze({
   // synthesis: {},
   // triplekick: {},
   // --
-  raindance: {
-    kind: "weather",
-    weather: "rain",
-    name: "Rain Dance",
-    pp: 5,
-    type: "water",
-  },
-  sandstorm: {
-    kind: "weather",
-    weather: "sand",
-    name: "Sandstorm",
-    pp: 10,
-    type: "rock",
-  },
-  sunnyday: {
-    kind: "weather",
-    weather: "sun",
-    name: "Sunny Day",
-    pp: 5,
-    type: "fire",
-  },
+  raindance: {kind: "weather", weather: "rain", name: "Rain Dance", pp: 5, type: "water"},
+  sandstorm: {kind: "weather", weather: "sand", name: "Sandstorm", pp: 10, type: "rock"},
+  sunnyday: {kind: "weather", weather: "sun", name: "Sunny Day", pp: 5, type: "fire"},
   // --
-  milkdrink: {
-    kind: "recover",
-    name: "Milk Drink",
-    pp: 10,
-    type: "normal",
-    why: "recover",
-  },
+  milkdrink: {kind: "recover", name: "Milk Drink", pp: 10, type: "normal", why: "recover"},
   // --
-  sweetkiss: {
-    kind: "confuse",
-    name: "Sweet Kiss",
-    pp: 10,
-    type: "normal",
-    acc: 75,
-  },
+  sweetkiss: {kind: "confuse", name: "Sweet Kiss", pp: 10, type: "normal", acc: 75},
   // --
-  charm: {
-    kind: "stage",
-    name: "Charm",
-    pp: 20,
-    type: "normal",
-    acc: 100,
-    stages: [["atk", -2]],
-  },
+  charm: {kind: "stage", name: "Charm", pp: 20, type: "normal", acc: 100, stages: [["atk", -2]]},
   cottonspore: {
     kind: "stage",
     name: "Cotton Spore",
@@ -1684,14 +1191,7 @@ const internalMoveList = Object.freeze({
     acc: 80,
     flag: "high_crit",
   },
-  crunch: {
-    kind: "damage",
-    name: "Crunch",
-    pp: 15,
-    type: "dark",
-    power: 80,
-    acc: 100,
-  },
+  crunch: {kind: "damage", name: "Crunch", pp: 15, type: "dark", power: 80, acc: 100},
   dragonbreath: {
     kind: "damage",
     name: "DragonBreath",
@@ -1728,22 +1228,8 @@ const internalMoveList = Object.freeze({
     acc: 100,
     flag: "false_swipe",
   },
-  feintattack: {
-    kind: "damage",
-    name: "Faint Attack",
-    pp: 20,
-    type: "dark",
-    power: 60,
-  },
-  flail: {
-    kind: "damage",
-    name: "Flail",
-    pp: 15,
-    type: "normal",
-    power: 0,
-    acc: 100,
-    flag: "flail",
-  },
+  feintattack: {kind: "damage", name: "Faint Attack", pp: 20, type: "dark", power: 60},
+  flail: {kind: "damage", name: "Flail", pp: 15, type: "normal", power: 0, acc: 100, flag: "flail"},
   flamewheel: {
     kind: "damage",
     name: "Flame Wheel",
@@ -1818,14 +1304,7 @@ const internalMoveList = Object.freeze({
     ignore: ["dig"],
     punish: true,
   },
-  megahorn: {
-    kind: "damage",
-    name: "Megahorn",
-    pp: 10,
-    type: "bug",
-    power: 120,
-    acc: 85,
-  },
+  megahorn: {kind: "damage", name: "Megahorn", pp: 10, type: "bug", power: 120, acc: 85},
   metalclaw: {
     kind: "damage",
     name: "Metal Claw",
@@ -1976,14 +1455,7 @@ const internalMoveList = Object.freeze({
     ignore: ["fly", "bounce"],
     punish: true,
   },
-  vitalthrow: {
-    kind: "damage",
-    name: "Vital Throw",
-    pp: 10,
-    type: "fight",
-    power: 70,
-    priority: -1,
-  },
+  vitalthrow: {kind: "damage", name: "Vital Throw", pp: 10, type: "fight", power: 70, priority: -1},
   whirlpool: {
     kind: "damage",
     name: "Whirlpool",

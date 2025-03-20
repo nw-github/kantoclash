@@ -1,5 +1,5 @@
 <template>
-  <UCard :ui="{ header: { padding: 'p-4 sm:p-4' }, body: { padding: 'p-0 sm:p-0' } }">
+  <UCard :ui="{header: {padding: 'p-4 sm:p-4'}, body: {padding: 'p-0 sm:p-0'}}">
     <template #header>
       <div class="flex gap-1">
         <FormatDropdown v-model="team.format" class="w-1/2" placeholder="Format" team-only />
@@ -55,11 +55,11 @@
             list: {
               width: 'w-min',
               rounded: 'rounded-tl-none rounded-r-none',
-              tab: { height: 'h-min' },
+              tab: {height: 'h-min'},
             },
           }"
         >
-          <template #default="{ item }">
+          <template #default="{item}">
             <div class="size-[64px] m-1">
               <BoxSprite :species="item.species" :scale="2" />
             </div>
@@ -72,9 +72,9 @@
           v-model="selectedPokeIdx"
           class="px-2 pt-2"
           :items="items"
-          :ui="{ container: 'hidden' }"
+          :ui="{container: 'hidden'}"
         >
-          <template #default="{ item }">
+          <template #default="{item}">
             <div class="size-[32px] m-1 flex items-center">
               <BoxSprite :species="item.species" />
             </div>
@@ -134,9 +134,7 @@
         <UCard
           v-if="selectedTab === 0"
           class="flex grow"
-          :ui="{
-            body: { base: 'flex flex-col gap-2 grow justify-between', padding: 'p-2 sm:p-2' },
-          }"
+          :ui="{body: {base: 'flex flex-col gap-2 grow justify-between', padding: 'p-2 sm:p-2'}}"
         >
           <div class="flex gap-2">
             <div class="flex flex-col">
@@ -199,7 +197,7 @@
                 </span>
                 <span
                   class="text-center px-1.5 min-w-8 text-xs"
-                  :style="{ color: baseStatColor(selectedPoke.species.stats[stat] ?? 0) }"
+                  :style="{color: baseStatColor(selectedPoke.species.stats[stat] ?? 0)}"
                 >
                   {{ selectedPoke.species.stats[stat] ?? 0 }}
                 </span>
@@ -215,13 +213,13 @@
           v-else
           v-model="currentPokeText"
           class="grow"
-          :ui="{ base: 'h-full min-h-[23.5rem]', rounded: 'rounded-lg' }"
+          :ui="{base: 'h-full min-h-[23.5rem]', rounded: 'rounded-lg'}"
           autofocus
           @change="team.pokemon[selectedPokeIdx] = parsePokemon(currentPokeText.trim())"
         >
           <TooltipButton
             text="Copy"
-            :popper="{ placement: 'bottom-end', offsetDistance: 40 }"
+            :popper="{placement: 'bottom-end', offsetDistance: 40}"
             class="absolute top-2 right-2"
             icon="material-symbols:content-copy-outline"
             variant="ghost"
@@ -235,7 +233,7 @@
       <UTextarea
         v-model="teamText"
         class="h-full"
-        :ui="{ base: 'h-full', rounded: 'rounded-lg' }"
+        :ui="{base: 'h-full', rounded: 'rounded-lg'}"
         placeholder="Paste your team here..."
         variant="none"
         autofocus
@@ -243,7 +241,7 @@
       >
         <TooltipButton
           text="Copy"
-          :popper="{ placement: 'bottom-end', offsetDistance: 40 }"
+          :popper="{placement: 'bottom-end', offsetDistance: 40}"
           class="absolute top-1 right-2"
           icon="material-symbols:content-copy-outline"
           variant="ghost"
@@ -256,18 +254,18 @@
 </template>
 
 <script setup lang="ts">
-import { calcStat, getHpDv } from "~/game/pokemon";
-import type { Species, SpeciesId } from "~/game/species";
-import type { Stats } from "~/game/utils";
-import { GENERATIONS } from "~/game/gen";
-import { evToStatexp, ivToDv, type TeamPokemonDesc } from "~/utils/pokemon";
+import {calcStat, getHpDv} from "~/game/pokemon";
+import type {Species, SpeciesId} from "~/game/species";
+import type {Stats} from "~/game/utils";
+import {GENERATIONS} from "~/game/gen";
+import {evToStatexp, ivToDv, type TeamPokemonDesc} from "~/utils/pokemon";
 
-defineEmits<{ (e: "delete" | "close"): void }>();
+defineEmits<{(e: "delete" | "close"): void}>();
 
-const { team } = defineProps<{ team: Team }>();
+const {team} = defineProps<{team: Team}>();
 const toast = useToast();
 const items = computed(() => {
-  return team.pokemon.map(poke => ({ label: poke.name ?? "", species: poke.species }));
+  return team.pokemon.map(poke => ({label: poke.name ?? "", species: poke.species}));
 });
 const teamText = ref("");
 const currentPokeText = ref("");
@@ -315,7 +313,7 @@ for (const poke of team.pokemon) {
 
 const copyTextArea = (text: string) => {
   navigator.clipboard.writeText(text);
-  toast.add({ title: `Copied to clipboard!` });
+  toast.add({title: `Copied to clipboard!`});
 };
 
 const ivsToDvs = (poke: TeamPokemonDesc) => {
@@ -332,7 +330,7 @@ const calcPokeStat = (stat: keyof Stats, poke: TeamPokemonDesc) => {
     gen.value.speciesList[poke.species as SpeciesId].stats,
     poke.level ?? 100,
     ivsToDvs(poke),
-    { [stat]: evToStatexp(poke.evs[stat]) },
+    {[stat]: evToStatexp(poke.evs[stat])},
   );
 };
 
@@ -350,7 +348,7 @@ const deletePokemon = (i: number) => {
     poke.name || gen.value.speciesList[poke.species as SpeciesId]?.name || `Pokemon ${i + 1}`;
   toast.add({
     title: `${name} deleted!`,
-    actions: [{ label: "Undo", click: () => team.pokemon.splice(i, 0, poke) }],
+    actions: [{label: "Undo", click: () => team.pokemon.splice(i, 0, poke)}],
   });
 };
 

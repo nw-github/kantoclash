@@ -3,7 +3,7 @@
     "dexId": 1,
     "name": "Bulbasaur",
     "types": ["grass", "poison"],
-    "stats": { "hp": 45, "atk": 49, "def": 49, "spa": 65, "spd": 0, "spe": 45 },
+    "stats": {"hp": 45, "atk": 49, "def": 49, "spa": 65, "spd": 0, "spe": 45},
     "moves": [
       "swordsdance",
       "cut",
@@ -35,7 +35,7 @@
     "dexId": 2,
     "name": "Ivysaur",
     "types": ["grass", "poison"],
-    "stats": { "hp": 60, "atk": 62, "def": 63, "spa": 80, "spd": 0, "spe": 60 },
+    "stats": {"hp": 60, "atk": 62, "def": 63, "spa": 80, "spd": 0, "spe": 60},
     "moves": [
       "swordsdance",
       "cut",
@@ -68,7 +68,7 @@
     "dexId": 3,
     "name": "Venusaur",
     "types": ["grass", "poison"],
-    "stats": { "hp": 80, "atk": 82, "def": 83, "spa": 100, "spd": 0, "spe": 80 },
+    "stats": {"hp": 80, "atk": 82, "def": 83, "spa": 100, "spd": 0, "spe": 80},
     "moves": [
       "swordsdance",
       "cut",
@@ -101,7 +101,7 @@
     "dexId": 4,
     "name": "Charmander",
     "types": ["fire"],
-    "stats": { "hp": 39, "atk": 52, "def": 43, "spa": 50, "spd": 0, "spe": 65 },
+    "stats": {"hp": 39, "atk": 52, "def": 43, "spa": 50, "spd": 0, "spe": 65},
     "moves": [
       "megapunch",
       "scratch",
@@ -141,7 +141,7 @@
     "dexId": 5,
     "name": "Charmeleon",
     "types": ["fire"],
-    "stats": { "hp": 58, "atk": 64, "def": 58, "spa": 65, "spd": 0, "spe": 80 },
+    "stats": {"hp": 58, "atk": 64, "def": 58, "spa": 65, "spd": 0, "spe": 80},
     "moves": [
       "megapunch",
       "scratch",
@@ -182,7 +182,7 @@
     "dexId": 6,
     "name": "Charizard",
     "types": ["fire", "flying"],
-    "stats": { "hp": 78, "atk": 84, "def": 78, "spa": 85, "spd": 0, "spe": 100 },
+    "stats": {"hp": 78, "atk": 84, "def": 78, "spa": 85, "spd": 0, "spe": 100},
     "moves": [
       "megapunch",
       "scratch",
@@ -226,7 +226,7 @@
     "dexId": 7,
     "name": "Squirtle",
     "types": ["water"],
-    "stats": { "hp": 44, "atk": 48, "def": 65, "spa": 50, "spd": 0, "spe": 43 },
+    "stats": {"hp": 44, "atk": 48, "def": 65, "spa": 50, "spd": 0, "spe": 43},
     "moves": [
       "megapunch",
       "megakick",
@@ -265,7 +265,7 @@
     "dexId": 8,
     "name": "Wartortle",
     "types": ["water"],
-    "stats": { "hp": 59, "atk": 63, "def": 80, "spa": 65, "spd": 0, "spe": 58 },
+    "stats": {"hp": 59, "atk": 63, "def": 80, "spa": 65, "spd": 0, "spe": 58},
     "moves": [
       "megapunch",
       "megakick",
@@ -305,7 +305,7 @@
     "dexId": 9,
     "name": "Blastoise",
     "types": ["water"],
-    "stats": { "hp": 79, "atk": 83, "def": 100, "spa": 85, "spd": 0, "spe": 78 },
+    "stats": {"hp": 79, "atk": 83, "def": 100, "spa": 85, "spd": 0, "spe": 78},
     "moves": [
       "megapunch",
       "megakick",
@@ -347,7 +347,7 @@
     "dexId": 10,
     "name": "Caterpie",
     "types": ["bug"],
-    "stats": { "hp": 45, "atk": 30, "def": 35, "spa": 20, "spd": 0, "spe": 45 },
+    "stats": {"hp": 45, "atk": 30, "def": 35, "spa": 20, "spd": 0, "spe": 45},
     "moves": ["stringshot", "tackle"],
     "evolvesTo": "metapod"
   },
@@ -355,7 +355,7 @@
     "dexId": 11,
     "name": "Metapod",
     "types": ["bug"],
-    "stats": { "hp": 50, "atk": 20, "def": 55, "spa": 25, "spd": 0, "spe": 30 },
+    "stats": {"hp": 50, "atk": 20, "def": 55, "spa": 25, "spd": 0, "spe": 30},
     "moves": ["harden", "stringshot", "tackle"],
     "evolvesFrom": "caterpie",
     "evolvesTo": "butterfree"
@@ -364,7 +364,7 @@
     "dexId": 12,
     "name": "Butterfree",
     "types": ["bug", "flying"],
-    "stats": { "hp": 60, "atk": 45, "def": 50, "spa": 80, "spd": 0, "spe": 70 },
+    "stats": {"hp": 60, "atk": 45, "def": 50, "spa": 80, "spd": 0, "spe": 70},
     "moves": [
       "tackle",
       "stringshot",
@@ -403,7 +403,7 @@
     "dexId": 13,
     "name": "Weedle",
     "types": ["bug", "poison"],
-    "stats": { "hp": 40, "atk": 35, "def": 30, "spa": 20, "spd": 0, "spe": 50 },
+    "stats": {"hp": 40, "atk": 35, "def": 30, "spa": 20, "spd": 0, "spe": 50},
     "moves": ["poisonsting", "stringshot"],
     "evolvesTo": "kakuna"
   },
@@ -411,7 +411,7 @@
     "dexId": 14,
     "name": "Kakuna",
     "types": ["bug", "poison"],
-    "stats": { "hp": 45, "atk": 25, "def": 50, "spa": 25, "spd": 0, "spe": 35 },
+    "stats": {"hp": 45, "atk": 25, "def": 50, "spa": 25, "spd": 0, "spe": 35},
     "moves": ["harden", "poisonsting", "stringshot"],
     "evolvesFrom": "weedle",
     "evolvesTo": "beedrill"
@@ -420,7 +420,7 @@
     "dexId": 15,
     "name": "Beedrill",
     "types": ["bug", "poison"],
-    "stats": { "hp": 65, "atk": 90, "def": 40, "spa": 45, "spd": 0, "spe": 75 },
+    "stats": {"hp": 65, "atk": 90, "def": 40, "spa": 45, "spd": 0, "spe": 75},
     "moves": [
       "poisonsting",
       "stringshot",
@@ -453,7 +453,7 @@
     "dexId": 16,
     "name": "Pidgey",
     "types": ["normal", "flying"],
-    "stats": { "hp": 40, "atk": 45, "def": 40, "spa": 35, "spd": 0, "spe": 56 },
+    "stats": {"hp": 40, "atk": 45, "def": 40, "spa": 35, "spd": 0, "spe": 56},
     "moves": [
       "razorwind",
       "gust",
@@ -483,7 +483,7 @@
     "dexId": 17,
     "name": "Pidgeotto",
     "types": ["normal", "flying"],
-    "stats": { "hp": 63, "atk": 60, "def": 55, "spa": 50, "spd": 0, "spe": 71 },
+    "stats": {"hp": 63, "atk": 60, "def": 55, "spa": 50, "spd": 0, "spe": 71},
     "moves": [
       "razorwind",
       "gust",
@@ -514,7 +514,7 @@
     "dexId": 18,
     "name": "Pidgeot",
     "types": ["normal", "flying"],
-    "stats": { "hp": 83, "atk": 80, "def": 75, "spa": 70, "spd": 0, "spe": 101 },
+    "stats": {"hp": 83, "atk": 80, "def": 75, "spa": 70, "spd": 0, "spe": 101},
     "moves": [
       "razorwind",
       "gust",
@@ -545,7 +545,7 @@
     "dexId": 19,
     "name": "Rattata",
     "types": ["normal"],
-    "stats": { "hp": 30, "atk": 56, "def": 35, "spa": 25, "spd": 0, "spe": 72 },
+    "stats": {"hp": 30, "atk": 56, "def": 35, "spa": 25, "spd": 0, "spe": 72},
     "moves": [
       "tackle",
       "bodyslam",
@@ -578,7 +578,7 @@
     "dexId": 20,
     "name": "Raticate",
     "types": ["normal"],
-    "stats": { "hp": 55, "atk": 81, "def": 60, "spa": 50, "spd": 0, "spe": 97 },
+    "stats": {"hp": 55, "atk": 81, "def": 60, "spa": 50, "spd": 0, "spe": 97},
     "moves": [
       "tackle",
       "bodyslam",
@@ -613,7 +613,7 @@
     "dexId": 21,
     "name": "Spearow",
     "types": ["normal", "flying"],
-    "stats": { "hp": 40, "atk": 60, "def": 30, "spa": 31, "spd": 0, "spe": 70 },
+    "stats": {"hp": 40, "atk": 60, "def": 30, "spa": 31, "spd": 0, "spe": 70},
     "moves": [
       "razorwind",
       "whirlwind",
@@ -643,7 +643,7 @@
     "dexId": 22,
     "name": "Fearow",
     "types": ["normal", "flying"],
-    "stats": { "hp": 65, "atk": 90, "def": 65, "spa": 61, "spd": 0, "spe": 100 },
+    "stats": {"hp": 65, "atk": 90, "def": 65, "spa": 61, "spd": 0, "spe": 100},
     "moves": [
       "razorwind",
       "whirlwind",
@@ -674,7 +674,7 @@
     "dexId": 23,
     "name": "Ekans",
     "types": ["poison"],
-    "stats": { "hp": 35, "atk": 60, "def": 44, "spa": 40, "spd": 0, "spe": 55 },
+    "stats": {"hp": 35, "atk": 60, "def": 44, "spa": 40, "spd": 0, "spe": 55},
     "moves": [
       "bodyslam",
       "wrap",
@@ -707,7 +707,7 @@
     "dexId": 24,
     "name": "Arbok",
     "types": ["poison"],
-    "stats": { "hp": 60, "atk": 95, "def": 69, "spa": 65, "spd": 0, "spe": 80 },
+    "stats": {"hp": 60, "atk": 95, "def": 69, "spa": 65, "spd": 0, "spe": 80},
     "moves": [
       "bodyslam",
       "wrap",
@@ -741,7 +741,7 @@
     "dexId": 25,
     "name": "Pikachu",
     "types": ["electric"],
-    "stats": { "hp": 35, "atk": 55, "def": 40, "spa": 50, "spd": 0, "spe": 90 },
+    "stats": {"hp": 35, "atk": 55, "def": 40, "spa": 50, "spd": 0, "spe": 90},
     "moves": [
       "doubleslap",
       "headbutt",
@@ -804,7 +804,7 @@
     "dexId": 26,
     "name": "Raichu",
     "types": ["electric"],
-    "stats": { "hp": 60, "atk": 90, "def": 55, "spa": 90, "spd": 0, "spe": 110 },
+    "stats": {"hp": 60, "atk": 90, "def": 55, "spa": 90, "spd": 0, "spe": 110},
     "moves": [
       "doubleslap",
       "headbutt",
@@ -868,7 +868,7 @@
     "dexId": 27,
     "name": "Sandshrew",
     "types": ["ground"],
-    "stats": { "hp": 50, "atk": 75, "def": 85, "spa": 30, "spd": 0, "spe": 40 },
+    "stats": {"hp": 50, "atk": 75, "def": 85, "spa": 30, "spd": 0, "spe": 40},
     "moves": [
       "scratch",
       "swordsdance",
@@ -903,7 +903,7 @@
     "dexId": 28,
     "name": "Sandslash",
     "types": ["ground"],
-    "stats": { "hp": 75, "atk": 100, "def": 110, "spa": 55, "spd": 0, "spe": 65 },
+    "stats": {"hp": 75, "atk": 100, "def": 110, "spa": 55, "spd": 0, "spe": 65},
     "moves": [
       "scratch",
       "swordsdance",
@@ -939,7 +939,7 @@
     "dexId": 29,
     "name": "Nidoran♀️",
     "types": ["poison"],
-    "stats": { "hp": 55, "atk": 47, "def": 52, "spa": 40, "spd": 0, "spe": 41 },
+    "stats": {"hp": 55, "atk": 47, "def": 52, "spa": 40, "spd": 0, "spe": 41},
     "moves": [
       "scratch",
       "doublekick",
@@ -971,7 +971,7 @@
     "dexId": 30,
     "name": "Nidorina",
     "types": ["poison"],
-    "stats": { "hp": 70, "atk": 62, "def": 67, "spa": 55, "spd": 0, "spe": 56 },
+    "stats": {"hp": 70, "atk": 62, "def": 67, "spa": 55, "spd": 0, "spe": 56},
     "moves": [
       "scratch",
       "doublekick",
@@ -1008,7 +1008,7 @@
     "dexId": 31,
     "name": "Nidoqueen",
     "types": ["poison", "ground"],
-    "stats": { "hp": 90, "atk": 92, "def": 87, "spa": 75, "spd": 0, "spe": 76 },
+    "stats": {"hp": 90, "atk": 92, "def": 87, "spa": 75, "spd": 0, "spe": 76},
     "moves": [
       "scratch",
       "doublekick",
@@ -1057,7 +1057,7 @@
     "dexId": 32,
     "name": "Nidoran♂️",
     "types": ["poison"],
-    "stats": { "hp": 46, "atk": 57, "def": 40, "spa": 40, "spd": 0, "spe": 50 },
+    "stats": {"hp": 46, "atk": 57, "def": 40, "spa": 40, "spd": 0, "spe": 50},
     "moves": [
       "doublekick",
       "hornattack",
@@ -1089,7 +1089,7 @@
     "dexId": 33,
     "name": "Nidorino",
     "types": ["poison"],
-    "stats": { "hp": 61, "atk": 72, "def": 57, "spa": 55, "spd": 0, "spe": 65 },
+    "stats": {"hp": 61, "atk": 72, "def": 57, "spa": 55, "spd": 0, "spe": 65},
     "moves": [
       "doublekick",
       "hornattack",
@@ -1125,7 +1125,7 @@
     "dexId": 34,
     "name": "Nidoking",
     "types": ["poison", "ground"],
-    "stats": { "hp": 81, "atk": 102, "def": 77, "spa": 75, "spd": 0, "spe": 85 },
+    "stats": {"hp": 81, "atk": 102, "def": 77, "spa": 75, "spd": 0, "spe": 85},
     "moves": [
       "doublekick",
       "hornattack",
@@ -1174,7 +1174,7 @@
     "dexId": 35,
     "name": "Clefairy",
     "types": ["normal"],
-    "stats": { "hp": 70, "atk": 45, "def": 48, "spa": 60, "spd": 0, "spe": 35 },
+    "stats": {"hp": 70, "atk": 45, "def": 48, "spa": 60, "spd": 0, "spe": 35},
     "moves": [
       "pound",
       "headbutt",
@@ -1254,7 +1254,7 @@
     "dexId": 36,
     "name": "Clefable",
     "types": ["normal"],
-    "stats": { "hp": 95, "atk": 70, "def": 73, "spa": 85, "spd": 0, "spe": 60 },
+    "stats": {"hp": 95, "atk": 70, "def": 73, "spa": 85, "spd": 0, "spe": 60},
     "moves": [
       "pound",
       "headbutt",
@@ -1335,7 +1335,7 @@
     "dexId": 37,
     "name": "Vulpix",
     "types": ["fire"],
-    "stats": { "hp": 38, "atk": 41, "def": 40, "spa": 65, "spd": 0, "spe": 65 },
+    "stats": {"hp": 38, "atk": 41, "def": 40, "spa": 65, "spd": 0, "spe": 65},
     "moves": [
       "bodyslam",
       "takedown",
@@ -1366,7 +1366,7 @@
     "dexId": 38,
     "name": "Ninetales",
     "types": ["fire"],
-    "stats": { "hp": 73, "atk": 76, "def": 75, "spa": 100, "spd": 0, "spe": 100 },
+    "stats": {"hp": 73, "atk": 76, "def": 75, "spa": 100, "spd": 0, "spe": 100},
     "moves": [
       "bodyslam",
       "takedown",
@@ -1398,7 +1398,7 @@
     "dexId": 39,
     "name": "Jigglypuff",
     "types": ["normal"],
-    "stats": { "hp": 115, "atk": 45, "def": 20, "spa": 25, "spd": 0, "spe": 20 },
+    "stats": {"hp": 115, "atk": 45, "def": 20, "spa": 25, "spd": 0, "spe": 20},
     "moves": [
       "pound",
       "headbutt",
@@ -1472,7 +1472,7 @@
     "dexId": 40,
     "name": "Wigglytuff",
     "types": ["normal"],
-    "stats": { "hp": 140, "atk": 70, "def": 45, "spa": 50, "spd": 0, "spe": 45 },
+    "stats": {"hp": 140, "atk": 70, "def": 45, "spa": 50, "spd": 0, "spe": 45},
     "moves": [
       "pound",
       "headbutt",
@@ -1547,7 +1547,7 @@
     "dexId": 41,
     "name": "Zubat",
     "types": ["poison", "flying"],
-    "stats": { "hp": 40, "atk": 45, "def": 35, "spa": 40, "spd": 0, "spe": 55 },
+    "stats": {"hp": 40, "atk": 45, "def": 35, "spa": 40, "spd": 0, "spe": 55},
     "moves": [
       "razorwind",
       "wingattack",
@@ -1575,7 +1575,7 @@
     "dexId": 42,
     "name": "Golbat",
     "types": ["poison", "flying"],
-    "stats": { "hp": 75, "atk": 80, "def": 70, "spa": 75, "spd": 0, "spe": 90 },
+    "stats": {"hp": 75, "atk": 80, "def": 70, "spa": 75, "spd": 0, "spe": 90},
     "moves": [
       "razorwind",
       "wingattack",
@@ -1605,7 +1605,7 @@
     "dexId": 43,
     "name": "Oddish",
     "types": ["grass", "poison"],
-    "stats": { "hp": 45, "atk": 50, "def": 55, "spa": 75, "spd": 0, "spe": 30 },
+    "stats": {"hp": 45, "atk": 50, "def": 55, "spa": 75, "spd": 0, "spe": 30},
     "moves": [
       "swordsdance",
       "cut",
@@ -1634,7 +1634,7 @@
     "dexId": 44,
     "name": "Gloom",
     "types": ["grass", "poison"],
-    "stats": { "hp": 60, "atk": 65, "def": 70, "spa": 85, "spd": 0, "spe": 40 },
+    "stats": {"hp": 60, "atk": 65, "def": 70, "spa": 85, "spd": 0, "spe": 40},
     "moves": [
       "swordsdance",
       "cut",
@@ -1664,7 +1664,7 @@
     "dexId": 45,
     "name": "Vileplume",
     "types": ["grass", "poison"],
-    "stats": { "hp": 75, "atk": 80, "def": 85, "spa": 100, "spd": 0, "spe": 50 },
+    "stats": {"hp": 75, "atk": 80, "def": 85, "spa": 100, "spd": 0, "spe": 50},
     "moves": [
       "swordsdance",
       "cut",
@@ -1695,7 +1695,7 @@
     "dexId": 46,
     "name": "Paras",
     "types": ["bug", "grass"],
-    "stats": { "hp": 35, "atk": 70, "def": 55, "spa": 55, "spd": 0, "spe": 25 },
+    "stats": {"hp": 35, "atk": 70, "def": 55, "spa": 55, "spd": 0, "spe": 25},
     "moves": [
       "scratch",
       "swordsdance",
@@ -1727,7 +1727,7 @@
     "dexId": 47,
     "name": "Parasect",
     "types": ["bug", "grass"],
-    "stats": { "hp": 60, "atk": 95, "def": 80, "spa": 80, "spd": 0, "spe": 30 },
+    "stats": {"hp": 60, "atk": 95, "def": 80, "spa": 80, "spd": 0, "spe": 30},
     "moves": [
       "scratch",
       "swordsdance",
@@ -1760,7 +1760,7 @@
     "dexId": 48,
     "name": "Venonat",
     "types": ["bug", "poison"],
-    "stats": { "hp": 60, "atk": 55, "def": 50, "spa": 40, "spd": 0, "spe": 45 },
+    "stats": {"hp": 60, "atk": 55, "def": 50, "spa": 40, "spd": 0, "spe": 45},
     "moves": [
       "tackle",
       "takedown",
@@ -1793,7 +1793,7 @@
     "dexId": 49,
     "name": "Venomoth",
     "types": ["bug", "poison"],
-    "stats": { "hp": 70, "atk": 65, "def": 60, "spa": 90, "spd": 0, "spe": 90 },
+    "stats": {"hp": 70, "atk": 65, "def": 60, "spa": 90, "spd": 0, "spe": 90},
     "moves": [
       "tackle",
       "takedown",
@@ -1831,7 +1831,7 @@
     "dexId": 50,
     "name": "Diglett",
     "types": ["ground"],
-    "stats": { "hp": 10, "atk": 55, "def": 25, "spa": 45, "spd": 0, "spe": 95 },
+    "stats": {"hp": 10, "atk": 55, "def": 25, "spa": 45, "spd": 0, "spe": 95},
     "moves": [
       "scratch",
       "cut",
@@ -1859,7 +1859,7 @@
     "dexId": 51,
     "name": "Dugtrio",
     "types": ["ground"],
-    "stats": { "hp": 35, "atk": 100, "def": 50, "spa": 70, "spd": 0, "spe": 120 },
+    "stats": {"hp": 35, "atk": 100, "def": 50, "spa": 70, "spd": 0, "spe": 120},
     "moves": [
       "scratch",
       "cut",
@@ -1888,7 +1888,7 @@
     "dexId": 52,
     "name": "Meowth",
     "types": ["normal"],
-    "stats": { "hp": 40, "atk": 45, "def": 35, "spa": 40, "spd": 0, "spe": 90 },
+    "stats": {"hp": 40, "atk": 45, "def": 35, "spa": 40, "spd": 0, "spe": 90},
     "moves": [
       "payday",
       "scratch",
@@ -1920,7 +1920,7 @@
     "dexId": 53,
     "name": "Persian",
     "types": ["normal"],
-    "stats": { "hp": 65, "atk": 70, "def": 60, "spa": 65, "spd": 0, "spe": 115 },
+    "stats": {"hp": 65, "atk": 70, "def": 60, "spa": 65, "spd": 0, "spe": 115},
     "moves": [
       "payday",
       "scratch",
@@ -1953,7 +1953,7 @@
     "dexId": 54,
     "name": "Psyduck",
     "types": ["water"],
-    "stats": { "hp": 50, "atk": 52, "def": 48, "spa": 50, "spd": 0, "spe": 55 },
+    "stats": {"hp": 50, "atk": 52, "def": 48, "spa": 50, "spd": 0, "spe": 55},
     "moves": [
       "megapunch",
       "payday",
@@ -1993,7 +1993,7 @@
     "dexId": 55,
     "name": "Golduck",
     "types": ["water"],
-    "stats": { "hp": 80, "atk": 82, "def": 78, "spa": 80, "spd": 0, "spe": 85 },
+    "stats": {"hp": 80, "atk": 82, "def": 78, "spa": 80, "spd": 0, "spe": 85},
     "moves": [
       "megapunch",
       "payday",
@@ -2034,7 +2034,7 @@
     "dexId": 56,
     "name": "Mankey",
     "types": ["fight"],
-    "stats": { "hp": 40, "atk": 80, "def": 35, "spa": 35, "spd": 0, "spe": 70 },
+    "stats": {"hp": 40, "atk": 80, "def": 35, "spa": 35, "spd": 0, "spe": 70},
     "moves": [
       "karatechop",
       "megapunch",
@@ -2075,7 +2075,7 @@
     "dexId": 57,
     "name": "Primeape",
     "types": ["fight"],
-    "stats": { "hp": 65, "atk": 105, "def": 60, "spa": 60, "spd": 0, "spe": 95 },
+    "stats": {"hp": 65, "atk": 105, "def": 60, "spa": 60, "spd": 0, "spe": 95},
     "moves": [
       "karatechop",
       "megapunch",
@@ -2117,7 +2117,7 @@
     "dexId": 58,
     "name": "Growlithe",
     "types": ["fire"],
-    "stats": { "hp": 55, "atk": 70, "def": 45, "spa": 50, "spd": 0, "spe": 60 },
+    "stats": {"hp": 55, "atk": 70, "def": 45, "spa": 50, "spd": 0, "spe": 60},
     "moves": [
       "bodyslam",
       "takedown",
@@ -2148,7 +2148,7 @@
     "dexId": 59,
     "name": "Arcanine",
     "types": ["fire"],
-    "stats": { "hp": 90, "atk": 110, "def": 80, "spa": 80, "spd": 0, "spe": 95 },
+    "stats": {"hp": 90, "atk": 110, "def": 80, "spa": 80, "spd": 0, "spe": 95},
     "moves": [
       "bodyslam",
       "takedown",
@@ -2181,7 +2181,7 @@
     "dexId": 60,
     "name": "Poliwag",
     "types": ["water"],
-    "stats": { "hp": 40, "atk": 50, "def": 40, "spa": 40, "spd": 0, "spe": 90 },
+    "stats": {"hp": 40, "atk": 50, "def": 40, "spa": 40, "spd": 0, "spe": 90},
     "moves": [
       "doubleslap",
       "bodyslam",
@@ -2213,7 +2213,7 @@
     "dexId": 61,
     "name": "Poliwhirl",
     "types": ["water"],
-    "stats": { "hp": 65, "atk": 65, "def": 65, "spa": 50, "spd": 0, "spe": 90 },
+    "stats": {"hp": 65, "atk": 65, "def": 65, "spa": 50, "spd": 0, "spe": 90},
     "moves": [
       "doubleslap",
       "bodyslam",
@@ -2255,7 +2255,7 @@
     "dexId": 62,
     "name": "Poliwrath",
     "types": ["water", "fight"],
-    "stats": { "hp": 90, "atk": 95, "def": 95, "spa": 70, "spd": 0, "spe": 70 },
+    "stats": {"hp": 90, "atk": 95, "def": 95, "spa": 70, "spd": 0, "spe": 70},
     "moves": [
       "doubleslap",
       "bodyslam",
@@ -2297,7 +2297,7 @@
     "dexId": 63,
     "name": "Abra",
     "types": ["psychic"],
-    "stats": { "hp": 25, "atk": 20, "def": 15, "spa": 105, "spd": 0, "spe": 90 },
+    "stats": {"hp": 25, "atk": 20, "def": 15, "spa": 105, "spd": 0, "spe": 90},
     "moves": [
       "megapunch",
       "megakick",
@@ -2330,7 +2330,7 @@
     "dexId": 64,
     "name": "Kadabra",
     "types": ["psychic"],
-    "stats": { "hp": 40, "atk": 35, "def": 30, "spa": 120, "spd": 0, "spe": 105 },
+    "stats": {"hp": 40, "atk": 35, "def": 30, "spa": 120, "spd": 0, "spe": 105},
     "moves": [
       "megapunch",
       "megakick",
@@ -2370,7 +2370,7 @@
     "dexId": 65,
     "name": "Alakazam",
     "types": ["psychic"],
-    "stats": { "hp": 55, "atk": 50, "def": 45, "spa": 135, "spd": 0, "spe": 120 },
+    "stats": {"hp": 55, "atk": 50, "def": 45, "spa": 135, "spd": 0, "spe": 120},
     "moves": [
       "megapunch",
       "megakick",
@@ -2410,7 +2410,7 @@
     "dexId": 66,
     "name": "Machop",
     "types": ["fight"],
-    "stats": { "hp": 70, "atk": 80, "def": 50, "spa": 35, "spd": 0, "spe": 35 },
+    "stats": {"hp": 70, "atk": 80, "def": 50, "spa": 35, "spd": 0, "spe": 35},
     "moves": [
       "karatechop",
       "megapunch",
@@ -2446,7 +2446,7 @@
     "dexId": 67,
     "name": "Machoke",
     "types": ["fight"],
-    "stats": { "hp": 80, "atk": 100, "def": 70, "spa": 50, "spd": 0, "spe": 45 },
+    "stats": {"hp": 80, "atk": 100, "def": 70, "spa": 50, "spd": 0, "spe": 45},
     "moves": [
       "karatechop",
       "megapunch",
@@ -2483,7 +2483,7 @@
     "dexId": 68,
     "name": "Machamp",
     "types": ["fight"],
-    "stats": { "hp": 90, "atk": 130, "def": 80, "spa": 65, "spd": 0, "spe": 55 },
+    "stats": {"hp": 90, "atk": 130, "def": 80, "spa": 65, "spd": 0, "spe": 55},
     "moves": [
       "karatechop",
       "megapunch",
@@ -2520,7 +2520,7 @@
     "dexId": 69,
     "name": "Bellsprout",
     "types": ["grass", "poison"],
-    "stats": { "hp": 50, "atk": 75, "def": 35, "spa": 70, "spd": 0, "spe": 40 },
+    "stats": {"hp": 50, "atk": 75, "def": 35, "spa": 70, "spd": 0, "spe": 40},
     "moves": [
       "swordsdance",
       "cut",
@@ -2552,7 +2552,7 @@
     "dexId": 70,
     "name": "Weepinbell",
     "types": ["grass", "poison"],
-    "stats": { "hp": 65, "atk": 90, "def": 50, "spa": 85, "spd": 0, "spe": 55 },
+    "stats": {"hp": 65, "atk": 90, "def": 50, "spa": 85, "spd": 0, "spe": 55},
     "moves": [
       "swordsdance",
       "cut",
@@ -2585,7 +2585,7 @@
     "dexId": 71,
     "name": "Victreebel",
     "types": ["grass", "poison"],
-    "stats": { "hp": 80, "atk": 105, "def": 65, "spa": 100, "spd": 0, "spe": 70 },
+    "stats": {"hp": 80, "atk": 105, "def": 65, "spa": 100, "spd": 0, "spe": 70},
     "moves": [
       "swordsdance",
       "cut",
@@ -2619,7 +2619,7 @@
     "dexId": 72,
     "name": "Tentacool",
     "types": ["water", "poison"],
-    "stats": { "hp": 40, "atk": 40, "def": 35, "spa": 100, "spd": 0, "spe": 70 },
+    "stats": {"hp": 40, "atk": 40, "def": 35, "spa": 100, "spd": 0, "spe": 70},
     "moves": [
       "swordsdance",
       "cut",
@@ -2655,7 +2655,7 @@
     "dexId": 73,
     "name": "Tentacruel",
     "types": ["water", "poison"],
-    "stats": { "hp": 80, "atk": 70, "def": 65, "spa": 120, "spd": 0, "spe": 100 },
+    "stats": {"hp": 80, "atk": 70, "def": 65, "spa": 120, "spd": 0, "spe": 100},
     "moves": [
       "swordsdance",
       "cut",
@@ -2692,7 +2692,7 @@
     "dexId": 74,
     "name": "Geodude",
     "types": ["rock", "ground"],
-    "stats": { "hp": 40, "atk": 80, "def": 100, "spa": 30, "spd": 0, "spe": 20 },
+    "stats": {"hp": 40, "atk": 80, "def": 100, "spa": 30, "spd": 0, "spe": 20},
     "moves": [
       "megapunch",
       "tackle",
@@ -2728,7 +2728,7 @@
     "dexId": 75,
     "name": "Graveler",
     "types": ["rock", "ground"],
-    "stats": { "hp": 55, "atk": 95, "def": 115, "spa": 45, "spd": 0, "spe": 35 },
+    "stats": {"hp": 55, "atk": 95, "def": 115, "spa": 45, "spd": 0, "spe": 35},
     "moves": [
       "megapunch",
       "tackle",
@@ -2765,7 +2765,7 @@
     "dexId": 76,
     "name": "Golem",
     "types": ["rock", "ground"],
-    "stats": { "hp": 80, "atk": 120, "def": 130, "spa": 55, "spd": 0, "spe": 45 },
+    "stats": {"hp": 80, "atk": 120, "def": 130, "spa": 55, "spd": 0, "spe": 45},
     "moves": [
       "megapunch",
       "tackle",
@@ -2803,7 +2803,7 @@
     "dexId": 77,
     "name": "Ponyta",
     "types": ["fire"],
-    "stats": { "hp": 50, "atk": 85, "def": 55, "spa": 65, "spd": 0, "spe": 90 },
+    "stats": {"hp": 50, "atk": 85, "def": 55, "spa": 65, "spd": 0, "spe": 90},
     "moves": [
       "stomp",
       "horndrill",
@@ -2833,7 +2833,7 @@
     "dexId": 78,
     "name": "Rapidash",
     "types": ["fire"],
-    "stats": { "hp": 65, "atk": 100, "def": 70, "spa": 80, "spd": 0, "spe": 105 },
+    "stats": {"hp": 65, "atk": 100, "def": 70, "spa": 80, "spd": 0, "spe": 105},
     "moves": [
       "stomp",
       "horndrill",
@@ -2864,7 +2864,7 @@
     "dexId": 79,
     "name": "Slowpoke",
     "types": ["water", "psychic"],
-    "stats": { "hp": 90, "atk": 65, "def": 65, "spa": 40, "spd": 0, "spe": 15 },
+    "stats": {"hp": 90, "atk": 65, "def": 65, "spa": 40, "spd": 0, "spe": 15},
     "moves": [
       "payday",
       "headbutt",
@@ -2908,7 +2908,7 @@
     "dexId": 80,
     "name": "Slowbro",
     "types": ["water", "psychic"],
-    "stats": { "hp": 95, "atk": 75, "def": 110, "spa": 80, "spd": 0, "spe": 30 },
+    "stats": {"hp": 95, "atk": 75, "def": 110, "spa": 80, "spd": 0, "spe": 30},
     "moves": [
       "payday",
       "headbutt",
@@ -2959,7 +2959,7 @@
     "dexId": 81,
     "name": "Magnemite",
     "types": ["electric"],
-    "stats": { "hp": 25, "atk": 35, "def": 70, "spa": 95, "spd": 0, "spe": 45 },
+    "stats": {"hp": 25, "atk": 35, "def": 70, "spa": 95, "spd": 0, "spe": 45},
     "moves": [
       "tackle",
       "takedown",
@@ -2989,7 +2989,7 @@
     "dexId": 82,
     "name": "Magneton",
     "types": ["electric"],
-    "stats": { "hp": 50, "atk": 60, "def": 95, "spa": 120, "spd": 0, "spe": 70 },
+    "stats": {"hp": 50, "atk": 60, "def": 95, "spa": 120, "spd": 0, "spe": 70},
     "moves": [
       "tackle",
       "takedown",
@@ -3020,7 +3020,7 @@
     "dexId": 83,
     "name": "Farfetch'd",
     "types": ["normal", "flying"],
-    "stats": { "hp": 52, "atk": 90, "def": 55, "spa": 58, "spd": 0, "spe": 60 },
+    "stats": {"hp": 52, "atk": 90, "def": 55, "spa": 58, "spd": 0, "spe": 60},
     "moves": [
       "razorwind",
       "swordsdance",
@@ -3053,7 +3053,7 @@
     "dexId": 84,
     "name": "Doduo",
     "types": ["normal", "flying"],
-    "stats": { "hp": 35, "atk": 85, "def": 45, "spa": 35, "spd": 0, "spe": 75 },
+    "stats": {"hp": 35, "atk": 85, "def": 45, "spa": 35, "spd": 0, "spe": 75},
     "moves": [
       "whirlwind",
       "fly",
@@ -3083,7 +3083,7 @@
     "dexId": 85,
     "name": "Dodrio",
     "types": ["normal", "flying"],
-    "stats": { "hp": 60, "atk": 110, "def": 70, "spa": 60, "spd": 0, "spe": 110 },
+    "stats": {"hp": 60, "atk": 110, "def": 70, "spa": 60, "spd": 0, "spe": 110},
     "moves": [
       "whirlwind",
       "fly",
@@ -3114,7 +3114,7 @@
     "dexId": 86,
     "name": "Seel",
     "types": ["water"],
-    "stats": { "hp": 65, "atk": 45, "def": 55, "spa": 70, "spd": 0, "spe": 45 },
+    "stats": {"hp": 65, "atk": 45, "def": 55, "spa": 70, "spd": 0, "spe": 45},
     "moves": [
       "payday",
       "headbutt",
@@ -3145,7 +3145,7 @@
     "dexId": 87,
     "name": "Dewgong",
     "types": ["water", "ice"],
-    "stats": { "hp": 90, "atk": 70, "def": 80, "spa": 95, "spd": 0, "spe": 70 },
+    "stats": {"hp": 90, "atk": 70, "def": 80, "spa": 95, "spd": 0, "spe": 70},
     "moves": [
       "payday",
       "headbutt",
@@ -3177,7 +3177,7 @@
     "dexId": 88,
     "name": "Grimer",
     "types": ["poison"],
-    "stats": { "hp": 80, "atk": 80, "def": 50, "spa": 40, "spd": 0, "spe": 25 },
+    "stats": {"hp": 80, "atk": 80, "def": 50, "spa": 40, "spd": 0, "spe": 25},
     "moves": [
       "pound",
       "bodyslam",
@@ -3208,7 +3208,7 @@
     "dexId": 89,
     "name": "Muk",
     "types": ["poison"],
-    "stats": { "hp": 105, "atk": 105, "def": 75, "spa": 65, "spd": 0, "spe": 50 },
+    "stats": {"hp": 105, "atk": 105, "def": 75, "spa": 65, "spd": 0, "spe": 50},
     "moves": [
       "pound",
       "bodyslam",
@@ -3240,7 +3240,7 @@
     "dexId": 90,
     "name": "Shellder",
     "types": ["water"],
-    "stats": { "hp": 30, "atk": 65, "def": 100, "spa": 45, "spd": 0, "spe": 40 },
+    "stats": {"hp": 30, "atk": 65, "def": 100, "spa": 45, "spd": 0, "spe": 40},
     "moves": [
       "tackle",
       "takedown",
@@ -3275,7 +3275,7 @@
     "dexId": 91,
     "name": "Cloyster",
     "types": ["water", "ice"],
-    "stats": { "hp": 50, "atk": 95, "def": 180, "spa": 85, "spd": 0, "spe": 70 },
+    "stats": {"hp": 50, "atk": 95, "def": 180, "spa": 85, "spd": 0, "spe": 70},
     "moves": [
       "tackle",
       "takedown",
@@ -3312,7 +3312,7 @@
     "dexId": 92,
     "name": "Gastly",
     "types": ["ghost", "poison"],
-    "stats": { "hp": 30, "atk": 35, "def": 30, "spa": 100, "spd": 0, "spe": 80 },
+    "stats": {"hp": 30, "atk": 35, "def": 30, "spa": 100, "spd": 0, "spe": 80},
     "moves": [
       "megadrain",
       "thunderbolt",
@@ -3340,7 +3340,7 @@
     "dexId": 93,
     "name": "Haunter",
     "types": ["ghost", "poison"],
-    "stats": { "hp": 45, "atk": 50, "def": 45, "spa": 115, "spd": 0, "spe": 95 },
+    "stats": {"hp": 45, "atk": 50, "def": 45, "spa": 115, "spd": 0, "spe": 95},
     "moves": [
       "megadrain",
       "thunderbolt",
@@ -3369,7 +3369,7 @@
     "dexId": 94,
     "name": "Gengar",
     "types": ["ghost", "poison"],
-    "stats": { "hp": 60, "atk": 65, "def": 60, "spa": 130, "spd": 0, "spe": 110 },
+    "stats": {"hp": 60, "atk": 65, "def": 60, "spa": 130, "spd": 0, "spe": 110},
     "moves": [
       "megadrain",
       "thunderbolt",
@@ -3409,7 +3409,7 @@
     "dexId": 95,
     "name": "Onix",
     "types": ["rock", "ground"],
-    "stats": { "hp": 35, "atk": 45, "def": 160, "spa": 30, "spd": 0, "spe": 70 },
+    "stats": {"hp": 35, "atk": 45, "def": 160, "spa": 30, "spd": 0, "spe": 70},
     "moves": [
       "bind",
       "slam",
@@ -3442,7 +3442,7 @@
     "dexId": 96,
     "name": "Drowzee",
     "types": ["psychic"],
-    "stats": { "hp": 60, "atk": 48, "def": 45, "spa": 90, "spd": 0, "spe": 42 },
+    "stats": {"hp": 60, "atk": 48, "def": 45, "spa": 90, "spd": 0, "spe": 42},
     "moves": [
       "pound",
       "megapunch",
@@ -3483,7 +3483,7 @@
     "dexId": 97,
     "name": "Hypno",
     "types": ["psychic"],
-    "stats": { "hp": 85, "atk": 73, "def": 70, "spa": 115, "spd": 0, "spe": 67 },
+    "stats": {"hp": 85, "atk": 73, "def": 70, "spa": 115, "spd": 0, "spe": 67},
     "moves": [
       "pound",
       "megapunch",
@@ -3525,7 +3525,7 @@
     "dexId": 98,
     "name": "Krabby",
     "types": ["water"],
-    "stats": { "hp": 30, "atk": 105, "def": 90, "spa": 25, "spd": 0, "spe": 50 },
+    "stats": {"hp": 30, "atk": 105, "def": 90, "spa": 25, "spd": 0, "spe": 50},
     "moves": [
       "vicegrip",
       "guillotine",
@@ -3559,7 +3559,7 @@
     "dexId": 99,
     "name": "Kingler",
     "types": ["water"],
-    "stats": { "hp": 55, "atk": 130, "def": 115, "spa": 50, "spd": 0, "spe": 75 },
+    "stats": {"hp": 55, "atk": 130, "def": 115, "spa": 50, "spd": 0, "spe": 75},
     "moves": [
       "vicegrip",
       "guillotine",
@@ -3594,7 +3594,7 @@
     "dexId": 100,
     "name": "Voltorb",
     "types": ["electric"],
-    "stats": { "hp": 40, "atk": 30, "def": 50, "spa": 55, "spd": 0, "spe": 100 },
+    "stats": {"hp": 40, "atk": 30, "def": 50, "spa": 55, "spd": 0, "spe": 100},
     "moves": [
       "tackle",
       "takedown",
@@ -3624,7 +3624,7 @@
     "dexId": 101,
     "name": "Electrode",
     "types": ["electric"],
-    "stats": { "hp": 60, "atk": 50, "def": 70, "spa": 80, "spd": 0, "spe": 150 },
+    "stats": {"hp": 60, "atk": 50, "def": 70, "spa": 80, "spd": 0, "spe": 150},
     "moves": [
       "tackle",
       "takedown",
@@ -3656,7 +3656,7 @@
     "dexId": 102,
     "name": "Exeggcute",
     "types": ["grass", "psychic"],
-    "stats": { "hp": 60, "atk": 40, "def": 80, "spa": 60, "spd": 0, "spe": 40 },
+    "stats": {"hp": 60, "atk": 40, "def": 80, "spa": 60, "spd": 0, "spe": 40},
     "moves": [
       "takedown",
       "doubleedge",
@@ -3688,7 +3688,7 @@
     "dexId": 103,
     "name": "Exeggutor",
     "types": ["grass", "psychic"],
-    "stats": { "hp": 95, "atk": 95, "def": 85, "spa": 125, "spd": 0, "spe": 55 },
+    "stats": {"hp": 95, "atk": 95, "def": 85, "spa": 125, "spd": 0, "spe": 55},
     "moves": [
       "takedown",
       "doubleedge",
@@ -3724,7 +3724,7 @@
     "dexId": 104,
     "name": "Cubone",
     "types": ["ground"],
-    "stats": { "hp": 50, "atk": 50, "def": 95, "spa": 40, "spd": 0, "spe": 35 },
+    "stats": {"hp": 50, "atk": 50, "def": 95, "spa": 40, "spd": 0, "spe": 35},
     "moves": [
       "megapunch",
       "megakick",
@@ -3766,7 +3766,7 @@
     "dexId": 105,
     "name": "Marowak",
     "types": ["ground"],
-    "stats": { "hp": 60, "atk": 80, "def": 110, "spa": 50, "spd": 0, "spe": 45 },
+    "stats": {"hp": 60, "atk": 80, "def": 110, "spa": 50, "spd": 0, "spe": 45},
     "moves": [
       "megapunch",
       "megakick",
@@ -3809,7 +3809,7 @@
     "dexId": 106,
     "name": "Hitmonlee",
     "types": ["fight"],
-    "stats": { "hp": 50, "atk": 120, "def": 53, "spa": 35, "spd": 0, "spe": 87 },
+    "stats": {"hp": 50, "atk": 120, "def": 53, "spa": 35, "spd": 0, "spe": 87},
     "moves": [
       "megapunch",
       "doublekick",
@@ -3843,7 +3843,7 @@
     "dexId": 107,
     "name": "Hitmonchan",
     "types": ["fight"],
-    "stats": { "hp": 50, "atk": 105, "def": 79, "spa": 35, "spd": 0, "spe": 76 },
+    "stats": {"hp": 50, "atk": 105, "def": 79, "spa": 35, "spd": 0, "spe": 76},
     "moves": [
       "cometpunch",
       "megapunch",
@@ -3876,7 +3876,7 @@
     "dexId": 108,
     "name": "Lickitung",
     "types": ["normal"],
-    "stats": { "hp": 90, "atk": 55, "def": 75, "spa": 60, "spd": 0, "spe": 30 },
+    "stats": {"hp": 90, "atk": 55, "def": 75, "spa": 60, "spd": 0, "spe": 30},
     "moves": [
       "megapunch",
       "swordsdance",
@@ -3922,7 +3922,7 @@
     "dexId": 109,
     "name": "Koffing",
     "types": ["poison"],
-    "stats": { "hp": 40, "atk": 65, "def": 95, "spa": 60, "spd": 0, "spe": 35 },
+    "stats": {"hp": 40, "atk": 65, "def": 95, "spa": 60, "spd": 0, "spe": 35},
     "moves": [
       "tackle",
       "thunderbolt",
@@ -3948,7 +3948,7 @@
     "dexId": 110,
     "name": "Weezing",
     "types": ["poison"],
-    "stats": { "hp": 65, "atk": 90, "def": 120, "spa": 85, "spd": 0, "spe": 60 },
+    "stats": {"hp": 65, "atk": 90, "def": 120, "spa": 85, "spd": 0, "spe": 60},
     "moves": [
       "tackle",
       "thunderbolt",
@@ -3975,7 +3975,7 @@
     "dexId": 111,
     "name": "Rhyhorn",
     "types": ["ground", "rock"],
-    "stats": { "hp": 80, "atk": 85, "def": 95, "spa": 30, "spd": 0, "spe": 25 },
+    "stats": {"hp": 80, "atk": 85, "def": 95, "spa": 30, "spd": 0, "spe": 25},
     "moves": [
       "stomp",
       "hornattack",
@@ -4009,7 +4009,7 @@
     "dexId": 112,
     "name": "Rhydon",
     "types": ["ground", "rock"],
-    "stats": { "hp": 105, "atk": 130, "def": 120, "spa": 45, "spd": 0, "spe": 40 },
+    "stats": {"hp": 105, "atk": 130, "def": 120, "spa": 45, "spd": 0, "spe": 40},
     "moves": [
       "stomp",
       "hornattack",
@@ -4055,7 +4055,7 @@
     "dexId": 113,
     "name": "Chansey",
     "types": ["normal"],
-    "stats": { "hp": 250, "atk": 5, "def": 5, "spa": 105, "spd": 0, "spe": 50 },
+    "stats": {"hp": 250, "atk": 5, "def": 5, "spa": 105, "spd": 0, "spe": 50},
     "moves": [
       "pound",
       "doubleslap",
@@ -4108,7 +4108,7 @@
     "dexId": 114,
     "name": "Tangela",
     "types": ["grass"],
-    "stats": { "hp": 65, "atk": 55, "def": 115, "spa": 100, "spd": 0, "spe": 60 },
+    "stats": {"hp": 65, "atk": 55, "def": 115, "spa": 100, "spd": 0, "spe": 60},
     "moves": [
       "swordsdance",
       "cut",
@@ -4142,7 +4142,7 @@
     "dexId": 115,
     "name": "Kangaskhan",
     "types": ["normal"],
-    "stats": { "hp": 105, "atk": 95, "def": 80, "spa": 40, "spd": 0, "spe": 90 },
+    "stats": {"hp": 105, "atk": 95, "def": 80, "spa": 40, "spd": 0, "spe": 90},
     "moves": [
       "cometpunch",
       "megapunch",
@@ -4185,7 +4185,7 @@
     "dexId": 116,
     "name": "Horsea",
     "types": ["water"],
-    "stats": { "hp": 30, "atk": 40, "def": 70, "spa": 70, "spd": 0, "spe": 60 },
+    "stats": {"hp": 30, "atk": 40, "def": 70, "spa": 70, "spd": 0, "spe": 60},
     "moves": [
       "takedown",
       "doubleedge",
@@ -4215,7 +4215,7 @@
     "dexId": 117,
     "name": "Seadra",
     "types": ["water"],
-    "stats": { "hp": 55, "atk": 65, "def": 95, "spa": 95, "spd": 0, "spe": 85 },
+    "stats": {"hp": 55, "atk": 65, "def": 95, "spa": 95, "spd": 0, "spe": 85},
     "moves": [
       "takedown",
       "doubleedge",
@@ -4246,7 +4246,7 @@
     "dexId": 118,
     "name": "Goldeen",
     "types": ["water"],
-    "stats": { "hp": 45, "atk": 67, "def": 60, "spa": 50, "spd": 0, "spe": 63 },
+    "stats": {"hp": 45, "atk": 67, "def": 60, "spa": 50, "spd": 0, "spe": 63},
     "moves": [
       "hornattack",
       "furyattack",
@@ -4279,7 +4279,7 @@
     "dexId": 119,
     "name": "Seaking",
     "types": ["water"],
-    "stats": { "hp": 80, "atk": 92, "def": 65, "spa": 80, "spd": 0, "spe": 68 },
+    "stats": {"hp": 80, "atk": 92, "def": 65, "spa": 80, "spd": 0, "spe": 68},
     "moves": [
       "hornattack",
       "furyattack",
@@ -4313,7 +4313,7 @@
     "dexId": 120,
     "name": "Staryu",
     "types": ["water"],
-    "stats": { "hp": 30, "atk": 45, "def": 55, "spa": 70, "spd": 0, "spe": 85 },
+    "stats": {"hp": 30, "atk": 45, "def": 55, "spa": 70, "spd": 0, "spe": 85},
     "moves": [
       "tackle",
       "takedown",
@@ -4353,7 +4353,7 @@
     "dexId": 121,
     "name": "Starmie",
     "types": ["water", "psychic"],
-    "stats": { "hp": 60, "atk": 75, "def": 85, "spa": 100, "spd": 0, "spe": 115 },
+    "stats": {"hp": 60, "atk": 75, "def": 85, "spa": 100, "spd": 0, "spe": 115},
     "moves": [
       "tackle",
       "takedown",
@@ -4394,7 +4394,7 @@
     "dexId": 122,
     "name": "Mr. Mime",
     "types": ["psychic"],
-    "stats": { "hp": 40, "atk": 45, "def": 65, "spa": 100, "spd": 0, "spe": 90 },
+    "stats": {"hp": 40, "atk": 45, "def": 65, "spa": 100, "spd": 0, "spe": 90},
     "moves": [
       "doubleslap",
       "megapunch",
@@ -4435,7 +4435,7 @@
     "dexId": 123,
     "name": "Scyther",
     "types": ["bug", "flying"],
-    "stats": { "hp": 70, "atk": 110, "def": 80, "spa": 55, "spd": 0, "spe": 105 },
+    "stats": {"hp": 70, "atk": 110, "def": 80, "spa": 55, "spd": 0, "spe": 105},
     "moves": [
       "swordsdance",
       "cut",
@@ -4464,7 +4464,7 @@
     "dexId": 124,
     "name": "Jynx",
     "types": ["ice", "psychic"],
-    "stats": { "hp": 65, "atk": 50, "def": 35, "spa": 95, "spd": 0, "spe": 95 },
+    "stats": {"hp": 65, "atk": 50, "def": 35, "spa": 95, "spd": 0, "spe": 95},
     "moves": [
       "pound",
       "icepunch",
@@ -4532,7 +4532,7 @@
     "dexId": 125,
     "name": "Electabuzz",
     "types": ["electric"],
-    "stats": { "hp": 65, "atk": 83, "def": 57, "spa": 85, "spd": 0, "spe": 105 },
+    "stats": {"hp": 65, "atk": 83, "def": 57, "spa": 85, "spd": 0, "spe": 105},
     "moves": [
       "karatechop",
       "firepunch",
@@ -4599,7 +4599,7 @@
     "dexId": 126,
     "name": "Magmar",
     "types": ["fire"],
-    "stats": { "hp": 65, "atk": 95, "def": 57, "spa": 85, "spd": 0, "spe": 93 },
+    "stats": {"hp": 65, "atk": 95, "def": 57, "spa": 85, "spd": 0, "spe": 93},
     "moves": [
       "karatechop",
       "megapunch",
@@ -4660,7 +4660,7 @@
     "dexId": 127,
     "name": "Pinsir",
     "types": ["bug"],
-    "stats": { "hp": 65, "atk": 125, "def": 100, "spa": 55, "spd": 0, "spe": 85 },
+    "stats": {"hp": 65, "atk": 125, "def": 100, "spa": 55, "spd": 0, "spe": 85},
     "moves": [
       "vicegrip",
       "guillotine",
@@ -4691,7 +4691,7 @@
     "dexId": 128,
     "name": "Tauros",
     "types": ["normal"],
-    "stats": { "hp": 75, "atk": 100, "def": 95, "spa": 70, "spd": 0, "spe": 110 },
+    "stats": {"hp": 75, "atk": 100, "def": 95, "spa": 70, "spd": 0, "spe": 110},
     "moves": [
       "stomp",
       "horndrill",
@@ -4725,7 +4725,7 @@
     "dexId": 129,
     "name": "Magikarp",
     "types": ["water"],
-    "stats": { "hp": 20, "atk": 10, "def": 55, "spa": 20, "spd": 0, "spe": 80 },
+    "stats": {"hp": 20, "atk": 10, "def": 55, "spa": 20, "spd": 0, "spe": 80},
     "moves": ["tackle", "splash"],
     "evolvesTo": "gyarados"
   },
@@ -4733,7 +4733,7 @@
     "dexId": 130,
     "name": "Gyarados",
     "types": ["water", "flying"],
-    "stats": { "hp": 95, "atk": 125, "def": 79, "spa": 100, "spd": 0, "spe": 81 },
+    "stats": {"hp": 95, "atk": 125, "def": 79, "spa": 100, "spd": 0, "spe": 81},
     "moves": [
       "tackle",
       "splash",
@@ -4770,7 +4770,7 @@
     "dexId": 131,
     "name": "Lapras",
     "types": ["water", "ice"],
-    "stats": { "hp": 130, "atk": 85, "def": 80, "spa": 95, "spd": 0, "spe": 60 },
+    "stats": {"hp": 130, "atk": 85, "def": 80, "spa": 95, "spd": 0, "spe": 60},
     "moves": [
       "horndrill",
       "bodyslam",
@@ -4810,7 +4810,7 @@
     "dexId": 132,
     "name": "Ditto",
     "types": ["normal"],
-    "stats": { "hp": 48, "atk": 48, "def": 48, "spa": 48, "spd": 0, "spe": 48 },
+    "stats": {"hp": 48, "atk": 48, "def": 48, "spa": 48, "spd": 0, "spe": 48},
     "moves": ["transform"],
     "evolves": false
   },
@@ -4818,7 +4818,7 @@
     "dexId": 133,
     "name": "Eevee",
     "types": ["normal"],
-    "stats": { "hp": 55, "atk": 55, "def": 50, "spa": 65, "spd": 0, "spe": 55 },
+    "stats": {"hp": 55, "atk": 55, "def": 50, "spa": 65, "spd": 0, "spe": 55},
     "moves": [
       "sandattack",
       "tackle",
@@ -4847,7 +4847,7 @@
     "dexId": 134,
     "name": "Vaporeon",
     "types": ["water"],
-    "stats": { "hp": 130, "atk": 65, "def": 60, "spa": 110, "spd": 0, "spe": 65 },
+    "stats": {"hp": 130, "atk": 65, "def": 60, "spa": 110, "spd": 0, "spe": 65},
     "moves": [
       "growl",
       "focusenergy",
@@ -4887,7 +4887,7 @@
     "dexId": 135,
     "name": "Jolteon",
     "types": ["electric"],
-    "stats": { "hp": 65, "atk": 65, "def": 60, "spa": 110, "spd": 0, "spe": 130 },
+    "stats": {"hp": 65, "atk": 65, "def": 60, "spa": 110, "spd": 0, "spe": 130},
     "moves": [
       "bite",
       "growl",
@@ -4925,7 +4925,7 @@
     "dexId": 136,
     "name": "Flareon",
     "types": ["fire"],
-    "stats": { "hp": 65, "atk": 130, "def": 60, "spa": 110, "spd": 0, "spe": 65 },
+    "stats": {"hp": 65, "atk": 130, "def": 60, "spa": 110, "spd": 0, "spe": 65},
     "moves": [
       "sandattack",
       "tackle",
@@ -4961,7 +4961,7 @@
     "dexId": 137,
     "name": "Porygon",
     "types": ["normal"],
-    "stats": { "hp": 65, "atk": 60, "def": 70, "spa": 75, "spd": 0, "spe": 40 },
+    "stats": {"hp": 65, "atk": 60, "def": 70, "spa": 75, "spd": 0, "spe": 40},
     "moves": [
       "tackle",
       "takedown",
@@ -4999,7 +4999,7 @@
     "dexId": 138,
     "name": "Omanyte",
     "types": ["rock", "water"],
-    "stats": { "hp": 35, "atk": 40, "def": 100, "spa": 90, "spd": 0, "spe": 35 },
+    "stats": {"hp": 35, "atk": 40, "def": 100, "spa": 90, "spd": 0, "spe": 35},
     "moves": [
       "hornattack",
       "bodyslam",
@@ -5029,7 +5029,7 @@
     "dexId": 139,
     "name": "Omastar",
     "types": ["rock", "water"],
-    "stats": { "hp": 70, "atk": 60, "def": 125, "spa": 115, "spd": 0, "spe": 55 },
+    "stats": {"hp": 70, "atk": 60, "def": 125, "spa": 115, "spd": 0, "spe": 55},
     "moves": [
       "hornattack",
       "bodyslam",
@@ -5064,7 +5064,7 @@
     "dexId": 140,
     "name": "Kabuto",
     "types": ["rock", "water"],
-    "stats": { "hp": 30, "atk": 80, "def": 90, "spa": 45, "spd": 0, "spe": 55 },
+    "stats": {"hp": 30, "atk": 80, "def": 90, "spa": 45, "spd": 0, "spe": 55},
     "moves": [
       "scratch",
       "bodyslam",
@@ -5095,7 +5095,7 @@
     "dexId": 141,
     "name": "Kabutops",
     "types": ["rock", "water"],
-    "stats": { "hp": 60, "atk": 115, "def": 105, "spa": 70, "spd": 0, "spe": 80 },
+    "stats": {"hp": 60, "atk": 115, "def": 105, "spa": 70, "spd": 0, "spe": 80},
     "moves": [
       "scratch",
       "bodyslam",
@@ -5134,7 +5134,7 @@
     "dexId": 142,
     "name": "Aerodactyl",
     "types": ["rock", "flying"],
-    "stats": { "hp": 80, "atk": 105, "def": 65, "spa": 60, "spd": 0, "spe": 130 },
+    "stats": {"hp": 80, "atk": 105, "def": 65, "spa": 60, "spd": 0, "spe": 130},
     "moves": [
       "razorwind",
       "wingattack",
@@ -5165,7 +5165,7 @@
     "dexId": 143,
     "name": "Snorlax",
     "types": ["normal"],
-    "stats": { "hp": 160, "atk": 110, "def": 65, "spa": 65, "spd": 0, "spe": 30 },
+    "stats": {"hp": 160, "atk": 110, "def": 65, "spa": 65, "spd": 0, "spe": 30},
     "moves": [
       "megapunch",
       "payday",
@@ -5213,7 +5213,7 @@
     "dexId": 144,
     "name": "Articuno",
     "types": ["ice", "flying"],
-    "stats": { "hp": 90, "atk": 85, "def": 100, "spa": 125, "spd": 0, "spe": 85 },
+    "stats": {"hp": 90, "atk": 85, "def": 100, "spa": 125, "spd": 0, "spe": 85},
     "moves": [
       "razorwind",
       "whirlwind",
@@ -5245,7 +5245,7 @@
     "dexId": 145,
     "name": "Zapdos",
     "types": ["electric", "flying"],
-    "stats": { "hp": 90, "atk": 90, "def": 85, "spa": 125, "spd": 0, "spe": 100 },
+    "stats": {"hp": 90, "atk": 90, "def": 85, "spa": 125, "spd": 0, "spe": 100},
     "moves": [
       "razorwind",
       "whirlwind",
@@ -5278,7 +5278,7 @@
     "dexId": 146,
     "name": "Moltres",
     "types": ["fire", "flying"],
-    "stats": { "hp": 90, "atk": 100, "def": 90, "spa": 125, "spd": 0, "spe": 90 },
+    "stats": {"hp": 90, "atk": 100, "def": 90, "spa": 125, "spd": 0, "spe": 90},
     "moves": [
       "razorwind",
       "whirlwind",
@@ -5308,7 +5308,7 @@
     "dexId": 147,
     "name": "Dratini",
     "types": ["dragon"],
-    "stats": { "hp": 41, "atk": 64, "def": 45, "spa": 50, "spd": 0, "spe": 50 },
+    "stats": {"hp": 41, "atk": 64, "def": 45, "spa": 50, "spd": 0, "spe": 50},
     "moves": [
       "slam",
       "bodyslam",
@@ -5345,7 +5345,7 @@
     "dexId": 148,
     "name": "Dragonair",
     "types": ["dragon"],
-    "stats": { "hp": 61, "atk": 84, "def": 65, "spa": 70, "spd": 0, "spe": 70 },
+    "stats": {"hp": 61, "atk": 84, "def": 65, "spa": 70, "spd": 0, "spe": 70},
     "moves": [
       "slam",
       "bodyslam",
@@ -5384,7 +5384,7 @@
     "dexId": 149,
     "name": "Dragonite",
     "types": ["dragon", "flying"],
-    "stats": { "hp": 91, "atk": 134, "def": 95, "spa": 100, "spd": 0, "spe": 80 },
+    "stats": {"hp": 91, "atk": 134, "def": 95, "spa": 100, "spd": 0, "spe": 80},
     "moves": [
       "slam",
       "bodyslam",
@@ -5424,7 +5424,7 @@
     "dexId": 150,
     "name": "Mewtwo",
     "types": ["psychic"],
-    "stats": { "hp": 106, "atk": 110, "def": 90, "spa": 154, "spd": 0, "spe": 130 },
+    "stats": {"hp": 106, "atk": 110, "def": 90, "spa": 154, "spd": 0, "spe": 130},
     "moves": [
       "megapunch",
       "payday",
@@ -5476,7 +5476,7 @@
     "dexId": 151,
     "name": "Mew",
     "types": ["psychic"],
-    "stats": { "hp": 100, "atk": 100, "def": 100, "spa": 100, "spd": 100, "spe": 100 },
+    "stats": {"hp": 100, "atk": 100, "def": 100, "spa": 100, "spd": 100, "spe": 100},
     "moves": [
       "pound",
       "megapunch",
@@ -5583,7 +5583,7 @@
     "dexId": 152,
     "name": "Chikorita",
     "types": ["grass"],
-    "stats": { "hp": 45, "atk": 49, "def": 65, "spa": 49, "spd": 65, "spe": 45 },
+    "stats": {"hp": 45, "atk": 49, "def": 65, "spa": 49, "spd": 65, "spe": 45},
     "moves": [
       "swordsdance",
       "cut",
@@ -5631,7 +5631,7 @@
     "dexId": 153,
     "name": "Bayleef",
     "types": ["grass"],
-    "stats": { "hp": 60, "atk": 62, "def": 80, "spa": 63, "spd": 80, "spe": 60 },
+    "stats": {"hp": 60, "atk": 62, "def": 80, "spa": 63, "spd": 80, "spe": 60},
     "moves": [
       "swordsdance",
       "cut",
@@ -5683,7 +5683,7 @@
     "dexId": 154,
     "name": "Meganium",
     "types": ["grass"],
-    "stats": { "hp": 80, "atk": 82, "def": 100, "spa": 83, "spd": 100, "spe": 80 },
+    "stats": {"hp": 80, "atk": 82, "def": 100, "spa": 83, "spd": 100, "spe": 80},
     "moves": [
       "swordsdance",
       "cut",
@@ -5736,7 +5736,7 @@
     "dexId": 155,
     "name": "Cyndaquil",
     "types": ["fire"],
-    "stats": { "hp": 39, "atk": 52, "def": 43, "spa": 60, "spd": 50, "spe": 65 },
+    "stats": {"hp": 39, "atk": 52, "def": 43, "spa": 60, "spd": 50, "spe": 65},
     "moves": [
       "cut",
       "headbutt",
@@ -5782,7 +5782,7 @@
     "dexId": 156,
     "name": "Quilava",
     "types": ["fire"],
-    "stats": { "hp": 58, "atk": 64, "def": 58, "spa": 80, "spd": 65, "spe": 80 },
+    "stats": {"hp": 58, "atk": 64, "def": 58, "spa": 80, "spd": 65, "spe": 80},
     "moves": [
       "cut",
       "headbutt",
@@ -5833,7 +5833,7 @@
     "dexId": 157,
     "name": "Typhlosion",
     "types": ["fire"],
-    "stats": { "hp": 78, "atk": 84, "def": 78, "spa": 109, "spd": 85, "spe": 100 },
+    "stats": {"hp": 78, "atk": 84, "def": 78, "spa": 109, "spd": 85, "spe": 100},
     "moves": [
       "cut",
       "headbutt",
@@ -5888,7 +5888,7 @@
     "dexId": 158,
     "name": "Totodile",
     "types": ["water"],
-    "stats": { "hp": 50, "atk": 65, "def": 64, "spa": 44, "spd": 48, "spe": 43 },
+    "stats": {"hp": 50, "atk": 65, "def": 64, "spa": 44, "spd": 48, "spe": 43},
     "moves": [
       "icepunch",
       "scratch",
@@ -5939,7 +5939,7 @@
     "dexId": 159,
     "name": "Croconaw",
     "types": ["water"],
-    "stats": { "hp": 65, "atk": 80, "def": 80, "spa": 59, "spd": 63, "spe": 58 },
+    "stats": {"hp": 65, "atk": 80, "def": 80, "spa": 59, "spd": 63, "spe": 58},
     "moves": [
       "icepunch",
       "scratch",
@@ -5995,7 +5995,7 @@
     "dexId": 160,
     "name": "Feraligatr",
     "types": ["water"],
-    "stats": { "hp": 85, "atk": 105, "def": 100, "spa": 79, "spd": 83, "spe": 78 },
+    "stats": {"hp": 85, "atk": 105, "def": 100, "spa": 79, "spd": 83, "spe": 78},
     "moves": [
       "icepunch",
       "scratch",
@@ -6052,7 +6052,7 @@
     "dexId": 161,
     "name": "Sentret",
     "types": ["normal"],
-    "stats": { "hp": 35, "atk": 46, "def": 34, "spa": 35, "spd": 45, "spe": 20 },
+    "stats": {"hp": 35, "atk": 46, "def": 34, "spa": 35, "spd": 45, "spe": 20},
     "moves": [
       "firepunch",
       "icepunch",
@@ -6103,7 +6103,7 @@
     "dexId": 162,
     "name": "Furret",
     "types": ["normal"],
-    "stats": { "hp": 85, "atk": 76, "def": 64, "spa": 45, "spd": 55, "spe": 90 },
+    "stats": {"hp": 85, "atk": 76, "def": 64, "spa": 45, "spd": 55, "spe": 90},
     "moves": [
       "firepunch",
       "icepunch",
@@ -6157,7 +6157,7 @@
     "dexId": 163,
     "name": "Hoothoot",
     "types": ["normal", "flying"],
-    "stats": { "hp": 60, "atk": 30, "def": 30, "spa": 36, "spd": 56, "spe": 50 },
+    "stats": {"hp": 60, "atk": 30, "def": 30, "spa": 36, "spd": 56, "spe": 50},
     "moves": [
       "wingattack",
       "whirlwind",
@@ -6204,7 +6204,7 @@
     "dexId": 164,
     "name": "Noctowl",
     "types": ["normal", "flying"],
-    "stats": { "hp": 100, "atk": 50, "def": 50, "spa": 86, "spd": 96, "spe": 70 },
+    "stats": {"hp": 100, "atk": 50, "def": 50, "spa": 86, "spd": 96, "spe": 70},
     "moves": [
       "wingattack",
       "whirlwind",
@@ -6252,7 +6252,7 @@
     "dexId": 165,
     "name": "Ledyba",
     "types": ["bug", "flying"],
-    "stats": { "hp": 40, "atk": 20, "def": 30, "spa": 40, "spd": 80, "spe": 55 },
+    "stats": {"hp": 40, "atk": 20, "def": 30, "spa": 40, "spd": 80, "spe": 55},
     "moves": [
       "cometpunch",
       "icepunch",
@@ -6299,7 +6299,7 @@
     "dexId": 166,
     "name": "Ledian",
     "types": ["bug", "flying"],
-    "stats": { "hp": 55, "atk": 35, "def": 50, "spa": 55, "spd": 110, "spe": 85 },
+    "stats": {"hp": 55, "atk": 35, "def": 50, "spa": 55, "spd": 110, "spe": 85},
     "moves": [
       "cometpunch",
       "icepunch",
@@ -6347,7 +6347,7 @@
     "dexId": 167,
     "name": "Spinarak",
     "types": ["bug", "poison"],
-    "stats": { "hp": 40, "atk": 60, "def": 40, "spa": 40, "spd": 40, "spe": 30 },
+    "stats": {"hp": 40, "atk": 60, "def": 40, "spa": 40, "spd": 40, "spe": 30},
     "moves": [
       "poisonsting",
       "sonicboom",
@@ -6393,7 +6393,7 @@
     "dexId": 168,
     "name": "Ariados",
     "types": ["bug", "poison"],
-    "stats": { "hp": 70, "atk": 90, "def": 70, "spa": 60, "spd": 70, "spe": 40 },
+    "stats": {"hp": 70, "atk": 90, "def": 70, "spa": 60, "spd": 70, "spe": 40},
     "moves": [
       "poisonsting",
       "sonicboom",
@@ -6440,7 +6440,7 @@
     "dexId": 169,
     "name": "Crobat",
     "types": ["poison", "flying"],
-    "stats": { "hp": 85, "atk": 90, "def": 80, "spa": 70, "spd": 80, "spe": 130 },
+    "stats": {"hp": 85, "atk": 90, "def": 80, "spa": 70, "spd": 80, "spe": 130},
     "moves": [
       "wingattack",
       "fly",
@@ -6479,7 +6479,7 @@
     "dexId": 170,
     "name": "Chinchou",
     "types": ["water", "electric"],
-    "stats": { "hp": 75, "atk": 38, "def": 38, "spa": 56, "spd": 56, "spe": 67 },
+    "stats": {"hp": 75, "atk": 38, "def": 38, "spa": 56, "spd": 56, "spe": 67},
     "moves": [
       "takedown",
       "supersonic",
@@ -6521,7 +6521,7 @@
     "dexId": 171,
     "name": "Lanturn",
     "types": ["water", "electric"],
-    "stats": { "hp": 125, "atk": 58, "def": 58, "spa": 76, "spd": 76, "spe": 67 },
+    "stats": {"hp": 125, "atk": 58, "def": 58, "spa": 76, "spd": 76, "spe": 67},
     "moves": [
       "takedown",
       "supersonic",
@@ -6565,7 +6565,7 @@
     "dexId": 172,
     "name": "Pichu",
     "types": ["electric"],
-    "stats": { "hp": 20, "atk": 40, "def": 15, "spa": 35, "spd": 35, "spe": 60 },
+    "stats": {"hp": 20, "atk": 40, "def": 15, "spa": 35, "spd": 35, "spe": 60},
     "moves": [
       "doubleslap",
       "headbutt",
@@ -6610,7 +6610,7 @@
     "dexId": 173,
     "name": "Cleffa",
     "types": ["normal"],
-    "stats": { "hp": 50, "atk": 25, "def": 28, "spa": 45, "spd": 55, "spe": 15 },
+    "stats": {"hp": 50, "atk": 25, "def": 28, "spa": 45, "spd": 55, "spe": 15},
     "moves": [
       "pound",
       "headbutt",
@@ -6663,7 +6663,7 @@
     "dexId": 174,
     "name": "Igglybuff",
     "types": ["normal"],
-    "stats": { "hp": 90, "atk": 30, "def": 15, "spa": 40, "spd": 20, "spe": 15 },
+    "stats": {"hp": 90, "atk": 30, "def": 15, "spa": 40, "spd": 20, "spe": 15},
     "moves": [
       "pound",
       "headbutt",
@@ -6710,7 +6710,7 @@
     "dexId": 175,
     "name": "Togepi",
     "types": ["normal"],
-    "stats": { "hp": 35, "atk": 20, "def": 65, "spa": 40, "spd": 65, "spe": 20 },
+    "stats": {"hp": 35, "atk": 20, "def": 65, "spa": 40, "spd": 65, "spe": 20},
     "moves": [
       "headbutt",
       "doubleedge",
@@ -6763,7 +6763,7 @@
     "dexId": 176,
     "name": "Togetic",
     "types": ["normal", "flying"],
-    "stats": { "hp": 55, "atk": 40, "def": 85, "spa": 80, "spd": 105, "spe": 40 },
+    "stats": {"hp": 55, "atk": 40, "def": 85, "spa": 80, "spd": 105, "spe": 40},
     "moves": [
       "headbutt",
       "doubleedge",
@@ -6819,7 +6819,7 @@
     "dexId": 177,
     "name": "Natu",
     "types": ["psychic", "flying"],
-    "stats": { "hp": 40, "atk": 50, "def": 45, "spa": 70, "spd": 45, "spe": 70 },
+    "stats": {"hp": 40, "atk": 50, "def": 45, "spa": 70, "spd": 45, "spe": 70},
     "moves": [
       "leer",
       "peck",
@@ -6864,7 +6864,7 @@
     "dexId": 178,
     "name": "Xatu",
     "types": ["psychic", "flying"],
-    "stats": { "hp": 65, "atk": 75, "def": 70, "spa": 95, "spd": 70, "spe": 95 },
+    "stats": {"hp": 65, "atk": 75, "def": 70, "spa": 95, "spd": 70, "spe": 95},
     "moves": [
       "leer",
       "peck",
@@ -6911,7 +6911,7 @@
     "dexId": 179,
     "name": "Mareep",
     "types": ["electric"],
-    "stats": { "hp": 55, "atk": 40, "def": 40, "spa": 65, "spd": 45, "spe": 35 },
+    "stats": {"hp": 55, "atk": 40, "def": 40, "spa": 65, "spd": 45, "spe": 35},
     "moves": [
       "headbutt",
       "tackle",
@@ -6954,7 +6954,7 @@
     "dexId": 180,
     "name": "Flaaffy",
     "types": ["electric"],
-    "stats": { "hp": 70, "atk": 55, "def": 55, "spa": 80, "spd": 60, "spe": 45 },
+    "stats": {"hp": 70, "atk": 55, "def": 55, "spa": 80, "spd": 60, "spe": 45},
     "moves": [
       "headbutt",
       "tackle",
@@ -7003,7 +7003,7 @@
     "dexId": 181,
     "name": "Ampharos",
     "types": ["electric"],
-    "stats": { "hp": 90, "atk": 75, "def": 85, "spa": 115, "spd": 90, "spe": 55 },
+    "stats": {"hp": 90, "atk": 75, "def": 85, "spa": 115, "spd": 90, "spe": 55},
     "moves": [
       "headbutt",
       "tackle",
@@ -7052,7 +7052,7 @@
     "dexId": 182,
     "name": "Bellossom",
     "types": ["grass"],
-    "stats": { "hp": 75, "atk": 80, "def": 95, "spa": 90, "spd": 100, "spe": 50 },
+    "stats": {"hp": 75, "atk": 80, "def": 95, "spa": 90, "spd": 100, "spe": 50},
     "moves": [
       "cut",
       "hyperbeam",
@@ -7085,7 +7085,7 @@
     "dexId": 183,
     "name": "Marill",
     "types": ["water"],
-    "stats": { "hp": 70, "atk": 20, "def": 50, "spa": 20, "spd": 50, "spe": 40 },
+    "stats": {"hp": 70, "atk": 20, "def": 50, "spa": 20, "spd": 50, "spe": 40},
     "moves": [
       "icepunch",
       "headbutt",
@@ -7137,7 +7137,7 @@
     "dexId": 184,
     "name": "Azumarill",
     "types": ["water"],
-    "stats": { "hp": 100, "atk": 50, "def": 80, "spa": 60, "spd": 80, "spe": 50 },
+    "stats": {"hp": 100, "atk": 50, "def": 80, "spa": 60, "spd": 80, "spe": 50},
     "moves": [
       "icepunch",
       "headbutt",
@@ -7191,7 +7191,7 @@
     "dexId": 185,
     "name": "Sudowoodo",
     "types": ["rock"],
-    "stats": { "hp": 70, "atk": 100, "def": 115, "spa": 30, "spd": 65, "spe": 30 },
+    "stats": {"hp": 70, "atk": 100, "def": 115, "spa": 30, "spd": 65, "spe": 30},
     "moves": [
       "firepunch",
       "icepunch",
@@ -7238,7 +7238,7 @@
     "dexId": 186,
     "name": "Politoed",
     "types": ["water"],
-    "stats": { "hp": 90, "atk": 75, "def": 75, "spa": 90, "spd": 100, "spe": 70 },
+    "stats": {"hp": 90, "atk": 75, "def": 75, "spa": 90, "spd": 100, "spe": 70},
     "moves": [
       "doubleslap",
       "icepunch",
@@ -7284,7 +7284,7 @@
     "dexId": 187,
     "name": "Hoppip",
     "types": ["grass", "flying"],
-    "stats": { "hp": 35, "atk": 35, "def": 40, "spa": 35, "spd": 55, "spe": 50 },
+    "stats": {"hp": 35, "atk": 35, "def": 40, "spa": 35, "spd": 55, "spe": 50},
     "moves": [
       "payday",
       "headbutt",
@@ -7331,7 +7331,7 @@
     "dexId": 188,
     "name": "Skiploom",
     "types": ["grass", "flying"],
-    "stats": { "hp": 55, "atk": 45, "def": 50, "spa": 45, "spd": 65, "spe": 80 },
+    "stats": {"hp": 55, "atk": 45, "def": 50, "spa": 45, "spd": 65, "spe": 80},
     "moves": [
       "payday",
       "headbutt",
@@ -7379,7 +7379,7 @@
     "dexId": 189,
     "name": "Jumpluff",
     "types": ["grass", "flying"],
-    "stats": { "hp": 75, "atk": 55, "def": 70, "spa": 55, "spd": 95, "spe": 110 },
+    "stats": {"hp": 75, "atk": 55, "def": 70, "spa": 55, "spd": 95, "spe": 110},
     "moves": [
       "payday",
       "headbutt",
@@ -7427,7 +7427,7 @@
     "dexId": 190,
     "name": "Aipom",
     "types": ["normal"],
-    "stats": { "hp": 55, "atk": 70, "def": 55, "spa": 40, "spd": 55, "spe": 85 },
+    "stats": {"hp": 55, "atk": 70, "def": 55, "spa": 40, "spd": 55, "spe": 85},
     "moves": [
       "doubleslap",
       "firepunch",
@@ -7484,7 +7484,7 @@
     "dexId": 191,
     "name": "Sunkern",
     "types": ["grass"],
-    "stats": { "hp": 30, "atk": 30, "def": 30, "spa": 30, "spd": 30, "spe": 30 },
+    "stats": {"hp": 30, "atk": 30, "def": 30, "spa": 30, "spd": 30, "spe": 30},
     "moves": [
       "cut",
       "absorb",
@@ -7518,7 +7518,7 @@
     "dexId": 192,
     "name": "Sunflora",
     "types": ["grass"],
-    "stats": { "hp": 75, "atk": 75, "def": 55, "spa": 105, "spd": 85, "spe": 30 },
+    "stats": {"hp": 75, "atk": 75, "def": 55, "spa": 105, "spd": 85, "spe": 30},
     "moves": [
       "cut",
       "absorb",
@@ -7556,7 +7556,7 @@
     "dexId": 193,
     "name": "Yanma",
     "types": ["bug", "flying"],
-    "stats": { "hp": 65, "atk": 65, "def": 45, "spa": 75, "spd": 45, "spe": 95 },
+    "stats": {"hp": 65, "atk": 65, "def": 45, "spa": 75, "spd": 45, "spe": 95},
     "moves": [
       "wingattack",
       "whirlwind",
@@ -7596,7 +7596,7 @@
     "dexId": 194,
     "name": "Wooper",
     "types": ["water", "ground"],
-    "stats": { "hp": 55, "atk": 45, "def": 45, "spa": 25, "spd": 25, "spe": 15 },
+    "stats": {"hp": 55, "atk": 45, "def": 45, "spa": 25, "spd": 25, "spe": 15},
     "moves": [
       "icepunch",
       "slam",
@@ -7645,7 +7645,7 @@
     "dexId": 195,
     "name": "Quagsire",
     "types": ["water", "ground"],
-    "stats": { "hp": 95, "atk": 85, "def": 85, "spa": 65, "spd": 65, "spe": 35 },
+    "stats": {"hp": 95, "atk": 85, "def": 85, "spa": 65, "spd": 65, "spe": 35},
     "moves": [
       "icepunch",
       "slam",
@@ -7696,7 +7696,7 @@
     "dexId": 196,
     "name": "Espeon",
     "types": ["psychic"],
-    "stats": { "hp": 65, "atk": 65, "def": 60, "spa": 130, "spd": 95, "spe": 110 },
+    "stats": {"hp": 65, "atk": 65, "def": 60, "spa": 130, "spd": 95, "spe": 110},
     "moves": [
       "cut",
       "sandattack",
@@ -7742,7 +7742,7 @@
     "dexId": 197,
     "name": "Umbreon",
     "types": ["dark"],
-    "stats": { "hp": 95, "atk": 65, "def": 110, "spa": 60, "spd": 130, "spe": 65 },
+    "stats": {"hp": 95, "atk": 65, "def": 110, "spa": 60, "spd": 130, "spe": 65},
     "moves": [
       "cut",
       "sandattack",
@@ -7791,7 +7791,7 @@
     "dexId": 198,
     "name": "Murkrow",
     "types": ["dark", "flying"],
-    "stats": { "hp": 60, "atk": 85, "def": 42, "spa": 85, "spd": 42, "spe": 91 },
+    "stats": {"hp": 60, "atk": 85, "def": 42, "spa": 85, "spd": 42, "spe": 91},
     "moves": [
       "wingattack",
       "whirlwind",
@@ -7837,7 +7837,7 @@
     "dexId": 199,
     "name": "Slowking",
     "types": ["water", "psychic"],
-    "stats": { "hp": 95, "atk": 75, "def": 80, "spa": 100, "spd": 110, "spe": 30 },
+    "stats": {"hp": 95, "atk": 75, "def": 80, "spa": 100, "spd": 110, "spe": 30},
     "moves": [
       "icepunch",
       "headbutt",
@@ -7893,7 +7893,7 @@
     "dexId": 200,
     "name": "Misdreavus",
     "types": ["ghost"],
-    "stats": { "hp": 60, "atk": 60, "def": 60, "spa": 85, "spd": 85, "spe": 85 },
+    "stats": {"hp": 60, "atk": 60, "def": 60, "spa": 85, "spd": 85, "spe": 85},
     "moves": [
       "headbutt",
       "growl",
@@ -7940,14 +7940,14 @@
     "dexId": 201,
     "name": "Unown",
     "types": ["psychic"],
-    "stats": { "hp": 48, "atk": 72, "def": 48, "spa": 72, "spd": 48, "spe": 48 },
+    "stats": {"hp": 48, "atk": 72, "def": 48, "spa": 72, "spd": 48, "spe": 48},
     "moves": ["hiddenpower"]
   },
   "wobbuffet": {
     "dexId": 202,
     "name": "Wobbuffet",
     "types": ["psychic"],
-    "stats": { "hp": 190, "atk": 33, "def": 58, "spa": 33, "spd": 58, "spe": 33 },
+    "stats": {"hp": 190, "atk": 33, "def": 58, "spa": 33, "spd": 58, "spe": 33},
     "moves": ["counter", "destinybond", "safeguard", "mirrorcoat"],
     "genderRatio": 50,
     "evolvesFrom": "wynaut"
@@ -7956,7 +7956,7 @@
     "dexId": 203,
     "name": "Girafarig",
     "types": ["normal", "psychic"],
-    "stats": { "hp": 70, "atk": 80, "def": 65, "spa": 90, "spd": 65, "spe": 85 },
+    "stats": {"hp": 70, "atk": 80, "def": 65, "spa": 90, "spd": 65, "spe": 85},
     "moves": [
       "stomp",
       "headbutt",
@@ -8008,7 +8008,7 @@
     "dexId": 204,
     "name": "Pineco",
     "types": ["bug"],
-    "stats": { "hp": 50, "atk": 65, "def": 90, "spa": 35, "spd": 35, "spe": 15 },
+    "stats": {"hp": 50, "atk": 65, "def": 90, "spa": 35, "spd": 35, "spe": 15},
     "moves": [
       "headbutt",
       "tackle",
@@ -8052,7 +8052,7 @@
     "dexId": 205,
     "name": "Forretress",
     "types": ["bug", "steel"],
-    "stats": { "hp": 75, "atk": 90, "def": 140, "spa": 60, "spd": 60, "spe": 40 },
+    "stats": {"hp": 75, "atk": 90, "def": 140, "spa": 60, "spd": 60, "spe": 40},
     "moves": [
       "headbutt",
       "tackle",
@@ -8098,7 +8098,7 @@
     "dexId": 206,
     "name": "Dunsparce",
     "types": ["normal"],
-    "stats": { "hp": 100, "atk": 70, "def": 70, "spa": 65, "spd": 65, "spe": 45 },
+    "stats": {"hp": 100, "atk": 70, "def": 70, "spa": 65, "spd": 65, "spe": 45},
     "moves": [
       "headbutt",
       "takedown",
@@ -8149,7 +8149,7 @@
     "dexId": 207,
     "name": "Gligar",
     "types": ["ground", "flying"],
-    "stats": { "hp": 65, "atk": 75, "def": 105, "spa": 35, "spd": 65, "spe": 85 },
+    "stats": {"hp": 65, "atk": 75, "def": 105, "spa": 35, "spd": 65, "spe": 85},
     "moves": [
       "guillotine",
       "razorwind",
@@ -8195,7 +8195,7 @@
     "dexId": 208,
     "name": "Steelix",
     "types": ["steel", "ground"],
-    "stats": { "hp": 75, "atk": 85, "def": 200, "spa": 55, "spd": 65, "spe": 30 },
+    "stats": {"hp": 75, "atk": 85, "def": 200, "spa": 55, "spd": 65, "spe": 30},
     "moves": [
       "cut",
       "bind",
@@ -8241,7 +8241,7 @@
     "dexId": 209,
     "name": "Snubbull",
     "types": ["normal"],
-    "stats": { "hp": 60, "atk": 80, "def": 50, "spa": 40, "spd": 40, "spe": 30 },
+    "stats": {"hp": 60, "atk": 80, "def": 50, "spa": 40, "spd": 40, "spe": 30},
     "moves": [
       "firepunch",
       "icepunch",
@@ -8298,7 +8298,7 @@
     "dexId": 210,
     "name": "Granbull",
     "types": ["normal"],
-    "stats": { "hp": 90, "atk": 120, "def": 75, "spa": 60, "spd": 60, "spe": 45 },
+    "stats": {"hp": 90, "atk": 120, "def": 75, "spa": 60, "spd": 60, "spe": 45},
     "moves": [
       "firepunch",
       "icepunch",
@@ -8356,7 +8356,7 @@
     "dexId": 211,
     "name": "Qwilfish",
     "types": ["water", "poison"],
-    "stats": { "hp": 65, "atk": 95, "def": 85, "spa": 55, "spd": 55, "spe": 85 },
+    "stats": {"hp": 65, "atk": 95, "def": 85, "spa": 55, "spd": 55, "spe": 85},
     "moves": [
       "headbutt",
       "tackle",
@@ -8403,7 +8403,7 @@
     "dexId": 212,
     "name": "Scizor",
     "types": ["bug", "steel"],
-    "stats": { "hp": 70, "atk": 130, "def": 100, "spa": 55, "spd": 80, "spe": 65 },
+    "stats": {"hp": 70, "atk": 130, "def": 100, "spa": 55, "spd": 80, "spe": 65},
     "moves": [
       "swordsdance",
       "cut",
@@ -8447,7 +8447,7 @@
     "dexId": 213,
     "name": "Shuckle",
     "types": ["bug", "rock"],
-    "stats": { "hp": 20, "atk": 10, "def": 230, "spa": 10, "spd": 230, "spe": 5 },
+    "stats": {"hp": 20, "atk": 10, "def": 230, "spa": 10, "spd": 230, "spe": 5},
     "moves": [
       "headbutt",
       "wrap",
@@ -8488,7 +8488,7 @@
     "dexId": 214,
     "name": "Heracross",
     "types": ["bug", "fight"],
-    "stats": { "hp": 80, "atk": 125, "def": 75, "spa": 40, "spd": 95, "spe": 85 },
+    "stats": {"hp": 80, "atk": 125, "def": 75, "spa": 40, "spd": 95, "spe": 85},
     "moves": [
       "cut",
       "headbutt",
@@ -8530,7 +8530,7 @@
     "dexId": 215,
     "name": "Sneasel",
     "types": ["dark", "ice"],
-    "stats": { "hp": 55, "atk": 95, "def": 55, "spa": 35, "spd": 75, "spe": 115 },
+    "stats": {"hp": 55, "atk": 95, "def": 55, "spa": 35, "spd": 75, "spe": 115},
     "moves": [
       "icepunch",
       "scratch",
@@ -8590,7 +8590,7 @@
     "dexId": 216,
     "name": "Teddiursa",
     "types": ["normal"],
-    "stats": { "hp": 60, "atk": 80, "def": 50, "spa": 50, "spd": 50, "spe": 40 },
+    "stats": {"hp": 60, "atk": 80, "def": 50, "spa": 50, "spd": 50, "spe": 40},
     "moves": [
       "firepunch",
       "icepunch",
@@ -8645,7 +8645,7 @@
     "dexId": 217,
     "name": "Ursaring",
     "types": ["normal"],
-    "stats": { "hp": 90, "atk": 130, "def": 75, "spa": 75, "spd": 75, "spe": 55 },
+    "stats": {"hp": 90, "atk": 130, "def": 75, "spa": 75, "spd": 75, "spe": 55},
     "moves": [
       "firepunch",
       "icepunch",
@@ -8701,7 +8701,7 @@
     "dexId": 218,
     "name": "Slugma",
     "types": ["fire"],
-    "stats": { "hp": 40, "atk": 40, "def": 40, "spa": 70, "spd": 40, "spe": 20 },
+    "stats": {"hp": 40, "atk": 40, "def": 40, "spa": 70, "spd": 40, "spe": 20},
     "moves": [
       "bodyslam",
       "ember",
@@ -8739,7 +8739,7 @@
     "dexId": 219,
     "name": "Magcargo",
     "types": ["fire", "rock"],
-    "stats": { "hp": 60, "atk": 50, "def": 120, "spa": 90, "spd": 80, "spe": 30 },
+    "stats": {"hp": 60, "atk": 50, "def": 120, "spa": 90, "spd": 80, "spe": 30},
     "moves": [
       "bodyslam",
       "ember",
@@ -8780,7 +8780,7 @@
     "dexId": 220,
     "name": "Swinub",
     "types": ["ice", "ground"],
-    "stats": { "hp": 50, "atk": 50, "def": 40, "spa": 30, "spd": 30, "spe": 50 },
+    "stats": {"hp": 50, "atk": 50, "def": 40, "spa": 30, "spd": 30, "spe": 50},
     "moves": [
       "headbutt",
       "tackle",
@@ -8824,7 +8824,7 @@
     "dexId": 221,
     "name": "Piloswine",
     "types": ["ice", "ground"],
-    "stats": { "hp": 100, "atk": 100, "def": 80, "spa": 60, "spd": 60, "spe": 50 },
+    "stats": {"hp": 100, "atk": 100, "def": 80, "spa": 60, "spd": 60, "spe": 50},
     "moves": [
       "headbutt",
       "tackle",
@@ -8871,7 +8871,7 @@
     "dexId": 222,
     "name": "Corsola",
     "types": ["water", "rock"],
-    "stats": { "hp": 65, "atk": 55, "def": 95, "spa": 65, "spd": 95, "spe": 35 },
+    "stats": {"hp": 65, "atk": 55, "def": 95, "spa": 65, "spd": 95, "spe": 35},
     "moves": [
       "headbutt",
       "tackle",
@@ -8920,7 +8920,7 @@
     "dexId": 223,
     "name": "Remoraid",
     "types": ["water"],
-    "stats": { "hp": 35, "atk": 65, "def": 35, "spa": 65, "spd": 35, "spe": 65 },
+    "stats": {"hp": 35, "atk": 65, "def": 35, "spa": 65, "spd": 35, "spe": 65},
     "moves": [
       "supersonic",
       "flamethrower",
@@ -8963,7 +8963,7 @@
     "dexId": 224,
     "name": "Octillery",
     "types": ["water"],
-    "stats": { "hp": 75, "atk": 105, "def": 75, "spa": 105, "spd": 75, "spe": 45 },
+    "stats": {"hp": 75, "atk": 105, "def": 75, "spa": 105, "spd": 75, "spe": 45},
     "moves": [
       "supersonic",
       "flamethrower",
@@ -9007,7 +9007,7 @@
     "dexId": 225,
     "name": "Delibird",
     "types": ["ice", "flying"],
-    "stats": { "hp": 45, "atk": 55, "def": 45, "spa": 65, "spd": 45, "spe": 75 },
+    "stats": {"hp": 45, "atk": 55, "def": 45, "spa": 65, "spd": 45, "spe": 75},
     "moves": [
       "fly",
       "headbutt",
@@ -9045,7 +9045,7 @@
     "dexId": 226,
     "name": "Mantine",
     "types": ["water", "flying"],
-    "stats": { "hp": 85, "atk": 40, "def": 70, "spa": 80, "spd": 140, "spe": 70 },
+    "stats": {"hp": 85, "atk": 40, "def": 70, "spa": 80, "spd": 140, "spe": 70},
     "moves": [
       "wingattack",
       "slam",
@@ -9090,7 +9090,7 @@
     "dexId": 227,
     "name": "Skarmory",
     "types": ["steel", "flying"],
-    "stats": { "hp": 65, "atk": 80, "def": 140, "spa": 40, "spd": 70, "spe": 70 },
+    "stats": {"hp": 65, "atk": 80, "def": 140, "spa": 40, "spd": 70, "spe": 70},
     "moves": [
       "cut",
       "whirlwind",
@@ -9130,7 +9130,7 @@
     "dexId": 228,
     "name": "Houndour",
     "types": ["dark", "fire"],
-    "stats": { "hp": 45, "atk": 60, "def": 30, "spa": 80, "spd": 50, "spe": 65 },
+    "stats": {"hp": 45, "atk": 60, "def": 30, "spa": 80, "spd": 50, "spe": 65},
     "moves": [
       "headbutt",
       "leer",
@@ -9182,7 +9182,7 @@
     "dexId": 229,
     "name": "Houndoom",
     "types": ["dark", "fire"],
-    "stats": { "hp": 75, "atk": 90, "def": 50, "spa": 110, "spd": 80, "spe": 95 },
+    "stats": {"hp": 75, "atk": 90, "def": 50, "spa": 110, "spd": 80, "spe": 95},
     "moves": [
       "headbutt",
       "leer",
@@ -9236,7 +9236,7 @@
     "dexId": 230,
     "name": "Kingdra",
     "types": ["water", "dragon"],
-    "stats": { "hp": 75, "atk": 95, "def": 95, "spa": 95, "spd": 95, "spe": 85 },
+    "stats": {"hp": 75, "atk": 95, "def": 95, "spa": 95, "spd": 95, "spe": 85},
     "moves": [
       "headbutt",
       "leer",
@@ -9277,7 +9277,7 @@
     "dexId": 231,
     "name": "Phanpy",
     "types": ["ground"],
-    "stats": { "hp": 90, "atk": 60, "def": 60, "spa": 40, "spd": 40, "spe": 40 },
+    "stats": {"hp": 90, "atk": 60, "def": 60, "spa": 40, "spd": 40, "spe": 40},
     "moves": [
       "headbutt",
       "tackle",
@@ -9319,7 +9319,7 @@
     "dexId": 232,
     "name": "Donphan",
     "types": ["ground"],
-    "stats": { "hp": 90, "atk": 120, "def": 120, "spa": 60, "spd": 60, "spe": 50 },
+    "stats": {"hp": 90, "atk": 120, "def": 120, "spa": 60, "spd": 60, "spe": 50},
     "moves": [
       "headbutt",
       "tackle",
@@ -9365,7 +9365,7 @@
     "dexId": 233,
     "name": "Porygon2",
     "types": ["normal"],
-    "stats": { "hp": 85, "atk": 80, "def": 90, "spa": 105, "spd": 95, "spe": 60 },
+    "stats": {"hp": 85, "atk": 80, "def": 90, "spa": 105, "spd": 95, "spe": 60},
     "moves": [
       "tackle",
       "icebeam",
@@ -9412,7 +9412,7 @@
     "dexId": 234,
     "name": "Stantler",
     "types": ["normal"],
-    "stats": { "hp": 73, "atk": 95, "def": 62, "spa": 85, "spd": 65, "spe": 85 },
+    "stats": {"hp": 73, "atk": 95, "def": 62, "spa": 85, "spd": 65, "spe": 85},
     "moves": [
       "stomp",
       "sandattack",
@@ -9460,7 +9460,7 @@
     "dexId": 235,
     "name": "Smeargle",
     "types": ["normal"],
-    "stats": { "hp": 55, "atk": 20, "def": 35, "spa": 20, "spd": 45, "spe": 75 },
+    "stats": {"hp": 55, "atk": 20, "def": 35, "spa": 20, "spd": 45, "spe": 75},
     "moves": ["sketch"],
     "genderRatio": 50
   },
@@ -9469,7 +9469,7 @@
     "dexId": 236,
     "name": "Tyrogue",
     "types": ["fight"],
-    "stats": { "hp": 35, "atk": 35, "def": 35, "spa": 35, "spd": 35, "spe": 35 },
+    "stats": {"hp": 35, "atk": 35, "def": 35, "spa": 35, "spd": 35, "spe": 35},
     "moves": [
       "headbutt",
       "tackle",
@@ -9504,7 +9504,7 @@
     "dexId": 237,
     "name": "Hitmontop",
     "types": ["fight"],
-    "stats": { "hp": 50, "atk": 95, "def": 95, "spa": 35, "spd": 110, "spe": 70 },
+    "stats": {"hp": 50, "atk": 95, "def": 95, "spa": 35, "spd": 110, "spe": 70},
     "moves": [
       "headbutt",
       "tackle",
@@ -9549,7 +9549,7 @@
     "dexId": 238,
     "name": "Smoochum",
     "types": ["ice", "psychic"],
-    "stats": { "hp": 45, "atk": 30, "def": 15, "spa": 85, "spd": 65, "spe": 65 },
+    "stats": {"hp": 45, "atk": 30, "def": 15, "spa": 85, "spd": 65, "spe": 65},
     "moves": [
       "pound",
       "icepunch",
@@ -9596,7 +9596,7 @@
     "dexId": 239,
     "name": "Elekid",
     "types": ["electric"],
-    "stats": { "hp": 45, "atk": 63, "def": 37, "spa": 65, "spd": 55, "spe": 95 },
+    "stats": {"hp": 45, "atk": 63, "def": 37, "spa": 65, "spd": 55, "spe": 95},
     "moves": [
       "karatechop",
       "firepunch",
@@ -9643,7 +9643,7 @@
     "dexId": 240,
     "name": "Magby",
     "types": ["fire"],
-    "stats": { "hp": 45, "atk": 75, "def": 37, "spa": 70, "spd": 55, "spe": 83 },
+    "stats": {"hp": 45, "atk": 75, "def": 37, "spa": 70, "spd": 55, "spe": 83},
     "moves": [
       "karatechop",
       "megapunch",
@@ -9687,7 +9687,7 @@
     "dexId": 241,
     "name": "Miltank",
     "types": ["normal"],
-    "stats": { "hp": 95, "atk": 80, "def": 105, "spa": 40, "spd": 70, "spe": 100 },
+    "stats": {"hp": 95, "atk": 80, "def": 105, "spa": 40, "spd": 70, "spe": 100},
     "moves": [
       "firepunch",
       "icepunch",
@@ -9745,7 +9745,7 @@
     "dexId": 242,
     "name": "Blissey",
     "types": ["normal"],
-    "stats": { "hp": 255, "atk": 10, "def": 10, "spa": 75, "spd": 135, "spe": 55 },
+    "stats": {"hp": 255, "atk": 10, "def": 10, "spa": 75, "spd": 135, "spe": 55},
     "moves": [
       "pound",
       "doubleslap",
@@ -9802,7 +9802,7 @@
     "dexId": 243,
     "name": "Raikou",
     "types": ["electric"],
-    "stats": { "hp": 90, "atk": 85, "def": 75, "spa": 115, "spd": 100, "spe": 115 },
+    "stats": {"hp": 90, "atk": 85, "def": 75, "spa": 115, "spd": 100, "spe": 115},
     "moves": [
       "cut",
       "headbutt",
@@ -9848,7 +9848,7 @@
     "dexId": 244,
     "name": "Entei",
     "types": ["fire"],
-    "stats": { "hp": 115, "atk": 115, "def": 85, "spa": 90, "spd": 75, "spe": 100 },
+    "stats": {"hp": 115, "atk": 115, "def": 85, "spa": 90, "spd": 75, "spe": 100},
     "moves": [
       "cut",
       "stomp",
@@ -9892,7 +9892,7 @@
     "dexId": 245,
     "name": "Suicune",
     "types": ["water"],
-    "stats": { "hp": 100, "atk": 75, "def": 115, "spa": 90, "spd": 115, "spe": 85 },
+    "stats": {"hp": 100, "atk": 75, "def": 115, "spa": 90, "spd": 115, "spe": 85},
     "moves": [
       "cut",
       "gust",
@@ -9941,7 +9941,7 @@
     "dexId": 246,
     "name": "Larvitar",
     "types": ["rock", "ground"],
-    "stats": { "hp": 50, "atk": 64, "def": 50, "spa": 45, "spd": 50, "spe": 41 },
+    "stats": {"hp": 50, "atk": 64, "def": 50, "spa": 45, "spd": 50, "spe": 41},
     "moves": [
       "stomp",
       "headbutt",
@@ -9985,7 +9985,7 @@
     "dexId": 247,
     "name": "Pupitar",
     "types": ["rock", "ground"],
-    "stats": { "hp": 70, "atk": 84, "def": 70, "spa": 65, "spd": 70, "spe": 51 },
+    "stats": {"hp": 70, "atk": 84, "def": 70, "spa": 65, "spd": 70, "spe": 51},
     "moves": [
       "stomp",
       "headbutt",
@@ -10030,7 +10030,7 @@
     "dexId": 248,
     "name": "Tyranitar",
     "types": ["rock", "dark"],
-    "stats": { "hp": 100, "atk": 134, "def": 110, "spa": 95, "spd": 100, "spe": 61 },
+    "stats": {"hp": 100, "atk": 134, "def": 110, "spa": 95, "spd": 100, "spe": 61},
     "moves": [
       "stomp",
       "headbutt",
@@ -10089,7 +10089,7 @@
     "dexId": 249,
     "name": "Lugia",
     "types": ["psychic", "flying"],
-    "stats": { "hp": 106, "atk": 90, "def": 130, "spa": 90, "spd": 154, "spe": 110 },
+    "stats": {"hp": 106, "atk": 90, "def": 130, "spa": 90, "spd": 154, "spe": 110},
     "moves": [
       "gust",
       "whirlwind",
@@ -10148,7 +10148,7 @@
     "dexId": 250,
     "name": "Ho-oh",
     "types": ["fire", "flying"],
-    "stats": { "hp": 106, "atk": 130, "def": 90, "spa": 110, "spd": 154, "spe": 90 },
+    "stats": {"hp": 106, "atk": 130, "def": 90, "spa": 110, "spd": 154, "spe": 90},
     "moves": [
       "gust",
       "whirlwind",
@@ -10202,7 +10202,7 @@
     "dexId": 251,
     "name": "Celebi",
     "types": ["psychic", "grass"],
-    "stats": { "hp": 100, "atk": 100, "def": 100, "spa": 100, "spd": 100, "spe": 100 },
+    "stats": {"hp": 100, "atk": 100, "def": 100, "spa": 100, "spd": 100, "spe": 100},
     "moves": [
       "hyperbeam",
       "leechseed",

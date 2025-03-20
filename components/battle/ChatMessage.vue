@@ -29,10 +29,10 @@
 </template>
 
 <script setup lang="ts">
-import { TextCensor } from "obscenity";
-import type { InfoMessage } from "~/server/utils/info";
+import {TextCensor} from "obscenity";
+import type {InfoMessage} from "~/server/utils/info";
 
-defineProps<{ chat: InfoMessage; players: Record<string, ClientPlayer> }>();
+defineProps<{chat: InfoMessage; players: Record<string, ClientPlayer>}>();
 
 const mutedPlayers = useMutedPlayerIds();
 const censorEnabled = useChatCensorEnabled();

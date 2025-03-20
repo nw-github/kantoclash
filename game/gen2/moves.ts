@@ -1,5 +1,5 @@
-import type { Move, MoveId } from "../moves";
-import { stageKeys } from "../utils";
+import type {Move, MoveId} from "../moves";
+import {stageKeys} from "../utils";
 
 // FLAG: drain        | always misses against substitute in Gen 2
 // FLAG: multi_hit    | all hits are now independently damage calcd, continues after breaking sub,  final strike only kings rock
@@ -53,7 +53,7 @@ In this generation only, Mirror Move always fails when used by a transformed Pok
 // Does 10% chance mean 10.2 /* 26/256 */ like in gen 1?
 
 export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
-  bide: { acc: 100 },
+  bide: {acc: 100},
   conversion: {
     exec(battle, user) {
       const type = battle.rng.choice(
@@ -71,7 +71,7 @@ export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
         type: "conversion",
         user: user.owner.id,
         types: [type],
-        volatiles: [{ id: user.owner.id, v: { conversion: [type] } }],
+        volatiles: [{id: user.owner.id, v: {conversion: [type]}}],
       });
       return false;
     },
@@ -93,12 +93,12 @@ export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
 
       const indexInMoves = target.v.lastMoveIndex!;
 
-      target.v.disabled = { indexInMoves, turns: battle.rng.int(1, 8) };
+      target.v.disabled = {indexInMoves, turns: battle.rng.int(1, 8)};
       battle.event({
         type: "disable",
         src: target.owner.id,
         move: target.base.moves[indexInMoves],
-        volatiles: [{ id: target.owner.id, v: { disabled: true } }],
+        volatiles: [{id: target.owner.id, v: {disabled: true}}],
       });
       return false;
     },
@@ -106,8 +106,8 @@ export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
   haze: {
     exec(battle, user, target) {
       battle.info(user, "haze", [
-        { id: user.owner.id, v: { stages: null } },
-        { id: target.owner.id, v: { stages: null } },
+        {id: user.owner.id, v: {stages: null}},
+        {id: target.owner.id, v: {stages: null}},
       ]);
 
       for (const k of stageKeys) {
@@ -116,54 +116,39 @@ export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
       return false;
     },
   },
-  roar: { kind: "phaze", acc: 100, priority: -1 },
-  whirlwind: { kind: "phaze", acc: 100, priority: -1, ignore: ["fly"] },
+  roar: {kind: "phaze", acc: 100, priority: -1},
+  whirlwind: {kind: "phaze", acc: 100, priority: -1, ignore: ["fly"]},
   // --
-  lightscreen: {
-    kind: "screen",
-    screen: "light_screen",
-  },
-  reflect: {
-    kind: "screen",
-    screen: "reflect",
-  },
+  lightscreen: {kind: "screen", screen: "light_screen"},
+  reflect: {kind: "screen", screen: "reflect"},
   // --
-  amnesia: { stages: [["spd", 2]] },
+  amnesia: {stages: [["spd", 2]]},
   // --
-  acid: { effect: [10, [["def", -1]]] },
-  aurorabeam: { effect: [10, [["atk", -1]]] },
-  bite: {
-    type: "dark",
-    effect: [30, "flinch"],
-  },
-  blizzard: { acc: 70 },
-  bubble: { effect: [10, [["spe", -1]]] },
-  bubblebeam: { effect: [10, [["spe", -1]]] },
-  constrict: { effect: [10, [["spe", -1]]] },
-  dig: { power: 60 },
-  dizzypunch: { effect: [20, "confusion"] },
-  doubleedge: { power: 120 },
-  earthquake: { ignore: ["dig"] },
-  explosion: { power: 250 },
-  fireblast: { effect: [10, "brn"] },
-  gust: { type: "flying", ignore: ["fly", "bounce"] },
-  karatechop: { type: "fight" },
-  poisonsting: { effect: [30, "psn"] },
-  psychic: { effect: [10, [["spd", -1]]] },
-  razorwind: { flag: "high_crit" },
-  rockslide: { effect: [30, "flinch"] },
-  rockthrow: { acc: 90 },
-  sandattack: { type: "ground" },
-  selfdestruct: { power: 200 },
-  skullbash: {
-    effect: [100, [["def", +1]]],
-    effect_self: "charge",
-  },
-  sludge: { effect: [30, "psn"] },
-  thunder: {
-    ignore: ["fly", "bounce"],
-    effect: [30, "par"],
-  },
-  triattack: { flag: "tri_attack" },
-  wingattack: { power: 60 },
+  acid: {effect: [10, [["def", -1]]]},
+  aurorabeam: {effect: [10, [["atk", -1]]]},
+  bite: {type: "dark", effect: [30, "flinch"]},
+  blizzard: {acc: 70},
+  bubble: {effect: [10, [["spe", -1]]]},
+  bubblebeam: {effect: [10, [["spe", -1]]]},
+  constrict: {effect: [10, [["spe", -1]]]},
+  dig: {power: 60},
+  dizzypunch: {effect: [20, "confusion"]},
+  doubleedge: {power: 120},
+  earthquake: {ignore: ["dig"]},
+  explosion: {power: 250},
+  fireblast: {effect: [10, "brn"]},
+  gust: {type: "flying", ignore: ["fly", "bounce"]},
+  karatechop: {type: "fight"},
+  poisonsting: {effect: [30, "psn"]},
+  psychic: {effect: [10, [["spd", -1]]]},
+  razorwind: {flag: "high_crit"},
+  rockslide: {effect: [30, "flinch"]},
+  rockthrow: {acc: 90},
+  sandattack: {type: "ground"},
+  selfdestruct: {power: 200},
+  skullbash: {effect: [100, [["def", +1]]], effect_self: "charge"},
+  sludge: {effect: [30, "psn"]},
+  thunder: {ignore: ["fly", "bounce"], effect: [30, "par"]},
+  triattack: {flag: "tri_attack"},
+  wingattack: {power: 60},
 };

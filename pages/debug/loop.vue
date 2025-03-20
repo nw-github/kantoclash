@@ -28,19 +28,19 @@
 <script setup lang="ts">
 import loops from "@/public/music/loops.json";
 
-definePageMeta({ middleware: ["admin"] });
+definePageMeta({middleware: ["admin"]});
 
-const musicTrackItems = allMusicTracks.map(value => ({ label: musicTrackName(value), value }));
+const musicTrackItems = allMusicTracks.map(value => ({label: musicTrackName(value), value}));
 const track = ref(musicTrackItems[0].value);
-const { volume } = useBGMusic();
+const {volume} = useBGMusic();
 watch(volume, value => gain && (gain.gain.value = value));
 
 const duration = ref(0);
 const currentTime = ref(0);
 const offset = ref(5);
 
-const startTimes = ref<{ label: string; start: number; end: number }[]>([]);
-const startTime = ref<{ label: string; start: number; end: number }>();
+const startTimes = ref<{label: string; start: number; end: number}[]>([]);
+const startTime = ref<{label: string; start: number; end: number}>();
 const textAreaText = ref("");
 const audioBuffer = ref<Promise<AudioBuffer>>();
 
@@ -139,7 +139,7 @@ const addStartTime = (start: number, end: number, confidence?: number) => {
   if (confidence) {
     label += ` [${roundTo(confidence * 100, 2)}]`;
   }
-  return startTimes.value[startTimes.value.push({ start, end, label }) - 1];
+  return startTimes.value[startTimes.value.push({start, end, label}) - 1];
 };
 
 const restart = () => {
@@ -177,7 +177,7 @@ watchImmediate(track, async track => {
 
   audioBuffer.value = undefined;
 
-  type Loops = Record<string, { start: string; end: string }>;
+  type Loops = Record<string, {start: string; end: string}>;
 
   const loop = (loops as Loops)[track.slice(track.lastIndexOf("/") + 1)];
   startTimes.value.length = 0;

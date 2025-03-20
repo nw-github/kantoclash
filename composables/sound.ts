@@ -1,4 +1,4 @@
-type Sprites = Record<string, { start: number; end: number }>;
+type Sprites = Record<string, {start: number; end: number}>;
 
 let context: AudioContext | undefined;
 
@@ -27,7 +27,7 @@ export const useAudioContext = () => {
   return context;
 };
 
-export const useAudio = (sounds: Record<string, { src: string; sprites?: Sprites }>) => {
+export const useAudio = (sounds: Record<string, {src: string; sprites?: Sprites}>) => {
   const saved: Record<string, [AudioBuffer, Sprites | undefined]> = {};
   const context = useAudioContext();
 
@@ -39,15 +39,15 @@ export const useAudio = (sounds: Record<string, { src: string; sprites?: Sprites
 
   const load = async (name: string, src: string, sprites?: Sprites) => {
     if (!context) {
-      sounds[name] = { src, sprites };
+      sounds[name] = {src, sprites};
       return;
     }
 
-    const sound = await $fetch<Blob>(src, { method: "GET" }).then(s => s.arrayBuffer());
+    const sound = await $fetch<Blob>(src, {method: "GET"}).then(s => s.arrayBuffer());
     saved[name] = [await context.decodeAudioData(sound), sprites];
   };
 
-  const play = (name: string, opts: { sprite?: string; volume?: number; detune?: number }) => {
+  const play = (name: string, opts: {sprite?: string; volume?: number; detune?: number}) => {
     const audio = saved[name];
     if (!context || !audio) {
       return;
@@ -75,5 +75,5 @@ export const useAudio = (sounds: Record<string, { src: string; sprites?: Sprites
     });
   };
 
-  return { load, play };
+  return {load, play};
 };

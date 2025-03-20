@@ -1,9 +1,9 @@
-import type { ActivePokemon, Battle } from "../battle";
-import { moveFunctions, type BaseMove } from "./index";
-import { getHiddenPower, type Pokemon, type Status } from "../pokemon";
-import { isSpecial, type Stages, randChoiceWeighted, idiv, hpPercentExact } from "../utils";
-import type { Random } from "random";
-import type { CalcDamageParams } from "../gen";
+import type {ActivePokemon, Battle} from "../battle";
+import {moveFunctions, type BaseMove} from "./index";
+import {getHiddenPower, type Pokemon, type Status} from "../pokemon";
+import {isSpecial, type Stages, randChoiceWeighted, idiv, hpPercentExact} from "../utils";
+import type {Random} from "random";
+import type {CalcDamageParams} from "../gen";
 
 type Effect = Status | [Stages, number][] | "confusion" | "flinch";
 
@@ -67,7 +67,7 @@ export function use(
     user.v.charging !== this
   ) {
     if (!(this.flag === "charge_sun" && battle.weather?.kind === "sun")) {
-      battle.event({ type: "charge", src: user.owner.id, move: battle.moveIdOf(this)! });
+      battle.event({type: "charge", src: user.owner.id, move: battle.moveIdOf(this)!});
       user.v.charging = this;
       user.v.invuln = this.flag === "charge_invuln" || user.v.invuln;
       return false;
@@ -90,7 +90,7 @@ export function exec(
   target: ActivePokemon,
 ) {
   if (this.flag === "multi_turn" && !user.v.thrashing) {
-    user.v.thrashing = { move: this, turns: battle.rng.int(2, 3) };
+    user.v.thrashing = {move: this, turns: battle.rng.int(2, 3)};
   } else if (user.v.thrashing && user.v.thrashing.turns !== -1) {
     if (--user.v.thrashing.turns === 0) {
       user.v.thrashing = undefined;
@@ -102,7 +102,7 @@ export function exec(
     target.v.recharge = undefined;
   }
 
-  const { dmg, isCrit, eff } = getDamage(this, battle, user, target);
+  const {dmg, isCrit, eff} = getDamage(this, battle, user, target);
   if (dmg === 0 || !battle.checkAccuracy(this, user, target)) {
     if (dmg === 0) {
       if (eff === 0) {
@@ -136,12 +136,12 @@ export function exec(
   }
 
   if (this.flag === "rage") {
-    user.v.thrashing = { move: this, turns: -1 };
+    user.v.thrashing = {move: this, turns: -1};
   }
 
   const hadSub = target.v.substitute !== 0;
   // eslint-disable-next-line prefer-const
-  let { dealt, brokeSub, dead, event } = target.damage(
+  let {dealt, brokeSub, dead, event} = target.damage(
     dmg,
     user,
     battle,
@@ -180,7 +180,7 @@ export function exec(
       const count = this.flag === "double" ? 2 : multiHitCount(battle.rng);
       for (let hits = 1; !dead && !brokeSub && hits < count; hits++) {
         event.hitCount = 0;
-        ({ dead, brokeSub, event } = target.damage(
+        ({dead, brokeSub, event} = target.damage(
           dmg,
           user,
           battle,
@@ -261,16 +261,12 @@ function getDamage(self: DamagingMove, battle: Battle, user: ActivePokemon, targ
   // https://bulbapedia.bulbagarden.net/wiki/Damage#Generation_I
   const eff = battle.getEffectiveness(type, target.v.types);
   if (self.flag === "dream_eater" && target.base.status !== "slp") {
-    return { dmg: 0, isCrit: false, eff: 1 };
+    return {dmg: 0, isCrit: false, eff: 1};
   } else if (self.flag === "level") {
-    return { dmg: user.base.level, isCrit: false, eff: 1 };
+    return {dmg: user.base.level, isCrit: false, eff: 1};
   } else if (self.flag === "ohko") {
     const targetIsFaster = target.getStat("spe") > user.getStat("spe");
-    return {
-      dmg: targetIsFaster || eff === 0 ? 0 : 65535,
-      isCrit: false,
-      eff: eff === 0 ? 0 : 1,
-    };
+    return {dmg: targetIsFaster || eff === 0 ? 0 : 65535, isCrit: false, eff: eff === 0 ? 0 : 1};
   } else if (self.flag === "counter") {
     // https://www.youtube.com/watch?v=ftTalHMjPRY
     //  On cartrige, the move counter uses is updated whenever a player hovers over a move (even
@@ -288,15 +284,15 @@ function getDamage(self: DamagingMove, battle: Battle, user: ActivePokemon, targ
       dmg = 0;
     }
     // Counter can crit, but it won't do any more damage
-    return { dmg, isCrit: false, eff: 1 };
+    return {dmg, isCrit: false, eff: 1};
   } else if (self.flag === "super_fang") {
-    return { dmg: Math.max(Math.floor(target.base.hp / 2), 1), isCrit: false, eff: 1 };
+    return {dmg: Math.max(Math.floor(target.base.hp / 2), 1), isCrit: false, eff: 1};
   } else if (self.flag === "psywave") {
     // psywave has a desync glitch that we don't emulate
     const dmg = battle.rng.int(1, Math.max(Math.floor(user.base.level * 1.5 - 1), 1));
-    return { dmg, isCrit: false, eff: 1 };
+    return {dmg, isCrit: false, eff: 1};
   } else if (self.dmg) {
-    return { dmg: self.dmg, isCrit: false, eff: 1 };
+    return {dmg: self.dmg, isCrit: false, eff: 1};
   }
 
   let isCrit = battle.rand255(battle.gen.getCritChance(user, self.flag === "high_crit"));
@@ -307,7 +303,7 @@ function getDamage(self: DamagingMove, battle: Battle, user: ActivePokemon, targ
   } else if (self.flag === "magnitude") {
     const magnitude = battle.rng.int(4, 10);
     pow = [10, 30, 50, 70, 90, 110, 150][magnitude - 4];
-    battle.event({ type: "magnitude", magnitude });
+    battle.event({type: "magnitude", magnitude});
   }
 
   let weather: CalcDamageParams["weather"];
@@ -316,8 +312,8 @@ function getDamage(self: DamagingMove, battle: Battle, user: ActivePokemon, targ
       type === "fire" || self.flag === "charge_sun"
         ? "penalty"
         : type === "water"
-        ? "bonus"
-        : undefined;
+          ? "bonus"
+          : undefined;
   } else if (battle.weather?.kind === "sun") {
     weather = type === "fire" ? "bonus" : type === "water" ? "penalty" : undefined;
   }
@@ -339,12 +335,12 @@ function getDamage(self: DamagingMove, battle: Battle, user: ActivePokemon, targ
   if (self.flag === "false_swipe" && dmg >= target.base.hp && !target.v.substitute) {
     dmg = target.base.hp - 1;
   }
-  return { dmg, isCrit, eff };
+  return {dmg, isCrit, eff};
 }
 
 function trapTarget(self: DamagingMove, rng: Random, user: ActivePokemon, target: ActivePokemon) {
   target.v.trapped = true;
-  user.v.trapping = { move: self, turns: multiHitCount(rng) - 1 };
+  user.v.trapping = {move: self, turns: multiHitCount(rng) - 1};
 }
 
 function multiHitCount(rng: Random) {

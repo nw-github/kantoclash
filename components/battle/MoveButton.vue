@@ -1,5 +1,5 @@
 <template>
-  <UPopover mode="hover" :popper="{ placement: 'auto' }">
+  <UPopover mode="hover" :popper="{placement: 'auto'}">
     <UButton
       :disabled="!option.valid"
       class="flex justify-between content-center w-full p-1 text-black"
@@ -44,18 +44,14 @@
 </template>
 
 <script setup lang="ts">
-import type { MoveOption } from "~/game/battle";
-import type { Generation } from "~/game/gen1";
-import { getMovePower } from "~/game/moves";
-import type { Pokemon } from "~/game/pokemon";
+import type {MoveOption} from "~/game/battle";
+import type {Generation} from "~/game/gen1";
+import {getMovePower} from "~/game/moves";
+import type {Pokemon} from "~/game/pokemon";
 
-defineEmits<{ (e: "click"): void }>();
+defineEmits<{(e: "click"): void}>();
 
-const { gen, option, poke } = defineProps<{
-  option: MoveOption;
-  gen: Generation;
-  poke?: Pokemon;
-}>();
+const {gen, option, poke} = defineProps<{option: MoveOption; gen: Generation; poke?: Pokemon}>();
 const move = computed(() => gen.moveList[option.move]);
 const info = computed(() => {
   if (move.value.kind === "damage" && poke) {

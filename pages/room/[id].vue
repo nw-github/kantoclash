@@ -31,28 +31,28 @@
         title="Invalid Room"
         description="This room does not exist or has expired."
         icon="material-symbols:error-circle-rounded-outline-sharp"
-        :actions="[{ label: 'Go Home', to: '/', icon: 'heroicons:home', variant: 'solid' }]"
+        :actions="[{label: 'Go Home', to: '/', icon: 'heroicons:home', variant: 'solid'}]"
       />
     </UModal>
   </div>
 </template>
 
 <script setup lang="ts">
-import type { Battle } from "#components";
-import type { Socket } from "socket.io-client";
-import type { Options, Turn } from "~/game/battle";
-import { GENERATIONS } from "~/game/gen";
-import { Pokemon } from "~/game/pokemon";
-import type { BattleTimer, InfoRecord, JoinRoomResponse } from "~/server/gameServer";
-import type { InfoMessage } from "~/server/utils/info";
+import type {Battle} from "#components";
+import type {Socket} from "socket.io-client";
+import type {Options, Turn} from "~/game/battle";
+import {GENERATIONS} from "~/game/gen";
+import {Pokemon} from "~/game/pokemon";
+import type {BattleTimer, InfoRecord, JoinRoomResponse} from "~/server/gameServer";
+import type {InfoMessage} from "~/server/utils/info";
 
-const { $conn } = useNuxtApp();
-const { user } = useUserSession();
+const {$conn} = useNuxtApp();
+const {user} = useUserSession();
 const title = useTitle("Battle");
 const toast = useToast();
 const route = useRoute();
 const mounted = useMounted();
-const { track: currentTrack } = useBGMusic();
+const {track: currentTrack} = useBGMusic();
 const battle = ref<InstanceType<typeof Battle>>();
 const loading = ref(true);
 const players = reactive<Record<string, ClientPlayer>>({});
@@ -199,9 +199,9 @@ const onJoinRoom = (resp: JoinRoomResponse | "bad_room") => {
     currentTrack.value = randChoice(allMusicTracks);
   }
 
-  for (const { id, name, nPokemon } of resp.battlers) {
+  for (const {id, name, nPokemon} of resp.battlers) {
     if (!(id in players)) {
-      players[id] = { name, isSpectator: false, connected: false, nPokemon, nFainted: 0 };
+      players[id] = {name, isSpectator: false, connected: false, nPokemon, nFainted: 0};
       if (!battlers.value.includes(id)) {
         battlers.value.push(id);
       }

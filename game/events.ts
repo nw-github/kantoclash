@@ -1,13 +1,11 @@
-import type { ClientVolatiles } from "~/utils/shared";
-import type { Screen } from "./battle";
-import type { MoveId } from "./moves";
-import type { Status } from "./pokemon";
-import type { SpeciesId } from "./species";
-import type { Stages, Type, VolatileFlag, Weather } from "./utils";
+import type {ClientVolatiles} from "~/utils/shared";
+import type {Screen} from "./battle";
+import type {MoveId} from "./moves";
+import type {Status} from "./pokemon";
+import type {SpeciesId} from "./species";
+import type {Stages, Type, VolatileFlag, Weather} from "./utils";
 
-type NullOrOptional<T> = {
-  [P in keyof T]?: T[P] | null;
-};
+type NullOrOptional<T> = {[P in keyof T]?: T[P] | null};
 
 type AnyEvent =
   | SwitchEvent
@@ -28,9 +26,9 @@ type AnyEvent =
   | WeatherEvent
   | ScreenEvent;
 
-export type ChangedVolatiles = { id: PlayerId; v: NullOrOptional<ClientVolatiles> }[];
+export type ChangedVolatiles = {id: PlayerId; v: NullOrOptional<ClientVolatiles>}[];
 
-export type BattleEvent = AnyEvent & { volatiles?: ChangedVolatiles };
+export type BattleEvent = AnyEvent & {volatiles?: ChangedVolatiles};
 
 export type PlayerId = string;
 
@@ -105,13 +103,7 @@ export type HitSubstituteEvent = {
   eff?: number;
 };
 
-type UseMoveEvent = {
-  type: "move";
-  src: PlayerId;
-  move: MoveId;
-  disabled?: true;
-  thrashing?: true;
-};
+type UseMoveEvent = {type: "move"; src: PlayerId; move: MoveId; disabled?: true; thrashing?: true};
 
 export type VictoryEvent = {
   type: "end";
@@ -120,18 +112,9 @@ export type VictoryEvent = {
   why?: "endless" | "too_long" | "timer";
 };
 
-type StatusEvent = {
-  type: "status";
-  src: PlayerId;
-  status: Status;
-};
+type StatusEvent = {type: "status"; src: PlayerId; status: Status};
 
-type StagesEvent = {
-  type: "stages";
-  src: PlayerId;
-  stat: Stages;
-  count: number;
-};
+type StagesEvent = {type: "stages"; src: PlayerId; stat: Stages; count: number};
 
 export type FailReason =
   | "immune"
@@ -166,57 +149,20 @@ export type InfoReason =
   | "ff"
   | "ff_timer";
 
-type InfoEvent = {
-  type: "info";
-  src: PlayerId;
-  why: InfoReason;
-};
+type InfoEvent = {type: "info"; src: PlayerId; why: InfoReason};
 
-type TransformEvent = {
-  type: "transform";
-  src: PlayerId;
-  target: PlayerId;
-};
+type TransformEvent = {type: "transform"; src: PlayerId; target: PlayerId};
 
-type DisableEvent = {
-  type: "disable";
-  src: PlayerId;
-  move: MoveId;
-};
+type DisableEvent = {type: "disable"; src: PlayerId; move: MoveId};
 
-type ChargeEvent = {
-  type: "charge";
-  src: PlayerId;
-  move: MoveId;
-};
+type ChargeEvent = {type: "charge"; src: PlayerId; move: MoveId};
 
-type MimicEvent = {
-  type: "mimic";
-  src: PlayerId;
-  move: MoveId;
-};
+type MimicEvent = {type: "mimic"; src: PlayerId; move: MoveId};
 
-type ConversionEvent = {
-  type: "conversion";
-  user: PlayerId;
-  target?: PlayerId;
-  types: Type[];
-};
+type ConversionEvent = {type: "conversion"; user: PlayerId; target?: PlayerId; types: Type[]};
 
-type MagnitudeEvent = {
-  type: "magnitude";
-  magnitude: number;
-};
+type MagnitudeEvent = {type: "magnitude"; magnitude: number};
 
-type ScreenEvent = {
-  type: "screen";
-  kind: "start" | "end";
-  screen: Screen;
-  src: PlayerId;
-};
+type ScreenEvent = {type: "screen"; kind: "start" | "end"; screen: Screen; src: PlayerId};
 
-export type WeatherEvent = {
-  type: "weather";
-  kind: "start" | "end" | "continue";
-  weather: Weather;
-};
+export type WeatherEvent = {type: "weather"; kind: "start" | "end" | "continue"; weather: Weather};

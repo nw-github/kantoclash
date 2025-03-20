@@ -1,8 +1,8 @@
-import { io, type Socket } from "socket.io-client";
-import type { ClientMessage, JoinRoomResponse, ServerMessage } from "./gameServer";
-import type { BattleEvent } from "~/game/events";
-import type { Options, Turn } from "~/game/battle";
-import { randoms } from "~/server/utils/formats";
+import {io, type Socket} from "socket.io-client";
+import type {ClientMessage, JoinRoomResponse, ServerMessage} from "./gameServer";
+import type {BattleEvent} from "~/game/events";
+import type {Options, Turn} from "~/game/battle";
+import {randoms} from "~/server/utils/formats";
 import {
   type ClientVolatiles,
   type ClientPlayer,
@@ -10,12 +10,12 @@ import {
   formatInfo,
   mergeVolatiles,
 } from "~/utils/shared";
-import { Pokemon } from "~/game/pokemon";
-import { getEffectiveness } from "~/game/utils";
+import {Pokemon} from "~/game/pokemon";
+import {getEffectiveness} from "~/game/utils";
 import random from "random";
-import { convertDesc, parseTeams, type Team } from "~/utils/pokemon";
-import type { MoveId } from "~/game/moves";
-import { type Generation, GENERATIONS } from "~/game/gen";
+import {convertDesc, parseTeams, type Team} from "~/utils/pokemon";
+import type {MoveId} from "~/game/moves";
+import {type Generation, GENERATIONS} from "~/game/gen";
 
 export type BotParams = {
   team: Pokemon[];
@@ -42,12 +42,12 @@ export async function startBot(format?: FormatId, botFunction: BotFunction = ran
     return;
   }
 
-  const { cookie, myId, name } = result;
+  const {cookie, myId, name} = result;
 
   const url = import.meta.dev
     ? "http://localhost:3000"
     : process.env.SELF_URL || `https://localhost:${process.env.PORT}`;
-  const $conn: S = io(url, { extraHeaders: { cookie }, secure: !import.meta.dev });
+  const $conn: S = io(url, {extraHeaders: {cookie}, secure: !import.meta.dev});
   const games: Record<string, (turn: Turn, opts?: Options) => void> = {};
   $conn.on("connect", () => {
     activeBots.push(myId);
@@ -87,7 +87,7 @@ export async function startBot(format?: FormatId, botFunction: BotFunction = ran
       }
     });
 
-    $conn.on("challengeReceived", ({ format, from }) => {
+    $conn.on("challengeReceived", ({format, from}) => {
       $conn.emit("respondToChallenge", from.id, true, createBotTeam(format), () => {});
     });
 
@@ -98,18 +98,18 @@ export async function startBot(format?: FormatId, botFunction: BotFunction = ran
     let attempts = 3;
     while (attempts--) {
       const name = "BOT " + ++nBots;
-      await $fetch("/api/_auth/session", { method: "DELETE" }).catch(() => {});
+      await $fetch("/api/_auth/session", {method: "DELETE"}).catch(() => {});
       let resp;
       try {
         resp = await $fetch.raw("/api/register", {
           method: "POST",
-          body: { username: name, password: process.env.BOT_PASSWORD },
+          body: {username: name, password: process.env.BOT_PASSWORD},
         });
       } catch {
         try {
           resp = await $fetch.raw("/api/login", {
             method: "POST",
-            body: { username: name, password: process.env.BOT_PASSWORD },
+            body: {username: name, password: process.env.BOT_PASSWORD},
           });
         } catch {
           console.log(`[${name}] Login failed!...`);
@@ -118,9 +118,9 @@ export async function startBot(format?: FormatId, botFunction: BotFunction = ran
       }
 
       const cookie = resp.headers.getSetCookie().at(-1)!.split(";")[0];
-      const { user } = await $fetch("/api/_auth/session", { method: "GET", headers: { cookie } });
+      const {user} = await $fetch("/api/_auth/session", {method: "GET", headers: {cookie}});
       if (user) {
-        return { cookie, myId: user.id, name };
+        return {cookie, myId: user.id, name};
       }
 
       console.log(`[${name}] Login failed!...`);
@@ -142,7 +142,7 @@ export async function startBot(format?: FormatId, botFunction: BotFunction = ran
 
   function playGame(
     room: string,
-    { team: teamDesc, options, chats, turns, battlers, format }: JoinRoomResponse,
+    {team: teamDesc, options, chats, turns, battlers, format}: JoinRoomResponse,
     ai: BotFunction,
     gameOver: () => void,
   ) {
@@ -157,7 +157,7 @@ export async function startBot(format?: FormatId, botFunction: BotFunction = ran
       // TODO: unify this and Battle.vue:handleEvent
       if (e.type === "switch") {
         const player = players[e.src];
-        player.active = { ...e, v: { stages: {} }, fainted: false };
+        player.active = {...e, v: {stages: {}}, fainted: false};
         if (e.src === myId) {
           if (team?.[activePokemon]?.status === "tox") {
             team[activePokemon].status = "psn";
@@ -178,7 +178,7 @@ export async function startBot(format?: FormatId, botFunction: BotFunction = ran
       }
 
       if (e.volatiles) {
-        for (const { v, id } of e.volatiles) {
+        for (const {v, id} of e.volatiles) {
           players[id].active!.v = mergeVolatiles(v, players[id].active!.v) as ClientVolatiles;
           if (id === myId) {
             team[activePokemon].status = players[id].active!.v.status;
@@ -197,15 +197,7 @@ export async function startBot(format?: FormatId, botFunction: BotFunction = ran
         return;
       }
 
-      const [idx, opt] = ai({
-        team,
-        options,
-        players,
-        me: myId,
-        activePokemon,
-        opponent,
-        gen,
-      });
+      const [idx, opt] = ai({team, options, players, me: myId, activePokemon, opponent, gen});
       $conn.emit("choose", room, idx, opt, turnNo, err => {
         if (err) {
           if (opt === "switch") {
@@ -220,7 +212,7 @@ export async function startBot(format?: FormatId, botFunction: BotFunction = ran
 
     const processMessage = (message: InfoMessage) => {
       if (message.type === "userJoin") {
-        const { name, isSpectator, nPokemon, id } = message;
+        const {name, isSpectator, nPokemon, id} = message;
         players[id] = {
           name,
           isSpectator,
@@ -233,8 +225,8 @@ export async function startBot(format?: FormatId, botFunction: BotFunction = ran
       }
     };
 
-    for (const { id, name, nPokemon } of battlers) {
-      players[id] = { name, isSpectator: false, connected: false, nPokemon, nFainted: 0 };
+    for (const {id, name, nPokemon} of battlers) {
+      players[id] = {name, isSpectator: false, connected: false, nPokemon, nFainted: 0};
       if (id !== myId) {
         opponent = id;
       }
@@ -292,7 +284,7 @@ export function createBotTeam(format: FormatId) {
   return team;
 }
 
-export function randomBot({ team, options, activePokemon }: BotParams) {
+export function randomBot({team, options, activePokemon}: BotParams) {
   const validSwitches = team.filter((poke, i) => poke.hp !== 0 && i !== activePokemon);
   const validMoves = options.moves.filter(move => move.valid);
   const switchRandomly = random.int(0, 11) === 1;
@@ -303,24 +295,16 @@ export function randomBot({ team, options, activePokemon }: BotParams) {
   }
 }
 
-export function rankBot({
-  team,
-  options,
-  players,
-  activePokemon,
-  opponent: id,
-  me,
-  gen,
-}: BotParams) {
+export function rankBot({team, options, players, activePokemon, opponent: id, me, gen}: BotParams) {
   const rank = <T>(arr: T[], sort: (t: T, i: number) => number) => {
     const result = arr
-      .map((item, i) => ({ score: sort(item, i), i }))
+      .map((item, i) => ({score: sort(item, i), i}))
       .sort((a, b) => b.score - a.score)
       .filter((move, _, arr) => move.score >= 0 && move.score === arr[0].score);
-    return result.length ? random.choice(result)! : { score: -1, i: -1 };
+    return result.length ? random.choice(result)! : {score: -1, i: -1};
   };
 
-  const rankMove = ({ move: id, valid }: { move: MoveId; valid: boolean }) => {
+  const rankMove = ({move: id, valid}: {move: MoveId; valid: boolean}) => {
     if (!valid) {
       return -1;
     }
@@ -370,12 +354,12 @@ export function rankBot({
   const opponentActive = players[id].active!;
   // const selfPoke = team[activePokemon];
 
-  const { score, i: bestMove } = rank(options.moves, rankMove);
+  const {score, i: bestMove} = rank(options.moves, rankMove);
   if ((bestMove !== -1 && score > 5) || !options.canSwitch) {
     return [bestMove, "move"] as const;
   }
 
-  const { i: bestSwitch } = rank(team, (poke, i) => {
+  const {i: bestSwitch} = rank(team, (poke, i) => {
     if (poke.hp === 0 || i === activePokemon) {
       return -1;
     } else if (!opponentActive) {
@@ -384,7 +368,7 @@ export function rankBot({
       return 0;
     }
 
-    return Math.max(...poke.moves.map(move => rankMove({ move, valid: true })));
+    return Math.max(...poke.moves.map(move => rankMove({move, valid: true})));
   });
   if (bestSwitch === -1) {
     return [bestMove, "move"] as const;

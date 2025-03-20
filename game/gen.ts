@@ -1,5 +1,5 @@
-import { GENERATION1, type Generation } from "./gen1";
-import { GENERATION2 } from "./gen2";
+import {GENERATION1, type Generation} from "./gen1";
+import {GENERATION2} from "./gen2";
 export * from "./gen1";
 export * from "./gen2";
 

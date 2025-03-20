@@ -1,10 +1,10 @@
 <template>
   <UContainer class="h-screen py-6">
-    <UCard class="h-full flex flex-col" :ui="{ body: { base: 'grow overflow-hidden' } }">
+    <UCard class="h-full flex flex-col" :ui="{body: {base: 'grow overflow-hidden'}}">
       <template #header>
         <nav class="flex justify-between">
           <UHorizontalNavigation class="hidden md:block" :links>
-            <template #default="{ link, isActive }">
+            <template #default="{link, isActive}">
               <UTooltip
                 :text="link.vs"
                 :class="[
@@ -23,7 +23,7 @@
               </UTooltip>
             </template>
 
-            <template #icon="{ link, isActive }">
+            <template #icon="{link, isActive}">
               <UTooltip :text="link.vs">
                 <UIcon
                   :name="link.icon"
@@ -34,7 +34,7 @@
             </template>
           </UHorizontalNavigation>
 
-          <UPopover class="block md:hidden" :popper="{ placement: 'bottom-start' }">
+          <UPopover class="block md:hidden" :popper="{placement: 'bottom-start'}">
             <UButton icon="heroicons:bars-3-16-solid" variant="link" color="gray" />
             <template #panel>
               <UVerticalNavigation :links />
@@ -60,7 +60,7 @@
                 @click="$colorMode.preference = $colorMode.value === 'dark' ? 'light' : 'dark'"
               />
             </ColorScheme>
-            <UPopover mode="click" :popper="{ placement: 'bottom-start' }">
+            <UPopover mode="click" :popper="{placement: 'bottom-start'}">
               <ClientOnly>
                 <UButton
                   :icon="
@@ -89,7 +89,7 @@
                       searchable
                       :options="musicTrackItems"
                       value-attribute="value"
-                      :popper="{ strategy: 'fixed' }"
+                      :popper="{strategy: 'fixed'}"
                     />
                   </div>
                 </div>
@@ -118,38 +118,30 @@
 </style>
 
 <script setup lang="ts">
-import { provideSSRWidth } from "@vueuse/core";
-import type { RoomDescriptor } from "./server/gameServer";
-import type { WatchStopHandle } from "vue";
+import {provideSSRWidth} from "@vueuse/core";
+import type {RoomDescriptor} from "./server/gameServer";
+import type {WatchStopHandle} from "vue";
 import AlertModal from "./components/AlertModal.vue";
 
 provideSSRWidth(768);
 
-const { $conn } = useNuxtApp();
-const { user, fetch } = useUserSession();
+const {$conn} = useNuxtApp();
+const {user, fetch} = useUserSession();
 const route = useRoute();
 const modal = useModal();
-const { volume: musicVol, track: currentTrack } = useBGMusic();
+const {volume: musicVol, track: currentTrack} = useBGMusic();
 const sfxVol = useSfxVolume();
 const challenges = useChallenges();
 const ignoreChallenges = useIgnoreChallenges();
 const ignoredPlayers = ref<string[]>([]);
 const toast = useToast();
-const musicTrackItems = allMusicTracks.map(value => ({ label: musicTrackName(value), value }));
+const musicTrackItems = allMusicTracks.map(value => ({label: musicTrackName(value), value}));
 const connected = ref($conn.connected);
 const accountOpen = ref(false);
 
 const links = ref([
-  {
-    label: "Home",
-    icon: "heroicons:home",
-    to: "/",
-  },
-  {
-    label: "Team Builder",
-    icon: "famicons:hammer-outline",
-    to: "/builder",
-  },
+  {label: "Home", icon: "heroicons:home", to: "/"},
+  {label: "Team Builder", icon: "famicons:hammer-outline", to: "/builder"},
 ]);
 const nLinks = ref(2);
 
@@ -233,7 +225,7 @@ onMounted(() => {
         ? "The server will be going down for maintenance shortly. The ability to start new battles is now disabled."
         : "Maintenance mode has been cancelled. The ability to start battles has been enabled.",
       preventClose: true,
-      actions: [{ variant: "solid", color: "primary", label: "OK", click: () => modal.close() }],
+      actions: [{variant: "solid", color: "primary", label: "OK", click: () => modal.close()}],
     };
 
     if (modal.isOpen.value) {
@@ -261,7 +253,7 @@ onMounted(() => {
       description: `You were challenged to a ${formatInfo[ch.format].name}!`,
       icon: "material-symbols:info-outline-rounded",
       actions: [
-        { label: "Go Home", icon: "heroicons:home", click: () => navigateTo("/") },
+        {label: "Go Home", icon: "heroicons:home", click: () => navigateTo("/")},
         {
           label: "Block This User",
           icon: "material-symbols:block",
@@ -275,7 +267,7 @@ onMounted(() => {
             }
 
             $conn.emit("respondToChallenge", ch.from.id, false, undefined, () => {});
-            toast.add({ title: `Blocked ${ch.from.name} for the rest of this session!` });
+            toast.add({title: `Blocked ${ch.from.name} for the rest of this session!`});
           },
         },
       ],

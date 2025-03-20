@@ -9,7 +9,7 @@
       option-attribute="name"
       clear-search-on-close
     >
-      <template #option="{ option: team }">
+      <template #option="{option: team}">
         <div>
           <span class="truncate text-xs sm:text-base">{{ team.name }}</span>
 
@@ -41,11 +41,11 @@
 </template>
 
 <script setup lang="ts">
-import { breakpointsTailwind } from "@vueuse/core";
+import {breakpointsTailwind} from "@vueuse/core";
 
 const selectTeamMenu = ref<HTMLDivElement>();
 const model = defineModel<Team | undefined>();
-const { format } = defineProps<{ format: FormatId; disabled?: boolean }>();
+const {format} = defineProps<{format: FormatId; disabled?: boolean}>();
 
 const myTeams = useMyTeams();
 const validTeams = computed(() => myTeams.value.filter(team => team.format === format));
@@ -61,5 +61,5 @@ const raise = () => {
   }
 };
 
-defineExpose({ raise });
+defineExpose({raise});
 </script>

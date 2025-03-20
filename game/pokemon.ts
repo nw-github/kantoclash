@@ -1,7 +1,7 @@
-import type { Generation } from "./gen";
-import type { SpeciesId } from "./species";
-import type { MoveId } from "./moves";
-import { idiv, type StageStats, type Stats, type Type } from "./utils";
+import type {Generation} from "./gen";
+import type {SpeciesId} from "./species";
+import type {MoveId} from "./moves";
+import {idiv, type StageStats, type Stats, type Type} from "./utils";
 
 export type Status = "psn" | "par" | "slp" | "frz" | "tox" | "brn";
 export type Gender = Pokemon["gender"];
@@ -35,7 +35,7 @@ export class Pokemon {
 
   constructor(
     readonly gen: Generation,
-    { species, ivs, evs, level, moves, name, friendship }: ValidatedPokemonDesc,
+    {species, ivs, evs, level, moves, name, friendship}: ValidatedPokemonDesc,
   ) {
     this.dvs = {
       hp: getHpDv(ivs),
@@ -95,7 +95,7 @@ export class Pokemon {
 export const transform = (user: Pokemon, transformed: Pokemon) => {
   const moves = [...transformed.moves];
   const pp = transformed.moves.map(move => Math.min(user.gen.getMaxPP(user.gen.moveList[move]), 5));
-  const stats = { ...transformed.stats, hp: user.stats.hp };
+  const stats = {...transformed.stats, hp: user.stats.hp};
 
   return new Proxy(user, {
     get(target, prop: keyof Pokemon) {

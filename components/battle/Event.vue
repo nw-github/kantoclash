@@ -113,10 +113,10 @@ div {
 </style>
 
 <script setup lang="ts">
-import { hpPercentExact } from "~/game/utils";
-import type { Generation } from "~/game/gen";
+import {hpPercentExact} from "~/game/utils";
+import type {Generation} from "~/game/gen";
 
-const { perspective, players, myId, e } = defineProps<{
+const {perspective, players, myId, e} = defineProps<{
   e: UIBattleEvent;
   players: Record<string, ClientPlayer>;
   perspective: string;

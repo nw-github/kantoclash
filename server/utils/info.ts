@@ -1,8 +1,4 @@
-type InfoChatMessage = {
-  type: "chat";
-  id: string;
-  message: string;
-};
+type InfoChatMessage = {type: "chat"; id: string; message: string};
 
 type InfoUserJoin = {
   type: "userJoin";
@@ -12,14 +8,8 @@ type InfoUserJoin = {
   nPokemon: number;
 };
 
-type InfoUserLeave = {
-  type: "userLeave";
-  id: string;
-};
+type InfoUserLeave = {type: "userLeave"; id: string};
 
-type InfoTimerStart = {
-  type: "timerStart";
-  id: string;
-};
+type InfoTimerStart = {type: "timerStart"; id: string};
 
 export type InfoMessage = InfoChatMessage | InfoUserJoin | InfoUserLeave | InfoTimerStart;

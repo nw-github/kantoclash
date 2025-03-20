@@ -55,7 +55,7 @@
           <div class="flex flex-row">
             <UTooltip
               :text="timer === undefined ? 'Start Timer' : 'Timer is on'"
-              :popper="{ placement: 'top' }"
+              :popper="{placement: 'top'}"
             >
               <UButton
                 :key="updateMarker"
@@ -69,18 +69,14 @@
               />
             </UTooltip>
 
-            <UTooltip
-              text="Open Chat"
-              :popper="{ placement: 'top' }"
-              class="min-[900px]:hidden px-2"
-            >
+            <UTooltip text="Open Chat" :popper="{placement: 'top'}" class="min-[900px]:hidden px-2">
               <UChip :show="unseen !== 0" :text="unseen" size="xl">
                 <UButton
                   ref="menuButton"
                   icon="material-symbols:chat-outline"
                   variant="link"
                   color="gray"
-                  @click="(slideoverOpen = true), (unseen = 0)"
+                  @click="((slideoverOpen = true), (unseen = 0))"
                 />
               </UChip>
             </UTooltip>
@@ -240,22 +236,22 @@
 </style>
 
 <script setup lang="ts">
-import type { Options, Turn } from "~/game/battle";
-import type { Pokemon } from "~/game/pokemon";
-import type { BattleEvent } from "~/game/events";
-import type { SpeciesId } from "~/game/species";
-import type { BattleTimer, InfoRecord } from "~/server/gameServer";
-import type { ActivePokemon } from "#build/components";
-import type { AnimationType } from "./ActivePokemon.vue";
+import type {Options, Turn} from "~/game/battle";
+import type {Pokemon} from "~/game/pokemon";
+import type {BattleEvent} from "~/game/events";
+import type {SpeciesId} from "~/game/species";
+import type {BattleTimer, InfoRecord} from "~/server/gameServer";
+import type {ActivePokemon} from "#build/components";
+import type {AnimationType} from "./ActivePokemon.vue";
 import criesSpritesheet from "~/public/effects/cries.json";
-import { GENERATIONS } from "~/game/gen";
+import {GENERATIONS} from "~/game/gen";
 
 const emit = defineEmits<{
   (e: "chat", message: string): void;
   (e: "forfeit" | "timer" | "cancel"): void;
   (e: "move" | "switch", index: number): void;
 }>();
-const { team, options, players, turns, chats, battlers, timer, finished, format } = defineProps<{
+const {team, options, players, turns, chats, battlers, timer, finished, format} = defineProps<{
   team?: Pokemon[];
   options?: Options;
   players: Record<string, ClientPlayer>;
@@ -268,7 +264,7 @@ const { team, options, players, turns, chats, battlers, timer, finished, format 
 }>();
 const myId = useMyId();
 const sfxVol = useSfxVolume();
-const { fadeOut } = useBGMusic();
+const {fadeOut} = useBGMusic();
 const isMounted = useMounted();
 const gen = computed(() => GENERATIONS[formatInfo[format].generation]!);
 const selectionText = ref("");
@@ -298,10 +294,10 @@ const liveEvents = ref<UIBattleEvent[]>([]);
 const paused = ref(isBattleOver.value);
 
 const sound = useAudio({
-  cries: { src: "/effects/cries.wav", sprites: criesSpritesheet },
-  supereffective: { src: "/effects/supereffective.mp3" },
-  ineffective: { src: "/effects/ineffective.mp3" },
-  neutral: { src: "/effects/neutral.mp3" },
+  cries: {src: "/effects/cries.wav", sprites: criesSpritesheet},
+  supereffective: {src: "/effects/supereffective.mp3"},
+  ineffective: {src: "/effects/ineffective.mp3"},
+  neutral: {src: "/effects/neutral.mp3"},
 });
 
 useIntervalFn(() => {
@@ -313,7 +309,7 @@ watch(
   () => options,
   options => {
     if (options && activeInTeam.value) {
-      for (const { pp, indexInMoves } of options.moves) {
+      for (const {pp, indexInMoves} of options.moves) {
         if (indexInMoves !== undefined && pp !== undefined) {
           activeInTeam.value.pp[indexInMoves] = pp;
         }
@@ -385,7 +381,7 @@ const timeLeft = () => {
 
 const handleVolatiles = (e: BattleEvent) => {
   if (e.volatiles) {
-    for (const { v, id } of e.volatiles) {
+    for (const {v, id} of e.volatiles) {
       players[id].active!.v = mergeVolatiles(v, players[id].active!.v) as ClientVolatiles;
       if (id === myId.value) {
         activeInTeam.value!.status = players[id].active!.v.status;
@@ -400,14 +396,14 @@ const runTurn = async (live: boolean, turnIdx: number) => {
   const playCry = (speciesId: SpeciesId, pitchDown = false) => {
     if (isLive()) {
       const sprite = gen.value.speciesList[speciesId].dexId.toString().padStart(3, "0");
-      return sound.play("cries", { sprite, volume: sfxVol.value, detune: pitchDown ? -350 : 0 });
+      return sound.play("cries", {sprite, volume: sfxVol.value, detune: pitchDown ? -350 : 0});
     }
   };
 
   const playDmg = (eff: number) => {
     if (isLive()) {
       const name = eff > 1 ? "supereffective" : eff < 1 ? "ineffective" : "neutral";
-      return sound.play(name, { volume: sfxVol.value });
+      return sound.play(name, {volume: sfxVol.value});
     }
   };
 
@@ -429,7 +425,7 @@ const runTurn = async (live: boolean, turnIdx: number) => {
   };
 
   const pushEvent = (e: RawUIBattleEvent) => {
-    const ev = { ...e, time: Date.now() } as UIBattleEvent;
+    const ev = {...e, time: Date.now()} as UIBattleEvent;
     if ("src" in ev) {
       ev[ev.src] = players[ev.src].active!.name;
     }
@@ -449,7 +445,7 @@ const runTurn = async (live: boolean, turnIdx: number) => {
       if (player.active) {
         if (!player.active.fainted) {
           if (e.why !== "phaze") {
-            pushEvent({ type: "retract", src: e.src, name: player.active.name });
+            pushEvent({type: "retract", src: e.src, name: player.active.name});
           }
           await playAnimation(e.src, e.why === "phaze" ? "phaze" : "retract", player.active.name);
         }
@@ -460,7 +456,7 @@ const runTurn = async (live: boolean, turnIdx: number) => {
         player.active = {
           speciesId: e.speciesId,
           hidden: true,
-          v: { stages: {} },
+          v: {stages: {}},
           fainted: true,
           name: "",
           hpPercent: 0,
@@ -471,7 +467,7 @@ const runTurn = async (live: boolean, turnIdx: number) => {
       pushEvent(e);
 
       await playAnimation(e.src, "sendin", e.name, () => {
-        player.active = { ...e, v: { stages: {} }, fainted: false };
+        player.active = {...e, v: {stages: {}}, fainted: false};
         if (e.src === myId.value) {
           if (activeInTeam.value?.status === "tox") {
             activeInTeam.value.status = "psn";
@@ -516,7 +512,7 @@ const runTurn = async (live: boolean, turnIdx: number) => {
       }
 
       if (e.why === "substitute") {
-        pushEvent({ type: "get_sub", src: e.target });
+        pushEvent({type: "get_sub", src: e.target});
         await playAnimation(e.target, "get_sub", undefined, () => {
           players[e.target].active!.v.substitute = true;
         });
@@ -528,7 +524,7 @@ const runTurn = async (live: boolean, turnIdx: number) => {
         }
 
         playCry(players[e.target].active!.speciesId, true);
-        pushEvent({ type: "faint", src: e.target });
+        pushEvent({type: "faint", src: e.target});
         await playAnimation(e.target, "faint");
         if (isLive()) {
           await delay(400);
@@ -547,7 +543,7 @@ const runTurn = async (live: boolean, turnIdx: number) => {
         playDmg(e.eff ?? 1);
       });
       if (e.broken) {
-        pushEvent({ type: "sub_break", target: e.target });
+        pushEvent({type: "sub_break", target: e.target});
         await playAnimation(e.target, "lose_sub", undefined, () => {
           players[e.target].active!.v.substitute = false;
         });
@@ -685,5 +681,5 @@ const onConnect = async (startAt?: number) => {
   onTurnsReceived(turns.length - currentTurn);
 };
 
-defineExpose({ onTurnsReceived, onConnect });
+defineExpose({onTurnsReceived, onConnect});
 </script>

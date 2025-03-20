@@ -1,9 +1,9 @@
-import type { Status } from "~/game/pokemon";
-import type { Mods, VolatileStats } from "../game/battle";
-import type { SpeciesId } from "../game/species";
-import { volatileFlags, type Stages, type Type } from "../game/utils";
-import type { MoveId } from "~/game/moves";
-import { createDefu } from "defu";
+import type {Status} from "~/game/pokemon";
+import type {Mods, VolatileStats} from "../game/battle";
+import type {SpeciesId} from "../game/species";
+import {volatileFlags, type Stages, type Type} from "../game/utils";
+import type {MoveId} from "~/game/moves";
+import {createDefu} from "defu";
 
 export const clientVolatiles = [...volatileFlags, "substitute", "confused", "disabled"] as const;
 export type ClientVolatileFlag = (typeof clientVolatiles)[number];
@@ -74,7 +74,7 @@ export const formatInfo: Record<FormatId, FormatInfo> = {
     desc: "A standard battle allowing all Pokémon.",
     needsTeam: true,
     chooseLead: true,
-    mods: { sleepClause: true, freezeClause: true, endlessBattle: true },
+    mods: {sleepClause: true, freezeClause: true, endlessBattle: true},
     generation: 2,
   },
   g1_standard: {
@@ -83,7 +83,7 @@ export const formatInfo: Record<FormatId, FormatInfo> = {
     desc: "A standard battle allowing all Pokémon.",
     needsTeam: true,
     chooseLead: true,
-    mods: { sleepClause: true, freezeClause: true, endlessBattle: true },
+    mods: {sleepClause: true, freezeClause: true, endlessBattle: true},
     generation: 1,
   },
   g1_nfe: {
@@ -92,7 +92,7 @@ export const formatInfo: Record<FormatId, FormatInfo> = {
     desc: "A standard battle allowing only Pokémon that have not fully evoled.",
     needsTeam: true,
     chooseLead: true,
-    mods: { sleepClause: true, freezeClause: true, endlessBattle: true },
+    mods: {sleepClause: true, freezeClause: true, endlessBattle: true},
     generation: 1,
   },
   g1_randoms: {
@@ -100,7 +100,7 @@ export const formatInfo: Record<FormatId, FormatInfo> = {
     icon: "mdi:dice-3-outline",
     desc: "A standard Pokémon battle, but your team and sets are randomly generated.",
     needsTeam: false,
-    mods: { sleepClause: true, freezeClause: true, endlessBattle: true },
+    mods: {sleepClause: true, freezeClause: true, endlessBattle: true},
     generation: 1,
   },
   g1_metronome: {
@@ -116,7 +116,7 @@ export const formatInfo: Record<FormatId, FormatInfo> = {
     icon: "mdi:dice-5-outline",
     desc: "A random battle with no limits on the generated move sets.",
     needsTeam: false,
-    mods: { sleepClause: true, freezeClause: true, endlessBattle: true },
+    mods: {sleepClause: true, freezeClause: true, endlessBattle: true},
     generation: 1,
   },
   g1_randoms_nfe: {
@@ -124,7 +124,7 @@ export const formatInfo: Record<FormatId, FormatInfo> = {
     icon: "mdi:dice-1-outline",
     desc: "A random battle where only Pokémon that are not fully evolved are included.",
     needsTeam: false,
-    mods: { sleepClause: true, freezeClause: true, endlessBattle: true },
+    mods: {sleepClause: true, freezeClause: true, endlessBattle: true},
     generation: 1,
   },
 };

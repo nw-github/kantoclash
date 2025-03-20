@@ -74,9 +74,9 @@
 </template>
 
 <script setup lang="ts">
-import { getCategory, moveList, type MoveId } from "~/game/moves";
-import { getHiddenPower, Pokemon } from "~/game/pokemon";
-import { type SpeciesId, speciesList } from "~/game/species";
+import {getCategory, moveList, type MoveId} from "~/game/moves";
+import {getHiddenPower, Pokemon} from "~/game/pokemon";
+import {type SpeciesId, speciesList} from "~/game/species";
 import {
   calcDamage,
   getEffectiveness,
@@ -86,9 +86,9 @@ import {
   type Stats,
 } from "~/game/utils";
 
-definePageMeta({ middleware: ["admin"] });
+definePageMeta({middleware: ["admin"]});
 
-const dvs = reactive<Partial<StageStats>>({ atk: 15, def: 15, spa: 15, spe: 15 });
+const dvs = reactive<Partial<StageStats>>({atk: 15, def: 15, spa: 15, spe: 15});
 
 const allMoves = Object.keys(moveList) as MoveId[];
 const allSpecies = Object.keys(speciesList) as MoveId[];

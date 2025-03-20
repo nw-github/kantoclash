@@ -17,7 +17,7 @@
       @keydown.tab="open = false"
     />
 
-    <template #item="{ item: [id, move] }">
+    <template #item="{item: [id, move]}">
       <span class="text-sm" :class="[isIllegal(id) && 'text-red-500']">{{ move.name }}</span>
 
       <div class="flex justify-end gap-2">
@@ -43,13 +43,13 @@
 </template>
 
 <script setup lang="ts">
-import type { Species, SpeciesId } from "~/game/species";
-import type { Move, MoveId } from "~/game/moves";
-import type { PokemonDesc } from "~/game/pokemon";
-import type { Generation } from "~/game/gen";
+import type {Species, SpeciesId} from "~/game/species";
+import type {Move, MoveId} from "~/game/moves";
+import type {PokemonDesc} from "~/game/pokemon";
+import type {Generation} from "~/game/gen";
 
-const query = defineModel<string>({ default: "" });
-const { poke, gen } = defineProps<{ poke?: PokemonDesc; gen: Generation }>();
+const query = defineModel<string>({default: ""});
+const {poke, gen} = defineProps<{poke?: PokemonDesc; gen: Generation}>();
 const open = ref(false);
 const species = computed<Species | undefined>(() => gen.speciesList[poke?.species as SpeciesId]);
 const items = computed(() => Object.entries(gen.moveList) as [MoveId, Move][]);

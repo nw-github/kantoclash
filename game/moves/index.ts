@@ -1,8 +1,8 @@
-import type { ActivePokemon, Battle, Screen } from "../battle";
-import type { FailReason, RecoveryReason } from "../events";
-import type { Pokemon, Status } from "../pokemon";
-import type { Stages, Type, VolatileFlag, Weather } from "../utils";
-import type { DamagingMove } from "./damaging";
+import type {ActivePokemon, Battle, Screen} from "../battle";
+import type {FailReason, RecoveryReason} from "../events";
+import type {Pokemon, Status} from "../pokemon";
+import type {Stages, Type, VolatileFlag, Weather} from "../utils";
+import type {DamagingMove} from "./damaging";
 
 export * from "./damaging";
 export * from "./functions";
