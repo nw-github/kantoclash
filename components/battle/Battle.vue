@@ -76,7 +76,7 @@
                   icon="material-symbols:chat-outline"
                   variant="link"
                   color="gray"
-                  @click="((slideoverOpen = true), (unseen = 0))"
+                  @click="(slideoverOpen = true), (unseen = 0)"
                 />
               </UChip>
             </UTooltip>

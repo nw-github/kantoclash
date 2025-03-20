@@ -66,8 +66,8 @@ export function use(
     (this.flag === "charge" || this.flag === "charge_sun" || this.flag === "charge_invuln") &&
     user.v.charging !== this
   ) {
+    battle.event({type: "charge", src: user.owner.id, move: battle.moveIdOf(this)!});
     if (!(this.flag === "charge_sun" && battle.weather?.kind === "sun")) {
-      battle.event({type: "charge", src: user.owner.id, move: battle.moveIdOf(this)!});
       user.v.charging = this;
       user.v.invuln = this.flag === "charge_invuln" || user.v.invuln;
       return false;
@@ -228,7 +228,8 @@ export function exec(
     } else if (hadSub) {
       return dead;
     } else if (Array.isArray(effect)) {
-      target.modStages(user.owner, effect, battle);
+      const poke = this.effect_self ? user : target;
+      poke.modStages(user.owner, effect, battle);
     } else if (effect === "flinch") {
       target.v.flinch = true;
     } else {
@@ -312,8 +313,8 @@ function getDamage(self: DamagingMove, battle: Battle, user: ActivePokemon, targ
       type === "fire" || self.flag === "charge_sun"
         ? "penalty"
         : type === "water"
-          ? "bonus"
-          : undefined;
+        ? "bonus"
+        : undefined;
   } else if (battle.weather?.kind === "sun") {
     weather = type === "fire" ? "bonus" : type === "water" ? "penalty" : undefined;
   }

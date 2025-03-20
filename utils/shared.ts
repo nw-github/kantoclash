@@ -3,7 +3,6 @@ import type {Mods, VolatileStats} from "../game/battle";
 import type {SpeciesId} from "../game/species";
 import {volatileFlags, type Stages, type Type} from "../game/utils";
 import type {MoveId} from "~/game/moves";
-import {createDefu} from "defu";
 
 export const clientVolatiles = [...volatileFlags, "substitute", "confused", "disabled"] as const;
 export type ClientVolatileFlag = (typeof clientVolatiles)[number];
@@ -16,14 +15,6 @@ export type ClientVolatiles = Partial<Record<ClientVolatileFlag, boolean>> & {
   charging?: MoveId;
   conversion?: Type[];
 };
-
-export const mergeVolatiles = createDefu((obj, key, value) => {
-  if (value === null) {
-    // @ts-expect-error undefined is not assignable to type
-    obj[key] = undefined;
-    return true;
-  }
-});
 
 export type ClientActivePokemon = {
   hidden?: boolean;
@@ -128,4 +119,20 @@ export const formatInfo: Record<FormatId, FormatInfo> = {
     mods: {sleepClause: true, freezeClause: true, endlessBattle: true},
     generation: 1,
   },
+};
+
+export const mergeVolatiles = <T extends object>(ext: any, obj: T) => {
+  const result: any = {};
+  for (const kk of new Set([...Object.keys(obj), ...Object.keys(ext)])) {
+    const k = kk as keyof T;
+    if (ext[k] === null) {
+      continue;
+    } else if (typeof obj[k] === "object" || typeof ext[k] === "object") {
+      result[k] = mergeVolatiles(ext[k] ?? {}, obj[k] ?? {});
+    } else {
+      result[k] = ext[k] ?? obj[k];
+    }
+  }
+
+  return result as T;
 };

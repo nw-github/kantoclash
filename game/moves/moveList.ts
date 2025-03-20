@@ -1170,7 +1170,7 @@ const internalMoveList = Object.freeze({
     power: 60,
     acc: 100,
     // prettier-ignore
-    effect: [0.10, [["atk", +1], ["def", +1], ["spa", +1], ["spd", +1], ["spe", +1]]],
+    effect: [10, [["atk", +1], ["def", +1], ["spa", +1], ["spd", +1], ["spe", +1]]],
     effect_self: true,
   },
   bonerush: {
@@ -1191,7 +1191,15 @@ const internalMoveList = Object.freeze({
     acc: 80,
     flag: "high_crit",
   },
-  crunch: {kind: "damage", name: "Crunch", pp: 15, type: "dark", power: 80, acc: 100},
+  crunch: {
+    kind: "damage",
+    name: "Crunch",
+    pp: 15,
+    type: "dark",
+    power: 80,
+    acc: 100,
+    effect: [20, [["spd", -1]]],
+  },
   dragonbreath: {
     kind: "damage",
     name: "DragonBreath",
@@ -1472,7 +1480,7 @@ const internalMoveList = Object.freeze({
     type: "electric",
     power: 100,
     acc: 50,
-    effect: [99.6 /* 255/256 */, "confusion"],
+    effect: [99.6 /* 255/256 */, "par"],
   },
   // --
 } satisfies Record<string, Move>);

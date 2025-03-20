@@ -87,8 +87,10 @@ const play = async (next: string) => {
 
   source = context.createBufferSource();
   source.buffer = buffer;
-  source.loopStart = toSeconds(loop.start);
-  source.loopEnd = toSeconds(loop.end);
+  if (loop) {
+    source.loopStart = toSeconds(loop.start);
+    source.loopEnd = toSeconds(loop.end);
+  }
   source.loop = true;
   source.connect(gain);
   source.start();

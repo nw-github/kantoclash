@@ -163,6 +163,19 @@ const flagDesc: Record<NonNullable<DamagingMove["flag"]>, string> = {
     "target if it is frozen. ",
 };
 
+const formatStages = (stages: [Stages, number][]) => {
+  const statsBefore = stages.map(v => stageTable[v[0]]);
+  let stats = "";
+  if (statsBefore.length > 1) {
+    stats = statsBefore.slice(0, -1).join(", ") + ", and " + statsBefore.at(-1);
+  } else {
+    stats = statsBefore[0];
+  }
+
+  const [, count] = stages[0];
+  return `${stats} by ${Math.abs(count)} stage(s)`;
+};
+
 export const describeMove = (gen: Generation, id: MoveId) => {
   const move = gen.moveList[id];
   if (move.kind === "damage") {
@@ -171,8 +184,8 @@ export const describeMove = (gen: Generation, id: MoveId) => {
       const [chance, effect] = move.effect;
       buf += `Has a ${chance}% chance to `;
       if (Array.isArray(effect)) {
-        const [stat, count] = effect[0];
-        buf += `drop ${stageTable[stat]} by ${Math.abs(count)} stage(s). `;
+        const raise = effect[0][1] < 0 ? "drop" : "raise";
+        buf += `${raise} ${formatStages(effect)}. `;
       } else if (effect === "confusion") {
         buf += "confuse the target. ";
       } else if (effect === "flinch") {
@@ -194,10 +207,10 @@ export const describeMove = (gen: Generation, id: MoveId) => {
   } else if (move.kind === "status") {
     return statusTable[move.status] + ". ";
   } else if (move.kind === "stage") {
-    const [stat, count] = move.stages[0];
+    const [, count] = move.stages[0];
     const target = move.acc ? "target" : "user";
     const raise = count < 0 ? "Drops" : "Raises";
-    return `${raise} the ${target}'s ${stageTable[stat]} by ${Math.abs(count)} stage(s). `;
+    return `${raise} the ${target}'s ${formatStages(move.stages)}. `;
   } else if (move.kind === "confuse") {
     return "Confuses the target. ";
   } else if (move.kind === "fail") {
@@ -210,6 +223,28 @@ export const describeMove = (gen: Generation, id: MoveId) => {
     }
   } else if (move.kind === "phaze") {
     return "Forces the target to switch to a different Pokémon. Fails if the target has no other living Pokémon, or if the move is used before the target attacks. ";
+  } else if (move.kind === "weather") {
+    let base = `Sets the weather to ${move.weather} for 5 turns. `;
+    // FIXME: mention moonlight, morning sun, etc.
+    if (move.weather === "sun") {
+      base +=
+        "While sun is active, fire moves have their base power doubled and water moves have their base power halved. Additionally, Solar Beam does not require a charge turn. ";
+    } else if (move.weather === "rain") {
+      base +=
+        "While rain is active, water moves have their base power doubled and fire moves and the move Solar Beam have their base power halved. ";
+    } else if (move.weather === "sand") {
+      base +=
+        "While sandstorm is active, pokemon that are not steel, rock, or ground type lose 1/8 of their health at the end of each turn. ";
+    }
+    return base;
+  } else if (move.kind === "screen") {
+    const msg = {
+      light_screen:
+        "Halves damage dealt by special attacks for all pokemon on the user's side for 5 turns. ",
+      reflect:
+        "Halves damage dealt by physical attacks for all pokemon on the user's side for 5 turns. ",
+    };
+    return msg[move.screen];
   } else if (id in descriptions) {
     return descriptions[id];
   }
