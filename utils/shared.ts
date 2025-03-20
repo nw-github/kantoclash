@@ -1,4 +1,4 @@
-import type {Status} from "~/game/pokemon";
+import type {Gender, Status} from "~/game/pokemon";
 import type {Mods, VolatileStats} from "../game/battle";
 import type {SpeciesId} from "../game/species";
 import {volatileFlags, type Stages, type Type} from "../game/utils";
@@ -27,6 +27,7 @@ export const mergeVolatiles = createDefu((obj, key, value) => {
 
 export type ClientActivePokemon = {
   hidden?: boolean;
+  gender?: Gender;
   speciesId: SpeciesId;
   name: string;
   fainted: boolean;

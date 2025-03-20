@@ -14,7 +14,7 @@
         tabindex="0"
         @focus="open = true"
       >
-        <Sprite :species="model as SpeciesId" :scale="2" @click="open = true" />
+        <Sprite :species="(model as SpeciesId)" :scale="2" @click="open = true" />
       </div>
     </div>
 

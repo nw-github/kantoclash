@@ -15,7 +15,14 @@
       @focus="open = true"
       @update:model-value="open = true"
       @keydown.tab="open = false"
-    />
+    >
+      <template v-if="query && normalizeName(query) === 'hiddenpower'" #trailing>
+        <div class="py-1 gap-1 flex items-center justify-center">
+          <TypeBadge :type="hp[0]" class="size-[16px] sm:size-[16px]" image />
+          <span class="text-sm">{{ hp[1] }}</span>
+        </div>
+      </template>
+    </UInput>
 
     <template #item="{item: [id, move]}">
       <span class="text-sm" :class="[isIllegal(id) && 'text-red-500']">{{ move.name }}</span>
@@ -45,14 +52,25 @@
 <script setup lang="ts">
 import type {Species, SpeciesId} from "~/game/species";
 import type {Move, MoveId} from "~/game/moves";
-import type {PokemonDesc} from "~/game/pokemon";
+import {getHiddenPower, type PokemonDesc} from "~/game/pokemon";
 import type {Generation} from "~/game/gen";
+import type {Stats} from "~/game/utils";
 
 const query = defineModel<string>({default: ""});
-const {poke, gen} = defineProps<{poke?: PokemonDesc; gen: Generation}>();
+const {poke, gen} = defineProps<{poke: PokemonDesc; gen: Generation}>();
 const open = ref(false);
 const species = computed<Species | undefined>(() => gen.speciesList[poke?.species as SpeciesId]);
 const items = computed(() => Object.entries(gen.moveList) as [MoveId, Move][]);
+const statKeys = computed(() => getStatKeys(gen));
+
+const ivsToDvs = (ivs: Partial<Stats>) => {
+  const dvs: Partial<Stats> = {};
+  for (const stat in statKeys.value) {
+    dvs[stat as keyof Stats] = ivToDv(ivs[stat as keyof Stats]);
+  }
+  return dvs;
+};
+const hp = computed(() => getHiddenPower(ivsToDvs(poke.ivs ?? {})));
 
 const filter = (moves: [MoveId, Move][], query: string) => {
   const q = normalizeName(query);

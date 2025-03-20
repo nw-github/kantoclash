@@ -1,10 +1,10 @@
 import type {Generation} from "./gen";
-import type {SpeciesId} from "./species";
+import type {Species, SpeciesId} from "./species";
 import type {MoveId} from "./moves";
 import {idiv, type StageStats, type Stats, type Type} from "./utils";
 
 export type Status = "psn" | "par" | "slp" | "frz" | "tox" | "brn";
-export type Gender = Pokemon["gender"];
+export type Gender = "male" | "female" | undefined;
 
 export type PokemonDesc<Species extends string = string, Move extends string = string> = {
   evs?: Partial<Stats>;
@@ -24,7 +24,6 @@ export class Pokemon {
   readonly level: number;
   readonly name: string;
   readonly moves: MoveId[];
-  readonly gender?: "male" | "female";
   pp: number[];
   hp: number;
   status?: Status;
@@ -60,12 +59,6 @@ export class Pokemon {
       spe: calcStat("spe", this.species.stats, this.level, this.dvs, evs),
     };
     this.hp = this.stats.hp;
-    if (this.species.genderRatio) {
-      this.gender =
-        this.dvs.atk < 15 - Math.floor(this.species.genderRatio * 15) ? "female" : "male";
-    } else if (this.species.genderRatio === 0) {
-      this.gender = "female";
-    }
     this.shiny =
       this.dvs.def === 10 &&
       this.dvs.spe === 10 &&
@@ -77,6 +70,13 @@ export class Pokemon {
     // const unownLetter = idiv(
     //   gen1StatKeys.filter(v => v !== "hp").reduce((acc, v) => acc + c2(dvs[v]), 0), 10,
     // );
+  }
+
+  get gender() {
+    if (this.gen.id === 1) {
+      return undefined;
+    }
+    return getGender(this.species, this.dvs.atk);
   }
 
   get species() {
@@ -178,4 +178,12 @@ export const getHiddenPower = (dvs: Partial<StageStats>) => {
     hpTypes[(((dvs.atk ?? 15) & 0b11) << 2) | ((dvs.def ?? 15) & 0b11)],
     idiv(5 * x + y, 2) + 31,
   ] as const;
+};
+
+export const getGender = (species: Species, atk: number) => {
+  if (species.genderRatio) {
+    return atk < 15 - Math.floor(species.genderRatio * 15) ? "female" : "male";
+  } else if (species.genderRatio === 0) {
+    return "female";
+  }
 };

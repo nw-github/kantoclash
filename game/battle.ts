@@ -340,7 +340,11 @@ export class Battle {
         }
       }
 
-      this.info(user, done ? "wake" : "sleep");
+      this.info(
+        user,
+        done ? "wake" : "sleep",
+        done ? [{id: user.owner.id, v: {status: null}}] : undefined,
+      );
       return false;
     } else if (user.base.status === "frz") {
       this.info(user, "frozen");
@@ -448,10 +452,7 @@ export class ActivePokemon {
   lastDamage = 0;
   movedThisTurn = false;
 
-  constructor(
-    public base: Pokemon,
-    public readonly owner: Player,
-  ) {
+  constructor(public base: Pokemon, public readonly owner: Player) {
     this.base = base;
     this.owner = owner;
     this.v = new Volatiles(base);
@@ -469,12 +470,12 @@ export class ActivePokemon {
     battle.event({
       type: "switch",
       speciesId: next.speciesId,
-      status: next.status,
       hpPercent: hpPercent(next.hp, next.stats.hp),
       hp: next.hp,
       src: this.owner.id,
       name: next.name,
       level: next.level,
+      gender: next.gender,
       indexInTeam: this.owner.team.indexOf(next),
       why,
       volatiles: [{id: this.owner.id, v: this.v.toClientVolatiles(next, battle)}],

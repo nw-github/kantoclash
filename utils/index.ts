@@ -71,8 +71,6 @@ const stageTable: Record<Stages, string> = {
   eva: "Evasion",
 };
 
-const statKeys = {hp: "HP", atk: "Atk", def: "Def", spa: "Spc", spd: "SpD", spe: "Spe"};
-
 export const getStageTable = (gen: Generation) => {
   if (gen.id === 1) {
     return stageTable;
@@ -83,9 +81,9 @@ export const getStageTable = (gen: Generation) => {
 
 export const getStatKeys = (gen: Generation) => {
   if (gen.id === 1) {
-    return statKeys;
+    return {hp: "HP", atk: "Atk", def: "Def", spa: "Spc", spe: "Spe"};
   } else {
-    return {...statKeys, spa: "SpA"};
+    return {hp: "HP", atk: "Atk", def: "Def", spa: "SpA", spd: "SpD", spe: "Spe"};
   }
 };
 

@@ -1,7 +1,7 @@
 import type {ClientVolatiles} from "~/utils/shared";
 import type {Screen} from "./battle";
 import type {MoveId} from "./moves";
-import type {Status} from "./pokemon";
+import type {Gender, Status} from "./pokemon";
 import type {SpeciesId} from "./species";
 import type {Stages, Type, VolatileFlag, Weather} from "./utils";
 
@@ -41,7 +41,7 @@ type SwitchEvent = {
   hp?: number;
   name: string;
   indexInTeam: number;
-  status?: Status;
+  gender?: Gender;
   why?: "phaze";
 };
 

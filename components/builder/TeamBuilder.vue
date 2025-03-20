@@ -133,11 +133,24 @@
 
         <UCard
           v-if="selectedTab === 0"
-          class="flex grow"
+          class="flex grow h-full min-h-[23.5rem]"
           :ui="{body: {base: 'flex flex-col gap-2 grow justify-between', padding: 'p-2 sm:p-2'}}"
         >
           <div class="flex gap-2">
-            <div class="flex flex-col">
+            <div class="flex flex-col relative">
+              <div
+                v-if="gen.id > 1 && gen.speciesList[selectedPoke.data.species as SpeciesId]"
+                class="absolute p-2"
+              >
+                <GenderIcon
+                  class="size-6"
+                  :gender="getGender(
+                    gen.speciesList[selectedPoke.data.species as SpeciesId],
+                    ivToDv(selectedPoke.data.ivs.atk),
+                  )"
+                />
+              </div>
+
               <PokemonSelector v-model="selectedPoke.data.species" :team :gen />
               <InputWithMax
                 v-model.trim="selectedPoke.data.name"
@@ -146,11 +159,21 @@
               />
             </div>
             <div class="flex flex-col justify-between gap-1">
+              <div v-if="gen.id > 1" class="flex justify-between items-center">
+                <span class="text-sm">Friendship</span>
+                <NumericInput
+                  v-model="selectedPoke.data.friendship"
+                  class="w-12"
+                  placeholder="255"
+                  :min="0"
+                  :max="255"
+                />
+              </div>
               <div class="flex justify-between items-center">
-                <span>Level</span>
+                <span class="text-sm">Level</span>
                 <NumericInput
                   v-model="selectedPoke.data.level"
-                  class="w-20"
+                  class="w-12"
                   placeholder="100"
                   :min="1"
                   :max="100"
@@ -165,7 +188,7 @@
               />
             </div>
           </div>
-          <div class="grid items-center grid-cols-[auto,1fr,auto,auto,auto,auto] gap-1">
+          <div class="grid items-center grid-cols-[auto,1fr,auto,auto,auto,auto] gap-1 grow">
             <template v-for="(name, stat) in statKeys" :key="stat">
               <span class="px-1.5">{{ name }}</span>
               <URange v-model="selectedPoke.evProxy[stat]" :min="0" :max="255" color="green" />
@@ -254,11 +277,10 @@
 </template>
 
 <script setup lang="ts">
-import {calcStat, getHpDv} from "~/game/pokemon";
+import {calcStat, getGender, getHpDv} from "~/game/pokemon";
 import type {Species, SpeciesId} from "~/game/species";
 import type {Stats} from "~/game/utils";
 import {GENERATIONS} from "~/game/gen";
-import {evToStatexp, ivToDv, type TeamPokemonDesc} from "~/utils/pokemon";
 
 defineEmits<{(e: "delete" | "close"): void}>();
 
@@ -272,7 +294,6 @@ const currentPokeText = ref("");
 const selectedPokeIdx = ref(0);
 const gen = computed(() => GENERATIONS[formatInfo[team.format].generation]!);
 const statKeys = computed(() => getStatKeys(gen.value));
-
 const selectedPoke = computed(() => ({
   data: team.pokemon[selectedPokeIdx.value],
   species: gen.value.speciesList[team.pokemon[selectedPokeIdx.value].species as SpeciesId] as
@@ -318,7 +339,7 @@ const copyTextArea = (text: string) => {
 
 const ivsToDvs = (poke: TeamPokemonDesc) => {
   const dvs: Partial<Stats> = {};
-  for (const stat in statKeys) {
+  for (const stat in statKeys.value) {
     dvs[stat as keyof Stats] = ivToDv(poke.ivs[stat as keyof Stats]);
   }
   return dvs;

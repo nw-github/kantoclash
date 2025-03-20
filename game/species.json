@@ -937,7 +937,7 @@
   },
   "nidoran-f": {
     "dexId": 29,
-    "name": "Nidoran♀️",
+    "name": "Nidoran-F",
     "types": ["poison"],
     "stats": {"hp": 55, "atk": 47, "def": 52, "spa": 40, "spd": 0, "spe": 41},
     "moves": [
@@ -1055,7 +1055,7 @@
   },
   "nidoran-m": {
     "dexId": 32,
-    "name": "Nidoran♂️",
+    "name": "Nidoran-M",
     "types": ["poison"],
     "stats": {"hp": 46, "atk": 57, "def": 40, "spa": 40, "spd": 0, "spe": 50},
     "moves": [

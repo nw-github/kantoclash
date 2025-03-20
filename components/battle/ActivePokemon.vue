@@ -5,7 +5,11 @@
       :class="{invisible: !poke || poke.hidden}"
     >
       <div class="flex justify-between flex-col sm:flex-row">
-        <span class="font-bold">{{ poke?.name ?? "--" }}</span>
+        <span class="font-bold flex items-center">
+          {{ poke?.name ?? "--" }}
+          <!-- @vue-expect-error -->
+          <GenderIcon class="size-4" :gender="poke?.gender ?? gen1Gender[poke?.speciesId]" />
+        </span>
         <span class="text-[0.75rem] sm:text-sm">Lv. {{ poke?.level ?? 100 }}</span>
       </div>
       <div class="relative overflow-hidden rounded-md bg-[#333] flex">
@@ -100,9 +104,7 @@
 .hp-fill {
   width: v-bind("hp + '%'");
   background-color: v-bind("hpColor(hp)");
-  transition:
-    width 0.5s,
-    background-color 0.5s;
+  transition: width 0.5s, background-color 0.5s;
 }
 
 .status {
@@ -132,10 +134,11 @@
 
 <script setup lang="ts">
 import {stageMultipliers} from "~/game/utils";
-import {calcStat, type Pokemon} from "~/game/pokemon";
+import {calcStat, type Gender, type Pokemon} from "~/game/pokemon";
 import type {MoveId} from "~/game/moves";
 import {breakpointsTailwind} from "@vueuse/core";
 import type {Generation} from "~/game/gen1";
+import type {SpeciesId} from "~/game/species";
 
 const {poke, base, back, gen} = defineProps<{
   poke?: ClientActivePokemon;
@@ -151,7 +154,7 @@ const maxSpe = computed(
   () => poke && calcStat("spe", species.value!.stats, poke.level, {spe: 15}, {spe: 65535}),
 );
 const hp = computed(() => poke?.hpPercent ?? 0);
-const statShortName = computed(() => ({...getStatKeys(gen), acc: "Acc", eva: "Eva"}));
+const statShortName = computed(() => ({...getStatKeys(gen), spd: "SpD", acc: "Acc", eva: "Eva"}));
 
 const breakpoint = useBreakpoints(breakpointsTailwind);
 const lessThanSm = breakpoint.smaller("sm");
@@ -161,6 +164,11 @@ const pokeBall = ref<HTMLDivElement>();
 const ground = ref<HTMLDivElement>();
 const pbRow = ref(0);
 const pbCol = ref(3);
+
+const gen1Gender: Partial<Record<SpeciesId, Gender>> = {
+  "nidoran-f": "female",
+  "nidoran-m": "male",
+};
 
 const offsX = (number: number) => `-${number * 42 - number}px`;
 const offsY = (number: number) => `-${number * 42 - number * 2}px`;

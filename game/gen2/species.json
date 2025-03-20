@@ -1358,7 +1358,8 @@
       "raindance",
       "sunnyday",
       "beatup"
-    ]
+    ],
+    "genderRatio": 0
   },
   "nidorina": {
     "stats": {"hp": 70, "atk": 62, "def": 67, "spa": 55, "spd": 55, "spe": 56},
@@ -1410,7 +1411,8 @@
       "raindance",
       "sunnyday",
       "rocksmash"
-    ]
+    ],
+    "genderRatio": 0
   },
   "nidoqueen": {
     "stats": {"hp": 90, "atk": 92, "def": 87, "spa": 75, "spd": 85, "spe": 76},
@@ -1484,7 +1486,8 @@
       "bite",
       "growl",
       "furyswipes"
-    ]
+    ],
+    "genderRatio": 0
   },
   "nidoran-m": {
     "stats": {"hp": 46, "atk": 57, "def": 40, "spa": 40, "spd": 40, "spe": 50},
@@ -5932,7 +5935,7 @@
       "shadowball",
       "rocksmash"
     ],
-    "evolvesFrom": "happiny",
+    "genderRatio": 0,
     "evolvesTo": "blissey"
   },
   "tangela": {
@@ -6058,7 +6061,8 @@
       "sunnyday",
       "shadowball",
       "rocksmash"
-    ]
+    ],
+    "genderRatio": 0
   },
   "horsea": {
     "stats": {"hp": 30, "atk": 40, "def": 70, "spa": 70, "spd": 25, "spe": 60},
@@ -6538,6 +6542,7 @@
       "psychup",
       "shadowball"
     ],
+    "genderRatio": 0,
     "evolvesFrom": "smoochum"
   },
   "electabuzz": {

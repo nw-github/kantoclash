@@ -3,6 +3,7 @@
     v-model.number="text"
     :color="hasError ? 'red' : undefined"
     :max-length="max && String(max).length"
+    size="xs"
     @keydown="checkDigit"
     @paste="checkPaste"
   />

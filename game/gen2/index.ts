@@ -1,4 +1,4 @@
-import defu from "defu";
+import {createDefu} from "defu";
 import {GENERATION1, type CalcDamageParams, type Generation} from "../gen1";
 import {moveList as baseMoveList} from "../moves";
 import {speciesList as baseSpeciesList, type Species, type SpeciesId} from "../species";
@@ -59,10 +59,17 @@ const calcDamage = ({
   return idiv(dmg * r, 255) * (doubleDmg ? 2 : 1);
 };
 
+const merge = createDefu((obj, key, value) => {
+  if (Array.isArray(obj[key])) {
+    obj[key] = value;
+    return true;
+  }
+});
+
 const createGeneration = (): Generation => {
-  const speciesList = defu(speciesPatches, baseSpeciesList) as typeof baseSpeciesList;
-  const moveList = defu(movePatches, baseMoveList) as typeof baseMoveList;
-  const typeChart = defu(typeChartPatch, GENERATION1.typeChart) as typeof GENERATION1.typeChart;
+  const speciesList = merge(speciesPatches, baseSpeciesList) as typeof baseSpeciesList;
+  const moveList = merge(movePatches, baseMoveList) as typeof baseMoveList;
+  const typeChart = merge(typeChartPatch, GENERATION1.typeChart) as typeof GENERATION1.typeChart;
 
   return {
     id: 2,
