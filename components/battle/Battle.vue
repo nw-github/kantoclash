@@ -242,9 +242,8 @@
 <script setup lang="ts">
 import type { Options, Turn } from "~/game/battle";
 import type { Pokemon } from "~/game/pokemon";
-import type { BattleEvent, InfoReason } from "~/game/events";
+import type { BattleEvent } from "~/game/events";
 import type { SpeciesId } from "~/game/species";
-import { clamp } from "~/game/utils";
 import type { BattleTimer, InfoRecord } from "~/server/gameServer";
 import type { ActivePokemon } from "#build/components";
 import type { AnimationType } from "./ActivePokemon.vue";
@@ -384,6 +383,17 @@ const timeLeft = () => {
   return timer ? Math.floor((timer.startedAt + timer.duration - Date.now()) / 1000) : 1000;
 };
 
+const handleVolatiles = (e: BattleEvent) => {
+  if (e.volatiles) {
+    for (const { v, id } of e.volatiles) {
+      players[id].active!.v = mergeVolatiles(v, players[id].active!.v) as ClientVolatiles;
+      if (id === myId.value) {
+        activeInTeam.value!.status = players[id].active!.v.status;
+      }
+    }
+  }
+};
+
 const runTurn = async (live: boolean, turnIdx: number) => {
   const isLive = () => live && skippingToTurn.value <= turnIdx && isMounted.value;
 
@@ -450,8 +460,7 @@ const runTurn = async (live: boolean, turnIdx: number) => {
         player.active = {
           speciesId: e.speciesId,
           hidden: true,
-          stages: {},
-          flags: {},
+          v: { stages: {} },
           fainted: true,
           name: "",
           hpPercent: 0,
@@ -460,8 +469,9 @@ const runTurn = async (live: boolean, turnIdx: number) => {
       }
 
       pushEvent(e);
+
       await playAnimation(e.src, "sendin", e.name, () => {
-        player.active = { ...e, stages: {}, flags: {}, fainted: false };
+        player.active = { ...e, v: { stages: {} }, fainted: false };
         if (e.src === myId.value) {
           if (activeInTeam.value?.status === "tox") {
             activeInTeam.value.status = "psn";
@@ -469,8 +479,9 @@ const runTurn = async (live: boolean, turnIdx: number) => {
 
           activeIndex.value = e.indexInTeam;
           activeInTeam.value!.hp = e.hp!;
-          player.active.stats = undefined;
+          player.active.v.stats = undefined;
         }
+        handleVolatiles(e);
         playCry(e.speciesId);
       });
       return;
@@ -485,6 +496,7 @@ const runTurn = async (live: boolean, turnIdx: number) => {
           ev.maxHp = activeInTeam.value!.stats.hp;
         }
 
+        handleVolatiles(ev);
         if (e.why !== "explosion" || (e.eff ?? 1) !== 1) {
           pushEvent(ev);
         }
@@ -506,7 +518,7 @@ const runTurn = async (live: boolean, turnIdx: number) => {
       if (e.why === "substitute") {
         pushEvent({ type: "get_sub", src: e.target });
         await playAnimation(e.target, "get_sub", undefined, () => {
-          players[e.target].active!.flags.substitute = true;
+          players[e.target].active!.v.substitute = true;
         });
       }
 
@@ -524,94 +536,11 @@ const runTurn = async (live: boolean, turnIdx: number) => {
         players[e.target].nFainted++;
       }
 
-      if (e.why === "rest") {
-        players[e.target].active!.status = "slp";
-        if (e.target === myId.value) {
-          activeInTeam.value!.status = "slp";
-        }
-      }
       return;
-    } else if (e.type === "status") {
-      players[e.src].active!.status = e.status;
-      if (e.src === myId.value) {
-        players[e.src].active!.stats = e.stats;
-        activeInTeam.value!.status = e.status;
-      }
-    } else if (e.type === "stages") {
-      if (isBattler.value) {
-        players[myId.value].active!.stats = e.stats;
-      }
-
-      const active = players[e.src].active!;
-      for (const [stat, val] of e.stages) {
-        active.stages[stat] = clamp((active.stages[stat] ?? 0) + val, -6, 6);
-      }
     } else if (e.type === "transform") {
       const target = players[e.target].active!;
       const src = players[e.src].active!;
       src.transformed = target.transformed ?? target.speciesId;
-      src.stages = { ...target.stages };
-    } else if (e.type === "info") {
-      const enableFlag: Partial<Record<InfoReason, ClientVolatileFlag>> = {
-        became_confused: "confused",
-        confused: "confused", // thrash, petal dance
-        light_screen: "light_screen",
-        reflect: "reflect",
-        seeded: "seeded",
-        focus: "focus",
-        mist: "mist",
-      };
-
-      if (e.why === "haze") {
-        for (const player in players) {
-          const active = players[player].active;
-          if (!active) {
-            continue;
-          }
-
-          if (player === e.src && active.status === "tox") {
-            active.status = "psn";
-            if (player === myId.value) {
-              activeInTeam.value!.status = "psn";
-            }
-          } else if (player !== e.src) {
-            active.status = undefined;
-            if (player === myId.value) {
-              activeInTeam.value!.status = undefined;
-            }
-          }
-
-          active.stages = {};
-          active.flags.confused = false;
-          active.flags.reflect = false;
-          active.flags.light_screen = false;
-          active.flags.focus = false;
-          active.flags.mist = false;
-          active.flags.seeded = false;
-          active.flags.disabled = false;
-        }
-
-        if (isBattler.value) {
-          players[myId.value].active!.stats = undefined;
-        }
-      } else if (e.why === "wake" || e.why === "thaw") {
-        players[e.src].active!.status = undefined;
-        if (e.src === myId.value) {
-          activeInTeam.value!.status = undefined;
-        }
-      } else if (e.why === "disable_end") {
-        players[e.src].active!.flags.disabled = false;
-      } else if (e.why === "confused_end") {
-        players[e.src].active!.flags.confused = false;
-      } else if (enableFlag[e.why]) {
-        players[e.src].active!.flags[enableFlag[e.why]!] = true;
-      } else if (e.why === "paralyze") {
-        players[e.src].active!.charging = undefined;
-      }
-    } else if (e.type === "conversion") {
-      players[e.user].active!.conversion = e.types;
-    } else if (e.type === "end") {
-      victor.value = e.victor ?? "draw";
     } else if (e.type === "hit_sub") {
       await playAnimation(e.src, "bodyslam", undefined, () => {
         pushEvent(e);
@@ -620,17 +549,15 @@ const runTurn = async (live: boolean, turnIdx: number) => {
       if (e.broken) {
         pushEvent({ type: "sub_break", target: e.target });
         await playAnimation(e.target, "lose_sub", undefined, () => {
-          players[e.target].active!.flags.substitute = false;
+          players[e.target].active!.v.substitute = false;
         });
       }
       return;
-    } else if (e.type === "disable") {
-      players[e.src].active!.flags.disabled = true;
-    } else if (e.type === "charge") {
-      players[e.src].active!.charging = e.move;
-    } else if (e.type === "move") {
-      players[e.src].active!.charging = undefined;
+    } else if (e.type === "end") {
+      victor.value = e.victor ?? "draw";
     }
+
+    handleVolatiles(e);
     pushEvent(e);
   };
 

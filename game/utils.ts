@@ -107,6 +107,10 @@ export const stageMultipliers: Record<number, number> = {
   6: 400,
 };
 
+export const arraysEqual = <T>(a: readonly T[], b: readonly T[]) => {
+  return a.length === b.length && a.every((item, i) => b[i] === item);
+};
+
 export const randChoiceWeighted = <T>(rng: Random, arr: readonly T[], weights: number[]) => {
   let i;
   for (i = 1; i < weights.length; i++) {

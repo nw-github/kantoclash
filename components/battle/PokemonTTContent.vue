@@ -23,7 +23,7 @@
       <template v-for="(name, stat) in statKeys">
         <template v-if="stat !== 'hp'">
           <UBadge :key="stat" color="black" :class="statClass(stat)">
-            <span>{{ active?.stats?.[stat] ?? poke.stats[stat] }}</span>
+            <span>{{ active?.v.stats?.[stat] ?? poke.stats[stat] }}</span>
             {{ name }}
           </UBadge>
         </template>
@@ -49,10 +49,10 @@ const { active, poke } = defineProps<{ active?: ClientActivePokemon; poke: Pokem
 const statKeys = computed(() => getStatKeys(poke.gen));
 
 const statClass = (stat: StatStages) => {
-  if (!active?.stats || poke.stats[stat] === active.stats[stat]) {
+  if (!active?.v.stats || poke.stats[stat] === active.v.stats[stat]) {
     return "";
   }
-  return poke.stats[stat] > active.stats[stat] ? "down" : "up";
+  return poke.stats[stat] > active.v.stats[stat] ? "down" : "up";
 };
 </script>
 

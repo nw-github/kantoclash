@@ -71,6 +71,7 @@ export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
         type: "conversion",
         user: user.owner.id,
         types: [type],
+        volatiles: [{ id: user.owner.id, v: { conversion: [type] } }],
       });
       return false;
     },
@@ -97,13 +98,17 @@ export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
         type: "disable",
         src: target.owner.id,
         move: target.base.moves[indexInMoves],
+        volatiles: [{ id: target.owner.id, v: { disabled: true } }],
       });
       return false;
     },
   },
   haze: {
     exec(battle, user, target) {
-      battle.info(user, "haze");
+      battle.info(user, "haze", [
+        { id: user.owner.id, v: { stages: null } },
+        { id: target.owner.id, v: { stages: null } },
+      ]);
 
       for (const k of stageKeys) {
         user.v.stages[k] = target.v.stages[k] = 0;
@@ -112,7 +117,6 @@ export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
     },
   },
   roar: { kind: "phaze", acc: 100, priority: -1 },
-
   whirlwind: { kind: "phaze", acc: 100, priority: -1, ignore: ["fly"] },
   // --
   lightscreen: {

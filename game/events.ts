@@ -1,10 +1,15 @@
-import type { Screen, VolatileStats } from "./battle";
+import type { ClientVolatiles } from "~/utils/shared";
+import type { Screen } from "./battle";
 import type { MoveId } from "./moves";
 import type { Status } from "./pokemon";
 import type { SpeciesId } from "./species";
 import type { Stages, Type, VolatileFlag, Weather } from "./utils";
 
-export type BattleEvent =
+type NullOrOptional<T> = {
+  [P in keyof T]?: T[P] | null;
+};
+
+type AnyEvent =
   | SwitchEvent
   | DamageEvent
   | RecoverEvent
@@ -22,6 +27,10 @@ export type BattleEvent =
   | MagnitudeEvent
   | WeatherEvent
   | ScreenEvent;
+
+export type ChangedVolatiles = { id: PlayerId; v: NullOrOptional<ClientVolatiles> }[];
+
+export type BattleEvent = AnyEvent & { volatiles?: ChangedVolatiles };
 
 export type PlayerId = string;
 
@@ -115,14 +124,13 @@ type StatusEvent = {
   type: "status";
   src: PlayerId;
   status: Status;
-  stats: VolatileStats;
 };
 
 type StagesEvent = {
   type: "stages";
   src: PlayerId;
-  stages: [Stages, number][];
-  stats: VolatileStats;
+  stat: Stages;
+  count: number;
 };
 
 export type FailReason =

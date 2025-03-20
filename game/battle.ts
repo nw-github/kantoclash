@@ -8,10 +8,12 @@ import type {
   RecoveryReason,
   InfoReason,
   VictoryEvent,
+  ChangedVolatiles,
 } from "./events";
 import { type MoveId, type Move, moveFunctions } from "./moves";
 import { Pokemon, type Status, type ValidatedPokemonDesc } from "./pokemon";
 import {
+  arraysEqual,
   clamp,
   floatTo255,
   getEffectiveness,
@@ -186,13 +188,13 @@ export class Battle {
     this.finished = true;
   }
 
-  event<T extends BattleEvent>(event: T) {
+  event<T extends BattleEvent = BattleEvent>(event: BattleEvent) {
     this.events.push(event);
-    return event;
+    return event as T;
   }
 
-  info(src: ActivePokemon, why: InfoReason) {
-    return this.event({ type: "info", src: src.owner.id, why });
+  info(src: ActivePokemon, why: InfoReason, volatiles?: ChangedVolatiles) {
+    return this.event({ type: "info", src: src.owner.id, why, volatiles });
   }
 
   opponentOf(player: Player): Player {
@@ -385,11 +387,15 @@ export class Battle {
 
     if (user.v.disabled && --user.v.disabled.turns === 0) {
       user.v.disabled = undefined;
-      this.info(user, "disable_end");
+      this.info(user, "disable_end", [{ id: user.owner.id, v: { disabled: false } }]);
     }
 
     if (user.v.confusion) {
-      this.info(user, --user.v.confusion === 0 ? "confused_end" : "confused");
+      if (--user.v.confusion === 0) {
+        this.info(user, "confused_end", [{ id: user.owner.id, v: { confused: false } }]);
+      } else {
+        this.info(user, "confused");
+      }
     }
 
     const confuse = user.v.confusion && this.rng.bool();
@@ -438,15 +444,21 @@ export class Battle {
         result[i] = { ...e, hpBefore: undefined, hpAfter: undefined };
       } else if (e.type === "switch" && e.src !== player?.id) {
         result[i] = { ...e, hp: undefined, indexInTeam: -1 };
-      } else if ((e.type === "stages" || e.type === "status") && e.src !== player?.id) {
-        // FIXME: this might not be accurate if two status moves were used in the same turn.
+      }
+
+      if (e.volatiles) {
         result[i] = {
           ...e,
-          stats: player ? { ...player.active.v.stats } : { atk: 0, def: 0, spa: 0, spd: 0, spe: 0 },
+          volatiles: e.volatiles.map(foo => {
+            const result = structuredClone(foo);
+            if (foo.id !== player?.id) {
+              result.v.stats = undefined;
+            }
+            return result;
+          }),
         };
       }
     }
-
     return result;
   }
 }
@@ -468,6 +480,10 @@ export class ActivePokemon {
       this.base.status = "psn";
     }
 
+    this.v = new Volatiles(next);
+    this.base = next;
+    this.applyStatusDebuff();
+
     battle.event({
       type: "switch",
       speciesId: next.speciesId,
@@ -479,11 +495,8 @@ export class ActivePokemon {
       level: next.level,
       indexInTeam: this.owner.team.indexOf(next),
       why,
+      volatiles: [{ id: this.owner.id, v: this.v.toClientVolatiles(next, battle) }],
     });
-
-    this.base = next;
-    this.v = new Volatiles(next);
-    this.applyStatusDebuff();
   }
 
   getStat(stat: keyof VolatileStats, isCrit?: boolean, def?: boolean, screen?: boolean) {
@@ -578,6 +591,7 @@ export class ActivePokemon {
       hpAfter: this.base.hp,
       dead: false,
       why,
+      volatiles: [{ id: this.owner.id, v: { status: this.base.status || null } }],
     });
   }
 
@@ -619,7 +633,7 @@ export class ActivePokemon {
       type: "status",
       src: this.owner.id,
       status,
-      stats: { ...this.v.stats },
+      volatiles: [{ id: this.owner.id, v: { stats: { ...this.v.stats }, status } }],
     });
 
     return true;
@@ -638,17 +652,18 @@ export class ActivePokemon {
 
       // https://bulbapedia.bulbagarden.net/wiki/List_of_battle_glitches_(Generation_I)#Stat_modification_errors
       opponent.applyStatusDebuff();
-    }
 
-    if (mods.length) {
       battle.event({
         type: "stages",
         src: this.owner.id,
-        stages: mods,
-        stats: { ...this.v.stats },
+        stat,
+        count,
+        volatiles: [
+          { id: this.owner.id, v: { stats: { ...this.v.stats }, stages: { ...this.v.stages } } },
+          { id: opponent.owner.id, v: { stats: { ...opponent.v.stats } } },
+        ],
       });
     }
-
     return mods.length !== 0;
   }
 
@@ -659,7 +674,7 @@ export class ActivePokemon {
 
     this.v.confusion = battle.rng.int(2, 5);
     if (!thrashing) {
-      battle.info(this, "became_confused");
+      battle.info(this, "became_confused", [{ id: this.owner.id, v: { confused: true } }]);
     }
     return true;
   }
@@ -873,5 +888,16 @@ class Volatiles {
       this.bide?.move ||
       this.trapping?.move
     );
+  }
+
+  toClientVolatiles(base: Pokemon, battle: Battle): ChangedVolatiles[number]["v"] {
+    return {
+      status: base.status || null,
+      stages: { ...this.stages },
+      stats: { ...this.stats },
+      charging: this.charging ? battle.moveIdOf(this.charging) : undefined,
+      conversion: !arraysEqual(this.types, base.species.types) ? [...this.types] : undefined,
+      disabled: !!this.disabled,
+    };
   }
 }

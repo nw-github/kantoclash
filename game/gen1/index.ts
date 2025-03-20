@@ -146,8 +146,8 @@ function getDamageVariables(
 ) {
   const [atks, defs] = special ? (["spa", "spa"] as const) : (["atk", "def"] as const);
 
-  const ls = special && !!target.owner.screens.light_screen;
-  const reflect = !special && !!target.owner.screens.reflect;
+  const ls = special && !!target.v.flags.light_screen;
+  const reflect = !special && !!target.v.flags.reflect;
 
   let atk = user.getStat(atks, isCrit);
   let def = target.getStat(defs, isCrit, true, ls || reflect);

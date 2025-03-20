@@ -3,9 +3,27 @@ import type { Mods, VolatileStats } from "../game/battle";
 import type { SpeciesId } from "../game/species";
 import { volatileFlags, type Stages, type Type } from "../game/utils";
 import type { MoveId } from "~/game/moves";
+import { createDefu } from "defu";
 
 export const clientVolatiles = [...volatileFlags, "substitute", "confused", "disabled"] as const;
 export type ClientVolatileFlag = (typeof clientVolatiles)[number];
+
+export type ClientVolatiles = Partial<Record<ClientVolatileFlag, boolean>> & {
+  stages: Partial<Record<Stages, number>>;
+  // Status isnt really a volatile, but it can get hazed away in Gen 1
+  status?: Status;
+  stats?: VolatileStats;
+  charging?: MoveId;
+  conversion?: Type[];
+};
+
+export const mergeVolatiles = createDefu((obj, key, value) => {
+  if (value === null) {
+    // @ts-expect-error undefined is not assignable to type
+    obj[key] = undefined;
+    return true;
+  }
+});
 
 export type ClientActivePokemon = {
   hidden?: boolean;
@@ -14,13 +32,8 @@ export type ClientActivePokemon = {
   fainted: boolean;
   hpPercent: number;
   level: number;
-  stages: Partial<Record<Stages, number>>;
-  status?: Status;
-  stats?: VolatileStats;
   transformed?: SpeciesId;
-  conversion?: Type[];
-  flags: Partial<Record<ClientVolatileFlag, boolean>>;
-  charging?: MoveId;
+  v: ClientVolatiles;
 };
 
 export type ClientPlayer = {

@@ -17,26 +17,30 @@
           <UBadge v-if="poke.transformed" color="black">Transformed</UBadge>
 
           <TypeBadge
-            v-if="poke.charging"
-            :type="gen.moveList[poke.charging].type"
-            :label="gen.moveList[poke.charging].name"
+            v-if="poke.v.charging"
+            :type="gen.moveList[poke.v.charging].type"
+            :label="gen.moveList[poke.v.charging].name"
           />
 
-          <template v-if="!species!.types.every((ty, i) => ty === poke!.conversion?.[i])">
-            <TypeBadge v-for="type in poke.conversion" :key="type" :type="type" />
+          <template v-if="!species!.types.every((ty, i) => ty === poke.v.conversion?.[i])">
+            <TypeBadge v-for="type in poke.v.conversion" :key="type" :type="type" />
           </template>
 
-          <UBadge v-if="poke.status" :style="{ backgroundColor: statusColor[poke.status] }">
-            {{ poke.status.toUpperCase() }}
+          <UBadge v-if="poke.v.status" :style="{ backgroundColor: statusColor[poke.v.status] }">
+            {{ poke.v.status.toUpperCase() }}
           </UBadge>
 
-          <template v-for="(value, flag) in poke.flags">
-            <UBadge v-if="value && flag !== 'substitute'" :key="flag" :color="flagInfo[flag].color">
+          <template v-for="flag in clientVolatiles">
+            <UBadge
+              v-if="poke.v[flag] && flag !== 'substitute'"
+              :key="flag"
+              :color="flagInfo[flag].color"
+            >
               {{ flagInfo[flag].name }}
             </UBadge>
           </template>
 
-          <template v-for="(val, stage) in poke.stages">
+          <template v-for="(val, stage) in poke.v.stages">
             <UBadge v-if="val" :key="stage" :class="val > 0 ? 'up' : 'down'">
               {{ roundTo(stageMultipliers[val] / 100, 2) }}x {{ statShortName[stage] }}
             </UBadge>
@@ -51,7 +55,7 @@
           <div ref="sprite" class="sprite z-20" :class="{ back, front: !back, invisible: !poke }">
             <Sprite
               :species="poke?.transformed ?? poke?.speciesId"
-              :substitute="poke?.flags.substitute"
+              :substitute="poke?.v.substitute"
               :scale="lessThanSm ? 1 : 2"
               :back
             />
@@ -100,7 +104,7 @@
 }
 
 .status {
-  background-color: v-bind("poke?.status ? statusColor[poke.status] : 'transparent'");
+  background-color: v-bind("poke?.v.status ? statusColor[poke.v.status] : 'transparent'");
 }
 
 .down {
@@ -251,7 +255,7 @@ const playAnimation = (anim: AnimationType, name?: string, cb?: () => void) => {
         complete: () => resolve(),
       });
     } else if (anim === "retract") {
-      if (!poke?.flags.substitute) {
+      if (!poke?.v.substitute) {
         reset(true);
       }
       useAnime.set(pokeBall.value, { translateX: 0, translateY: 0, opacity: 1 });

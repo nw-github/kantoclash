@@ -49,6 +49,7 @@ const internalMoveList = Object.freeze({
         user: user.owner.id,
         target: target.owner.id,
         types: [...user.v.types],
+        volatiles: [{ id: user.owner.id, v: { conversion: [...user.v.types] } }],
       });
 
       return false;
@@ -78,6 +79,7 @@ const internalMoveList = Object.freeze({
         type: "disable",
         src: target.owner.id,
         move: target.base.moves[indexInMoves],
+        volatiles: [{ id: target.owner.id, v: { disabled: true } }],
       });
       target.handleRage(battle);
       return false;
@@ -88,8 +90,6 @@ const internalMoveList = Object.freeze({
     pp: 30,
     type: "ice",
     exec(battle, user, target) {
-      battle.info(user, "haze");
-
       for (const k of stageKeys) {
         user.v.stages[k] = target.v.stages[k] = 0;
       }
@@ -109,12 +109,17 @@ const internalMoveList = Object.freeze({
       }
 
       if (target.base.status === "frz" || target.base.status === "slp") {
-        battle.info(target, target.base.status === "frz" ? "thaw" : "wake");
+        // battle.info(target, target.base.status === "frz" ? "thaw" : "wake");
         target.base.sleepTurns = 0;
         target.v.hazed = true;
       }
 
       target.base.status = undefined;
+
+      battle.info(user, "haze", [
+        { id: user.owner.id, v: user.v.toClientVolatiles(user.base, battle) },
+        { id: target.owner.id, v: target.v.toClientVolatiles(target.base, battle) },
+      ]);
       return false;
     },
   },
@@ -135,7 +140,7 @@ const internalMoveList = Object.freeze({
       }
 
       target.v.flags.seeded = true;
-      battle.info(target, "seeded");
+      battle.info(target, "seeded", [{ id: target.owner.id, v: { seeded: true } }]);
       return false;
     },
   },
@@ -217,7 +222,12 @@ const internalMoveList = Object.freeze({
       }
 
       user.v.types = [...target.v.types];
-      battle.event({ type: "transform", src: user.owner.id, target: target.owner.id });
+      battle.event({
+        type: "transform",
+        src: user.owner.id,
+        target: target.owner.id,
+        volatiles: [{ id: user.owner.id, v: user.v.toClientVolatiles(user.base, battle) }],
+      });
       return false;
     },
   },

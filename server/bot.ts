@@ -3,9 +3,15 @@ import type { ClientMessage, JoinRoomResponse, ServerMessage } from "./gameServe
 import type { BattleEvent } from "~/game/events";
 import type { Options, Turn } from "~/game/battle";
 import { randoms } from "~/server/utils/formats";
-import { formatInfo, type ClientPlayer, type FormatId } from "~/utils/shared";
+import {
+  type ClientVolatiles,
+  type ClientPlayer,
+  type FormatId,
+  formatInfo,
+  mergeVolatiles,
+} from "~/utils/shared";
 import { Pokemon } from "~/game/pokemon";
-import { clamp, getEffectiveness } from "~/game/utils";
+import { getEffectiveness } from "~/game/utils";
 import random from "random";
 import { convertDesc, parseTeams, type Team } from "~/utils/pokemon";
 import type { MoveId } from "~/game/moves";
@@ -151,14 +157,14 @@ export async function startBot(format?: FormatId, botFunction: BotFunction = ran
       // TODO: unify this and Battle.vue:handleEvent
       if (e.type === "switch") {
         const player = players[e.src];
-        player.active = { ...e, stages: {}, flags: {}, fainted: false };
+        player.active = { ...e, v: { stages: {} }, fainted: false };
         if (e.src === myId) {
           if (team?.[activePokemon]?.status === "tox") {
             team[activePokemon].status = "psn";
           }
 
           activePokemon = e.indexInTeam;
-          player.active.stats = undefined;
+          player.active.v.stats = undefined;
         }
       } else if (e.type === "damage" || e.type === "recover") {
         players[e.target].active!.hpPercent = e.hpPercentAfter;
@@ -169,56 +175,15 @@ export async function startBot(format?: FormatId, botFunction: BotFunction = ran
         if (e.dead) {
           players[e.target].nFainted++;
         }
+      }
 
-        if (e.why === "rest") {
-          players[e.target].active!.status = "slp";
-        }
-
-        // if (e.why === "substitute") {
-        // }
-      } else if (e.type === "status") {
-        players[e.src].active!.status = e.status;
-        if (e.src === myId) {
-          players[e.src].active!.stats = e.stats;
-          team[activePokemon].status = e.status;
-        }
-      } else if (e.type === "stages") {
-        players[myId].active!.stats = e.stats;
-        const active = players[e.src].active!;
-        for (const [stat, val] of e.stages) {
-          active.stages[stat] = clamp((active.stages[stat] ?? 0) + val, -6, 6);
-        }
-      } else if (e.type === "transform") {
-        const target = players[e.target].active!;
-        const src = players[e.src].active!;
-        src.transformed = target.transformed ?? target.speciesId;
-        src.stages = { ...target.stages };
-      } else if (e.type === "info") {
-        if (e.why === "haze") {
-          for (const player in players) {
-            const active = players[player].active;
-            if (!active) {
-              continue;
-            }
-
-            if (player === e.src && active.status === "tox") {
-              active.status = "psn";
-            } else if (player !== e.src) {
-              active.status = undefined;
-            }
-
-            active.stages = {};
+      if (e.volatiles) {
+        for (const { v, id } of e.volatiles) {
+          players[id].active!.v = mergeVolatiles(v, players[id].active!.v) as ClientVolatiles;
+          if (id === myId) {
+            team[activePokemon].status = players[id].active!.v.status;
           }
-
-          players[myId].active!.stats = undefined;
-        } else if (e.why === "wake" || e.why === "thaw") {
-          players[e.src].active!.status = undefined;
         }
-      } else if (e.type === "conversion") {
-        players[e.user].active!.conversion = e.types;
-      } else if (e.type === "hit_sub") {
-        // if (e.broken) {
-        // }
       }
     };
 
@@ -388,11 +353,11 @@ export function rankBot({
       }
     } else {
       // prettier-ignore
-      const useless = (move.kind === "confuse" && opponentActive.flags.confused) ||
-        (move.kind === "status" && opponentActive.status) ||
-        (id === "leechseed" && (opponentActive.flags.seeded || opponentPoke.species.types.includes("grass"))) ||
-        (id === "substitute" && self.flags.substitute) ||
-        (move.kind === "stage" && move.acc && opponentActive.flags.substitute);
+      const useless = (move.kind === "confuse" && opponentActive.v.confused) ||
+        (move.kind === "status" && opponentActive.v.status) ||
+        (id === "leechseed" && (opponentActive.v.seeded || opponentPoke.species.types.includes("grass"))) ||
+        (id === "substitute" && self.v.substitute) ||
+        (move.kind === "stage" && move.acc && opponentActive.v.substitute);
       if (useless) {
         return 0;
       }

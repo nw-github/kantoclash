@@ -84,7 +84,7 @@ export const moveFunctions: Record<MoveKind, MoveFunctions> = {
         battle.info(user, "fail_generic");
       } else {
         user.v.flags[this.flag] = true;
-        battle.info(user, this.flag);
+        battle.info(user, this.flag, [{ id: user.owner.id, v: { [this.flag]: true } }]);
       }
       return false;
     },
@@ -117,9 +117,9 @@ export const moveFunctions: Record<MoveKind, MoveFunctions> = {
       }
 
       if (this.why === "rest") {
-        user.recover(diff, user, battle, this.why);
         user.base.status = "slp";
         user.base.sleepTurns = 2;
+        user.recover(diff, user, battle, this.why);
         // In gen 1, Rest doesn't reset the toxic counter or par/brn stat drops
       } else {
         user.recover(Math.floor(user.base.stats.hp / 2), user, battle, this.why);

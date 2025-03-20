@@ -65,9 +65,7 @@
   <div v-else-if="e.type === 'sub_break'">{{ pn(e.target) }}'s substitute broke!</div>
   <div v-else-if="e.type === 'status'">{{ pn(e.src) }} {{ statusTable[e.status] }}!</div>
   <div v-else-if="e.type === 'stages'">
-    <p v-for="[stage, amount] of e.stages" :key="stage">
-      {{ pn(e.src) }}'s {{ getStageTable(gen)[stage] }} {{ amount > 0 ? "rose" : "fell" }}{{ Math.abs(amount) > 1 ? " sharply" : "" }}!
-    </p>
+    {{ pn(e.src) }}'s {{ getStageTable(gen)[e.stat] }} {{ e.count > 0 ? "rose" : "fell" }}{{ Math.abs(e.count) > 1 ? " sharply" : "" }}!
   </div>
   <div v-else-if="e.type === 'info'" :class="{ confused: e.why === 'confused', move: e.why === 'sleep' || e.why === 'disable_end' || e.why === 'wake' }">
     <p v-if="e.why === 'ff' || e.why === 'ff_timer'">
