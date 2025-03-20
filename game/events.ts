@@ -70,7 +70,6 @@ export type DamageEvent = {
   hpBefore?: number;
   hpAfter?: number;
   isCrit: boolean;
-  dead: boolean;
   why: DamageReason;
   /**
    * undefined: this is the one and only hit of a normal attack
@@ -89,7 +88,6 @@ export type RecoverEvent = {
   hpPercentAfter: number;
   hpBefore?: number;
   hpAfter?: number;
-  dead: false;
   why: RecoveryReason;
 };
 
@@ -147,7 +145,8 @@ export type InfoReason =
   | "bide"
   | "trapped"
   | "ff"
-  | "ff_timer";
+  | "ff_timer"
+  | "faint";
 
 type InfoEvent = {type: "info"; src: PlayerId; why: InfoReason};
 

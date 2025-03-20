@@ -484,7 +484,6 @@ const runTurn = async (live: boolean, turnIdx: number) => {
     } else if (e.type === "damage" || e.type === "recover") {
       const update = () => {
         players[e.target].active!.hpPercent = e.hpPercentAfter;
-        players[e.target].active!.fainted = e.dead;
 
         const ev = e as UIDamageEvent | UIRecoverEvent;
         if (e.target === myId.value) {
@@ -518,20 +517,17 @@ const runTurn = async (live: boolean, turnIdx: number) => {
         });
       }
 
-      if (e.dead) {
-        if (isLive()) {
-          await delay(250);
-        }
-
-        playCry(players[e.target].active!.speciesId, true);
-        pushEvent({type: "faint", src: e.target});
-        await playAnimation(e.target, "faint");
-        if (isLive()) {
-          await delay(400);
-        }
-        players[e.target].nFainted++;
+      return;
+    } else if (e.type === "info" && e.why === "faint") {
+      playCry(players[e.src].active!.speciesId, true);
+      pushEvent(e);
+      await playAnimation(e.src, "faint");
+      if (isLive()) {
+        await delay(400);
       }
 
+      players[e.src].active!.fainted = true;
+      players[e.src].nFainted++;
       return;
     } else if (e.type === "transform") {
       const target = players[e.target].active!;

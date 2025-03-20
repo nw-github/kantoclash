@@ -1,7 +1,7 @@
 import type {Generation} from "./gen";
 import type {Species, SpeciesId} from "./species";
 import type {MoveId} from "./moves";
-import {idiv, type StageStats, type Stats, type Type} from "./utils";
+import type {StageStats, Stats} from "./utils";
 
 export type Status = "psn" | "par" | "slp" | "frz" | "tox" | "brn";
 export type Gender = "male" | "female" | undefined;
@@ -148,36 +148,6 @@ export const getHpDv = (dvs?: Partial<StageStats>) => {
     (((dvs?.spa ?? 15) & 1) << 1) |
     ((dvs?.spe ?? 15) & 1)
   );
-};
-
-export const getHiddenPower = (dvs: Partial<StageStats>) => {
-  const hpTypes: Type[] = [
-    "fight",
-    "flying",
-    "poison",
-    "ground",
-    "rock",
-    "bug",
-    "ghost",
-    "steel",
-    "fire",
-    "water",
-    "grass",
-    "electric",
-    "psychic",
-    "ice",
-    "dragon",
-    "dark",
-  ];
-
-  const msb = (dv?: number) => +(((dv ?? 15) & (1 << 3)) !== 0);
-
-  const x = msb(dvs.spa) | (msb(dvs.spe) << 1) | (msb(dvs.def) << 2) | (msb(dvs.atk) << 3);
-  const y = (dvs.spa ?? 15) & 0b11;
-  return [
-    hpTypes[(((dvs.atk ?? 15) & 0b11) << 2) | ((dvs.def ?? 15) & 0b11)],
-    idiv(5 * x + y, 2) + 31,
-  ] as const;
 };
 
 export const getGender = (species: Species, atk: number) => {

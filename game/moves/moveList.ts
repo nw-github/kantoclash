@@ -1,6 +1,7 @@
-import {moveFunctions, type Move} from "./index";
-import {transform} from "../pokemon";
-import {stageKeys, volatileFlags} from "../utils";
+import {moveFunctions, type DamagingMove, type Move} from "./index";
+import {type Pokemon, transform} from "../pokemon";
+import {hpPercentExact, idiv, stageKeys, volatileFlags, type Type} from "../utils";
+import type {ActivePokemon, Battle} from "../battle";
 
 export type MoveId = keyof typeof internalMoveList;
 
@@ -469,7 +470,25 @@ const internalMoveList = Object.freeze({
     acc: 100,
     power: 1,
     priority: -1,
-    flag: "counter",
+    getDamage(_, user, target) {
+      // https://www.youtube.com/watch?v=ftTalHMjPRY
+      //  On cartrige, the move counter uses is updated whenever a player hovers over a move (even
+      //  if he doesn't select it). In a link battle, this information is not shared between both
+      //  players. This means, that a player can influence the ability of counter to succeed by
+      //  hovering over a move on their side, cancelling the 'FIGHT' menu, and switching out. Since
+      //  we don't have a FIGHT menu, and this can cause a desync anyway, just use the last
+      //  attempted move.
+
+      const mv = target.lastChosenMove;
+      let dmg = user.lastDamage * 2;
+      if (mv && ((mv.type !== "normal" && mv.type !== "fight") || !mv.power || mv === this)) {
+        dmg = 0;
+      } else if (target.owner.choice?.move === this) {
+        dmg = 0;
+      }
+      // Counter can crit, but it won't do any more damage
+      return dmg;
+    },
   },
   crabhammer: {
     kind: "damage",
@@ -525,7 +544,7 @@ const internalMoveList = Object.freeze({
     type: "dragon",
     acc: 100,
     power: 1,
-    dmg: 40,
+    getDamage: () => 40,
   },
   dreameater: {
     kind: "damage",
@@ -592,6 +611,7 @@ const internalMoveList = Object.freeze({
     acc: 30,
     power: 1,
     flag: "ohko",
+    getDamage: getOHKODamage,
   },
   flamethrower: {
     kind: "damage",
@@ -637,6 +657,7 @@ const internalMoveList = Object.freeze({
     acc: 30,
     power: 1,
     flag: "ohko",
+    getDamage: getOHKODamage,
   },
   gust: {kind: "damage", name: "Gust", pp: 35, type: "normal", power: 40, acc: 100},
   headbutt: {
@@ -666,6 +687,7 @@ const internalMoveList = Object.freeze({
     acc: 30,
     power: 1,
     flag: "ohko",
+    getDamage: getOHKODamage,
   },
   hydropump: {kind: "damage", name: "Hydro Pump", pp: 5, type: "water", power: 120, acc: 80},
   hyperbeam: {
@@ -767,7 +789,7 @@ const internalMoveList = Object.freeze({
     type: "ghost",
     acc: 100,
     power: 1,
-    flag: "level",
+    getDamage: (_, user) => user.base.level,
   },
   payday: {
     kind: "damage",
@@ -832,7 +854,10 @@ const internalMoveList = Object.freeze({
     type: "psychic",
     power: 1,
     acc: 80,
-    flag: "psywave",
+    getDamage(battle, user) {
+      // psywave has a desync glitch that we don't emulate
+      return battle.rng.int(1, Math.max(Math.floor(user.base.level * 1.5 - 1), 1));
+    },
   },
   quickattack: {
     kind: "damage",
@@ -890,7 +915,7 @@ const internalMoveList = Object.freeze({
     type: "fight",
     acc: 100,
     power: 1,
-    flag: "level",
+    getDamage: (_, user) => user.base.level,
   },
   skullbash: {
     kind: "damage",
@@ -954,7 +979,7 @@ const internalMoveList = Object.freeze({
     type: "normal",
     acc: 90,
     power: 1,
-    dmg: 20,
+    getDamage: () => 20,
   },
   spikecannon: {
     kind: "damage",
@@ -1000,7 +1025,7 @@ const internalMoveList = Object.freeze({
     type: "normal",
     acc: 90,
     power: 1,
-    flag: "super_fang",
+    getDamage: (_battle, _, target) => Math.max(Math.floor(target.base.hp / 2), 1),
   },
   surf: {kind: "damage", name: "Surf", pp: 15, type: "water", power: 95, acc: 100},
   swift: {kind: "damage", name: "Swift", pp: 20, type: "normal", power: 60},
@@ -1237,7 +1262,16 @@ const internalMoveList = Object.freeze({
     flag: "false_swipe",
   },
   feintattack: {kind: "damage", name: "Faint Attack", pp: 20, type: "dark", power: 60},
-  flail: {kind: "damage", name: "Flail", pp: 15, type: "normal", power: 0, acc: 100, flag: "flail"},
+  flail: {
+    kind: "damage",
+    name: "Flail",
+    pp: 15,
+    type: "normal",
+    power: 0,
+    acc: 100,
+    getPower: getFlailPower,
+    flag: "flail",
+  },
   flamewheel: {
     kind: "damage",
     name: "Flame Wheel",
@@ -1254,7 +1288,7 @@ const internalMoveList = Object.freeze({
     type: "normal",
     power: 0,
     acc: 100,
-    flag: "frustration",
+    getPower: user => idiv(255 - user.friendship, 2.5),
   },
   gigadrain: {
     kind: "damage",
@@ -1272,7 +1306,23 @@ const internalMoveList = Object.freeze({
     type: "normal",
     power: 0,
     acc: 100,
-    flag: "hidden_power",
+    getType(user) {
+      // prettier-ignore
+      const hpTypes: Type[] = [
+        "fight", "flying", "poison", "ground", "rock", "bug", "ghost", "steel", "fire", "water",
+        "grass", "electric", "psychic", "ice", "dragon", "dark",
+      ];
+      const dvs = user.dvs;
+      return hpTypes[(((dvs.atk ?? 15) & 0b11) << 2) | ((dvs.def ?? 15) & 0b11)];
+    },
+    getPower(user) {
+      const msb = (dv?: number) => +(((dv ?? 15) & (1 << 3)) !== 0);
+
+      const dvs = user.dvs;
+      const x = msb(dvs.spa) | (msb(dvs.spe) << 1) | (msb(dvs.def) << 2) | (msb(dvs.atk) << 3);
+      const y = (dvs.spa ?? 15) & 0b11;
+      return idiv(5 * x + y, 2) + 31;
+    },
   },
   icywind: {
     kind: "damage",
@@ -1376,7 +1426,7 @@ const internalMoveList = Object.freeze({
     type: "normal",
     power: 0,
     acc: 100,
-    flag: "return",
+    getPower: user => idiv(user.friendship, 2.5),
   },
   reversal: {
     kind: "damage",
@@ -1385,6 +1435,7 @@ const internalMoveList = Object.freeze({
     type: "fight",
     power: 0,
     acc: 100,
+    getPower: getFlailPower,
     flag: "flail",
   },
   rocksmash: {
@@ -1511,3 +1562,30 @@ export const validMetronome: MoveId[] = [
   "thunderpunch", "thundershock", "thunderbolt", "triattack", "twineedle", "vinewhip", "vicegrip",
   "watergun", "waterfall", "wingattack", "wrap", "roar", "splash", "teleport", "whirlwind"
 ];
+
+function getFlailPower(this: DamagingMove, user: Pokemon) {
+  const percent = hpPercentExact(user.hp, user.stats.hp);
+  if (percent >= 68.8) {
+    return 20;
+  } else if (percent >= 35.4) {
+    return 40;
+  } else if (percent >= 20.8) {
+    return 80;
+  } else if (percent >= 10.4) {
+    return 100;
+  } else if (percent >= 4.2) {
+    return 150;
+  } else {
+    return 200;
+  }
+}
+
+function getOHKODamage(
+  this: DamagingMove,
+  _: Battle,
+  user: ActivePokemon,
+  target: ActivePokemon,
+  eff: number,
+) {
+  return target.getStat("spe") > user.getStat("spe") || !eff ? false : 65535;
+}

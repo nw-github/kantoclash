@@ -3,6 +3,7 @@ import {speciesList, type SpeciesId} from "~/game/species";
 import {statKeys, type Stats} from "~/game/utils";
 import {battleFormats} from "./shared";
 import type {PokemonDesc} from "~/game/pokemon";
+import type {Generation} from "~/game/gen";
 
 type WithRequired<T, K extends keyof T> = T & {[P in K]-?: T[P]};
 
@@ -173,3 +174,11 @@ export const dvToIv = (v?: number) => (v ?? 15) * 2;
 // FIXME: showdown parity
 export const evToStatexp = (v?: number) => (v ?? 255) * 257;
 export const statexpToEv = (v?: number) => Math.floor((v ?? 65535) / 257);
+
+export const ivsToDvs = (gen: Generation, ivs: Partial<Stats>) => {
+  const dvs: Partial<Stats> = {};
+  for (const stat in getStatKeys(gen)) {
+    dvs[stat as keyof Stats] = ivToDv(ivs[stat as keyof Stats]);
+  }
+  return dvs;
+};

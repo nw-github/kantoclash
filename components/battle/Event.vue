@@ -35,7 +35,6 @@
     </template>
   </div>
   <div v-else-if="e.type === 'get_sub'">{{ pn(e.src) }} put in a substitute!</div>
-  <div v-else-if="e.type === 'faint'">{{ pn(e.src) }} fainted!</div>
   <div v-else-if="e.type === 'recover'">
     <p v-if="e.why === 'drain'">{{ pn(e.src) }} has its energy drained!</p>
     <p v-else-if="e.why === 'recover'">{{ pn(e.src) }} regained health!</p>

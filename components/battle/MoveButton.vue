@@ -46,7 +46,6 @@
 <script setup lang="ts">
 import type {MoveOption} from "~/game/battle";
 import type {Generation} from "~/game/gen1";
-import {getMovePower} from "~/game/moves";
 import type {Pokemon} from "~/game/pokemon";
 
 defineEmits<{(e: "click"): void}>();
@@ -54,9 +53,14 @@ defineEmits<{(e: "click"): void}>();
 const {gen, option, poke} = defineProps<{option: MoveOption; gen: Generation; poke?: Pokemon}>();
 const move = computed(() => gen.moveList[option.move]);
 const info = computed(() => {
-  if (move.value.kind === "damage" && poke) {
-    return getMovePower(move.value, poke);
+  let type = move.value.type;
+  let pow = move.value.power;
+  if (move.value.kind === "damage" && poke && move.value.getPower) {
+    pow = move.value.getPower(poke);
   }
-  return [move.value.type, move.value.power] as const;
+  if (move.value.kind === "damage" && poke && move.value.getType) {
+    type = move.value.getType(poke);
+  }
+  return [type, pow] as const;
 });
 </script>

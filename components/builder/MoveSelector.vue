@@ -16,10 +16,10 @@
       @update:model-value="open = true"
       @keydown.tab="open = false"
     >
-      <template v-if="query && normalizeName(query) === 'hiddenpower'" #trailing>
+      <template v-if="trailing" #trailing>
         <div class="py-1 gap-1 flex items-center justify-center">
-          <TypeBadge :type="hp[0]" class="size-[16px] sm:size-[16px]" image />
-          <span class="text-sm">{{ hp[1] }}</span>
+          <TypeBadge :type="trailing[0]" class="size-[16px] sm:size-[16px]" image />
+          <span class="text-sm">{{ trailing[1] }}</span>
         </div>
       </template>
     </UInput>
@@ -42,6 +42,10 @@
           <span class="text-[0.6rem] text-center text-gray-400">Acc</span>
           <span class="text-sm text-center">{{ move.acc ?? "--" }}</span>
         </div>
+        <div class="flex flex-col w-8">
+          <span class="text-[0.6rem] text-center text-gray-400">PP</span>
+          <span class="text-sm text-center">{{ gen.getMaxPP(move) }}</span>
+        </div>
       </div>
     </template>
 
@@ -52,25 +56,36 @@
 <script setup lang="ts">
 import type {Species, SpeciesId} from "~/game/species";
 import type {Move, MoveId} from "~/game/moves";
-import {getHiddenPower, type PokemonDesc} from "~/game/pokemon";
+import {Pokemon, type PokemonDesc} from "~/game/pokemon";
 import type {Generation} from "~/game/gen";
-import type {Stats} from "~/game/utils";
+import {ivsToDvs} from "~/utils/pokemon";
 
 const query = defineModel<string>({default: ""});
 const {poke, gen} = defineProps<{poke: PokemonDesc; gen: Generation}>();
 const open = ref(false);
 const species = computed<Species | undefined>(() => gen.speciesList[poke?.species as SpeciesId]);
 const items = computed(() => Object.entries(gen.moveList) as [MoveId, Move][]);
-const statKeys = computed(() => getStatKeys(gen));
-
-const ivsToDvs = (ivs: Partial<Stats>) => {
-  const dvs: Partial<Stats> = {};
-  for (const stat in statKeys.value) {
-    dvs[stat as keyof Stats] = ivToDv(ivs[stat as keyof Stats]);
+const trailing = computed(() => {
+  const q = normalizeName(query.value);
+  const move = q && q in gen.moveList ? gen.moveList[q as MoveId] : undefined;
+  if (!move || move.kind !== "damage") {
+    return;
   }
-  return dvs;
-};
-const hp = computed(() => getHiddenPower(ivsToDvs(poke.ivs ?? {})));
+
+  const base = new Pokemon(gen, {
+    species: "abra",
+    moves: [],
+    ivs: ivsToDvs(gen, poke.ivs ?? {}),
+    friendship: poke.friendship,
+  });
+  const type = move.getType ? move.getType(base) : move.type;
+  const pow = move.getPower ? move.getPower(base) : move.power;
+  if (type === move.type && pow === move.power) {
+    return;
+  }
+
+  return [type, pow] as const;
+});
 
 const filter = (moves: [MoveId, Move][], query: string) => {
   const q = normalizeName(query);

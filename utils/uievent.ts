@@ -7,7 +7,6 @@ export type RawUIBattleEvent =
   | BattleEvent
   | RetractEvent
   | SubBroke
-  | FaintEvent
   | GetSubstitute
   | UIDamageEvent
   | UIRecoverEvent;
@@ -16,8 +15,6 @@ export type UIBattleEvent = RawUIBattleEvent & {time: number} & {[id: string]: s
 export type RetractEvent = {type: "retract"; src: string; name: string};
 
 export type SubBroke = {type: "sub_break"; target: string};
-
-export type FaintEvent = {type: "faint"; src: string};
 
 export type GetSubstitute = {type: "get_sub"; src: string};
 
@@ -75,6 +72,7 @@ export const infoMessage: Record<InfoReason, string> = {
   trapped: "{} can't move!",
   ff: "{} forfeit the match.",
   ff_timer: "{} ran out of time.",
+  faint: "{} fainted!",
 };
 
 export const weatherMessage: Record<Weather, Record<WeatherEvent["kind"], string>> = {

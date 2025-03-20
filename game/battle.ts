@@ -211,11 +211,11 @@ export class Battle {
         return bSpe - aSpe;
       });
 
-    if (this.leadTurn) {
+    this.leadTurn = false;
+    if (choices.every(choice => choice.move.kind === "switch")) {
       // Randomize choices to avoid leaking speed. The player always sees their pokemon switch in
       // first in a link battle on console.
       choices.sort(() => (this.rng.bool() ? -1 : 1));
-      this.leadTurn = false;
     }
 
     let skipEnd = false;
@@ -227,7 +227,14 @@ export class Battle {
       }
 
       const target = this.opponentOf(choice.user.owner).active;
-      if (this.tryUseMove(choice, target) || choice.user.handleRecurrentDamage(this)) {
+      if (!this.beforeUseMove(choice, target)) {
+        continue;
+      }
+
+      if (
+        this.callUseMove(choice.move, choice.user, target, choice.indexInMoves) ||
+        this.handleRecurrentDamage(choice.user)
+      ) {
         if (!this.victor) {
           if (target.owner.areAllDead()) {
             this.victor = choice.user.owner;
@@ -325,7 +332,51 @@ export class Battle {
     return getEffectiveness(this.gen.typeChart, atk, def);
   }
 
-  private tryUseMove({move, user, indexInMoves}: ChosenMove, target: ActivePokemon) {
+  rand255(num: number) {
+    return this.rng.int(0, 255) < Math.min(num, 255);
+  }
+
+  rand255Good(num: number) {
+    return this.rng.int(0, 255) <= Math.min(num, 255);
+  }
+
+  rand100(num: number) {
+    return this.rng.int(1, 256) <= Math.floor((num / 100) * 256);
+  }
+
+  checkAccuracy(move: Move, user: ActivePokemon, target: ActivePokemon) {
+    return this.gen.checkAccuracy(move, this, user, target);
+  }
+
+  static censorEvents(events: BattleEvent[], player?: Player) {
+    const result = [...events];
+    for (let i = 0; i < result.length; i++) {
+      const e = result[i];
+      if ((e.type === "damage" || e.type === "recover") && e.target !== player?.id) {
+        result[i] = {...e, hpBefore: undefined, hpAfter: undefined};
+      } else if (e.type === "switch" && e.src !== player?.id) {
+        result[i] = {...e, hp: undefined, indexInTeam: -1};
+      }
+
+      if (e.volatiles) {
+        result[i] = {
+          ...e,
+          volatiles: e.volatiles.map(foo => {
+            const result = structuredClone(foo);
+            if (foo.id !== player?.id) {
+              result.v.stats = undefined;
+            }
+            return result;
+          }),
+        };
+      }
+    }
+    return result;
+  }
+
+  //
+
+  protected beforeUseMove({move, user}: ChosenMove, target: ActivePokemon) {
     // Order of events comes from here:
     //  https://www.smogon.com/forums/threads/past-gens-research-thread.3506992/#post-5878612
     if (user.v.hazed) {
@@ -394,55 +445,44 @@ export class Battle {
     }
 
     if (confuse) {
-      return user.handleConfusionDamage(this, target);
+      return this.handleConfusionDamage(user, target);
     } else if (fullPara) {
       this.info(user, "paralyze");
       return false;
     }
 
-    return this.callUseMove(move, user, target, indexInMoves);
+    return true;
   }
 
-  rand255(num: number) {
-    return this.rng.int(0, 255) < Math.min(num, 255);
-  }
+  protected handleConfusionDamage(user: ActivePokemon, target: ActivePokemon) {
+    const [atk, def] = this.gen.getDamageVariables(false, target, target, false);
+    const dmg = this.gen.calcDamage({
+      lvl: user.base.level,
+      pow: 40,
+      def,
+      atk,
+      eff: 1,
+      rand: false,
+      isCrit: false,
+      isStab: false,
+    });
 
-  rand255Good(num: number) {
-    return this.rng.int(0, 255) <= Math.min(num, 255);
-  }
-
-  rand100(num: number) {
-    return this.rng.int(1, 256) <= Math.floor((num / 100) * 256);
-  }
-
-  checkAccuracy(move: Move, user: ActivePokemon, target: ActivePokemon) {
-    return this.gen.checkAccuracy(move, this, user, target);
-  }
-
-  static censorEvents(events: BattleEvent[], player?: Player) {
-    const result = [...events];
-    for (let i = 0; i < result.length; i++) {
-      const e = result[i];
-      if ((e.type === "damage" || e.type === "recover") && e.target !== player?.id) {
-        result[i] = {...e, hpBefore: undefined, hpAfter: undefined};
-      } else if (e.type === "switch" && e.src !== player?.id) {
-        result[i] = {...e, hp: undefined, indexInTeam: -1};
-      }
-
-      if (e.volatiles) {
-        result[i] = {
-          ...e,
-          volatiles: e.volatiles.map(foo => {
-            const result = structuredClone(foo);
-            if (foo.id !== player?.id) {
-              result.v.stats = undefined;
-            }
-            return result;
-          }),
-        };
-      }
+    if (user.v.substitute && target.v.substitute) {
+      target.damage(dmg, user, this, false, "confusion");
+    } else if (!user.v.substitute) {
+      return user.damage(dmg, user, this, false, "confusion").dead;
     }
-    return result;
+
+    return false;
+  }
+
+  protected handleRecurrentDamage(user: ActivePokemon) {
+    if (user.handleStatusDamage(this)) {
+      return true;
+    } else if (user.v.flags.seeded && user.tickCounter(this, "seeded")) {
+      return true;
+    }
+    return false;
   }
 }
 
@@ -539,11 +579,14 @@ export class ActivePokemon {
         hpPercentAfter: hpPercent(this.base.hp, this.base.stats.hp),
         hpBefore,
         hpAfter: this.base.hp,
-        dead: this.base.hp === 0,
         why,
         eff,
         isCrit,
       });
+      if (this.base.hp === 0) {
+        battle.info(this, "faint");
+      }
+
       if (shouldRage) {
         this.handleRage(battle);
       }
@@ -567,7 +610,6 @@ export class ActivePokemon {
       hpPercentAfter: hpPercent(this.base.hp, this.base.stats.hp),
       hpBefore,
       hpAfter: this.base.hp,
-      dead: false,
       why,
       volatiles: [{id: this.owner.id, v: {status: this.base.status || null}}],
     });
@@ -706,38 +748,6 @@ export class ActivePokemon {
     } else if (this.base.status === "par") {
       this.v.stats.spe = Math.max(Math.floor(this.v.stats.spe / 4), 1);
     }
-  }
-
-  handleConfusionDamage(battle: Battle, target: ActivePokemon) {
-    const [atk, def] = battle.gen.getDamageVariables(false, target, target, false);
-    const dmg = battle.gen.calcDamage({
-      lvl: this.base.level,
-      pow: 40,
-      def,
-      atk,
-      eff: 1,
-      rand: false,
-      isCrit: false,
-      isStab: false,
-    });
-
-    if (this.v.substitute && target.v.substitute) {
-      target.damage(dmg, this, battle, false, "confusion");
-    } else if (!this.v.substitute) {
-      return this.damage(dmg, this, battle, false, "confusion").dead;
-    }
-
-    return false;
-  }
-
-  handleRecurrentDamage(battle: Battle) {
-    if (this.handleStatusDamage(battle)) {
-      return true;
-    } else if (this.v.flags.seeded && this.tickCounter(battle, "seeded")) {
-      return true;
-    }
-
-    return false;
   }
 
   applyStages(stat: keyof VolatileStats, negative: boolean) {

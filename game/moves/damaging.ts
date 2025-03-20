@@ -1,7 +1,7 @@
 import type {ActivePokemon, Battle} from "../battle";
 import {moveFunctions, type BaseMove} from "./index";
-import {getHiddenPower, type Pokemon, type Status} from "../pokemon";
-import {isSpecial, type Stages, randChoiceWeighted, idiv, hpPercentExact} from "../utils";
+import type {Pokemon, Status} from "../pokemon";
+import {isSpecial, type Stages, randChoiceWeighted, type Type} from "../utils";
 import type {Random} from "random";
 import type {CalcDamageParams} from "../gen";
 
@@ -23,15 +23,8 @@ type Flag =
   | "multi_turn"
   | "rage"
   | "trap"
-  | "level"
   | "ohko"
-  | "counter"
-  | "super_fang"
-  | "psywave"
-  | "frustration"
-  | "return"
   | "flail"
-  | "hidden_power"
   | "magnitude"
   | "false_swipe"
   | "tri_attack";
@@ -43,8 +36,15 @@ export interface DamagingMove extends BaseMove {
   readonly effect?: [number, Effect];
   readonly effect_self?: boolean | "charge";
   readonly recoil?: number;
-  readonly dmg?: number;
   readonly punish?: boolean;
+  readonly getPower?: (user: Pokemon) => number;
+  readonly getType?: (user: Pokemon) => Type;
+  readonly getDamage?: (
+    battle: Battle,
+    user: ActivePokemon,
+    target: ActivePokemon,
+    eff: number,
+  ) => number | false;
 }
 
 export function use(
@@ -256,44 +256,18 @@ export function exec(
 }
 
 function getDamage(self: DamagingMove, battle: Battle, user: ActivePokemon, target: ActivePokemon) {
-  // eslint-disable-next-line prefer-const
-  let [type, pow] = getMovePower(self, user.base);
-
-  // https://bulbapedia.bulbagarden.net/wiki/Damage#Generation_I
+  let pow = self.getPower ? self.getPower(user.base) : self.power;
+  const type = self.getType ? self.getType(user.base) : self.type;
   const eff = battle.getEffectiveness(type, target.v.types);
   if (self.flag === "dream_eater" && target.base.status !== "slp") {
     return {dmg: 0, isCrit: false, eff: 1};
-  } else if (self.flag === "level") {
-    return {dmg: user.base.level, isCrit: false, eff: 1};
-  } else if (self.flag === "ohko") {
-    const targetIsFaster = target.getStat("spe") > user.getStat("spe");
-    return {dmg: targetIsFaster || eff === 0 ? 0 : 65535, isCrit: false, eff: eff === 0 ? 0 : 1};
-  } else if (self.flag === "counter") {
-    // https://www.youtube.com/watch?v=ftTalHMjPRY
-    //  On cartrige, the move counter uses is updated whenever a player hovers over a move (even
-    //  if he doesn't select it). In a link battle, this information is not shared between both
-    //  players. This means, that a player can influence the ability of counter to succeed by
-    //  hovering over a move on their side, cancelling the 'FIGHT' menu, and switching out. Since
-    //  we don't have a FIGHT menu, and this can cause a desync anyway, just use the last
-    //  attempted move.
-
-    const mv = target.lastChosenMove;
-    let dmg = user.lastDamage * 2;
-    if (mv && ((mv.type !== "normal" && mv.type !== "fight") || !mv.power || mv === self)) {
-      dmg = 0;
-    } else if (target.owner.choice?.move === self) {
-      dmg = 0;
+  } else if (self.getDamage) {
+    const result = self.getDamage(battle, user, target, eff);
+    if (typeof result === "number") {
+      return {dmg: result, isCrit: false, eff: 1};
+    } else {
+      return {dmg: 0, isCrit: false, eff: 0};
     }
-    // Counter can crit, but it won't do any more damage
-    return {dmg, isCrit: false, eff: 1};
-  } else if (self.flag === "super_fang") {
-    return {dmg: Math.max(Math.floor(target.base.hp / 2), 1), isCrit: false, eff: 1};
-  } else if (self.flag === "psywave") {
-    // psywave has a desync glitch that we don't emulate
-    const dmg = battle.rng.int(1, Math.max(Math.floor(user.base.level * 1.5 - 1), 1));
-    return {dmg, isCrit: false, eff: 1};
-  } else if (self.dmg) {
-    return {dmg: self.dmg, isCrit: false, eff: 1};
   }
 
   let isCrit = battle.rand255(battle.gen.getCritChance(user, self.flag === "high_crit"));
@@ -346,35 +320,4 @@ function trapTarget(self: DamagingMove, rng: Random, user: ActivePokemon, target
 
 function multiHitCount(rng: Random) {
   return randChoiceWeighted(rng, [2, 3, 4, 5], [37.5, 37.5, 12.5, 12.5]);
-}
-
-export function getMovePower(self: DamagingMove, user: Pokemon) {
-  let pow = self.power;
-  let type = self.type;
-  if (self.flag === "hidden_power") {
-    [type, pow] = getHiddenPower(user.dvs);
-  }
-
-  if (self.flag === "frustration") {
-    pow = idiv(255 - user.friendship, 2.5);
-  } else if (self.flag === "return") {
-    pow = idiv(user.friendship, 2.5);
-  } else if (self.flag === "flail") {
-    const percent = hpPercentExact(user.hp, user.stats.hp);
-    if (percent >= 68.8) {
-      pow = 20;
-    } else if (percent >= 35.4) {
-      pow = 40;
-    } else if (percent >= 20.8) {
-      pow = 80;
-    } else if (percent >= 10.4) {
-      pow = 100;
-    } else if (percent >= 4.2) {
-      pow = 150;
-    } else {
-      pow = 200;
-    }
-  }
-
-  return [type, pow] as const;
 }
