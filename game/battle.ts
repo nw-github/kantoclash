@@ -315,8 +315,11 @@ export class Battle {
     if (!move.kind && move.use) {
       return move.use(this, user, target, moveIndex);
     } else {
-      const use = (move.kind && moveFunctions[move.kind].use) ?? moveFunctions.default.use;
-      return use!.call(move, this, user, target, moveIndex);
+      const func = move.kind && moveFunctions[move.kind].use;
+      if (typeof func === "function") {
+        return func.call(move, this, user, target, moveIndex);
+      }
+      return this.defaultUseMove(move, user, target, moveIndex);
     }
   }
 
@@ -375,6 +378,32 @@ export class Battle {
   }
 
   //
+
+  defaultUseMove(move: Move, user: ActivePokemon, target: ActivePokemon, moveIndex?: number) {
+    const moveId = this.moveIdOf(move)!;
+    if (moveId === user.base.moves[user.v.disabled?.indexInMoves ?? -1]) {
+      this.event({move: moveId, type: "move", src: user.owner.id, disabled: true});
+      user.v.charging = undefined;
+      return false;
+    }
+
+    if (moveIndex !== undefined && !user.v.thrashing) {
+      user.base.pp[moveIndex]--;
+      if (user.base.pp[moveIndex] < 0) {
+        user.base.pp[moveIndex] = 63;
+      }
+      user.v.lastMoveIndex = moveIndex;
+    }
+
+    this.event({
+      move: moveId,
+      type: "move",
+      src: user.owner.id,
+      thrashing: user.v.thrashing ? true : undefined,
+    });
+    user.v.lastMove = move;
+    return this.callExecMove(move, user, target);
+  }
 
   protected beforeUseMove({move, user}: ChosenMove, target: ActivePokemon) {
     // Order of events comes from here:

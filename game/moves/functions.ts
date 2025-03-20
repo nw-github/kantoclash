@@ -2,7 +2,6 @@ import type {
   ConfuseMove,
   CustomMove,
   DamagingMove,
-  DefaultMove,
   FailMove,
   Move,
   PhazingMove,
@@ -25,7 +24,6 @@ type KindToType = {
   status: StatusMove;
   switch: SwitchMove;
   fail: FailMove;
-  default: DefaultMove;
   weather: WeatherMove;
   screen: ScreenMove;
   phaze: PhazingMove;
@@ -48,36 +46,6 @@ type MoveFunctions = {
 };
 
 export const moveFunctions: Record<MoveKind, MoveFunctions> = {
-  default: {
-    use(battle, user, target, moveIndex) {
-      const move = battle.moveIdOf(this)!;
-      if (move === user.base.moves[user.v.disabled?.indexInMoves ?? -1]) {
-        battle.event({move, type: "move", src: user.owner.id, disabled: true});
-        user.v.charging = undefined;
-        return false;
-      }
-
-      if (moveIndex !== undefined && !user.v.thrashing) {
-        user.base.pp[moveIndex]--;
-        if (user.base.pp[moveIndex] < 0) {
-          user.base.pp[moveIndex] = 63;
-        }
-        user.v.lastMoveIndex = moveIndex;
-      }
-
-      battle.event({
-        move,
-        type: "move",
-        src: user.owner.id,
-        thrashing: user.v.thrashing ? true : undefined,
-      });
-      user.v.lastMove = this;
-      return battle.callExecMove(this, user, target);
-    },
-    exec() {
-      throw new Error(`Must override exec(): ${this.name}`);
-    },
-  },
   volatile: {
     exec(battle, user) {
       if (user.v.flags[this.flag]) {

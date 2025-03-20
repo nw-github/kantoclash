@@ -1,5 +1,5 @@
 import type {ActivePokemon, Battle} from "../battle";
-import {moveFunctions, type BaseMove} from "./index";
+import type {BaseMove} from "./index";
 import type {Pokemon, Status} from "../pokemon";
 import {isSpecial, type Stages, randChoiceWeighted, type Type} from "../utils";
 import type {Random} from "random";
@@ -80,7 +80,7 @@ export function use(
   if (this.flag === "charge_invuln") {
     user.v.invuln = false;
   }
-  return moveFunctions.default.use!.call(this, battle, user, target, moveIndex);
+  return battle.defaultUseMove(this, user, target, moveIndex);
 }
 
 export function exec(

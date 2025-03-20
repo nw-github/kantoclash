@@ -22,10 +22,6 @@ export interface BaseMove {
   readonly ignore?: string[] /* MoveId[] */;
 }
 
-export interface DefaultMove extends BaseMove {
-  readonly kind: "default";
-}
-
 export interface CustomMove extends BaseMove {
   readonly kind?: never;
 
@@ -92,7 +88,6 @@ export type Move =
   | StatusMove
   | SwitchMove
   | FailMove
-  | DefaultMove
   | WeatherMove
   | ScreenMove
   | PhazingMove;

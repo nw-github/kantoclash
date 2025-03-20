@@ -1,4 +1,4 @@
-import {moveFunctions, type DamagingMove, type Move} from "./index";
+import type {DamagingMove, Move} from "./index";
 import {type Pokemon, transform} from "../pokemon";
 import {hpPercentExact, idiv, stageKeys, volatileFlags, type Type} from "../utils";
 import type {ActivePokemon, Battle} from "../battle";
@@ -12,7 +12,7 @@ const internalMoveList = Object.freeze({
     type: "normal",
     use(battle, user, target, moveIndex) {
       if (!user.v.bide) {
-        return moveFunctions.default.use!.call(this, battle, user, target, moveIndex);
+        return battle.defaultUseMove(this, user, target, moveIndex);
       }
 
       // TODO: bulbapedia says lastDamage includes the opponent's self-inflicted confusion damage
