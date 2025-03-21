@@ -17,7 +17,7 @@
       @keydown.tab="open = false"
     >
       <template v-if="trailing" #trailing>
-        <div class="py-1 gap-1 flex items-center justify-center">
+        <div class="gap-1 flex items-center justify-center">
           <TypeBadge :type="trailing[0]" class="size-[16px] sm:size-[16px]" image />
           <span class="text-sm">{{ trailing[1] }}</span>
         </div>

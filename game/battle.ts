@@ -777,29 +777,44 @@ export class ActivePokemon {
     return true;
   }
 
-  modStages(user: Player, mods: [Stages, number][], battle: Battle) {
+  setStage(
+    stat: Stages,
+    value: number,
+    battle: Battle,
+    negative: boolean,
+    opponent?: ActivePokemon,
+  ) {
+    this.v.stages[stat] = value;
+
+    opponent ??= battle.opponentOf(this.owner).active;
+    if (stageStatKeys.includes(stat)) {
+      this.applyStages(stat, negative);
+    }
+
+    // https://bulbapedia.bulbagarden.net/wiki/List_of_battle_glitches_(Generation_I)#Stat_modification_errors
+    opponent.applyStatusDebuff();
+
+    return [
+      {id: this.owner.id, v: {stats: {...this.v.stats}, stages: {...this.v.stages}}},
+      {id: opponent.owner.id, v: {stats: {...opponent.v.stats}}},
+    ];
+  }
+
+  modStages(mods: [Stages, number][], battle: Battle, opponent?: ActivePokemon) {
     mods = mods.filter(([stat]) => Math.abs(this.v.stages[stat]) !== 6);
-
-    const opponent = battle.opponentOf(user).active;
     for (const [stat, count] of mods) {
-      this.v.stages[stat] = clamp(this.v.stages[stat] + count, -6, 6);
-
-      if (stageStatKeys.includes(stat)) {
-        this.applyStages(stat, count < 0);
-      }
-
-      // https://bulbapedia.bulbagarden.net/wiki/List_of_battle_glitches_(Generation_I)#Stat_modification_errors
-      opponent.applyStatusDebuff();
-
       battle.event({
         type: "stages",
         src: this.owner.id,
         stat,
         count,
-        volatiles: [
-          {id: this.owner.id, v: {stats: {...this.v.stats}, stages: {...this.v.stages}}},
-          {id: opponent.owner.id, v: {stats: {...opponent.v.stats}}},
-        ],
+        volatiles: this.setStage(
+          stat,
+          clamp(this.v.stages[stat] + count, -6, 6),
+          battle,
+          count < 0,
+          opponent,
+        ),
       });
     }
     return mods.length !== 0;
@@ -824,7 +839,7 @@ export class ActivePokemon {
       this.v.stages.atk < 6
     ) {
       battle.info(this, "rage");
-      this.modStages(this.owner, [["atk", +1]], battle);
+      this.modStages([["atk", +1]], battle);
     }
   }
 

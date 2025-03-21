@@ -2,6 +2,7 @@ import type {DamagingMove, Move} from "./index";
 import {type Pokemon, transform} from "../pokemon";
 import {hpPercentExact, idiv, stageKeys, volatileFlags, type Type} from "../utils";
 import type {ActivePokemon, Battle} from "../battle";
+import type {BattleEvent} from "../events";
 
 export type MoveId = keyof typeof internalMoveList;
 
@@ -1143,7 +1144,35 @@ const internalMoveList = createMoveList({
   },
   // batonpass: {},
   // beatup: {},
-  // bellydrum: {},
+  bellydrum: {
+    name: "Belly Drum",
+    pp: 10,
+    acc: 100,
+    type: "normal",
+    exec(battle, user) {
+      if (user.v.stages.atk >= 6) {
+        battle.info(user, "fail_generic");
+        return;
+      }
+
+      const dmg = idiv(user.base.stats.hp, 2);
+      if (user.base.hp < dmg) {
+        battle.info(user, "fail_generic");
+
+        if (battle.gen.id <= 2) {
+          battle.event({
+            type: "bug",
+            bug: "bug_gen2_bellydrum",
+            volatiles: user.setStage("atk", Math.min(user.v.stages.atk + 2, 6), battle, false),
+          });
+        }
+        return;
+      }
+
+      const {event} = user.damage(dmg, user, battle, false, "belly_drum", true);
+      (event as BattleEvent).volatiles = user.setStage("atk", +6, battle, false);
+    },
+  },
   // conversion2: {},
   // curse: {},
   // destinybond: { noMetronome: true },

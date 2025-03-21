@@ -145,7 +145,8 @@ const minSpe = computed(
   () => poke && calcStat("spe", species.value!.stats, poke.level, {spe: 0}, {spe: 0}),
 );
 const maxSpe = computed(
-  () => poke && calcStat("spe", species.value!.stats, poke.level, {spe: 15}, {spe: 65535}),
+  () =>
+    poke && calcStat("spe", species.value!.stats, poke.level, {spe: gen.maxIv}, {spe: gen.maxEv}),
 );
 const hp = computed(() => poke?.hpPercent ?? 0);
 const statShortName = computed(() => ({...getStatKeys(gen), spd: "SpD", acc: "Acc", eva: "Eva"}));

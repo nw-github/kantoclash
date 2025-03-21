@@ -74,7 +74,7 @@ export const moveFunctions: MM = {
         target = user;
       }
 
-      if (!target.modStages(user.owner, this.stages, battle)) {
+      if (!target.modStages(this.stages, battle, user)) {
         battle.info(target, "fail_generic");
       }
     },

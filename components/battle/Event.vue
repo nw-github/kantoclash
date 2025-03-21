@@ -20,6 +20,7 @@
     <p v-else-if="e.why === 'ohko'">It's a one-hit KO!</p>
     <p v-else-if="e.why === 'trap'">{{ pn(e.src) }}'s attack continues!</p>
     <p v-else-if="e.why === 'sandstorm'">{{ pn(e.src) }} is buffeted by the sandstorm!</p>
+    <p v-else-if="e.why === 'belly_drum'">{{ pn(e.src) }} cut its own HP and maximized its Attack!</p>
 
     <p v-if="e.why === 'attacked' && e.hitCount === undefined && (e.eff ?? 1) !== 1" class="italic">
       {{ eff(e.eff) }}
@@ -96,6 +97,9 @@
     {{ screenMessage[e.screen][e.kind].replace("{}", tn(e.src, true)).replace("{l}", tn(e.src, false)) }}
   </div>
   <div v-else-if="e.type === 'in_love'" class="move">{{ pn(e.src) }} is in love with {{ pn(e.target, false) }}!</div>
+  <div v-else-if="e.type === 'bug'">
+    <p class="text-xs sm:text-[0.8rem] muted">({{ bugMessage[e.bug] }})</p>
+  </div>
   <div v-else>Unknown event: <code>{{ e }}</code></div>
 </template>
 

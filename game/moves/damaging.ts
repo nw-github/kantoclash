@@ -60,7 +60,7 @@ export function use(
   if (this.charge && user.v.charging !== this) {
     battle.event({type: "charge", src: user.owner.id, move: battle.moveIdOf(this)!});
     if (Array.isArray(this.charge)) {
-      user.modStages(user.owner, this.charge, battle);
+      user.modStages(this.charge, battle);
     }
 
     if (this.charge !== "sun" || battle.weather?.kind !== "sun") {
@@ -226,7 +226,7 @@ export function exec(
       return;
     } else if (Array.isArray(effect)) {
       const poke = this.effect_self ? user : target;
-      poke.modStages(user.owner, effect, battle);
+      poke.modStages(effect, battle);
     } else if (effect === "flinch") {
       target.v.flinch = true;
     } else {

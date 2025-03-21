@@ -26,7 +26,8 @@ type AnyEvent =
   | MagnitudeEvent
   | WeatherEvent
   | ScreenEvent
-  | SetVolatilesEvent;
+  | SetVolatilesEvent
+  | BugEvent;
 
 export type ChangedVolatiles = {id: PlayerId; v: NullOrOptional<ClientVolatiles>}[];
 
@@ -59,7 +60,8 @@ export type DamageReason =
   | "brn"
   | "confusion"
   | "trap"
-  | "sandstorm";
+  | "sandstorm"
+  | "belly_drum";
 
 export type RecoveryReason = "drain" | "recover" | "rest" | "seeder";
 
@@ -129,6 +131,8 @@ export type FailReason =
   | "splash"
   | "whirlwind";
 
+export type BugType = "bug_gen2_bellydrum";
+
 export type InfoReason =
   | VolatileFlag
   | FailReason
@@ -154,6 +158,8 @@ export type InfoReason =
   | "immobilized";
 
 type InfoEvent = {type: "info"; src: PlayerId; why: InfoReason};
+
+type BugEvent = {type: "bug"; bug: BugType};
 
 type TransformEvent = {type: "transform"; src: PlayerId; target: PlayerId};
 

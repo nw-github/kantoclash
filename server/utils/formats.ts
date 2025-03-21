@@ -17,7 +17,7 @@ interface FormatFunctions {
 
 const speciesIds = Object.keys(speciesList) as SpeciesId[];
 
-const badMoves = new Set<MoveId>(["struggle", "focusenergy", "payday", "absorb", "focusenergy"]);
+const badMoves = new Set<MoveId>(["struggle", "focusenergy", "payday", "absorb"]);
 
 const uselessNfe = new Set<SpeciesId>(["weedle", "metapod", "kakuna", "magikarp", "caterpie"]);
 
@@ -88,8 +88,8 @@ const createValidator = (gen: Generation) => {
         .array()
         .nonempty("Must have at least one move")
         .refine(arr => new Set(arr).size === arr.length, "Duplicate moves are not allowed"),
-      ivs: z.record(z.enum(statKeys), z.number().min(0).max(15)).optional(),
-      evs: z.record(z.enum(statKeys), z.number().min(0).max(65535)).optional(),
+      ivs: z.record(z.enum(statKeys), z.number().min(0).max(gen.maxIv)).optional(),
+      evs: z.record(z.enum(statKeys), z.number().min(0).max(gen.maxEv)).optional(),
       friendship: z.number().min(0).max(255).optional(),
     })
     .superRefine((desc, ctx) => {

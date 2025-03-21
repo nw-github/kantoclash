@@ -183,6 +183,8 @@ const isValidMove = (battle: Battle, user: ActivePokemon, move: MoveId, i: numbe
 const createGeneration = () => {
   return {
     id: 1,
+    maxIv: 15,
+    maxEv: 65535,
     speciesList,
     moveList,
     typeChart,

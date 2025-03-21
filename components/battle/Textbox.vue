@@ -160,6 +160,10 @@
   .confused + .move {
     padding-top: 0;
   }
+
+  .muted {
+    @apply text-gray-600 dark:text-gray-400;
+  }
 }
 </style>
 

@@ -1,6 +1,7 @@
 import type {Screen} from "~/game/battle";
 import type {
   BattleEvent,
+  BugType,
   DamageEvent,
   InfoReason,
   RecoverEvent,
@@ -117,4 +118,8 @@ export const screenMessage: Record<Screen, Record<ScreenEvent["kind"], string>> 
     start: "Reflect raised {l}'s Defense!",
     end: "{}'s Reflect wore off...",
   },
+};
+
+export const bugMessage: Record<BugType, string> = {
+  bug_gen2_bellydrum: "In Gen 2, Belly Drum still raises Atk by 2 on failure due to a bug.",
 };
