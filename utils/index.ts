@@ -249,6 +249,8 @@ export const describeMove = (gen: Generation, id: MoveId) => {
         "Halves damage dealt by special attacks for all pokemon on the user's side for 5 turns. ",
       reflect:
         "Halves damage dealt by physical attacks for all pokemon on the user's side for 5 turns. ",
+      safeguard:
+        "Protects the user's side from non-volatile status conditions and confusion for 5 turns. ",
     };
     return msg[move.screen];
   } else {

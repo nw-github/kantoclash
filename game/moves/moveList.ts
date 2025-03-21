@@ -1158,6 +1158,8 @@ const internalMoveList = createMoveList({
   // synthesis: {},
   // triplekick: {},
   // --
+  safeguard: {kind: "screen", name: "Safeguard", pp: 25, type: "normal", screen: "safeguard"},
+  // --
   raindance: {kind: "weather", weather: "rain", name: "Rain Dance", pp: 5, type: "water"},
   sandstorm: {kind: "weather", weather: "sand", name: "Sandstorm", pp: 10, type: "rock"},
   sunnyday: {kind: "weather", weather: "sun", name: "Sunny Day", pp: 5, type: "fire"},

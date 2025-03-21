@@ -90,7 +90,9 @@ export function exec(
   } else if (user.v.thrashing && user.v.thrashing.turns !== -1) {
     if (--user.v.thrashing.turns === 0) {
       user.v.thrashing = undefined;
-      user.confuse(battle, true);
+      if (!user.owner.screens.safeguard) {
+        user.confuse(battle, true);
+      }
     }
   }
 
@@ -216,7 +218,7 @@ export function exec(
     }
 
     if (effect === "confusion") {
-      if (target.v.confusion === 0) {
+      if (target.v.confusion === 0 && !user.owner.screens.safeguard) {
         target.confuse(battle);
       }
       return;
@@ -228,7 +230,11 @@ export function exec(
     } else if (effect === "flinch") {
       target.v.flinch = true;
     } else {
-      if (target.base.status || target.v.types.includes(this.type)) {
+      if (
+        target.owner.screens.safeguard ||
+        target.base.status ||
+        target.v.types.includes(this.type)
+      ) {
         return;
       }
 
@@ -240,7 +246,7 @@ export function exec(
       target.v.hazed = true;
       battle.unstatus(target, "thaw");
       return;
-    } else if (!target.base.status && battle.rand100(20)) {
+    } else if (!target.base.status && !target.owner.screens.safeguard && battle.rand100(20)) {
       // In Gen 2, tri attack can burn fire types and freeze ice types
       target.status(choice, battle);
     }

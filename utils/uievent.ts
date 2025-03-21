@@ -1,4 +1,12 @@
-import type {BattleEvent, DamageEvent, InfoReason, RecoverEvent, WeatherEvent} from "~/game/events";
+import type {Screen} from "~/game/battle";
+import type {
+  BattleEvent,
+  DamageEvent,
+  InfoReason,
+  RecoverEvent,
+  ScreenEvent,
+  WeatherEvent,
+} from "~/game/events";
 import type {MoveId} from "~/game/moves";
 import type {Status} from "~/game/pokemon";
 import type {Weather} from "~/game/utils";
@@ -51,6 +59,7 @@ export const infoMessage: Record<InfoReason, string> = {
   splash: "No effect!",
   seeded: "{} was seeded!",
   mist_protect: "{} is protected by the mist!",
+  safeguard_protect: "{} is protected by Safeguard!",
   mist: "{}'s shrouded in mist!",
   light_screen: "{}'s protected against special attacks!",
   reflect: "{} is gained armor!",
@@ -90,5 +99,20 @@ export const weatherMessage: Record<Weather, Record<WeatherEvent["kind"], string
     start: "A sandstorm brewed!",
     continue: "The sandstorm rages.",
     end: "The sandstorm subsided.",
+  },
+};
+
+export const screenMessage: Record<Screen, Record<ScreenEvent["kind"], string>> = {
+  safeguard: {
+    start: "{} became cloaked in a mystical veil!",
+    end: "{}'s Safeguard wore off...",
+  },
+  light_screen: {
+    start: "Light Screen raised {l}'s Special Defense!",
+    end: "{}'s Light Screen wore off...",
+  },
+  reflect: {
+    start: "Reflect raised {l}'s Defense!",
+    end: "{}'s Reflect wore off...",
   },
 };

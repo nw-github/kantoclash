@@ -45,7 +45,7 @@ export type Turn = {events: BattleEvent[]; switchTurn: boolean};
 
 export type PlayerParams = {readonly id: PlayerId; readonly team: ValidatedPokemonDesc[]};
 
-export type Screen = "light_screen" | "reflect";
+export type Screen = "light_screen" | "reflect" | "safeguard";
 
 class Player {
   readonly id: PlayerId;
@@ -579,9 +579,9 @@ export class Battle {
     }
 
     // Screens
-    // for (const player of this.players) {
-    //   this.handleScreen(player, "safeguard");
-    // }
+    for (const player of this.players) {
+      this.handleScreen(player, "safeguard");
+    }
 
     for (const player of this.players) {
       this.handleScreen(player, "light_screen");

@@ -27,6 +27,9 @@ export const moveFunctions: MM = {
       if (target.v.substitute) {
         battle.info(target, "fail_generic");
         return;
+      } else if (target.owner.screens.safeguard) {
+        battle.info(target, "safeguard_protect");
+        return;
       } else if (!battle.checkAccuracy(this, user, target)) {
         return;
       }
@@ -86,6 +89,9 @@ export const moveFunctions: MM = {
         (this.type === "poison" && target.v.types.includes("poison"))
       ) {
         battle.info(target, "immune");
+        return;
+      } else if (target.owner.screens.safeguard) {
+        battle.info(target, "safeguard_protect");
         return;
       } else if (this.status === "slp" && target.v.recharge) {
         // https://www.youtube.com/watch?v=x2AgAdQwyGI

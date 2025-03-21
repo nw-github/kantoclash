@@ -124,6 +124,7 @@ export type FailReason =
   | "cant_substitute"
   | "flinch"
   | "mist_protect"
+  | "safeguard_protect"
   | "splash"
   | "whirlwind";
 
@@ -163,7 +164,7 @@ type ConversionEvent = {type: "conversion"; src: PlayerId; target?: PlayerId; ty
 
 type MagnitudeEvent = {type: "magnitude"; magnitude: number};
 
-type ScreenEvent = {type: "screen"; kind: "start" | "end"; screen: Screen; src: PlayerId};
+export type ScreenEvent = {type: "screen"; kind: "start" | "end"; screen: Screen; src: PlayerId};
 
 type SetVolatilesEvent = {type: "sv"};
 

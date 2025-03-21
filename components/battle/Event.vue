@@ -93,12 +93,7 @@
   <div v-else-if="e.type === 'magnitude'">Magnitude {{ e.magnitude }}!</div>
   <div v-else-if="e.type === 'weather'">{{ weatherMessage[e.weather][e.kind] }}</div>
   <div v-else-if="e.type === 'screen'">
-    <template v-if="e.screen === 'light_screen'">
-      Light Screen raised {{ e.src === myId ? "your team" : "the opposing team" }}'s Special Defense!
-    </template>
-    <template v-else>
-      Reflect raised {{ e.src === myId ? "your team" : "the opposing team" }}'s Defense!
-    </template>
+    {{ screenMessage[e.screen][e.kind].replace("{}", tn(e.src, true)).replace("{l}", tn(e.src, false)) }}
   </div>
   <div v-else>Unknown event: <code>{{ e }}</code></div>
 </template>
@@ -126,10 +121,16 @@ const {perspective, players, myId, e} = defineProps<{
 const pn = (id: string, title = true) => {
   if (id === perspective) {
     return e[id];
-  } else if (title) {
-    return `The opposing ${e[id]}`;
   } else {
-    return `the opposing ${e[id]}`;
+    return title ? `The opposing ${e[id]}` : `the opposing ${e[id]}`;
+  }
+};
+
+const tn = (id: string, title = true) => {
+  if (id === perspective) {
+    return title ? "Your team" : "your team";
+  } else {
+    return title ? "The opposing team" : "the opposing team";
   }
 };
 
