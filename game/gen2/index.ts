@@ -76,6 +76,7 @@ const createGeneration = (): Generation => {
     speciesList,
     moveList,
     typeChart,
+    moveFunctions: GENERATION1.moveFunctions,
     getCritChance(user, hc) {
       let stages = hc ? 2 : 0;
       if (user.v.flags.focus) {

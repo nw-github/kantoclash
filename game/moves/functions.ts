@@ -1,51 +1,17 @@
-import type {
-  ConfuseMove,
-  CustomMove,
-  DamagingMove,
-  FailMove,
-  Move,
-  PhazingMove,
-  RecoveryMove,
-  ScreenMove,
-  StageMove,
-  StatusMove,
-  SwitchMove,
-  VolatileFlagMove,
-  WeatherMove,
-} from "./index";
+import type {CustomMove, Move} from ".";
 import {exec as execDamagingMove, use as useDamagingMove} from "./damaging";
 
-type KindToType = {
-  volatile: VolatileFlagMove;
-  confuse: ConfuseMove;
-  damage: DamagingMove;
-  recover: RecoveryMove;
-  stage: StageMove;
-  status: StatusMove;
-  switch: SwitchMove;
-  fail: FailMove;
-  weather: WeatherMove;
-  screen: ScreenMove;
-  phaze: PhazingMove;
-};
-
-type MoveKind = Required<Move>["kind"];
 type UseMoveFn = Required<CustomMove>["use"];
 type ExecMoveFn = CustomMove["exec"];
 
 type MM = {
-  [K in MoveKind]: {
-    use?(this: KindToType[K], ...args: Parameters<UseMoveFn>): ReturnType<UseMoveFn>;
-    exec(this: KindToType[K], ...args: Parameters<ExecMoveFn>): ReturnType<ExecMoveFn>;
+  [K in Required<Move>["kind"]]: {
+    use?(this: Move & {kind: K}, ...args: Parameters<UseMoveFn>): ReturnType<UseMoveFn>;
+    exec(this: Move & {kind: K}, ...args: Parameters<ExecMoveFn>): ReturnType<ExecMoveFn>;
   };
 };
 
-type MoveFunctions = {
-  use?(this: Move, ...args: Parameters<UseMoveFn>): ReturnType<UseMoveFn>;
-  exec(this: Move, ...args: Parameters<ExecMoveFn>): ReturnType<ExecMoveFn>;
-};
-
-export const moveFunctions: Record<MoveKind, MoveFunctions> = {
+export const moveFunctions: MM = {
   volatile: {
     exec(battle, user) {
       if (user.v.flags[this.flag]) {
@@ -185,4 +151,4 @@ export const moveFunctions: Record<MoveKind, MoveFunctions> = {
       return false;
     },
   },
-} satisfies MM;
+};

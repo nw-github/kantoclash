@@ -1,6 +1,6 @@
 import type {Random} from "random";
 import type {ActivePokemon, Battle} from "../battle";
-import {moveList, type Move} from "../moves";
+import {moveFunctions, moveList, type Move} from "../moves";
 import {speciesList, type Species} from "../species";
 import {floatTo255, idiv, scaleAccuracy255, type Type} from "../utils";
 
@@ -138,12 +138,12 @@ const calcDamage = ({lvl, pow, atk, def, eff, isCrit, isStab, rand}: CalcDamageP
   return idiv(dmg * r, 255);
 };
 
-function getDamageVariables(
+const getDamageVariables = (
   special: boolean,
   user: ActivePokemon,
   target: ActivePokemon,
   isCrit: boolean,
-) {
+) => {
   const [atks, defs] = special ? (["spa", "spa"] as const) : (["atk", "def"] as const);
 
   const ls = special && !!target.v.flags.light_screen;
@@ -157,7 +157,7 @@ function getDamageVariables(
     def = Math.max(Math.floor(def / 4) % 256, 1);
   }
   return [atk, def] as const;
-}
+};
 
 const createGeneration = () => {
   return {
@@ -165,6 +165,7 @@ const createGeneration = () => {
     speciesList,
     moveList,
     typeChart,
+    moveFunctions,
     getCritChance,
     checkAccuracy,
     calcDamage,

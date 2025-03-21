@@ -10,7 +10,7 @@ import type {
   VictoryEvent,
   ChangedVolatiles,
 } from "./events";
-import {type MoveId, type Move, moveFunctions} from "./moves";
+import type {MoveId, Move} from "./moves";
 import {Pokemon, type Status, type ValidatedPokemonDesc} from "./pokemon";
 import {
   arraysEqual,
@@ -313,9 +313,9 @@ export class Battle {
 
   callUseMove(move: Move, user: ActivePokemon, target: ActivePokemon, moveIndex?: number) {
     if (!move.kind && move.use) {
-      return move.use(this, user, target, moveIndex);
+      return move.use.call(move, this, user, target, moveIndex);
     } else {
-      const func = move.kind && moveFunctions[move.kind].use;
+      const func = move.kind && (this as any).gen.moveFunctions[move.kind].use;
       if (typeof func === "function") {
         return func.call(move, this, user, target, moveIndex);
       }
@@ -325,9 +325,10 @@ export class Battle {
 
   callExecMove(move: Move, user: ActivePokemon, target: ActivePokemon, moveIndex?: number) {
     if (!move.kind) {
-      return move.exec(this, user, target, moveIndex);
+      return move.exec.call(move, this, user, target, moveIndex);
     } else {
-      return moveFunctions[move.kind].exec.call(move, this, user, target, moveIndex);
+      const func = (this as any).gen.moveFunctions[move.kind];
+      return func.exec.call(move, this, user, target, moveIndex);
     }
   }
 

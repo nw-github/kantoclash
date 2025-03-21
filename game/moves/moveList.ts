@@ -480,14 +480,13 @@ const internalMoveList = Object.freeze({
       //  attempted move.
 
       const mv = target.lastChosenMove;
-      let dmg = user.lastDamage * 2;
       if (mv && ((mv.type !== "normal" && mv.type !== "fight") || !mv.power || mv === this)) {
-        dmg = 0;
+        return 0;
       } else if (target.owner.choice?.move === this) {
-        dmg = 0;
+        return 0;
       }
       // Counter can crit, but it won't do any more damage
-      return dmg;
+      return user.lastDamage * 2;
     },
   },
   crabhammer: {
