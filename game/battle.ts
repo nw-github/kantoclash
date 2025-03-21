@@ -177,11 +177,6 @@ export class Battle {
     return this.event({type: "info", src: src.owner.id, why, volatiles});
   }
 
-  unstatus(src: ActivePokemon, why: InfoReason) {
-    src.base.status = undefined;
-    return this.info(src, why, [{id: src.owner.id, v: {status: null}}]);
-  }
-
   opponentOf(player: Player): Player {
     return this.players[0] === player ? this.players[1] : this.players[0];
   }
@@ -431,7 +426,7 @@ export class Battle {
         if (opp.sleepClausePoke === user.base) {
           opp.sleepClausePoke = undefined;
         }
-        this.unstatus(user, "wake");
+        user.unstatus(this, "wake");
       } else {
         this.info(user, "sleep");
       }
@@ -583,7 +578,7 @@ export class Battle {
     // Defrost
     for (const {active} of this.players) {
       if (active.base.status === "frz" && this.rand100((25 / 256) * 100)) {
-        this.unstatus(active, "thaw");
+        active.unstatus(this, "thaw");
       }
     }
 
@@ -777,6 +772,14 @@ export class ActivePokemon {
     return true;
   }
 
+  unstatus(battle: Battle, why: InfoReason) {
+    this.base.status = undefined;
+    if (battle.gen.id === 1 && why === "thaw") {
+      this.v.hazed = true;
+    }
+    return battle.info(this, why, [{id: this.owner.id, v: {status: null}}]);
+  }
+
   setStage(
     stat: Stages,
     value: number,
@@ -791,13 +794,16 @@ export class ActivePokemon {
       this.applyStages(stat, negative);
     }
 
-    // https://bulbapedia.bulbagarden.net/wiki/List_of_battle_glitches_(Generation_I)#Stat_modification_errors
-    opponent.applyStatusDebuff();
-
-    return [
+    const v: ChangedVolatiles = [
       {id: this.owner.id, v: {stats: {...this.v.stats}, stages: {...this.v.stages}}},
-      {id: opponent.owner.id, v: {stats: {...opponent.v.stats}}},
     ];
+    if (battle.gen.id === 1) {
+      // https://bulbapedia.bulbagarden.net/wiki/List_of_battle_glitches_(Generation_I)#Stat_modification_errors
+      opponent.applyStatusDebuff();
+      v.push({id: opponent.owner.id, v: {stats: {...opponent.v.stats}}});
+    }
+
+    return v;
   }
 
   modStages(mods: [Stages, number][], battle: Battle, opponent?: ActivePokemon) {

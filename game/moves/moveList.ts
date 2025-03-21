@@ -1185,7 +1185,7 @@ const internalMoveList = createMoveList({
       }
 
       const types = (Object.keys(battle.gen.typeChart) as Type[]).filter(type => {
-        return battle.gen.typeChart[type][lastMove.type] ?? 1 < 1;
+        return (battle.gen.typeChart[type][lastMove.type] ?? 1) < 1;
       });
 
       const v = user.setVolatile("types", [battle.rng.choice(types)!]);

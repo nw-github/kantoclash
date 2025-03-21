@@ -317,7 +317,11 @@ export function rankBot({team, options, players, activePokemon, opponent: id, me
 
     const move = gen.moveList[id];
     if ((move.power ?? 0) > 1) {
-      const eff = getEffectiveness(gen.typeChart, move.type, opponentPoke.species.types);
+      const eff = getEffectiveness(
+        gen.typeChart,
+        move.type,
+        opponentActive.v.types ?? opponentPoke.species.types,
+      );
       if (eff > 1) {
         return 15;
       } else if (eff < 1) {

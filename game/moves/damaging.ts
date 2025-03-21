@@ -206,9 +206,7 @@ export function exec(
   if (this.effect) {
     const [chance, effect] = this.effect;
     if (effect === "brn" && target.base.status === "frz") {
-      target.base.status = undefined;
-      battle.unstatus(target, "thaw");
-      target.v.hazed = true;
+      target.unstatus(battle, "thaw");
       // TODO: can you thaw and then burn?
       return;
     }
@@ -243,9 +241,7 @@ export function exec(
   } else if (this.flag === "tri_attack") {
     const choice = battle.rng.choice(["brn", "par", "frz"] as const)!;
     if (target.base.status === "frz" && choice === "brn") {
-      target.v.hazed = true;
-      battle.unstatus(target, "thaw");
-      return;
+      target.unstatus(battle, "thaw");
     } else if (!target.base.status && !target.owner.screens.safeguard && battle.rand100(20)) {
       // In Gen 2, tri attack can burn fire types and freeze ice types
       target.status(choice, battle);

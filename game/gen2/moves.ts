@@ -60,21 +60,15 @@ export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
       const type = battle.rng.choice(
         user.base.moves
           .map(move => battle.gen.moveList[move].type)
-          .filter(type => !user.v.types.includes(type)),
+          .filter(type => type !== "???" && !user.v.types.includes(type)),
       );
       if (!type) {
         battle.info(user, "fail_generic");
-        return false;
+        return;
       }
 
-      user.v.types = [type];
-      battle.event({
-        type: "conversion",
-        src: user.owner.id,
-        types: [type],
-        volatiles: [{id: user.owner.id, v: {types: [type]}}],
-      });
-      return false;
+      const v = user.setVolatile("types", [type]);
+      battle.event({type: "conversion", src: user.owner.id, types: [type], volatiles: [v]});
     },
   },
   disable: {
@@ -87,9 +81,9 @@ export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
         battle.moveIdOf(target.v.lastMove) === "struggle"
       ) {
         battle.info(user, "fail_generic");
-        return false;
+        return;
       } else if (!battle.checkAccuracy(this, user, target)) {
-        return false;
+        return;
       }
 
       const indexInMoves = target.v.lastMoveIndex!;
@@ -101,20 +95,19 @@ export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
         move: target.base.moves[indexInMoves],
         volatiles: [{id: target.owner.id, v: {disabled: true}}],
       });
-      return false;
     },
   },
   haze: {
     exec(battle, user, target) {
-      battle.info(user, "haze", [
-        {id: user.owner.id, v: {stages: null}},
-        {id: target.owner.id, v: {stages: null}},
-      ]);
-
       for (const k of stageKeys) {
-        user.v.stages[k] = target.v.stages[k] = 0;
+        user.setStage(k, 0, battle, false);
+        target.setStage(k, 0, battle, false);
       }
-      return false;
+
+      battle.info(user, "haze", [
+        {id: user.owner.id, v: {stages: null, stats: {...user.v.stats}}},
+        {id: target.owner.id, v: {stages: null, stats: {...target.v.stats}}},
+      ]);
     },
   },
   mimic: {noMetronome: true},

@@ -21,7 +21,8 @@ export type Type =
   | "psychic"
   | "dragon"
   | "dark"
-  | "steel";
+  | "steel"
+  | "???";
 export type Stages = (typeof stageKeys)[number];
 export type StatStages = (typeof stageStatKeys)[number];
 
@@ -74,6 +75,7 @@ export const isSpecial = (atk: Type) => {
     case "flying":
     case "fight":
     case "steel":
+    case "???":
       return false;
     case "water":
     case "grass":

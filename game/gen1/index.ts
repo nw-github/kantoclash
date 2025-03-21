@@ -56,6 +56,7 @@ export const typeChart: TypeChart = {
   dragon: {dragon: 2, steel: 0.5},
   dark: {ghost: 2, fight: 0.5, psychic: 2, dark: 0.5, steel: 0.5},
   steel: {rock: 2, water: 0.5, fire: 0.5, electric: 0.5, ice: 2, steel: 0.5},
+  "???": {},
 };
 
 const checkAccuracy = (move: Move, battle: Battle, user: ActivePokemon, target: ActivePokemon) => {
