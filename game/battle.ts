@@ -176,6 +176,11 @@ export class Battle {
     return this.event({type: "info", src: src.owner.id, why, volatiles});
   }
 
+  unstatus(src: ActivePokemon, why: InfoReason) {
+    src.base.status = undefined;
+    return this.info(src, why, [{id: src.owner.id, v: {status: null}}]);
+  }
+
   opponentOf(player: Player): Player {
     return this.players[0] === player ? this.players[1] : this.players[0];
   }
@@ -414,18 +419,14 @@ export class Battle {
     } else if (user.base.status === "slp") {
       const done = --user.base.sleepTurns === 0;
       if (done) {
-        user.base.status = undefined;
         const opp = this.opponentOf(user.owner);
         if (opp.sleepClausePoke === user.base) {
           opp.sleepClausePoke = undefined;
         }
+        this.unstatus(user, "wake");
+      } else {
+        this.info(user, "sleep");
       }
-
-      this.info(
-        user,
-        done ? "wake" : "sleep",
-        done ? [{id: user.owner.id, v: {status: null}}] : undefined,
-      );
       return false;
     } else if (user.base.status === "frz") {
       this.info(user, "frozen");

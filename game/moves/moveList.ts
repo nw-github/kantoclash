@@ -520,7 +520,7 @@ const internalMoveList = createMoveList({
     type: "ground",
     power: 100,
     acc: 100,
-    flag: "charge_invuln",
+    charge: "invuln",
   },
   dizzypunch: {kind: "damage", name: "Dizzy Punch", pp: 10, type: "normal", power: 70, acc: 100},
   doubleedge: {
@@ -642,7 +642,7 @@ const internalMoveList = createMoveList({
     type: "flying",
     power: 70,
     acc: 95,
-    flag: "charge_invuln",
+    charge: "invuln",
   },
   furyattack: {
     kind: "damage",
@@ -898,7 +898,7 @@ const internalMoveList = createMoveList({
     type: "normal",
     power: 80,
     acc: 75,
-    flag: "charge",
+    charge: true,
   },
   rockslide: {kind: "damage", name: "Rock Slide", pp: 10, type: "rock", power: 75, acc: 90},
   rockthrow: {kind: "damage", name: "Rock Throw", pp: 15, type: "rock", power: 50, acc: 65},
@@ -937,7 +937,7 @@ const internalMoveList = createMoveList({
     type: "normal",
     power: 100,
     acc: 100,
-    flag: "charge",
+    charge: true,
   },
   skyattack: {
     kind: "damage",
@@ -946,7 +946,7 @@ const internalMoveList = createMoveList({
     type: "flying",
     power: 140,
     acc: 90,
-    flag: "charge",
+    charge: true,
   },
   slam: {kind: "damage", name: "Slam", pp: 20, type: "normal", power: 80, acc: 75},
   slash: {
@@ -983,7 +983,7 @@ const internalMoveList = createMoveList({
     type: "grass",
     power: 120,
     acc: 100,
-    flag: "charge_sun",
+    charge: "sun",
   },
   sonicboom: {
     kind: "damage",

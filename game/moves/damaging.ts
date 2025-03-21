@@ -17,9 +17,6 @@ type Flag =
   | "multi"
   | "dream_eater"
   | "payday"
-  | "charge"
-  | "charge_sun"
-  | "charge_invuln"
   | "multi_turn"
   | "rage"
   | "trap"
@@ -34,9 +31,10 @@ export interface DamagingMove extends BaseMove {
   readonly power: number;
   readonly flag?: Flag;
   readonly effect?: [number, Effect];
-  readonly effect_self?: boolean | "charge";
+  readonly effect_self?: boolean;
   readonly recoil?: number;
   readonly punish?: boolean;
+  readonly charge?: boolean | "sun" | "invuln" | [Stages, number][];
   readonly getPower?: (user: Pokemon) => number;
   readonly getType?: (user: Pokemon) => Type;
   readonly getDamage?:
@@ -59,14 +57,15 @@ export function use(
     return dead;
   }
 
-  if (
-    (this.flag === "charge" || this.flag === "charge_sun" || this.flag === "charge_invuln") &&
-    user.v.charging !== this
-  ) {
+  if (this.charge && user.v.charging !== this) {
     battle.event({type: "charge", src: user.owner.id, move: battle.moveIdOf(this)!});
-    if (!(this.flag === "charge_sun" && battle.weather?.kind === "sun")) {
+    if (Array.isArray(this.charge)) {
+      user.modStages(user.owner, this.charge, battle);
+    }
+
+    if (this.charge !== "sun" || battle.weather?.kind !== "sun") {
       user.v.charging = this;
-      user.v.invuln = this.flag === "charge_invuln" || user.v.invuln;
+      user.v.invuln = this.charge === "invuln" || user.v.invuln;
       return false;
     }
   }
@@ -74,7 +73,7 @@ export function use(
   user.v.charging = undefined;
   user.v.trapping = undefined;
   target.lastDamage = 0;
-  if (this.flag === "charge_invuln") {
+  if (this.charge === "invuln") {
     user.v.invuln = false;
   }
   return battle.defaultUseMove(this, user, target, moveIndex);
@@ -207,8 +206,8 @@ export function exec(
     const [chance, effect] = this.effect;
     if (effect === "brn" && target.base.status === "frz") {
       target.base.status = undefined;
+      battle.unstatus(target, "thaw");
       target.v.hazed = true;
-      battle.info(target, "thaw");
       // TODO: can you thaw and then burn?
       return dead;
     }
@@ -225,7 +224,7 @@ export function exec(
     } else if (hadSub) {
       return dead;
     } else if (Array.isArray(effect)) {
-      const poke = this.effect_self === true ? user : target;
+      const poke = this.effect_self ? user : target;
       poke.modStages(user.owner, effect, battle);
     } else if (effect === "flinch") {
       target.v.flinch = true;
@@ -239,9 +238,8 @@ export function exec(
   } else if (this.flag === "tri_attack") {
     const choice = battle.rng.choice(["brn", "par", "frz"] as const)!;
     if (target.base.status === "frz" && choice === "brn") {
-      target.base.status = undefined;
       target.v.hazed = true;
-      battle.info(target, "thaw");
+      battle.unstatus(target, "thaw");
       return dead;
     } else if (!target.base.status && battle.rand100(20)) {
       // In Gen 2, tri attack can burn fire types and freeze ice types
@@ -283,11 +281,7 @@ function getDamage(self: DamagingMove, battle: Battle, user: ActivePokemon, targ
   let weather: CalcDamageParams["weather"];
   if (battle.weather?.kind === "rain") {
     weather =
-      type === "fire" || self.flag === "charge_sun"
-        ? "penalty"
-        : type === "water"
-        ? "bonus"
-        : undefined;
+      type === "fire" || self.charge === "sun" ? "penalty" : type === "water" ? "bonus" : undefined;
   } else if (battle.weather?.kind === "sun") {
     weather = type === "fire" ? "bonus" : type === "water" ? "penalty" : undefined;
   }

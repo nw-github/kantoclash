@@ -132,7 +132,7 @@ const descriptions: Partial<Record<MoveId, string>> = {
 
 const flagDesc: Record<NonNullable<DamagingMove["flag"]>, string> = {
   drain: "The user recovers 1/2 the damage dealt. ",
-  explosion: "Causes the user to faint. ",
+  explosion: "Halves target defense during damage calculation. Causes the user to faint. ",
   crash: "If the user misses this move, it will take 1 HP due to crash damage. ",
   multi: "Hits 2-5 times. ",
   high_crit: "Has a high critical hit ratio. ",
@@ -140,13 +140,6 @@ const flagDesc: Record<NonNullable<DamagingMove["flag"]>, string> = {
   double: "Hits twice. ",
   dream_eater: "The user recovers 1/2 the damage dealt. Only works on sleeping targets. ",
   payday: "",
-  charge: "The user charges on the first turn, and attacks on the second. ",
-  charge_sun:
-    "The user charges on the first turn, and attacks on the second. Skips the charging " +
-    "turn if sun is active.",
-  charge_invuln:
-    "The user charges on the first turn, and attacks on the second. While charging, the user " +
-    "can only be hit by moves that do not check accuracy.",
   multi_turn: "Locks the user in for 3-4 turns. Afterwards, the user becomes confused.",
   rage:
     "After using this move, the user will not be able to switch or do anything else except " +
@@ -182,6 +175,17 @@ export const describeMove = (gen: Generation, id: MoveId) => {
     return descriptions[id];
   } else if (move.kind === "damage") {
     let buf = move.flag && move.flag in flagDesc ? flagDesc[move.flag] : "";
+    if (move.charge) {
+      buf += "The user charges on the first turn, and attacks on the second. ";
+      if (move.charge === "invuln") {
+        buf += "While charging, the user can not be hit by most moves. ";
+      } else if (move.charge === "sun") {
+        buf += "Skips the charging turn if sun is active.";
+      } else if (Array.isArray(move.charge)) {
+        buf += `On the charge turn, ${formatStages(move.charge)}. `;
+      }
+    }
+
     if (move.effect) {
       const [chance, effect] = move.effect;
       buf += `Has a ${chance}% chance to `;

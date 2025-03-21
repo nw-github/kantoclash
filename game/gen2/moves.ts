@@ -148,7 +148,7 @@ export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
   rockthrow: {acc: 90},
   sandattack: {type: "ground"},
   selfdestruct: {power: 200},
-  skullbash: {effect: [100, [["def", +1]]], effect_self: "charge"},
+  skullbash: {charge: [["def", +1]]},
   sludge: {effect: [30, "psn"]},
   thunder: {ignore: ["fly", "bounce"], effect: [30, "par"]},
   triattack: {flag: "tri_attack"},
