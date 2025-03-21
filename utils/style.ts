@@ -7,6 +7,7 @@ export const typeColor: Record<Type, string> = {
   rock: "#C6B68A",
   ground: "#D87646",
   ghost: "#5168AB",
+  "???": "#5168AB",
   poison: "#AA69C7",
   bug: "#8FC02B",
   flying: "#8EA7DC",

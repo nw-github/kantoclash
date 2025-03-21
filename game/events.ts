@@ -63,7 +63,8 @@ export type DamageReason =
   | "sandstorm"
   | "belly_drum"
   | "set_curse"
-  | "curse";
+  | "curse"
+  | "destiny_bond";
 
 export type RecoveryReason = "drain" | "recover" | "rest" | "seeder";
 
@@ -157,7 +158,8 @@ export type InfoReason =
   | "ff_timer"
   | "faint"
   | "attract"
-  | "immobilized";
+  | "immobilized"
+  | "destinyBond";
 
 type InfoEvent = {type: "info"; src: PlayerId; why: InfoReason};
 

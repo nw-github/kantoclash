@@ -85,6 +85,7 @@ export const infoMessage: Record<InfoReason, string> = {
   faint: "{} fainted!",
   attract: "{} fell in love!",
   immobilized: "{} is immobilized by love!",
+  destinyBond: "{} is trying to take its foe with it!",
 };
 
 export const weatherMessage: Record<Weather, Record<WeatherEvent["kind"], string>> = {

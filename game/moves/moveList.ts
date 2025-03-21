@@ -1221,7 +1221,14 @@ const internalMoveList = createMoveList({
       }
     },
   },
-  // destinybond: { noMetronome: true },
+  destinybond: {
+    kind: "volatile",
+    name: "Destiny Bond",
+    pp: 5,
+    type: "ghost",
+    noMetronome: true,
+    flag: "destinyBond",
+  },
   // detect: { noMetronome: true },
   // encore: {},
   // endure: { noMetronome: true  },

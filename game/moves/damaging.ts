@@ -194,6 +194,12 @@ export function exec(
     }
   }
 
+  if (dead && target.v.flags.destinyBond) {
+    user.damage(user.base.hp, target, battle, false, "destiny_bond", true);
+    // user should die first
+    battle.checkFaint(target, user);
+  }
+
   if (dead || brokeSub) {
     return;
   }

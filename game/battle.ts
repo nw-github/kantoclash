@@ -333,6 +333,7 @@ export class Battle {
   private runTurn(choices: ChosenMove[]) {
     for (const {user, move, indexInMoves} of choices) {
       user.movedThisTurn = true;
+      user.v.flags.destinyBond = false;
 
       const target = this.opponentOf(user.owner).active;
       if (move.kind !== "switch" && !this.beforeUseMove(move, user, target)) {
@@ -395,23 +396,20 @@ export class Battle {
   }
 
   checkFaint(user: ActivePokemon, target: ActivePokemon) {
-    let dead = false;
-    if (target.base.hp === 0) {
+    if (target.base.hp === 0 && !target.v.fainted) {
       target.faint(this);
       if (!this.victor && target.owner.areAllDead()) {
         this.victor = user.owner;
       }
-      dead = true;
     }
 
-    if (user.base.hp === 0) {
+    if (user.base.hp === 0 && !target.v.fainted) {
       user.faint(this);
       if (!this.victor && user.owner.areAllDead()) {
         this.victor = target.owner;
       }
-      dead = true;
     }
-    return dead;
+    return target.base.hp === 0 || user.base.hp === 0;
   }
 
   private beforeUseMove(move: Move, user: ActivePokemon, target: ActivePokemon) {
@@ -564,7 +562,7 @@ export class Battle {
 
       this.event({type: "weather", kind: "continue", weather: this.weather.kind});
       for (const {active} of this.players) {
-        if (active.v.charging === this.gen.moveList.dig) {
+        if (active.v.charging === this.gen.moveList.dig || active.v.fainted) {
           continue;
         } else if (active.v.types.some(t => t === "steel" || t === "ground" || t === "rock")) {
           continue;

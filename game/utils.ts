@@ -33,7 +33,7 @@ export const stageStatKeys = ["atk", "def", "spa", "spd", "spe"] as const;
 export const statKeys = ["hp", ...stageStatKeys] as const;
 export const stageKeys = [...stageStatKeys, "acc", "eva"] as const;
 
-export type VolatileFlag = (typeof volatileFlags)[number];
+export type VolatileFlag = (typeof volatileFlags)[number] | "destinyBond";
 
 export const volatileFlags = ["light_screen", "reflect", "mist", "focus", "seeded"] as const;
 

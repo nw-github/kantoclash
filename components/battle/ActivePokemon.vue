@@ -35,7 +35,7 @@
           </UBadge>
 
           <template v-for="({name, color}, flag) in badges">
-            <UBadge v-if="poke.v[flag]" :key="flag" :color="color" :label="name" />
+            <UBadge v-if="poke.v[flag]" :key="flag" :color :label="name" />
           </template>
 
           <template v-for="(val, stage) in poke.v.stages">
@@ -177,6 +177,7 @@ const badges = {
   reflect: {color: "pink", name: "Reflect"},
   mist: {color: "teal", name: "Mist"},
   seeded: {color: "lime", name: "Leech Seed"},
+  destinyBond: {color: "gray", name: "Destiny Bond"},
 } as const;
 
 export type AnimationType =
