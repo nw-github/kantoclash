@@ -1,6 +1,6 @@
 <template>
   <div class="flex items-center justify-center">
-    <span class="pokesprite pokemon unknown" :class="species" />
+    <span class="pokesprite pokemon" :class="species" />
   </div>
 </template>
 
