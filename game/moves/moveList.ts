@@ -59,7 +59,7 @@ const internalMoveList = createMoveList({
         src: user.owner.id,
         target: target.owner.id,
         types: [...user.v.types],
-        volatiles: [{id: user.owner.id, v: {conversion: [...user.v.types]}}],
+        volatiles: [{id: user.owner.id, v: {types: [...user.v.types]}}],
       });
 
       return false;
@@ -1173,7 +1173,30 @@ const internalMoveList = createMoveList({
       (event as BattleEvent).volatiles = user.setStage("atk", +6, battle, false);
     },
   },
-  // conversion2: {},
+  conversion2: {
+    name: "Conversion2",
+    pp: 30,
+    type: "normal",
+    exec(battle, user, target) {
+      const lastMove = target.v.lastMove;
+      if (!lastMove) {
+        battle.info(user, "fail_generic");
+        return;
+      }
+
+      const types = (Object.keys(battle.gen.typeChart) as Type[]).filter(type => {
+        return battle.gen.typeChart[type][lastMove.type] ?? 1 < 1;
+      });
+
+      const v = user.setVolatile("types", [battle.rng.choice(types)!]);
+      battle.event({
+        type: "conversion",
+        src: user.owner.id,
+        types: [...user.v.types],
+        volatiles: [v],
+      });
+    },
+  },
   // curse: {},
   // destinybond: { noMetronome: true },
   // detect: { noMetronome: true },

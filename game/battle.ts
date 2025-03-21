@@ -907,6 +907,11 @@ export class ActivePokemon {
     const moveLocked = !!(this.v.bide || this.v.trapping);
     return {canSwitch: !lockedIn || moveLocked || this.v.fainted, moves};
   }
+
+  setVolatile<T extends keyof Volatiles>(key: T, val: Volatiles[T]) {
+    this.v[key] = val;
+    return {id: this.owner.id, v: {[key]: structuredClone(val)}} as const;
+  }
 }
 
 export type VolatileStats = Volatiles["stats"];
@@ -962,7 +967,7 @@ class Volatiles {
       stages: {...this.stages},
       stats: {...this.stats},
       charging: this.charging ? battle.moveIdOf(this.charging) : undefined,
-      conversion: !arraysEqual(this.types, base.species.types) ? [...this.types] : undefined,
+      types: !arraysEqual(this.types, base.species.types) ? [...this.types] : undefined,
       disabled: !!this.disabled,
       attract: !!this.attract,
     };

@@ -132,6 +132,22 @@ const descriptions: Partial<Record<MoveId, string>> = {
     "Infatuates the target, preventing it from moving 50% of the time. Fails on Pokémon of the " +
     "same gender, or when used by or on Pokémon with unknown gender. Ends when either pokemon " +
     "switches out. ",
+  conversion2:
+    "Randomly changes the user's type to one that resists the last move used by the opponent. ",
+};
+
+const gen2Descriptions: Partial<Record<MoveId, string>> = {
+  conversion:
+    "Randomly changes the user's type to the type of one of its moves. Cannot change type to one " +
+    "that matches any of the user's current types.",
+  disable: "Disables a move from the target's move set at random.",
+  haze: "Removes the all stat stages for both the user and the target. ",
+  substitute:
+    "The user sacrifices 1/4 its HP to create a substitute with 1/4 its HP + 1. The " +
+    "substitute protects it from status, stat stage changes, and confusion from the opponent's " +
+    "attacks. ",
+  focusenergy: "Raises the user's critical hit stages by 1. Does not stack. ",
+  counter: "Deals 2x the last move's damage if it was physical. ",
 };
 
 const flagDesc: Record<NonNullable<DamagingMove["flag"]>, string> = {
@@ -175,7 +191,10 @@ const formatStages = (stages: [Stages, number][]) => {
 
 export const describeMove = (gen: Generation, id: MoveId) => {
   const move = gen.moveList[id];
-  if (id in descriptions) {
+  // FIXME: more generic solution
+  if (id in gen2Descriptions && gen.id === 2) {
+    return gen2Descriptions[id];
+  } else if (id in descriptions) {
     return descriptions[id];
   } else if (move.kind === "damage") {
     let buf = move.flag && move.flag in flagDesc ? flagDesc[move.flag] : "";

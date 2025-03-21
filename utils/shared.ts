@@ -12,7 +12,7 @@ export type ClientVolatiles = Partial<Record<ClientVolatileFlag, boolean>> & {
   status?: Status;
   stats?: VolatileStats;
   charging?: MoveId;
-  conversion?: Type[];
+  types?: Type[];
   attract?: boolean;
 };
 

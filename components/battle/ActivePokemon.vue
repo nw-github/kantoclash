@@ -26,8 +26,8 @@
             :label="gen.moveList[poke.v.charging].name"
           />
 
-          <template v-if="!species!.types.every((ty, i) => ty === poke.v.conversion?.[i])">
-            <TypeBadge v-for="type in poke.v.conversion" :key="type" :type="type" />
+          <template v-if="!species!.types.every((ty, i) => ty === poke.v.types?.[i])">
+            <TypeBadge v-for="type in poke.v.types" :key="type" :type="type" />
           </template>
 
           <UBadge v-if="poke.v.status" :style="{backgroundColor: statusColor[poke.v.status]}">

@@ -72,7 +72,7 @@ export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
         type: "conversion",
         src: user.owner.id,
         types: [type],
-        volatiles: [{id: user.owner.id, v: {conversion: [type]}}],
+        volatiles: [{id: user.owner.id, v: {types: [type]}}],
       });
       return false;
     },
