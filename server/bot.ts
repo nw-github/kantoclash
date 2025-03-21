@@ -171,10 +171,9 @@ export async function startBot(format?: FormatId, botFunction: BotFunction = ran
         if (e.target === myId) {
           team[activePokemon].hp = e.hpAfter!;
         }
-
-        if (e.dead) {
-          players[e.target].nFainted++;
-        }
+      } else if (e.type === "info" && e.why === "faint") {
+        players[e.src].active!.fainted = true;
+        players[e.src].nFainted++;
       }
 
       if (e.volatiles) {

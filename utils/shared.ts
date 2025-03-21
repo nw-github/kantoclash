@@ -1,11 +1,10 @@
 import type {Gender, Status} from "~/game/pokemon";
 import type {Mods, VolatileStats} from "../game/battle";
 import type {SpeciesId} from "../game/species";
-import {volatileFlags, type Stages, type Type} from "../game/utils";
+import type {Stages, Type, VolatileFlag} from "../game/utils";
 import type {MoveId} from "~/game/moves";
 
-export const clientVolatiles = [...volatileFlags, "substitute", "confused", "disabled"] as const;
-export type ClientVolatileFlag = (typeof clientVolatiles)[number];
+export type ClientVolatileFlag = VolatileFlag | "substitute" | "confused" | "disabled";
 
 export type ClientVolatiles = Partial<Record<ClientVolatileFlag, boolean>> & {
   stages: Partial<Record<Stages, number>>;
@@ -14,6 +13,7 @@ export type ClientVolatiles = Partial<Record<ClientVolatileFlag, boolean>> & {
   stats?: VolatileStats;
   charging?: MoveId;
   conversion?: Type[];
+  attract?: boolean;
 };
 
 export type ClientActivePokemon = {

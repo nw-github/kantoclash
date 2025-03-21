@@ -18,6 +18,7 @@ type AnyEvent =
   | StagesEvent
   | InfoEvent
   | TransformEvent
+  | InLoveEvent
   | DisableEvent
   | ChargeEvent
   | MimicEvent
@@ -148,11 +149,15 @@ export type InfoReason =
   | "trapped"
   | "ff"
   | "ff_timer"
-  | "faint";
+  | "faint"
+  | "attract"
+  | "immobilized";
 
 type InfoEvent = {type: "info"; src: PlayerId; why: InfoReason};
 
 type TransformEvent = {type: "transform"; src: PlayerId; target: PlayerId};
+
+type InLoveEvent = {type: "in_love"; src: PlayerId; target: PlayerId};
 
 type DisableEvent = {type: "disable"; src: PlayerId; move: MoveId};
 

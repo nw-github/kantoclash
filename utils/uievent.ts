@@ -82,6 +82,8 @@ export const infoMessage: Record<InfoReason, string> = {
   ff: "{} forfeit the match.",
   ff_timer: "{} ran out of time.",
   faint: "{} fainted!",
+  attract: "{} fell in love!",
+  immobilized: "{} is immobilized by love!",
 };
 
 export const weatherMessage: Record<Weather, Record<WeatherEvent["kind"], string>> = {

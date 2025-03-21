@@ -473,7 +473,8 @@ export class Battle {
 
     const confuse = user.v.confusion && this.rng.bool();
     const fullPara = user.base.status === "par" && this.rand255(floatTo255(25));
-    if (confuse || fullPara) {
+    const attract = user.v.attract && this.rand255(floatTo255(50));
+    if (confuse || attract || fullPara) {
       // Gen 1 bug: remove charging w/o removing user.v.invuln
       user.v.charging = undefined;
       user.v.bide = undefined;
@@ -481,6 +482,11 @@ export class Battle {
         user.v.thrashing = undefined;
       }
       user.v.trapping = undefined;
+    }
+
+    if (!confuse && user.v.attract) {
+      // TODO: in doubles, need the pokemon that originally attracted
+      this.event({type: "in_love", src: user.owner.id, target: target.owner.id});
     }
 
     if (confuse) {
@@ -503,6 +509,9 @@ export class Battle {
         return this.checkFaint(user, target);
       }
 
+      return false;
+    } else if (attract) {
+      this.info(user, "immobilized");
       return false;
     } else if (fullPara) {
       this.info(user, "paralyze");
@@ -612,6 +621,15 @@ export class ActivePokemon {
     this.base = next;
     this.applyStatusDebuff();
 
+    const volatiles: ChangedVolatiles = [
+      {id: this.owner.id, v: this.v.toClientVolatiles(next, battle)},
+    ];
+    const {active, id} = battle.opponentOf(this.owner);
+    if (active.v.attract) {
+      active.v.attract = undefined;
+      volatiles.push({id, v: {attract: null}});
+    }
+
     battle.event({
       type: "switch",
       speciesId: next.speciesId,
@@ -623,7 +641,7 @@ export class ActivePokemon {
       gender: next.gender,
       indexInTeam: this.owner.team.indexOf(next),
       why,
-      volatiles: [{id: this.owner.id, v: this.v.toClientVolatiles(next, battle)}],
+      volatiles,
     });
   }
 
@@ -891,6 +909,7 @@ class Volatiles {
   hazed = false;
   trapped = false;
   fainted = false;
+  attract?: ActivePokemon;
   lastMove?: Move;
   lastMoveIndex?: number;
   charging?: Move;
@@ -930,6 +949,7 @@ class Volatiles {
       charging: this.charging ? battle.moveIdOf(this.charging) : undefined,
       conversion: !arraysEqual(this.types, base.species.types) ? [...this.types] : undefined,
       disabled: !!this.disabled,
+      attract: !!this.attract,
     };
   }
 }

@@ -1121,7 +1121,26 @@ const internalMoveList = createMoveList({
   teleport: {kind: "fail", name: "Teleport", pp: 20, type: "psychic", why: "fail_generic"},
   whirlwind: {kind: "fail", name: "Whirlwind", pp: 20, acc: 85, type: "normal", why: "whirlwind"},
   // >== Generation 2
-  // attract: {},
+  attract: {
+    name: "Attract",
+    pp: 15,
+    acc: 100,
+    type: "normal",
+    exec(battle, user, target) {
+      if (
+        !user.base.gender ||
+        !target.base.gender ||
+        user.base.gender === target.base.gender ||
+        target.v.attract
+      ) {
+        battle.info(user, "fail_generic");
+        return;
+      }
+
+      target.v.attract = user;
+      battle.info(target, "attract", [{id: target.owner.id, v: {attract: true}}]);
+    },
+  },
   // batonpass: {},
   // beatup: {},
   // bellydrum: {},

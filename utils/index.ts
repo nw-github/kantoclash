@@ -128,6 +128,10 @@ const descriptions: Partial<Record<MoveId, string>> = {
   hiddenpower: "Power and type of this move are determined by the user's DVs. ",
   seismictoss: "Deals damage equal to the user's level.",
   nightshade: "Deals damage equal to the user's level.",
+  attract:
+    "Infatuates the target, preventing it from moving 50% of the time. Fails on Pokémon of the " +
+    "same gender, or when used by or on Pokémon with unknown gender. Ends when either pokemon " +
+    "switches out. ",
 };
 
 const flagDesc: Record<NonNullable<DamagingMove["flag"]>, string> = {

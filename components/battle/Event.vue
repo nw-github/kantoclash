@@ -95,6 +95,7 @@
   <div v-else-if="e.type === 'screen'">
     {{ screenMessage[e.screen][e.kind].replace("{}", tn(e.src, true)).replace("{l}", tn(e.src, false)) }}
   </div>
+  <div v-else-if="e.type === 'in_love'" class="move">{{ pn(e.src) }} is in love with {{ pn(e.target, false) }}!</div>
   <div v-else>Unknown event: <code>{{ e }}</code></div>
 </template>
 

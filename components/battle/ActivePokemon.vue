@@ -34,14 +34,8 @@
             {{ poke.v.status.toUpperCase() }}
           </UBadge>
 
-          <template v-for="flag in clientVolatiles">
-            <UBadge
-              v-if="poke.v[flag] && flag !== 'substitute'"
-              :key="flag"
-              :color="flagInfo[flag].color"
-            >
-              {{ flagInfo[flag].name }}
-            </UBadge>
+          <template v-for="({name, color}, flag) in badges">
+            <UBadge v-if="poke.v[flag]" :key="flag" :color="color" :label="name" />
           </template>
 
           <template v-for="(val, stage) in poke.v.stages">
@@ -173,9 +167,10 @@ const gen1Gender: Partial<Record<SpeciesId, Gender>> = {
 const offsX = (number: number) => `-${number * 42 - number}px`;
 const offsY = (number: number) => `-${number * 42 - number * 2}px`;
 
-const flagInfo = {
+const badges = {
   confused: {color: "red", name: "Confused"},
   disabled: {color: "red", name: "Disable"},
+  attract: {color: "pink", name: "Attract"},
   focus: {color: "emerald", name: "Focus Energy"},
   light_screen: {color: "pink", name: "Light Screen"},
   reflect: {color: "pink", name: "Reflect"},
