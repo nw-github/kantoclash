@@ -469,13 +469,8 @@ const runTurn = async (live: boolean, turnIdx: number) => {
       await playAnimation(e.src, "sendin", e.name, () => {
         player.active = {...e, v: {stages: {}}, fainted: false};
         if (e.src === myId.value) {
-          if (activeInTeam.value?.status === "tox") {
-            activeInTeam.value.status = "psn";
-          }
-
           activeIndex.value = e.indexInTeam;
           activeInTeam.value!.hp = e.hp!;
-          player.active.v.stats = undefined;
         }
         handleVolatiles(e);
         playCry(e.speciesId);
@@ -505,7 +500,7 @@ const runTurn = async (live: boolean, turnIdx: number) => {
         });
       } else {
         update();
-        if (e.why === "confusion") {
+        if (e.why === "confusion" || e.why === "sandstorm") {
           await playDmg(e.eff ?? 1);
         }
       }
@@ -550,7 +545,9 @@ const runTurn = async (live: boolean, turnIdx: number) => {
     }
 
     handleVolatiles(e);
-    pushEvent(e);
+    if (e.type !== "sv") {
+      pushEvent(e);
+    }
   };
 
   liveEvents.value.length = 0;
@@ -566,7 +563,7 @@ const runTurn = async (live: boolean, turnIdx: number) => {
   for (const e of turn.events) {
     await handleEvent(e);
     if (isLive()) {
-      await delay(250);
+      await delay(e.type === "weather" && e.kind === "continue" ? 450 : 250);
     }
   }
 

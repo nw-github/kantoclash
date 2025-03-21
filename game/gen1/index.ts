@@ -1,6 +1,6 @@
 import type {Random} from "random";
 import type {ActivePokemon, Battle} from "../battle";
-import {moveFunctions, moveList, type Move} from "../moves";
+import {moveFunctions, moveList, type Move, type MoveId} from "../moves";
 import {speciesList, type Species} from "../species";
 import {floatTo255, idiv, scaleAccuracy255, type Type} from "../utils";
 
@@ -159,6 +159,27 @@ const getDamageVariables = (
   return [atk, def] as const;
 };
 
+const isValidMove = (battle: Battle, user: ActivePokemon, move: MoveId, i: number) => {
+  if (user.v.lockedIn() && user.v.lockedIn() !== battle.gen.moveList[move]) {
+    return false;
+  } else if (user.base.status === "frz" || user.base.status === "slp") {
+    // https://bulbapedia.bulbagarden.net/wiki/List_of_battle_glitches_(Generation_I)#Defrost_move_forcing
+    // XXX: Gen 1 doesn't let you pick your move when frozen, so if you are defrosted
+    // before your turn, the game can desync. The logic we implement follows with what the
+    // opponent player's game would do :shrug:
+
+    // This also implements the bug in which pokemon who are frozen/put to sleep on the turn
+    // they use a modified priority move retain that priority until they wake up/thaw.
+    return (user.v.lastMoveIndex ?? 0) === i;
+  } else if (i === user.v.disabled?.indexInMoves) {
+    return false;
+  } else if (user.base.pp[i] === 0) {
+    return false;
+  }
+
+  return true;
+};
+
 const createGeneration = () => {
   return {
     id: 1,
@@ -167,12 +188,23 @@ const createGeneration = () => {
     typeChart,
     moveFunctions,
     lastMoveIdx: moveList.whirlwind.idx!,
+    isValidMove,
     getCritChance,
     checkAccuracy,
     calcDamage,
     getDamageVariables,
     validSpecies: (species: Species) => species.dexId <= 151,
     getMaxPP: (move: Move) => (move.pp === 1 ? 1 : Math.min(Math.floor((move.pp * 8) / 5), 61)),
+    getSleepTurns(battle: Battle) {
+      // https://www.smogon.com/forums/threads/outdated-new-rby-sleep-mechanics-discovery.3745689/
+      let rng = battle.rng.int(0, 255);
+      let sleepTurns = rng & 7;
+      while (!sleepTurns) {
+        rng = (rng * 5 + 1) & 255;
+        sleepTurns = rng & 7;
+      }
+      return sleepTurns;
+    },
   };
 };
 

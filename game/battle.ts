@@ -18,6 +18,7 @@ import {
   floatTo255,
   getEffectiveness,
   hpPercent,
+  idiv,
   stageMultipliers,
   stageStatKeys,
   type Stages,
@@ -189,6 +190,33 @@ export class Battle {
     return this.moveListToId.get(move);
   }
 
+  findPlayer(id: string) {
+    return this.players.find(pl => pl.id === id);
+  }
+
+  forfeit(player: Player, timer: boolean) {
+    this.victor = this.opponentOf(player);
+    this.event({type: "info", src: player.id, why: timer ? "ff_timer" : "ff"});
+    this.event({type: "end", victor: this.victor.id});
+    for (const player of this.players) {
+      player.options = undefined;
+    }
+    return {events: this.events.splice(0), switchTurn: false};
+  }
+
+  draw(why: VictoryEvent["why"]) {
+    this.finished = true;
+    for (const player of this.players) {
+      if (why === "timer") {
+        this.event({type: "info", src: player.id, why: "ff_timer"});
+      }
+      player.options = undefined;
+    }
+
+    this.event({type: "end", why});
+    return {events: this.events.splice(0), switchTurn: false};
+  }
+
   nextTurn() {
     if (!this.players.every(player => !player.options || player.choice)) {
       return;
@@ -223,98 +251,20 @@ export class Battle {
       choices.sort(() => (this.rng.bool() ? -1 : 1));
     }
 
-    let skipEnd = false;
-    for (const choice of choices) {
-      choice.user.movedThisTurn = true;
-      if (choice.move.kind === "switch") {
-        this.callUseMove(choice.move, choice.user, choice.user);
-        continue;
-      }
-
-      const target = this.opponentOf(choice.user.owner).active;
-      if (!this.beforeUseMove(choice, target)) {
-        continue;
-      }
-
-      if (
-        this.callUseMove(choice.move, choice.user, target, choice.indexInMoves) ||
-        this.handleRecurrentDamage(choice.user)
-      ) {
-        if (!this.victor) {
-          if (target.owner.areAllDead()) {
-            this.victor = choice.user.owner;
-          } else if (choice.user.owner.areAllDead()) {
-            this.victor = target.owner;
-          }
-        }
-
-        skipEnd = true;
-        break;
-      }
-    }
-
-    if (!skipEnd && !this.switchTurn) {
-      for (const {user} of choices) {
-        if (user.handleStatusDamage(this)) {
-          if (user.owner.areAllDead()) {
-            this.victor = this.opponentOf(user.owner);
-          }
-          break;
-        }
-      }
-    }
+    this.runTurn(choices);
 
     if (this.victor) {
       this.event({type: "end", victor: this.victor.id});
-    }
-
-    for (const player of this.players) {
-      player.choice = undefined;
-      player.active.v.handledStatus = false;
-      player.active.v.hazed = false;
-      player.active.v.flinch = false;
-      player.active.movedThisTurn = false;
-      if (player.active.v.trapped && !this.opponentOf(player).active.v.trapping) {
-        player.active.v.trapped = false;
-      }
-      player.updateOptions(this);
-    }
-
-    if (this.turn >= 1000 && this.mods.endlessBattle) {
+    } else if (this.turn >= 1000 && this.mods.endlessBattle) {
       return this.draw("too_long");
     }
 
     const switchTurn = this.switchTurn;
-    this.switchTurn = this.players.some(pl => pl.active.base.hp === 0);
+    this.switchTurn = this.players.some(pl => pl.active.v.fainted);
     return {events: this.events.splice(0), switchTurn};
   }
 
-  findPlayer(id: string) {
-    return this.players.find(pl => pl.id === id);
-  }
-
-  forfeit(player: Player, timer: boolean) {
-    this.victor = this.opponentOf(player);
-    this.event({type: "info", src: player.id, why: timer ? "ff_timer" : "ff"});
-    this.event({type: "end", victor: this.victor.id});
-    for (const player of this.players) {
-      player.options = undefined;
-    }
-    return {events: this.events.splice(0), switchTurn: false};
-  }
-
-  draw(why: VictoryEvent["why"]) {
-    this.finished = true;
-    for (const player of this.players) {
-      if (why === "timer") {
-        this.event({type: "info", src: player.id, why: "ff_timer"});
-      }
-      player.options = undefined;
-    }
-
-    this.event({type: "end", why});
-    return {events: this.events.splice(0), switchTurn: false};
-  }
+  // --
 
   callUseMove(move: Move, user: ActivePokemon, target: ActivePokemon, moveIndex?: number) {
     if (!move.kind && move.use) {
@@ -383,14 +333,52 @@ export class Battle {
     return result;
   }
 
-  //
+  // --
+
+  private runTurn(choices: ChosenMove[]) {
+    for (const {user, move, indexInMoves} of choices) {
+      user.movedThisTurn = true;
+
+      const target = this.opponentOf(user.owner).active;
+      if (move.kind !== "switch" && !this.beforeUseMove(move, user, target)) {
+        continue;
+      }
+
+      this.callUseMove(move, user, target, indexInMoves);
+      if (!this.switchTurn) {
+        if (this.checkFaint(user, target)) {
+          break;
+        }
+
+        this.handleResidualDamage(user);
+        if (this.checkFaint(user, target)) {
+          break;
+        }
+      }
+    }
+
+    if (!this.switchTurn) {
+      this.handleBetweenTurns();
+    }
+
+    for (const player of this.players) {
+      player.choice = undefined;
+      player.active.v.hazed = false;
+      player.active.v.flinch = false;
+      player.active.movedThisTurn = false;
+      if (player.active.v.trapped && !this.opponentOf(player).active.v.trapping) {
+        player.active.v.trapped = false;
+      }
+      player.updateOptions(this);
+    }
+  }
 
   defaultUseMove(move: Move, user: ActivePokemon, target: ActivePokemon, moveIndex?: number) {
     const moveId = this.moveIdOf(move)!;
     if (moveId === user.base.moves[user.v.disabled?.indexInMoves ?? -1]) {
       this.event({move: moveId, type: "move", src: user.owner.id, disabled: true});
       user.v.charging = undefined;
-      return false;
+      return;
     }
 
     if (moveIndex !== undefined && !user.v.thrashing) {
@@ -411,7 +399,27 @@ export class Battle {
     return this.callExecMove(move, user, target);
   }
 
-  protected beforeUseMove({move, user}: ChosenMove, target: ActivePokemon) {
+  checkFaint(user: ActivePokemon, target: ActivePokemon) {
+    let dead = false;
+    if (target.base.hp === 0) {
+      target.faint(this);
+      if (!this.victor && target.owner.areAllDead()) {
+        this.victor = user.owner;
+      }
+      dead = true;
+    }
+
+    if (user.base.hp === 0) {
+      user.faint(this);
+      if (!this.victor && user.owner.areAllDead()) {
+        this.victor = target.owner;
+      }
+      dead = true;
+    }
+    return dead;
+  }
+
+  private beforeUseMove(move: Move, user: ActivePokemon, target: ActivePokemon) {
     // Order of events comes from here:
     //  https://www.smogon.com/forums/threads/past-gens-research-thread.3506992/#post-5878612
     if (user.v.hazed) {
@@ -459,7 +467,7 @@ export class Battle {
       if (--user.v.confusion === 0) {
         this.info(user, "confused_end", [{id: user.owner.id, v: {confused: false}}]);
       } else {
-        this.info(user, "confused");
+        this.info(user, "confused", [{id: user.owner.id, v: {confused: true}}]);
       }
     }
 
@@ -476,7 +484,26 @@ export class Battle {
     }
 
     if (confuse) {
-      return this.handleConfusionDamage(user, target);
+      const [atk, def] = this.gen.getDamageVariables(false, target, target, false);
+      const dmg = this.gen.calcDamage({
+        lvl: user.base.level,
+        pow: 40,
+        def,
+        atk,
+        eff: 1,
+        rand: false,
+        isCrit: false,
+        isStab: false,
+      });
+
+      if (user.v.substitute && target.v.substitute) {
+        target.damage(dmg, user, this, false, "confusion");
+      } else if (!user.v.substitute) {
+        user.damage(dmg, user, this, false, "confusion");
+        return this.checkFaint(user, target);
+      }
+
+      return false;
     } else if (fullPara) {
       this.info(user, "paralyze");
       return false;
@@ -485,35 +512,81 @@ export class Battle {
     return true;
   }
 
-  protected handleConfusionDamage(user: ActivePokemon, target: ActivePokemon) {
-    const [atk, def] = this.gen.getDamageVariables(false, target, target, false);
-    const dmg = this.gen.calcDamage({
-      lvl: user.base.level,
-      pow: 40,
-      def,
-      atk,
-      eff: 1,
-      rand: false,
-      isCrit: false,
-      isStab: false,
-    });
+  private handleResidualDamage(user: ActivePokemon) {
+    const tickCounter = (why: DamageReason) => {
+      const multiplier = user.base.status === "psn" && why === "psn" ? 1 : user.v.counter;
+      const dmg = Math.max(Math.floor((multiplier * user.base.stats.hp) / 16), 1);
+      const {dead} = user.damage(dmg, user, this, false, why, true);
+      const opponent = this.opponentOf(user.owner).active;
+      if (why === "seeded" && opponent.base.hp < opponent.base.stats.hp) {
+        opponent.recover(dmg, user, this, "seeder");
+      }
 
-    if (user.v.substitute && target.v.substitute) {
-      target.damage(dmg, user, this, false, "confusion");
-    } else if (!user.v.substitute) {
-      return user.damage(dmg, user, this, false, "confusion").dead;
+      if (user.base.status === "tox") {
+        user.v.counter++;
+      }
+      return dead;
+    };
+
+    if ((user.base.status === "tox" || user.base.status === "psn") && tickCounter("psn")) {
+      return;
+    } else if (user.base.status === "brn" && tickCounter("brn")) {
+      return;
+    } else if (user.v.flags.seeded && tickCounter("seeded")) {
+      return;
     }
-
-    return false;
   }
 
-  protected handleRecurrentDamage(user: ActivePokemon) {
-    if (user.handleStatusDamage(this)) {
-      return true;
-    } else if (user.v.flags.seeded && user.tickCounter(this, "seeded")) {
-      return true;
+  private handleScreen(player: Player, screen: Screen) {
+    if (player.screens[screen] && --player.screens[screen] === 0) {
+      this.event({type: "screen", src: player.id, screen, kind: "end"});
     }
-    return false;
+  }
+
+  private handleBetweenTurns() {
+    // Weather
+    weather: if (this.weather) {
+      if (--this.weather.turns === 0) {
+        this.event({type: "weather", kind: "end", weather: this.weather.kind});
+        delete this.weather;
+        break weather;
+      } else if (this.weather.kind !== "sand") {
+        break weather;
+      }
+
+      this.event({type: "weather", kind: "continue", weather: this.weather.kind});
+      for (const {active} of this.players) {
+        if (active.v.charging === this.gen.moveList.dig) {
+          continue;
+        } else if (active.v.types.some(t => t === "steel" || t === "ground" || t === "rock")) {
+          continue;
+        }
+
+        const dmg = Math.max(idiv(active.base.stats.hp, 8), 1);
+        active.damage(dmg, active, this, false, "sandstorm", true);
+      }
+
+      if (this.checkFaint(this.players[0].active, this.players[1].active)) {
+        return;
+      }
+    }
+
+    // Defrost
+    for (const {active} of this.players) {
+      if (active.base.status === "frz" && this.rand100((25 / 256) * 100)) {
+        this.unstatus(active, "thaw");
+      }
+    }
+
+    // Screens
+    // for (const player of this.players) {
+    //   this.handleScreen(player, "safeguard");
+    // }
+
+    for (const player of this.players) {
+      this.handleScreen(player, "light_screen");
+      this.handleScreen(player, "reflect");
+    }
   }
 }
 
@@ -530,8 +603,9 @@ export class ActivePokemon {
   }
 
   switchTo(next: Pokemon, battle: Battle, why?: "phaze") {
-    if (this.base.status === "tox") {
+    if (this.base.status === "tox" && battle.gen.id === 1) {
       this.base.status = "psn";
+      battle.event({type: "sv", volatiles: [{id: this.owner.id, v: {status: "psn"}}]});
     }
 
     this.v = new Volatiles(next);
@@ -562,6 +636,11 @@ export class ActivePokemon {
       return this.v.stats[stat] * 2;
     }
     return this.v.stats[stat];
+  }
+
+  faint(battle: Battle) {
+    battle.info(this, "faint");
+    this.v.fainted = true;
   }
 
   damage(
@@ -614,9 +693,6 @@ export class ActivePokemon {
         eff,
         isCrit,
       });
-      if (this.base.hp === 0) {
-        battle.info(this, "faint");
-      }
 
       if (shouldRage) {
         this.handleRage(battle);
@@ -658,27 +734,20 @@ export class ActivePokemon {
         return true;
       }
 
-      // https://www.smogon.com/forums/threads/outdated-new-rby-sleep-mechanics-discovery.3745689/
-      let rng = battle.rng.int(0, 255);
-      let sleepTurns = rng & 7;
-      while (!sleepTurns) {
-        rng = (rng * 5 + 1) & 255;
-        sleepTurns = rng & 7;
-      }
-
       this.v.recharge = undefined;
-      this.base.sleepTurns = sleepTurns;
+      this.base.sleepTurns = battle.gen.getSleepTurns(battle);
       opp.sleepClausePoke = this.base;
     } else if (status === "tox") {
       this.v.counter = 1;
-    } else if (status === "frz" && battle.mods.freezeClause) {
-      if (this.owner.team.some(poke => poke.status === "frz")) {
+    } else if (status === "frz") {
+      if (battle.weather?.kind === "sun") {
+        return false;
+      } else if (battle.mods.freezeClause && this.owner.team.some(poke => poke.status === "frz")) {
         return true;
       }
     }
 
     this.base.status = status;
-    this.v.handledStatus = false;
     this.applyStatusDebuff();
     battle.event({
       type: "status",
@@ -730,38 +799,6 @@ export class ActivePokemon {
     return true;
   }
 
-  tickCounter(battle: Battle, why: DamageReason) {
-    const multiplier = this.base.status === "psn" && why === "psn" ? 1 : this.v.counter;
-    const dmg = Math.max(Math.floor((multiplier * this.base.stats.hp) / 16), 1);
-    const {dead} = this.damage(dmg, this, battle, false, why, true);
-    const opponent = battle.opponentOf(this.owner).active;
-    if (why === "seeded" && opponent.base.hp < opponent.base.stats.hp) {
-      opponent.recover(dmg, this, battle, "seeder");
-    }
-
-    if (this.base.status === "tox") {
-      this.v.counter++;
-    }
-    return dead;
-  }
-
-  handleStatusDamage(battle: Battle) {
-    if (this.v.handledStatus) {
-      return false;
-    }
-
-    this.v.handledStatus = true;
-    if (this.base.status === "tox" && this.tickCounter(battle, "psn")) {
-      return true;
-    } else if (this.base.status === "brn" && this.tickCounter(battle, "brn")) {
-      return true;
-    } else if (this.base.status === "psn" && this.tickCounter(battle, "psn")) {
-      return true;
-    }
-
-    return false;
-  }
-
   handleRage(battle: Battle) {
     if (
       this.base.hp &&
@@ -808,14 +845,14 @@ export class ActivePokemon {
       return {
         move,
         pp: this.base.pp[i],
-        valid: this.isValidMove(battle, move, i),
+        valid: battle.gen.isValidMove(battle, this, move, i),
         indexInMoves: i,
         display: true,
       } as MoveOption;
     });
 
     const lockedIn = this.v.lockedIn();
-    if (!this.base.hp) {
+    if (this.v.fainted) {
       moves.forEach(move => (move.valid = false));
     } else if (moves.every(move => !move.valid)) {
       // Two-turn moves, thrashing moves, and recharging skip the normal move selection menu
@@ -835,28 +872,7 @@ export class ActivePokemon {
     }
 
     const moveLocked = !!(this.v.bide || this.v.trapping);
-    return {canSwitch: !lockedIn || moveLocked || this.base.hp === 0, moves};
-  }
-
-  private isValidMove(battle: Battle, move: MoveId, i: number) {
-    if (this.v.lockedIn() && this.v.lockedIn() !== battle.gen.moveList[move]) {
-      return false;
-    } else if (this.base.status === "frz" || this.base.status === "slp") {
-      // https://bulbapedia.bulbagarden.net/wiki/List_of_battle_glitches_(Generation_I)#Defrost_move_forcing
-      // XXX: Gen 1 doesn't let you pick your move when frozen, so if you are defrosted
-      // before your turn, the game can desync. The logic we implement follows with what the
-      // opponent player's game would do :shrug:
-
-      // This also implements the bug in which pokemon who are frozen/put to sleep on the turn
-      // they use a modified priority move retain that priority until they wake up/thaw.
-      return (this.v.lastMoveIndex ?? 0) === i;
-    } else if (i === this.v.disabled?.indexInMoves) {
-      return false;
-    } else if (this.base.pp[i] === 0) {
-      return false;
-    }
-
-    return true;
+    return {canSwitch: !lockedIn || moveLocked || this.v.fainted, moves};
   }
 }
 
@@ -872,9 +888,9 @@ class Volatiles {
   counter = 1;
   flinch = false;
   invuln = false;
-  handledStatus = false;
   hazed = false;
   trapped = false;
+  fainted = false;
   lastMove?: Move;
   lastMoveIndex?: number;
   charging?: Move;

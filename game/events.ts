@@ -24,7 +24,8 @@ type AnyEvent =
   | ConversionEvent
   | MagnitudeEvent
   | WeatherEvent
-  | ScreenEvent;
+  | ScreenEvent
+  | SetVolatilesEvent;
 
 export type ChangedVolatiles = {id: PlayerId; v: NullOrOptional<ClientVolatiles>}[];
 
@@ -163,5 +164,7 @@ type ConversionEvent = {type: "conversion"; src: PlayerId; target?: PlayerId; ty
 type MagnitudeEvent = {type: "magnitude"; magnitude: number};
 
 type ScreenEvent = {type: "screen"; kind: "start" | "end"; screen: Screen; src: PlayerId};
+
+type SetVolatilesEvent = {type: "sv"};
 
 export type WeatherEvent = {type: "weather"; kind: "start" | "end" | "continue"; weather: Weather};

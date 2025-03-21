@@ -28,8 +28,8 @@ export interface BaseMove {
 export interface CustomMove extends BaseMove {
   readonly kind?: never;
 
-  use?(battle: Battle, user: ActivePokemon, target: ActivePokemon, moveIndex?: number): boolean;
-  exec(battle: Battle, user: ActivePokemon, target: ActivePokemon, moveIndex?: number): boolean;
+  use?(battle: Battle, user: ActivePokemon, target: ActivePokemon, moveIndex?: number): void;
+  exec(battle: Battle, user: ActivePokemon, target: ActivePokemon, moveIndex?: number): void;
 }
 
 export interface VolatileFlagMove extends BaseMove {

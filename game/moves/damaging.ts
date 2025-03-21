@@ -54,7 +54,7 @@ export function use(
     if (dead || --user.v.trapping.turns === 0) {
       user.v.trapping = undefined;
     }
-    return dead;
+    return;
   }
 
   if (this.charge && user.v.charging !== this) {
@@ -66,7 +66,7 @@ export function use(
     if (this.charge !== "sun" || battle.weather?.kind !== "sun") {
       user.v.charging = this;
       user.v.invuln = this.charge === "invuln" || user.v.invuln;
-      return false;
+      return;
     }
   }
 
@@ -111,7 +111,7 @@ export function exec(
       }
 
       if (this.flag === "crash" && eff === 0) {
-        return false;
+        return;
       }
     }
 
@@ -120,15 +120,14 @@ export function exec(
       if (user.v.substitute && target.v.substitute) {
         target.damage(1, user, battle, false, "attacked");
       } else if (!user.v.substitute) {
-        return user.damage(1, user, battle, false, "crash", true).dead;
+        user.damage(1, user, battle, false, "crash", true);
       }
     } else if (this.flag === "explosion") {
       // according to showdown, explosion also boosts rage even on miss/failure
       target.handleRage(battle);
-      return user.damage(user.base.hp, user, battle, false, "explosion", true).dead;
+      user.damage(user.base.hp, user, battle, false, "explosion", true);
     }
-
-    return false;
+    return;
   }
 
   if (this.flag === "rage") {
@@ -193,7 +192,7 @@ export function exec(
   }
 
   if (dead || brokeSub) {
-    return dead;
+    return;
   }
 
   if (this.flag === "recharge") {
@@ -209,20 +208,20 @@ export function exec(
       battle.unstatus(target, "thaw");
       target.v.hazed = true;
       // TODO: can you thaw and then burn?
-      return dead;
+      return;
     }
 
     if (!battle.rand100(chance)) {
-      return dead;
+      return;
     }
 
     if (effect === "confusion") {
       if (target.v.confusion === 0) {
         target.confuse(battle);
       }
-      return dead;
+      return;
     } else if (hadSub) {
-      return dead;
+      return;
     } else if (Array.isArray(effect)) {
       const poke = this.effect_self ? user : target;
       poke.modStages(user.owner, effect, battle);
@@ -230,7 +229,7 @@ export function exec(
       target.v.flinch = true;
     } else {
       if (target.base.status || target.v.types.includes(this.type)) {
-        return dead;
+        return;
       }
 
       target.status(effect, battle);
@@ -240,14 +239,12 @@ export function exec(
     if (target.base.status === "frz" && choice === "brn") {
       target.v.hazed = true;
       battle.unstatus(target, "thaw");
-      return dead;
+      return;
     } else if (!target.base.status && battle.rand100(20)) {
       // In Gen 2, tri attack can burn fire types and freeze ice types
       target.status(choice, battle);
     }
   }
-
-  return dead;
 }
 
 function getDamage(self: DamagingMove, battle: Battle, user: ActivePokemon, target: ActivePokemon) {

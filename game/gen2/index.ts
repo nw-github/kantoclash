@@ -1,7 +1,6 @@
 import {createDefu} from "defu";
 import {GENERATION1, type CalcDamageParams, type Generation} from "../gen1";
-import {moveList as baseMoveList} from "../moves";
-import {speciesList as baseSpeciesList, type Species, type SpeciesId} from "../species";
+import type {Species, SpeciesId} from "../species";
 import {floatTo255, clamp, scaleAccuracy255, idiv, imul} from "../utils";
 import {movePatches} from "./moves";
 import __speciesPatches from "./species.json";
@@ -67,17 +66,23 @@ const merge = createDefu((obj, key, value) => {
 });
 
 const createGeneration = (): Generation => {
-  const speciesList = merge(speciesPatches, baseSpeciesList) as typeof baseSpeciesList;
-  const moveList = merge(movePatches, baseMoveList) as typeof baseMoveList;
-  const typeChart = merge(typeChartPatch, GENERATION1.typeChart) as typeof GENERATION1.typeChart;
-
-  return {
+  const patches: Partial<Generation> = {
     id: 2,
-    speciesList,
-    moveList,
-    typeChart,
-    moveFunctions: GENERATION1.moveFunctions,
-    lastMoveIdx: moveList.zapcannon.idx!,
+    speciesList: speciesPatches as typeof GENERATION1.speciesList,
+    moveList: movePatches as typeof GENERATION1.moveList,
+    typeChart: typeChartPatch as typeof GENERATION1.typeChart,
+    lastMoveIdx: GENERATION1.moveList.zapcannon.idx!,
+    isValidMove(battle, user, move, i) {
+      if (user.v.lockedIn() && user.v.lockedIn() !== battle.gen.moveList[move]) {
+        return false;
+      } else if (i === user.v.disabled?.indexInMoves) {
+        return false;
+      } else if (user.base.pp[i] === 0) {
+        return false;
+      }
+
+      return true;
+    },
     getCritChance(user, hc) {
       let stages = hc ? 2 : 0;
       if (user.v.flags.focus) {
@@ -134,8 +139,10 @@ const createGeneration = (): Generation => {
       return [atk, def] as const;
     },
     validSpecies: species => species.dexId <= 251,
-    getMaxPP: GENERATION1.getMaxPP,
+    getSleepTurns: battle => battle.rng.int(1, 6),
   };
+
+  return merge(patches, GENERATION1);
 };
 
 export const GENERATION2 = createGeneration();
