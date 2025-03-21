@@ -33,9 +33,26 @@ export const stageStatKeys = ["atk", "def", "spa", "spd", "spe"] as const;
 export const statKeys = ["hp", ...stageStatKeys] as const;
 export const stageKeys = [...stageStatKeys, "acc", "eva"] as const;
 
-export type VolatileFlag = (typeof volatileFlags)[number] | "destinyBond";
+// prettier-ignore
+export enum VolatileFlag {
+  none         = 0,
+  light_screen = 0x0000_0001,
+  reflect      = 0x0000_0002,
+  mist         = 0x0000_0004,
+  focus        = 0x0000_0008,
+  seeded       = 0x0000_0010,
+  destinyBond  = 0x0000_0020,
+  curse        = 0x0000_0040,
 
-export const volatileFlags = ["light_screen", "reflect", "mist", "focus", "seeded"] as const;
+  /** Client only */
+  confused     = 0x8000_0000,
+  /** Client only */
+  disabled     = 0x4000_0000,
+  /** Client only */
+  attract      = 0x2000_0000,
+  /** Client only */
+  substitute   = 0x1000_0000,
+}
 
 export const floatTo255 = (num: number) => Math.floor((num / 100) * 255);
 

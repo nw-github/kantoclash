@@ -4,17 +4,14 @@ import type {SpeciesId} from "../game/species";
 import type {Stages, Type, VolatileFlag} from "../game/utils";
 import type {MoveId} from "~/game/moves";
 
-export type ClientVolatileFlag = VolatileFlag | "substitute" | "confused" | "disabled";
-
-export type ClientVolatiles = Partial<Record<ClientVolatileFlag, boolean>> & {
+export type ClientVolatiles = {
   stages: Partial<Record<Stages, number>>;
-  // Status isnt really a volatile, but it can get hazed away in Gen 1
+  // Status isnt really a volatile, but multiple things can inflict/remove it, so let server handle it
   status?: Status;
   stats?: VolatileStats;
   charging?: MoveId;
   types?: Type[];
-  attract?: boolean;
-  curse?: boolean;
+  flags?: VolatileFlag;
 };
 
 export type ClientActivePokemon = {

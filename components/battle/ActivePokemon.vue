@@ -34,8 +34,8 @@
             {{ poke.v.status.toUpperCase() }}
           </UBadge>
 
-          <template v-for="({name, color}, flag) in badges">
-            <UBadge v-if="poke.v[flag]" :key="flag" :color :label="name" />
+          <template v-for="{name, color, flag} in badges">
+            <UBadge v-if="((poke.v.flags ?? 0) & flag) !== 0" :key="flag" :color :label="name" />
           </template>
 
           <template v-for="(val, stage) in poke.v.stages">
@@ -53,7 +53,7 @@
           <div ref="sprite" class="sprite z-20" :class="{back, front: !back, invisible: !poke}">
             <Sprite
               :species="poke?.transformed ?? poke?.speciesId"
-              :substitute="poke?.v.substitute"
+              :substitute="((poke?.v.flags || 0) & VolatileFlag.substitute) !== 0"
               :scale="lessThanSm ? 1 : 2"
               :back
             />
@@ -127,7 +127,7 @@
 </style>
 
 <script setup lang="ts">
-import {stageMultipliers} from "~/game/utils";
+import {stageMultipliers, VolatileFlag} from "~/game/utils";
 import {calcStat, type Gender, type Pokemon} from "~/game/pokemon";
 import type {MoveId} from "~/game/moves";
 import {breakpointsTailwind} from "@vueuse/core";
@@ -168,17 +168,17 @@ const gen1Gender: Partial<Record<SpeciesId, Gender>> = {
 const offsX = (number: number) => `-${number * 42 - number}px`;
 const offsY = (number: number) => `-${number * 42 - number * 2}px`;
 
-const badges = {
-  confused: {color: "red", name: "Confused"},
-  disabled: {color: "red", name: "Disable"},
-  attract: {color: "pink", name: "Attract"},
-  focus: {color: "emerald", name: "Focus Energy"},
-  light_screen: {color: "pink", name: "Light Screen"},
-  reflect: {color: "pink", name: "Reflect"},
-  mist: {color: "teal", name: "Mist"},
-  seeded: {color: "lime", name: "Leech Seed"},
-  destinyBond: {color: "gray", name: "Destiny Bond"},
-} as const;
+const badges = [
+  {flag: VolatileFlag.confused, color: "red", name: "Confused"},
+  {flag: VolatileFlag.disabled, color: "red", name: "Disable"},
+  {flag: VolatileFlag.attract, color: "pink", name: "Attract"},
+  {flag: VolatileFlag.focus, color: "emerald", name: "Focus Energy"},
+  {flag: VolatileFlag.light_screen, color: "pink", name: "Light Screen"},
+  {flag: VolatileFlag.reflect, color: "pink", name: "Reflect"},
+  {flag: VolatileFlag.mist, color: "teal", name: "Mist"},
+  {flag: VolatileFlag.seeded, color: "lime", name: "Leech Seed"},
+  {flag: VolatileFlag.destinyBond, color: "gray", name: "Destiny Bond"},
+] as const;
 
 export type AnimationType =
   | "faint"
@@ -262,7 +262,7 @@ const playAnimation = (anim: AnimationType, name?: string, cb?: () => void) => {
         complete: () => resolve(),
       });
     } else if (anim === "retract") {
-      if (!poke?.v.substitute) {
+      if (((poke?.v.flags || 0) & VolatileFlag.substitute) === 0) {
         reset(true);
       }
       useAnime.set(pokeBall.value, {translateX: 0, translateY: 0, opacity: 1});

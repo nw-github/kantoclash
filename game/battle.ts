@@ -21,10 +21,10 @@ import {
   idiv,
   stageMultipliers,
   stageStatKeys,
+  VolatileFlag,
   type Stages,
   type StatStages,
   type Type,
-  type VolatileFlag,
   type Weather,
 } from "./utils";
 import type {Generation} from "./gen";
@@ -333,7 +333,10 @@ export class Battle {
   private runTurn(choices: ChosenMove[]) {
     for (const {user, move, indexInMoves} of choices) {
       user.movedThisTurn = true;
-      user.v.flags.destinyBond = false;
+      if (user.v.hasFlag(VolatileFlag.destinyBond)) {
+        user.v.clearFlag(VolatileFlag.destinyBond);
+        this.event({type: "sv", volatiles: [{id: user.owner.id, v: {flags: user.v.flags}}]});
+      }
 
       const target = this.opponentOf(user.owner).active;
       if (move.kind !== "switch" && !this.beforeUseMove(move, user, target)) {
@@ -453,15 +456,13 @@ export class Battle {
 
     if (user.v.disabled && --user.v.disabled.turns === 0) {
       user.v.disabled = undefined;
-      this.info(user, "disable_end", [{id: user.owner.id, v: {disabled: false}}]);
+      this.info(user, "disable_end", [{id: user.owner.id, v: {flags: user.v.flags}}]);
     }
 
     if (user.v.confusion) {
-      if (--user.v.confusion === 0) {
-        this.info(user, "confused_end", [{id: user.owner.id, v: {confused: false}}]);
-      } else {
-        this.info(user, "confused", [{id: user.owner.id, v: {confused: true}}]);
-      }
+      const done = --user.v.confusion === 0;
+      const v = [{id: user.owner.id, v: {flags: user.v.flags}}];
+      this.info(user, done ? "confused_end" : "confused", v);
     }
 
     const confuse = user.v.confusion && this.rng.bool();
@@ -534,11 +535,11 @@ export class Battle {
       return;
     } else if (user.base.status === "brn" && tickCounter("brn")) {
       return;
-    } else if (user.v.flags.seeded && tickCounter("seeded")) {
+    } else if (user.v.hasFlag(VolatileFlag.seeded) && tickCounter("seeded")) {
       return;
     }
 
-    if (user.v.curse) {
+    if (user.v.hasFlag(VolatileFlag.curse)) {
       user.damage(idiv(user.base.stats.hp, 4), user, this, false, "curse", true);
     }
   }
@@ -624,7 +625,7 @@ export class ActivePokemon {
     const {active, id} = battle.opponentOf(this.owner);
     if (active.v.attract) {
       active.v.attract = undefined;
-      volatiles.push({id, v: {attract: null}});
+      volatiles.push({id, v: {flags: active.v.flags}});
     }
 
     battle.event({
@@ -666,6 +667,7 @@ export class ActivePokemon {
     why: DamageReason,
     direct?: boolean,
     eff?: number,
+    volatiles?: ChangedVolatiles,
   ) {
     if (why !== "brn" && why !== "psn" && why !== "seeded" && why !== "substitute") {
       // Counter uses the damage it would've done ignoring substitutes
@@ -676,6 +678,11 @@ export class ActivePokemon {
     if (this.v.substitute !== 0 && !direct) {
       const hpBefore = this.v.substitute;
       this.v.substitute = Math.max(this.v.substitute - dmg, 0);
+      if (this.v.substitute === 0) {
+        volatiles ??= [];
+        volatiles.push({id: this.owner.id, v: {flags: this.v.flags}});
+      }
+
       const event = battle.event<HitSubstituteEvent>({
         type: "hit_sub",
         src: src.owner.id,
@@ -683,6 +690,7 @@ export class ActivePokemon {
         broken: this.v.substitute === 0,
         confusion: why === "confusion",
         eff,
+        volatiles,
       });
       if (shouldRage) {
         this.handleRage(battle);
@@ -707,6 +715,7 @@ export class ActivePokemon {
         why,
         eff,
         isCrit,
+        volatiles,
       });
 
       if (shouldRage) {
@@ -835,7 +844,7 @@ export class ActivePokemon {
 
     this.v.confusion = battle.rng.int(2, 5);
     if (!thrashing) {
-      battle.info(this, "became_confused", [{id: this.owner.id, v: {confused: true}}]);
+      battle.info(this, "became_confused", [{id: this.owner.id, v: {flags: this.v.flags}}]);
     }
     return true;
   }
@@ -924,6 +933,11 @@ export class ActivePokemon {
       return {id: this.owner.id, v: {[key]: structuredClone(val)}} as const;
     }
   }
+
+  setFlag(flag: VolatileFlag) {
+    this.v.setFlag(flag);
+    return {id: this.owner.id, v: {flags: this.v.flags}};
+  }
 }
 
 export type VolatileStats = Volatiles["stats"];
@@ -932,7 +946,6 @@ class Volatiles {
   readonly stages = {atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0};
   stats: Record<StatStages, number>;
   types: Type[];
-  flags: Partial<Record<VolatileFlag, boolean>> = {};
   substitute = 0;
   confusion = 0;
   counter = 1;
@@ -941,7 +954,6 @@ class Volatiles {
   hazed = false;
   trapped = false;
   fainted = false;
-  curse = false;
   attract?: ActivePokemon;
   lastMove?: Move;
   lastMoveIndex?: number;
@@ -952,6 +964,7 @@ class Volatiles {
   disabled?: {turns: number; indexInMoves: number};
   mimic?: {move: MoveId; indexInMoves: number};
   trapping?: {move: Move; turns: number};
+  private _flags = VolatileFlag.none;
 
   constructor(base: Pokemon) {
     this.types = [...base.species.types];
@@ -974,6 +987,18 @@ class Volatiles {
     );
   }
 
+  setFlag(flag: VolatileFlag) {
+    this._flags |= flag;
+  }
+
+  clearFlag(flag: VolatileFlag) {
+    this._flags &= ~flag;
+  }
+
+  hasFlag(flag: VolatileFlag) {
+    return (this.flags & flag) !== 0;
+  }
+
   toClientVolatiles(base: Pokemon, battle: Battle): ChangedVolatiles[number]["v"] {
     return {
       status: base.status || null,
@@ -981,9 +1006,24 @@ class Volatiles {
       stats: {...this.stats},
       charging: this.charging ? battle.moveIdOf(this.charging) : undefined,
       types: !arraysEqual(this.types, base.species.types) ? [...this.types] : undefined,
-      disabled: !!this.disabled,
-      attract: !!this.attract,
-      curse: this.curse,
+      flags: this.flags,
     };
+  }
+
+  get flags() {
+    let flags = this._flags;
+    if (this.disabled) {
+      flags |= VolatileFlag.disabled;
+    }
+    if (this.attract) {
+      flags |= VolatileFlag.attract;
+    }
+    if (this.confusion) {
+      flags |= VolatileFlag.confused;
+    }
+    if (this.substitute) {
+      flags |= VolatileFlag.substitute;
+    }
+    return flags;
   }
 }

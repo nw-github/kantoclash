@@ -486,7 +486,9 @@ const runTurn = async (live: boolean, turnIdx: number) => {
           ev.maxHp = activeInTeam.value!.stats.hp;
         }
 
-        handleVolatiles(ev);
+        if (e.why !== "substitute") {
+          handleVolatiles(ev);
+        }
         if (e.why !== "explosion" || (e.eff ?? 1) !== 1) {
           pushEvent(ev);
         }
@@ -508,7 +510,7 @@ const runTurn = async (live: boolean, turnIdx: number) => {
       if (e.why === "substitute") {
         pushEvent({type: "get_sub", src: e.target});
         await playAnimation(e.target, "get_sub", undefined, () => {
-          players[e.target].active!.v.substitute = true;
+          handleVolatiles(e);
         });
       }
 
@@ -536,7 +538,7 @@ const runTurn = async (live: boolean, turnIdx: number) => {
       if (e.broken) {
         pushEvent({type: "sub_break", target: e.target});
         await playAnimation(e.target, "lose_sub", undefined, () => {
-          players[e.target].active!.v.substitute = false;
+          handleVolatiles(e);
         });
       }
       return;

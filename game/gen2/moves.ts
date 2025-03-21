@@ -93,7 +93,7 @@ export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
         type: "disable",
         src: target.owner.id,
         move: target.base.moves[indexInMoves],
-        volatiles: [{id: target.owner.id, v: {disabled: true}}],
+        volatiles: [{id: target.owner.id, v: {flags: target.v.flags}}],
       });
     },
   },

@@ -1,4 +1,5 @@
 import type {CustomMove, Move} from ".";
+import {VolatileFlag} from "../utils";
 import {exec as execDamagingMove, use as useDamagingMove} from "./damaging";
 
 type UseMoveFn = Required<CustomMove>["use"];
@@ -14,22 +15,25 @@ type MM = {
 export const moveFunctions: MM = {
   volatile: {
     exec(battle, user) {
-      if (user.v.flags[this.flag]) {
-        battle.info(user, "fail_generic");
-      } else {
-        user.v.flags[this.flag] = true;
-        battle.info(user, this.flag, [{id: user.owner.id, v: {[this.flag]: true}}]);
+      if (user.v.hasFlag(this.flag)) {
+        return battle.info(user, "fail_generic");
       }
+
+      for (const [key, flag] of Object.entries(VolatileFlag)) {
+        if (flag === this.flag) {
+          return battle.info(user, key as keyof typeof VolatileFlag, [user.setFlag(this.flag)]);
+        }
+      }
+
+      console.error("Attempt to set invalid VolatileFlag value: " + this.flag);
     },
   },
   confuse: {
     exec(battle, user, target) {
       if (target.v.substitute) {
-        battle.info(target, "fail_generic");
-        return;
+        return battle.info(target, "fail_generic");
       } else if (target.owner.screens.safeguard) {
-        battle.info(target, "safeguard_protect");
-        return;
+        return battle.info(target, "safeguard_protect");
       } else if (!battle.checkAccuracy(this, user, target)) {
         return;
       }
@@ -44,8 +48,7 @@ export const moveFunctions: MM = {
     exec(battle, user) {
       const diff = user.base.stats.hp - user.base.hp;
       if (diff === 0 || diff % 255 === 0) {
-        battle.info(user, "fail_generic");
-        return;
+        return battle.info(user, "fail_generic");
       }
 
       if (this.why === "rest") {
@@ -62,9 +65,10 @@ export const moveFunctions: MM = {
     exec(battle, user, target) {
       target.lastDamage = 0;
       if (this.acc) {
-        if (target.v.flags.mist || target.v.substitute) {
-          battle.info(target, target.v.flags.mist ? "mist_protect" : "fail_generic");
-          return;
+        if (target.v.hasFlag(VolatileFlag.mist)) {
+          return battle.info(target, "mist_protect");
+        } else if (target.v.substitute) {
+          return battle.info(target, "fail_generic");
         }
 
         if (!battle.checkAccuracy(this, user, target)) {
@@ -82,21 +86,17 @@ export const moveFunctions: MM = {
   status: {
     exec(battle, user, target) {
       if (target.v.substitute && this.status !== "par" && this.status !== "slp") {
-        battle.info(target, "fail_generic");
-        return;
+        return battle.info(target, "fail_generic");
       } else if (
         (this.type === "electric" && battle.getEffectiveness(this.type, target.v.types) === 0) ||
         (this.type === "poison" && target.v.types.includes("poison"))
       ) {
-        battle.info(target, "immune");
-        return;
+        return battle.info(target, "immune");
       } else if (target.owner.screens.safeguard) {
-        battle.info(target, "safeguard_protect");
-        return;
+        return battle.info(target, "safeguard_protect");
       } else if (this.status === "slp" && target.v.recharge) {
         // https://www.youtube.com/watch?v=x2AgAdQwyGI
-        target.status(this.status, battle, true);
-        return;
+        return target.status(this.status, battle, true);
       } else if (!battle.checkAccuracy(this, user, target)) {
         return;
       }
@@ -126,8 +126,7 @@ export const moveFunctions: MM = {
   screen: {
     exec(battle, user) {
       if (user.owner.screens[this.screen]) {
-        battle.info(user, "fail_generic");
-        return;
+        return battle.info(user, "fail_generic");
       }
 
       user.owner.screens[this.screen] = 5;
@@ -138,8 +137,7 @@ export const moveFunctions: MM = {
     exec(battle, user, target) {
       const next = battle.rng.choice(target.owner.team.filter(p => p.hp && p != target.base.real));
       if (!next || !target.movedThisTurn) {
-        battle.info(user, "fail_generic");
-        return;
+        return battle.info(user, "fail_generic");
       } else if (!battle.checkAccuracy(this, user, target)) {
         return;
       }

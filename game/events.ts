@@ -137,7 +137,7 @@ export type FailReason =
 export type BugType = "bug_gen2_bellydrum";
 
 export type InfoReason =
-  | VolatileFlag
+  | keyof typeof VolatileFlag
   | FailReason
   | "payday"
   | "became_confused"

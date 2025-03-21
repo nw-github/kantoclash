@@ -1,7 +1,7 @@
 import type {ActivePokemon, Battle} from "../battle";
 import type {BaseMove} from "./index";
 import type {Pokemon, Status} from "../pokemon";
-import {isSpecial, type Stages, randChoiceWeighted, type Type} from "../utils";
+import {isSpecial, type Stages, randChoiceWeighted, type Type, VolatileFlag} from "../utils";
 import type {Random} from "random";
 import type {CalcDamageParams} from "../gen";
 
@@ -194,7 +194,7 @@ export function exec(
     }
   }
 
-  if (dead && target.v.flags.destinyBond) {
+  if (dead && target.v.hasFlag(VolatileFlag.destinyBond)) {
     user.damage(user.base.hp, target, battle, false, "destiny_bond", true);
     // user should die first
     battle.checkFaint(target, user);

@@ -11,7 +11,7 @@ import {
   mergeVolatiles,
 } from "~/utils/shared";
 import {Pokemon} from "~/game/pokemon";
-import {getEffectiveness} from "~/game/utils";
+import {getEffectiveness, VolatileFlag} from "~/game/utils";
 import random from "random";
 import {convertDesc, parseTeams, type Team} from "~/utils/pokemon";
 import type {MoveId} from "~/game/moves";
@@ -339,12 +339,21 @@ export function rankBot({team, options, players, activePokemon, opponent: id, me
         return 5;
       }
     } else {
+      const confused = (opponentActive.v.flags || 0) & VolatileFlag.confused;
+      const seeded = (opponentActive.v.flags || 0) & VolatileFlag.seeded;
+      const cursed = (opponentActive.v.flags || 0) & VolatileFlag.curse;
+      const dbond = (self.v.flags || 0) & VolatileFlag.destinyBond;
+      const selfSub = (self.v.flags || 0) & VolatileFlag.substitute;
+      const sub = (opponentActive.v.flags || 0) & VolatileFlag.substitute;
+
       // prettier-ignore
-      const useless = (move.kind === "confuse" && opponentActive.v.confused) ||
-        (move.kind === "status" && opponentActive.v.status) ||
-        (id === "leechseed" && (opponentActive.v.seeded || opponentPoke.species.types.includes("grass"))) ||
-        (id === "substitute" && self.v.substitute) ||
-        (move.kind === "stage" && move.acc && opponentActive.v.substitute);
+      const useless = (move.kind === "confuse" && confused) ||
+        (move.kind === "status" && (opponentActive.v.status || (gen.id === 2 && sub))) ||
+        (id === "leechseed" && (seeded || opponentPoke.species.types.includes("grass"))) ||
+        (id === "curse" && cursed) ||
+        (id === "destinybond" && dbond) ||
+        (id === "substitute" && selfSub) ||
+        (move.kind === "stage" && move.acc && sub);
       if (useless) {
         return 0;
       }

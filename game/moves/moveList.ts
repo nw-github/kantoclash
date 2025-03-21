@@ -1,8 +1,7 @@
 import type {DamagingMove, Move} from "./index";
 import {type Pokemon, transform} from "../pokemon";
-import {hpPercentExact, idiv, stageKeys, volatileFlags, type Type} from "../utils";
+import {hpPercentExact, idiv, stageKeys, VolatileFlag, type Type} from "../utils";
 import type {ActivePokemon, Battle} from "../battle";
-import type {BattleEvent} from "../events";
 
 export type MoveId = keyof typeof internalMoveList;
 
@@ -89,7 +88,7 @@ const internalMoveList = createMoveList({
         type: "disable",
         src: target.owner.id,
         move: target.base.moves[indexInMoves],
-        volatiles: [{id: target.owner.id, v: {disabled: true}}],
+        volatiles: [{id: target.owner.id, v: {flags: target.v.flags}}],
       });
       target.handleRage(battle);
       return false;
@@ -104,9 +103,14 @@ const internalMoveList = createMoveList({
         user.v.stages[k] = target.v.stages[k] = 0;
       }
 
-      for (const k of volatileFlags) {
-        user.v.flags[k] = target.v.flags[k] = false;
-      }
+      const flags =
+        VolatileFlag.light_screen |
+        VolatileFlag.reflect |
+        VolatileFlag.mist |
+        VolatileFlag.focus |
+        VolatileFlag.seeded;
+      user.v.clearFlag(flags);
+      target.v.clearFlag(flags);
 
       user.v.counter = target.v.counter = 0;
       user.v.confusion = target.v.confusion = 0;
@@ -142,15 +146,14 @@ const internalMoveList = createMoveList({
       if (target.v.types.includes(this.type)) {
         battle.info(target, "immune");
         return false;
-      } else if (target.v.flags.seeded) {
+      } else if (target.v.hasFlag(VolatileFlag.seeded)) {
         battle.info(target, "fail_generic");
         return false;
       } else if (!battle.checkAccuracy(this, user, target)) {
         return false;
       }
 
-      target.v.flags.seeded = true;
-      battle.info(target, "seeded", [{id: target.owner.id, v: {seeded: true}}]);
+      battle.info(target, "seeded", [target.setFlag(VolatileFlag.seeded)]);
       return false;
     },
   },
@@ -211,15 +214,16 @@ const internalMoveList = createMoveList({
       const hp = Math.floor(user.base.stats.hp / 4);
       if (user.v.substitute > 0) {
         battle.info(user, "has_substitute");
-        return false;
+        return;
       } else if (hp > user.base.hp) {
         battle.info(user, "cant_substitute");
-        return false;
+        return;
       }
 
-      const {dead} = user.damage(hp, user, battle, false, "substitute");
       user.v.substitute = hp + 1;
-      return dead;
+      user.damage(hp, user, battle, false, "substitute", true, undefined, [
+        {id: user.owner.id, v: {flags: user.v.flags}},
+      ]);
     },
   },
   transform: {
@@ -248,16 +252,22 @@ const internalMoveList = createMoveList({
     },
   },
   // --
-  focusenergy: {kind: "volatile", name: "Focus Energy", pp: 30, type: "normal", flag: "focus"},
+  focusenergy: {
+    kind: "volatile",
+    name: "Focus Energy",
+    pp: 30,
+    type: "normal",
+    flag: VolatileFlag.focus,
+  },
   lightscreen: {
     kind: "volatile",
     name: "Light Screen",
     pp: 30,
     type: "psychic",
-    flag: "light_screen",
+    flag: VolatileFlag.light_screen,
   },
-  mist: {kind: "volatile", name: "Mist", pp: 30, type: "ice", flag: "mist"},
-  reflect: {kind: "volatile", name: "Reflect", pp: 20, type: "psychic", flag: "reflect"},
+  mist: {kind: "volatile", name: "Mist", pp: 30, type: "ice", flag: VolatileFlag.mist},
+  reflect: {kind: "volatile", name: "Reflect", pp: 20, type: "psychic", flag: VolatileFlag.reflect},
   // --
   recover: {kind: "recover", name: "Recover", pp: 20, type: "normal", why: "recover"},
   rest: {kind: "recover", name: "Rest", pp: 10, type: "psychic", why: "rest"},
@@ -1139,7 +1149,7 @@ const internalMoveList = createMoveList({
       }
 
       target.v.attract = user;
-      battle.info(target, "attract", [{id: target.owner.id, v: {attract: true}}]);
+      battle.info(target, "attract", [{id: target.owner.id, v: {flags: target.v.flags}}]);
     },
   },
   // batonpass: {},
@@ -1169,8 +1179,16 @@ const internalMoveList = createMoveList({
         return;
       }
 
-      const {event} = user.damage(dmg, user, battle, false, "belly_drum", true);
-      (event as BattleEvent).volatiles = user.setStage("atk", +6, battle, false);
+      user.damage(
+        dmg,
+        user,
+        battle,
+        false,
+        "belly_drum",
+        true,
+        undefined,
+        user.setStage("atk", +6, battle, false),
+      );
     },
   },
   conversion2: {
@@ -1215,9 +1233,16 @@ const internalMoveList = createMoveList({
           return;
         }
 
-        const dmg = idiv(user.base.stats.hp, 2);
-        const {event} = user.damage(dmg, target, battle, false, "set_curse", true);
-        (event as BattleEvent).volatiles = [target.setVolatile("curse", true)];
+        user.damage(
+          idiv(user.base.stats.hp, 2),
+          target,
+          battle,
+          false,
+          "set_curse",
+          true,
+          undefined,
+          [target.setFlag(VolatileFlag.curse)],
+        );
       }
     },
   },
@@ -1227,7 +1252,7 @@ const internalMoveList = createMoveList({
     pp: 5,
     type: "ghost",
     noMetronome: true,
-    flag: "destinyBond",
+    flag: VolatileFlag.destinyBond,
   },
   // detect: { noMetronome: true },
   // encore: {},
