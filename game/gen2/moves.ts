@@ -54,6 +54,7 @@ In this generation only, Mirror Move always fails when used by a transformed Pok
 
 export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
   bide: {acc: 100},
+  counter: {noMetronome: true},
   conversion: {
     exec(battle, user) {
       const type = battle.rng.choice(
@@ -69,7 +70,7 @@ export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
       user.v.types = [type];
       battle.event({
         type: "conversion",
-        user: user.owner.id,
+        src: user.owner.id,
         types: [type],
         volatiles: [{id: user.owner.id, v: {conversion: [type]}}],
       });
@@ -116,6 +117,7 @@ export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
       return false;
     },
   },
+  mimic: {noMetronome: true},
   roar: {kind: "phaze", acc: 100, priority: -1},
   whirlwind: {kind: "phaze", acc: 100, priority: -1, ignore: ["fly"]},
   // --

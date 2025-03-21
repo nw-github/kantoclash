@@ -112,7 +112,7 @@ const descriptions: Partial<Record<MoveId, string>> = {
     "The user sacrifices 1/4 its HP to create a substitute with 1/4 its HP + 1. The " +
     "substitute protects it from status and stat stage changes from the opponent's attacks, " +
     "excluding Leech Seed, Disable, direct sleep or paralysis, and indirect confusion.",
-  superfang: "Damages the target for 1/2 its current HP.",
+  superfang: "Deals damage equal to 1/2 the target's current HP. ",
   transform: "Copies the target's stats, species, moves, and types. Each move is given 5 PP.",
   focusenergy: "Quarters the user's critical hit rate.",
   lightscreen: "Halves damage dealt by special attacks. Ends on switch out.",
@@ -121,6 +121,13 @@ const descriptions: Partial<Record<MoveId, string>> = {
   bide:
     "The user sits dormant for 2-3 turns, then damages the opponent for 2x the damage received " +
     "during the idling period.",
+  psywave: "Damages the target for a random amount between 1 HP and 1.5x the user's level. ",
+  counter: "Deals 2x the last move's damage if it was normal or fighting type. ",
+  frustration: "Higher power the lower the user's friendship is. ",
+  return: "Higher power the higher the user's friendship is. ",
+  hiddenpower: "Power and type of this move are determined by the user's DVs. ",
+  seismictoss: "Deals damage equal to the user's level.",
+  nightshade: "Deals damage equal to the user's level.",
 };
 
 const flagDesc: Record<NonNullable<DamagingMove["flag"]>, string> = {
@@ -146,18 +153,11 @@ const flagDesc: Record<NonNullable<DamagingMove["flag"]>, string> = {
     "continue to use Rage until it faints or the battle ends. Every time it is hit by a move " +
     "or targeted by Disable, Explosion, or Self-Destruct, its attack will increase by one " +
     "stage. ",
-  level: "Deals damage equal to the user's level.",
   ohko: "Deals 65535 damage to the target. Fails on faster opponents. ",
   trap: "Deals damage and prevents the target from moving for 2-5 turns. ",
-  counter: "Deals 2x the last move's damage if it was normal or fighting type. ",
-  super_fang: "Deals damage equal to 1/2 the target's current HP. ",
-  psywave: "Damages the target for a random amount between 1 HP and 1.5x the user's level. ",
-  frustration: "Higher power the lower the user's friendship is. ",
-  return: "Higher power the higher the user's friendship is. ",
   flail: "Higher power the lower the user's HP is. ",
-  hidden_power: "Power and type of this move are determined by the user's DVs. ",
   magnitude: "Power is determined randomly. ",
-  false_swipe: "Always leaves the target with at least 1HP. ",
+  false_swipe: "Always leaves the target with at least 1 HP. ",
   tri_attack:
     "Has a 1/5 chance to burn, paralyze, or freeze the target, and a 1/3 chance to thaw the " +
     "target if it is frozen. ",
@@ -178,7 +178,9 @@ const formatStages = (stages: [Stages, number][]) => {
 
 export const describeMove = (gen: Generation, id: MoveId) => {
   const move = gen.moveList[id];
-  if (move.kind === "damage") {
+  if (id in descriptions) {
+    return descriptions[id];
+  } else if (move.kind === "damage") {
     let buf = move.flag && move.flag in flagDesc ? flagDesc[move.flag] : "";
     if (move.effect) {
       const [chance, effect] = move.effect;
@@ -195,8 +197,8 @@ export const describeMove = (gen: Generation, id: MoveId) => {
       }
     }
 
-    if (move.dmg) {
-      buf += `Deals ${move.dmg} damage. `;
+    if (typeof move.getDamage === "number") {
+      buf += `Deals ${move.getDamage} damage. `;
     }
 
     if (move.recoil) {
@@ -245,7 +247,7 @@ export const describeMove = (gen: Generation, id: MoveId) => {
         "Halves damage dealt by physical attacks for all pokemon on the user's side for 5 turns. ",
     };
     return msg[move.screen];
-  } else if (id in descriptions) {
-    return descriptions[id];
+  } else {
+    return "No description. ";
   }
 };

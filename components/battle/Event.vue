@@ -87,7 +87,7 @@
       Converted type to match {{ pn(e.target, false) }}!
     </template>
     <template v-else>
-      {{ pn(e.src) }} converted into the {{ toTitleCase(e.types[0]) }} type!
+      {{ pn(e.src) }} converted into the <b>{{ toTitleCase(e.types[0]) }}</b> type!
     </template>
   </div>
   <div v-else-if="e.type === 'magnitude'">Magnitude {{ e.magnitude }}!</div>

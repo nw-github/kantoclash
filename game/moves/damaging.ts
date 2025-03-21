@@ -39,12 +39,9 @@ export interface DamagingMove extends BaseMove {
   readonly punish?: boolean;
   readonly getPower?: (user: Pokemon) => number;
   readonly getType?: (user: Pokemon) => Type;
-  readonly getDamage?: (
-    battle: Battle,
-    user: ActivePokemon,
-    target: ActivePokemon,
-    eff: number,
-  ) => number | false;
+  readonly getDamage?:
+    | number
+    | ((battle: Battle, user: ActivePokemon, target: ActivePokemon, eff: number) => number | false);
 }
 
 export function use(
@@ -228,7 +225,7 @@ export function exec(
     } else if (hadSub) {
       return dead;
     } else if (Array.isArray(effect)) {
-      const poke = this.effect_self ? user : target;
+      const poke = this.effect_self === true ? user : target;
       poke.modStages(user.owner, effect, battle);
     } else if (effect === "flinch") {
       target.v.flinch = true;
@@ -261,6 +258,8 @@ function getDamage(self: DamagingMove, battle: Battle, user: ActivePokemon, targ
   const eff = battle.getEffectiveness(type, target.v.types);
   if (self.flag === "dream_eater" && target.base.status !== "slp") {
     return {dmg: 0, isCrit: false, eff: 1};
+  } else if (typeof self.getDamage === "number") {
+    return {dmg: self.getDamage, isCrit: false, eff: 1};
   } else if (self.getDamage) {
     const result = self.getDamage(battle, user, target, eff);
     if (typeof result === "number") {

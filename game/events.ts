@@ -158,7 +158,7 @@ type ChargeEvent = {type: "charge"; src: PlayerId; move: MoveId};
 
 type MimicEvent = {type: "mimic"; src: PlayerId; move: MoveId};
 
-type ConversionEvent = {type: "conversion"; user: PlayerId; target?: PlayerId; types: Type[]};
+type ConversionEvent = {type: "conversion"; src: PlayerId; target?: PlayerId; types: Type[]};
 
 type MagnitudeEvent = {type: "magnitude"; magnitude: number};
 

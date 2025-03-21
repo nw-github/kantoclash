@@ -9,6 +9,7 @@ export * from "./functions";
 export * from "./moveList";
 
 export interface BaseMove {
+  readonly idx?: number;
   readonly name: string;
   readonly pp: number;
   readonly type: Type;
@@ -20,6 +21,8 @@ export interface BaseMove {
   readonly rainAcc?: boolean;
   /** Hits users in the semi-invuln state of these moves */
   readonly ignore?: string[] /* MoveId[] */;
+  /** Not callable by metronome */
+  readonly noMetronome?: boolean;
 }
 
 export interface CustomMove extends BaseMove {

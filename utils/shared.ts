@@ -49,6 +49,7 @@ type FormatInfo = {
 
 export const battleFormats = [
   "g2_standard",
+  "g2_metronome",
   "g1_standard",
   "g1_nfe",
   "g1_randoms",
@@ -67,6 +68,14 @@ export const formatInfo: Record<FormatId, FormatInfo> = {
     needsTeam: true,
     chooseLead: true,
     mods: {sleepClause: true, freezeClause: true, endlessBattle: true},
+    generation: 2,
+  },
+  g2_metronome: {
+    name: "[Gen 2] Random Metronome Battle",
+    icon: "mdi:metronome",
+    desc: "A random battle where all Pokémon only know the move Metronome.",
+    needsTeam: false,
+    mods: {},
     generation: 2,
   },
   g1_standard: {

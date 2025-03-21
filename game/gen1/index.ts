@@ -166,6 +166,7 @@ const createGeneration = () => {
     moveList,
     typeChart,
     moveFunctions,
+    lastMoveIdx: moveList.whirlwind.idx!,
     getCritChance,
     checkAccuracy,
     calcDamage,

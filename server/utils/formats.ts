@@ -190,4 +190,14 @@ export const formatDescs: Record<FormatId, FormatFunctions> = {
       );
     },
   },
+  g2_metronome: {
+    generate() {
+      return getRandomPokemon(
+        GENERATION2,
+        6,
+        s => !s.evolvesTo,
+        (_, species) => ({species, moves: ["metronome"]}),
+      );
+    },
+  },
 };

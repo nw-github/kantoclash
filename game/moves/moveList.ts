@@ -5,7 +5,15 @@ import type {ActivePokemon, Battle} from "../battle";
 
 export type MoveId = keyof typeof internalMoveList;
 
-const internalMoveList = Object.freeze({
+export const createMoveList = <T extends Record<string, Move>>(list: T) => {
+  let id = 0;
+  for (const k in list) {
+    (list[k].idx as any) = id++;
+  }
+  return Object.freeze(list);
+};
+
+const internalMoveList = createMoveList({
   bide: {
     name: "Bide",
     pp: 10,
@@ -47,7 +55,7 @@ const internalMoveList = Object.freeze({
       user.v.types = [...target.v.types];
       battle.event({
         type: "conversion",
-        user: user.owner.id,
+        src: user.owner.id,
         target: target.owner.id,
         types: [...user.v.types],
         volatiles: [{id: user.owner.id, v: {conversion: [...user.v.types]}}],
@@ -151,7 +159,13 @@ const internalMoveList = Object.freeze({
     type: "normal",
     exec(battle, user, target): boolean {
       target.lastDamage = 0;
-      return battle.callUseMove(moveList[battle.rng.choice(validMetronome)!], user, target);
+      const moves = Object.entries(battle.gen.moveList)
+        .filter(([, move]) => !move.noMetronome && move.idx! <= battle.gen.lastMoveIdx)
+        .filter(
+          ([id]) => (battle.gen.id !== 2 && battle.gen.id !== 4) || !user.base.moves.includes(id),
+        )
+        .map(([, move]) => move);
+      return battle.callUseMove(battle.rng.choice(moves)!, user, target);
     },
   },
   mimic: {
@@ -543,7 +557,7 @@ const internalMoveList = Object.freeze({
     type: "dragon",
     acc: 100,
     power: 1,
-    getDamage: () => 40,
+    getDamage: 40,
   },
   dreameater: {
     kind: "damage",
@@ -978,7 +992,7 @@ const internalMoveList = Object.freeze({
     type: "normal",
     acc: 90,
     power: 1,
-    getDamage: () => 20,
+    getDamage: 20,
   },
   spikecannon: {
     kind: "damage",
@@ -1007,6 +1021,7 @@ const internalMoveList = Object.freeze({
     acc: 100,
     power: 50,
     recoil: 2,
+    noMetronome: true,
   },
   submission: {
     kind: "damage",
@@ -1112,10 +1127,10 @@ const internalMoveList = Object.freeze({
   // bellydrum: {},
   // conversion2: {},
   // curse: {},
-  // destinybond: {},
-  // detect: {},
+  // destinybond: { noMetronome: true },
+  // detect: { noMetronome: true },
   // encore: {},
-  // endure: {},
+  // endure: { noMetronome: true  },
   // foresight: {},
   // furycutter: {},
   // futuresight: {},
@@ -1123,19 +1138,19 @@ const internalMoveList = Object.freeze({
   // lockon: {},
   // meanlook: {},
   // mindreader: {},
-  // mirrorcoat: {},
+  // mirrorcoat: { noMetronome: true },
   // moonlight: {},
   // morningsun: {},
   // nightmare: {},
   // painsplit: {},
   // perishsong: {},
   // present: {},
-  // protect: {},
+  // protect: { noMetronome: true },
   // psychup: {},
   // pursuit: {},
   // rollout: {},
-  // sketch: {},
-  // sleeptalk: {},
+  // sketch: { noMetronome: true },
+  // sleeptalk: { noMetronome: true },
   // spiderweb: {},
   // spikes: {},
   // spite: {},
@@ -1244,7 +1259,7 @@ const internalMoveList = Object.freeze({
   },
   extremespeed: {
     kind: "damage",
-    name: "Extreme Speed",
+    name: "ExtremeSpeed",
     pp: 5,
     type: "normal",
     power: 80,
@@ -1501,6 +1516,7 @@ const internalMoveList = Object.freeze({
   //   power: 40,
   //   acc: 100,
   //   flag: "thief",
+  //   noMetronome: true
   // },
   twister: {
     kind: "damage",
@@ -1533,34 +1549,9 @@ const internalMoveList = Object.freeze({
     effect: [99.6 /* 255/256 */, "par"],
   },
   // --
-} satisfies Record<string, Move>);
+});
 
 export const moveList = internalMoveList as Record<MoveId, Move>;
-
-// prettier-ignore
-export const validMetronome: MoveId[] = [
-  "bide", "conversion", "disable", "haze", "leechseed", "mimic", "mirrormove", "substitute",
-  "transform", "focusenergy", "lightscreen", "mist", "reflect", "recover", "rest", "softboiled",
-  "confuseray", "supersonic", "glare", "hypnosis", "lovelykiss", "poisongas", "poisonpowder",
-  "sing", "sleeppowder", "spore", "stunspore", "thunderwave", "toxic", "acidarmor", "agility",
-  "amnesia", "barrier", "defensecurl", "doubleteam", "flash", "growl", "growth", "harden",
-  "kinesis", "leer", "meditate", "minimize", "sandattack", "screech", "sharpen", "smokescreen",
-  "stringshot", "swordsdance", "tailwhip", "withdraw", "absorb", "acid", "aurorabeam", "barrage",
-  "bind", "bodyslam", "bonemerang", "bubble", "bubblebeam", "bite", "blizzard", "boneclub", "clamp",
-  "cometpunch", "confusion", "constrict", "counter", "crabhammer", "cut", "dig", "dizzypunch",
-  "doubleedge", "doublekick", "doubleslap", "dragonrage", "dreameater", "drillpeck", "eggbomb",
-  "earthquake", "ember", "explosion", "fireblast", "firepunch", "firespin", "fissure",
-  "flamethrower", "fly", "furyattack", "furyswipes", "guillotine", "gust", "headbutt", "hijumpkick",
-  "hornattack", "horndrill", "hydropump", "hyperbeam", "hyperfang", "icebeam", "icepunch",
-  "jumpkick", "karatechop", "leechlife", "lick", "lowkick", "megadrain", "megakick", "megapunch",
-  "nightshade", "payday", "peck", "petaldance", "pinmissile", "poisonsting", "pound", "psybeam",
-  "psychic", "psywave", "quickattack", "rage", "razorleaf", "razorwind", "rockslide", "rockthrow",
-  "rollingkick", "selfdestruct", "scratch", "seismictoss", "skullbash", "skyattack", "slam",
-  "slash", "sludge", "smog", "solarbeam", "sonicboom", "spikecannon", "stomp", "strength",
-  "submission", "superfang", "surf", "swift", "tackle", "takedown", "thrash", "thunder",
-  "thunderpunch", "thundershock", "thunderbolt", "triattack", "twineedle", "vinewhip", "vicegrip",
-  "watergun", "waterfall", "wingattack", "wrap", "roar", "splash", "teleport", "whirlwind"
-];
 
 function getFlailPower(this: DamagingMove, user: Pokemon) {
   const percent = hpPercentExact(user.hp, user.stats.hp);

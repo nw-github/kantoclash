@@ -77,6 +77,7 @@ const createGeneration = (): Generation => {
     moveList,
     typeChart,
     moveFunctions: GENERATION1.moveFunctions,
+    lastMoveIdx: moveList.zapcannon.idx!,
     getCritChance(user, hc) {
       let stages = hc ? 2 : 0;
       if (user.v.flags.focus) {
