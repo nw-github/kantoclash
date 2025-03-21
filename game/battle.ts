@@ -539,6 +539,10 @@ export class Battle {
     } else if (user.v.flags.seeded && tickCounter("seeded")) {
       return;
     }
+
+    if (user.v.curse) {
+      user.damage(idiv(user.base.stats.hp, 4), user, this, false, "curse", true);
+    }
   }
 
   private handleScreen(player: Player, screen: Screen) {
@@ -916,7 +920,11 @@ export class ActivePokemon {
 
   setVolatile<T extends keyof Volatiles>(key: T, val: Volatiles[T]) {
     this.v[key] = val;
-    return {id: this.owner.id, v: {[key]: structuredClone(val)}} as const;
+    if (key === "types" && arraysEqual(this.v.types, this.base.species.types)) {
+      return {id: this.owner.id, v: {[key]: null}} as const;
+    } else {
+      return {id: this.owner.id, v: {[key]: structuredClone(val)}} as const;
+    }
   }
 }
 
@@ -935,6 +943,7 @@ class Volatiles {
   hazed = false;
   trapped = false;
   fainted = false;
+  curse = false;
   attract?: ActivePokemon;
   lastMove?: Move;
   lastMoveIndex?: number;
@@ -976,6 +985,7 @@ class Volatiles {
       types: !arraysEqual(this.types, base.species.types) ? [...this.types] : undefined,
       disabled: !!this.disabled,
       attract: !!this.attract,
+      curse: this.curse,
     };
   }
 }

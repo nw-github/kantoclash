@@ -2,7 +2,7 @@
   <img
     v-if="image"
     class="size-[20px] sm:size-[24px]"
-    :src="`/sprites/type/${type}.png`"
+    :src="`/sprites/type/${encodeURIComponent(type)}.png`"
     :alt="type"
   />
   <UBadge v-else :style="{backgroundColor: typeColor[type]}" :label="label ?? toTitleCase(type)" />

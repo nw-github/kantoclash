@@ -14,6 +14,7 @@ export type ClientVolatiles = Partial<Record<ClientVolatileFlag, boolean>> & {
   charging?: MoveId;
   types?: Type[];
   attract?: boolean;
+  curse?: boolean;
 };
 
 export type ClientActivePokemon = {
@@ -131,12 +132,16 @@ export const formatInfo: Record<FormatId, FormatInfo> = {
 };
 
 export const mergeVolatiles = <T extends object>(ext: any, obj: T) => {
+  const isObject = (foo: any): foo is object => {
+    return !Array.isArray(foo) && typeof foo === "object";
+  };
+
   const result: any = {};
   for (const kk of new Set([...Object.keys(obj), ...Object.keys(ext)])) {
     const k = kk as keyof T;
     if (ext[k] === null) {
       continue;
-    } else if (typeof obj[k] === "object" || typeof ext[k] === "object") {
+    } else if (isObject(obj[k]) || isObject(ext[k])) {
       result[k] = mergeVolatiles(ext[k] ?? {}, obj[k] ?? {});
     } else {
       result[k] = ext[k] ?? obj[k];

@@ -143,6 +143,7 @@ export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
   selfdestruct: {power: 200},
   skullbash: {charge: [["def", +1]]},
   sludge: {effect: [30, "psn"]},
+  struggle: {type: "???", recoil: 4, pp: 1},
   thunder: {ignore: ["fly", "bounce"], effect: [30, "par"]},
   triattack: {flag: "tri_attack"},
   wingattack: {power: 60},

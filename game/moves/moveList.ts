@@ -1185,7 +1185,7 @@ const internalMoveList = createMoveList({
       }
 
       const types = (Object.keys(battle.gen.typeChart) as Type[]).filter(type => {
-        return (battle.gen.typeChart[type][lastMove.type] ?? 1) < 1;
+        return (battle.gen.typeChart[lastMove.type][type] ?? 1) < 1;
       });
 
       const v = user.setVolatile("types", [battle.rng.choice(types)!]);
@@ -1197,7 +1197,30 @@ const internalMoveList = createMoveList({
       });
     },
   },
-  // curse: {},
+  curse: {
+    name: "Curse",
+    pp: 10,
+    type: "???",
+    exec(battle, user, target) {
+      if (!user.v.types.includes("ghost")) {
+        if (user.v.stages.atk >= 6 && user.v.stages.def >= 6) {
+          battle.info(user, "fail_generic");
+          return;
+        }
+        // prettier-ignore
+        user.modStages([["atk", +1], ["def", +1], ["spe", -1]], battle);
+      } else {
+        if (target.v.substitute) {
+          battle.info(user, "fail_generic");
+          return;
+        }
+
+        const dmg = idiv(user.base.stats.hp, 2);
+        const {event} = user.damage(dmg, target, battle, false, "set_curse", true);
+        (event as BattleEvent).volatiles = [target.setVolatile("curse", true)];
+      }
+    },
+  },
   // destinybond: { noMetronome: true },
   // detect: { noMetronome: true },
   // encore: {},

@@ -134,6 +134,10 @@ const descriptions: Partial<Record<MoveId, string>> = {
     "switches out. ",
   conversion2:
     "Randomly changes the user's type to one that resists the last move used by the opponent. ",
+  curse:
+    "If the user is not a ghost type, raises Attack and Defense and lowers Speed by 1 stage. " +
+    "If the user is ghost type, sacrifices 1/2 its max HP to place a curse on the opponent that " +
+    "deals 1/4 its max HP after every turn. ",
 };
 
 const gen2Descriptions: Partial<Record<MoveId, string>> = {

@@ -32,6 +32,7 @@ export interface DamagingMove extends BaseMove {
   readonly flag?: Flag;
   readonly effect?: [number, Effect];
   readonly effect_self?: boolean;
+  /** Recoil: max(1 / recoil, 1) */
   readonly recoil?: number;
   readonly punish?: boolean;
   readonly charge?: boolean | "sun" | "invuln" | [Stages, number][];

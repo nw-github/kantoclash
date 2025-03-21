@@ -61,7 +61,9 @@ export type DamageReason =
   | "confusion"
   | "trap"
   | "sandstorm"
-  | "belly_drum";
+  | "belly_drum"
+  | "set_curse"
+  | "curse";
 
 export type RecoveryReason = "drain" | "recover" | "rest" | "seeder";
 

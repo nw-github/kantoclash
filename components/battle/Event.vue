@@ -21,6 +21,8 @@
     <p v-else-if="e.why === 'trap'">{{ pn(e.src) }}'s attack continues!</p>
     <p v-else-if="e.why === 'sandstorm'">{{ pn(e.src) }} is buffeted by the sandstorm!</p>
     <p v-else-if="e.why === 'belly_drum'">{{ pn(e.src) }} cut its own HP and maximized its Attack!</p>
+    <p v-else-if="e.why === 'set_curse'">{{ pn(e.target) }} cut its own HP and laid a curse on {{ pn(e.src, false) }}!</p>
+    <p v-else-if="e.why === 'curse'">{{ pn(e.src) }} is afflicted by the Curse!</p>
 
     <p v-if="e.why === 'attacked' && e.hitCount === undefined && (e.eff ?? 1) !== 1" class="italic">
       {{ eff(e.eff) }}
