@@ -172,4 +172,13 @@ export const moveFunctions: MoveFunctions = {
       }
     },
   },
+  noSwitch: {
+    exec(battle, user, target) {
+      if (target.v.hasFlag(VolatileFlag.meanLook)) {
+        return battle.info(user, "fail_generic");
+      }
+
+      battle.info(target, "meanLook", [target.setFlag(VolatileFlag.meanLook)]);
+    },
+  },
 };

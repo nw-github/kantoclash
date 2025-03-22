@@ -97,7 +97,7 @@ class Player {
     }
 
     this.choice = {
-      move: {kind: "switch", type: "normal", name: "", pp: 0, priority: 2, poke},
+      move: {kind: "switch", type: "normal", name: "", pp: 0, priority: +7, poke},
       user: this.active,
     };
     return true;
@@ -907,7 +907,8 @@ export class ActivePokemon {
     }
 
     const moveLocked = !!(this.v.bide || this.v.trapping);
-    return {canSwitch: !lockedIn || moveLocked || this.v.fainted, moves};
+    const meanLook = this.v.hasFlag(VolatileFlag.meanLook);
+    return {canSwitch: ((!lockedIn || moveLocked) && !meanLook) || this.v.fainted, moves};
   }
 
   setVolatile<T extends keyof Volatiles>(key: T, val: Volatiles[T]) {

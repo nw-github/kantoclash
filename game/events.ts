@@ -27,7 +27,8 @@ type AnyEvent =
   | WeatherEvent
   | ScreenEvent
   | SetVolatilesEvent
-  | BugEvent;
+  | BugEvent
+  | SpiteEvent;
 
 export type ChangedVolatiles = {id: PlayerId; v: NullOrOptional<ClientVolatiles>}[];
 
@@ -183,5 +184,7 @@ type MagnitudeEvent = {type: "magnitude"; magnitude: number};
 export type ScreenEvent = {type: "screen"; kind: "start" | "end"; screen: Screen; src: PlayerId};
 
 type SetVolatilesEvent = {type: "sv"};
+
+type SpiteEvent = {type: "spite"; src: PlayerId; move: MoveId; amount: number};
 
 export type WeatherEvent = {type: "weather"; kind: "start" | "end" | "continue"; weather: Weather};

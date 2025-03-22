@@ -66,7 +66,7 @@ export interface StatusMove extends BaseMove {
 export interface SwitchMove extends BaseMove {
   readonly kind: "switch";
   readonly poke: Pokemon;
-  readonly priority: 2;
+  readonly priority: number;
 }
 
 export interface FailMove extends BaseMove {
@@ -93,6 +93,10 @@ export interface ProtectMove extends BaseMove {
   readonly endure?: boolean;
 }
 
+export interface PreventEscapeMove extends BaseMove {
+  readonly kind: "noSwitch";
+}
+
 export type Move =
   | CustomMove
   | VolatileFlagMove
@@ -106,4 +110,5 @@ export type Move =
   | WeatherMove
   | ScreenMove
   | PhazingMove
-  | ProtectMove;
+  | ProtectMove
+  | PreventEscapeMove;

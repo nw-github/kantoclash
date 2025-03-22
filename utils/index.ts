@@ -146,6 +146,7 @@ const descriptions: Partial<Record<MoveId, string>> = {
     "target will also faint. ",
   encore: "Forces the target to use its last selected move for the next 2-6 turns. ",
   swagger: "Raises the target's Attack by 2 stages and confuses it. ",
+  spite: "Lowers the PP of the target's last used move by 2-5 PP. ",
 };
 
 const gen2Descriptions: Partial<Record<MoveId, string>> = {
@@ -302,6 +303,8 @@ export const describeMove = (gen: Generation, id: MoveId) => {
     } else {
       return "Protects the user from most moves that target it directly. More likely to fail if used successively. ";
     }
+  } else if (move.kind === "noSwitch") {
+    return "Prevents the target from switching out. ";
   } else {
     return "No description. ";
   }

@@ -103,6 +103,10 @@
   <div v-else-if="e.type === 'bug'">
     <p class="text-xs sm:text-[0.8rem] muted">({{ bugMessage[e.bug] }})</p>
   </div>
+  <div v-else-if="e.type === 'spite'" class="move">
+    It reduced the PP of {{ pn(e.src, false) }}'s {{ gen.moveList[e.move].name }} by {{ e.amount }}!
+  </div>
+
   <div v-else>Unknown event: <code>{{ e }}</code></div>
 </template>
 

@@ -1266,7 +1266,8 @@ const internalMoveList = createMoveList({
         !target.v.lastMove ||
         target.v.lastMoveIndex === undefined ||
         target.v.encore ||
-        target.v.lastMove.noEncore
+        target.v.lastMove.noEncore ||
+        !target.base.pp[target.v.lastMoveIndex]
       ) {
         return battle.info(user, "fail_generic");
       }
@@ -1280,7 +1281,6 @@ const internalMoveList = createMoveList({
   // futuresight: {},
   // healbell: {},
   // lockon: {},
-  // meanlook: {},
   // mindreader: {},
   // mirrorcoat: { noMetronome: true },
   // nightmare: {},
@@ -1292,9 +1292,29 @@ const internalMoveList = createMoveList({
   // rollout: {},
   // sketch: { noMetronome: true, noEncore: true },
   // sleeptalk: { noMetronome: true, noEncore: true },
-  // spiderweb: {},
   // spikes: {},
-  // spite: {},
+  spite: {
+    name: "Spite",
+    pp: 10,
+    acc: 100,
+    type: "ghost",
+    exec(battle, user, target) {
+      if (!target.v.lastMove) {
+        return battle.info(user, "fail_generic");
+      }
+      const id = battle.moveIdOf(target.v.lastMove)!;
+      const idx = target.base.moves.indexOf(id);
+      // Fail for struggle, metronome, mirror move, sleep talk unless it called a move we already
+      // know (which metronome cant in gen 2)
+      if (idx === -1 || !target.base.pp[idx]) {
+        return battle.info(user, "fail_generic");
+      }
+
+      const amount = Math.min(battle.rng.int(2, 5), target.base.pp[idx]);
+      target.base.pp[idx] -= amount;
+      battle.event({type: "spite", src: target.owner.id, move: id, amount});
+    },
+  },
   swagger: {
     name: "Swagger",
     pp: 15,
@@ -1311,6 +1331,19 @@ const internalMoveList = createMoveList({
     },
   },
   // triplekick: {},
+  // --
+  meanlook: {
+    kind: "noSwitch",
+    name: "Mean Look",
+    pp: 5,
+    type: "normal",
+  },
+  spiderweb: {
+    kind: "noSwitch",
+    name: "Spider Web",
+    pp: 10,
+    type: "bug",
+  },
   // --
   detect: {
     kind: "protect",
