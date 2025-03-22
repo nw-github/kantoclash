@@ -96,6 +96,8 @@ export const infoMessage: Record<InfoReason, string> = {
   heal_bell: "A bell chimed!",
   pain_split: "The battlers shared their pain!",
   perish_song: "All affected pokemon will faint in three turns!",
+  future_sight: "{} foresaw an attack!",
+  future_sight_release: "{} took the Future Sight attack!",
 
   substitute: "",
   curse: "",

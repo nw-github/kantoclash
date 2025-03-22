@@ -246,12 +246,12 @@ const beforeUseMove = (battle: Battle, move: Move, user: ActivePokemon, target: 
   }
 
   if (!confuse && user.v.attract) {
-    // TODO: in doubles, need the pokemon that originally attracted
-    battle.event({type: "in_love", src: user.owner.id, target: target.owner.id});
+    battle.event({type: "in_love", src: user.owner.id, target: user.v.attract.owner.id});
   }
 
   if (confuse) {
-    const [atk, def] = battle.gen.getDamageVariables(false, target, target, false);
+    // TODO: use target reflect
+    const [atk, def] = battle.gen.getDamageVariables(false, user, user, false);
     const dmg = battle.gen.calcDamage({
       lvl: user.base.level,
       pow: 40,

@@ -120,11 +120,13 @@ const beforeUseMove = (battle: Battle, move: Move, user: ActivePokemon, target: 
     const v = [{id: user.owner.id, v: {flags: user.v.flags}}];
     battle.info(user, done ? "confused_end" : "confused", v);
     if (!done && battle.rng.bool()) {
-      const [atk, def] = battle.gen.getDamageVariables(false, target, target, false);
+      const move = user.owner.choice?.move;
+      const explosion = move?.kind === "damage" && move.flag === "explosion" ? 2 : 1;
+      const [atk, def] = battle.gen.getDamageVariables(false, user, user, false);
       const dmg = battle.gen.calcDamage({
         lvl: user.base.level,
         pow: 40,
-        def,
+        def: Math.max(Math.floor(def / explosion), 1),
         atk,
         eff: 1,
         rand: false,
@@ -139,8 +141,7 @@ const beforeUseMove = (battle: Battle, move: Move, user: ActivePokemon, target: 
   }
 
   if (user.v.attract) {
-    // TODO: in doubles, need the pokemon that originally attracted
-    battle.event({type: "in_love", src: user.owner.id, target: target.owner.id});
+    battle.event({type: "in_love", src: user.owner.id, target: user.v.attract.owner.id});
 
     if (battle.rand100(50)) {
       battle.info(user, "immobilized");

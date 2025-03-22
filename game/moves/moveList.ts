@@ -1293,7 +1293,32 @@ const internalMoveList = createMoveList({
   },
   // foresight: {},
   // furycutter: {},
-  // futuresight: {},
+  futuresight: {
+    name: "Future Sight",
+    pp: 15,
+    power: 80,
+    acc: 90,
+    type: "psychic",
+    exec(battle, user, target) {
+      if (target.futureSight) {
+        return battle.info(user, "fail_generic");
+      }
+
+      const [atk, def] = battle.gen.getDamageVariables(true, user, target, false);
+      const dmg = battle.gen.calcDamage({
+        atk,
+        def,
+        pow: this.power,
+        lvl: user.base.level,
+        eff: 1,
+        isCrit: false,
+        isStab: false,
+        rand: battle.rng,
+      });
+      target.futureSight = {damage: dmg, turns: 3};
+      battle.info(user, "future_sight");
+    },
+  },
   healbell: {
     name: "Heal Bell",
     pp: 5,
@@ -1714,13 +1739,11 @@ const internalMoveList = createMoveList({
         "fight", "flying", "poison", "ground", "rock", "bug", "ghost", "steel", "fire", "water",
         "grass", "electric", "psychic", "ice", "dragon", "dark",
       ];
-      const dvs = user.dvs;
-      return hpTypes[(((dvs.atk ?? 15) & 0b11) << 2) | ((dvs.def ?? 15) & 0b11)];
+      return hpTypes[(((user.dvs.atk ?? 15) & 0b11) << 2) | ((user.dvs.def ?? 15) & 0b11)];
     },
-    getPower(user) {
+    getPower({dvs}) {
       const msb = (dv?: number) => +(((dv ?? 15) & (1 << 3)) !== 0);
 
-      const dvs = user.dvs;
       const x = msb(dvs.spa) | (msb(dvs.spe) << 1) | (msb(dvs.def) << 2) | (msb(dvs.atk) << 3);
       const y = (dvs.spa ?? 15) & 0b11;
       return idiv(5 * x + y, 2) + 31;

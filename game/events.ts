@@ -71,7 +71,8 @@ export type DamageReason =
   | "nightmare"
   | "destiny_bond"
   | "pain_split"
-  | "perish_song";
+  | "perish_song"
+  | "future_sight";
 
 export type RecoveryReason =
   | "drain"
@@ -176,7 +177,9 @@ export type InfoReason =
   | "encore_end"
   | "heal_bell"
   | "pain_split"
-  | "perish_song";
+  | "perish_song"
+  | "future_sight"
+  | "future_sight_release";
 
 type InfoEvent = {type: "info"; src: PlayerId; why: InfoReason};
 

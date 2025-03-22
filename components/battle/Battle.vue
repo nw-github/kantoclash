@@ -508,7 +508,7 @@ const runTurn = async (live: boolean, turnIdx: number) => {
         });
       } else {
         update();
-        if (e.why === "confusion" || e.why === "sandstorm") {
+        if (e.why === "confusion" || e.why === "sandstorm" || e.why === "future_sight") {
           await playDmg(e.eff ?? 1);
         }
       }

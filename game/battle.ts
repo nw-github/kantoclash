@@ -430,11 +430,13 @@ export class Battle {
   }
 
   checkFaint(user: ActivePokemon, target: ActivePokemon) {
+    let fainted = false;
     if (target.base.hp === 0 && !target.v.fainted) {
       target.faint(this);
       if (!this.victor && target.owner.areAllDead()) {
         this.victor = user.owner;
       }
+      fainted = true;
     }
 
     if (user.base.hp === 0 && !user.v.fainted) {
@@ -442,8 +444,9 @@ export class Battle {
       if (!this.victor && user.owner.areAllDead()) {
         this.victor = target.owner;
       }
+      fainted = true;
     }
-    return target.base.hp === 0 || user.base.hp === 0;
+    return fainted;
   }
 
   private handleResidualDamage(user: ActivePokemon) {
@@ -462,7 +465,9 @@ export class Battle {
       return dead;
     };
 
-    if ((user.base.status === "tox" || user.base.status === "psn") && tickCounter("psn")) {
+    if (user.base.hp === 0) {
+      return;
+    } else if ((user.base.status === "tox" || user.base.status === "psn") && tickCounter("psn")) {
       return;
     } else if (user.base.status === "brn" && tickCounter("brn")) {
       return;
@@ -489,6 +494,28 @@ export class Battle {
         this.event({type: "screen", src: player.id, screen, kind: "end"});
       }
     };
+
+    // Future Sight
+    for (const {active} of this.players) {
+      if (active.futureSight && --active.futureSight.turns === 0) {
+        if (!active.v.fainted) {
+          this.info(active, "future_sight_release");
+          if (!this.checkAccuracy(this.gen.moveList.futuresight, active, active)) {
+            // FIXME: this is lazy
+            this.events.splice(-1, 1);
+            this.info(active, "fail_generic");
+          } else {
+            active.damage(active.futureSight.damage, active, this, false, "future_sight");
+          }
+        }
+
+        active.futureSight = undefined;
+      }
+    }
+
+    if (this.checkFaint(this.players[0].active, this.players[1].active)) {
+      return;
+    }
 
     // Weather
     weather: if (this.weather) {
@@ -519,6 +546,10 @@ export class Battle {
 
     // Perish song
     for (const {active, id} of this.players) {
+      if (active.v.fainted) {
+        continue;
+      }
+
       if (active.v.perishCount) {
         --active.v.perishCount;
 
@@ -540,7 +571,7 @@ export class Battle {
 
     // Defrost
     for (const {active} of this.players) {
-      if (active.base.status === "frz" && this.rand100((25 / 256) * 100)) {
+      if (!active.v.fainted && active.base.status === "frz" && this.rand100((25 / 256) * 100)) {
         active.unstatus(this, "thaw");
       }
     }
@@ -568,6 +599,7 @@ export class Battle {
     // Encore
     for (const {active} of this.players) {
       if (
+        !active.v.fainted &&
         active.v.encore &&
         (--active.v.encore.turns === 0 || !active.base.pp[active.v.encore.indexInMoves])
       ) {
@@ -597,6 +629,7 @@ export class ActivePokemon {
   lastChosenMove?: Move;
   lastDamage = 0;
   movedThisTurn = false;
+  futureSight?: {damage: number; turns: number};
 
   constructor(public base: Pokemon, public readonly owner: Player) {
     this.base = base;
