@@ -1147,7 +1147,9 @@ const internalMoveList = createMoveList({
     type: "normal",
     protect: true,
     exec(battle, user, target) {
-      if (
+      if (!battle.checkAccuracy(this, user, target)) {
+        return;
+      } else if (
         !user.base.gender ||
         !target.base.gender ||
         user.base.gender === target.base.gender ||
@@ -1229,7 +1231,9 @@ const internalMoveList = createMoveList({
     pp: 10,
     type: "???",
     exec(battle, user, target) {
-      if (!user.v.types.includes("ghost")) {
+      if (!battle.checkAccuracy(this, user, target)) {
+        return;
+      } else if (!user.v.types.includes("ghost")) {
         if (user.v.stages.atk >= 6 && user.v.stages.def >= 6) {
           battle.info(user, "fail_generic");
           return;
@@ -1262,7 +1266,9 @@ const internalMoveList = createMoveList({
     type: "normal",
     noEncore: true,
     exec(battle, user, target) {
-      if (
+      if (!battle.checkAccuracy(this, user, target)) {
+        return;
+      } else if (
         !target.v.lastMove ||
         target.v.lastMoveIndex === undefined ||
         target.v.encore ||
@@ -1299,7 +1305,9 @@ const internalMoveList = createMoveList({
     acc: 100,
     type: "ghost",
     exec(battle, user, target) {
-      if (!target.v.lastMove) {
+      if (!battle.checkAccuracy(this, user, target)) {
+        return;
+      } else if (!target.v.lastMove) {
         return battle.info(user, "fail_generic");
       }
       const id = battle.moveIdOf(target.v.lastMove)!;
@@ -1321,7 +1329,9 @@ const internalMoveList = createMoveList({
     acc: 90,
     type: "normal",
     exec(battle, user, target) {
-      if (!target.modStages([["atk", +2]], battle)) {
+      if (!battle.checkAccuracy(this, user, target)) {
+        return;
+      } else if (!target.modStages([["atk", +2]], battle)) {
         return battle.info(user, "fail_generic");
       } else if (target.owner.screens.safeguard) {
         return battle.info(user, "safeguard_protect");

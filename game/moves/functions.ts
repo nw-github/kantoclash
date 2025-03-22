@@ -174,7 +174,9 @@ export const moveFunctions: MoveFunctions = {
   },
   noSwitch: {
     exec(battle, user, target) {
-      if (target.v.hasFlag(VolatileFlag.meanLook)) {
+      if (!battle.checkAccuracy(this, user, target)) {
+        return;
+      } else if (target.v.hasFlag(VolatileFlag.meanLook)) {
         return battle.info(user, "fail_generic");
       }
 
