@@ -106,6 +106,9 @@
   <div v-else-if="e.type === 'psych_up'">
     {{ pn(e.src) }} copied {{ pn(e.target, false) }}'s stat changes!
   </div>
+  <div v-else-if="e.type === 'foresight'">
+    {{ pn(e.src) }} identified {{ pn(e.target, false) }}!
+  </div>
   <div v-else>Unknown event: <code>{{ e }}</code></div>
 </template>
 

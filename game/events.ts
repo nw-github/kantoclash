@@ -17,9 +17,7 @@ type AnyEvent =
   | StatusEvent
   | StagesEvent
   | InfoEvent
-  | TransformEvent
-  | InLoveEvent
-  | PsychUpEvent
+  | SrcTargetEvent
   | DisableEvent
   | ChargeEvent
   | MimicEvent
@@ -189,16 +187,22 @@ type InfoEvent = {type: "info"; src: PlayerId; why: InfoReason};
 
 type BugEvent = {type: "bug"; bug: BugType};
 
-type TransformEvent = {type: "transform"; src: PlayerId; target: PlayerId};
+type SrcTargetEvent = {
+  type: "transform" | "in_love" | "psych_up" | "foresight";
+  src: PlayerId;
+  target: PlayerId;
+};
 
-type InLoveEvent = {type: "in_love"; src: PlayerId; target: PlayerId};
-
-type PsychUpEvent = {type: "psych_up"; src: PlayerId; target: PlayerId};
+// For some reason making these 1 thing causes MoveId to become a recursive type
+// type SrcMoveEvent = {
+//   type: "disable" | "charge" | "sketch" | "mimic";
+//   src: PlayerId;
+//   move: MoveId;
+// };
 
 type DisableEvent = {type: "disable"; src: PlayerId; move: MoveId};
-
 type ChargeEvent = {type: "charge"; src: PlayerId; move: MoveId};
-
+type SketchEvent = {type: "sketch"; src: PlayerId; move: MoveId};
 type MimicEvent = {type: "mimic"; src: PlayerId; move: MoveId};
 
 type ConversionEvent = {type: "conversion"; src: PlayerId; target?: PlayerId; types: Type[]};
@@ -210,8 +214,6 @@ export type ScreenEvent = {type: "screen"; kind: "start" | "end"; screen: Screen
 type SetVolatilesEvent = {type: "sv"};
 
 type SpiteEvent = {type: "spite"; src: PlayerId; move: MoveId; amount: number};
-
-type SketchEvent = {type: "sketch"; src: PlayerId; move: MoveId};
 
 export type WeatherEvent = {type: "weather"; kind: "start" | "end" | "continue"; weather: Weather};
 

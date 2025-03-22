@@ -301,8 +301,15 @@ export class Battle {
     }
   }
 
-  getEffectiveness(atk: Type, def: readonly Type[]) {
-    return getEffectiveness(this.gen.typeChart, atk, def);
+  getEffectiveness(atk: Type, target: ActivePokemon) {
+    if (target.v.hasFlag(VolatileFlag.foresight)) {
+      // FIXME: this is lazy
+      const chart = structuredClone(this.gen.typeChart);
+      chart.normal.ghost = 1;
+      chart.fight.ghost = 1;
+      return getEffectiveness(chart, atk, target.v.types);
+    }
+    return getEffectiveness(this.gen.typeChart, atk, target.v.types);
   }
 
   rand255(num: number) {

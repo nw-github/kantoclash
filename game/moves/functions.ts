@@ -94,7 +94,7 @@ export const moveFunctions: MoveFunctions = {
       if (target.v.substitute && this.status !== "par" && this.status !== "slp") {
         return battle.info(target, "fail_generic");
       } else if (
-        (this.type === "electric" && battle.getEffectiveness(this.type, target.v.types) === 0) ||
+        (this.type === "electric" && battle.getEffectiveness(this.type, target) === 0) ||
         (this.type === "poison" && target.v.types.includes("poison"))
       ) {
         return battle.info(target, "immune");

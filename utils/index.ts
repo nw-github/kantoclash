@@ -154,6 +154,10 @@ const descriptions: Partial<Record<MoveId, string>> = {
   psychup: "Copies the stat stages of the target. Fails if they are all 0. ",
   pursuit: "Doubles damage and goes first if the target is switching out. ",
   spikes: "Sets an entry hazard that damages any Pokémon switching in for 1/8 its max HP. ",
+  foresight:
+    "While this move is in effect, accuracy checks against the target ignore evasion and " +
+    "accuracy stages if the target's evasion is greater than the user's accuracy, and Normal and " +
+    "Fighting-type moves deal neutral damage to Ghost types. Switching removes this effect. ",
 };
 
 const gen2Descriptions: Partial<Record<MoveId, string>> = {
@@ -196,6 +200,13 @@ const flagDesc: Record<NonNullable<DamagingMove["flag"]>, string> = {
     "target if it is frozen. ",
   rapid_spin: "Removes the entry hazards and the effects of trapping moves and Leech Seed. ",
   thief: "Has a 99.6% chance to steal the target's held item if the user does not have one. ",
+  rollout:
+    "Locks the user in for 5 turns, doubling in power for each consecutive hit. Boosted if " +
+    "Defense Curl was previousl used by the user. ",
+  triple:
+    "Hits up to 3 times. The second hit has a damage multiplier of 2, and the third hit has " +
+    "a damage multiplier of 3. ",
+  fury_cutter: "Base power doubles if used consecutively, up to a maximum of 160. ",
 };
 
 const formatStages = (stages: [Stages, number][]) => {

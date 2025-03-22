@@ -46,6 +46,7 @@ export enum VolatileFlag {
   protect      = 0x0000_0080,
   endure       = 0x0000_0100,
   nightmare    = 0x0000_0200,
+  foresight    = 0x0000_0400,
 
   /** Client only */
   confused     = 0x8000_0000,
@@ -78,9 +79,14 @@ export const hpPercent = (current: number, max: number) => {
 
 export const scaleAccuracy255 = (acc: number, user: ActivePokemon, target: ActivePokemon) => {
   // https://bulbapedia.bulbagarden.net/wiki/Accuracy#Generation_I_and_II
-  acc *=
-    (stageMultipliers[user.v.stages["acc"]] / 100) *
-    (stageMultipliers[-target.v.stages["eva"]] / 100);
+  let userStages = user.v.stages["acc"];
+  let targetStages = target.v.stages["eva"];
+  if (userStages < targetStages && target.v.hasFlag(VolatileFlag.foresight)) {
+    userStages = 0;
+    targetStages = 0;
+  }
+
+  acc *= (stageMultipliers[userStages] / 100) * (stageMultipliers[-targetStages] / 100);
   return clamp(Math.floor(acc), 1, 255);
 };
 

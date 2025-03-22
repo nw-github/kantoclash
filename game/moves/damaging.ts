@@ -274,7 +274,7 @@ export function exec(
 function getDamage(self: DamagingMove, battle: Battle, user: ActivePokemon, target: ActivePokemon) {
   const type = self.getType ? self.getType(user.base) : self.type;
   let pow = self.getPower ? self.getPower(user.base) : self.power;
-  let eff = battle.getEffectiveness(type, target.v.types);
+  let eff = battle.getEffectiveness(type, target);
   let dmg = 0;
   let isCrit = battle.rand255(battle.gen.getCritChance(user, self.flag === "high_crit"));
   if (self.flag === "dream_eater" && target.base.status !== "slp") {

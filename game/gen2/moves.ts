@@ -72,7 +72,7 @@ export const moveFunctionPatches: Partial<MoveFunctions> = {
       if (target.v.substitute) {
         return battle.info(target, "fail_generic");
       } else if (
-        battle.getEffectiveness(this.type, target.v.types) === 0 ||
+        battle.getEffectiveness(this.type, target) === 0 ||
         (this.status === "psn" && target.v.types.includes("poison"))
       ) {
         return battle.info(target, "immune");

@@ -171,6 +171,11 @@ const gen1Gender: Partial<Record<SpeciesId, Gender>> = {
 const offsX = (number: number) => `-${number * 42 - number}px`;
 const offsY = (number: number) => `-${number * 42 - number * 2}px`;
 
+/*
+"red" | "pink" | "emerald" | "teal" | "lime" | "gray" | "black" | "sky" | "white" | "green" |
+"orange" | "amber" | "yellow" | "cyan" | "blue" | "indigo" | "violet" | "purple" | "fuchsia" |
+"rose" | "primary"
+*/
 const badges = [
   {flag: VolatileFlag.confused, color: "red", name: "Confused"},
   {flag: VolatileFlag.disabled, color: "red", name: "Disable"},
@@ -186,6 +191,7 @@ const badges = [
   {flag: VolatileFlag.encore, color: "sky", name: "Encore"},
   {flag: VolatileFlag.meanLook, color: "red", name: "Can't Escape"},
   {flag: VolatileFlag.nightmare, color: "black", name: "Nightmare"},
+  {flag: VolatileFlag.foresight, color: "violet", name: "Foresight"},
 ] as const;
 
 export type AnimationType =

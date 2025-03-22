@@ -1291,7 +1291,27 @@ const internalMoveList = createMoveList({
       battle.info(target, "encore", [{id: target.owner.id, v: {flags: target.v.flags}}]);
     },
   },
-  // foresight: {},
+  foresight: {
+    name: "Foresight",
+    pp: 40,
+    acc: 100,
+    type: "normal",
+    protect: true,
+    exec(battle, user, target) {
+      if (user.v.hasFlag(VolatileFlag.foresight)) {
+        return battle.info(user, "fail_generic");
+      } else if (!battle.checkAccuracy(this, user, target)) {
+        return;
+      }
+
+      battle.event({
+        type: "foresight",
+        src: user.owner.id,
+        target: target.owner.id,
+        volatiles: [target.setFlag(VolatileFlag.foresight)],
+      });
+    },
+  },
   futuresight: {
     name: "Future Sight",
     pp: 15,
