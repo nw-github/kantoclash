@@ -93,6 +93,8 @@ export const infoMessage: Record<InfoReason, string> = {
   encore_end: "{}'s encore ended!",
   meanLook: "{} can no longer escape!",
   nightmare: "{} fell into a nightmare!",
+  heal_bell: "A bell chimed!",
+  pain_split: "The battlers shared their pain!",
 
   substitute: "",
   curse: "",

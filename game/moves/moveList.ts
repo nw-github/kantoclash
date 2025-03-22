@@ -1294,7 +1294,15 @@ const internalMoveList = createMoveList({
   // foresight: {},
   // furycutter: {},
   // futuresight: {},
-  // healbell: {},
+  healbell: {
+    name: "Heal Bell",
+    pp: 5,
+    type: "normal",
+    exec(battle, user) {
+      user.unstatus(battle, "heal_bell");
+      user.owner.team.forEach(poke => (poke.status = undefined));
+    },
+  },
   // lockon: {},
   // mindreader: {},
   // mirrorcoat: { noMetronome: true },
@@ -1312,7 +1320,32 @@ const internalMoveList = createMoveList({
       battle.info(target, "nightmare", [target.setFlag(VolatileFlag.nightmare)]);
     },
   },
-  // painsplit: {},
+  painsplit: {
+    name: "Pain Split",
+    pp: 20,
+    acc: 100,
+    type: "ghost",
+    exec(battle, user, target) {
+      if (!battle.checkAccuracy(this, user, target)) {
+        return;
+      }
+
+      battle.info(user, "pain_split");
+
+      const hp = idiv(user.base.hp + target.base.hp, 2);
+      if (user.base.hp < hp) {
+        user.recover(hp - user.base.hp, user, battle, "pain_split");
+      } else {
+        user.damage(user.base.hp - hp, user, battle, false, "pain_split", true);
+      }
+
+      if (target.base.hp < hp) {
+        target.recover(hp - target.base.hp, user, battle, "pain_split");
+      } else {
+        target.damage(target.base.hp - hp, user, battle, false, "pain_split", true);
+      }
+    },
+  },
   // perishsong: {},
   // present: {},
   // psychup: {},

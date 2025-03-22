@@ -515,17 +515,23 @@ const runTurn = async (live: boolean, turnIdx: number) => {
       }
 
       return;
-    } else if (e.type === "info" && e.why === "faint") {
-      playCry(players[e.src].active!.speciesId, true);
-      pushEvent(e);
-      await playAnimation(e.src, "faint");
-      if (isLive()) {
-        await delay(400);
-      }
+    } else if (e.type === "info") {
+      if (e.why === "faint") {
+        playCry(players[e.src].active!.speciesId, true);
+        pushEvent(e);
+        await playAnimation(e.src, "faint");
+        if (isLive()) {
+          await delay(400);
+        }
 
-      players[e.src].active!.fainted = true;
-      players[e.src].nFainted++;
-      return;
+        players[e.src].active!.fainted = true;
+        players[e.src].nFainted++;
+        return;
+      } else if (e.why === "heal_bell") {
+        if (e.src === myId.value && team) {
+          team.forEach(poke => (poke.status = undefined));
+        }
+      }
     } else if (e.type === "transform") {
       const target = players[e.target].active!;
       const src = players[e.src].active!;

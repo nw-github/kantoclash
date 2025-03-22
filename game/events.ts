@@ -67,9 +67,16 @@ export type DamageReason =
   | "set_curse"
   | "curse"
   | "nightmare"
-  | "destiny_bond";
+  | "destiny_bond"
+  | "pain_split";
 
-export type RecoveryReason = "drain" | "recover" | "rest" | "seeder";
+export type RecoveryReason =
+  | "drain"
+  | "recover"
+  | "rest"
+  | "seeder"
+  | "pain_split"
+  | "pain_split_enemy";
 
 export type DamageEvent = {
   type: "damage";
@@ -163,7 +170,9 @@ export type InfoReason =
   | "attract"
   | "immobilized"
   | "endure_hit"
-  | "encore_end";
+  | "encore_end"
+  | "heal_bell"
+  | "pain_split";
 
 type InfoEvent = {type: "info"; src: PlayerId; why: InfoReason};
 
