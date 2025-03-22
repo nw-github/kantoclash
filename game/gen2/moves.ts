@@ -55,7 +55,13 @@ export const moveFunctionPatches: Partial<MoveFunctions> = {
         user.v.counter = 0;
         user.recover(diff, user, battle, this.why, true);
       } else {
-        user.recover(Math.floor(user.base.stats.hp / 2), user, battle, this.why);
+        let amount = Math.floor(user.base.stats.hp / 2);
+        if (this.weather && !battle.weather) {
+          amount = Math.floor(user.base.stats.hp / 4);
+        } else if (this.weather && battle.weather?.kind !== "sun") {
+          amount = Math.floor(user.base.stats.hp / 8);
+        }
+        user.recover(amount, user, battle, this.why);
       }
     },
   },
@@ -161,6 +167,7 @@ export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
   earthquake: {ignore: ["dig"]},
   explosion: {power: 250},
   fireblast: {effect: [10, "brn"]},
+  fissure: {ignore: ["dig"]},
   gust: {type: "flying", ignore: ["fly", "bounce"]},
   karatechop: {type: "fight"},
   poisonsting: {effect: [30, "psn"]},

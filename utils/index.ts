@@ -262,7 +262,11 @@ export const describeMove = (gen: Generation, id: MoveId) => {
     if (move.why === "rest") {
       return "The user goes to sleep for two turns, recovering HP and curing status conditions. ";
     } else {
-      return "The user recovers 1/2 its max HP. ";
+      if (move.weather) {
+        return "The user recovers a percenage of its max HP, varying with the weather. ";
+      } else {
+        return "The user recovers 1/2 its max HP. ";
+      }
     }
   } else if (move.kind === "phaze") {
     return "Forces the target to switch to a different Pokémon. Fails if the target has no other living Pokémon, or if the move is used before the target attacks. ";

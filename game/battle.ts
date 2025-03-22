@@ -767,6 +767,10 @@ export class ActivePokemon {
     opponent ??= battle.opponentOf(this.owner).active;
     if (stageStatKeys.includes(stat)) {
       this.recalculateStat(stat, negative);
+
+      if (battle.gen.id !== 1) {
+        this.applyStatusDebuff();
+      }
     }
 
     const v: ChangedVolatiles = [

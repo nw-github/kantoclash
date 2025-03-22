@@ -57,7 +57,13 @@ export const moveFunctions: MoveFunctions = {
         user.recover(diff, user, battle, this.why, true);
         // In gen 1, Rest doesn't reset the toxic counter or par/brn stat drops
       } else {
-        user.recover(Math.floor(user.base.stats.hp / 2), user, battle, this.why);
+        let amount = Math.floor(user.base.stats.hp / 2);
+        if (this.weather && !battle.weather) {
+          amount = Math.floor(user.base.stats.hp / 4);
+        } else if (this.weather && battle.weather?.kind !== "sun") {
+          amount = Math.floor(user.base.stats.hp / 8);
+        }
+        user.recover(amount, user, battle, this.why);
       }
     },
   },

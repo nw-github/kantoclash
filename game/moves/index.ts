@@ -48,6 +48,7 @@ export interface ConfuseMove extends BaseMove {
 export interface RecoveryMove extends BaseMove {
   readonly kind: "recover";
   readonly why: RecoveryReason;
+  readonly weather?: boolean;
 }
 
 export interface StageMove extends BaseMove {
