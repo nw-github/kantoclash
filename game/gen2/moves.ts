@@ -1,4 +1,4 @@
-import type {Move, MoveId} from "../moves";
+import type {Move, MoveFunctions, MoveId} from "../moves";
 import {stageKeys} from "../utils";
 
 // FLAG: drain        | always misses against substitute in Gen 2
@@ -8,7 +8,6 @@ import {stageKeys} from "../utils";
 // FLAG: level, dmg, super_fang   | affected by type immunities
 // FLAG: multi_turn   | 2-3 turns instead of 3-4
 
-// Sleep now disrupts bide
 // Partial trapping
 // Normal type moves can par normal types, etc.
 // Counter is sane now
@@ -20,7 +19,6 @@ import {stageKeys} from "../utils";
 // leech seed doesn't interact with toxic N and drains 1/8
 // Mist now applies to secondary effects of moves
 // Quick attack/counter priority doesnt stick to sleep/frozen poke
-// Recover fail glitch is fixed
 // All status moves cannot affect targets behind a substitute
 
 // substitute: can no longer create a sub and insta-die
@@ -40,8 +38,6 @@ has 5 pp like transform
 https://bulbapedia.bulbagarden.net/wiki/Rage_(move)
 rage is now different
 
-rest now resets the toxic counter & stat reductions and all recovery moves dont fail for no reason
-
 https://bulbapedia.bulbagarden.net/wiki/Solar_Beam_(move)
 If the user is prevented from attacking with SolarBeam during harsh sunlight by conditions such as flinching, paralysis, and confusion, then PP will still be deducted regardless, due to the fact that SolarBeam was designed as a two-turn attack.
 
@@ -51,6 +47,27 @@ In this generation only, Mirror Move always fails when used by a transformed Pok
 */
 
 // Does 10% chance mean 10.2 /* 26/256 */ like in gen 1?
+
+export const moveFunctionPatches: Partial<MoveFunctions> = {
+  recover: {
+    exec(battle, user) {
+      const diff = user.base.stats.hp - user.base.hp;
+      if (diff === 0) {
+        return battle.info(user, "fail_generic");
+      }
+
+      if (this.why === "rest") {
+        user.clearStatusAndRecalculate();
+        user.base.status = "slp";
+        user.base.sleepTurns = 3;
+        user.v.counter = 0;
+        user.recover(diff, user, battle, this.why, true);
+      } else {
+        user.recover(Math.floor(user.base.stats.hp / 2), user, battle, this.why);
+      }
+    },
+  },
+};
 
 export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
   bide: {acc: 100},

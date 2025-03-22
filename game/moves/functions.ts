@@ -5,7 +5,7 @@ import {exec as execDamagingMove, use as useDamagingMove} from "./damaging";
 type UseMoveFn = Required<CustomMove>["use"];
 type ExecMoveFn = CustomMove["exec"];
 
-type MoveFunctions = {
+export type MoveFunctions = {
   [K in Required<Move>["kind"]]: {
     use?(this: Move & {kind: K}, ...args: Parameters<UseMoveFn>): ReturnType<UseMoveFn>;
     exec(this: Move & {kind: K}, ...args: Parameters<ExecMoveFn>): ReturnType<ExecMoveFn>;
@@ -54,7 +54,7 @@ export const moveFunctions: MoveFunctions = {
       if (this.why === "rest") {
         user.base.status = "slp";
         user.base.sleepTurns = 2;
-        user.recover(diff, user, battle, this.why);
+        user.recover(diff, user, battle, this.why, true);
         // In gen 1, Rest doesn't reset the toxic counter or par/brn stat drops
       } else {
         user.recover(Math.floor(user.base.stats.hp / 2), user, battle, this.why);

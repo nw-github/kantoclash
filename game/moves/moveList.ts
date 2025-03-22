@@ -127,7 +127,6 @@ const internalMoveList = createMoveList({
       }
 
       if (target.base.status === "frz" || target.base.status === "slp") {
-        // battle.info(target, target.base.status === "frz" ? "thaw" : "wake");
         target.base.sleepTurns = 0;
         target.v.hazed = true;
       }
@@ -242,7 +241,7 @@ const internalMoveList = createMoveList({
       for (const k of stageKeys) {
         user.v.stages[k] = target.v.stages[k];
         if (k === "atk" || k === "def" || k == "spa" || k === "spe") {
-          user.applyStages(k, false);
+          user.recalculateStat(k, false);
         }
       }
 
@@ -1450,6 +1449,7 @@ const internalMoveList = createMoveList({
     power: 60,
     acc: 100,
     effect: [10, "brn"],
+    selfThaw: true,
   },
   frustration: {
     kind: "damage",
@@ -1625,6 +1625,7 @@ const internalMoveList = createMoveList({
     power: 100,
     acc: 95,
     effect: [50, "brn"],
+    selfThaw: true,
   },
   shadowball: {
     kind: "damage",
@@ -1644,6 +1645,7 @@ const internalMoveList = createMoveList({
     acc: 100,
     effect: [30, "flinch"],
     sleepOnly: true,
+    whileAsleep: true,
   },
   spark: {
     kind: "damage",

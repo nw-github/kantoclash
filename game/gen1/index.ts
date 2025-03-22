@@ -2,7 +2,7 @@ import type {Random} from "random";
 import type {ActivePokemon, Battle} from "../battle";
 import {moveFunctions, moveList, type Move, type MoveId} from "../moves";
 import {speciesList, type Species} from "../species";
-import {floatTo255, idiv, scaleAccuracy255, type Type} from "../utils";
+import {floatTo255, idiv, scaleAccuracy255, VolatileFlag, type Type} from "../utils";
 
 export type TypeChart = Record<Type, Partial<Record<Type, number>>>;
 
@@ -80,10 +80,11 @@ const checkAccuracy = (move: Move, battle: Battle, user: ActivePokemon, target: 
 
 const getCritChance = (user: ActivePokemon, hc: boolean) => {
   const baseSpe = user.base.species.stats.spe;
+  const focus = user.v.hasFlag(VolatileFlag.focus);
   if (hc) {
-    return user.v.flags.focus ? 4 * Math.floor(baseSpe / 4) : 8 * Math.floor(baseSpe / 2);
+    return focus ? 4 * Math.floor(baseSpe / 4) : 8 * Math.floor(baseSpe / 2);
   } else {
-    return Math.floor(user.v.flags.focus ? baseSpe / 8 : baseSpe / 2);
+    return Math.floor(focus ? baseSpe / 8 : baseSpe / 2);
   }
 };
 
@@ -146,12 +147,10 @@ const getDamageVariables = (
   isCrit: boolean,
 ) => {
   const [atks, defs] = special ? (["spa", "spa"] as const) : (["atk", "def"] as const);
-
-  const ls = special && !!target.v.flags.light_screen;
-  const reflect = !special && !!target.v.flags.reflect;
+  const screen = target.v.hasFlag(special ? VolatileFlag.light_screen : VolatileFlag.reflect);
 
   let atk = user.getStat(atks, isCrit);
-  let def = target.getStat(defs, isCrit, true, ls || reflect);
+  let def = target.getStat(defs, isCrit, true, screen);
   if (atk >= 256 || def >= 256) {
     atk = Math.max(Math.floor(atk / 4) % 256, 1);
     // defense doesn't get capped here on cart, potentially causing divide by 0
@@ -181,6 +180,105 @@ const isValidMove = (battle: Battle, user: ActivePokemon, move: MoveId, i: numbe
   return true;
 };
 
+const beforeUseMove = (battle: Battle, move: Move, user: ActivePokemon, target: ActivePokemon) => {
+  // Order of events comes from here:
+  //  https://www.smogon.com/forums/threads/past-gens-research-thread.3506992/#post-5878612
+  if (user.v.hazed) {
+    return false;
+  } else if (user.base.status === "slp") {
+    const done = --user.base.sleepTurns === 0;
+    if (done) {
+      const opp = battle.opponentOf(user.owner);
+      if (opp.sleepClausePoke === user.base) {
+        opp.sleepClausePoke = undefined;
+      }
+      user.unstatus(battle, "wake");
+    } else {
+      battle.info(user, "sleep");
+    }
+    return false;
+  } else if (user.base.status === "frz") {
+    battle.info(user, "frozen");
+    return false;
+  }
+
+  // See: damaging.ts:counterDamage
+  // https://bulbapedia.bulbagarden.net/wiki/Counter_(move) | Full Para desync
+  user.lastChosenMove = move;
+
+  if (user.v.flinch) {
+    battle.info(user, "flinch");
+    user.v.recharge = undefined;
+    return false;
+  } else if (user.v.trapped) {
+    battle.info(user, "trapped");
+    return false;
+  } else if (user.v.recharge) {
+    battle.info(user, "recharge");
+    user.v.recharge = undefined;
+    return false;
+  }
+
+  if (user.v.disabled && --user.v.disabled.turns === 0) {
+    user.v.disabled = undefined;
+    battle.info(user, "disable_end", [{id: user.owner.id, v: {flags: user.v.flags}}]);
+  }
+
+  if (user.v.confusion) {
+    const done = --user.v.confusion === 0;
+    const v = [{id: user.owner.id, v: {flags: user.v.flags}}];
+    battle.info(user, done ? "confused_end" : "confused", v);
+  }
+
+  const confuse = user.v.confusion && battle.rng.bool();
+  const fullPara = user.base.status === "par" && battle.rand255(floatTo255(25));
+  const attract = user.v.attract && battle.rand255(floatTo255(50));
+  if (confuse || attract || fullPara) {
+    // Gen 1 bug: remove charging w/o removing user.v.invuln
+    user.v.charging = undefined;
+    user.v.bide = undefined;
+    if (user.v.thrashing?.turns !== -1) {
+      user.v.thrashing = undefined;
+    }
+    user.v.trapping = undefined;
+  }
+
+  if (!confuse && user.v.attract) {
+    // TODO: in doubles, need the pokemon that originally attracted
+    battle.event({type: "in_love", src: user.owner.id, target: target.owner.id});
+  }
+
+  if (confuse) {
+    const [atk, def] = battle.gen.getDamageVariables(false, target, target, false);
+    const dmg = battle.gen.calcDamage({
+      lvl: user.base.level,
+      pow: 40,
+      def,
+      atk,
+      eff: 1,
+      rand: false,
+      isCrit: false,
+      isStab: false,
+    });
+
+    if (user.v.substitute && target.v.substitute) {
+      target.damage(dmg, user, battle, false, "confusion");
+    } else if (!user.v.substitute) {
+      user.damage(dmg, user, battle, false, "confusion");
+    }
+
+    return false;
+  } else if (attract) {
+    battle.info(user, "immobilized");
+    return false;
+  } else if (fullPara) {
+    battle.info(user, "paralyze");
+    return false;
+  }
+
+  return true;
+};
+
 const createGeneration = () => {
   return {
     id: 1,
@@ -191,6 +289,7 @@ const createGeneration = () => {
     typeChart,
     moveFunctions,
     lastMoveIdx: moveList.whirlwind.idx!,
+    beforeUseMove,
     isValidMove,
     getCritChance,
     checkAccuracy,

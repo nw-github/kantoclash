@@ -1,9 +1,11 @@
 import {createDefu} from "defu";
 import {GENERATION1, type CalcDamageParams, type Generation} from "../gen1";
 import type {Species, SpeciesId} from "../species";
-import {floatTo255, clamp, scaleAccuracy255, idiv, imul} from "../utils";
-import {movePatches} from "./moves";
+import {floatTo255, clamp, scaleAccuracy255, idiv, imul, VolatileFlag} from "../utils";
+import {moveFunctionPatches, movePatches} from "./moves";
 import __speciesPatches from "./species.json";
+import type {ActivePokemon, Battle} from "../battle";
+import type {Move} from "../moves";
 
 const speciesPatches = __speciesPatches as Partial<Record<SpeciesId, Partial<Species>>>;
 
@@ -65,6 +67,97 @@ const merge = createDefu((obj, key, value) => {
   }
 });
 
+const beforeUseMove = (battle: Battle, move: Move, user: ActivePokemon, target: ActivePokemon) => {
+  const resetVolatiles = () => {
+    user.v.charging = undefined;
+    user.v.invuln = false;
+    user.v.bide = undefined;
+    if (user.v.thrashing?.turns !== -1) {
+      user.v.thrashing = undefined;
+    }
+    user.v.trapping = undefined;
+    // Rollout & fury cutter
+  };
+
+  if (user.v.recharge) {
+    battle.info(user, "recharge");
+    user.v.recharge = undefined;
+    resetVolatiles();
+    return false;
+  } else if (user.base.status === "slp") {
+    const done = --user.base.sleepTurns === 0;
+    if (done) {
+      const opp = battle.opponentOf(user.owner);
+      if (opp.sleepClausePoke === user.base) {
+        opp.sleepClausePoke = undefined;
+      }
+      user.unstatus(battle, "wake");
+    } else {
+      battle.info(user, "sleep");
+      if (!move.whileAsleep) {
+        return false;
+      }
+    }
+  } else if (user.base.status === "frz" && !move.selfThaw) {
+    battle.info(user, "frozen");
+    resetVolatiles();
+    return false;
+  }
+
+  if (user.v.flinch) {
+    battle.info(user, "flinch");
+    resetVolatiles();
+    return false;
+  }
+
+  if (user.v.disabled && --user.v.disabled.turns === 0) {
+    user.v.disabled = undefined;
+    battle.info(user, "disable_end", [{id: user.owner.id, v: {flags: user.v.flags}}]);
+  }
+
+  if (user.v.confusion) {
+    const done = --user.v.confusion === 0;
+    const v = [{id: user.owner.id, v: {flags: user.v.flags}}];
+    battle.info(user, done ? "confused_end" : "confused", v);
+    if (!done && battle.rng.bool()) {
+      const [atk, def] = battle.gen.getDamageVariables(false, target, target, false);
+      const dmg = battle.gen.calcDamage({
+        lvl: user.base.level,
+        pow: 40,
+        def,
+        atk,
+        eff: 1,
+        rand: false,
+        isCrit: false,
+        isStab: false,
+      });
+
+      user.damage(dmg, user, battle, false, "confusion");
+      resetVolatiles();
+      return false;
+    }
+  }
+
+  if (user.v.attract) {
+    // TODO: in doubles, need the pokemon that originally attracted
+    battle.event({type: "in_love", src: user.owner.id, target: target.owner.id});
+
+    if (battle.rand100(50)) {
+      battle.info(user, "immobilized");
+      resetVolatiles();
+      return false;
+    }
+  }
+
+  if (user.base.status === "par" && battle.rand100(25)) {
+    battle.info(user, "paralyze");
+    resetVolatiles();
+    return false;
+  }
+
+  return true;
+};
+
 const createGeneration = (): Generation => {
   const patches: Partial<Generation> = {
     id: 2,
@@ -72,6 +165,8 @@ const createGeneration = (): Generation => {
     moveList: movePatches as typeof GENERATION1.moveList,
     typeChart: typeChartPatch as typeof GENERATION1.typeChart,
     lastMoveIdx: GENERATION1.moveList.zapcannon.idx!,
+    moveFunctions: moveFunctionPatches as typeof GENERATION1.moveFunctions,
+    beforeUseMove,
     isValidMove(battle, user, move, i) {
       if (user.v.lockedIn() && user.v.lockedIn() !== battle.gen.moveList[move]) {
         return false;
@@ -85,7 +180,7 @@ const createGeneration = (): Generation => {
     },
     getCritChance(user, hc) {
       let stages = hc ? 2 : 0;
-      if (user.v.flags.focus) {
+      if (user.v.hasFlag(VolatileFlag.focus)) {
         stages++;
       }
 

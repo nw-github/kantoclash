@@ -15,7 +15,6 @@ import {Pokemon, type Status, type ValidatedPokemonDesc} from "./pokemon";
 import {
   arraysEqual,
   clamp,
-  floatTo255,
   getEffectiveness,
   hpPercent,
   idiv,
@@ -344,7 +343,7 @@ export class Battle {
       }
 
       const target = this.opponentOf(user.owner).active;
-      if (move.kind !== "switch" && !this.beforeUseMove(move, user, target)) {
+      if (move.kind !== "switch" && !this.gen.beforeUseMove(this, move, user, target)) {
         if (this.checkFaint(user, target)) {
           break;
         }
@@ -398,6 +397,10 @@ export class Battle {
       user.v.lastMoveIndex = moveIndex;
     }
 
+    if (move.selfThaw && user.base.status === "frz") {
+      user.unstatus(this, "thaw");
+    }
+
     this.event({
       move: moveId,
       type: "move",
@@ -405,6 +408,11 @@ export class Battle {
       thrashing: user.v.thrashing ? true : undefined,
     });
     user.v.lastMove = move;
+
+    if (move.sleepOnly && user.base.status !== "slp") {
+      this.info(target, "fail_generic");
+      return false;
+    }
 
     if (target.v.hasFlag(VolatileFlag.protect) && this.affectedByProtect(move)) {
       this.info(target, "protect");
@@ -422,112 +430,13 @@ export class Battle {
       }
     }
 
-    if (user.base.hp === 0 && !target.v.fainted) {
+    if (user.base.hp === 0 && !user.v.fainted) {
       user.faint(this);
       if (!this.victor && user.owner.areAllDead()) {
         this.victor = target.owner;
       }
     }
     return target.base.hp === 0 || user.base.hp === 0;
-  }
-
-  private beforeUseMove(move: Move, user: ActivePokemon, target: ActivePokemon) {
-    // Order of events comes from here:
-    //  https://www.smogon.com/forums/threads/past-gens-research-thread.3506992/#post-5878612
-    if (user.v.hazed) {
-      return false;
-    } else if (user.base.status === "slp") {
-      const done = --user.base.sleepTurns === 0;
-      if (done) {
-        const opp = this.opponentOf(user.owner);
-        if (opp.sleepClausePoke === user.base) {
-          opp.sleepClausePoke = undefined;
-        }
-        user.unstatus(this, "wake");
-      } else {
-        this.info(user, "sleep");
-      }
-      return false;
-    } else if (user.base.status === "frz") {
-      this.info(user, "frozen");
-      return false;
-    }
-
-    // See: damaging.ts:counterDamage
-    // https://bulbapedia.bulbagarden.net/wiki/Counter_(move) | Full Para desync
-    user.lastChosenMove = move;
-
-    if (user.v.flinch) {
-      this.info(user, "flinch");
-      user.v.recharge = undefined;
-      return false;
-    } else if (user.v.trapped) {
-      this.info(user, "trapped");
-      return false;
-    } else if (user.v.recharge) {
-      this.info(user, "recharge");
-      user.v.recharge = undefined;
-      return false;
-    }
-
-    if (user.v.disabled && --user.v.disabled.turns === 0) {
-      user.v.disabled = undefined;
-      this.info(user, "disable_end", [{id: user.owner.id, v: {flags: user.v.flags}}]);
-    }
-
-    if (user.v.confusion) {
-      const done = --user.v.confusion === 0;
-      const v = [{id: user.owner.id, v: {flags: user.v.flags}}];
-      this.info(user, done ? "confused_end" : "confused", v);
-    }
-
-    const confuse = user.v.confusion && this.rng.bool();
-    const fullPara = user.base.status === "par" && this.rand255(floatTo255(25));
-    const attract = user.v.attract && this.rand255(floatTo255(50));
-    if (confuse || attract || fullPara) {
-      // Gen 1 bug: remove charging w/o removing user.v.invuln
-      user.v.charging = undefined;
-      user.v.bide = undefined;
-      if (user.v.thrashing?.turns !== -1) {
-        user.v.thrashing = undefined;
-      }
-      user.v.trapping = undefined;
-    }
-
-    if (!confuse && user.v.attract) {
-      // TODO: in doubles, need the pokemon that originally attracted
-      this.event({type: "in_love", src: user.owner.id, target: target.owner.id});
-    }
-
-    if (confuse) {
-      const [atk, def] = this.gen.getDamageVariables(false, target, target, false);
-      const dmg = this.gen.calcDamage({
-        lvl: user.base.level,
-        pow: 40,
-        def,
-        atk,
-        eff: 1,
-        rand: false,
-        isCrit: false,
-        isStab: false,
-      });
-
-      if (user.v.substitute && target.v.substitute) {
-        target.damage(dmg, user, this, false, "confusion");
-      } else if (!user.v.substitute) {
-        user.damage(dmg, user, this, false, "confusion");
-      }
-
-      return false;
-    } else if (attract) {
-      this.info(user, "immobilized");
-      return false;
-    } else if (fullPara) {
-      this.info(user, "paralyze");
-      return false;
-    }
-
-    return true;
   }
 
   private handleResidualDamage(user: ActivePokemon) {
@@ -765,11 +674,19 @@ export class ActivePokemon {
     }
   }
 
-  recover(amount: number, src: ActivePokemon, battle: Battle, why: RecoveryReason) {
+  recover(amount: number, src: ActivePokemon, battle: Battle, why: RecoveryReason, v = false) {
     const hpBefore = this.base.hp;
     this.base.hp = Math.min(this.base.hp + amount, this.base.stats.hp);
     if (this.base.hp === hpBefore) {
       return;
+    }
+
+    const volatiles: ChangedVolatiles = [];
+    if (v) {
+      volatiles.push({
+        id: this.owner.id,
+        v: {status: this.base.status || null, stats: {...this.v.stats}},
+      });
     }
 
     battle.event({
@@ -781,8 +698,16 @@ export class ActivePokemon {
       hpBefore,
       hpAfter: this.base.hp,
       why,
-      volatiles: [{id: this.owner.id, v: {status: this.base.status || null}}],
+      volatiles,
     });
+  }
+
+  clearStatusAndRecalculate() {
+    this.base.status = undefined;
+
+    for (const key of stageStatKeys) {
+      this.recalculateStat(key, false);
+    }
   }
 
   status(status: Status, battle: Battle, override = false) {
@@ -841,7 +766,7 @@ export class ActivePokemon {
 
     opponent ??= battle.opponentOf(this.owner).active;
     if (stageStatKeys.includes(stat)) {
-      this.applyStages(stat, negative);
+      this.recalculateStat(stat, negative);
     }
 
     const v: ChangedVolatiles = [
@@ -907,7 +832,7 @@ export class ActivePokemon {
     }
   }
 
-  applyStages(stat: keyof VolatileStats, negative: boolean) {
+  recalculateStat(stat: keyof VolatileStats, negative: boolean) {
     this.v.stats[stat] = Math.floor(
       (this.base.stats[stat] * stageMultipliers[this.v.stages[stat]]) / 100,
     );

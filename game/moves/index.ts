@@ -25,6 +25,8 @@ export interface BaseMove {
   readonly noMetronome?: boolean;
   /** Undefined: Inherit from kind, true: affected, false: unaffected */
   readonly protect?: boolean;
+  readonly whileAsleep?: boolean;
+  readonly selfThaw?: boolean;
 }
 
 export interface CustomMove extends BaseMove {

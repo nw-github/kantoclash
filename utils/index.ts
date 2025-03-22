@@ -138,6 +138,12 @@ const descriptions: Partial<Record<MoveId, string>> = {
     "If the user is not a ghost type, raises Attack and Defense and lowers Speed by 1 stage. " +
     "If the user is ghost type, sacrifices 1/2 its max HP to place a curse on the opponent that " +
     "deals 1/4 its max HP after every turn. ",
+  bellydrum:
+    "Sacrifices 1/2 its max HP to raise Attack to +6. Fails if the user's current HP is " +
+    "less than 1/2 its max HP, rounded down. ",
+  destinybond:
+    "Until the user moves again, if the user faints as the direct result of a move, the " +
+    "target will also faint. ",
 };
 
 const gen2Descriptions: Partial<Record<MoveId, string>> = {
@@ -234,6 +240,10 @@ export const describeMove = (gen: Generation, id: MoveId) => {
 
     if (move.recoil) {
       buf += `The user takes 1/${move.recoil} the damage dealt due to recoil. `;
+    }
+
+    if (move.sleepOnly) {
+      buf += "Fails if the user is not asleep. ";
     }
 
     return buf.length ? buf : "No additional effects.";
