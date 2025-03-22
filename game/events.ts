@@ -66,6 +66,7 @@ export type DamageReason =
   | "belly_drum"
   | "set_curse"
   | "curse"
+  | "nightmare"
   | "destiny_bond";
 
 export type RecoveryReason = "drain" | "recover" | "rest" | "seeder";

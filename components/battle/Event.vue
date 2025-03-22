@@ -24,6 +24,7 @@
     <p v-else-if="e.why === 'set_curse'">{{ pn(e.target) }} cut its own HP and laid a curse on {{ pn(e.src, false) }}!</p>
     <p v-else-if="e.why === 'curse'">{{ pn(e.src) }} is afflicted by the Curse!</p>
     <p v-else-if="e.why === 'destiny_bond'">{{ pn(e.src) }} took {{ pn(e.target, false)}} with it!</p>
+    <p v-else-if="e.why === 'nightmare'">{{ pn(e.src) }} is locked in a Nightmare!</p>
 
     <p v-if="e.why === 'attacked' && e.hitCount === undefined && (e.eff ?? 1) !== 1" class="italic">
       {{ eff(e.eff) }}

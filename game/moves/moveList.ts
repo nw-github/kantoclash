@@ -1155,15 +1155,15 @@ const internalMoveList = createMoveList({
     type: "normal",
     protect: true,
     exec(battle, user, target) {
-      if (!battle.checkAccuracy(this, user, target)) {
-        return;
-      } else if (
+      if (
         !user.base.gender ||
         !target.base.gender ||
         user.base.gender === target.base.gender ||
         target.v.attract
       ) {
         battle.info(user, "fail_generic");
+        return;
+      } else if (!battle.checkAccuracy(this, user, target)) {
         return;
       }
 
@@ -1275,9 +1275,7 @@ const internalMoveList = createMoveList({
     noEncore: true,
     protect: true,
     exec(battle, user, target) {
-      if (!battle.checkAccuracy(this, user, target)) {
-        return;
-      } else if (
+      if (
         !target.v.lastMove ||
         target.v.lastMoveIndex === undefined ||
         target.v.encore ||
@@ -1285,6 +1283,8 @@ const internalMoveList = createMoveList({
         !target.base.pp[target.v.lastMoveIndex]
       ) {
         return battle.info(user, "fail_generic");
+      } else if (!battle.checkAccuracy(this, user, target)) {
+        return;
       }
 
       target.v.encore = {indexInMoves: target.v.lastMoveIndex, turns: battle.rng.int(2, 6) + 1};
@@ -1298,7 +1298,20 @@ const internalMoveList = createMoveList({
   // lockon: {},
   // mindreader: {},
   // mirrorcoat: { noMetronome: true },
-  // nightmare: {},
+  nightmare: {
+    name: "Nightmare",
+    pp: 15,
+    type: "ghost",
+    exec(battle, user, target) {
+      if (target.v.hasFlag(VolatileFlag.nightmare) || target.base.status !== "slp") {
+        return battle.info(user, "fail_generic");
+      } else if (!battle.checkAccuracy(this, user, target)) {
+        return;
+      }
+
+      battle.info(target, "nightmare", [target.setFlag(VolatileFlag.nightmare)]);
+    },
+  },
   // painsplit: {},
   // perishsong: {},
   // present: {},
@@ -1401,12 +1414,12 @@ const internalMoveList = createMoveList({
     type: "normal",
     protect: true,
     exec(battle, user, target) {
-      if (!battle.checkAccuracy(this, user, target)) {
-        return;
-      } else if (!target.modStages([["atk", +2]], battle)) {
+      if (!target.modStages([["atk", +2]], battle)) {
         return battle.info(user, "fail_generic");
       } else if (target.owner.screens.safeguard) {
         return battle.info(user, "safeguard_protect");
+      } else if (!battle.checkAccuracy(this, user, target)) {
+        return;
       } else {
         target.confuse(battle);
       }

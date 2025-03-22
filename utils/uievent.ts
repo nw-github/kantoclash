@@ -92,6 +92,7 @@ export const infoMessage: Record<InfoReason, string> = {
   encore: "{} received an encore!",
   encore_end: "{}'s encore ended!",
   meanLook: "{} can no longer escape!",
+  nightmare: "{} fell into a nightmare!",
 
   substitute: "",
   curse: "",

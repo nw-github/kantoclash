@@ -350,6 +350,7 @@ export class Battle {
 
       const target = this.opponentOf(user.owner).active;
       if (move.kind !== "switch" && !this.gen.beforeUseMove(this, move, user, target)) {
+        this.handleResidualDamage(user);
         if (this.checkFaint(user, target)) {
           break;
         }
@@ -469,8 +470,16 @@ export class Battle {
       return;
     }
 
+    if (user.v.hasFlag(VolatileFlag.nightmare)) {
+      if (user.damage(idiv(user.base.stats.hp, 4), user, this, false, "nightmare", true).dead) {
+        return;
+      }
+    }
+
     if (user.v.hasFlag(VolatileFlag.curse)) {
-      user.damage(idiv(user.base.stats.hp, 4), user, this, false, "curse", true);
+      if (user.damage(idiv(user.base.stats.hp, 4), user, this, false, "curse", true).dead) {
+        return;
+      }
     }
   }
 
@@ -769,7 +778,8 @@ export class ActivePokemon {
     if (battle.gen.id === 1 && why === "thaw") {
       this.v.hazed = true;
     }
-    return battle.info(this, why, [{id: this.owner.id, v: {status: null}}]);
+    this.v.clearFlag(VolatileFlag.nightmare);
+    return battle.info(this, why, [{id: this.owner.id, v: {status: null, flags: this.v.flags}}]);
   }
 
   setStage(
