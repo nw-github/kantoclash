@@ -1295,7 +1295,21 @@ const internalMoveList = createMoveList({
   // spiderweb: {},
   // spikes: {},
   // spite: {},
-  // swagger: {},
+  swagger: {
+    name: "Swagger",
+    pp: 15,
+    acc: 90,
+    type: "normal",
+    exec(battle, user, target) {
+      if (!target.modStages([["atk", +2]], battle)) {
+        return battle.info(user, "fail_generic");
+      } else if (target.owner.screens.safeguard) {
+        return battle.info(user, "safeguard_protect");
+      } else {
+        target.confuse(battle);
+      }
+    },
+  },
   // triplekick: {},
   // --
   detect: {

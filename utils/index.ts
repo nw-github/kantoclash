@@ -144,6 +144,8 @@ const descriptions: Partial<Record<MoveId, string>> = {
   destinybond:
     "Until the user moves again, if the user faints as the direct result of a move, the " +
     "target will also faint. ",
+  encore: "Forces the target to use its last selected move for the next 2-6 turns. ",
+  swagger: "Raises the target's Attack by 2 stages and confuses it. ",
 };
 
 const gen2Descriptions: Partial<Record<MoveId, string>> = {
