@@ -1,6 +1,6 @@
 import type {DamagingMove, Move} from "./index";
 import {type Pokemon, transform} from "../pokemon";
-import {hpPercentExact, idiv, stageKeys, VolatileFlag, type Type} from "../utils";
+import {hpPercentExact, idiv, stageKeys, stageStatKeys, VolatileFlag, type Type} from "../utils";
 import type {ActivePokemon, Battle} from "../battle";
 
 export type MoveId = keyof typeof internalMoveList;
@@ -1384,7 +1384,29 @@ const internalMoveList = createMoveList({
     },
   },
   // present: {},
-  // psychup: {},
+  psychup: {
+    name: "Psych Up",
+    pp: 10,
+    type: "normal",
+    exec(battle, user, target) {
+      if (Object.values(target.v.stages).every(v => v === 0)) {
+        return battle.info(user, "fail_generic");
+      } else if (!battle.checkAccuracy(this, user, target)) {
+        return;
+      }
+
+      user.v.stages = {...target.v.stages};
+      for (const stat of stageStatKeys) {
+        user.recalculateStat(stat, false);
+      }
+      battle.event({
+        type: "psych_up",
+        src: user.owner.id,
+        target: target.owner.id,
+        volatiles: [{id: user.owner.id, v: {stats: {...user.v.stats}, stages: {...user.v.stages}}}],
+      });
+    },
+  },
   // pursuit: {},
   // rollout: {},
   sketch: {

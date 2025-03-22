@@ -1003,7 +1003,7 @@ export class ActivePokemon {
 export type VolatileStats = Volatiles["stats"];
 
 class Volatiles {
-  readonly stages = {atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0};
+  stages = {atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0};
   stats: Record<StatStages, number>;
   types: Type[];
   substitute = 0;

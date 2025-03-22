@@ -150,6 +150,8 @@ const descriptions: Partial<Record<MoveId, string>> = {
   sketch: "Permanently replaces this move with the last move used by the target. ",
   perishsong:
     "Sets a 3-turn timer for all Pokémon on the field, after which they will faint. Switching removes the timer. ",
+  futuresight: "After two turns, the target is hit with an attack. ",
+  psychup: "Copies the stat stages of the target. Fails if they are all 0. ",
 };
 
 const gen2Descriptions: Partial<Record<MoveId, string>> = {

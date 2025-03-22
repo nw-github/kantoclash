@@ -19,6 +19,7 @@ type AnyEvent =
   | InfoEvent
   | TransformEvent
   | InLoveEvent
+  | PsychUpEvent
   | DisableEvent
   | ChargeEvent
   | MimicEvent
@@ -188,6 +189,8 @@ type BugEvent = {type: "bug"; bug: BugType};
 type TransformEvent = {type: "transform"; src: PlayerId; target: PlayerId};
 
 type InLoveEvent = {type: "in_love"; src: PlayerId; target: PlayerId};
+
+type PsychUpEvent = {type: "psych_up"; src: PlayerId; target: PlayerId};
 
 type DisableEvent = {type: "disable"; src: PlayerId; move: MoveId};
 

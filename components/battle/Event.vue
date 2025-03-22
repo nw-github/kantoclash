@@ -109,6 +109,9 @@
   </div>
   <div v-else-if="e.type === 'sketch'">{{ pn(e.src) }} sketched {{ gen.moveList[e.move].name }}!</div>
   <div v-else-if="e.type === 'perish'">{{ pn(e.src) }}'s perish count fell to {{ e.turns }}!</div>
+  <div v-else-if="e.type === 'psych_up'">
+    {{ pn(e.src) }} copied {{ pn(e.target, false) }}'s stat changes!
+  </div>
   <div v-else>Unknown event: <code>{{ e }}</code></div>
 </template>
 
