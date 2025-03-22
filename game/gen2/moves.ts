@@ -7,23 +7,17 @@ import {stageKeys} from "../utils";
 // FLAG: ohko         | new formula: https://bulbapedia.bulbagarden.net/wiki/Fissure_(move), counterable even on miss
 // FLAG: level, dmg, super_fang   | affected by type immunities
 // FLAG: multi_turn   | 2-3 turns instead of 3-4
+// Normal type moves can par normal types, etc.
+// User takes recoil when breaking a substitute
+// Hyper beam must now always recharge (substitute, faint), and trapping moves dont reset it
+// Mist now applies to secondary effects of moves
+// Twineedle can poison steel types
 
 // Partial trapping
-// Normal type moves can par normal types, etc.
 // Counter is sane now
 // Defense curl doubles rollout
-// User takes recoil when breaking a substitute
 // Crash damage is now 1/8
-// Hyper beam must now always recharge (substitute, faint), and trapping moves dont reset it
-// Status moves: glare cannot hit ghost types now, poison powder cant hit steels
 // leech seed doesn't interact with toxic N and drains 1/8
-// Mist now applies to secondary effects of moves
-// Quick attack/counter priority doesnt stick to sleep/frozen poke
-// All status moves cannot affect targets behind a substitute
-
-// substitute: can no longer create a sub and insta-die
-
-// Twineedle can poison steel types
 
 /*
 https://bulbapedia.bulbagarden.net/wiki/Dig_(move)
@@ -40,8 +34,6 @@ rage is now different
 
 https://bulbapedia.bulbagarden.net/wiki/Solar_Beam_(move)
 If the user is prevented from attacking with SolarBeam during harsh sunlight by conditions such as flinching, paralysis, and confusion, then PP will still be deducted regardless, due to the fact that SolarBeam was designed as a two-turn attack.
-
-If SolarBeam is disrupted from succeeding due to conditions such as flinching, paralysis, or confusion, the entire move will now be cancelled rather than simply paused.
 
 In this generation only, Mirror Move always fails when used by a transformed Pokémon.
 */
@@ -64,6 +56,26 @@ export const moveFunctionPatches: Partial<MoveFunctions> = {
         user.recover(diff, user, battle, this.why, true);
       } else {
         user.recover(Math.floor(user.base.stats.hp / 2), user, battle, this.why);
+      }
+    },
+  },
+  status: {
+    exec(battle, user, target) {
+      if (target.v.substitute) {
+        return battle.info(target, "fail_generic");
+      } else if (
+        battle.getEffectiveness(this.type, target.v.types) === 0 ||
+        (this.status === "psn" && target.v.types.includes("poison"))
+      ) {
+        return battle.info(target, "immune");
+      } else if (target.owner.screens.safeguard) {
+        return battle.info(target, "safeguard_protect");
+      } else if (!battle.checkAccuracy(this, user, target)) {
+        return;
+      }
+
+      if (!target.status(this.status, battle)) {
+        battle.info(target, "fail_generic");
       }
     },
   },

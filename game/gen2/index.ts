@@ -166,6 +166,7 @@ const createGeneration = (): Generation => {
     typeChart: typeChartPatch as typeof GENERATION1.typeChart,
     lastMoveIdx: GENERATION1.moveList.zapcannon.idx!,
     moveFunctions: moveFunctionPatches as typeof GENERATION1.moveFunctions,
+    canSubstitute: (user, hp) => hp < user.base.hp,
     beforeUseMove,
     isValidMove(battle, user, move, i) {
       if (user.v.lockedIn() && user.v.lockedIn() !== battle.gen.moveList[move]) {

@@ -214,12 +214,11 @@ const internalMoveList = createMoveList({
     pp: 10,
     type: "normal",
     exec(battle, user) {
-      // Gen 1 bug, if you have exactly 25% hp you can create a substitute and instantly die
       const hp = Math.floor(user.base.stats.hp / 4);
-      if (user.v.substitute > 0) {
+      if (user.v.substitute) {
         battle.info(user, "has_substitute");
         return;
-      } else if (hp > user.base.hp) {
+      } else if (!battle.gen.canSubstitute(user, hp)) {
         battle.info(user, "cant_substitute");
         return;
       }
