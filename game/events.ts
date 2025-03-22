@@ -150,7 +150,7 @@ export type FailReason =
   | "splash"
   | "whirlwind";
 
-export type BugType = "bug_gen2_bellydrum";
+export type BugType = "bug_gen2_bellydrum" | "bug_gen2_spikes";
 
 export type InfoReason =
   | keyof typeof VolatileFlag
@@ -182,7 +182,8 @@ export type InfoReason =
   | "perish_song"
   | "future_sight"
   | "future_sight_release"
-  | "withdraw";
+  | "withdraw"
+  | "spikes";
 
 type InfoEvent = {type: "info"; src: PlayerId; why: InfoReason};
 

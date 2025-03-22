@@ -153,6 +153,7 @@ const descriptions: Partial<Record<MoveId, string>> = {
   futuresight: "After two turns, the target is hit with an attack. ",
   psychup: "Copies the stat stages of the target. Fails if they are all 0. ",
   pursuit: "Doubles damage and goes first if the target is switching out. ",
+  spikes: "Sets an entry hazard that damages any Pokémon switching in for 1/8 its max HP. ",
 };
 
 const gen2Descriptions: Partial<Record<MoveId, string>> = {
@@ -193,7 +194,7 @@ const flagDesc: Record<NonNullable<DamagingMove["flag"]>, string> = {
   tri_attack:
     "Has a 1/5 chance to burn, paralyze, or freeze the target, and a 1/3 chance to thaw the " +
     "target if it is frozen. ",
-  rapid_spin: "Removes the effects of trapping moves, Leech Seed, and all entry hazards. ",
+  rapid_spin: "Removes the entry hazards and the effects of trapping moves and Leech Seed. ",
   thief: "Has a 99.6% chance to steal the target's held item if the user does not have one. ",
 };
 

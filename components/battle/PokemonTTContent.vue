@@ -16,7 +16,7 @@
         }}%)
       </span>
 
-      <StatusOrFaint :poke="poke" faint />
+      <StatusOrFaint :poke="poke" :faint="!active || active.fainted" />
     </div>
 
     <div class="flex gap-1">

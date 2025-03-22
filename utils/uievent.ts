@@ -100,6 +100,7 @@ export const infoMessage: Record<InfoReason, string> = {
   future_sight: "{} foresaw an attack!",
   future_sight_release: "{} took the Future Sight attack!",
   withdraw: "({} is trying to switch out...)",
+  spikes: "Spikes were scattered all around the feet of {tl}!",
 
   substitute: "",
   curse: "",
@@ -160,4 +161,6 @@ export const damageMessage: Partial<Record<DamageReason, string>> = {
 
 export const bugMessage: Record<BugType, string> = {
   bug_gen2_bellydrum: "In Gen 2, Belly Drum still raises Atk by 2 on failure due to a bug.",
+  bug_gen2_spikes:
+    "In Gen 2, Pokémon take damage but do not faint after a previous Pokémon fainted to certain end-of-turn effects.",
 };

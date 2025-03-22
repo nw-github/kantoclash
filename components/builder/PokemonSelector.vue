@@ -2,7 +2,7 @@
   <Selector
     v-model:open="open"
     class="grow"
-    base="w-80 sm:w-[31rem] max-h-60 sm:left-[-6rem]"
+    base="w-80 sm:w-[31rem] max-h-60 sm:left-[-7rem]"
     :items
     searchable
     :filter
@@ -33,17 +33,18 @@
             v-for="(name, stat) in statKeys"
             :key="stat"
             color="white"
-            class="w-6 sm:w-11"
             size="xs"
-            :ui="{rounded: 'rounded-lg'}"
+            :ui="{rounded: 'rounded-lg', base: 'flex flex-col justify-center'}"
           >
+            <span class="text-[0.65rem] px-0.5 -mb-1 text-gray-400 dark:text-gray-200">{{
+              name
+            }}</span>
             <span
-              class="text-[0.5rem] text-center sm:text-left sm:text-[0.6rem] grow"
+              class="text-[0.5rem] sm:text-[0.6rem] grow"
               :style="{color: baseStatColor(species.stats[stat])}"
             >
               {{ species.stats[stat] }}
             </span>
-            <span class="text-[0.5rem] hidden sm:block">{{ name }}</span>
           </UBadge>
         </div>
       </div>

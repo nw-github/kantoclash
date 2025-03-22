@@ -378,6 +378,8 @@ export class Battle {
         continue;
       }
 
+      const faintedBetweenTurns = user.v.faintedBetweenTurns;
+
       this.callUseMove(move, user, target, indexInMoves);
       if (!this.switchTurn) {
         if (this.checkFaint(user, target)) {
@@ -387,6 +389,21 @@ export class Battle {
         this.handleResidualDamage(user);
         if (this.checkFaint(user, target)) {
           break;
+        }
+      } else {
+        if (!faintedBetweenTurns) {
+          if (this.checkFaint(user, target)) {
+            break;
+          }
+        } else if (user.base.hp === 0) {
+          // https://www.youtube.com/watch?v=1IiPWw5fMf8&t=85s
+          // TODO: This implements the bug where spikes does not check if the pokemon it damaged
+          // fainted, demonstrated here ()
+          // The way we have this set up right now, this bug is also triggered by for example:
+          //    - Explosion, then switch into Pokemon that dies from spikes
+          //    - Die to recoil, then switch into Pokemon that dies from spikes
+          //
+          this.event({type: "bug", bug: "bug_gen2_spikes"});
         }
       }
     }
@@ -449,10 +466,11 @@ export class Battle {
     return this.callExecMove(move, user, target, moveIndex);
   }
 
-  checkFaint(user: ActivePokemon, target: ActivePokemon) {
+  checkFaint(user: ActivePokemon, target: ActivePokemon, betweenTurns = false) {
     let fainted = false;
     if (target.base.hp === 0 && !target.v.fainted) {
       target.faint(this);
+      target.v.faintedBetweenTurns = betweenTurns;
       if (!this.victor && target.owner.areAllDead()) {
         this.victor = user.owner;
       }
@@ -461,6 +479,7 @@ export class Battle {
 
     if (user.base.hp === 0 && !user.v.fainted) {
       user.faint(this);
+      user.v.faintedBetweenTurns = betweenTurns;
       if (!this.victor && user.owner.areAllDead()) {
         this.victor = target.owner;
       }
@@ -533,7 +552,7 @@ export class Battle {
       }
     }
 
-    if (this.checkFaint(this.players[0].active, this.players[1].active)) {
+    if (this.checkFaint(this.players[0].active, this.players[1].active, true)) {
       return;
     }
 
@@ -559,7 +578,7 @@ export class Battle {
         active.damage(dmg, active, this, false, "sandstorm", true);
       }
 
-      if (this.checkFaint(this.players[0].active, this.players[1].active)) {
+      if (this.checkFaint(this.players[0].active, this.players[1].active, true)) {
         return;
       }
     }
@@ -585,7 +604,7 @@ export class Battle {
       }
     }
 
-    if (this.checkFaint(this.players[0].active, this.players[1].active)) {
+    if (this.checkFaint(this.players[0].active, this.players[1].active, true)) {
       return;
     }
 
@@ -694,6 +713,10 @@ export class ActivePokemon {
       why,
       volatiles,
     });
+
+    if (this.owner.spikes && !this.v.types.includes("flying")) {
+      this.damage(Math.floor(this.base.stats.hp / 8), this, battle, false, "spikes", true);
+    }
   }
 
   getStat(stat: keyof VolatileStats, isCrit?: boolean, def?: boolean, screen?: boolean) {
@@ -955,11 +978,9 @@ export class ActivePokemon {
   }
 
   getOptions(battle: Battle): Options | undefined {
-    if (battle.finished || (!battle.opponentOf(this.owner).active.base.hp && this.base.hp)) {
+    if (battle.finished || (battle.opponentOf(this.owner).active.v.fainted && !this.v.fainted)) {
       return;
-    }
-
-    if (battle.leadTurn) {
+    } else if (battle.leadTurn) {
       return {canSwitch: true, moves: []};
     }
 
@@ -1034,6 +1055,7 @@ class Volatiles {
   hazed = false;
   trapped = false;
   fainted = false;
+  faintedBetweenTurns = false;
   inPursuit = false;
   protectCount = 0;
   perishCount = 0;

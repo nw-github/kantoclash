@@ -1469,7 +1469,19 @@ const internalMoveList = createMoveList({
       return battle.callUseMove(battle.gen.moveList[m], user, target);
     },
   },
-  // spikes: {},
+  spikes: {
+    name: "Spikes",
+    pp: 20,
+    type: "ground",
+    exec(battle, user, target) {
+      if (target.owner.spikes) {
+        return battle.info(user, "fail_generic");
+      }
+
+      battle.info(target, "spikes");
+      target.owner.spikes = true;
+    },
+  },
   spite: {
     name: "Spite",
     pp: 10,

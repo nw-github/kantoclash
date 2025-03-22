@@ -70,7 +70,7 @@
       {{ infoMessage[e.why].replace("{}", players[e.src].name) }}
     </p>
     <p v-else :class="[e.why === 'withdraw' && 'text-xs sm:text-[0.8rem] muted']">
-      {{ infoMessage[e.why].replace("{}", pn(e.src)).replace("{l}", pn(e.src, false)) }}
+      {{ infoMessage[e.why].replace("{}", pn(e.src)).replace("{l}", pn(e.src, false)).replace("{tl}", tn(e.src, false)) }}
     </p>
 
     <p v-if="e.why === 'fail_sleep_clause'">
