@@ -99,6 +99,10 @@ export interface PreventEscapeMove extends BaseMove {
   readonly kind: "noSwitch";
 }
 
+export interface LockOnMove extends BaseMove {
+  readonly kind: "lockOn";
+}
+
 export type Move =
   | CustomMove
   | VolatileFlagMove
@@ -113,4 +117,5 @@ export type Move =
   | ScreenMove
   | PhazingMove
   | ProtectMove
-  | PreventEscapeMove;
+  | PreventEscapeMove
+  | LockOnMove;

@@ -325,6 +325,8 @@ export const describeMove = (gen: Generation, id: MoveId) => {
     }
   } else if (move.kind === "noSwitch") {
     return "Prevents the target from switching out. ";
+  } else if (move.kind === "lockOn") {
+    return "The next move used against the target will always hit, unless it is Earthquake, Fissure, or Magnitude and the target is in the semi-invulnerable turn of Fly. ";
   } else {
     return "No description. ";
   }

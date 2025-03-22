@@ -192,6 +192,7 @@ const badges = [
   {flag: VolatileFlag.meanLook, color: "red", name: "Can't Escape"},
   {flag: VolatileFlag.nightmare, color: "black", name: "Nightmare"},
   {flag: VolatileFlag.foresight, color: "violet", name: "Foresight"},
+  {flag: VolatileFlag.lockon, color: "red", name: "Locked Onto"},
 ] as const;
 
 export type AnimationType =

@@ -325,6 +325,19 @@ export class Battle {
   }
 
   checkAccuracy(move: Move, user: ActivePokemon, target: ActivePokemon) {
+    if (target.v.hasFlag(VolatileFlag.lockon)) {
+      this.event({type: "sv", volatiles: [target.clearFlag(VolatileFlag.lockon)]});
+
+      const moveId = this.moveIdOf(move);
+      if (moveId === "earthquake" || moveId === "fissure" || moveId === "magnitude") {
+        if (target.v.charging && this.moveIdOf(target.v.charging) === "fly") {
+          return false;
+        }
+      }
+
+      return true;
+    }
+
     return this.gen.checkAccuracy(move, this, user, target);
   }
 

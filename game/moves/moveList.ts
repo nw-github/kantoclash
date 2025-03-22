@@ -1347,8 +1347,6 @@ const internalMoveList = createMoveList({
       user.owner.team.forEach(poke => (poke.status = undefined));
     },
   },
-  // lockon: {},
-  // mindreader: {},
   // mirrorcoat: { noMetronome: true },
   nightmare: {
     name: "Nightmare",
@@ -1544,6 +1542,21 @@ const internalMoveList = createMoveList({
         target.confuse(battle);
       }
     },
+  },
+  // --
+  lockon: {
+    kind: "lockOn",
+    name: "Lock On",
+    pp: 5,
+    type: "normal",
+    acc: 100,
+  },
+  mindreader: {
+    kind: "lockOn",
+    name: "Mind Reader",
+    pp: 5,
+    type: "normal",
+    acc: 100,
   },
   // --
   meanlook: {

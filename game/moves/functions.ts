@@ -184,4 +184,18 @@ export const moveFunctions: MoveFunctions = {
       battle.info(target, "meanLook", [{id: target.owner.id, v: {flags: target.v.flags}}]);
     },
   },
+  lockOn: {
+    exec(battle, user, target) {
+      if (!battle.checkAccuracy(this, user, target)) {
+        return;
+      }
+
+      battle.event({
+        type: "lock_on",
+        src: user.owner.id,
+        target: target.owner.id,
+        volatiles: [target.setFlag(VolatileFlag.lockon)],
+      });
+    },
+  },
 };

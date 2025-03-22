@@ -47,6 +47,7 @@ export enum VolatileFlag {
   endure       = 0x0000_0100,
   nightmare    = 0x0000_0200,
   foresight    = 0x0000_0400,
+  lockon       = 0x0000_0800,
 
   /** Client only */
   confused     = 0x8000_0000,

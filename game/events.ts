@@ -188,7 +188,7 @@ type InfoEvent = {type: "info"; src: PlayerId; why: InfoReason};
 type BugEvent = {type: "bug"; bug: BugType};
 
 type SrcTargetEvent = {
-  type: "transform" | "in_love" | "psych_up" | "foresight";
+  type: "transform" | "in_love" | "psych_up" | "foresight" | "lock_on";
   src: PlayerId;
   target: PlayerId;
 };

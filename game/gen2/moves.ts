@@ -1,7 +1,7 @@
 import type {Move, MoveFunctions, MoveId} from "../moves";
 import {stageKeys} from "../utils";
 
-// FLAG: drain        | always misses against substitute in Gen 2
+// FLAG: drain        | always misses against substitute in Gen 2 | (checked before the accuracy check of Lock-On)
 // FLAG: multi        | all hits are now independently damage calcd, continues after breaking sub,  final strike only kings rock
 // FLAG: explosion    | now faints when hitting a substitute/protect, end of turn damage happens after, defense halving applies to self-inflicted confusion damage
 // FLAG: ohko         | new formula: https://bulbapedia.bulbagarden.net/wiki/Fissure_(move), counterable even on miss
