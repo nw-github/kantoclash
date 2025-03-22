@@ -25,6 +25,8 @@ export interface BaseMove {
   readonly noMetronome?: boolean;
   /** Not encoreable */
   readonly noEncore?: boolean;
+  /** Unselectable for sleep talk */
+  readonly noSleepTalk?: boolean;
   /** Undefined: Inherit from kind, true: affected, false: unaffected */
   readonly protect?: boolean;
   readonly whileAsleep?: boolean;

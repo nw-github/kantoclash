@@ -147,6 +147,7 @@ const descriptions: Partial<Record<MoveId, string>> = {
   encore: "Forces the target to use its last selected move for the next 2-6 turns. ",
   swagger: "Raises the target's Attack by 2 stages and confuses it. ",
   spite: "Lowers the PP of the target's last used move by 2-5 PP. ",
+  sketch: "Permanently replaces this move with the last move used by the target. ",
 };
 
 const gen2Descriptions: Partial<Record<MoveId, string>> = {
@@ -187,6 +188,8 @@ const flagDesc: Record<NonNullable<DamagingMove["flag"]>, string> = {
   tri_attack:
     "Has a 1/5 chance to burn, paralyze, or freeze the target, and a 1/3 chance to thaw the " +
     "target if it is frozen. ",
+  rapid_spin: "Removes the effects of trapping moves, Leech Seed, and all entry hazards. ",
+  thief: "Has a 99.6% chance to steal the target's held item if the user does not have one. ",
 };
 
 const formatStages = (stages: [Stages, number][]) => {

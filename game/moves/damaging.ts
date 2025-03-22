@@ -24,7 +24,9 @@ type Flag =
   | "flail"
   | "magnitude"
   | "false_swipe"
-  | "tri_attack";
+  | "tri_attack"
+  | "rapid_spin"
+  | "thief";
 
 export interface DamagingMove extends BaseMove {
   readonly kind: "damage";

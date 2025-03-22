@@ -7,6 +7,9 @@ import {stageKeys} from "../utils";
 // FLAG: ohko         | new formula: https://bulbapedia.bulbagarden.net/wiki/Fissure_(move), counterable even on miss
 // FLAG: level, dmg, super_fang   | affected by type immunities
 // FLAG: multi_turn   | 2-3 turns instead of 3-4
+// FLAG: rapid_spin   | implement
+// FLAG: thief        | implement
+
 // Normal type moves can par normal types, etc.
 // User takes recoil when breaking a substitute
 // Hyper beam must now always recharge (substitute, faint), and trapping moves dont reset it

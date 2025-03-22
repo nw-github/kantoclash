@@ -18,6 +18,7 @@ const internalMoveList = createMoveList({
     name: "Bide",
     pp: 10,
     type: "normal",
+    noSleepTalk: true,
     use(battle, user, target, moveIndex) {
       if (!user.v.bide) {
         return battle.defaultUseMove(this, user, target, moveIndex);
@@ -183,6 +184,7 @@ const internalMoveList = createMoveList({
     type: "normal",
     acc: 100,
     noEncore: true,
+    noSleepTalk: true,
     exec(battle, user, target, indexInMoves) {
       if (!battle.checkAccuracy(this, user, target)) {
         return false;
@@ -539,6 +541,7 @@ const internalMoveList = createMoveList({
     power: 100,
     acc: 100,
     charge: "invuln",
+    noSleepTalk: true,
   },
   dizzypunch: {kind: "damage", name: "Dizzy Punch", pp: 10, type: "normal", power: 70, acc: 100},
   doubleedge: {
@@ -661,6 +664,7 @@ const internalMoveList = createMoveList({
     power: 70,
     acc: 95,
     charge: "invuln",
+    noSleepTalk: true,
   },
   furyattack: {
     kind: "damage",
@@ -917,6 +921,7 @@ const internalMoveList = createMoveList({
     power: 80,
     acc: 75,
     charge: true,
+    noSleepTalk: true,
   },
   rockslide: {kind: "damage", name: "Rock Slide", pp: 10, type: "rock", power: 75, acc: 90},
   rockthrow: {kind: "damage", name: "Rock Throw", pp: 15, type: "rock", power: 50, acc: 65},
@@ -956,6 +961,7 @@ const internalMoveList = createMoveList({
     power: 100,
     acc: 100,
     charge: true,
+    noSleepTalk: true,
   },
   skyattack: {
     kind: "damage",
@@ -965,6 +971,7 @@ const internalMoveList = createMoveList({
     power: 140,
     acc: 90,
     charge: true,
+    noSleepTalk: true,
   },
   slam: {kind: "damage", name: "Slam", pp: 20, type: "normal", power: 80, acc: 75},
   slash: {
@@ -1002,6 +1009,7 @@ const internalMoveList = createMoveList({
     power: 120,
     acc: 100,
     charge: "sun",
+    noSleepTalk: true,
   },
   sonicboom: {
     kind: "damage",
@@ -1308,12 +1316,17 @@ const internalMoveList = createMoveList({
         return;
       }
 
-      if (!target.v.lastMove || moveIndex === undefined) {
-        // no move index would mean we were called by mirror move/metronome which should be impossible
-        if (moveIndex === undefined) {
+      if (moveIndex === undefined) {
+        // called by sleep talk
+        moveIndex = user.base.moves.indexOf("sketch");
+        // TODO: call by mirror move? is that even possible
+        if (moveIndex === -1) {
           console.warn("sketch called with no moveIndex: ", user);
+          return battle.info(user, "fail_generic");
         }
+      }
 
+      if (!target.v.lastMove) {
         return battle.info(user, "fail_generic");
       }
 
@@ -1334,7 +1347,27 @@ const internalMoveList = createMoveList({
       battle.event({type: "sketch", src: user.owner.id, move: id});
     },
   },
-  // sleeptalk: { noMetronome: true, noEncore: true },
+  sleeptalk: {
+    name: "Sleep Talk",
+    pp: 10,
+    type: "normal",
+    noMetronome: true,
+    noEncore: true,
+    sleepOnly: true,
+    whileAsleep: true,
+    noSleepTalk: true,
+    exec(battle, user, target) {
+      const m = battle.rng.choice(user.base.moves.filter(m => !battle.gen.moveList[m].noSleepTalk));
+      if (!m) {
+        return battle.info(user, "fail_generic");
+      }
+
+      // TODO: https://bulbapedia.bulbagarden.net/wiki/Sleep_Talk_(move)
+      // If Sleep Talk calls Metronome or Mirror Move (which are selectable by Sleep Talk only in
+      // this generation) and thus in turn calls a two-turn move, the move will fail.
+      return battle.callUseMove(battle.gen.moveList[m], user, target);
+    },
+  },
   // spikes: {},
   spite: {
     name: "Spite",
@@ -1722,15 +1755,15 @@ const internalMoveList = createMoveList({
     acc: 100,
     effect: [10, "frz"],
   },
-  // rapidspin: {
-  //   kind: "damage",
-  //   name: "Rapid Spin",
-  //   pp: 40,
-  //   type: "normal",
-  //   power: 20,
-  //   acc: 100,
-  //   flag: "rapid_spin",
-  // },
+  rapidspin: {
+    kind: "damage",
+    name: "Rapid Spin",
+    pp: 40,
+    type: "normal",
+    power: 20,
+    acc: 100,
+    flag: "rapid_spin",
+  },
   return: {
     kind: "damage",
     name: "Return",
@@ -1808,16 +1841,16 @@ const internalMoveList = createMoveList({
     effect: [10, [["def", +1]]],
     effect_self: true,
   },
-  // thief: {
-  //   kind: "damage",
-  //   name: "Thief",
-  //   pp: 10,
-  //   type: "dark",
-  //   power: 40,
-  //   acc: 100,
-  //   flag: "thief",
-  //   noMetronome: true
-  // },
+  thief: {
+    kind: "damage",
+    name: "Thief",
+    pp: 10,
+    type: "dark",
+    power: 40,
+    acc: 100,
+    flag: "thief",
+    noMetronome: true,
+  },
   twister: {
     kind: "damage",
     name: "Twister",
