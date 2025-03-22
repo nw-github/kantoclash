@@ -165,6 +165,7 @@ const internalMoveList = createMoveList({
     name: "Metronome",
     pp: 10,
     type: "normal",
+    noEncore: true,
     exec(battle, user, target): boolean {
       target.lastDamage = 0;
       const moves = Object.entries(battle.gen.moveList)
@@ -181,6 +182,7 @@ const internalMoveList = createMoveList({
     pp: 10,
     type: "normal",
     acc: 100,
+    noEncore: true,
     exec(battle, user, target, indexInMoves) {
       if (!battle.checkAccuracy(this, user, target)) {
         return false;
@@ -199,6 +201,7 @@ const internalMoveList = createMoveList({
     name: "Mirror Move",
     pp: 20,
     type: "flying",
+    noEncore: true,
     exec(battle, user, target) {
       target.lastDamage = 0;
       if (!target.v.lastMove || target.v.lastMove === this) {
@@ -233,6 +236,7 @@ const internalMoveList = createMoveList({
     name: "Transform",
     pp: 10,
     type: "normal",
+    noEncore: true,
     exec(battle, user, target) {
       target.lastDamage = 0;
       user.base = transform(user.base.real, target.base);
@@ -1036,6 +1040,7 @@ const internalMoveList = createMoveList({
     power: 50,
     recoil: 2,
     noMetronome: true,
+    noEncore: true,
   },
   submission: {
     kind: "damage",
@@ -1250,7 +1255,26 @@ const internalMoveList = createMoveList({
       }
     },
   },
-  // encore: {},
+  encore: {
+    name: "Encore",
+    pp: 5,
+    acc: 100,
+    type: "normal",
+    noEncore: true,
+    exec(battle, user, target) {
+      if (
+        !target.v.lastMove ||
+        target.v.lastMoveIndex === undefined ||
+        target.v.encore ||
+        target.v.lastMove.noEncore
+      ) {
+        return battle.info(user, "fail_generic");
+      }
+
+      target.v.encore = {indexInMoves: target.v.lastMoveIndex, turns: battle.rng.int(2, 6) + 1};
+      battle.info(target, "encore", [{id: target.owner.id, v: {flags: target.v.flags}}]);
+    },
+  },
   // foresight: {},
   // furycutter: {},
   // futuresight: {},
@@ -1266,8 +1290,8 @@ const internalMoveList = createMoveList({
   // psychup: {},
   // pursuit: {},
   // rollout: {},
-  // sketch: { noMetronome: true },
-  // sleeptalk: { noMetronome: true },
+  // sketch: { noMetronome: true, noEncore: true },
+  // sleeptalk: { noMetronome: true, noEncore: true },
   // spiderweb: {},
   // spikes: {},
   // spite: {},

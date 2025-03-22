@@ -89,6 +89,8 @@ export const infoMessage: Record<InfoReason, string> = {
   protect: "{} protected itself!",
   endure: "{} braced itself!",
   endure_hit: "{} endured the hit!",
+  encore: "{} received an encore!",
+  encore_end: "{}'s encore ended!",
 
   substitute: "",
   curse: "",

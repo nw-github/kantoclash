@@ -175,6 +175,8 @@ const isValidMove = (battle: Battle, user: ActivePokemon, move: MoveId, i: numbe
     return false;
   } else if (user.base.pp[i] === 0) {
     return false;
+  } else if (user.v.encore && i !== user.v.encore.indexInMoves) {
+    return false;
   }
 
   return true;

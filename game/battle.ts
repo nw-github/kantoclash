@@ -336,10 +336,16 @@ export class Battle {
       }
     });
 
-    for (const {user, move, indexInMoves} of choices) {
+    // eslint-disable-next-line prefer-const
+    for (let {user, move, indexInMoves} of choices) {
       user.movedThisTurn = true;
       if (user.v.hasFlag(VolatileFlag.destinyBond)) {
         this.event({type: "sv", volatiles: [user.clearFlag(VolatileFlag.destinyBond)]});
+      }
+
+      if (move.kind !== "switch" && user.v.encore) {
+        indexInMoves = user.v.encore.indexInMoves;
+        move = this.gen.moveList[user.base.moves[user.v.encore.indexInMoves]];
       }
 
       const target = this.opponentOf(user.owner).active;
@@ -526,6 +532,17 @@ export class Battle {
       }
       if (active.v.hasFlag(VolatileFlag.endure)) {
         this.event({type: "sv", volatiles: [active.clearFlag(VolatileFlag.endure)]});
+      }
+    }
+
+    // Encore
+    for (const {active} of this.players) {
+      if (
+        active.v.encore &&
+        (--active.v.encore.turns === 0 || !active.base.pp[active.v.encore.indexInMoves])
+      ) {
+        active.v.encore = undefined;
+        this.info(active, "encore_end", [{id: active.owner.id, v: {flags: active.v.flags}}]);
       }
     }
   }
@@ -936,6 +953,7 @@ class Volatiles {
   thrashing?: {move: Move; turns: number; acc?: number};
   bide?: {move: Move; turns: number; dmg: number};
   disabled?: {turns: number; indexInMoves: number};
+  encore?: {turns: number; indexInMoves: number};
   mimic?: {move: MoveId; indexInMoves: number};
   trapping?: {move: Move; turns: number};
   private _flags = VolatileFlag.none;
@@ -997,6 +1015,9 @@ class Volatiles {
     }
     if (this.substitute) {
       flags |= VolatileFlag.substitute;
+    }
+    if (this.encore) {
+      flags |= VolatileFlag.encore;
     }
     return flags;
   }

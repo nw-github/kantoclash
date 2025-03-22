@@ -23,6 +23,8 @@ export interface BaseMove {
   readonly ignore?: string[] /* MoveId[] */;
   /** Not callable by metronome */
   readonly noMetronome?: boolean;
+  /** Not encoreable */
+  readonly noEncore?: boolean;
   /** Undefined: Inherit from kind, true: affected, false: unaffected */
   readonly protect?: boolean;
   readonly whileAsleep?: boolean;

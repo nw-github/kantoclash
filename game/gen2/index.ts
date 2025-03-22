@@ -175,6 +175,8 @@ const createGeneration = (): Generation => {
         return false;
       } else if (user.base.pp[i] === 0) {
         return false;
+      } else if (user.v.encore && i !== user.v.encore.indexInMoves) {
+        return false;
       }
 
       return true;

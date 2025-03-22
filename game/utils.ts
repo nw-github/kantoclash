@@ -54,6 +54,8 @@ export enum VolatileFlag {
   attract      = 0x2000_0000,
   /** Client only */
   substitute   = 0x1000_0000,
+  /** Client only */
+  encore       = 0x0800_0000,
 }
 
 export const floatTo255 = (num: number) => Math.floor((num / 100) * 255);

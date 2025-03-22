@@ -180,6 +180,7 @@ const badges = [
   {flag: VolatileFlag.destinyBond, color: "gray", name: "Destiny Bond"},
   {flag: VolatileFlag.protect, color: "black", name: "Protect"},
   {flag: VolatileFlag.endure, color: "black", name: "Endure"},
+  {flag: VolatileFlag.encore, color: "sky", name: "Encore"},
 ] as const;
 
 export type AnimationType =

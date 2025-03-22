@@ -159,7 +159,8 @@ export type InfoReason =
   | "faint"
   | "attract"
   | "immobilized"
-  | "endure_hit";
+  | "endure_hit"
+  | "encore_end";
 
 type InfoEvent = {type: "info"; src: PlayerId; why: InfoReason};
 
