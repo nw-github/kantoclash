@@ -23,6 +23,8 @@ export interface BaseMove {
   readonly ignore?: string[] /* MoveId[] */;
   /** Not callable by metronome */
   readonly noMetronome?: boolean;
+  /** Undefined: Inherit from kind, true: affected, false: unaffected */
+  readonly protect?: boolean;
 }
 
 export interface CustomMove extends BaseMove {
@@ -81,6 +83,11 @@ export interface PhazingMove extends BaseMove {
   readonly kind: "phaze";
 }
 
+export interface ProtectMove extends BaseMove {
+  readonly kind: "protect";
+  readonly endure?: boolean;
+}
+
 export type Move =
   | CustomMove
   | VolatileFlagMove
@@ -93,4 +100,5 @@ export type Move =
   | FailMove
   | WeatherMove
   | ScreenMove
-  | PhazingMove;
+  | PhazingMove
+  | ProtectMove;

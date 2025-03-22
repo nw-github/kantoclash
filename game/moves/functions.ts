@@ -5,14 +5,14 @@ import {exec as execDamagingMove, use as useDamagingMove} from "./damaging";
 type UseMoveFn = Required<CustomMove>["use"];
 type ExecMoveFn = CustomMove["exec"];
 
-type MM = {
+type MoveFunctions = {
   [K in Required<Move>["kind"]]: {
     use?(this: Move & {kind: K}, ...args: Parameters<UseMoveFn>): ReturnType<UseMoveFn>;
     exec(this: Move & {kind: K}, ...args: Parameters<ExecMoveFn>): ReturnType<ExecMoveFn>;
   };
 };
 
-export const moveFunctions: MM = {
+export const moveFunctions: MoveFunctions = {
   volatile: {
     exec(battle, user) {
       if (user.v.hasFlag(this.flag)) {
@@ -143,6 +143,27 @@ export const moveFunctions: MM = {
       }
 
       target.switchTo(next, battle, "phaze");
+    },
+  },
+  protect: {
+    exec(battle, user, target) {
+      if (user.v.substitute || (target.movedThisTurn && !this.endure)) {
+        user.v.protectCount = 0;
+        return battle.info(user, "fail_generic");
+      }
+
+      const threshold = [255, 127, 63, 31, 15, 7, 3, 1];
+      if ((threshold[user.v.protectCount] ?? 0) <= battle.rng.int(0, 254)) {
+        user.v.protectCount = 0;
+        return battle.info(user, "fail_generic");
+      }
+
+      user.v.protectCount++;
+      if (!this.endure) {
+        battle.info(user, "protect", [user.setFlag(VolatileFlag.protect)]);
+      } else {
+        battle.info(user, "endure", [user.setFlag(VolatileFlag.endure)]);
+      }
     },
   },
 };

@@ -280,6 +280,12 @@ export const describeMove = (gen: Generation, id: MoveId) => {
         "Protects the user's side from non-volatile status conditions and confusion for 5 turns. ",
     };
     return msg[move.screen];
+  } else if (move.kind === "protect") {
+    if (move.endure) {
+      return "Allows the user to survive any move that would faint it with 1 HP. More likely to fail if used successively. ";
+    } else {
+      return "Protects the user from most moves that target it directly. More likely to fail if used successively. ";
+    }
   } else {
     return "No description. ";
   }

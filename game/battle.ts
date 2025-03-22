@@ -331,15 +331,25 @@ export class Battle {
   // --
 
   private runTurn(choices: ChosenMove[]) {
+    choices.forEach(({move, user}) => {
+      if (move.kind !== "protect") {
+        user.v.protectCount = 0;
+      }
+    });
+
     for (const {user, move, indexInMoves} of choices) {
       user.movedThisTurn = true;
       if (user.v.hasFlag(VolatileFlag.destinyBond)) {
-        user.v.clearFlag(VolatileFlag.destinyBond);
-        this.event({type: "sv", volatiles: [{id: user.owner.id, v: {flags: user.v.flags}}]});
+        this.event({type: "sv", volatiles: [user.clearFlag(VolatileFlag.destinyBond)]});
       }
 
       const target = this.opponentOf(user.owner).active;
       if (move.kind !== "switch" && !this.beforeUseMove(move, user, target)) {
+        if (this.checkFaint(user, target)) {
+          break;
+        }
+
+        user.v.protectCount = 0;
         continue;
       }
 
@@ -395,6 +405,12 @@ export class Battle {
       thrashing: user.v.thrashing ? true : undefined,
     });
     user.v.lastMove = move;
+
+    if (target.v.hasFlag(VolatileFlag.protect) && this.affectedByProtect(move)) {
+      this.info(target, "protect");
+      return false;
+    }
+
     return this.callExecMove(move, user, target);
   }
 
@@ -500,7 +516,6 @@ export class Battle {
         target.damage(dmg, user, this, false, "confusion");
       } else if (!user.v.substitute) {
         user.damage(dmg, user, this, false, "confusion");
-        return this.checkFaint(user, target);
       }
 
       return false;
@@ -544,13 +559,13 @@ export class Battle {
     }
   }
 
-  private handleScreen(player: Player, screen: Screen) {
-    if (player.screens[screen] && --player.screens[screen] === 0) {
-      this.event({type: "screen", src: player.id, screen, kind: "end"});
-    }
-  }
-
   private handleBetweenTurns() {
+    const handleScreen = (player: Player, screen: Screen) => {
+      if (player.screens[screen] && --player.screens[screen] === 0) {
+        this.event({type: "screen", src: player.id, screen, kind: "end"});
+      }
+    };
+
     // Weather
     weather: if (this.weather) {
       if (--this.weather.turns === 0) {
@@ -587,13 +602,37 @@ export class Battle {
 
     // Screens
     for (const player of this.players) {
-      this.handleScreen(player, "safeguard");
+      handleScreen(player, "safeguard");
     }
 
     for (const player of this.players) {
-      this.handleScreen(player, "light_screen");
-      this.handleScreen(player, "reflect");
+      handleScreen(player, "light_screen");
+      handleScreen(player, "reflect");
     }
+
+    //
+    for (const {active} of this.players) {
+      if (active.v.hasFlag(VolatileFlag.protect)) {
+        this.event({type: "sv", volatiles: [active.clearFlag(VolatileFlag.protect)]});
+      }
+      if (active.v.hasFlag(VolatileFlag.endure)) {
+        this.event({type: "sv", volatiles: [active.clearFlag(VolatileFlag.endure)]});
+      }
+    }
+  }
+
+  private affectedByProtect(move: Move) {
+    if (move.protect !== undefined) {
+      return move.protect;
+    }
+
+    return (
+      (move.kind === "stage" && move.acc) ||
+      move.kind === "confuse" ||
+      move.kind === "damage" ||
+      move.kind === "status" ||
+      move.kind === "phaze"
+    );
   }
 }
 
@@ -938,6 +977,11 @@ export class ActivePokemon {
     this.v.setFlag(flag);
     return {id: this.owner.id, v: {flags: this.v.flags}};
   }
+
+  clearFlag(flag: VolatileFlag) {
+    this.v.clearFlag(flag);
+    return {id: this.owner.id, v: {flags: this.v.flags}};
+  }
 }
 
 export type VolatileStats = Volatiles["stats"];
@@ -954,6 +998,7 @@ class Volatiles {
   hazed = false;
   trapped = false;
   fainted = false;
+  protectCount = 0;
   attract?: ActivePokemon;
   lastMove?: Move;
   lastMoveIndex?: number;

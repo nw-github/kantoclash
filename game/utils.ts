@@ -43,6 +43,8 @@ export enum VolatileFlag {
   seeded       = 0x0000_0010,
   destinyBond  = 0x0000_0020,
   curse        = 0x0000_0040,
+  protect      = 0x0000_0080,
+  endure       = 0x0000_0100,
 
   /** Client only */
   confused     = 0x8000_0000,

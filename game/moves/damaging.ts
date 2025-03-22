@@ -101,7 +101,8 @@ export function exec(
     target.v.recharge = undefined;
   }
 
-  const {dmg, isCrit, eff} = getDamage(this, battle, user, target);
+  // eslint-disable-next-line prefer-const
+  let {dmg, isCrit, eff, endured} = getDamage(this, battle, user, target);
   if (dmg === 0 || !battle.checkAccuracy(this, user, target)) {
     if (dmg === 0) {
       if (eff === 0) {
@@ -176,7 +177,12 @@ export function exec(
       dead = user.damage(user.base.hp, user, battle, false, "explosion", true).dead || dead;
     } else if (this.flag === "double" || this.flag === "multi") {
       const count = this.flag === "double" ? 2 : multiHitCount(battle.rng);
-      for (let hits = 1; !dead && !brokeSub && hits < count; hits++) {
+      for (let hits = 1; !dead && !brokeSub && !endured && hits < count; hits++) {
+        if (dmg > target.base.hp) {
+          dmg = Math.max(target.base.hp - 1, 0);
+          endured = true;
+        }
+
         event.hitCount = 0;
         ({dead, brokeSub, event} = target.damage(
           dmg,
@@ -192,6 +198,10 @@ export function exec(
     } else if (this.flag === "payday") {
       battle.info(user, "payday");
     }
+  }
+
+  if (endured) {
+    battle.info(target, "endure_hit");
   }
 
   if (dead && target.v.hasFlag(VolatileFlag.destinyBond)) {
@@ -257,59 +267,77 @@ export function exec(
 }
 
 function getDamage(self: DamagingMove, battle: Battle, user: ActivePokemon, target: ActivePokemon) {
-  let pow = self.getPower ? self.getPower(user.base) : self.power;
   const type = self.getType ? self.getType(user.base) : self.type;
-  const eff = battle.getEffectiveness(type, target.v.types);
+  let pow = self.getPower ? self.getPower(user.base) : self.power;
+  let eff = battle.getEffectiveness(type, target.v.types);
+  let dmg = 0;
+  let isCrit = battle.rand255(battle.gen.getCritChance(user, self.flag === "high_crit"));
   if (self.flag === "dream_eater" && target.base.status !== "slp") {
-    return {dmg: 0, isCrit: false, eff: 1};
+    eff = 1;
+    isCrit = false;
   } else if (typeof self.getDamage === "number") {
-    return {dmg: self.getDamage, isCrit: false, eff: 1};
+    dmg = self.getDamage;
+    eff = 1;
+    isCrit = false;
   } else if (self.getDamage) {
+    isCrit = false;
     const result = self.getDamage(battle, user, target, eff);
     if (typeof result === "number") {
-      return {dmg: result, isCrit: false, eff: 1};
+      dmg = result;
+      eff = 1;
     } else {
-      return {dmg: 0, isCrit: false, eff: 0};
+      eff = 0;
+    }
+  } else {
+    let rand: number | false | Random = battle.rng;
+    if (self.flag === "flail") {
+      isCrit = false;
+      rand = false;
+    } else if (self.flag === "magnitude") {
+      const magnitude = battle.rng.int(4, 10);
+      pow = [10, 30, 50, 70, 90, 110, 150][magnitude - 4];
+      battle.event({type: "magnitude", magnitude});
+    }
+
+    let weather: CalcDamageParams["weather"];
+    if (battle.weather?.kind === "rain") {
+      weather =
+        type === "fire" || self.charge === "sun"
+          ? "penalty"
+          : type === "water"
+          ? "bonus"
+          : undefined;
+    } else if (battle.weather?.kind === "sun") {
+      weather = type === "fire" ? "bonus" : type === "water" ? "penalty" : undefined;
+    }
+
+    const explosion = self.flag === "explosion" ? 2 : 1;
+    const [atk, def] = battle.gen.getDamageVariables(isSpecial(type), user, target, isCrit);
+    dmg = battle.gen.calcDamage({
+      lvl: user.base.level,
+      pow,
+      atk,
+      def: Math.max(Math.floor(def / explosion), 1),
+      isCrit,
+      isStab: user.v.types.includes(type),
+      rand,
+      eff,
+      weather,
+    });
+
+    if (self.flag === "false_swipe" && dmg >= target.base.hp && !target.v.substitute) {
+      dmg = target.base.hp - 1;
     }
   }
 
-  let isCrit = battle.rand255(battle.gen.getCritChance(user, self.flag === "high_crit"));
-  let rand: number | false | Random = battle.rng;
-  if (self.flag === "flail") {
-    isCrit = false;
-    rand = false;
-  } else if (self.flag === "magnitude") {
-    const magnitude = battle.rng.int(4, 10);
-    pow = [10, 30, 50, 70, 90, 110, 150][magnitude - 4];
-    battle.event({type: "magnitude", magnitude});
+  // TODO: What happens when a pokemon that is 0 HP as a result of the perish song+spikes bug uses
+  // endure?
+  const endured = dmg > 0 && dmg > target.base.hp && target.v.hasFlag(VolatileFlag.endure);
+  if (endured) {
+    dmg = Math.max(target.base.hp - 1, 0);
   }
 
-  let weather: CalcDamageParams["weather"];
-  if (battle.weather?.kind === "rain") {
-    weather =
-      type === "fire" || self.charge === "sun" ? "penalty" : type === "water" ? "bonus" : undefined;
-  } else if (battle.weather?.kind === "sun") {
-    weather = type === "fire" ? "bonus" : type === "water" ? "penalty" : undefined;
-  }
-
-  const explosion = self.flag === "explosion" ? 2 : 1;
-  const [atk, def] = battle.gen.getDamageVariables(isSpecial(type), user, target, isCrit);
-  let dmg = battle.gen.calcDamage({
-    lvl: user.base.level,
-    pow,
-    atk,
-    def: Math.max(Math.floor(def / explosion), 1),
-    isCrit,
-    isStab: user.v.types.includes(type),
-    rand,
-    eff,
-    weather,
-  });
-
-  if (self.flag === "false_swipe" && dmg >= target.base.hp && !target.v.substitute) {
-    dmg = target.base.hp - 1;
-  }
-  return {dmg, isCrit, eff};
+  return {dmg, isCrit, eff, endured};
 }
 
 function trapTarget(self: DamagingMove, rng: Random, user: ActivePokemon, target: ActivePokemon) {

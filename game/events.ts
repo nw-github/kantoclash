@@ -159,7 +159,7 @@ export type InfoReason =
   | "faint"
   | "attract"
   | "immobilized"
-  | "destinyBond";
+  | "endure_hit";
 
 type InfoEvent = {type: "info"; src: PlayerId; why: InfoReason};
 

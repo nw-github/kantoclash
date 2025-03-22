@@ -26,17 +26,20 @@ const internalMoveList = createMoveList({
       // TODO: bulbapedia says lastDamage includes the opponent's self-inflicted confusion damage
       user.v.bide.dmg += user.lastDamage;
       if (--user.v.bide.turns !== 0) {
-        return false;
+        return;
       }
 
       battle.info(user, "bide");
+
+      if (target.v.hasFlag(VolatileFlag.protect)) {
+        return battle.info(target, "protect");
+      }
 
       const dmg = user.v.bide.dmg;
       user.v.bide = undefined;
 
       if (dmg === 0) {
-        battle.info(user, "miss");
-        return false;
+        return battle.info(user, "miss");
       }
 
       return target.damage(dmg * 2, user, battle, false, "attacked").dead;
@@ -69,6 +72,7 @@ const internalMoveList = createMoveList({
     pp: 20,
     type: "normal",
     acc: 55,
+    protect: true,
     exec(battle, user, target) {
       target.lastDamage = 0;
 
@@ -142,6 +146,7 @@ const internalMoveList = createMoveList({
     pp: 15,
     type: "grass",
     acc: 80,
+    protect: true,
     exec(battle, user, target) {
       if (target.v.types.includes(this.type)) {
         battle.info(target, "immune");
@@ -1137,6 +1142,7 @@ const internalMoveList = createMoveList({
     pp: 15,
     acc: 100,
     type: "normal",
+    protect: true,
     exec(battle, user, target) {
       if (
         !user.base.gender ||
@@ -1254,9 +1260,24 @@ const internalMoveList = createMoveList({
     noMetronome: true,
     flag: VolatileFlag.destinyBond,
   },
-  // detect: { noMetronome: true },
+  detect: {
+    kind: "protect",
+    name: "Detect",
+    pp: 5,
+    priority: +3,
+    type: "fight",
+    noMetronome: true,
+  },
   // encore: {},
-  // endure: { noMetronome: true  },
+  endure: {
+    kind: "protect",
+    name: "Endure",
+    pp: 10,
+    priority: +2,
+    type: "normal",
+    noMetronome: true,
+    endure: true,
+  },
   // foresight: {},
   // furycutter: {},
   // futuresight: {},
@@ -1271,7 +1292,14 @@ const internalMoveList = createMoveList({
   // painsplit: {},
   // perishsong: {},
   // present: {},
-  // protect: { noMetronome: true },
+  protect: {
+    kind: "protect",
+    name: "Protect",
+    pp: 10,
+    priority: +3,
+    type: "normal",
+    noMetronome: true,
+  },
   // psychup: {},
   // pursuit: {},
   // rollout: {},
