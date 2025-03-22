@@ -73,7 +73,8 @@ export type DamageReason =
   | "destiny_bond"
   | "pain_split"
   | "perish_song"
-  | "future_sight";
+  | "future_sight"
+  | "spikes";
 
 export type RecoveryReason =
   | "drain"

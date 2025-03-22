@@ -1,30 +1,24 @@
 <!-- prettier-ignore -->
 <template>
-  <div v-if="e.type === 'retract'" class="switch">
+  <div v-if="e.type === 'retract'" class="move">
     <template v-if="e.src === perspective">Come back! {{ e.name }}!</template>
     <template v-else>{{ players[e.src].name }} withdrew {{ e.name }}!</template>
   </div>
-  <div v-else-if="e.type === 'switch'" class="switch">
+  <div v-else-if="e.type === 'switch'" class="move">
     <template v-if="e.why === 'phaze'"><b>{{ e.name }}</b> was dragged out!</template>
     <template v-else-if="e.src === perspective">Go! <b>{{ e.name }}</b>!</template>
     <template v-else>{{ players[e.src].name }} sent in <b>{{ e.name }}</b>!</template>
   </div>
   <div v-else-if="e.type === 'damage'">
-    <p v-if="e.why === 'recoil'">{{ pn(e.src) }} was hurt by recoil!</p>
-    <p v-else-if="e.why === 'crash'">{{ pn(e.src) }} kept going and crashed!</p>
-    <p v-else-if="e.why === 'seeded'">{{ pn(e.src) }}'s health was sapped by Leech Seed!</p>
-    <p v-else-if="e.why === 'psn'">{{ pn(e.src) }} is hurt by poison!</p>
-    <p v-else-if="e.why === 'brn'">{{ pn(e.src) }} is hurt by burn!</p>
-    <p v-else-if="e.why === 'attacked' && e.isCrit">A critical hit!</p>
-    <p v-else-if="e.why === 'confusion'">It hurt itself in its confusion!</p>
-    <p v-else-if="e.why === 'ohko'">It's a one-hit KO!</p>
-    <p v-else-if="e.why === 'trap'">{{ pn(e.src) }}'s attack continues!</p>
-    <p v-else-if="e.why === 'sandstorm'">{{ pn(e.src) }} is buffeted by the sandstorm!</p>
-    <p v-else-if="e.why === 'belly_drum'">{{ pn(e.src) }} cut its own HP and maximized its Attack!</p>
-    <p v-else-if="e.why === 'set_curse'">{{ pn(e.target) }} cut its own HP and laid a curse on {{ pn(e.src, false) }}!</p>
-    <p v-else-if="e.why === 'curse'">{{ pn(e.src) }} is afflicted by the Curse!</p>
-    <p v-else-if="e.why === 'destiny_bond'">{{ pn(e.src) }} took {{ pn(e.target, false)}} with it!</p>
-    <p v-else-if="e.why === 'nightmare'">{{ pn(e.src) }} is locked in a Nightmare!</p>
+    <p v-if="e.why === 'attacked' && e.isCrit">A critical hit!</p>
+    <p v-else-if="damageMessage[e.why]">
+      {{ damageMessage[e.why]!
+          .replace("{}", pn(e.src))
+          .replace("{l}", pn(e.src, false))
+          .replace("{t}", pn(e.target))
+          .replace("{tl}", pn(e.target, false))
+      }}
+    </p>
 
     <p v-if="e.why === 'attacked' && e.hitCount === undefined && (e.eff ?? 1) !== 1" class="italic">
       {{ eff(e.eff) }}
@@ -126,6 +120,7 @@ div {
 <script setup lang="ts">
 import {hpPercentExact} from "~/game/utils";
 import type {Generation} from "~/game/gen";
+import {damageMessage} from "~/utils/uievent";
 
 const {perspective, players, myId, e} = defineProps<{
   e: UIBattleEvent;

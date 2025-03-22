@@ -247,6 +247,24 @@ export class Battle {
       choices.sort(() => (this.rng.bool() ? -1 : 1));
     }
 
+    for (let i = 0; i < choices.length; i++) {
+      const {move, user, target} = choices[i];
+      if (move.kind !== "protect") {
+        user.v.protectCount = 0;
+      }
+
+      if (move !== this.gen.moveList.pursuit) {
+        continue;
+      }
+
+      const ti = choices.findIndex(choice => choice.user === target);
+      if (choices[ti].move.kind === "switch") {
+        console.log(user.base.name + " is pursuing ", target.base.name);
+        [choices[i], choices[ti]] = [choices[ti], choices[i]];
+        user.v.inPursuit = true;
+      }
+    }
+
     this.runTurn(choices);
 
     if (this.victor) {
@@ -332,24 +350,6 @@ export class Battle {
   // --
 
   private runTurn(choices: ChosenMove[]) {
-    for (let i = 0; i < choices.length; i++) {
-      const {move, user, target} = choices[i];
-      if (move.kind !== "protect") {
-        user.v.protectCount = 0;
-      }
-
-      if (move !== this.gen.moveList.pursuit) {
-        continue;
-      }
-
-      const ti = choices.findIndex(choice => choice.user === target);
-      if (choices[ti].move.kind === "switch") {
-        console.log(user.base.name + " is pursuing ", target.base.name);
-        [choices[i], choices[ti]] = [choices[ti], choices[i]];
-        user.v.inPursuit = true;
-      }
-    }
-
     // eslint-disable-next-line prefer-const
     for (let {move, user, target, indexInMoves} of choices) {
       user.movedThisTurn = true;

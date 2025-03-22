@@ -3,6 +3,7 @@ import type {
   BattleEvent,
   BugType,
   DamageEvent,
+  DamageReason,
   InfoReason,
   RecoverEvent,
   ScreenEvent,
@@ -137,6 +138,24 @@ export const screenMessage: Record<Screen, Record<ScreenEvent["kind"], string>> 
     start: "Reflect raised {l}'s Defense!",
     end: "{}'s Reflect wore off...",
   },
+};
+
+export const damageMessage: Partial<Record<DamageReason, string>> = {
+  recoil: "{} was hurt by recoil!",
+  psn: "{} is hurt by poison!",
+  brn: "{} is hurt by its burn!",
+  spikes: "{} is hurt by the spikes!",
+  confusion: "It hurt itself in its confusion!",
+  crash: "{} kept going and crashed!",
+  trap: "{}'s attack continues!",
+  ohko: "It's a one-hit KO!",
+  nightmare: "{} is locked in a Nightmare!",
+  sandstorm: "{} is buffeted by the sandstorm!",
+  seeded: "{}'s health was sapped by Leech Seed!",
+  belly_drum: "{} cut its own HP and maximized its Attack!",
+  set_curse: "{t} cut its own HP and laid a curse on {l}!",
+  curse: "{} is afflicted by the Curse!",
+  destiny_bond: "{} took {tl} with it!",
 };
 
 export const bugMessage: Record<BugType, string> = {

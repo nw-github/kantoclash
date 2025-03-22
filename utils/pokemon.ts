@@ -84,9 +84,8 @@ export const parsePokemon = (src: string): TeamPokemonDesc => {
     if ((match = line.match(levelRegex))) {
       level = +match[1];
     } else if ((match = line.match(evsRegex)) || (match = line.match(ivsRegex))) {
-      // EVs and IVs for smogon compatibility
-      const isEvs = match[0].toLowerCase().includes("evs");
-      for (const [, v, s] of match[1].matchAll(statRegex)) {
+      const isEvs = match[0].toLowerCase().startsWith("evs");
+      for (const [, v, s] of match[0].matchAll(statRegex)) {
         const value = +v;
         const stat = s.toLowerCase();
         if (!statKeys.includes(stat)) {
