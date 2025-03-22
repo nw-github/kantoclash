@@ -517,6 +517,27 @@ export class Battle {
       }
     }
 
+    // Perish song
+    for (const {active, id} of this.players) {
+      if (active.v.perishCount) {
+        --active.v.perishCount;
+
+        const volatiles = [{id, v: {perishCount: active.v.perishCount}}];
+        if (active.v.perishCount !== 3) {
+          this.event({type: "perish", src: id, turns: active.v.perishCount, volatiles});
+        } else {
+          this.event({type: "sv", volatiles});
+        }
+        if (!active.v.perishCount) {
+          active.damage(active.base.hp, active, this, false, "perish_song", true);
+        }
+      }
+    }
+
+    if (this.checkFaint(this.players[0].active, this.players[1].active)) {
+      return;
+    }
+
     // Defrost
     for (const {active} of this.players) {
       if (active.base.status === "frz" && this.rand100((25 / 256) * 100)) {
@@ -597,8 +618,12 @@ export class ActivePokemon {
       {id: this.owner.id, v: this.v.toClientVolatiles(next, battle)},
     ];
     const {active, id} = battle.opponentOf(this.owner);
-    if (active.v.attract) {
+    if (active.v.attract === this) {
       active.v.attract = undefined;
+      volatiles.push({id, v: {flags: active.v.flags}});
+    }
+    if (active.v.meanLook === this) {
+      active.v.meanLook = undefined;
       volatiles.push({id, v: {flags: active.v.flags}});
     }
 
@@ -917,7 +942,7 @@ export class ActivePokemon {
     }
 
     const moveLocked = !!(this.v.bide || this.v.trapping);
-    const meanLook = this.v.hasFlag(VolatileFlag.meanLook);
+    const meanLook = !!this.v.meanLook;
     return {canSwitch: ((!lockedIn || moveLocked) && !meanLook) || this.v.fainted, moves};
   }
 
@@ -956,6 +981,8 @@ class Volatiles {
   trapped = false;
   fainted = false;
   protectCount = 0;
+  perishCount = 0;
+  meanLook?: ActivePokemon;
   attract?: ActivePokemon;
   lastMove?: Move;
   lastMoveIndex?: number;
@@ -1010,6 +1037,7 @@ class Volatiles {
       charging: this.charging ? battle.moveIdOf(this.charging) : undefined,
       types: !arraysEqual(this.types, base.species.types) ? [...this.types] : undefined,
       flags: this.flags,
+      perishCount: this.perishCount,
     };
   }
 
@@ -1029,6 +1057,9 @@ class Volatiles {
     }
     if (this.encore) {
       flags |= VolatileFlag.encore;
+    }
+    if (this.meanLook) {
+      flags |= VolatileFlag.meanLook;
     }
     return flags;
   }

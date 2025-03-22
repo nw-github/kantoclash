@@ -1346,7 +1346,18 @@ const internalMoveList = createMoveList({
       }
     },
   },
-  // perishsong: {},
+  perishsong: {
+    name: "Perish Song",
+    pp: 5,
+    type: "normal",
+    exec(battle, user, target) {
+      user.v.perishCount = target.v.perishCount = 4;
+      battle.info(user, "perish_song", [
+        {id: user.owner.id, v: {perishCount: 4}},
+        {id: target.owner.id, v: {perishCount: 4}},
+      ]);
+    },
+  },
   // present: {},
   // psychup: {},
   // pursuit: {},

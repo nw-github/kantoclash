@@ -13,6 +13,7 @@ export type ClientVolatiles = {
   charging?: MoveId;
   types?: Type[];
   flags?: VolatileFlag;
+  perishCount?: number;
 };
 
 export type ClientActivePokemon = {

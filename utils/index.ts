@@ -148,6 +148,8 @@ const descriptions: Partial<Record<MoveId, string>> = {
   swagger: "Raises the target's Attack by 2 stages and confuses it. ",
   spite: "Lowers the PP of the target's last used move by 2-5 PP. ",
   sketch: "Permanently replaces this move with the last move used by the target. ",
+  perishsong:
+    "Sets a 3-turn timer for all Pokémon on the field, after which they will faint. Switching removes the timer. ",
 };
 
 const gen2Descriptions: Partial<Record<MoveId, string>> = {

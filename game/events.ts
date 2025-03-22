@@ -29,7 +29,8 @@ type AnyEvent =
   | SetVolatilesEvent
   | BugEvent
   | SpiteEvent
-  | SketchEvent;
+  | SketchEvent
+  | PerishSongEvent;
 
 export type ChangedVolatiles = {id: PlayerId; v: NullOrOptional<ClientVolatiles>}[];
 
@@ -68,7 +69,8 @@ export type DamageReason =
   | "curse"
   | "nightmare"
   | "destiny_bond"
-  | "pain_split";
+  | "pain_split"
+  | "perish_song";
 
 export type RecoveryReason =
   | "drain"
@@ -172,7 +174,8 @@ export type InfoReason =
   | "endure_hit"
   | "encore_end"
   | "heal_bell"
-  | "pain_split";
+  | "pain_split"
+  | "perish_song";
 
 type InfoEvent = {type: "info"; src: PlayerId; why: InfoReason};
 
@@ -201,3 +204,5 @@ type SpiteEvent = {type: "spite"; src: PlayerId; move: MoveId; amount: number};
 type SketchEvent = {type: "sketch"; src: PlayerId; move: MoveId};
 
 export type WeatherEvent = {type: "weather"; kind: "start" | "end" | "continue"; weather: Weather};
+
+type PerishSongEvent = {type: "perish"; src: PlayerId; turns: number};

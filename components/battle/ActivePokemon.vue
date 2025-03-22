@@ -34,6 +34,8 @@
             {{ poke.v.status.toUpperCase() }}
           </UBadge>
 
+          <UBadge v-if="poke.v.perishCount" color="red"> Perish: {{ poke.v.perishCount }} </UBadge>
+
           <template v-for="{name, color, flag} in badges">
             <UBadge v-if="((poke.v.flags ?? 0) & flag) !== 0" :key="flag" :color :label="name" />
           </template>

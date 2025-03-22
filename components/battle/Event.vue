@@ -108,6 +108,7 @@
     It reduced the PP of {{ pn(e.src, false) }}'s {{ gen.moveList[e.move].name }} by {{ e.amount }}!
   </div>
   <div v-else-if="e.type === 'sketch'">{{ pn(e.src) }} sketched {{ gen.moveList[e.move].name }}!</div>
+  <div v-else-if="e.type === 'perish'">{{ pn(e.src) }}'s perish count fell to {{ e.turns }}!</div>
   <div v-else>Unknown event: <code>{{ e }}</code></div>
 </template>
 

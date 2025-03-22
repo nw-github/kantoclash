@@ -45,7 +45,6 @@ export enum VolatileFlag {
   curse        = 0x0000_0040,
   protect      = 0x0000_0080,
   endure       = 0x0000_0100,
-  meanLook     = 0x0000_0200,
   nightmare    = 0x0000_0400,
 
   /** Client only */
@@ -58,6 +57,8 @@ export enum VolatileFlag {
   substitute   = 0x1000_0000,
   /** Client only */
   encore       = 0x0800_0000,
+  /** Client only */
+  meanLook     = 0x0400_0000,
 }
 
 export const floatTo255 = (num: number) => Math.floor((num / 100) * 255);
