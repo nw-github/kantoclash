@@ -1265,6 +1265,7 @@ const internalMoveList = createMoveList({
     acc: 100,
     type: "normal",
     noEncore: true,
+    protect: true,
     exec(battle, user, target) {
       if (!battle.checkAccuracy(this, user, target)) {
         return;
@@ -1296,7 +1297,43 @@ const internalMoveList = createMoveList({
   // psychup: {},
   // pursuit: {},
   // rollout: {},
-  // sketch: { noMetronome: true, noEncore: true },
+  sketch: {
+    name: "Sketch",
+    pp: 1,
+    type: "normal",
+    noMetronome: true,
+    noEncore: true,
+    exec(battle, user, target, moveIndex) {
+      if (!battle.checkAccuracy(this, user, target)) {
+        return;
+      }
+
+      if (!target.v.lastMove || moveIndex === undefined) {
+        // no move index would mean we were called by mirror move/metronome which should be impossible
+        if (moveIndex === undefined) {
+          console.warn("sketch called with no moveIndex: ", user);
+        }
+
+        return battle.info(user, "fail_generic");
+      }
+
+      const id = battle.moveIdOf(target.v.lastMove)!;
+      const idx = target.base.moves.indexOf(id);
+      // Fail for struggle, metronome, mirror move, sleep talk
+      if (
+        idx === -1 ||
+        target.v.lastMove === this ||
+        target.v.lastMove.noEncore ||
+        user.base.moves.includes(id)
+      ) {
+        return battle.info(user, "fail_generic");
+      }
+
+      user.base.moves[moveIndex] = id;
+      user.base.pp[moveIndex] = battle.gen.getMaxPP(target.v.lastMove);
+      battle.event({type: "sketch", src: user.owner.id, move: id});
+    },
+  },
   // sleeptalk: { noMetronome: true, noEncore: true },
   // spikes: {},
   spite: {
@@ -1304,6 +1341,7 @@ const internalMoveList = createMoveList({
     pp: 10,
     acc: 100,
     type: "ghost",
+    protect: true,
     exec(battle, user, target) {
       if (!battle.checkAccuracy(this, user, target)) {
         return;
@@ -1328,6 +1366,7 @@ const internalMoveList = createMoveList({
     pp: 15,
     acc: 90,
     type: "normal",
+    protect: true,
     exec(battle, user, target) {
       if (!battle.checkAccuracy(this, user, target)) {
         return;

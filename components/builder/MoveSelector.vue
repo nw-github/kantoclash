@@ -95,7 +95,7 @@ const filter = (moves: [MoveId, Move][], query: string) => {
 
     let subset = all.filter(([id, _]) => !currentMoves.includes(id));
     if (species.value) {
-      subset = subset.filter(([id, _]) => species.value!.moves.includes(id));
+      subset = subset.filter(([id, _]) => !isIllegal(id));
     }
 
     if (subset.length) {
@@ -110,7 +110,13 @@ const onChoose = ([_, move]: [string, Move]) => (query.value = move.name);
 const isIllegal = (id: string) => {
   if (!id) {
     return false;
+  } else if (!species.value) {
+    return true;
+  } else if (species.value.moves.includes(id)) {
+    return false;
+  } else if (species.value.moves.includes("sketch")) {
+    return !isValidSketchMove(gen, id as MoveId);
   }
-  return species.value ? !species.value.moves.includes(id as MoveId) : true;
+  return true;
 };
 </script>

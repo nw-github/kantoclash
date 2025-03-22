@@ -4,7 +4,7 @@ import {speciesList, type Species, type SpeciesId} from "~/game/species";
 import {statKeys} from "~/game/utils";
 import random from "random";
 import {z} from "zod";
-import type {FormatId} from "~/utils/shared";
+import {isValidSketchMove, type FormatId} from "~/utils/shared";
 import {type Generation, GENERATION1} from "~/game/gen";
 import {GENERATION2} from "~/game/gen2";
 
@@ -98,8 +98,9 @@ const createValidator = (gen: Generation) => {
         return;
       }
 
+      const sk = learnset.includes("sketch");
       for (let i = 0; i < desc.moves.length; i++) {
-        if (!learnset.includes(desc.moves[i])) {
+        if (!learnset.includes(desc.moves[i]) && (!sk || !isValidSketchMove(gen, desc.moves[i]))) {
           ctx.addIssue({path: ["moves", i], message: "Does not learn this move", code: "custom"});
         }
       }

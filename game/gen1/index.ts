@@ -291,6 +291,15 @@ const createGeneration = () => {
     typeChart,
     moveFunctions,
     lastMoveIdx: moveList.whirlwind.idx!,
+    invalidSketchMoves: [
+      "transform",
+      "metronome",
+      "mimic",
+      "mirrormove",
+      "sleeptalk",
+      "explosion",
+      "selfdestruct",
+    ] as MoveId[],
     // Gen 1 bug, if you have exactly 25% hp you can create a substitute and instantly die
     canSubstitute: (user: ActivePokemon, hp: number) => hp <= user.base.hp,
     beforeUseMove,

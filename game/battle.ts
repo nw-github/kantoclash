@@ -425,7 +425,7 @@ export class Battle {
       return false;
     }
 
-    return this.callExecMove(move, user, target);
+    return this.callExecMove(move, user, target, moveIndex);
   }
 
   checkFaint(user: ActivePokemon, target: ActivePokemon) {

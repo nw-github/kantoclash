@@ -3,6 +3,7 @@ import type {Mods, VolatileStats} from "../game/battle";
 import type {SpeciesId} from "../game/species";
 import type {Stages, Type, VolatileFlag} from "../game/utils";
 import type {MoveId} from "~/game/moves";
+import type {Generation} from "~/game/gen1";
 
 export type ClientVolatiles = {
   stages: Partial<Record<Stages, number>>;
@@ -146,4 +147,12 @@ export const mergeVolatiles = <T extends object>(ext: any, obj: T) => {
   }
 
   return result as T;
+};
+
+export const isValidSketchMove = (gen: Generation, id: string) => {
+  const move = gen.moveList[id as MoveId];
+  if (!move) {
+    return false;
+  }
+  return !gen.invalidSketchMoves.includes(id) && move.idx! <= gen.lastMoveIdx;
 };
