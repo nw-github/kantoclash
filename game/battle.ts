@@ -36,7 +36,7 @@ export type MoveOption = {
   indexInMoves?: number;
 };
 
-type ChosenMove = {move: Move; indexInMoves?: number; user: ActivePokemon};
+type ChosenMove = {move: Move; indexInMoves?: number; user: ActivePokemon; target: ActivePokemon};
 
 export type Options = NonNullable<Player["options"]>;
 
@@ -79,6 +79,7 @@ class Player {
       indexInMoves: choice.indexInMoves,
       move: battle.gen.moveList[choice.move],
       user: this.active,
+      target: battle.opponentOf(this).active,
     };
     return true;
   }
@@ -99,6 +100,7 @@ class Player {
     this.choice = {
       move: {kind: "switch", type: "normal", name: "", pp: 0, priority: +7, poke},
       user: this.active,
+      target: this.active,
     };
     return true;
   }
@@ -330,14 +332,26 @@ export class Battle {
   // --
 
   private runTurn(choices: ChosenMove[]) {
-    choices.forEach(({move, user}) => {
+    for (let i = 0; i < choices.length; i++) {
+      const {move, user, target} = choices[i];
       if (move.kind !== "protect") {
         user.v.protectCount = 0;
       }
-    });
+
+      if (move !== this.gen.moveList.pursuit) {
+        continue;
+      }
+
+      const ti = choices.findIndex(choice => choice.user === target);
+      if (choices[ti].move.kind === "switch") {
+        console.log(user.base.name + " is pursuing ", target.base.name);
+        [choices[i], choices[ti]] = [choices[ti], choices[i]];
+        user.v.inPursuit = true;
+      }
+    }
 
     // eslint-disable-next-line prefer-const
-    for (let {user, move, indexInMoves} of choices) {
+    for (let {move, user, target, indexInMoves} of choices) {
       user.movedThisTurn = true;
       if (user.v.hasFlag(VolatileFlag.destinyBond)) {
         this.event({type: "sv", volatiles: [user.clearFlag(VolatileFlag.destinyBond)]});
@@ -348,7 +362,12 @@ export class Battle {
         move = this.gen.moveList[user.base.moves[user.v.encore.indexInMoves]];
       }
 
-      const target = this.opponentOf(user.owner).active;
+      if (user.v.inPursuit) {
+        // This isnt present in the original games, but showdown has it and it's cool without giving
+        // any advantage
+        this.info(target, "withdraw");
+      }
+
       if (move.kind !== "switch" && !this.gen.beforeUseMove(this, move, user, target)) {
         this.handleResidualDamage(user);
         if (this.checkFaint(user, target)) {
@@ -380,6 +399,7 @@ export class Battle {
       player.choice = undefined;
       player.active.v.hazed = false;
       player.active.v.flinch = false;
+      player.active.v.inPursuit = false;
       player.active.movedThisTurn = false;
       if (player.active.v.trapped && !this.opponentOf(player).active.v.trapping) {
         player.active.v.trapped = false;
@@ -1014,6 +1034,7 @@ class Volatiles {
   hazed = false;
   trapped = false;
   fainted = false;
+  inPursuit = false;
   protectCount = 0;
   perishCount = 0;
   meanLook?: ActivePokemon;

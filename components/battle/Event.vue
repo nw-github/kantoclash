@@ -75,7 +75,7 @@
     <p v-if="e.why === 'ff' || e.why === 'ff_timer'">
       {{ infoMessage[e.why].replace("{}", players[e.src].name) }}
     </p>
-    <p v-else>
+    <p v-else :class="[e.why === 'withdraw' && 'text-xs sm:text-[0.8rem] muted']">
       {{ infoMessage[e.why].replace("{}", pn(e.src)).replace("{l}", pn(e.src, false)) }}
     </p>
 

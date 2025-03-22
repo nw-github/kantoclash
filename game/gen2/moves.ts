@@ -2,13 +2,12 @@ import type {Move, MoveFunctions, MoveId} from "../moves";
 import {stageKeys} from "../utils";
 
 // FLAG: drain        | always misses against substitute in Gen 2
-// FLAG: multi_hit    | all hits are now independently damage calcd, continues after breaking sub,  final strike only kings rock
+// FLAG: multi        | all hits are now independently damage calcd, continues after breaking sub,  final strike only kings rock
 // FLAG: explosion    | now faints when hitting a substitute/protect, end of turn damage happens after, defense halving applies to self-inflicted confusion damage
 // FLAG: ohko         | new formula: https://bulbapedia.bulbagarden.net/wiki/Fissure_(move), counterable even on miss
 // FLAG: level, dmg, super_fang   | affected by type immunities
 // FLAG: multi_turn   | 2-3 turns instead of 3-4
-// FLAG: rapid_spin   | implement
-// FLAG: thief        | implement
+// FLAG: rapid_spin, thief, triple, fury_cutter, rollout   | implement
 
 // Normal type moves can par normal types, etc.
 // User takes recoil when breaking a substitute
@@ -167,7 +166,7 @@ export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
   dig: {power: 60},
   dizzypunch: {effect: [20, "confusion"]},
   doubleedge: {power: 120},
-  earthquake: {ignore: ["dig"]},
+  earthquake: {ignore: ["dig"], punish: true},
   explosion: {power: 250},
   fireblast: {effect: [10, "brn"]},
   fissure: {ignore: ["dig"]},

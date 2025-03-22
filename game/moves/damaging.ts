@@ -14,6 +14,7 @@ type Flag =
   | "recharge"
   | "crash"
   | "double"
+  | "triple"
   | "multi"
   | "dream_eater"
   | "payday"
@@ -26,7 +27,9 @@ type Flag =
   | "false_swipe"
   | "tri_attack"
   | "rapid_spin"
-  | "thief";
+  | "thief"
+  | "fury_cutter"
+  | "rollout";
 
 export interface DamagingMove extends BaseMove {
   readonly kind: "damage";
@@ -313,6 +316,11 @@ function getDamage(self: DamagingMove, battle: Battle, user: ActivePokemon, targ
       weather = type === "fire" ? "bonus" : type === "water" ? "penalty" : undefined;
     }
 
+    let doubleDmg = user.v.inPursuit;
+    if (target.v.charging && self.ignore && self.punish) {
+      doubleDmg = doubleDmg || self.ignore.includes(battle.moveIdOf(target.v.charging));
+    }
+
     const explosion = self.flag === "explosion" ? 2 : 1;
     const [atk, def] = battle.gen.getDamageVariables(isSpecial(type), user, target, isCrit);
     dmg = battle.gen.calcDamage({
@@ -325,6 +333,7 @@ function getDamage(self: DamagingMove, battle: Battle, user: ActivePokemon, targ
       rand,
       eff,
       weather,
+      doubleDmg,
     });
 
     if (self.flag === "false_swipe" && dmg >= target.base.hp && !target.v.substitute) {

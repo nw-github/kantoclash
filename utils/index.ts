@@ -152,6 +152,7 @@ const descriptions: Partial<Record<MoveId, string>> = {
     "Sets a 3-turn timer for all Pokémon on the field, after which they will faint. Switching removes the timer. ",
   futuresight: "After two turns, the target is hit with an attack. ",
   psychup: "Copies the stat stages of the target. Fails if they are all 0. ",
+  pursuit: "Doubles damage and goes first if the target is switching out. ",
 };
 
 const gen2Descriptions: Partial<Record<MoveId, string>> = {

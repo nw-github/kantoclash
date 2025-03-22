@@ -1292,7 +1292,6 @@ const internalMoveList = createMoveList({
     },
   },
   // foresight: {},
-  // furycutter: {},
   futuresight: {
     name: "Future Sight",
     pp: 15,
@@ -1407,8 +1406,6 @@ const internalMoveList = createMoveList({
       });
     },
   },
-  // pursuit: {},
-  // rollout: {},
   sketch: {
     name: "Sketch",
     pp: 1,
@@ -1516,7 +1513,6 @@ const internalMoveList = createMoveList({
       }
     },
   },
-  // triplekick: {},
   // --
   meanlook: {
     kind: "noSwitch",
@@ -1739,6 +1735,15 @@ const internalMoveList = createMoveList({
     acc: 100,
     getPower: user => idiv(255 - user.friendship, 2.5),
   },
+  furycutter: {
+    kind: "damage",
+    name: "Fury Cutter",
+    pp: 20,
+    type: "bug",
+    power: 10,
+    acc: 95,
+    flag: "fury_cutter",
+  },
   gigadrain: {
     kind: "damage",
     name: "Giga Drain",
@@ -1857,6 +1862,14 @@ const internalMoveList = createMoveList({
     acc: 100,
     effect: [10, "frz"],
   },
+  pursuit: {
+    kind: "damage",
+    name: "Pursuit",
+    pp: 20,
+    type: "dark",
+    power: 40,
+    acc: 100,
+  },
   rapidspin: {
     kind: "damage",
     name: "Rapid Spin",
@@ -1893,6 +1906,15 @@ const internalMoveList = createMoveList({
     power: 20,
     acc: 100,
     effect: [50, [["def", -1]]],
+  },
+  rollout: {
+    kind: "damage",
+    name: "Rollout",
+    pp: 20,
+    type: "rock",
+    power: 30,
+    acc: 90,
+    flag: "rollout",
   },
   sacredfire: {
     kind: "damage",
@@ -1952,6 +1974,15 @@ const internalMoveList = createMoveList({
     acc: 100,
     flag: "thief",
     noMetronome: true,
+  },
+  triplekick: {
+    kind: "damage",
+    name: "Triple Kick",
+    pp: 10,
+    type: "fight",
+    power: 10,
+    acc: 90,
+    flag: "triple",
   },
   twister: {
     kind: "damage",

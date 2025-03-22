@@ -180,7 +180,8 @@ export type InfoReason =
   | "pain_split"
   | "perish_song"
   | "future_sight"
-  | "future_sight_release";
+  | "future_sight_release"
+  | "withdraw";
 
 type InfoEvent = {type: "info"; src: PlayerId; why: InfoReason};
 

@@ -98,6 +98,7 @@ export const infoMessage: Record<InfoReason, string> = {
   perish_song: "All affected pokemon will faint in three turns!",
   future_sight: "{} foresaw an attack!",
   future_sight_release: "{} took the Future Sight attack!",
+  withdraw: "({} is trying to switch out...)",
 
   substitute: "",
   curse: "",

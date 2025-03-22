@@ -48,6 +48,7 @@ const calcDamage = ({
   const tk = tripleKick ?? 1;
   const stab = isStab ? 1.5 : 1;
   const w = weather === "bonus" ? 1.5 : weather === "penalty" ? 0.5 : 1;
+  const double = doubleDmg ? 2 : 1;
 
   let dmg = imul(idiv(idiv((idiv(2 * lvl, 5) + 2) * pow * atk, def), 50), item) * crit + 2;
   // TODO: something about type priority
@@ -57,7 +58,9 @@ const calcDamage = ({
   if (rand && typeof rand !== "number" && dmg > 1) {
     r = rand.int(217, 255);
   }
-  return idiv(dmg * r, 255) * (doubleDmg ? 2 : 1);
+
+  // console.log({item, crit, tk, stab, w, double, r, moveMod: moveMod ?? 1});
+  return idiv(dmg * r, 255) * double;
 };
 
 const merge = createDefu((obj, key, value) => {
@@ -67,7 +70,7 @@ const merge = createDefu((obj, key, value) => {
   }
 });
 
-const beforeUseMove = (battle: Battle, move: Move, user: ActivePokemon, target: ActivePokemon) => {
+const beforeUseMove = (battle: Battle, move: Move, user: ActivePokemon, _: ActivePokemon) => {
   const resetVolatiles = () => {
     user.v.charging = undefined;
     user.v.invuln = false;
