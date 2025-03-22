@@ -298,6 +298,7 @@ const sound = useAudio({
   supereffective: {src: "/effects/supereffective.mp3"},
   ineffective: {src: "/effects/ineffective.mp3"},
   neutral: {src: "/effects/neutral.mp3"},
+  shiny: {src: "/effects/shiny.mp3"},
 });
 
 useIntervalFn(() => {
@@ -452,6 +453,7 @@ const runTurn = async (live: boolean, turnIdx: number) => {
 
         // preload the image
         player.active!.speciesId = e.speciesId;
+        player.active!.shiny = e.shiny;
       } else {
         player.active = {
           speciesId: e.speciesId,
@@ -473,7 +475,11 @@ const runTurn = async (live: boolean, turnIdx: number) => {
           activeInTeam.value!.hp = e.hp!;
         }
         handleVolatiles(e);
-        playCry(e.speciesId);
+        playCry(e.speciesId)?.then(() => {
+          if (e.shiny) {
+            return sound.play("shiny", {volume: sfxVol.value});
+          }
+        });
       });
       return;
     } else if (e.type === "damage" || e.type === "recover") {

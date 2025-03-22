@@ -140,7 +140,7 @@
             <div class="flex flex-col relative">
               <div
                 v-if="gen.id > 1 && gen.speciesList[selectedPoke.data.species as SpeciesId]"
-                class="absolute p-2"
+                class="absolute p-2 flex flex-col gap-1"
               >
                 <GenderIcon
                   class="size-6"
@@ -149,9 +149,20 @@
                     ivToDv(selectedPoke.data.ivs.atk),
                   )"
                 />
+
+                <UIcon
+                  name="tabler:sparkles"
+                  class="size-6"
+                  v-if="getShiny(ivsToDvs(selectedPoke.data))"
+                />
               </div>
 
-              <PokemonSelector v-model="selectedPoke.data.species" :team :gen />
+              <PokemonSelector
+                v-model="selectedPoke.data.species"
+                :team
+                :gen
+                :shiny="getShiny(ivsToDvs(selectedPoke.data))"
+              />
               <InputWithMax
                 v-model.trim="selectedPoke.data.name"
                 :maxlength="24"
@@ -277,7 +288,7 @@
 </template>
 
 <script setup lang="ts">
-import {calcStat, getGender, getHpDv} from "~/game/pokemon";
+import {calcStat, getGender, getHpDv, getShiny} from "~/game/pokemon";
 import type {Species, SpeciesId} from "~/game/species";
 import type {Stats} from "~/game/utils";
 import {GENERATIONS} from "~/game/gen";

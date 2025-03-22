@@ -636,6 +636,7 @@ export class ActivePokemon {
       name: next.name,
       level: next.level,
       gender: next.gender,
+      shiny: next.shiny || undefined,
       indexInTeam: this.owner.team.indexOf(next),
       why,
       volatiles,

@@ -28,7 +28,6 @@ export class Pokemon {
   hp: number;
   status?: Status;
   sleepTurns: number = 0;
-  shiny: boolean;
   friendship: number;
   dvs: Stats;
 
@@ -59,17 +58,19 @@ export class Pokemon {
       spe: calcStat("spe", this.species.stats, this.level, this.dvs, evs),
     };
     this.hp = this.stats.hp;
-    this.shiny =
-      this.dvs.def === 10 &&
-      this.dvs.spe === 10 &&
-      this.dvs.spa === 10 &&
-      [2, 3, 6, 7, 10, 11, 14, 15].includes(this.dvs.atk);
     this.friendship = friendship ?? 255;
 
     // const c2 = (iv?: number) => ((iv ?? 15) >> 1) & 0b11;
     // const unownLetter = idiv(
     //   gen1StatKeys.filter(v => v !== "hp").reduce((acc, v) => acc + c2(dvs[v]), 0), 10,
     // );
+  }
+
+  get shiny() {
+    if (this.gen.id === 1) {
+      return undefined;
+    }
+    return getShiny(this.dvs);
   }
 
   get gender() {
@@ -153,4 +154,13 @@ export const getGender = (species: Species, atk: number) => {
   } else if (species.genderRatio === 0) {
     return "female";
   }
+};
+
+export const getShiny = (dvs: Partial<Stats>) => {
+  return (
+    dvs.def === 10 &&
+    dvs.spe === 10 &&
+    dvs.spa === 10 &&
+    [2, 3, 6, 7, 10, 11, 14, 15].includes(dvs.atk)
+  );
 };

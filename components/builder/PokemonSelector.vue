@@ -14,7 +14,7 @@
         tabindex="0"
         @focus="open = true"
       >
-        <Sprite :species="(model as SpeciesId)" :scale="2" @click="open = true" />
+        <Sprite :species="(model as SpeciesId)" :scale="2" :shiny @click="open = true" />
       </div>
     </div>
 
@@ -58,7 +58,7 @@ import type {Species, SpeciesId} from "@/game/species";
 import type {Generation} from "~/game/gen1";
 
 const model = defineModel<string>();
-const {team, gen} = defineProps<{team: Team; gen: Generation}>();
+const {team, gen} = defineProps<{team: Team; gen: Generation; shiny: boolean}>();
 const open = ref(false);
 const items = computed(() => Object.entries(gen.speciesList) as [SpeciesId, Species][]);
 const statKeys = computed(() => getStatKeys(gen));

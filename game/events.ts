@@ -48,6 +48,7 @@ type SwitchEvent = {
   name: string;
   indexInTeam: number;
   gender?: Gender;
+  shiny?: boolean;
   why?: "phaze";
 };
 

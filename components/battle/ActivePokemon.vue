@@ -57,6 +57,7 @@
               :species="poke?.transformed ?? poke?.speciesId"
               :substitute="((poke?.v.flags || 0) & VolatileFlag.substitute) !== 0"
               :scale="lessThanSm ? 1 : 2"
+              :shiny="poke?.shiny"
               :back
             />
           </div>

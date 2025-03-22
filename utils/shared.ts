@@ -25,6 +25,7 @@ export type ClientActivePokemon = {
   hpPercent: number;
   level: number;
   transformed?: SpeciesId;
+  shiny?: boolean;
   v: ClientVolatiles;
 };
 
