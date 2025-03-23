@@ -1171,7 +1171,18 @@ const internalMoveList = createMoveList({
       battle.info(target, "attract", [{id: target.owner.id, v: {flags: target.v.flags}}]);
     },
   },
-  // batonpass: {},
+  batonpass: {
+    name: "Baton Pass",
+    pp: 40,
+    type: "normal",
+    exec(battle, user) {
+      if (user.owner.team.every(p => p === user.base.real || p.hp === 0)) {
+        return battle.info(user, "fail_generic");
+      }
+
+      user.v.inBatonPass = true;
+    },
+  },
   // beatup: {},
   bellydrum: {
     name: "Belly Drum",

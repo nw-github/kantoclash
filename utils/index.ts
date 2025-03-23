@@ -158,6 +158,7 @@ const descriptions: Partial<Record<MoveId, string>> = {
     "While this move is in effect, accuracy checks against the target ignore evasion and " +
     "accuracy stages if the target's evasion is greater than the user's accuracy, and Normal and " +
     "Fighting-type moves deal neutral damage to Ghost types. Switching removes this effect. ",
+  batonpass: "Switches while retaining stages and certain volatile status conditions. ",
 };
 
 const gen2Descriptions: Partial<Record<MoveId, string>> = {

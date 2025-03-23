@@ -36,7 +36,9 @@ export const stageKeys = [...stageStatKeys, "acc", "eva"] as const;
 // prettier-ignore
 export enum VolatileFlag {
   none         = 0,
+  /** Gen 1 only */
   light_screen = 0x0000_0001,
+  /** Gen 1 only */
   reflect      = 0x0000_0002,
   mist         = 0x0000_0004,
   focus        = 0x0000_0008,

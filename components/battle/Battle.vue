@@ -415,7 +415,7 @@ const runTurn = async (live: boolean, turnIdx: number) => {
         cb();
       }
 
-      if (anim === "faint" && component) {
+      if ((anim === "faint" || anim === "retract") && component) {
         component.reset(false);
       } else if (anim === "sendin" && component) {
         component.reset(true);
@@ -444,7 +444,7 @@ const runTurn = async (live: boolean, turnIdx: number) => {
     if (e.type === "switch") {
       const player = players[e.src];
       if (player.active) {
-        if (!player.active.fainted) {
+        if (!player.active.fainted && e.why !== "baton_pass") {
           if (e.why !== "phaze") {
             pushEvent({type: "retract", src: e.src, name: player.active.name});
           }
@@ -556,6 +556,11 @@ const runTurn = async (live: boolean, turnIdx: number) => {
       return;
     } else if (e.type === "end") {
       victor.value = e.victor ?? "draw";
+    } else if (e.type === "move" && e.move === "batonpass") {
+      pushEvent(e);
+      handleVolatiles(e);
+      await playAnimation(e.src, "retract", players[e.src].active!.name);
+      return;
     }
 
     handleVolatiles(e);

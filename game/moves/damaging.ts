@@ -183,7 +183,7 @@ export function exec(
     } else if (this.flag === "double" || this.flag === "multi") {
       const count = this.flag === "double" ? 2 : multiHitCount(battle.rng);
       for (let hits = 1; !dead && !brokeSub && !endured && hits < count; hits++) {
-        if (dmg > target.base.hp) {
+        if (dmg > 0 && dmg > target.base.hp && target.v.hasFlag(VolatileFlag.endure)) {
           dmg = Math.max(target.base.hp - 1, 0);
           endured = true;
         }
@@ -291,7 +291,7 @@ function getDamage(self: DamagingMove, battle: Battle, user: ActivePokemon, targ
       dmg = result;
       eff = 1;
     } else {
-      eff = 0;
+      eff = 1;
     }
   } else {
     let rand: number | false | Random = battle.rng;

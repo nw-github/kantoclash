@@ -114,7 +114,7 @@ export const moveFunctions: MoveFunctions = {
   },
   switch: {
     use(battle, user) {
-      user.switchTo(this.poke, battle);
+      user.switchTo(this.poke, battle, this.batonPass ? "baton_pass" : undefined);
     },
     exec: () => false,
   },
@@ -186,7 +186,9 @@ export const moveFunctions: MoveFunctions = {
   },
   lockOn: {
     exec(battle, user, target) {
-      if (!battle.checkAccuracy(this, user, target)) {
+      if (target.v.substitute) {
+        return battle.info(user, "fail_generic");
+      } else if (!battle.checkAccuracy(this, user, target)) {
         return;
       }
 

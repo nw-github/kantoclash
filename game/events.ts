@@ -48,7 +48,7 @@ type SwitchEvent = {
   indexInTeam: number;
   gender?: Gender;
   shiny?: boolean;
-  why?: "phaze";
+  why?: "phaze" | "baton_pass";
 };
 
 export type DamageReason =

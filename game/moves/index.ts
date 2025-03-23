@@ -69,6 +69,7 @@ export interface SwitchMove extends BaseMove {
   readonly kind: "switch";
   readonly poke: Pokemon;
   readonly priority: number;
+  readonly batonPass: boolean;
 }
 
 export interface FailMove extends BaseMove {

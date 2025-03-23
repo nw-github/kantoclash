@@ -90,7 +90,7 @@ class Player {
     }
 
     const poke = this.team[index];
-    if (!battle.leadTurn) {
+    if (battle.turnType !== TurnType.Lead) {
       const current = this.active.base;
       if (!poke || poke === current || !poke.hp || poke === current.real) {
         return false;
@@ -98,7 +98,15 @@ class Player {
     }
 
     this.choice = {
-      move: {kind: "switch", type: "normal", name: "", pp: 0, priority: +7, poke},
+      move: {
+        kind: "switch",
+        type: "normal",
+        name: "",
+        pp: 0,
+        priority: +7,
+        poke,
+        batonPass: this.active.v.inBatonPass,
+      },
       user: this.active,
       target: this.active,
     };
@@ -116,16 +124,23 @@ class Player {
 
 export type Mods = {sleepClause?: boolean; freezeClause?: boolean; endlessBattle?: boolean};
 
+enum TurnType {
+  Lead,
+  Switch,
+  Normal,
+  BatonPass,
+}
+
 export class Battle {
   readonly players: [Player, Player];
   private readonly events: BattleEvent[] = [];
   private readonly moveListToId = new Map<Move, MoveId>();
-  private switchTurn = true;
+  turnType = TurnType.Lead;
+
   private _victor?: Player;
   weather?: {kind: Weather; turns: number};
   finished = false;
-  leadTurn = true;
-  turn = 0;
+  private turn = 0;
 
   private constructor(
     readonly gen: Generation,
@@ -218,7 +233,7 @@ export class Battle {
       return;
     }
 
-    if (!this.switchTurn) {
+    if (this.turnType === TurnType.Normal) {
       this.turn++;
     }
 
@@ -240,7 +255,9 @@ export class Battle {
         return bSpe - aSpe;
       });
 
-    this.leadTurn = false;
+    if (this.turnType === TurnType.Lead) {
+      this.turnType = TurnType.Switch;
+    }
     if (choices.every(choice => choice.move.kind === "switch")) {
       // Randomize choices to avoid leaking speed. The player always sees their pokemon switch in
       // first in a link battle on console.
@@ -253,7 +270,7 @@ export class Battle {
         user.v.protectCount = 0;
       }
 
-      if (move !== this.gen.moveList.pursuit) {
+      if (move !== this.gen.moveList.pursuit || this.turnType === TurnType.BatonPass) {
         continue;
       }
 
@@ -267,14 +284,31 @@ export class Battle {
 
     this.runTurn(choices);
 
-    if (this.victor) {
-      this.event({type: "end", victor: this.victor.id});
-    } else if (this.turn >= 1000 && this.mods.endlessBattle) {
-      return this.draw("too_long");
+    const switchTurn = this.turnType === TurnType.Switch || this.turnType === TurnType.BatonPass;
+    if (this.players.some(pl => pl.active.v.inBatonPass)) {
+      this.turnType = TurnType.BatonPass;
+    } else {
+      if (this.victor) {
+        this.event({type: "end", victor: this.victor.id});
+      } else if (this.turn >= 1000 && this.mods.endlessBattle) {
+        return this.draw("too_long");
+      }
+
+      this.turnType = this.players.some(pl => pl.active.v.fainted)
+        ? TurnType.Switch
+        : TurnType.Normal;
     }
 
-    const switchTurn = this.switchTurn;
-    this.switchTurn = this.players.some(pl => pl.active.v.fainted);
+    for (const player of this.players) {
+      if (
+        this.turnType !== TurnType.BatonPass ||
+        player.active.v.inBatonPass ||
+        player.active.movedThisTurn
+      ) {
+        player.choice = undefined;
+      }
+      player.updateOptions(this);
+    }
     return {events: this.events.splice(0), switchTurn};
   }
 
@@ -401,7 +435,11 @@ export class Battle {
       const faintedBetweenTurns = user.v.faintedBetweenTurns;
 
       this.callUseMove(move, user, target, indexInMoves);
-      if (!this.switchTurn) {
+      if (this.turnType !== TurnType.Switch) {
+        if (user.v.inBatonPass) {
+          return;
+        }
+
         if (this.checkFaint(user, target)) {
           break;
         }
@@ -428,12 +466,11 @@ export class Battle {
       }
     }
 
-    if (!this.switchTurn) {
+    if (this.turnType !== TurnType.Switch) {
       this.handleBetweenTurns();
     }
 
     for (const player of this.players) {
-      player.choice = undefined;
       player.active.v.hazed = false;
       player.active.v.flinch = false;
       player.active.v.inPursuit = false;
@@ -441,7 +478,6 @@ export class Battle {
       if (player.active.v.trapped && !this.opponentOf(player).active.v.trapping) {
         player.active.v.trapped = false;
       }
-      player.updateOptions(this);
     }
   }
 
@@ -696,14 +732,42 @@ export class ActivePokemon {
     this.v = new Volatiles(base);
   }
 
-  switchTo(next: Pokemon, battle: Battle, why?: "phaze") {
-    if (this.base.status === "tox" && battle.gen.id === 1) {
+  switchTo(next: Pokemon, battle: Battle, why?: "phaze" | "baton_pass") {
+    if (this.base.status === "tox" && battle.gen.id <= 2) {
       this.base.status = "psn";
       battle.event({type: "sv", volatiles: [{id: this.owner.id, v: {status: "psn"}}]});
     }
 
+    const old = this.v;
     this.v = new Volatiles(next);
     this.base = next;
+
+    if (why === "baton_pass") {
+      this.v.substitute = old.substitute;
+      this.v.stages = old.stages;
+      this.v.confusion = old.confusion;
+      this.v.perishCount = old.perishCount;
+      this.v.meanLook = old.meanLook;
+      this.v.counter = old.counter;
+
+      const passedFlags =
+        VolatileFlag.light_screen |
+        VolatileFlag.reflect |
+        VolatileFlag.mist |
+        VolatileFlag.focus |
+        VolatileFlag.seeded |
+        VolatileFlag.curse |
+        VolatileFlag.foresight |
+        VolatileFlag.lockon;
+      this.v.setFlag(old.flags & passedFlags);
+
+      // Is trapping passed? Encore? Nightmare?
+
+      for (const stat of stageStatKeys) {
+        this.recalculateStat(stat, false);
+      }
+    }
+
     this.applyStatusDebuff();
 
     const volatiles: ChangedVolatiles = [
@@ -1000,8 +1064,10 @@ export class ActivePokemon {
   getOptions(battle: Battle): Options | undefined {
     if (battle.finished || (battle.opponentOf(this.owner).active.v.fainted && !this.v.fainted)) {
       return;
-    } else if (battle.leadTurn) {
+    } else if (battle.turnType === TurnType.Lead) {
       return {canSwitch: true, moves: []};
+    } else if (battle.turnType === TurnType.BatonPass) {
+      return this.v.inBatonPass ? {canSwitch: true, moves: []} : undefined;
     }
 
     // send all moves so PP can be updated
@@ -1077,6 +1143,7 @@ class Volatiles {
   fainted = false;
   faintedBetweenTurns = false;
   inPursuit = false;
+  inBatonPass = false;
   protectCount = 0;
   perishCount = 0;
   meanLook?: ActivePokemon;
