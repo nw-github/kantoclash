@@ -232,6 +232,7 @@ export function getDamage(
   battle: Battle,
   user: ActivePokemon,
   target: ActivePokemon,
+  tripleKick = 1,
 ) {
   const type = self.getType ? self.getType(user.base) : self.type;
   let pow = self.getPower ? self.getPower(user.base) : self.power;
@@ -311,6 +312,7 @@ export function getDamage(
       weather,
       moveMod,
       doubleDmg,
+      tripleKick,
     });
 
     if (self.flag === "false_swipe" && dmg >= target.base.hp && !target.v.substitute) {

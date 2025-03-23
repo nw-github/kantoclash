@@ -2,12 +2,10 @@ import type {Move, MoveFunctions, MoveId} from "../moves";
 import {stageKeys} from "../utils";
 import {exec as execDamagingMove} from "./damaging";
 
-// FLAG: multi        | final strike only kings rock
-// FLAG: thief, triple | implement
+// FLAG: multi | final strike only kings rock
+// FLAG: thief | implement
 // Counter is sane now, can counter ohko moves for max damage on miss
-
-// leech seed doesn't interact with toxic N and drains 1/8
-// rage is now different | https://bulbapedia.bulbagarden.net/wiki/Rage_(move)
+//  Despite Dark-type moves being special prior to Generation IV, Beat Up activates Counter but not Mirror Coat.
 
 /*
 https://bulbapedia.bulbagarden.net/wiki/Bide_(move)
@@ -25,6 +23,8 @@ https://bulbapedia.bulbagarden.net/wiki/Solar_Beam_(move)
 If the user is prevented from attacking with SolarBeam during harsh sunlight by conditions such as flinching, paralysis, and confusion, then PP will still be deducted regardless, due to the fact that SolarBeam was designed as a two-turn attack.
 
 In this generation only, Mirror Move always fails when used by a transformed Pokémon.
+
+leech seed doesn't interact with toxic N and drains 1/8
 */
 
 // Does 10% chance mean 10.2 /* 26/256 */ like in gen 1?

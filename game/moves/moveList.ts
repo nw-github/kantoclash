@@ -1179,7 +1179,49 @@ const internalMoveList = createMoveList({
       user.v.inBatonPass = true;
     },
   },
-  // beatup: {},
+  beatup: {
+    name: "Beat Up",
+    pp: 10,
+    type: "dark",
+    power: 10,
+    acc: 100,
+    protect: true,
+    exec(battle, user, target) {
+      if (!battle.checkAccuracy(this, user, target)) {
+        return;
+      }
+
+      let failed = true;
+      for (const poke of user.owner.team) {
+        if (poke.status || !poke.hp) {
+          continue;
+        }
+
+        failed = false;
+        const dmg = battle.gen.calcDamage({
+          pow: this.power,
+          atk: poke.stats.atk,
+          def: target.base.stats.def,
+          lvl: poke.level,
+          eff: 1,
+          isCrit: false,
+          isStab: false,
+          rand: battle.rng,
+        });
+
+        battle.event({type: "beatup", name: poke.name});
+        if (target.damage2(battle, {dmg, src: user, why: "attacked"}).dead) {
+          break;
+        }
+      }
+
+      if (failed) {
+        battle.info(user, "fail_generic");
+      }
+
+      // TODO: kings rock
+    },
+  },
   bellydrum: {
     name: "Belly Drum",
     pp: 10,

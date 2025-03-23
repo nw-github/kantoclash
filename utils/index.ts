@@ -88,7 +88,7 @@ export const getStatKeys = (gen: Generation) => {
 };
 
 export const getCategory = (move: Move, type?: Type) => {
-  return move.kind === "damage"
+  return move.kind === "damage" || move.power
     ? isSpecial(type ?? move.type)
       ? "special"
       : "physical"
@@ -159,6 +159,8 @@ const descriptions: Partial<Record<MoveId, string>> = {
     "accuracy stages if the target's evasion is greater than the user's accuracy, and Normal and " +
     "Fighting-type moves deal neutral damage to Ghost types. Switching removes this effect. ",
   batonpass: "Switches while retaining stages and certain volatile status conditions. ",
+  beatup:
+    "Deals a typeless 10 power attack for each Pokémon in the user's party without a non-volatile status condition. ",
 };
 
 const gen2Descriptions: Partial<Record<MoveId, string>> = {

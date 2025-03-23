@@ -30,7 +30,8 @@ type AnyEvent =
   | SpiteEvent
   | SketchEvent
   | PerishSongEvent
-  | TrapEvent;
+  | TrapEvent
+  | BeatUpEvent;
 
 export type ChangedVolatiles = {id: PlayerId; v: NullOrOptional<ClientVolatiles>}[];
 
@@ -232,6 +233,8 @@ export type ScreenEvent = {type: "screen"; kind: "start" | "end"; screen: Screen
 type SetVolatilesEvent = {type: "sv"};
 
 type SpiteEvent = {type: "spite"; src: PlayerId; move: MoveId; amount: number};
+
+type BeatUpEvent = {type: "beatup"; name: string};
 
 export type WeatherEvent = {type: "weather"; kind: "start" | "end" | "continue"; weather: Weather};
 

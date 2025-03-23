@@ -90,11 +90,24 @@ export function exec(
     user.recover(dmg, target, battle, "drain");
   } else if (this.flag === "explosion") {
     dead = user.damage(user.base.hp, user, battle, false, "explosion", true).dead || dead;
-  } else if (this.flag === "double" || this.flag === "multi") {
-    const count = this.flag === "double" ? 2 : multiHitCount(battle.rng);
+  } else if (this.flag === "double" || this.flag === "triple" || this.flag === "multi") {
+    const counts = {
+      double: 2,
+      triple: battle.rng.int(1, 3),
+      multi: multiHitCount(battle.rng),
+    };
+    event.hitCount = 1;
+
+    const count = counts[this.flag];
     for (let hits = 1; !dead && !endured && hits < count; hits++) {
       hadSub = target.v.substitute !== 0;
-      ({dmg, isCrit, endured} = getDamage(this, battle, user, target));
+      ({dmg, isCrit, endured} = getDamage(
+        this,
+        battle,
+        user,
+        target,
+        this.flag === "triple" ? hits + 1 : 1,
+      ));
 
       event.hitCount = 0;
       ({dead, event} = target.damage(dmg, user, battle, isCrit, "attacked", false, eff));

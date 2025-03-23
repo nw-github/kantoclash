@@ -125,6 +125,7 @@
       {{ pn(e.src) }} was freed from {{ gen.moveList[e.move].name }}!
     </template>
   </div>
+  <div v-else-if="e.type === 'beatup'">{{ e.name }}'s attack!</div>
   <div v-else>Unknown event: <code>{{ e }}</code></div>
 </template>
 
