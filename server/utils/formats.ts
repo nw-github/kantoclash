@@ -70,7 +70,13 @@ export const randoms = (
     if (stab.length) {
       moves[0] = random.choice(stab)!;
     }
-    return {species: id, level, moves};
+
+    let friendship = 255;
+    if (moves.includes("frustration")) {
+      friendship = 0;
+    }
+
+    return {species: id, level, moves, friendship};
   });
 };
 
@@ -143,6 +149,9 @@ const validateTeam = (
 
 export const formatDescs: Record<FormatId, FormatFunctions> = {
   g2_standard: {validate: team => validateTeam(VALIDATOR_GEN2, team)},
+  g2_randoms: {
+    generate: () => randoms(GENERATION2, (s, id) => !s.evolvesTo && id !== "mewtwo"),
+  },
   g1_standard: {validate: team => validateTeam(VALIDATOR_GEN1, team)},
   g1_nfe: {
     validate(team) {

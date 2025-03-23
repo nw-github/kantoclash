@@ -3046,8 +3046,7 @@
       "rest",
       "slash",
       "substitute"
-    ],
-    "evolves": false
+    ]
   },
   "doduo": {
     "dexId": 84,
@@ -3435,8 +3434,7 @@
       "rest",
       "rockslide",
       "substitute"
-    ],
-    "evolves": false
+    ]
   },
   "drowzee": {
     "dexId": 96,
@@ -3836,8 +3834,7 @@
       "hijumpkick",
       "rest",
       "substitute"
-    ],
-    "evolves": false
+    ]
   },
   "hitmonchan": {
     "dexId": 107,
@@ -3915,8 +3912,7 @@
       "skullbash",
       "rest",
       "substitute"
-    ],
-    "evolves": false
+    ]
   },
   "koffing": {
     "dexId": 109,
@@ -4101,8 +4097,7 @@
       "rest",
       "triattack",
       "substitute"
-    ],
-    "evolves": false
+    ]
   },
   "tangela": {
     "dexId": 114,
@@ -4135,8 +4130,7 @@
       "constrict",
       "rest",
       "substitute"
-    ],
-    "evolves": false
+    ]
   },
   "kangaskhan": {
     "dexId": 115,
@@ -4178,8 +4172,7 @@
       "rest",
       "rockslide",
       "substitute"
-    ],
-    "evolves": false
+    ]
   },
   "horsea": {
     "dexId": 116,
@@ -4428,8 +4421,7 @@
       "psywave",
       "rest",
       "substitute"
-    ],
-    "evolves": false
+    ]
   },
   "scyther": {
     "dexId": 123,
@@ -4457,8 +4449,7 @@
       "rest",
       "slash",
       "substitute"
-    ],
-    "evolves": false
+    ]
   },
   "jynx": {
     "dexId": 124,
@@ -4525,8 +4516,7 @@
       "skullbash",
       "psywave",
       "substitute"
-    ],
-    "evolves": false
+    ]
   },
   "electabuzz": {
     "dexId": 125,
@@ -4592,8 +4582,7 @@
       "skullbash",
       "psywave",
       "substitute"
-    ],
-    "evolves": false
+    ]
   },
   "magmar": {
     "dexId": 126,
@@ -4653,8 +4642,7 @@
       "skullbash",
       "psywave",
       "substitute"
-    ],
-    "evolves": false
+    ]
   },
   "pinsir": {
     "dexId": 127,
@@ -4684,8 +4672,7 @@
       "rest",
       "slash",
       "substitute"
-    ],
-    "evolves": false
+    ]
   },
   "tauros": {
     "dexId": 128,
@@ -4718,8 +4705,7 @@
       "skullbash",
       "rest",
       "substitute"
-    ],
-    "evolves": false
+    ]
   },
   "magikarp": {
     "dexId": 129,
@@ -4803,16 +4789,14 @@
       "psywave",
       "rest",
       "substitute"
-    ],
-    "evolves": false
+    ]
   },
   "ditto": {
     "dexId": 132,
     "name": "Ditto",
     "types": ["normal"],
     "stats": {"hp": 48, "atk": 48, "def": 48, "spa": 48, "spd": 0, "spe": 48},
-    "moves": ["transform"],
-    "evolves": false
+    "moves": ["transform"]
   },
   "eevee": {
     "dexId": 133,
@@ -4992,8 +4976,7 @@
       "conversion",
       "triattack",
       "substitute"
-    ],
-    "evolves": false
+    ]
   },
   "omanyte": {
     "dexId": 138,
@@ -5158,8 +5141,7 @@
       "skyattack",
       "rest",
       "substitute"
-    ],
-    "evolves": false
+    ]
   },
   "snorlax": {
     "dexId": 143,
@@ -5206,8 +5188,7 @@
       "rest",
       "rockslide",
       "substitute"
-    ],
-    "evolves": false
+    ]
   },
   "articuno": {
     "dexId": 144,
@@ -5238,8 +5219,7 @@
       "skyattack",
       "rest",
       "substitute"
-    ],
-    "evolves": false
+    ]
   },
   "zapdos": {
     "dexId": 145,
@@ -5271,8 +5251,7 @@
       "flash",
       "rest",
       "substitute"
-    ],
-    "evolves": false
+    ]
   },
   "moltres": {
     "dexId": 146,
@@ -5301,8 +5280,7 @@
       "skyattack",
       "rest",
       "substitute"
-    ],
-    "evolves": false
+    ]
   },
   "dratini": {
     "dexId": 147,
@@ -5469,34 +5447,27 @@
       "rest",
       "triattack",
       "substitute"
-    ],
-    "evolves": false
+    ]
   },
   "mew": {
     "dexId": 151,
     "name": "Mew",
     "types": ["psychic"],
-    "stats": {"hp": 100, "atk": 100, "def": 100, "spa": 100, "spd": 100, "spe": 100},
+    "stats": {"hp": 100, "atk": 100, "def": 100, "spa": 100, "spd": 0, "spe": 100},
     "moves": [
       "pound",
       "megapunch",
       "payday",
-      "firepunch",
-      "icepunch",
-      "thunderpunch",
       "razorwind",
       "swordsdance",
       "cut",
       "whirlwind",
       "fly",
       "megakick",
-      "headbutt",
       "horndrill",
       "bodyslam",
       "takedown",
       "doubleedge",
-      "roar",
-      "flamethrower",
       "watergun",
       "surf",
       "icebeam",
@@ -5522,14 +5493,12 @@
       "teleport",
       "mimic",
       "doubleteam",
-      "defensecurl",
       "reflect",
       "bide",
       "metronome",
       "selfdestruct",
       "eggbomb",
       "fireblast",
-      "waterfall",
       "swift",
       "skullbash",
       "softboiled",
@@ -5542,42 +5511,8 @@
       "rest",
       "rockslide",
       "triattack",
-      "substitute",
-      "thief",
-      "nightmare",
-      "snore",
-      "curse",
-      "protect",
-      "sludgebomb",
-      "mudslap",
-      "zapcannon",
-      "icywind",
-      "detect",
-      "sandstorm",
-      "gigadrain",
-      "endure",
-      "rollout",
-      "swagger",
-      "furycutter",
-      "steelwing",
-      "attract",
-      "sleeptalk",
-      "return",
-      "frustration",
-      "dynamicpunch",
-      "dragonbreath",
-      "sweetscent",
-      "irontail",
-      "hiddenpower",
-      "raindance",
-      "sunnyday",
-      "psychup",
-      "ancientpower",
-      "shadowball",
-      "rocksmash",
-      "whirlpool"
-    ],
-    "evolves": false
+      "substitute"
+    ]
   },
   "chikorita": {
     "dexId": 152,

@@ -128,14 +128,15 @@ export const calcStat = (
   dvs?: Partial<Stats>,
   statexp?: Partial<Stats>,
 ) => {
-  const s = Math.min(Math.ceil(Math.sqrt(statexp?.[stat] ?? 65535)), 255);
   const base = bases[stat];
-  // Gen 2 uses the Spc IV for SpA and SpD
-  let dv = dvs?.[stat === "spd" ? "spa" : stat] ?? 15;
+  // Gen 2 uses the Spc IV/EVs for SpA and SpD
+  stat = stat === "spd" ? "spa" : stat;
+
+  let dv = dvs?.[stat] ?? 15;
   if (stat === "hp") {
     dv = getHpDv(dvs);
   }
-
+  const s = Math.min(Math.ceil(Math.sqrt(statexp?.[stat] ?? 65535)), 255);
   return Math.floor((((base + dv) * 2 + s / 4) * level) / 100) + (stat === "hp" ? level + 10 : 5);
 };
 

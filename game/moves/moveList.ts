@@ -1945,7 +1945,6 @@ const internalMoveList = createMoveList({
     power: 20,
     acc: 100,
     effect: [99.6 /* 255/256 */, [["acc", -1]]],
-    effect_self: true,
   },
   octazooka: {
     kind: "damage",
@@ -2055,6 +2054,15 @@ const internalMoveList = createMoveList({
     power: 80,
     acc: 100,
     effect: [20, [["spd", -1]]],
+  },
+  sludgebomb: {
+    kind: "damage",
+    name: "Sludge Bomb",
+    pp: 10,
+    type: "poison",
+    power: 90,
+    acc: 100,
+    effect: [30, "psn"],
   },
   snore: {
     kind: "damage",

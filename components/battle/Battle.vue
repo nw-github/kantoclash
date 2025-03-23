@@ -12,7 +12,11 @@
             <span class="text-lg font-medium">Turn {{ currentTurnNo }}</span>
           </div>
           <UTooltip v-if="weather" :text="weatherData[weather].tooltip">
-            <UIcon class="size-6" :name="weatherData[weather].icon" />
+            <UIcon
+              class="size-6"
+              :class="weatherData[weather].class"
+              :name="weatherData[weather].icon"
+            />
           </UTooltip>
         </div>
 
@@ -258,9 +262,9 @@ import {GENERATIONS} from "~/game/gen";
 import type {Weather} from "~/game/utils";
 
 const weatherData = {
-  rain: {icon: "material-symbols:rainy", tooltip: "Raining"},
-  sun: {icon: "material-symbols:clear-day-rounded", tooltip: "Harsh Sun"},
-  sand: {icon: "mingcute:sandstorm-fill", tooltip: "Sandstorm"},
+  rain: {icon: "material-symbols:rainy", tooltip: "Raining", class: "text-sky-400"},
+  sun: {icon: "material-symbols:clear-day-rounded", tooltip: "Harsh Sun", class: "text-orange-500"},
+  sand: {icon: "mingcute:sandstorm-fill", tooltip: "Sandstorm", class: "text-amber-700"},
   // material-symbols:weather-hail
 } satisfies Record<Weather, any>;
 

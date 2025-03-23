@@ -202,9 +202,15 @@
           <div class="grid items-center grid-cols-[auto,1fr,auto,auto,auto,auto] gap-1 grow">
             <template v-for="(name, stat) in statKeys" :key="stat">
               <span class="px-1.5">{{ name }}</span>
-              <URange v-model="selectedPoke.evProxy[stat]" :min="0" :max="255" color="green" />
+              <URange
+                v-model="selectedPoke.evProxy[stat === 'spd' ? 'spa' : stat]"
+                :min="0"
+                :max="255"
+                color="green"
+                :disabled="stat === 'spd'"
+              />
               <span class="text-center px-1.5 min-w-8 text-xs">
-                {{ selectedPoke.evProxy[stat] }}
+                {{ selectedPoke.evProxy[stat === "spd" ? "spa" : stat] }}
               </span>
               <NumericInput
                 v-if="stat === 'hp'"

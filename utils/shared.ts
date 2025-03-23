@@ -28,6 +28,7 @@ type FormatInfo = {
 
 export const battleFormats = [
   "g2_standard",
+  "g2_randoms",
   "g2_metronome",
   "g1_standard",
   "g1_nfe",
@@ -41,7 +42,7 @@ export type FormatId = (typeof battleFormats)[number];
 
 export const formatInfo: Record<FormatId, FormatInfo> = {
   g2_standard: {
-    name: "[Gen 2] Standard Battle",
+    name: "[GSC] Standard Battle",
     icon: "akar-icons:sword",
     desc: "A standard battle allowing all Pokémon.",
     needsTeam: true,
@@ -49,8 +50,16 @@ export const formatInfo: Record<FormatId, FormatInfo> = {
     mods: {sleepClause: true, freezeClause: true, endlessBattle: true},
     generation: 2,
   },
+  g2_randoms: {
+    name: "[GSC] Random Battle",
+    icon: "mdi:dice-3-outline",
+    desc: "A standard Pokémon battle, but your team and sets are randomly generated.",
+    needsTeam: false,
+    mods: {sleepClause: true, freezeClause: true, endlessBattle: true},
+    generation: 2,
+  },
   g2_metronome: {
-    name: "[Gen 2] Random Metronome Battle",
+    name: "[GSC] Random Metronome Battle",
     icon: "mdi:metronome",
     desc: "A random battle where all Pokémon only know the move Metronome.",
     needsTeam: false,
