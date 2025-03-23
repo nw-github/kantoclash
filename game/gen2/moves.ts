@@ -184,7 +184,7 @@ export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
   sludge: {effect: [30, "psn"]},
   stomp: {flag: "minimize"},
   struggle: {type: "???", recoil: 4, pp: 1},
-  thunder: {ignore: ["fly", "bounce"], effect: [30, "par"]},
+  thunder: {ignore: ["fly", "bounce"], effect: [30, "par"], rainAcc: true},
   triattack: {flag: "tri_attack"},
   wingattack: {power: 60},
 };

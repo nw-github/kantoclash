@@ -275,6 +275,10 @@ export const describeMove = (gen: Generation, id: MoveId) => {
       buf += "Fails if the user is not asleep. ";
     }
 
+    if (move.selfThaw) {
+      buf += "Thaws out the user if used while frozen. ";
+    }
+
     return buf.length ? buf : "No additional effects.";
   } else if (move.kind === "status") {
     return statusTable[move.status] + ". ";
