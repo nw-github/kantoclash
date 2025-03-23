@@ -1287,10 +1287,9 @@ const internalMoveList = createMoveList({
     protect: true,
     exec(battle, user, target) {
       if (
-        !target.v.lastMove ||
         target.v.lastMoveIndex === undefined ||
         target.v.encore ||
-        target.v.lastMove.noEncore ||
+        battle.gen.moveList[target.base.moves[target.v.lastMoveIndex]].noEncore ||
         !target.base.pp[target.v.lastMoveIndex]
       ) {
         return battle.info(user, "fail_generic");

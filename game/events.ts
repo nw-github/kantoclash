@@ -186,7 +186,8 @@ export type InfoReason =
   | "future_sight"
   | "future_sight_release"
   | "withdraw"
-  | "spikes";
+  | "spikes"
+  | "spin_spikes";
 
 type InfoEvent = {type: "info"; src: PlayerId; why: InfoReason};
 

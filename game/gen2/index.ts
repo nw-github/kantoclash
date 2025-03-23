@@ -1,7 +1,7 @@
 import {createDefu} from "defu";
 import {GENERATION1, type CalcDamageParams, type Generation} from "../gen1";
 import type {Species, SpeciesId} from "../species";
-import {floatTo255, clamp, scaleAccuracy255, idiv, imul, VolatileFlag} from "../utils";
+import {floatTo255, scaleAccuracy255, idiv, imul, VolatileFlag} from "../utils";
 import {moveFunctionPatches, movePatches} from "./moves";
 import __speciesPatches from "./species.json";
 import type {ActivePokemon, Battle} from "../battle";
@@ -185,7 +185,7 @@ const createGeneration = (): Generation => {
 
       return true;
     },
-    getCritChance(user, hc) {
+    tryCrit(battle, user, hc) {
       let stages = hc ? 2 : 0;
       if (user.v.hasFlag(VolatileFlag.focus)) {
         stages++;
@@ -195,8 +195,9 @@ const createGeneration = (): Generation => {
       if (user.base.item === "scope_lens") {
         stages++;
       }
+      leek & farfetchd, lucky punch & chansey
       */
-      return floatTo255(critStages[clamp(stages, 0, 4)]);
+      return battle.rand255Good(floatTo255(critStages[Math.min(stages, 4)] * 100));
     },
     checkAccuracy(move, battle, user, target) {
       if (target.v.invuln) {
@@ -228,17 +229,22 @@ const createGeneration = (): Generation => {
     getDamageVariables(special, user, target, isCrit) {
       const [atks, defs] = special ? (["spa", "spd"] as const) : (["atk", "def"] as const);
 
-      const ls = special && !!target.owner.screens.light_screen;
-      const reflect = !special && !!target.owner.screens.reflect;
+      if (isCrit && target.v.stages[defs] < user.v.stages[atks]) {
+        isCrit = false;
+      }
+      const screen = !!target.owner.screens[special ? "light_screen" : "reflect"] && !isCrit;
 
       let atk = user.getStat(atks, isCrit);
-      // Crits ignore defensive boosts but not drops
-      let def = target.getStat(defs, isCrit && target.v.stages[defs] > 0, true, ls || reflect);
+      let def = target.getStat(defs, isCrit, true, screen);
       if (atk >= 256 || def >= 256) {
         atk = Math.max(Math.floor(atk / 4) % 256, 1);
         def = Math.max(Math.floor(def / 4) % 256, 1);
       }
       return [atk, def] as const;
+    },
+    handleCrashDamage(battle, user, target, dmg) {
+      dmg = Math.min(dmg, target.base.hp);
+      user.damage(Math.floor(dmg / 8), user, battle, false, "crash", true);
     },
     validSpecies: species => species.dexId <= 251,
     getSleepTurns: battle => battle.rng.int(1, 6),

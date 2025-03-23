@@ -1,24 +1,19 @@
 import type {Move, MoveFunctions, MoveId} from "../moves";
 import {stageKeys} from "../utils";
+import {exec as execDamagingMove} from "./damaging";
 
-// FLAG: drain        | always misses against substitute in Gen 2 | (checked before the accuracy check of Lock-On)
-// FLAG: multi        | all hits are now independently damage calcd, continues after breaking sub,  final strike only kings rock
-// FLAG: explosion    | now faints when hitting a substitute/protect, end of turn damage happens after, defense halving applies to self-inflicted confusion damage
+// FLAG: multi        | final strike only kings rock
+// FLAG: explosion    | defense halving applies to self-inflicted confusion damage
 // FLAG: ohko         | new formula: https://bulbapedia.bulbagarden.net/wiki/Fissure_(move), counterable even on miss
 // FLAG: level, dmg, super_fang   | affected by type immunities
-// FLAG: multi_turn   | 2-3 turns instead of 3-4
 // FLAG: rapid_spin, thief, triple, fury_cutter, rollout   | implement
 
-// Normal type moves can par normal types, etc.
-// User takes recoil when breaking a substitute
 // Hyper beam must now always recharge (substitute, faint), and trapping moves dont reset it
 // Mist now applies to secondary effects of moves
-// Twineedle can poison steel types
 
 // Partial trapping
 // Counter is sane now
 // Defense curl doubles rollout
-// Crash damage is now 1/8
 // leech seed doesn't interact with toxic N and drains 1/8
 
 /*
@@ -87,6 +82,9 @@ export const moveFunctionPatches: Partial<MoveFunctions> = {
       }
     },
   },
+  damage: {
+    exec: execDamagingMove,
+  },
 };
 
 export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
@@ -125,7 +123,7 @@ export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
 
       const indexInMoves = target.v.lastMoveIndex!;
 
-      target.v.disabled = {indexInMoves, turns: battle.rng.int(1, 8)};
+      target.v.disabled = {indexInMoves, turns: battle.rng.int(2, 8) + 1};
       battle.event({
         type: "disable",
         src: target.owner.id,

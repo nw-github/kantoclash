@@ -712,7 +712,6 @@ export class Battle {
     return (
       (move.kind === "stage" && move.acc) ||
       move.kind === "confuse" ||
-      move.kind === "damage" ||
       move.kind === "status" ||
       move.kind === "phaze"
     );

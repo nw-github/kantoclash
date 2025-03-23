@@ -1,7 +1,7 @@
 import type {CustomMove, Move} from ".";
 import type {InfoReason} from "../events";
 import {VolatileFlag} from "../utils";
-import {exec as execDamagingMove, use as useDamagingMove} from "./damaging";
+import {exec as execDamagingMove, use as useDamagingMove} from "../gen1/damaging";
 
 type UseMoveFn = Required<CustomMove>["use"];
 type ExecMoveFn = CustomMove["exec"];

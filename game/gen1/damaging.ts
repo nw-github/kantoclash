@@ -1,52 +1,8 @@
 import type {ActivePokemon, Battle} from "../battle";
-import type {BaseMove} from "./index";
-import type {Pokemon, Status} from "../pokemon";
-import {isSpecial, type Stages, randChoiceWeighted, type Type, VolatileFlag} from "../utils";
+import {isSpecial, randChoiceWeighted, VolatileFlag} from "../utils";
 import type {Random} from "random";
 import type {CalcDamageParams} from "../gen";
-
-type Effect = Status | [Stages, number][] | "confusion" | "flinch";
-
-type Flag =
-  | "high_crit"
-  | "drain"
-  | "explosion"
-  | "recharge"
-  | "crash"
-  | "double"
-  | "triple"
-  | "multi"
-  | "dream_eater"
-  | "payday"
-  | "multi_turn"
-  | "rage"
-  | "trap"
-  | "ohko"
-  | "flail"
-  | "magnitude"
-  | "false_swipe"
-  | "tri_attack"
-  | "rapid_spin"
-  | "thief"
-  | "fury_cutter"
-  | "rollout";
-
-export interface DamagingMove extends BaseMove {
-  readonly kind: "damage";
-  readonly power: number;
-  readonly flag?: Flag;
-  readonly effect?: [number, Effect];
-  readonly effect_self?: boolean;
-  /** Recoil: max(1 / recoil, 1) */
-  readonly recoil?: number;
-  readonly punish?: boolean;
-  readonly charge?: boolean | "sun" | "invuln" | [Stages, number][];
-  readonly getPower?: (user: Pokemon) => number;
-  readonly getType?: (user: Pokemon) => Type;
-  readonly getDamage?:
-    | number
-    | ((battle: Battle, user: ActivePokemon, target: ActivePokemon, eff: number) => number | false);
-}
+import type {DamagingMove} from "../moves";
 
 export function use(
   this: DamagingMove,
@@ -106,6 +62,11 @@ export function exec(
     target.v.recharge = undefined;
   }
 
+  if (target.v.hasFlag(VolatileFlag.protect)) {
+    battle.info(target, "protect");
+    return false;
+  }
+
   // eslint-disable-next-line prefer-const
   let {dmg, isCrit, eff, endured} = getDamage(this, battle, user, target);
   if (dmg === 0 || !battle.checkAccuracy(this, user, target)) {
@@ -125,12 +86,7 @@ export function exec(
     }
 
     if (this.flag === "crash") {
-      // https://www.smogon.com/dex/rb/moves/high-jump-kick/
-      if (user.v.substitute && target.v.substitute) {
-        target.damage(1, user, battle, false, "attacked");
-      } else if (!user.v.substitute) {
-        user.damage(1, user, battle, false, "crash", true);
-      }
+      battle.gen.handleCrashDamage(battle, user, target, dmg);
     } else if (this.flag === "explosion") {
       // according to showdown, explosion also boosts rage even on miss/failure
       target.handleRage(battle);
@@ -271,12 +227,17 @@ export function exec(
   }
 }
 
-function getDamage(self: DamagingMove, battle: Battle, user: ActivePokemon, target: ActivePokemon) {
+export function getDamage(
+  self: DamagingMove,
+  battle: Battle,
+  user: ActivePokemon,
+  target: ActivePokemon,
+) {
   const type = self.getType ? self.getType(user.base) : self.type;
   let pow = self.getPower ? self.getPower(user.base) : self.power;
   let eff = battle.getEffectiveness(type, target);
   let dmg = 0;
-  let isCrit = battle.rand255(battle.gen.getCritChance(user, self.flag === "high_crit"));
+  let isCrit = battle.gen.tryCrit(battle, user, self.flag === "high_crit");
   if (self.flag === "dream_eater" && target.base.status !== "slp") {
     eff = 1;
     isCrit = false;
@@ -356,6 +317,6 @@ function trapTarget(self: DamagingMove, rng: Random, user: ActivePokemon, target
   user.v.trapping = {move: self, turns: multiHitCount(rng) - 1};
 }
 
-function multiHitCount(rng: Random) {
+export function multiHitCount(rng: Random) {
   return randChoiceWeighted(rng, [2, 3, 4, 5], [37.5, 37.5, 12.5, 12.5]);
 }

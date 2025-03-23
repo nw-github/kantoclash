@@ -101,6 +101,7 @@ export const infoMessage: Record<InfoReason, string> = {
   future_sight_release: "{} took the Future Sight attack!",
   withdraw: "({} is trying to switch out...)",
   spikes: "Spikes were scattered all around the feet of {tl}!",
+  spin_spikes: "Rapid Spin blew away the Spikes around {tl}'s feet!",
 };
 
 export const weatherMessage: Record<Weather, Record<WeatherEvent["kind"], string>> = {

@@ -565,6 +565,9 @@ const runTurn = async (live: boolean, turnIdx: number) => {
       } else if (e.why === "spikes") {
         sides[e.src] ??= {};
         sides[e.src].spikes = true;
+      } else if (e.why === "spin_spikes") {
+        sides[e.src] ??= {};
+        sides[e.src].spikes = false;
       }
     } else if (e.type === "transform") {
       const target = players[e.target].active!;

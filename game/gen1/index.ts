@@ -78,13 +78,13 @@ const checkAccuracy = (move: Move, battle: Battle, user: ActivePokemon, target: 
   return true;
 };
 
-const getCritChance = (user: ActivePokemon, hc: boolean) => {
+const tryCrit = (battle: Battle, user: ActivePokemon, hc: boolean) => {
   const baseSpe = user.base.species.stats.spe;
   const focus = user.v.hasFlag(VolatileFlag.focus);
   if (hc) {
-    return focus ? 4 * Math.floor(baseSpe / 4) : 8 * Math.floor(baseSpe / 2);
+    return battle.rand255(focus ? 4 * Math.floor(baseSpe / 4) : 8 * Math.floor(baseSpe / 2));
   } else {
-    return Math.floor(focus ? baseSpe / 8 : baseSpe / 2);
+    return battle.rand255(Math.floor(focus ? baseSpe / 8 : baseSpe / 2));
   }
 };
 
@@ -180,6 +180,20 @@ const isValidMove = (battle: Battle, user: ActivePokemon, move: MoveId, i: numbe
   }
 
   return true;
+};
+
+const handleCrashDamage = (
+  battle: Battle,
+  user: ActivePokemon,
+  target: ActivePokemon,
+  _dmg: number,
+) => {
+  // https://www.smogon.com/dex/rb/moves/high-jump-kick/
+  if (user.v.substitute && target.v.substitute) {
+    target.damage(1, user, battle, false, "attacked");
+  } else if (!user.v.substitute) {
+    user.damage(1, user, battle, false, "crash", true);
+  }
 };
 
 const beforeUseMove = (battle: Battle, move: Move, user: ActivePokemon, target: ActivePokemon) => {
@@ -304,10 +318,11 @@ const createGeneration = () => {
     canSubstitute: (user: ActivePokemon, hp: number) => hp <= user.base.hp,
     beforeUseMove,
     isValidMove,
-    getCritChance,
+    tryCrit,
     checkAccuracy,
     calcDamage,
     getDamageVariables,
+    handleCrashDamage,
     validSpecies: (species: Species) => species.dexId <= 151,
     getMaxPP: (move: Move) => (move.pp === 1 ? 1 : Math.min(Math.floor((move.pp * 8) / 5), 61)),
     getSleepTurns(battle: Battle) {

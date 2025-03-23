@@ -2,9 +2,8 @@ import type {ActivePokemon, Battle, Screen} from "../battle";
 import type {FailReason, RecoveryReason} from "../events";
 import type {Pokemon, Status} from "../pokemon";
 import type {Stages, Type, VolatileFlag, Weather} from "../utils";
-import type {DamagingMove} from "./damaging";
 
-export * from "./damaging";
+export * from "../gen1/damaging";
 export * from "./functions";
 export * from "./moveList";
 
@@ -104,6 +103,23 @@ export interface LockOnMove extends BaseMove {
   readonly kind: "lockOn";
 }
 
+export interface DamagingMove extends BaseMove {
+  readonly kind: "damage";
+  readonly power: number;
+  readonly flag?: Flag;
+  readonly effect?: [number, Effect];
+  readonly effect_self?: boolean;
+  /** Recoil: max(1 / recoil, 1) */
+  readonly recoil?: number;
+  readonly punish?: boolean;
+  readonly charge?: boolean | "sun" | "invuln" | [Stages, number][];
+  readonly getPower?: (user: Pokemon) => number;
+  readonly getType?: (user: Pokemon) => Type;
+  readonly getDamage?:
+    | number
+    | ((battle: Battle, user: ActivePokemon, target: ActivePokemon, eff: number) => number | false);
+}
+
 export type Move =
   | CustomMove
   | VolatileFlagMove
@@ -120,3 +136,29 @@ export type Move =
   | ProtectMove
   | PreventEscapeMove
   | LockOnMove;
+
+type Effect = Status | [Stages, number][] | "confusion" | "flinch";
+
+type Flag =
+  | "high_crit"
+  | "drain"
+  | "explosion"
+  | "recharge"
+  | "crash"
+  | "double"
+  | "triple"
+  | "multi"
+  | "dream_eater"
+  | "payday"
+  | "multi_turn"
+  | "rage"
+  | "trap"
+  | "ohko"
+  | "flail"
+  | "magnitude"
+  | "false_swipe"
+  | "tri_attack"
+  | "rapid_spin"
+  | "thief"
+  | "fury_cutter"
+  | "rollout";

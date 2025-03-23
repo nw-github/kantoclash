@@ -1,0 +1,167 @@
+import type {ActivePokemon, Battle} from "../battle";
+import {getDamage, multiHitCount, type DamagingMove} from "../moves";
+import {VolatileFlag} from "../utils";
+
+export function exec(
+  this: DamagingMove,
+  battle: Battle,
+  user: ActivePokemon,
+  target: ActivePokemon,
+) {
+  if (this.flag === "multi_turn" && !user.v.thrashing) {
+    user.v.thrashing = {move: this, turns: battle.rng.int(2, 3) - 1};
+  } else if (user.v.thrashing && user.v.thrashing.turns !== -1) {
+    if (--user.v.thrashing.turns === 0) {
+      user.v.thrashing = undefined;
+      if (!user.owner.screens.safeguard) {
+        user.confuse(battle, true);
+      }
+    }
+  }
+
+  if (this.flag === "drain" && target.v.substitute) {
+    // does failure display as a miss like in gen 1?
+    return battle.info(user, "fail_generic");
+  }
+
+  const protect = target.v.hasFlag(VolatileFlag.protect);
+  // eslint-disable-next-line prefer-const
+  let {dmg, isCrit, eff, endured} = getDamage(this, battle, user, target);
+  if (eff === 0) {
+    return battle.info(target, "immune");
+  } else if (dmg === 0) {
+    return battle.info(user, "fail_generic");
+  } else if (protect || !battle.checkAccuracy(this, user, target)) {
+    if (protect) {
+      return battle.info(target, "protect");
+    }
+
+    if (this.flag === "crash") {
+      battle.gen.handleCrashDamage(battle, user, target, dmg);
+    } else if (this.flag === "explosion") {
+      user.damage(user.base.hp, user, battle, false, "explosion", true);
+    }
+    return;
+  }
+
+  let hadSub = target.v.substitute !== 0;
+  // eslint-disable-next-line prefer-const
+  let {dealt, dead, event} = target.damage(
+    dmg,
+    user,
+    battle,
+    isCrit,
+    this.flag === "ohko" ? "ohko" : "attacked",
+    false,
+    eff,
+  );
+
+  if (this.flag === "multi" || this.flag === "double") {
+    event.hitCount = 1;
+  }
+
+  if (this.recoil) {
+    dead =
+      user.damage(Math.max(Math.floor(dealt / this.recoil), 1), user, battle, false, "recoil", true)
+        .dead || dead;
+  }
+
+  if (this.flag === "drain" || this.flag === "dream_eater") {
+    // https://www.smogon.com/forums/threads/past-gens-research-thread.3506992/#post-5878612
+    //  - DRAIN HP SIDE EFFECT
+    const dmg = Math.max(Math.floor(dealt / 2), 1);
+    target.lastDamage = dmg;
+    user.recover(dmg, target, battle, "drain");
+  } else if (this.flag === "explosion") {
+    dead = user.damage(user.base.hp, user, battle, false, "explosion", true).dead || dead;
+  } else if (this.flag === "double" || this.flag === "multi") {
+    const count = this.flag === "double" ? 2 : multiHitCount(battle.rng);
+    for (let hits = 1; !dead && !endured && hits < count; hits++) {
+      hadSub = target.v.substitute !== 0;
+      ({dmg, isCrit, endured} = getDamage(this, battle, user, target));
+
+      event.hitCount = 0;
+      ({dead, event} = target.damage(dmg, user, battle, isCrit, "attacked", false, eff));
+      event.hitCount = hits + 1;
+    }
+  } else if (this.flag === "payday") {
+    battle.info(user, "payday");
+  } else if (this.flag === "rapid_spin" && user.base.hp) {
+    if (user.owner.spikes) {
+      user.owner.spikes = false;
+      battle.info(user, "spin_spikes");
+    }
+
+    if (user.v.hasFlag(VolatileFlag.seeded)) {
+      battle.event({type: "sv", volatiles: [user.clearFlag(VolatileFlag.seeded)]});
+    }
+  }
+
+  if (endured) {
+    battle.info(target, "endure_hit");
+  }
+
+  if (dead && target.v.hasFlag(VolatileFlag.destinyBond)) {
+    user.damage(user.base.hp, target, battle, false, "destiny_bond", true);
+    // user should die first
+    battle.checkFaint(target, user);
+  }
+
+  if (this.flag === "recharge") {
+    user.v.recharge = this;
+  }
+
+  if (dead) {
+    return;
+  }
+
+  if (this.flag === "trap") {
+    // trapTarget(this, battle.rng, user, target);
+  }
+
+  if (this.effect) {
+    const [chance, effect] = this.effect;
+    if (effect === "brn" && target.base.status === "frz") {
+      target.unstatus(battle, "thaw");
+      // TODO: can you thaw and then burn?
+      return;
+    } else if (!battle.rand100(chance) || hadSub) {
+      return;
+    }
+
+    if (effect === "confusion") {
+      if (!target.v.confusion && !user.owner.screens.safeguard) {
+        target.confuse(battle);
+      }
+    } else if (Array.isArray(effect)) {
+      const poke = this.effect_self ? user : target;
+      poke.modStages(effect, battle);
+    } else if (effect === "flinch") {
+      target.v.flinch = true;
+    } else {
+      if (target.owner.screens.safeguard || target.base.status) {
+        return;
+      } else if (effect === "brn" && target.v.types.includes("fire")) {
+        return;
+      } else if (effect === "frz" && target.v.types.includes("ice")) {
+        return;
+      } else if ((effect === "psn" || effect === "tox") && target.v.types.includes("psn")) {
+        return;
+      } else if (
+        (effect === "psn" || effect === "tox") &&
+        target.v.types.includes("steel") &&
+        battle.moveIdOf(this) !== "twineedle"
+      ) {
+        target.status(effect, battle);
+      }
+    }
+  } else if (this.flag === "tri_attack") {
+    const choice = battle.rng.choice(["brn", "par", "frz"] as const)!;
+    if (target.base.status === "frz" && choice === "brn") {
+      target.unstatus(battle, "thaw");
+    } else if (!target.base.status && !target.owner.screens.safeguard && battle.rand100(20)) {
+      // In Gen 2, tri attack can burn fire types and freeze ice types
+      target.status(choice, battle);
+    }
+  }
+}
