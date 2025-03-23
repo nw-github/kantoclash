@@ -9,13 +9,13 @@ export function exec(
   target: ActivePokemon,
 ) {
   if (this.flag === "multi_turn" && !user.v.thrashing) {
-    user.v.thrashing = {move: this, turns: battle.rng.int(2, 3) - 1};
-  } else if (user.v.thrashing && user.v.thrashing.turns !== -1) {
-    if (--user.v.thrashing.turns === 0) {
-      user.v.thrashing = undefined;
-      if (!user.owner.screens.safeguard) {
-        user.confuse(battle, true);
-      }
+    user.v.thrashing = {move: this, turns: battle.rng.int(2, 3)};
+  } else if (this.flag === "rollout") {
+    if (!user.v.thrashing) {
+      user.v.thrashing = {move: this, turns: 5};
+      user.v.rollout = 1;
+    } else {
+      user.v.rollout++;
     }
   }
 
@@ -26,11 +26,22 @@ export function exec(
   const protect = target.v.hasFlag(VolatileFlag.protect);
   // eslint-disable-next-line prefer-const
   let {dmg, isCrit, eff, realEff, endured} = getDamage(this, battle, user, target);
+  if (user.v.thrashing && --user.v.thrashing.turns === 0) {
+    user.v.thrashing = undefined;
+    user.v.rollout = 0;
+    if (!user.owner.screens.safeguard && this.flag !== "rollout") {
+      user.confuse(battle, true);
+    }
+  }
+
   if (eff === 0 || realEff === 0 || (this.flag === "ohko" && user.base.level < target.base.level)) {
+    user.v.rollout = 0;
     return battle.info(target, "immune");
   } else if (dmg === 0) {
+    user.v.rollout = 0;
     return battle.info(user, "fail_generic");
   } else if (protect || !battle.checkAccuracy(this, user, target)) {
+    user.v.rollout = 0;
     if (protect) {
       return battle.info(target, "protect");
     }

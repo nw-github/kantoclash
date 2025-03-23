@@ -10,7 +10,7 @@ import type {
   VictoryEvent,
   ChangedVolatiles,
 } from "./events";
-import type {MoveId, Move} from "./moves";
+import type {MoveId, Move, DamagingMove} from "./moves";
 import {Pokemon, type Status, type ValidatedPokemonDesc} from "./pokemon";
 import {
   arraysEqual,
@@ -509,7 +509,7 @@ export class Battle {
       move: moveId,
       type: "move",
       src: user.owner.id,
-      thrashing: user.v.thrashing ? true : undefined,
+      thrashing: user.v.thrashing && user.v.thrashing.move.flag !== "rollout" ? true : undefined,
     });
     user.v.lastMove = move;
 
@@ -1259,15 +1259,18 @@ class Volatiles {
   faintedBetweenTurns = false;
   inPursuit = false;
   inBatonPass = false;
+  usedDefenseCurl = false;
+  usedMinimize = false;
   protectCount = 0;
   perishCount = 0;
+  rollout = 0;
   meanLook?: ActivePokemon;
   attract?: ActivePokemon;
   lastMove?: Move;
   lastMoveIndex?: number;
   charging?: Move;
   recharge?: Move;
-  thrashing?: {move: Move; turns: number; acc?: number};
+  thrashing?: {move: DamagingMove; turns: number; acc?: number};
   bide?: {move: Move; turns: number; dmg: number};
   disabled?: {turns: number; indexInMoves: number};
   encore?: {turns: number; indexInMoves: number};

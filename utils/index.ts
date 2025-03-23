@@ -203,7 +203,7 @@ const flagDesc: Record<NonNullable<DamagingMove["flag"]>, string> = {
   thief: "Has a 99.6% chance to steal the target's held item if the user does not have one. ",
   rollout:
     "Locks the user in for 5 turns, doubling in power for each consecutive hit. Boosted if " +
-    "Defense Curl was previousl used by the user. ",
+    "Defense Curl was previously used by the user. ",
   triple:
     "Hits up to 3 times. The second hit has a damage multiplier of 2, and the third hit has " +
     "a damage multiplier of 3. ",

@@ -287,6 +287,11 @@ export function getDamage(
 
     const explosion = self.flag === "explosion" ? 2 : 1;
     const [atk, def] = battle.gen.getDamageVariables(isSpecial(type), user, target, isCrit);
+    let moveMod = 1;
+    if (self.flag === "rollout") {
+      moveMod = 2 ** (user.v.rollout + +user.v.usedDefenseCurl);
+    }
+
     dmg = battle.gen.calcDamage({
       lvl: user.base.level,
       pow,
@@ -297,6 +302,7 @@ export function getDamage(
       rand,
       eff,
       weather,
+      moveMod,
       doubleDmg,
     });
 

@@ -85,6 +85,10 @@ export const moveFunctions: MoveFunctions = {
         target = user;
       }
 
+      const id = battle.moveIdOf(this)!;
+      user.v.usedMinimize = user.v.usedMinimize || id === "minimize";
+      user.v.usedDefenseCurl = user.v.usedDefenseCurl || id === "defensecurl";
+
       if (!target.modStages(this.stages, battle, user)) {
         battle.info(target, "fail_generic");
       }
