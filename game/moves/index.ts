@@ -162,4 +162,5 @@ type Flag =
   | "thief"
   | "fury_cutter"
   | "rollout"
-  | "minimize";
+  | "minimize"
+  | "present";

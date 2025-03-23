@@ -83,7 +83,8 @@ export type RecoveryReason =
   | "rest"
   | "seeder"
   | "pain_split"
-  | "pain_split_enemy";
+  | "pain_split_enemy"
+  | "present";
 
 export type DamageEvent = {
   type: "damage";
@@ -192,7 +193,8 @@ export type InfoReason =
   | "future_sight_release"
   | "withdraw"
   | "spikes"
-  | "spin_spikes";
+  | "spin_spikes"
+  | "fail_present";
 
 type InfoEvent = {type: "info"; src: PlayerId; why: InfoReason};
 

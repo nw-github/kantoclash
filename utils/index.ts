@@ -211,6 +211,8 @@ const flagDesc: Record<NonNullable<DamagingMove["flag"]>, string> = {
     "a damage multiplier of 3. ",
   fury_cutter: "Base power doubles for each consecutive use, up to a maximum of 160. ",
   minimize: "Doubles damage against a target that has previously used minimize. ",
+  present:
+    "Deals damage with a base power of 40, 80, or 120, or heals the target for 1/4 its max HP. ",
 };
 
 const formatStages = (stages: [Stages, number][]) => {

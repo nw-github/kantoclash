@@ -1,6 +1,6 @@
 import type {ActivePokemon, Battle} from "../battle";
 import {getDamage, multiHitCount, type DamagingMove} from "../moves";
-import {VolatileFlag} from "../utils";
+import {idiv, VolatileFlag} from "../utils";
 
 export function exec(
   this: DamagingMove,
@@ -35,6 +35,15 @@ export function exec(
     if (!user.owner.screens.safeguard && this.flag !== "rollout") {
       user.confuse(battle, true);
     }
+  }
+
+  if (dmg < 0) {
+    if (target.base.hp === target.base.stats.hp) {
+      return battle.info(target, "fail_present");
+    }
+
+    target.recover(idiv(target.base.stats.hp, 4), user, battle, "present");
+    return;
   }
 
   if (eff === 0 || realEff === 0 || (this.flag === "ohko" && user.base.level < target.base.level)) {

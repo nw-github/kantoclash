@@ -1448,7 +1448,6 @@ const internalMoveList = createMoveList({
       ]);
     },
   },
-  // present: {},
   psychup: {
     name: "Psych Up",
     pp: 10,
@@ -1954,6 +1953,15 @@ const internalMoveList = createMoveList({
     power: 40,
     acc: 100,
     effect: [10, "frz"],
+  },
+  present: {
+    kind: "damage",
+    name: "Present",
+    pp: 15,
+    power: 0,
+    type: "normal",
+    acc: 90,
+    flag: "present",
   },
   pursuit: {
     kind: "damage",

@@ -1,5 +1,5 @@
 import type {ActivePokemon, Battle} from "../battle";
-import {isSpecial, randChoiceWeighted, VolatileFlag} from "../utils";
+import {idiv, isSpecial, randChoiceWeighted, VolatileFlag} from "../utils";
 import type {Random} from "random";
 import type {CalcDamageParams} from "../gen";
 import type {DamagingMove} from "../moves";
@@ -69,6 +69,15 @@ export function exec(
 
   // eslint-disable-next-line prefer-const
   let {dmg, isCrit, eff, endured} = getDamage(this, battle, user, target);
+  if (dmg < 0) {
+    if (target.base.hp === target.base.stats.hp) {
+      return battle.info(target, "fail_present");
+    }
+
+    target.recover(idiv(target.base.stats.hp, 4), user, battle, "present");
+    return;
+  }
+
   if (dmg === 0 || !battle.checkAccuracy(this, user, target)) {
     if (dmg === 0) {
       if (eff === 0) {
@@ -267,6 +276,12 @@ export function getDamage(
       const magnitude = battle.rng.int(4, 10);
       pow = [10, 30, 50, 70, 90, 110, 150][magnitude - 4];
       battle.event({type: "magnitude", magnitude});
+    } else if (self.flag === "present") {
+      const result = randChoiceWeighted(battle.rng, [40, 80, 120, -4], [40, 30, 10, 20]);
+      if (result < 0) {
+        return {dmg: -1, isCrit: false, eff: 1, endured: false, realEff: 1};
+      }
+      pow = result;
     }
 
     let weather: CalcDamageParams["weather"];
