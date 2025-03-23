@@ -249,9 +249,11 @@ export function getDamage(
   const realEff = eff;
   let dmg = 0;
   let isCrit = battle.gen.tryCrit(battle, user, self.flag === "high_crit");
+  let fail = false;
   if (self.flag === "dream_eater" && target.base.status !== "slp") {
     eff = 1;
     isCrit = false;
+    fail = true;
   } else if (typeof self.getDamage === "number") {
     dmg = self.getDamage;
     eff = 1;
@@ -266,6 +268,7 @@ export function getDamage(
       eff = 1;
     } else {
       eff = 1;
+      fail = true;
     }
   } else {
     let rand: number | false | Random = battle.rng;
@@ -342,7 +345,7 @@ export function getDamage(
     dmg = Math.max(target.base.hp - 1, 0);
   }
 
-  return {dmg, isCrit, eff, endured, realEff};
+  return {dmg, isCrit, eff, endured, realEff, fail};
 }
 
 function trapTarget(self: DamagingMove, rng: Random, user: ActivePokemon, target: ActivePokemon) {

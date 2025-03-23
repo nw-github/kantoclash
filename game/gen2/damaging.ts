@@ -27,7 +27,7 @@ export function exec(
 
   const protect = target.v.hasFlag(VolatileFlag.protect);
   // eslint-disable-next-line prefer-const
-  let {dmg, isCrit, eff, realEff, endured} = getDamage(this, battle, user, target);
+  let {dmg, isCrit, eff, realEff, endured, fail} = getDamage(this, battle, user, target);
   if (user.v.thrashing && --user.v.thrashing.turns === 0) {
     user.v.thrashing = undefined;
     user.v.rollout = 0;
@@ -50,7 +50,7 @@ export function exec(
     user.v.rollout = 0;
     user.v.furyCutter = 0;
     return battle.info(target, "immune");
-  } else if (dmg === 0) {
+  } else if (fail) {
     user.v.rollout = 0;
     user.v.furyCutter = 0;
     return battle.info(user, "fail_generic");
@@ -218,6 +218,8 @@ export function exec(
         target.v.types.includes("steel") &&
         battle.moveIdOf(this) !== "twineedle"
       ) {
+        return;
+      } else {
         target.status(effect, battle);
       }
     }

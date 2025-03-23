@@ -22,3 +22,8 @@ export type ClientPlayer = {
   nFainted: number;
   active?: ClientActivePokemon;
 };
+
+export const gen1Gender: Partial<Record<SpeciesId, Gender>> = {
+  "nidoran-f": "female",
+  "nidoran-m": "male",
+};

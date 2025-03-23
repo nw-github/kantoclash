@@ -1,7 +1,10 @@
 <template>
   <div class="flex flex-col gap-1.5 p-2 text-sm sm:text-md">
     <div class="flex justify-between items-center gap-4">
-      <span>{{ poke.species.name }}</span>
+      <div class="flex gap-0.5 items-center justify-center">
+        <span>{{ poke.species.name }}</span>
+        <GenderIcon class="size-4" :gender="poke.gender ?? gen1Gender[poke.speciesId]" />
+      </div>
 
       <div class="flex gap-1">
         <TypeBadge v-for="type in poke.species.types" :key="type" :type image />

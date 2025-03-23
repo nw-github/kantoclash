@@ -172,11 +172,6 @@ const ground = ref<HTMLDivElement>();
 const pbRow = ref(0);
 const pbCol = ref(3);
 
-const gen1Gender: Partial<Record<SpeciesId, Gender>> = {
-  "nidoran-f": "female",
-  "nidoran-m": "male",
-};
-
 const offsX = (number: number) => `-${number * 42 - number}px`;
 const offsY = (number: number) => `-${number * 42 - number * 2}px`;
 
