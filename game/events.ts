@@ -29,7 +29,8 @@ type AnyEvent =
   | BugEvent
   | SpiteEvent
   | SketchEvent
-  | PerishSongEvent;
+  | PerishSongEvent
+  | TrapEvent;
 
 export type ChangedVolatiles = {id: PlayerId; v: NullOrOptional<ClientVolatiles>}[];
 
@@ -72,7 +73,8 @@ export type DamageReason =
   | "pain_split"
   | "perish_song"
   | "future_sight"
-  | "spikes";
+  | "spikes"
+  | "trap_eot";
 
 export type RecoveryReason =
   | "drain"
@@ -90,8 +92,10 @@ export type DamageEvent = {
   hpPercentAfter: number;
   hpBefore?: number;
   hpAfter?: number;
-  isCrit: boolean;
+  isCrit?: boolean;
   why: DamageReason;
+  /* when why === "trap", this is a moveId */
+  move?: string;
   /**
    * undefined: this is the one and only hit of a normal attack
    * 0:         this is one, non-final hit of a multi-hit attack
@@ -210,6 +214,14 @@ type DisableEvent = {type: "disable"; src: PlayerId; move: MoveId};
 type ChargeEvent = {type: "charge"; src: PlayerId; move: MoveId};
 type SketchEvent = {type: "sketch"; src: PlayerId; move: MoveId};
 type MimicEvent = {type: "mimic"; src: PlayerId; move: MoveId};
+
+type TrapEvent = {
+  type: "trap";
+  kind: "start" | "end";
+  src: PlayerId;
+  target: PlayerId;
+  move: MoveId;
+};
 
 type ConversionEvent = {type: "conversion"; src: PlayerId; target?: PlayerId; types: Type[]};
 

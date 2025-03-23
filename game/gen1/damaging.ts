@@ -236,6 +236,7 @@ export function getDamage(
   const type = self.getType ? self.getType(user.base) : self.type;
   let pow = self.getPower ? self.getPower(user.base) : self.power;
   let eff = battle.getEffectiveness(type, target);
+  const realEff = eff;
   let dmg = 0;
   let isCrit = battle.gen.tryCrit(battle, user, self.flag === "high_crit");
   if (self.flag === "dream_eater" && target.base.status !== "slp") {
@@ -309,11 +310,11 @@ export function getDamage(
     dmg = Math.max(target.base.hp - 1, 0);
   }
 
-  return {dmg, isCrit, eff, endured};
+  return {dmg, isCrit, eff, endured, realEff};
 }
 
 function trapTarget(self: DamagingMove, rng: Random, user: ActivePokemon, target: ActivePokemon) {
-  target.v.trapped = true;
+  target.v.trapped = {move: self, turns: -1, user};
   user.v.trapping = {move: self, turns: multiHitCount(rng) - 1};
 }
 

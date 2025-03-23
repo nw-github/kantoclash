@@ -3,19 +3,14 @@ import type {ClientMessage, JoinRoomResponse, ServerMessage} from "./gameServer"
 import type {BattleEvent} from "~/game/events";
 import type {Options, Turn} from "~/game/battle";
 import {randoms} from "~/server/utils/formats";
-import {
-  type ClientVolatiles,
-  type ClientPlayer,
-  type FormatId,
-  formatInfo,
-  mergeVolatiles,
-} from "~/utils/shared";
+import {type ClientVolatiles, type FormatId, formatInfo, mergeVolatiles} from "~/utils/shared";
 import {Pokemon} from "~/game/pokemon";
 import {getEffectiveness, VolatileFlag} from "~/game/utils";
 import random from "random";
 import {convertDesc, parseTeams, type Team} from "~/utils/pokemon";
 import type {MoveId} from "~/game/moves";
 import {type Generation, GENERATIONS} from "~/game/gen";
+import type {ClientPlayer} from "~/utils/client";
 
 export type BotParams = {
   team: Pokemon[];

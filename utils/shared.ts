@@ -10,6 +10,7 @@ export type ClientVolatiles = {
   status?: Status;
   stats?: VolatileStats;
   charging?: MoveId;
+  trapped?: MoveId;
   types?: Type[];
   flags?: VolatileFlag;
   perishCount?: number;

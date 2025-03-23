@@ -11,6 +11,9 @@
   </div>
   <div v-else-if="e.type === 'damage'">
     <p v-if="e.why === 'attacked' && e.isCrit">A critical hit!</p>
+    <p v-else-if="e.why === 'trap_eot'">
+      {{ pn(e.src) }} is hurt by {{ (gen.moveList as any)[e.move!].name }}!
+    </p>
     <p v-else-if="damageMessage[e.why]">
       {{ damageMessage[e.why]!
           .replace("{}", pn(e.src))
@@ -25,7 +28,10 @@
     </p>
 
     <p v-if="e.why !== 'explosion'" class="text-xs sm:text-[0.8rem] text-[var(--stat-down)]">
-      {{ pn(e.target) }} lost <b>{{ percent(e) }}%</b> of its health.
+      {{ pn(e.target) }} lost
+      <UTooltip :text="tooltip(e)">
+        <b class="text-xs sm:text-[0.8rem] text-[var(--stat-down)]" :class="[tooltip(e) && 'underline decoration-dotted']">{{ percent(e) }}%</b>
+      </UTooltip> of its health.
     </p>
 
     <template v-if="e.hitCount">
@@ -40,7 +46,10 @@
     <p v-else-if="e.why === 'rest'">{{ pn(e.src) }} started sleeping!</p>
 
     <p class="text-xs sm:text-[0.8rem] text-[var(--stat-up)]">
-      {{ pn(e.target) }} gained <b>{{ percent(e) }}%</b> of its health.
+      {{ pn(e.target) }} gained
+      <UTooltip :text="tooltip(e)">
+        <b class="text-xs sm:text-[0.8rem] text-[var(--stat-up)]" :class="[tooltip(e) && 'underline decoration-dotted']">{{ percent(e) }}%</b>
+      </UTooltip> of its health.
     </p>
   </div>
   <div v-else-if="e.type === 'move'" class="move">
@@ -108,6 +117,14 @@
   </div>
   <div v-else-if="e.type === 'foresight'">{{ pn(e.src) }} identified {{ pn(e.target, false) }}!</div>
   <div v-else-if="e.type === 'lock_on'">{{ pn(e.src) }} took aim at {{ pn(e.target, false) }}!</div>
+  <div v-else-if="e.type === 'trap'">
+    <template v-if="e.kind === 'start'">
+      {{ trapStart[e.move]!.replace("{s}", pn(e.src, false)).replace("{t}", pn(e.target)) }}
+    </template>
+    <template v-else>
+      {{ pn(e.src) }} was freed from {{ gen.moveList[e.move].name }}!
+    </template>
+  </div>
   <div v-else>Unknown event: <code>{{ e }}</code></div>
 </template>
 
@@ -152,9 +169,16 @@ const eff = (v?: number) => `It's ${(v ?? 1) > 1 ? "super effective!" : "not ver
 
 const percent = (e: UIDamageEvent | UIRecoverEvent) => {
   let pv = Math.abs(e.hpPercentBefore - e.hpPercentAfter);
-  if (e.target === myId && e.maxHp !== undefined) {
+  if (e.hpBefore !== undefined && e.hpAfter !== undefined && e.maxHp !== undefined) {
     pv = roundTo(Math.abs(hpPercentExact(e.hpBefore! - e.hpAfter!, e.maxHp)), 1);
   }
   return pv === 0 ? "<1" : `${pv}`;
+};
+
+const tooltip = (e: UIDamageEvent | UIRecoverEvent) => {
+  if (e.hpBefore !== undefined && e.hpAfter !== undefined) {
+    return `${roundTo(Math.abs(e.hpBefore! - e.hpAfter!), 1)} HP`;
+  }
+  return "";
 };
 </script>

@@ -5,13 +5,8 @@ import {exec as execDamagingMove} from "./damaging";
 // FLAG: multi        | final strike only kings rock
 // FLAG: explosion    | defense halving applies to self-inflicted confusion damage
 // FLAG: ohko         | new formula: https://bulbapedia.bulbagarden.net/wiki/Fissure_(move), counterable even on miss
-// FLAG: level, dmg, super_fang   | affected by type immunities
-// FLAG: rapid_spin, thief, triple, fury_cutter, rollout   | implement
+// FLAG: thief, triple, fury_cutter, rollout | implement
 
-// Hyper beam must now always recharge (substitute, faint), and trapping moves dont reset it
-// Mist now applies to secondary effects of moves
-
-// Partial trapping
 // Counter is sane now
 // Defense curl doubles rollout
 // leech seed doesn't interact with toxic N and drains 1/8

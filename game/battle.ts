@@ -475,8 +475,12 @@ export class Battle {
       player.active.v.flinch = false;
       player.active.v.inPursuit = false;
       player.active.movedThisTurn = false;
-      if (player.active.v.trapped && !this.opponentOf(player).active.v.trapping) {
-        player.active.v.trapped = false;
+      if (
+        this.gen.id === 1 &&
+        player.active.v.trapped &&
+        !this.opponentOf(player).active.v.trapping
+      ) {
+        player.active.v.trapped = undefined;
       }
     }
   }
@@ -639,6 +643,33 @@ export class Battle {
       }
     }
 
+    // Partial trapping
+    for (const {active} of this.players) {
+      if (!active.v.trapped || active.v.trapped.turns === -1 || active.v.fainted) {
+        continue;
+      }
+
+      const move = this.moveIdOf(active.v.trapped.move)!;
+      if (--active.v.trapped.turns === 0) {
+        this.event({
+          type: "trap",
+          src: active.owner.id,
+          target: active.owner.id,
+          kind: "end",
+          move,
+          volatiles: [{id: active.owner.id, v: {trapped: null}}],
+        });
+        active.v.trapped = undefined;
+      } else {
+        const dmg = Math.max(idiv(active.base.stats.hp, 16), 1);
+        active.damage2(this, {dmg, src: active, why: "trap_eot", move, direct: true});
+      }
+    }
+
+    if (this.checkFaint(this.players[0].active, this.players[1].active, true)) {
+      return;
+    }
+
     // Perish song
     for (const {active, id} of this.players) {
       if (active.v.fainted) {
@@ -665,9 +696,11 @@ export class Battle {
     }
 
     // Defrost
-    for (const {active} of this.players) {
-      if (!active.v.fainted && active.base.status === "frz" && this.rand100((25 / 256) * 100)) {
-        active.unstatus(this, "thaw");
+    if (this.gen.id >= 2) {
+      for (const {active} of this.players) {
+        if (!active.v.fainted && active.base.status === "frz" && this.rand100((25 / 256) * 100)) {
+          active.unstatus(this, "thaw");
+        }
       }
     }
 
@@ -717,6 +750,17 @@ export class Battle {
     );
   }
 }
+
+type DamageParams = {
+  dmg: number;
+  src: ActivePokemon;
+  why: DamageReason;
+  isCrit?: boolean;
+  direct?: boolean;
+  eff?: number;
+  move?: MoveId;
+  volatiles?: ChangedVolatiles;
+};
 
 export class ActivePokemon {
   v: Volatiles;
@@ -769,17 +813,16 @@ export class ActivePokemon {
 
     this.applyStatusDebuff();
 
-    const volatiles: ChangedVolatiles = [
-      {id: this.owner.id, v: this.v.toClientVolatiles(next, battle)},
-    ];
+    const v: ChangedVolatiles[number]["v"] = {};
+
     const {active, id} = battle.opponentOf(this.owner);
     if (active.v.attract === this) {
       active.v.attract = undefined;
-      volatiles.push({id, v: {flags: active.v.flags}});
+      v.flags = active.v.flags;
     }
     if (active.v.meanLook === this) {
       active.v.meanLook = undefined;
-      volatiles.push({id, v: {flags: active.v.flags}});
+      v.flags = active.v.flags;
     }
 
     battle.event({
@@ -794,8 +837,23 @@ export class ActivePokemon {
       shiny: next.shiny || undefined,
       indexInTeam: this.owner.team.indexOf(next),
       why,
-      volatiles,
+      volatiles: [
+        {id: this.owner.id, v: this.v.toClientVolatiles(next, battle)},
+        ...(Object.keys(v).length ? [{id, v}] : []),
+      ],
     });
+
+    if (active.v.trapped && active.v.trapped.user === this) {
+      battle.event({
+        type: "trap",
+        src: active.owner.id,
+        target: active.owner.id,
+        kind: "end",
+        move: battle.moveIdOf(active.v.trapped.move)!,
+        volatiles: [{id, v: {trapped: null}}],
+      });
+      active.v.trapped = undefined;
+    }
 
     if (this.owner.spikes && !this.v.types.includes("flying")) {
       this.damage(Math.floor(this.base.stats.hp / 8), this, battle, false, "spikes", true);
@@ -874,6 +932,65 @@ export class ActivePokemon {
         why,
         eff,
         isCrit,
+        volatiles,
+      });
+
+      if (shouldRage) {
+        this.handleRage(battle);
+      }
+
+      return {event, dealt: hpBefore - this.base.hp, brokeSub: false, dead: this.base.hp === 0};
+    }
+  }
+
+  damage2(battle: Battle, {dmg, src, isCrit, why, direct, eff, volatiles, move}: DamageParams) {
+    if (why !== "brn" && why !== "psn" && why !== "seeded" && why !== "substitute") {
+      // Counter uses the damage it would've done ignoring substitutes
+      this.lastDamage = Math.min(this.base.hp, dmg);
+    }
+
+    const shouldRage = why === "attacked" || why === "trap";
+    if (this.v.substitute !== 0 && !direct) {
+      const hpBefore = this.v.substitute;
+      this.v.substitute = Math.max(this.v.substitute - dmg, 0);
+      if (this.v.substitute === 0) {
+        volatiles ??= [];
+        volatiles.push({id: this.owner.id, v: {flags: this.v.flags}});
+      }
+
+      const event = battle.event<HitSubstituteEvent>({
+        type: "hit_sub",
+        src: src.owner.id,
+        target: this.owner.id,
+        broken: this.v.substitute === 0,
+        confusion: why === "confusion",
+        eff,
+        volatiles,
+      });
+      if (shouldRage) {
+        this.handleRage(battle);
+      }
+      return {
+        event,
+        dealt: hpBefore - this.v.substitute,
+        brokeSub: this.v.substitute === 0,
+        dead: false,
+      };
+    } else {
+      const hpBefore = this.base.hp;
+      this.base.hp = Math.max(this.base.hp - dmg, 0);
+      const event = battle.event<DamageEvent>({
+        type: "damage",
+        src: src.owner.id,
+        target: this.owner.id,
+        hpPercentBefore: hpPercent(hpBefore, this.base.stats.hp),
+        hpPercentAfter: hpPercent(this.base.hp, this.base.stats.hp),
+        hpBefore,
+        hpAfter: this.base.hp,
+        why,
+        eff,
+        isCrit,
+        move,
         volatiles,
       });
 
@@ -1102,8 +1219,8 @@ export class ActivePokemon {
     }
 
     const moveLocked = !!(this.v.bide || this.v.trapping);
-    const meanLook = !!this.v.meanLook;
-    return {canSwitch: ((!lockedIn || moveLocked) && !meanLook) || this.v.fainted, moves};
+    const cantEscape = !!this.v.meanLook || (battle.gen.id >= 2 && !!this.v.trapped);
+    return {canSwitch: ((!lockedIn || moveLocked) && !cantEscape) || this.v.fainted, moves};
   }
 
   setVolatile<T extends keyof Volatiles>(key: T, val: Volatiles[T]) {
@@ -1138,7 +1255,6 @@ class Volatiles {
   flinch = false;
   invuln = false;
   hazed = false;
-  trapped = false;
   fainted = false;
   faintedBetweenTurns = false;
   inPursuit = false;
@@ -1157,6 +1273,7 @@ class Volatiles {
   encore?: {turns: number; indexInMoves: number};
   mimic?: {move: MoveId; indexInMoves: number};
   trapping?: {move: Move; turns: number};
+  trapped?: {user: ActivePokemon; move: Move; turns: number};
   private _flags = VolatileFlag.none;
 
   constructor(base: Pokemon) {
@@ -1198,6 +1315,7 @@ class Volatiles {
       stages: {...this.stages},
       stats: {...this.stats},
       charging: this.charging ? battle.moveIdOf(this.charging) : undefined,
+      trapped: this.trapped ? battle.moveIdOf(this.trapped.move) : undefined,
       types: !arraysEqual(this.types, base.species.types) ? [...this.types] : undefined,
       flags: this.flags,
       perishCount: this.perishCount,

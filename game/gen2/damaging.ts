@@ -26,8 +26,8 @@ export function exec(
 
   const protect = target.v.hasFlag(VolatileFlag.protect);
   // eslint-disable-next-line prefer-const
-  let {dmg, isCrit, eff, endured} = getDamage(this, battle, user, target);
-  if (eff === 0) {
+  let {dmg, isCrit, eff, realEff, endured} = getDamage(this, battle, user, target);
+  if (eff === 0 || realEff === 0) {
     return battle.info(target, "immune");
   } else if (dmg === 0) {
     return battle.info(user, "fail_generic");
@@ -95,6 +95,18 @@ export function exec(
     if (user.v.hasFlag(VolatileFlag.seeded)) {
       battle.event({type: "sv", volatiles: [user.clearFlag(VolatileFlag.seeded)]});
     }
+
+    if (user.v.trapped) {
+      battle.event({
+        type: "trap",
+        src: user.owner.id,
+        target: user.owner.id,
+        kind: "end",
+        move: battle.moveIdOf(user.v.trapped.move)!,
+        volatiles: [{id: user.owner.id, v: {trapped: null}}],
+      });
+      user.v.trapped = undefined;
+    }
   }
 
   if (endured) {
@@ -116,7 +128,16 @@ export function exec(
   }
 
   if (this.flag === "trap") {
-    // trapTarget(this, battle.rng, user, target);
+    target.v.trapped = {user, move: this, turns: multiHitCount(battle.rng) + 1};
+    const move = battle.moveIdOf(this)!;
+    battle.event({
+      type: "trap",
+      src: user.owner.id,
+      target: target.owner.id,
+      kind: "start",
+      move,
+      volatiles: [{id: target.owner.id, v: {trapped: move}}],
+    });
   }
 
   if (this.effect) {
@@ -134,6 +155,10 @@ export function exec(
         target.confuse(battle);
       }
     } else if (Array.isArray(effect)) {
+      if (!this.effect_self && target.v.hasFlag(VolatileFlag.mist)) {
+        return;
+      }
+
       const poke = this.effect_self ? user : target;
       poke.modStages(effect, battle);
     } else if (effect === "flinch") {

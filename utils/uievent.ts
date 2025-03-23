@@ -155,6 +155,14 @@ export const damageMessage: Partial<Record<DamageReason, string>> = {
   destiny_bond: "{} took {tl} with it!",
 };
 
+export const trapStart: Partial<Record<MoveId, string>> = {
+  wrap: "{t} was wrapped by {s}!",
+  whirlpool: "{t} was trapped in the vortex!",
+  bind: "{t} was squeezed by {s}!",
+  clamp: "{t} was clamped by {s}!",
+  firespin: "{t} was trapped in the vortex!",
+};
+
 export const bugMessage: Record<BugType, string> = {
   bug_gen2_bellydrum: "In Gen 2, Belly Drum still raises Atk by 2 on failure due to a bug.",
   bug_gen2_spikes:
