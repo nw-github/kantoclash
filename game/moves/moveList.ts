@@ -1191,28 +1191,39 @@ const internalMoveList = createMoveList({
         return;
       }
 
-      let failed = true;
+      let failed = true,
+        endured = false;
       for (const poke of user.owner.team) {
         if (poke.status || !poke.hp) {
           continue;
         }
 
         failed = false;
-        const dmg = battle.gen.calcDamage({
+        const isCrit = battle.gen.tryCrit(battle, user, false);
+        let dmg = battle.gen.calcDamage({
           pow: this.power,
           atk: poke.stats.atk,
           def: target.base.stats.def,
           lvl: poke.level,
           eff: 1,
-          isCrit: false,
+          isCrit,
           isStab: false,
           rand: battle.rng,
         });
 
+        endured = dmg > 0 && dmg > target.base.hp && target.v.hasFlag(VolatileFlag.endure);
+        if (endured) {
+          dmg = Math.max(target.base.hp - 1, 0);
+        }
+
         battle.event({type: "beatup", name: poke.name});
-        if (target.damage2(battle, {dmg, src: user, why: "attacked"}).dead) {
+        if (target.damage2(battle, {dmg, src: user, why: "attacked", isCrit}).dead) {
           break;
         }
+      }
+
+      if (endured) {
+        battle.info(target, "endure_hit");
       }
 
       if (failed) {
@@ -1395,7 +1406,16 @@ const internalMoveList = createMoveList({
       user.owner.team.forEach(poke => (poke.status = undefined));
     },
   },
-  // mirrorcoat: { noMetronome: true },
+  mirrorcoat: {
+    kind: "retaliate",
+    name: "Mirror Coat",
+    pp: 20,
+    type: "psychic",
+    acc: 100,
+    priority: -1,
+    noMetronome: true,
+    special: true,
+  },
   nightmare: {
     name: "Nightmare",
     pp: 15,

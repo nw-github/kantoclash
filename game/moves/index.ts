@@ -103,6 +103,11 @@ export interface LockOnMove extends BaseMove {
   readonly kind: "lockOn";
 }
 
+export interface RetaliateMove extends BaseMove {
+  readonly kind: "retaliate";
+  readonly special: boolean;
+}
+
 export interface DamagingMove extends BaseMove {
   readonly kind: "damage";
   readonly power: number;
@@ -135,7 +140,8 @@ export type Move =
   | PhazingMove
   | ProtectMove
   | PreventEscapeMove
-  | LockOnMove;
+  | LockOnMove
+  | RetaliateMove;
 
 type Effect = Status | [Stages, number][] | "confusion" | "flinch";
 

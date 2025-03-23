@@ -65,6 +65,9 @@ export function exec(
       battle.gen.handleCrashDamage(battle, user, target, dmg);
     } else if (this.flag === "explosion") {
       user.damage(user.base.hp, user, battle, false, "explosion", true);
+    } else if (this.flag === "ohko" && this !== battle.gen.moveList.guillotine) {
+      // In Gen 2, Horn Drill and Fissure can be countered for max damage on miss
+      target.v.retaliateDamage = 65535;
     }
     return;
   }

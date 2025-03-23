@@ -474,6 +474,7 @@ export class Battle {
       player.active.v.hazed = false;
       player.active.v.flinch = false;
       player.active.v.inPursuit = false;
+      player.active.v.retaliateDamage = 0;
       player.active.movedThisTurn = false;
       if (
         this.gen.id === 1 &&
@@ -551,6 +552,11 @@ export class Battle {
       }
       fainted = true;
     }
+
+    if (!betweenTurns) {
+      return user.base.hp === 0 || target.base.hp === 0;
+    }
+
     return fainted;
   }
 
@@ -953,11 +959,13 @@ export class ActivePokemon {
         volatiles,
       });
 
+      const dealt = hpBefore - this.base.hp;
       if (shouldRage) {
         this.handleRage(battle);
+        this.v.retaliateDamage = dealt;
       }
 
-      return {event, dealt: hpBefore - this.base.hp, brokeSub: false, dead: this.base.hp === 0};
+      return {event, dealt, brokeSub: false, dead: this.base.hp === 0};
     }
   }
 
@@ -1232,6 +1240,7 @@ class Volatiles {
   rollout = 0;
   rage = 1;
   furyCutter = 0;
+  retaliateDamage = 0;
   meanLook?: ActivePokemon;
   attract?: ActivePokemon;
   lastMove?: Move;

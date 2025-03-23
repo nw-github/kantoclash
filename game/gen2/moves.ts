@@ -4,8 +4,6 @@ import {exec as execDamagingMove} from "./damaging";
 
 // FLAG: multi | final strike only kings rock
 // FLAG: thief | implement
-// Counter is sane now, can counter ohko moves for max damage on miss
-//  Despite Dark-type moves being special prior to Generation IV, Beat Up activates Counter but not Mirror Coat.
 
 /*
 https://bulbapedia.bulbagarden.net/wiki/Bide_(move)
@@ -25,6 +23,8 @@ If the user is prevented from attacking with SolarBeam during harsh sunlight by 
 In this generation only, Mirror Move always fails when used by a transformed Pokémon.
 
 leech seed doesn't interact with toxic N and drains 1/8
+
+Bide
 */
 
 // Does 10% chance mean 10.2 /* 26/256 */ like in gen 1?
@@ -81,7 +81,6 @@ export const moveFunctionPatches: Partial<MoveFunctions> = {
 
 export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
   bide: {acc: 100},
-  counter: {noMetronome: true},
   conversion: {
     exec(battle, user) {
       const type = battle.rng.choice(
@@ -138,6 +137,18 @@ export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
     },
   },
   mimic: {noMetronome: true},
+  // --
+  counter: {
+    kind: "retaliate",
+    name: "Counter",
+    pp: 20,
+    type: "fight",
+    acc: 100,
+    priority: -1,
+    noMetronome: true,
+    special: false,
+  },
+  // --
   roar: {kind: "phaze", acc: 100, priority: -1},
   whirlwind: {kind: "phaze", acc: 100, priority: -1, ignore: ["fly"]},
   // --
