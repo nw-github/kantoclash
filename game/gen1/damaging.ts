@@ -284,12 +284,19 @@ export function getDamage(
     if (target.v.charging && self.ignore && self.punish) {
       doubleDmg = doubleDmg || self.ignore.includes(battle.moveIdOf(target.v.charging));
     }
+    if (target.v.usedMinimize && self.flag === "minimize") {
+      doubleDmg = true;
+    }
 
     const explosion = self.flag === "explosion" ? 2 : 1;
     const [atk, def] = battle.gen.getDamageVariables(isSpecial(type), user, target, isCrit);
     let moveMod = 1;
     if (self.flag === "rollout") {
       moveMod = 2 ** (user.v.rollout + +user.v.usedDefenseCurl);
+    } else if (self.flag === "rage") {
+      moveMod = user.v.rage;
+    } else if (self.flag === "fury_cutter") {
+      moveMod = 2 ** Math.min(user.v.furyCutter, 4);
     }
 
     dmg = battle.gen.calcDamage({

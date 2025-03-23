@@ -207,7 +207,8 @@ const flagDesc: Record<NonNullable<DamagingMove["flag"]>, string> = {
   triple:
     "Hits up to 3 times. The second hit has a damage multiplier of 2, and the third hit has " +
     "a damage multiplier of 3. ",
-  fury_cutter: "Base power doubles if used consecutively, up to a maximum of 160. ",
+  fury_cutter: "Base power doubles for each consecutive use, up to a maximum of 160. ",
+  minimize: "Doubles damage against a target that has previously used minimize. ",
 };
 
 const formatStages = (stages: [Stages, number][]) => {

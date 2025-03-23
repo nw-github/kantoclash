@@ -498,6 +498,12 @@ export class Battle {
       if (user.base.pp[moveIndex] < 0) {
         user.base.pp[moveIndex] = 63;
       }
+
+      if (user.v.lastMoveIndex !== moveIndex) {
+        user.v.rage = 1;
+        user.v.furyCutter = 0;
+      }
+
       user.v.lastMoveIndex = moveIndex;
     }
 
@@ -886,65 +892,18 @@ export class ActivePokemon {
     eff?: number,
     volatiles?: ChangedVolatiles,
   ) {
-    if (why !== "brn" && why !== "psn" && why !== "seeded" && why !== "substitute") {
-      // Counter uses the damage it would've done ignoring substitutes
-      this.lastDamage = Math.min(this.base.hp, dmg);
-    }
-
-    const shouldRage = why === "attacked" || why === "trap";
-    if (this.v.substitute !== 0 && !direct) {
-      const hpBefore = this.v.substitute;
-      this.v.substitute = Math.max(this.v.substitute - dmg, 0);
-      if (this.v.substitute === 0) {
-        volatiles ??= [];
-        volatiles.push({id: this.owner.id, v: {flags: this.v.flags}});
-      }
-
-      const event = battle.event<HitSubstituteEvent>({
-        type: "hit_sub",
-        src: src.owner.id,
-        target: this.owner.id,
-        broken: this.v.substitute === 0,
-        confusion: why === "confusion",
-        eff,
-        volatiles,
-      });
-      if (shouldRage) {
-        this.handleRage(battle);
-      }
-      return {
-        event,
-        dealt: hpBefore - this.v.substitute,
-        brokeSub: this.v.substitute === 0,
-        dead: false,
-      };
-    } else {
-      const hpBefore = this.base.hp;
-      this.base.hp = Math.max(this.base.hp - dmg, 0);
-      const event = battle.event<DamageEvent>({
-        type: "damage",
-        src: src.owner.id,
-        target: this.owner.id,
-        hpPercentBefore: hpPercent(hpBefore, this.base.stats.hp),
-        hpPercentAfter: hpPercent(this.base.hp, this.base.stats.hp),
-        hpBefore,
-        hpAfter: this.base.hp,
-        why,
-        eff,
-        isCrit,
-        volatiles,
-      });
-
-      if (shouldRage) {
-        this.handleRage(battle);
-      }
-
-      return {event, dealt: hpBefore - this.base.hp, brokeSub: false, dead: this.base.hp === 0};
-    }
+    return this.damage2(battle, {dmg, src, isCrit, why, direct, eff, volatiles});
   }
 
   damage2(battle: Battle, {dmg, src, isCrit, why, direct, eff, volatiles, move}: DamageParams) {
-    if (why !== "brn" && why !== "psn" && why !== "seeded" && why !== "substitute") {
+    if (
+      why === "crash" ||
+      why === "attacked" ||
+      why === "recoil" ||
+      why === "ohko" ||
+      why === "confusion" ||
+      why === "trap"
+    ) {
       // Counter uses the damage it would've done ignoring substitutes
       this.lastDamage = Math.min(this.base.hp, dmg);
     }
@@ -1154,6 +1113,13 @@ export class ActivePokemon {
     ) {
       battle.info(this, "rage");
       this.modStages([["atk", +1]], battle);
+    } else if (
+      battle.gen.id >= 2 &&
+      this.v.lastMove?.kind === "damage" &&
+      this.v.lastMove.flag === "rage"
+    ) {
+      battle.info(this, "rage");
+      this.v.rage++;
     }
   }
 
@@ -1264,6 +1230,8 @@ class Volatiles {
   protectCount = 0;
   perishCount = 0;
   rollout = 0;
+  rage = 1;
+  furyCutter = 0;
   meanLook?: ActivePokemon;
   attract?: ActivePokemon;
   lastMove?: Move;

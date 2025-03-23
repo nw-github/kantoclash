@@ -3,15 +3,15 @@ import {stageKeys} from "../utils";
 import {exec as execDamagingMove} from "./damaging";
 
 // FLAG: multi        | final strike only kings rock
-// FLAG: explosion    | defense halving applies to self-inflicted confusion damage
-// FLAG: thief, triple, fury_cutter, rollout | implement
+// FLAG: thief, triple | implement
 // Counter is sane now, can counter ohko moves for max damage on miss
 
-// Defense curl doubles rollout
 // leech seed doesn't interact with toxic N and drains 1/8
 // rage is now different | https://bulbapedia.bulbagarden.net/wiki/Rage_(move)
 
 /*
+https://bulbapedia.bulbagarden.net/wiki/Bide_(move)
+
 https://bulbapedia.bulbagarden.net/wiki/Dig_(move)
 In Generation II only, due to a glitch, when Lock-On or Mind Reader are in effect, the moves Attract, Curse, Foresight, Mean Look, Mimic, Nightmare, Spider Web, and Transform cannot hit targets in the semi-invulnerable turn of Dig, and moves cannot lower stats of targets in the semi-invulnerable turn of Dig (status moves such as String Shot will fail, and additional effects of moves such as Bubble will not activate).
 
@@ -171,6 +171,7 @@ export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
   selfdestruct: {power: 200},
   skullbash: {charge: [["def", +1]]},
   sludge: {effect: [30, "psn"]},
+  stomp: {flag: "minimize"},
   struggle: {type: "???", recoil: 4, pp: 1},
   thunder: {ignore: ["fly", "bounce"], effect: [30, "par"]},
   triattack: {flag: "tri_attack"},

@@ -17,6 +17,8 @@ export function exec(
     } else {
       user.v.rollout++;
     }
+  } else if (this.flag === "fury_cutter") {
+    user.v.furyCutter++;
   }
 
   if (this.flag === "drain" && target.v.substitute) {
@@ -29,6 +31,7 @@ export function exec(
   if (user.v.thrashing && --user.v.thrashing.turns === 0) {
     user.v.thrashing = undefined;
     user.v.rollout = 0;
+    user.v.furyCutter = 0;
     if (!user.owner.screens.safeguard && this.flag !== "rollout") {
       user.confuse(battle, true);
     }
@@ -36,12 +39,15 @@ export function exec(
 
   if (eff === 0 || realEff === 0 || (this.flag === "ohko" && user.base.level < target.base.level)) {
     user.v.rollout = 0;
+    user.v.furyCutter = 0;
     return battle.info(target, "immune");
   } else if (dmg === 0) {
     user.v.rollout = 0;
+    user.v.furyCutter = 0;
     return battle.info(user, "fail_generic");
   } else if (protect || !battle.checkAccuracy(this, user, target)) {
     user.v.rollout = 0;
+    user.v.furyCutter = 0;
     if (protect) {
       return battle.info(target, "protect");
     }

@@ -161,4 +161,5 @@ type Flag =
   | "rapid_spin"
   | "thief"
   | "fury_cutter"
-  | "rollout";
+  | "rollout"
+  | "minimize";
