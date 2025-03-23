@@ -150,9 +150,14 @@ export type FailReason =
 
 export type BugType = "bug_gen2_bellydrum" | "bug_gen2_spikes";
 
+type VF = Exclude<
+  keyof typeof VolatileFlag,
+  "substitute" | "curse" | "none" | "disabled" | "foresight" | "lockon"
+>;
+
 export type InfoReason =
-  | keyof typeof VolatileFlag
   | FailReason
+  | VF
   | "payday"
   | "became_confused"
   | "confused"

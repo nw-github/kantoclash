@@ -3,14 +3,17 @@
     class="flex h-full flex-col sm:flex-row p-4 overflow-auto rounded-lg gap-4 dark:divide-gray-800 ring-1 ring-gray-200 dark:ring-gray-800 shadow"
   >
     <div class="flex flex-col w-full items-center">
-      <div class="flex w-full relative justify-between">
-        <div>
+      <div class="flex w-full relative justify-between items-start">
+        <div class="flex gap-2 items-center">
           <div
-            class="rounded-md bg-gray-300 dark:bg-gray-700 flex justify-center py-0.5 px-1"
             :class="[!currentTurnNo && 'invisible']"
+            class="rounded-md bg-gray-300 dark:bg-gray-700 flex justify-center py-0.5 px-1"
           >
             <span class="text-lg font-medium">Turn {{ currentTurnNo }}</span>
           </div>
+          <UTooltip v-if="weather" :text="weatherData[weather].tooltip">
+            <UIcon class="size-6" :name="weatherData[weather].icon" />
+          </UTooltip>
         </div>
 
         <div v-if="opponent" class="absolute sm:static right-0 flex flex-col items-end gap-1">
@@ -22,12 +25,19 @@
       </div>
 
       <div class="flex">
-        <ActivePokemon ref="frontPokemon" class="order-2" :poke="players[opponent]?.active" :gen />
+        <ActivePokemon
+          ref="frontPokemon"
+          class="order-2"
+          :poke="players[opponent]?.active"
+          :side="sides[opponent]"
+          :gen
+        />
         <ActivePokemon
           ref="backPokemon"
           class="pt-10 sm:pt-14 pb-2 sm:pb-0"
           :poke="players[perspective]?.active"
           :base="perspective === myId ? activeInTeam : undefined"
+          :side="sides[perspective]"
           :gen
           back
         />
@@ -236,7 +246,7 @@
 </style>
 
 <script setup lang="ts">
-import type {Options, Turn} from "~/game/battle";
+import type {Options, Screen, Turn} from "~/game/battle";
 import type {Pokemon} from "~/game/pokemon";
 import type {BattleEvent} from "~/game/events";
 import type {SpeciesId} from "~/game/species";
@@ -245,6 +255,19 @@ import type {ActivePokemon} from "#build/components";
 import type {AnimationType} from "./ActivePokemon.vue";
 import criesSpritesheet from "~/public/effects/cries.json";
 import {GENERATIONS} from "~/game/gen";
+import type {Weather} from "~/game/utils";
+
+const weatherData = {
+  rain: {icon: "material-symbols:rainy", tooltip: "Raining"},
+  sun: {icon: "material-symbols:clear-day-rounded", tooltip: "Harsh Sun"},
+  sand: {icon: "mingcute:sandstorm-fill", tooltip: "Sandstorm"},
+  // material-symbols:weather-hail
+} satisfies Record<Weather, any>;
+
+export type Side = {
+  spikes?: boolean;
+  screens?: Partial<Record<Screen, boolean>>;
+};
 
 const emit = defineEmits<{
   (e: "chat", message: string): void;
@@ -277,6 +300,8 @@ const smoothScroll = ref(true);
 const skippingToTurn = ref(0);
 const updateMarker = ref(0);
 const currentTurnNo = ref(0);
+const weather = ref<Weather>();
+const sides = reactive<Record<string, Side>>({});
 
 const backPokemon = ref<InstanceType<typeof ActivePokemon>>();
 const frontPokemon = ref<InstanceType<typeof ActivePokemon>>();
@@ -537,6 +562,9 @@ const runTurn = async (live: boolean, turnIdx: number) => {
         if (e.src === myId.value && team) {
           team.forEach(poke => (poke.status = undefined));
         }
+      } else if (e.why === "spikes") {
+        sides[e.src] ??= {};
+        sides[e.src].spikes = true;
       }
     } else if (e.type === "transform") {
       const target = players[e.target].active!;
@@ -561,6 +589,12 @@ const runTurn = async (live: boolean, turnIdx: number) => {
       handleVolatiles(e);
       await playAnimation(e.src, "retract", players[e.src].active!.name);
       return;
+    } else if (e.type === "weather") {
+      if (e.kind === "start") {
+        weather.value = e.weather;
+      } else if (e.kind === "end") {
+        weather.value = undefined;
+      }
     }
 
     handleVolatiles(e);

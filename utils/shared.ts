@@ -1,6 +1,5 @@
-import type {Gender, Status} from "~/game/pokemon";
+import type {Status} from "~/game/pokemon";
 import type {Mods, VolatileStats} from "../game/battle";
-import type {SpeciesId} from "../game/species";
 import type {Stages, Type, VolatileFlag} from "../game/utils";
 import type {MoveId} from "~/game/moves";
 import type {Generation} from "~/game/gen1";
@@ -14,28 +13,6 @@ export type ClientVolatiles = {
   types?: Type[];
   flags?: VolatileFlag;
   perishCount?: number;
-};
-
-export type ClientActivePokemon = {
-  hidden?: boolean;
-  gender?: Gender;
-  speciesId: SpeciesId;
-  name: string;
-  fainted: boolean;
-  hpPercent: number;
-  level: number;
-  transformed?: SpeciesId;
-  shiny?: boolean;
-  v: ClientVolatiles;
-};
-
-export type ClientPlayer = {
-  name: string;
-  isSpectator: boolean;
-  connected: boolean;
-  nPokemon: number;
-  nFainted: number;
-  active?: ClientActivePokemon;
 };
 
 type FormatInfo = {

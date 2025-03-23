@@ -90,6 +90,12 @@
         class="absolute bottom-4 sm:bottom-8 bg-gray-200 dark:bg-gray-600 h-10 w-20 sm:h-16 sm:w-40 rounded-[100%]"
       />
 
+      <img
+        v-if="side?.spikes"
+        class="absolute size-8 bottom-10 sm:bottom-14 opacity-80"
+        src="/caltrop.svg"
+      />
+
       <div ref="pokeBall" class="pokeball absolute size-[42px] z-10 opacity-0" />
     </div>
   </div>
@@ -136,11 +142,13 @@ import type {MoveId} from "~/game/moves";
 import {breakpointsTailwind} from "@vueuse/core";
 import type {Generation} from "~/game/gen1";
 import type {SpeciesId} from "~/game/species";
+import type {Side} from "./Battle.vue";
 
 const {poke, base, back, gen} = defineProps<{
   poke?: ClientActivePokemon;
   base?: Pokemon;
   back?: boolean;
+  side?: Side;
   gen: Generation;
 }>();
 const species = computed(() => poke && gen.speciesList[poke.transformed ?? poke.speciesId]);

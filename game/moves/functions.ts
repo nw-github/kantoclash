@@ -1,4 +1,5 @@
 import type {CustomMove, Move} from ".";
+import type {InfoReason} from "../events";
 import {VolatileFlag} from "../utils";
 import {exec as execDamagingMove, use as useDamagingMove} from "./damaging";
 
@@ -21,7 +22,7 @@ export const moveFunctions: MoveFunctions = {
 
       for (const [key, flag] of Object.entries(VolatileFlag)) {
         if (flag === this.flag) {
-          return battle.info(user, key as keyof typeof VolatileFlag, [user.setFlag(this.flag)]);
+          return battle.info(user, key as InfoReason, [user.setFlag(this.flag)]);
         }
       }
 
