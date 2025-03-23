@@ -246,9 +246,11 @@ export function getDamage(
     dmg = self.getDamage;
     eff = 1;
     isCrit = false;
-  } else if (self.getDamage) {
+  } else if (self.getDamage || self.flag === "ohko") {
     isCrit = false;
-    const result = self.getDamage(battle, user, target, eff);
+    const result = self.getDamage
+      ? self.getDamage(battle, user, target, eff)
+      : battle.gen.getOHKODamage(user, target, eff);
     if (typeof result === "number") {
       dmg = result;
       eff = 1;

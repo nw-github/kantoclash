@@ -113,8 +113,8 @@ export interface DamagingMove extends BaseMove {
   readonly recoil?: number;
   readonly punish?: boolean;
   readonly charge?: boolean | "sun" | "invuln" | [Stages, number][];
-  readonly getPower?: (user: Pokemon) => number;
-  readonly getType?: (user: Pokemon) => Type;
+  getPower?(user: Pokemon): number;
+  getType?(user: Pokemon): Type;
   readonly getDamage?:
     | number
     | ((battle: Battle, user: ActivePokemon, target: ActivePokemon, eff: number) => number | false);

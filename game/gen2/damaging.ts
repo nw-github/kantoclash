@@ -20,14 +20,13 @@ export function exec(
   }
 
   if (this.flag === "drain" && target.v.substitute) {
-    // does failure display as a miss like in gen 1?
-    return battle.info(user, "fail_generic");
+    return battle.info(user, "miss");
   }
 
   const protect = target.v.hasFlag(VolatileFlag.protect);
   // eslint-disable-next-line prefer-const
   let {dmg, isCrit, eff, realEff, endured} = getDamage(this, battle, user, target);
-  if (eff === 0 || realEff === 0) {
+  if (eff === 0 || realEff === 0 || (this.flag === "ohko" && user.base.level < target.base.level)) {
     return battle.info(target, "immune");
   } else if (dmg === 0) {
     return battle.info(user, "fail_generic");

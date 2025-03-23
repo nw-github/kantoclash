@@ -34,6 +34,7 @@
             :key="stat"
             color="white"
             size="xs"
+            class="w-8"
             :ui="{rounded: 'rounded-lg', base: 'flex flex-col justify-center'}"
           >
             <span class="text-[0.65rem] px-0.5 -mb-1 text-gray-400 dark:text-gray-200">{{

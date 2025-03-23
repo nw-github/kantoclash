@@ -1,7 +1,6 @@
 import type {DamagingMove, Move} from "./index";
 import {type Pokemon, transform} from "../pokemon";
 import {hpPercentExact, idiv, stageKeys, stageStatKeys, VolatileFlag, type Type} from "../utils";
-import type {ActivePokemon, Battle} from "../battle";
 
 export type MoveId = keyof typeof internalMoveList;
 
@@ -645,7 +644,6 @@ const internalMoveList = createMoveList({
     acc: 30,
     power: 1,
     flag: "ohko",
-    getDamage: getOHKODamage,
   },
   flamethrower: {
     kind: "damage",
@@ -692,7 +690,6 @@ const internalMoveList = createMoveList({
     acc: 30,
     power: 1,
     flag: "ohko",
-    getDamage: getOHKODamage,
   },
   gust: {kind: "damage", name: "Gust", pp: 35, type: "normal", power: 40, acc: 100},
   headbutt: {
@@ -722,7 +719,6 @@ const internalMoveList = createMoveList({
     acc: 30,
     power: 1,
     flag: "ohko",
-    getDamage: getOHKODamage,
   },
   hydropump: {kind: "damage", name: "Hydro Pump", pp: 5, type: "water", power: 120, acc: 80},
   hyperbeam: {
@@ -2089,14 +2085,4 @@ function getFlailPower(this: DamagingMove, user: Pokemon) {
   } else {
     return 200;
   }
-}
-
-function getOHKODamage(
-  this: DamagingMove,
-  _: Battle,
-  user: ActivePokemon,
-  target: ActivePokemon,
-  eff: number,
-) {
-  return target.getStat("spe") > user.getStat("spe") || !eff ? false : 65535;
 }

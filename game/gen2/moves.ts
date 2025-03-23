@@ -4,12 +4,12 @@ import {exec as execDamagingMove} from "./damaging";
 
 // FLAG: multi        | final strike only kings rock
 // FLAG: explosion    | defense halving applies to self-inflicted confusion damage
-// FLAG: ohko         | new formula: https://bulbapedia.bulbagarden.net/wiki/Fissure_(move), counterable even on miss
 // FLAG: thief, triple, fury_cutter, rollout | implement
+// Counter is sane now, can counter ohko moves for max damage on miss
 
-// Counter is sane now
 // Defense curl doubles rollout
 // leech seed doesn't interact with toxic N and drains 1/8
+// rage is now different | https://bulbapedia.bulbagarden.net/wiki/Rage_(move)
 
 /*
 https://bulbapedia.bulbagarden.net/wiki/Dig_(move)
@@ -20,9 +20,6 @@ pp rollover
 
 https://bulbapedia.bulbagarden.net/wiki/Mimic_(move)
 has 5 pp like transform
-
-https://bulbapedia.bulbagarden.net/wiki/Rage_(move)
-rage is now different
 
 https://bulbapedia.bulbagarden.net/wiki/Solar_Beam_(move)
 If the user is prevented from attacking with SolarBeam during harsh sunlight by conditions such as flinching, paralysis, and confusion, then PP will still be deducted regardless, due to the fact that SolarBeam was designed as a two-turn attack.

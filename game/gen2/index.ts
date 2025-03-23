@@ -213,7 +213,9 @@ const createGeneration = (): Generation => {
       }
 
       let chance = move.acc;
-      if (move.rainAcc && battle.weather?.kind === "rain") {
+      if (move.kind === "damage" && move.flag === "ohko") {
+        chance = idiv((user.base.level - target.base.level) * 2 + 76, 256) * 100;
+      } else if (move.rainAcc && battle.weather?.kind === "rain") {
         return true;
       } else if (move.rainAcc && battle.weather?.kind === "sun") {
         chance = 50;
@@ -248,6 +250,9 @@ const createGeneration = (): Generation => {
     },
     validSpecies: species => species.dexId <= 251,
     getSleepTurns: battle => battle.rng.int(1, 6),
+    getOHKODamage(user, target, eff) {
+      return target.base.level > user.base.level || !eff ? false : 65535;
+    },
   };
 
   return merge(patches, GENERATION1);

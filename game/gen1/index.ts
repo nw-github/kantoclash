@@ -335,6 +335,9 @@ const createGeneration = () => {
       }
       return sleepTurns;
     },
+    getOHKODamage(user: ActivePokemon, target: ActivePokemon, eff: number) {
+      return target.getStat("spe") > user.getStat("spe") || !eff ? false : 65535;
+    },
   };
 };
 
