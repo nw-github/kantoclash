@@ -115,7 +115,7 @@ const isIllegal = (id: string) => {
   } else if (species.value.moves.includes(id)) {
     return false;
   } else if (species.value.moves.includes("sketch")) {
-    return !isValidSketchMove(gen, id as MoveId);
+    return !isValidSketchMove(gen, id);
   }
   return true;
 };
