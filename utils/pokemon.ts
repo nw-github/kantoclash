@@ -59,7 +59,7 @@ const evsRegex = /^EVs:\s*(\d+\s+\w+\s*\/?\s*)+/i;
 const ivsRegex = /^IVs:\s*(\d+\s+\w+\s*\/?\s*)+/i;
 const moveRegex = /^\s*-\s*(.+)\s*/;
 const statRegex = /\s*(\d+)\s+(\w+)\s*/g;
-const ignoreChars = /(\s|-)+/g;
+const ignoreChars = /(\s|-|\.)+/g;
 const teamRegex = /^===\s*(?:\[(.+)\])?\s*(.+?)\s*===$/;
 
 export const parsePokemon = (src: string): TeamPokemonDesc => {
@@ -153,6 +153,7 @@ export const convertDesc = (desc: PokemonDesc): PokemonDesc => {
     }
   }
 
+  const item = desc.item && normalizeName(desc.item);
   const evs: Partial<Stats> = {};
   const ivs: Partial<Stats> = {};
   for (const stat of statKeys) {
@@ -163,7 +164,7 @@ export const convertDesc = (desc: PokemonDesc): PokemonDesc => {
       ivs[stat] = ivToDv(desc.ivs[stat]);
     }
   }
-  return {evs, ivs, moves, level: desc.level ?? 100, name: desc.name, species};
+  return {evs, ivs, moves, level: desc.level ?? 100, name: desc.name, species, item};
 };
 
 export const normalizeName = (v: string) => v.trim().toLowerCase().replaceAll(ignoreChars, "");

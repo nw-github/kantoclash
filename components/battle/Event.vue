@@ -129,6 +129,7 @@
   <div v-else-if="e.type === 'beatup'">{{ e.name }}'s attack!</div>
   <div v-else-if="e.type === 'item'">
     <template v-if="e.item.includes('berry')">{{ pn(e.src) }} ate its {{ gen.items[e.item] }}!</template>
+    <template v-else-if="e.item === 'berserkgene'">{{ pn(e.src) }} used its {{ gen.items[e.item] }}!</template>
     <template v-else>Unknown event: <code>{{ e }}</code></template>
   </div>
   <div v-else-if="e.type === 'pp'">{{ pn(e.src) }}'s {{ gen.moveList[e.move] }} was restored.</div>

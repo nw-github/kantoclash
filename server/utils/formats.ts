@@ -94,18 +94,21 @@ const createValidator = (gen: Generation) => {
     .object({
       name: z.string().trim().max(24, "Name must be at most 24 characters").optional(),
       level: z.number().min(1).max(100).optional(),
-      species: z
-        .string()
-        .refine(s => (gen.speciesList as any)[s] !== undefined, "Species is invalid"),
+      species: z.string().refine(s => s in gen.speciesList, "Species is invalid"),
       moves: z
         .string()
-        .refine(m => (gen.moveList as any)[m] !== undefined, "Move does not exist")
+        .refine(m => m in gen.moveList, "Move does not exist")
         .array()
         .nonempty("Must have at least one move")
         .refine(arr => new Set(arr).size === arr.length, "Duplicate moves are not allowed"),
       ivs: z.record(z.enum(statKeys), z.number().min(0).max(gen.maxIv)).optional(),
       evs: z.record(z.enum(statKeys), z.number().min(0).max(gen.maxEv)).optional(),
       friendship: z.number().min(0).max(255).optional(),
+      item: z
+        .string()
+        .refine(i => i in gen.items, "Item does not exist")
+        .optional()
+        .refine(i => gen.id !== 1 || !i, "Cannot have item in Gen 1"),
     })
     .superRefine((desc, ctx) => {
       const learnset = gen.speciesList[desc.species as SpeciesId]?.moves;

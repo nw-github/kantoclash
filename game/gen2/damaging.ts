@@ -42,7 +42,7 @@ export function exec(
       return battle.info(target, "fail_present");
     }
 
-    target.recover(idiv(target.base.stats.hp, 4), user, battle, "present");
+    target.recover(Math.max(idiv(target.base.stats.hp, 4), 1), user, battle, "present");
     return;
   }
 

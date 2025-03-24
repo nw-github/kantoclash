@@ -748,6 +748,7 @@ export class Battle {
           active.base.pp[slot] = 5;
           this.event({type: "item", src: active.owner.id, item: "mysteryberry"});
           this.event({type: "pp", src: active.owner.id, move: active.base.moves[slot]});
+          active.base.item = undefined;
         }
       }
     }
@@ -902,6 +903,15 @@ export class ActivePokemon {
         volatiles: [{id, v: {trapped: null}}],
       });
       active.v.trapped = undefined;
+    }
+
+    if (this.base.item === "berserkgene") {
+      battle.event({type: "item", item: "berserkgene", src: this.owner.id});
+      this.modStages([["atk", +2]], battle);
+      // Intentional Bug: If you baton pass into a pokemon with a berserk gene, the confusion value
+      // is not updated.
+      this.confuse(battle, false, 256);
+      this.base.item = undefined;
     }
 
     if (this.owner.spikes && !this.v.types.includes("flying")) {
@@ -1127,12 +1137,12 @@ export class ActivePokemon {
     return mods.length !== 0;
   }
 
-  confuse(battle: Battle, thrashing?: true) {
+  confuse(battle: Battle, thrashing?: boolean, turns?: number) {
     if (!thrashing && this.v.confusion) {
       return false;
     }
 
-    this.v.confusion = battle.rng.int(2, 5);
+    this.v.confusion = turns ?? battle.rng.int(2, 5);
     if (!thrashing) {
       battle.info(this, "became_confused", [{id: this.owner.id, v: {flags: this.v.flags}}]);
     }

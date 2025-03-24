@@ -168,6 +168,7 @@
                 :maxlength="24"
                 :placeholder="selectedPoke.species?.name ?? ''"
               />
+              <ItemSelector v-if="gen.id >= 2" v-model="selectedPoke.data.item" class="pt-1" :gen />
             </div>
             <div class="flex flex-col justify-between gap-1">
               <div v-if="gen.id > 1" class="flex justify-between items-center">

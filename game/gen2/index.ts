@@ -290,7 +290,7 @@ const createGeneration = (): Generation => {
       } else if (
         poke.base.item === "thickclub" &&
         stat === "atk" &&
-        poke.base.real.speciesId === "pikachu"
+        poke.base.real.speciesId === "marowak"
       ) {
         value *= 2;
       }

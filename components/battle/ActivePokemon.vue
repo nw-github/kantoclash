@@ -84,6 +84,24 @@
             </div>
           </template>
         </UPopover>
+
+        <!-- TODO: use vue transition -->
+        <div v-if="side?.screens?.light_screen" class="screen bg-pink-500" />
+
+        <div
+          v-if="side?.screens?.reflect"
+          class="screen bg-blue-400"
+          :class="[side?.screens?.light_screen && '-ml-2 -mt-2']"
+        />
+
+        <div
+          v-if="side?.screens?.safeguard"
+          class="screen bg-purple-500"
+          :class="[
+            side?.screens?.light_screen && side?.screens?.reflect && '-ml-4 -mt-4',
+            +!!side?.screens?.light_screen ^ +!!side?.screens?.reflect && '-ml-2 -mt-2',
+          ]"
+        />
       </div>
 
       <div
@@ -134,15 +152,32 @@
     scale: 0.5;
   }
 }
+
+@keyframes grow {
+  from {
+    transform: scale(0);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+.screen {
+  @apply absolute w-[128px] h-[117px] opacity-30 z-30 rounded-md pointer-events-none;
+
+  transition: all 0.5s;
+
+  animation: grow 0.5s ease-out;
+  animation-duration: 0.5s;
+}
 </style>
 
 <script setup lang="ts">
 import {stageMultipliers, VolatileFlag} from "~/game/utils";
-import {calcStat, type Gender, type Pokemon} from "~/game/pokemon";
+import {calcStat, type Pokemon} from "~/game/pokemon";
 import type {MoveId} from "~/game/moves";
 import {breakpointsTailwind} from "@vueuse/core";
 import type {Generation} from "~/game/gen1";
-import type {SpeciesId} from "~/game/species";
 import type {Side} from "./Battle.vue";
 
 const {poke, base, back, gen} = defineProps<{

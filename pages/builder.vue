@@ -207,13 +207,28 @@ const filteredTeams = computed(() => {
 });
 watch([pageCount, filteredTeams], () => (page.value = 1));
 
+const route = useRoute();
+const router = useRouter();
+
+watch(editingTeam, team => {
+  if (team) {
+    router.replace({query: {editing: myTeams.value.indexOf(team)}});
+  } else {
+    router.replace({query: {}});
+  }
+});
+
 onMounted(() => {
   useTitle("Team Builder");
 
-  const format = String(useRoute().query.new_team);
-  useRouter().replace({query: {}});
+  const format = String(route.query.new_team);
+  const editing = +String(route.query.editing);
+
+  router.replace({query: {}});
   if (battleFormats.includes(format)) {
     newTeam(format);
+  } else if (myTeams.value[editing]) {
+    editingTeam.value = myTeams.value[editing];
   }
 });
 

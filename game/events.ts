@@ -86,7 +86,6 @@ export type RecoveryReason =
   | "rest"
   | "seeder"
   | "pain_split"
-  | "pain_split_enemy"
   | "present"
   | "leftovers";
 

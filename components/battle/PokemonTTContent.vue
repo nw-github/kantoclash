@@ -4,9 +4,14 @@
       <div class="flex gap-0.5 items-center justify-center">
         <span>{{ poke.species.name }}</span>
         <GenderIcon class="size-4" :gender="poke.gender ?? gen1Gender[poke.speciesId]" />
+
+        <template v-if="poke.item">
+          <ItemSprite :item="poke.item" />
+          <span class="text-xs">{{ poke.gen.items[poke.item] }}</span>
+        </template>
       </div>
 
-      <div class="flex gap-1">
+      <div class="flex gap-1 items-center">
         <TypeBadge v-for="type in poke.species.types" :key="type" :type image />
       </div>
     </div>

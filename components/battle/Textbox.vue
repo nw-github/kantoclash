@@ -191,16 +191,21 @@ const scrollPoint = ref<HTMLDivElement>();
 const forfeitModalOpen = ref(false);
 const gen = computed(() => GENERATIONS[formatInfo[props.format].generation]!);
 
+let lastScroll = 0;
 onMounted(async () => {
   await nextTick();
-  scrollPoint.value?.scrollIntoView({
-    // behavior: "smooth",
-    block: "center",
-    inline: "center",
-  });
+  scrollPoint.value?.scrollIntoView({block: "center", inline: "center"});
+
+  useEventListener(scrollPoint.value?.parentElement, "wheel", () => (lastScroll = Date.now()));
+  useEventListener(scrollPoint.value?.parentElement, "touchmove", () => (lastScroll = Date.now()));
+  useEventListener(scrollPoint.value?.parentElement, "mousedown", () => (lastScroll = Date.now()));
 });
 
 watch([props.chats, props.turns], async () => {
+  if (Date.now() - lastScroll < 3500) {
+    return;
+  }
+
   await nextTick();
   scrollPoint.value?.scrollIntoView({
     behavior: props.smoothScroll ? "smooth" : "instant",
