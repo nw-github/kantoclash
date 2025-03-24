@@ -857,7 +857,7 @@ export class ActivePokemon {
       // Is trapping passed? Encore? Nightmare?
 
       for (const stat of stageStatKeys) {
-        this.recalculateStat(stat, false);
+        this.recalculateStat(battle, stat, false, false);
       }
     }
 
@@ -888,7 +888,7 @@ export class ActivePokemon {
       indexInTeam: this.owner.team.indexOf(next),
       why,
       volatiles: [
-        {id: this.owner.id, v: this.v.toClientVolatiles(next, battle)},
+        {id: this.owner.id, v: this.getClientVolatiles(next, battle)},
         ...(Object.keys(v).length ? [{id, v}] : []),
       ],
     });
@@ -1016,7 +1016,7 @@ export class ActivePokemon {
     if (v) {
       volatiles.push({
         id: this.owner.id,
-        v: {status: this.base.status || null, stats: {...this.v.stats}},
+        v: {status: this.base.status || null, stats: this.dmgCalcStats(battle)},
       });
     }
 
@@ -1033,11 +1033,11 @@ export class ActivePokemon {
     });
   }
 
-  clearStatusAndRecalculate() {
+  clearStatusAndRecalculate(battle: Battle) {
     this.base.status = undefined;
 
     for (const key of stageStatKeys) {
-      this.recalculateStat(key, false);
+      this.recalculateStat(battle, key, false, true);
     }
   }
 
@@ -1072,7 +1072,7 @@ export class ActivePokemon {
       type: "status",
       src: this.owner.id,
       status,
-      volatiles: [{id: this.owner.id, v: {stats: {...this.v.stats}, status}}],
+      volatiles: [{id: this.owner.id, v: {stats: this.dmgCalcStats(battle), status}}],
     });
 
     return true;
@@ -1098,20 +1098,16 @@ export class ActivePokemon {
 
     opponent ??= battle.opponentOf(this.owner).active;
     if (stageStatKeys.includes(stat)) {
-      this.recalculateStat(stat, negative);
-
-      if (battle.gen.id !== 1) {
-        this.applyStatusDebuff();
-      }
+      this.recalculateStat(battle, stat, negative);
     }
 
     const v: ChangedVolatiles = [
-      {id: this.owner.id, v: {stats: {...this.v.stats}, stages: {...this.v.stages}}},
+      {id: this.owner.id, v: {stats: this.dmgCalcStats(battle), stages: {...this.v.stages}}},
     ];
     if (battle.gen.id === 1) {
       // https://bulbapedia.bulbagarden.net/wiki/List_of_battle_glitches_(Generation_I)#Stat_modification_errors
       opponent.applyStatusDebuff();
-      v.push({id: opponent.owner.id, v: {stats: {...opponent.v.stats}}});
+      v.push({id: opponent.owner.id, v: {stats: opponent.dmgCalcStats(battle)}});
     }
 
     return v;
@@ -1176,12 +1172,21 @@ export class ActivePokemon {
     }
   }
 
-  recalculateStat(stat: keyof VolatileStats, negative: boolean) {
+  recalculateStat(battle: Battle, stat: StatStages, negative: boolean, status?: boolean) {
     this.v.stats[stat] = Math.floor(
       (this.base.stats[stat] * stageMultipliers[this.v.stages[stat]]) / 100,
     );
+
+    if (status ?? battle.gen.id !== 1) {
+      if (this.base.status === "brn" && stat === "atk") {
+        this.v.stats.atk = Math.max(Math.floor(this.v.stats.atk / 2), 1);
+      } else if (this.base.status === "par" && stat === "spe") {
+        this.v.stats.spe = Math.max(Math.floor(this.v.stats.spe / 4), 1);
+      }
+    }
+
     // https://www.smogon.com/rb/articles/rby_mechanics_guide#stat-mechanics
-    if (negative) {
+    if (negative && battle.gen.id === 1) {
       this.v.stats[stat] %= 1024;
     } else {
       this.v.stats[stat] = clamp(this.v.stats[stat], 1, 999);
@@ -1251,6 +1256,25 @@ export class ActivePokemon {
   clearFlag(flag: VolatileFlag) {
     this.v.clearFlag(flag);
     return {id: this.owner.id, v: {flags: this.v.flags}};
+  }
+
+  dmgCalcStats(battle: Battle) {
+    return Object.fromEntries(
+      stageStatKeys.map(key => [key, battle.gen.getStat(this, key)]),
+    ) as VolatileStats;
+  }
+
+  getClientVolatiles(base: Pokemon, battle: Battle): ChangedVolatiles[number]["v"] {
+    return {
+      status: base.status || null,
+      stages: {...this.v.stages},
+      stats: this.dmgCalcStats(battle),
+      charging: this.v.charging ? battle.moveIdOf(this.v.charging) : undefined,
+      trapped: this.v.trapped ? battle.moveIdOf(this.v.trapped.move) : undefined,
+      types: !arraysEqual(this.v.types, base.species.types) ? [...this.v.types] : undefined,
+      flags: this.v.flags,
+      perishCount: this.v.perishCount,
+    };
   }
 }
 
@@ -1324,19 +1348,6 @@ class Volatiles {
 
   hasFlag(flag: VolatileFlag) {
     return (this.flags & flag) !== 0;
-  }
-
-  toClientVolatiles(base: Pokemon, battle: Battle): ChangedVolatiles[number]["v"] {
-    return {
-      status: base.status || null,
-      stages: {...this.stages},
-      stats: {...this.stats},
-      charging: this.charging ? battle.moveIdOf(this.charging) : undefined,
-      trapped: this.trapped ? battle.moveIdOf(this.trapped.move) : undefined,
-      types: !arraysEqual(this.types, base.species.types) ? [...this.types] : undefined,
-      flags: this.flags,
-      perishCount: this.perishCount,
-    };
   }
 
   get flags() {

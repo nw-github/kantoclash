@@ -134,8 +134,8 @@ const internalMoveList = createMoveList({
       target.base.status = undefined;
 
       battle.info(user, "haze", [
-        {id: user.owner.id, v: user.v.toClientVolatiles(user.base, battle)},
-        {id: target.owner.id, v: target.v.toClientVolatiles(target.base, battle)},
+        {id: user.owner.id, v: user.getClientVolatiles(user.base, battle)},
+        {id: target.owner.id, v: target.getClientVolatiles(target.base, battle)},
       ]);
       return false;
     },
@@ -243,8 +243,8 @@ const internalMoveList = createMoveList({
 
       for (const k of stageKeys) {
         user.v.stages[k] = target.v.stages[k];
-        if (k === "atk" || k === "def" || k == "spa" || k === "spe") {
-          user.recalculateStat(k, false);
+        if (stageStatKeys.includes(k)) {
+          user.recalculateStat(battle, k, false);
         }
       }
 
@@ -253,7 +253,7 @@ const internalMoveList = createMoveList({
         type: "transform",
         src: user.owner.id,
         target: target.owner.id,
-        volatiles: [{id: user.owner.id, v: user.v.toClientVolatiles(user.base, battle)}],
+        volatiles: [{id: user.owner.id, v: user.getClientVolatiles(user.base, battle)}],
       });
       return false;
     },
@@ -1480,13 +1480,15 @@ const internalMoveList = createMoveList({
 
       user.v.stages = {...target.v.stages};
       for (const stat of stageStatKeys) {
-        user.recalculateStat(stat, false);
+        user.recalculateStat(battle, stat, false);
       }
       battle.event({
         type: "psych_up",
         src: user.owner.id,
         target: target.owner.id,
-        volatiles: [{id: user.owner.id, v: {stats: {...user.v.stats}, stages: {...user.v.stages}}}],
+        volatiles: [
+          {id: user.owner.id, v: {stats: user.dmgCalcStats(battle), stages: {...user.v.stages}}},
+        ],
       });
     },
   },

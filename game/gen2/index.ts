@@ -295,6 +295,9 @@ const createGeneration = (): Generation => {
         value *= 2;
       }
 
+      // Screens & the species boosting moves all fail to cap the stat at 999, meaning they will
+      // cause it to wrap around if the base stat is >= 512
+      value %= 1024;
       return value;
     },
   };

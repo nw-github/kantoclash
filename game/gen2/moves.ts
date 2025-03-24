@@ -38,7 +38,7 @@ export const moveFunctionPatches: Partial<MoveFunctions> = {
       }
 
       if (this.why === "rest") {
-        user.clearStatusAndRecalculate();
+        user.clearStatusAndRecalculate(battle);
         user.base.status = "slp";
         user.base.sleepTurns = 3;
         user.v.counter = 0;
@@ -131,8 +131,8 @@ export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
       }
 
       battle.info(user, "haze", [
-        {id: user.owner.id, v: {stages: null, stats: {...user.v.stats}}},
-        {id: target.owner.id, v: {stages: null, stats: {...target.v.stats}}},
+        {id: user.owner.id, v: {stages: null, stats: user.dmgCalcStats(battle)}},
+        {id: target.owner.id, v: {stages: null, stats: target.dmgCalcStats(battle)}},
       ]);
     },
   },
