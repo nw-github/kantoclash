@@ -244,7 +244,7 @@ const importOrCopy = async () => {
   importText.value = "";
   myTeams.value.unshift(...teams);
   if (teams.length === 1) {
-    editingTeam.value = myTeams.value.at(-1);
+    editingTeam.value = myTeams.value.at(0);
   } else if (!teams.length) {
     toast.add({
       title: "Malformed Input!",
