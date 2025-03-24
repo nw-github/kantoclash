@@ -246,8 +246,8 @@ export class Battle {
           return bPri - aPri;
         }
 
-        const aSpe = a.user.owner.active.getStat("spe");
-        const bSpe = b.user.owner.active.getStat("spe");
+        const aSpe = this.gen.getStat(a.user.owner.active, "spe");
+        const bSpe = this.gen.getStat(b.user.owner.active, "spe");
         if (aSpe === bSpe) {
           return this.rng.bool() ? -1 : 1;
         }
@@ -870,17 +870,6 @@ export class ActivePokemon {
     if (this.owner.spikes && !this.v.types.includes("flying")) {
       this.damage(Math.floor(this.base.stats.hp / 8), this, battle, false, "spikes", true);
     }
-  }
-
-  getStat(stat: keyof VolatileStats, isCrit?: boolean, def?: boolean, screen?: boolean) {
-    if (!def && isCrit && this.base.transformed) {
-      return this.base.real.stats[stat];
-    } else if (isCrit) {
-      return this.base.stats[stat];
-    } else if (screen) {
-      return this.v.stats[stat] * 2;
-    }
-    return this.v.stats[stat];
   }
 
   faint(battle: Battle) {

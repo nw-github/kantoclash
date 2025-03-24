@@ -62,6 +62,11 @@ export const randoms = (
   level = 100,
 ) => {
   return getRandomPokemon(gen, 6, validSpecies, (s, id) => {
+    let valid = s.moves;
+    if (valid.includes("sketch")) {
+      valid = Object.keys(gen.moveList).filter(id => isValidSketchMove(gen, id)) as MoveId[];
+    }
+
     const moves = getRandomMoves(4, s.moves, (move, id) => !isBadMove(move, id));
     const stab = s.moves.filter(m => {
       const move = moveList[m];

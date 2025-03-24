@@ -219,7 +219,12 @@ const createGeneration = (): Generation => {
         chance = 50;
       }
 
-      if (!battle.rand255Good(scaleAccuracy255(floatTo255(chance), user, target))) {
+      let acc = scaleAccuracy255(floatTo255(chance), user, target);
+      if (target.base.item === "brightpowder") {
+        acc -= 20;
+      }
+
+      if (!battle.rand255Good(acc)) {
         battle.info(user, "miss");
         return false;
       }
@@ -228,14 +233,12 @@ const createGeneration = (): Generation => {
     calcDamage,
     getDamageVariables(special, user, target, isCrit) {
       const [atks, defs] = special ? (["spa", "spd"] as const) : (["atk", "def"] as const);
-
       if (isCrit && target.v.stages[defs] < user.v.stages[atks]) {
         isCrit = false;
       }
-      const screen = !!target.owner.screens[special ? "light_screen" : "reflect"] && !isCrit;
 
-      let atk = user.getStat(atks, isCrit);
-      let def = target.getStat(defs, isCrit, true, screen);
+      let atk = this.getStat!(user, atks, isCrit);
+      let def = this.getStat!(target, defs, isCrit, true);
       if (atk >= 256 || def >= 256) {
         atk = Math.max(Math.floor(atk / 4) % 256, 1);
         def = Math.max(Math.floor(def / 4) % 256, 1);
@@ -250,6 +253,29 @@ const createGeneration = (): Generation => {
     getSleepTurns: battle => battle.rng.int(1, 6),
     getOHKODamage(user, target, eff) {
       return target.base.level > user.base.level || !eff ? false : 65535;
+    },
+    getStat(poke, stat, isCrit) {
+      const def = stat === "def" || stat === "spd";
+      const screen = def && !!poke.owner.screens[stat === "def" ? "reflect" : "light_screen"];
+
+      let value = poke.v.stats[stat];
+      if (isCrit) {
+        value = poke.base.stats[stat];
+      } else if (screen) {
+        value *= 2;
+      }
+
+      if (poke.base.item === "metalpowder" && def && poke.base.speciesId === "ditto") {
+        value *= 2;
+      } else if (
+        poke.base.item === "lightball" &&
+        stat === "spa" &&
+        poke.base.speciesId === "pikachu"
+      ) {
+        value *= 2;
+      }
+
+      return value;
     },
   };
 

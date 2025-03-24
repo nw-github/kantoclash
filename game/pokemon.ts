@@ -2,11 +2,16 @@ import type {Generation} from "./gen";
 import type {Species, SpeciesId} from "./species";
 import type {MoveId} from "./moves";
 import type {StageStats, Stats} from "./utils";
+import type {ItemId} from "./item";
 
 export type Status = "psn" | "par" | "slp" | "frz" | "tox" | "brn";
 export type Gender = "male" | "female" | undefined;
 
-export type PokemonDesc<Species extends string = string, Move extends string = string> = {
+export type PokemonDesc<
+  Species extends string = string,
+  Move extends string = string,
+  Item extends string = string,
+> = {
   evs?: Partial<Stats>;
   ivs?: Partial<Stats>;
   level?: number;
@@ -14,9 +19,10 @@ export type PokemonDesc<Species extends string = string, Move extends string = s
   species: Species;
   moves: Move[];
   friendship?: number;
+  item?: Item;
 };
 
-export type ValidatedPokemonDesc = PokemonDesc<SpeciesId, MoveId>;
+export type ValidatedPokemonDesc = PokemonDesc<SpeciesId, MoveId, ItemId>;
 
 export class Pokemon {
   readonly stats: Stats;
@@ -24,6 +30,7 @@ export class Pokemon {
   readonly level: number;
   readonly name: string;
   readonly moves: MoveId[];
+  item?: ItemId;
   pp: number[];
   hp: number;
   status?: Status;
@@ -33,7 +40,7 @@ export class Pokemon {
 
   constructor(
     readonly gen: Generation,
-    {species, ivs, evs, level, moves, name, friendship}: ValidatedPokemonDesc,
+    {species, ivs, evs, level, moves, name, friendship, item}: ValidatedPokemonDesc,
   ) {
     this.dvs = {
       hp: getHpDv(ivs),
@@ -48,6 +55,7 @@ export class Pokemon {
     this.moves = moves;
     this.pp = moves.map(move => gen.getMaxPP(gen.moveList[move]));
     this.level = level ?? 100;
+    this.item = item;
     // https://bulbapedia.bulbagarden.net/wiki/Individual_values#Usage
     this.stats = {
       hp: calcStat("hp", this.species.stats, this.level, this.dvs, evs),

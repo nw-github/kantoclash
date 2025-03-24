@@ -1,12 +1,13 @@
 import type {Random} from "random";
-import type {ActivePokemon, Battle} from "../battle";
+import type {ActivePokemon, Battle, VolatileStats} from "../battle";
 import {moveFunctions, moveList, type Move, type MoveId} from "../moves";
 import {speciesList, type Species} from "../species";
 import {floatTo255, idiv, scaleAccuracy255, VolatileFlag, type Type} from "../utils";
+import type {ItemId} from "../item";
 
 export type TypeChart = Record<Type, Partial<Record<Type, number>>>;
 
-export const typeChart: TypeChart = {
+const typeChart: TypeChart = {
   normal: {ghost: 0, rock: 0.5, steel: 0.5},
   rock: {bug: 2, fire: 2, flying: 2, ice: 2, fight: 0.5, ground: 0.5, steel: 0.5},
   ground: {rock: 2, poison: 2, bug: 0.5, flying: 0, grass: 0.5, fire: 2, electric: 2, steel: 2},
@@ -57,6 +58,28 @@ export const typeChart: TypeChart = {
   dark: {ghost: 2, fight: 0.5, psychic: 2, dark: 0.5, steel: 0.5},
   steel: {rock: 2, water: 0.5, fire: 0.5, electric: 0.5, ice: 2, steel: 0.5},
   "???": {},
+};
+
+const itemTypeBoost: Partial<Record<ItemId, Type>> = {
+  softsand: "ground",
+  hardstone: "rock",
+  metalcoat: "steel",
+  pinkbow: "normal",
+  blackbelt: "fight",
+  sharpbeak: "flying",
+  poisonbarb: "poison",
+  silverpowder: "bug",
+  spelltag: "ghost",
+  polkadotbow: "normal",
+  charcoal: "fire",
+  mysticwater: "water",
+  miracleseed: "grass",
+  magnet: "electric",
+  twistedspoon: "psychic",
+  nevermeltice: "ice",
+  dragonscale: "dragon",
+  // dragonfang: "dragon"
+  blackglasses: "dark",
 };
 
 const checkAccuracy = (move: Move, battle: Battle, user: ActivePokemon, target: ActivePokemon) => {
@@ -147,10 +170,8 @@ const getDamageVariables = (
   isCrit: boolean,
 ) => {
   const [atks, defs] = special ? (["spa", "spa"] as const) : (["atk", "def"] as const);
-  const screen = target.v.hasFlag(special ? VolatileFlag.light_screen : VolatileFlag.reflect);
-
-  let atk = user.getStat(atks, isCrit);
-  let def = target.getStat(defs, isCrit, true, screen);
+  let atk = getStat(user, atks, isCrit);
+  let def = getStat(target, defs, isCrit, true);
   if (atk >= 256 || def >= 256) {
     atk = Math.max(Math.floor(atk / 4) % 256, 1);
     // defense doesn't get capped here on cart, potentially causing divide by 0
@@ -295,6 +316,28 @@ const beforeUseMove = (battle: Battle, move: Move, user: ActivePokemon, target: 
   return true;
 };
 
+const getStat = (
+  poke: ActivePokemon,
+  stat: keyof VolatileStats,
+  isCrit?: boolean,
+  def?: boolean,
+) => {
+  // In gen 1, a crit against a transformed pokemon will use its untransformed stats
+  let value = poke.v.stats[stat];
+  if (def && isCrit && poke.base.transformed) {
+    return poke.base.real.stats[stat];
+  }
+
+  const screen =
+    def && poke.v.hasFlag(stat === "def" ? VolatileFlag.reflect : VolatileFlag.light_screen);
+  if (isCrit) {
+    value = poke.base.stats[stat];
+  } else if (screen) {
+    value *= 2;
+  }
+  return value;
+};
+
 const createGeneration = () => {
   return {
     id: 1,
@@ -304,6 +347,7 @@ const createGeneration = () => {
     moveList,
     typeChart,
     moveFunctions,
+    itemTypeBoost,
     lastMoveIdx: moveList.whirlwind.idx!,
     invalidSketchMoves: [
       "transform",
@@ -323,6 +367,7 @@ const createGeneration = () => {
     calcDamage,
     getDamageVariables,
     handleCrashDamage,
+    getStat,
     validSpecies: (species: Species) => species.dexId <= 151,
     getMaxPP: (move: Move) => (move.pp === 1 ? 1 : Math.min(Math.floor((move.pp * 8) / 5), 61)),
     getSleepTurns(battle: Battle) {
@@ -336,7 +381,7 @@ const createGeneration = () => {
       return sleepTurns;
     },
     getOHKODamage(user: ActivePokemon, target: ActivePokemon, eff: number) {
-      return target.getStat("spe") > user.getStat("spe") || !eff ? false : 65535;
+      return getStat(target, "spe") > getStat(user, "spe") || !eff ? false : 65535;
     },
   };
 };

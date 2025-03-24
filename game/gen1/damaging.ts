@@ -287,6 +287,10 @@ export function getDamage(
       pow = result;
     }
 
+    if (user.base.item && battle.gen.itemTypeBoost[user.base.item] === type) {
+      pow += idiv(pow, 10);
+    }
+
     let weather: CalcDamageParams["weather"];
     if (battle.weather?.kind === "rain") {
       weather =
