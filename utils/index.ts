@@ -242,6 +242,10 @@ export const describeMove = (gen: Generation, id: MoveId) => {
     return descriptions[id];
   } else if (move.kind === "damage") {
     let buf = move.flag && move.flag in flagDesc ? flagDesc[move.flag] : "";
+    if (move.flag === "drain" && gen.id === 2) {
+      buf += "Always fails on a target with a substitute. ";
+    }
+
     if (move.charge) {
       buf += "The user charges on the first turn, and attacks on the second. ";
       if (move.charge === "invuln") {

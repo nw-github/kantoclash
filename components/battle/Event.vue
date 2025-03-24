@@ -79,7 +79,7 @@
     <p v-if="e.why === 'ff' || e.why === 'ff_timer'">
       {{ infoMessage[e.why].replace("{}", players[e.src].name) }}
     </p>
-    <p v-else :class="[e.why === 'withdraw' && 'text-xs sm:text-[0.8rem] muted']">
+    <p v-else :class="[e.why === 'withdraw' && 'muted']">
       {{ infoMessage[e.why].replace("{}", pn(e.src)).replace("{l}", pn(e.src, false)).replace("{tl}", tn(e.src, false)) }}
     </p>
 
@@ -106,7 +106,7 @@
   </div>
   <div v-else-if="e.type === 'in_love'" class="move">{{ pn(e.src) }} is in love with {{ pn(e.target, false) }}!</div>
   <div v-else-if="e.type === 'bug'">
-    <p class="text-xs sm:text-[0.8rem] muted">({{ bugMessage[e.bug] }})</p>
+    <p class="muted">({{ bugMessage[e.bug] }})</p>
   </div>
   <div v-else-if="e.type === 'spite'">
     It reduced the PP of {{ pn(e.src, false) }}'s {{ gen.moveList[e.move].name }} by {{ e.amount }}!
@@ -127,12 +127,12 @@
     </template>
   </div>
   <div v-else-if="e.type === 'beatup'">{{ e.name }}'s attack!</div>
-  <div v-else-if="e.type === 'item'">
-    <template v-if="e.item.includes('berry')">{{ pn(e.src) }} ate its {{ gen.items[e.item] }}!</template>
-    <template v-else-if="e.item === 'berserkgene'">{{ pn(e.src) }} used its {{ gen.items[e.item] }}!</template>
-    <template v-else>Unknown event: <code>{{ e }}</code></template>
+  <div v-else-if="e.type === 'item'" class="move">
+    <p class="muted" v-if="e.item.includes('berry')">({{ pn(e.src) }} ate its {{ gen.items[e.item] }}!)</p>
+    <p class="muted" v-else-if="e.item === 'berserkgene'">{{ pn(e.src) }} used its {{ gen.items[e.item] }}!</p>
+    <p class="muted" v-else>Unknown event: <code>{{ e }}</code></p>
   </div>
-  <div v-else-if="e.type === 'pp'">{{ pn(e.src) }}'s {{ gen.moveList[e.move] }} was restored.</div>
+  <div v-else-if="e.type === 'pp'">{{ pn(e.src) }}'s <b>{{ gen.moveList[e.move].name }}</b> was restored!</div>
   <div v-else>Unknown event: <code>{{ e }}</code></div>
 </template>
 
@@ -141,6 +141,10 @@
 
 div {
   @apply text-sm sm:text-base;
+}
+
+.muted {
+  @apply text-xs sm:text-[0.8rem];
 }
 </style>
 

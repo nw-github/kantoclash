@@ -3,7 +3,7 @@ import type {ActivePokemon, Battle, VolatileStats} from "../battle";
 import {moveFunctions, moveList, type Move, type MoveId} from "../moves";
 import {speciesList, type Species} from "../species";
 import {floatTo255, idiv, scaleAccuracy255, VolatileFlag, type Type} from "../utils";
-import {items, type ItemId} from "../item";
+import type {ItemId} from "../item";
 
 export type TypeChart = Record<Type, Partial<Record<Type, number>>>;
 
@@ -346,8 +346,8 @@ const createGeneration = () => {
     speciesList,
     moveList,
     typeChart,
+    items: {} as Record<ItemId, string>,
     moveFunctions,
-    items,
     itemTypeBoost,
     lastMoveIdx: moveList.whirlwind.idx!,
     invalidSketchMoves: [

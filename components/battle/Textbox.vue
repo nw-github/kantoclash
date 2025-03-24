@@ -172,6 +172,7 @@
 import {useMutedPlayerIds} from "~/composables/states";
 import {GENERATIONS} from "~/game/gen";
 import type {InfoRecord} from "~/server/gameServer";
+import {until} from "@vueuse/core";
 
 const props = defineProps<{
   turns: [UIBattleEvent[], boolean, number][];
@@ -193,6 +194,7 @@ const gen = computed(() => GENERATIONS[formatInfo[props.format].generation]!);
 
 let lastScroll = 0;
 onMounted(async () => {
+  await until(scrollPoint).toBeTruthy();
   await nextTick();
   scrollPoint.value?.scrollIntoView({block: "center", inline: "center"});
 

@@ -87,7 +87,8 @@ export type RecoveryReason =
   | "seeder"
   | "pain_split"
   | "present"
-  | "leftovers";
+  | "leftovers"
+  | "item";
 
 export type DamageEvent = {
   type: "damage";
@@ -140,7 +141,7 @@ export type VictoryEvent = {
   why?: "endless" | "too_long" | "timer";
 };
 
-type StatusEvent = {type: "status"; src: PlayerId; status: Status};
+type StatusEvent = {type: "status" | "cure"; src: PlayerId; status: Status};
 
 type StagesEvent = {type: "stages"; src: PlayerId; stat: Stages; count: number};
 

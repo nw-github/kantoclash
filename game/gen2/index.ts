@@ -6,6 +6,7 @@ import {moveFunctionPatches, movePatches} from "./moves";
 import __speciesPatches from "./species.json";
 import type {ActivePokemon, Battle} from "../battle";
 import type {Move} from "../moves";
+import {items} from "../item";
 
 const speciesPatches = __speciesPatches as Partial<Record<SpeciesId, Partial<Species>>>;
 
@@ -170,6 +171,7 @@ const createGeneration = (): Generation => {
     typeChart: typeChartPatch as typeof GENERATION1.typeChart,
     lastMoveIdx: GENERATION1.moveList.zapcannon.idx!,
     moveFunctions: moveFunctionPatches as typeof GENERATION1.moveFunctions,
+    items,
     canSubstitute: (user, hp) => hp < user.base.hp,
     beforeUseMove,
     isValidMove(battle, user, move, i) {

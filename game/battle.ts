@@ -27,6 +27,7 @@ import {
   type Weather,
 } from "./utils";
 import type {Generation} from "./gen";
+import {healBerry, statusBerry} from "./item";
 
 export type MoveOption = {
   move: MoveId;
@@ -541,10 +542,10 @@ export class Battle {
     }
 
     this.event({
-      move: moveId,
       type: "move",
+      move: moveId,
       src: user.owner.id,
-      thrashing: user.v.thrashing && user.v.thrashing.move.flag !== "rollout" ? true : undefined,
+      thrashing: user.v.thrashing && this.gen.id === 1 ? true : undefined,
     });
     user.v.lastMove = move;
 
@@ -769,10 +770,54 @@ export class Battle {
       handleScreen(player, "reflect");
     }
 
+    const cureStatus = (poke: ActivePokemon) => {
+      const status = poke.base.status!;
+      poke.clearStatusAndRecalculate(this);
+      this.event({type: "item", src: poke.owner.id, item: poke.base.item!});
+      this.event({
+        type: "cure",
+        src: poke.owner.id,
+        status,
+        volatiles: [{id: poke.owner.id, v: {status: null, stats: poke.dmgCalcStats(this)}}],
+      });
+      poke.base.item = undefined;
+    };
+
+    const cureConfuse = (poke: ActivePokemon) => {
+      poke.v.confusion = 0;
+      const v = [{id: poke.owner.id, v: {flags: poke.v.flags}}];
+      this.info(poke, "confused_end", v);
+      poke.base.item = undefined;
+    };
+
     //
-    //     for (const {active} of this.players) {
-    //
-    //     }
+    for (const {active} of this.players) {
+      if (active.v.fainted) {
+        continue;
+      }
+
+      if (statusBerry[active.base.item!] && statusBerry[active.base.item!] === active.base.status) {
+        cureStatus(active);
+      } else if (active.base.item === "miracleberry") {
+        if (active.base.status) {
+          cureStatus(active);
+        }
+
+        if (active.v.confusion) {
+          if (active.base.item) {
+            this.event({type: "item", src: active.owner.id, item: active.base.item!});
+          }
+          cureConfuse(active);
+        }
+      } else if (active.base.item === "bitterberry" && active.v.confusion) {
+        this.event({type: "item", src: active.owner.id, item: active.base.item!});
+        cureConfuse(active);
+      } else if (healBerry[active.base.item!] && active.base.hp < idiv(active.base.stats.hp, 2)) {
+        this.event({type: "item", src: active.owner.id, item: active.base.item!});
+        active.recover(healBerry[active.base.item!]!, active, this, "item");
+        active.base.item = undefined;
+      }
+    }
 
     // Encore
     for (const {active} of this.players) {

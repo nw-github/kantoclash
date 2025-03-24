@@ -268,11 +268,11 @@ export function createBotTeam(format: FormatId) {
 
   let team = undefined;
   if (formatInfo[format].needsTeam) {
-    if (format.includes("standard")) {
+    if (format === "g1_standard") {
       team = random.choice(ouTeams)!.pokemon.map(convertDesc);
     } else {
       const gen = GENERATIONS[formatInfo[format].generation]!;
-      team = randoms(gen, s => (format === "g1_nfe") === !!s.evolvesTo);
+      team = randoms(gen, s => format.includes("nfe") === !!s.evolvesTo);
     }
   }
   return team;

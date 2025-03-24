@@ -69,7 +69,7 @@ export const infoMessage: Record<InfoReason, string> = {
   payday: "Coins scattered everywhere!",
   became_confused: "{} became confused!",
   confused: "{} is confused!",
-  confused_end: "{}'s confused no more!",
+  confused_end: "{} is no longer confused!",
   recharge: "{} must recharge!",
   frozen: "{} is frozen solid!",
   sleep: "{} is fast asleep!",

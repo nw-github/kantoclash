@@ -7,6 +7,8 @@ import {z} from "zod";
 import {isValidSketchMove, type FormatId} from "~/utils/shared";
 import {type Generation, GENERATION1} from "~/game/gen";
 import {GENERATION2} from "~/game/gen2";
+import {ItemId} from "~/game/item";
+import {itemDesc} from "~/utils";
 
 export type TeamProblems = {path: (string | number)[]; message: string}[];
 
@@ -80,12 +82,14 @@ export const randoms = (
       moves[0] = random.choice(stab)!;
     }
 
+    const items = (Object.keys(gen.items) as ItemId[]).filter(item => item in itemDesc);
+    let item = random.choice(items);
     let friendship = 255;
     if (moves.includes("frustration")) {
       friendship = 0;
     }
 
-    return {species: id, level, moves, friendship};
+    return {species: id, level, moves, friendship, item};
   });
 };
 
