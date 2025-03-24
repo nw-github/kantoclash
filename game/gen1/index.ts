@@ -3,7 +3,7 @@ import type {ActivePokemon, Battle, VolatileStats} from "../battle";
 import {moveFunctions, moveList, type Move, type MoveId} from "../moves";
 import {speciesList, type Species} from "../species";
 import {floatTo255, idiv, scaleAccuracy255, VolatileFlag, type Type} from "../utils";
-import type {ItemId} from "../item";
+import {items, type ItemId} from "../item";
 
 export type TypeChart = Record<Type, Partial<Record<Type, number>>>;
 
@@ -347,6 +347,7 @@ const createGeneration = () => {
     moveList,
     typeChart,
     moveFunctions,
+    items,
     itemTypeBoost,
     lastMoveIdx: moveList.whirlwind.idx!,
     invalidSketchMoves: [
@@ -363,6 +364,7 @@ const createGeneration = () => {
     beforeUseMove,
     isValidMove,
     tryCrit,
+    tryQuickClaw: (battle: Battle) => battle.rand255Good(60),
     checkAccuracy,
     calcDamage,
     getDamageVariables,

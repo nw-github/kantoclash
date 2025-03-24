@@ -44,6 +44,7 @@
     <p v-if="e.why === 'drain'">{{ pn(e.src) }} has its energy drained!</p>
     <p v-else-if="e.why === 'recover'">{{ pn(e.src) }} regained health!</p>
     <p v-else-if="e.why === 'rest'">{{ pn(e.src) }} started sleeping!</p>
+    <p v-else-if="e.why === 'leftovers'">{{ pn(e.src) }} restored a little HP using its Leftovers!</p>
 
     <p class="text-xs sm:text-[0.8rem] text-[var(--stat-up)]">
       {{ pn(e.target) }} gained
@@ -126,6 +127,11 @@
     </template>
   </div>
   <div v-else-if="e.type === 'beatup'">{{ e.name }}'s attack!</div>
+  <div v-else-if="e.type === 'item'">
+    <template v-if="e.item.includes('berry')">{{ pn(e.src) }} ate its {{ gen.items[e.item] }}!</template>
+    <template v-else>Unknown event: <code>{{ e }}</code></template>
+  </div>
+  <div v-else-if="e.type === 'pp'">{{ pn(e.src) }}'s {{ gen.moveList[e.move] }} was restored.</div>
   <div v-else>Unknown event: <code>{{ e }}</code></div>
 </template>
 

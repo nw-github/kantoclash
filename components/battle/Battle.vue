@@ -602,6 +602,14 @@ const runTurn = async (live: boolean, turnIdx: number) => {
       } else if (e.kind === "end") {
         weather.value = undefined;
       }
+    } else if (e.type === "item") {
+      if (e.src === myId.value) {
+        activeInTeam.value!.item = undefined;
+      }
+    } else if (e.type === "screen") {
+      sides[e.src] ??= {};
+      sides[e.src].screens ??= {};
+      sides[e.src].screens![e.screen] = e.kind === "start";
     }
 
     handleVolatiles(e);

@@ -144,21 +144,20 @@ const internalMoveList = createMoveList({
     name: "Leech Seed",
     pp: 15,
     type: "grass",
-    acc: 80,
+    acc: 90,
     protect: true,
     exec(battle, user, target) {
       if (target.v.types.includes(this.type)) {
-        battle.info(target, "immune");
-        return false;
+        return battle.info(target, "immune");
       } else if (target.v.hasFlag(VolatileFlag.seeded)) {
-        battle.info(target, "fail_generic");
-        return false;
+        return battle.info(target, "fail_generic");
+      } else if (battle.gen.id >= 2 && target.v.substitute) {
+        return battle.info(target, "fail_generic");
       } else if (!battle.checkAccuracy(this, user, target)) {
-        return false;
+        return;
       }
 
       battle.info(target, "seeded", [target.setFlag(VolatileFlag.seeded)]);
-      return false;
     },
   },
   metronome: {
@@ -1299,9 +1298,7 @@ const internalMoveList = createMoveList({
     pp: 10,
     type: "???",
     exec(battle, user, target) {
-      if (!battle.checkAccuracy(this, user, target)) {
-        return;
-      } else if (!user.v.types.includes("ghost")) {
+      if (!user.v.types.includes("ghost")) {
         if (user.v.stages.atk >= 6 && user.v.stages.def >= 6) {
           battle.info(user, "fail_generic");
           return;
@@ -1309,7 +1306,9 @@ const internalMoveList = createMoveList({
         // prettier-ignore
         user.modStages([["atk", +1], ["def", +1], ["spe", -1]], battle);
       } else {
-        if (target.v.substitute) {
+        if (!battle.checkAccuracy(this, user, target)) {
+          return;
+        } else if (target.v.substitute) {
           battle.info(user, "fail_generic");
           return;
         }
@@ -1599,12 +1598,13 @@ const internalMoveList = createMoveList({
     type: "normal",
     protect: true,
     exec(battle, user, target) {
-      if (!target.modStages([["atk", +2]], battle)) {
-        return battle.info(user, "fail_generic");
-      } else if (target.owner.screens.safeguard) {
+      if (target.owner.screens.safeguard) {
+        target.modStages([["atk", +2]], battle);
         return battle.info(user, "safeguard_protect");
       } else if (!battle.checkAccuracy(this, user, target)) {
         return;
+      } else if (!target.modStages([["atk", +2]], battle)) {
+        return battle.info(user, "fail_generic");
       } else {
         target.confuse(battle);
       }

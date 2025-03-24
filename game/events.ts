@@ -4,6 +4,7 @@ import type {MoveId} from "./moves";
 import type {Gender, Status} from "./pokemon";
 import type {SpeciesId} from "./species";
 import type {Stages, Type, VolatileFlag, Weather} from "./utils";
+import type {ItemId} from "./item";
 
 type NullOrOptional<T> = {[P in keyof T]?: T[P] | null};
 
@@ -31,7 +32,9 @@ type AnyEvent =
   | SketchEvent
   | PerishSongEvent
   | TrapEvent
-  | BeatUpEvent;
+  | BeatUpEvent
+  | UseItemEvent
+  | RestorePPEvent;
 
 export type ChangedVolatiles = {id: PlayerId; v: NullOrOptional<ClientVolatiles>}[];
 
@@ -84,7 +87,8 @@ export type RecoveryReason =
   | "seeder"
   | "pain_split"
   | "pain_split_enemy"
-  | "present";
+  | "present"
+  | "leftovers";
 
 export type DamageEvent = {
   type: "damage";
@@ -241,3 +245,15 @@ type BeatUpEvent = {type: "beatup"; name: string};
 export type WeatherEvent = {type: "weather"; kind: "start" | "end" | "continue"; weather: Weather};
 
 type PerishSongEvent = {type: "perish"; src: PlayerId; turns: number};
+
+type UseItemEvent = {
+  type: "item";
+  src: PlayerId;
+  item: ItemId;
+};
+
+type RestorePPEvent = {
+  type: "pp";
+  src: PlayerId;
+  move: MoveId;
+};

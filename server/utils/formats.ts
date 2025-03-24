@@ -46,10 +46,14 @@ const getRandomMoves = (
 };
 
 const isBadMove = (move: Move, id: MoveId) => {
-  if (
-    move.kind === "stage" &&
-    move.stages.some(stages => stages[0] === "acc" || stages[0] === "eva")
-  ) {
+  const eva = ([stat, c]: [string, number]) =>
+    (stat === "acc" && c < 0) || (stat === "eva" && c > 0);
+
+  if (move.kind === "stage" && move.stages.some(eva)) {
+    return true;
+  }
+
+  if (move.kind === "damage" && Array.isArray(move.effect?.[1]) && move.effect[1].some(eva)) {
     return true;
   }
 

@@ -4197,6 +4197,7 @@
     "genderRatio": 50
   },
   "magnemite": {
+    "types": ["electric", "steel"],
     "stats": {"hp": 25, "atk": 35, "def": 70, "spa": 95, "spd": 55, "spe": 45},
     "moves": [
       "tackle",
@@ -4236,6 +4237,7 @@
     ]
   },
   "magneton": {
+    "types": ["electric", "steel"],
     "stats": {"hp": 50, "atk": 60, "def": 95, "spa": 120, "spd": 70, "spe": 70},
     "moves": [
       "tackle",

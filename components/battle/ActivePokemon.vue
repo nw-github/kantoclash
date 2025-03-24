@@ -5,11 +5,11 @@
       :class="{invisible: !poke || poke.hidden}"
     >
       <div class="flex justify-between flex-col sm:flex-row">
-        <span class="font-bold flex items-center">
-          {{ poke?.name ?? "--" }}
+        <div class="font-bold flex items-center">
+          <span class="truncate max-w-24">{{ poke?.name ?? "--" }}</span>
           <!-- @vue-expect-error -->
           <GenderIcon class="size-4" :gender="poke?.gender ?? gen1Gender[poke?.speciesId]" />
-        </span>
+        </div>
         <span class="text-[0.75rem] sm:text-sm">Lv. {{ poke?.level ?? 100 }}</span>
       </div>
       <div class="relative overflow-hidden rounded-md bg-[#333] flex">

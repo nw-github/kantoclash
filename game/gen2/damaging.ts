@@ -95,11 +95,7 @@ export function exec(
   }
 
   if (this.flag === "drain" || this.flag === "dream_eater") {
-    // https://www.smogon.com/forums/threads/past-gens-research-thread.3506992/#post-5878612
-    //  - DRAIN HP SIDE EFFECT
-    const dmg = Math.max(Math.floor(dealt / 2), 1);
-    target.lastDamage = dmg;
-    user.recover(dmg, target, battle, "drain");
+    user.recover(Math.max(Math.floor(dealt / 2), 1), target, battle, "drain");
   } else if (this.flag === "explosion") {
     dead = user.damage(user.base.hp, user, battle, false, "explosion", true).dead || dead;
   } else if (this.flag === "double" || this.flag === "triple" || this.flag === "multi") {
@@ -211,7 +207,7 @@ export function exec(
         return;
       } else if (effect === "frz" && target.v.types.includes("ice")) {
         return;
-      } else if ((effect === "psn" || effect === "tox") && target.v.types.includes("psn")) {
+      } else if ((effect === "psn" || effect === "tox") && target.v.types.includes("poison")) {
         return;
       } else if (
         (effect === "psn" || effect === "tox") &&

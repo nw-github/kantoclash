@@ -161,6 +161,9 @@ const descriptions: Partial<Record<MoveId, string>> = {
   batonpass: "Switches while retaining stages and certain volatile status conditions. ",
   beatup:
     "Deals a typeless 10 power attack for each Pokémon in the user's party without a non-volatile status condition. ",
+  nightmare:
+    "The target loses 1/4 its max HP at the end of every turn while asleep. Fails if the " +
+    "target is not asleep. ",
 };
 
 const gen2Descriptions: Partial<Record<MoveId, string>> = {
@@ -175,6 +178,7 @@ const gen2Descriptions: Partial<Record<MoveId, string>> = {
     "attacks. ",
   focusenergy: "Raises the user's critical hit stages by 1. Does not stack. ",
   counter: "Deals 2x the last move's damage if it was physical. ",
+  rage: "Rage builds when attacked while using this move consecutively, increasing its damage. ",
 };
 
 const flagDesc: Record<NonNullable<DamagingMove["flag"]>, string> = {
@@ -199,7 +203,7 @@ const flagDesc: Record<NonNullable<DamagingMove["flag"]>, string> = {
   magnitude: "Power is determined randomly. ",
   false_swipe: "Always leaves the target with at least 1 HP. ",
   tri_attack:
-    "Has a 1/5 chance to burn, paralyze, or freeze the target, and a 1/3 chance to thaw the " +
+    "Has a 20% chance to burn, paralyze, or freeze the target, and a 1/3 chance to thaw the " +
     "target if it is frozen. ",
   rapid_spin: "Removes the entry hazards and the effects of trapping moves and Leech Seed. ",
   thief: "Has a 99.6% chance to steal the target's held item if the user does not have one. ",
@@ -225,7 +229,7 @@ const formatStages = (stages: [Stages, number][]) => {
   }
 
   const [, count] = stages[0];
-  return `${stats} by ${Math.abs(count)} stage(s)`;
+  return `${stats} by ${Math.abs(count)} stage${count > 1 ? "s" : ""}`;
 };
 
 export const describeMove = (gen: Generation, id: MoveId) => {
@@ -244,7 +248,8 @@ export const describeMove = (gen: Generation, id: MoveId) => {
       } else if (move.charge === "sun") {
         buf += "Skips the charging turn if sun is active.";
       } else if (Array.isArray(move.charge)) {
-        buf += `On the charge turn, ${formatStages(move.charge)}. `;
+        const raise = move.charge[0][1] < 0 ? "drops" : "raises";
+        buf += `On the charge turn, ${raise} ${formatStages(move.charge)}. `;
       }
     }
 

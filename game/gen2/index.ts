@@ -190,13 +190,15 @@ const createGeneration = (): Generation => {
       if (user.v.hasFlag(VolatileFlag.focus)) {
         stages++;
       }
-
-      /*
-      if (user.base.item === "scope_lens") {
+      if (user.base.item === "scopelens") {
         stages++;
       }
-      leek & farfetchd, lucky punch & chansey
-      */
+      if (user.base.item === "stick" && user.base.real.speciesId === "farfetchd") {
+        stages += 2;
+      }
+      if (user.base.item === "luckypunch" && user.base.real.speciesId === "chansey") {
+        stages += 2;
+      }
       return battle.rand255Good(floatTo255(critStages[Math.min(stages, 4)] * 100));
     },
     checkAccuracy(move, battle, user, target) {
@@ -250,7 +252,15 @@ const createGeneration = (): Generation => {
       user.damage(Math.floor(dmg / 8), user, battle, false, "crash", true);
     },
     validSpecies: species => species.dexId <= 251,
-    getSleepTurns: battle => battle.rng.int(1, 6),
+    getSleepTurns(battle) {
+      let rng = battle.rng.int(0, 255);
+      let sleepTurns = rng & 7;
+      while (!sleepTurns || sleepTurns === 7) {
+        rng = (rng * 5 + 1) & 255;
+        sleepTurns = rng & 7;
+      }
+      return sleepTurns;
+    },
     getOHKODamage(user, target, eff) {
       return target.base.level > user.base.level || !eff ? false : 65535;
     },
@@ -265,12 +275,22 @@ const createGeneration = (): Generation => {
         value *= 2;
       }
 
-      if (poke.base.item === "metalpowder" && def && poke.base.speciesId === "ditto") {
+      if (
+        poke.base.item === "metalpowder" &&
+        def &&
+        (poke.base.speciesId === "ditto" || poke.base.real.speciesId === "ditto")
+      ) {
         value *= 2;
       } else if (
         poke.base.item === "lightball" &&
         stat === "spa" &&
-        poke.base.speciesId === "pikachu"
+        poke.base.real.speciesId === "pikachu"
+      ) {
+        value *= 2;
+      } else if (
+        poke.base.item === "thickclub" &&
+        stat === "atk" &&
+        poke.base.real.speciesId === "pikachu"
       ) {
         value *= 2;
       }

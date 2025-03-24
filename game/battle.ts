@@ -229,6 +229,18 @@ export class Battle {
   }
 
   nextTurn() {
+    const priorityBrackets = (choices: ChosenMove[]) => {
+      const brackets = [];
+      let start = 0;
+      for (let i = 0; i < choices.length; i++) {
+        if (i === choices.length - 1 || choices[i].move.priority !== choices[i + 1].move.priority) {
+          brackets.push([start, i] as const);
+          start = i + 1;
+        }
+      }
+      return brackets;
+    };
+
     if (!this.players.every(player => !player.options || player.choice)) {
       return;
     }
@@ -237,23 +249,32 @@ export class Battle {
       this.turn++;
     }
 
-    const choices = this.players
+    const tmp = this.players
       .flatMap(({choice}) => (choice ? [choice] : []))
-      .sort((a, b) => {
-        const aPri = a.move.priority ?? 0,
-          bPri = b.move.priority ?? 0;
-        if (aPri !== bPri) {
-          return bPri - aPri;
-        }
-
+      .sort((a, b) => (b.move.priority ?? 0) - (a.move.priority ?? 0));
+    const choices = [];
+    for (const [start, end] of priorityBrackets(tmp)) {
+      const bracket = tmp.slice(start, end + 1).sort((a, b) => {
         const aSpe = this.gen.getStat(a.user.owner.active, "spe");
         const bSpe = this.gen.getStat(b.user.owner.active, "spe");
-        if (aSpe === bSpe) {
-          return this.rng.bool() ? -1 : 1;
+        // TODO: in gen 2, host checks quick claw first and if it procs the second one isnt checked
+        if (a.user.base.item === "quickclaw" && this.gen.tryQuickClaw(this)) {
+          console.log("proc quick claw: ", a.user.base.name);
+          // quick claw activates silently until gen iv
+          return -1;
+        } else if (b.user.base.item === "quickclaw" && this.gen.tryQuickClaw(this)) {
+          console.log("proc quick claw: ", b.user.base.name);
+          // quick claw activates silently until gen iv
+          return 1;
+        } else if (aSpe === bSpe) {
+          return +this.rng.bool() || -1;
         }
 
         return bSpe - aSpe;
       });
+
+      choices.push(...bracket);
+    }
 
     if (this.turnType === TurnType.Lead) {
       this.turnType = TurnType.Switch;
@@ -387,7 +408,7 @@ export class Battle {
 
       if (e.volatiles) {
         result[i] = {
-          ...e,
+          ...result[i],
           volatiles: e.volatiles.map(foo => {
             const result = structuredClone(foo);
             if (foo.id !== player?.id) {
@@ -482,6 +503,13 @@ export class Battle {
         !this.opponentOf(player).active.v.trapping
       ) {
         player.active.v.trapped = undefined;
+      }
+
+      if (player.active.v.hasFlag(VolatileFlag.protect)) {
+        this.event({type: "sv", volatiles: [player.active.clearFlag(VolatileFlag.protect)]});
+      }
+      if (player.active.v.hasFlag(VolatileFlag.endure)) {
+        this.event({type: "sv", volatiles: [player.active.clearFlag(VolatileFlag.endure)]});
       }
     }
   }
@@ -707,6 +735,23 @@ export class Battle {
       return;
     }
 
+    for (const {active} of this.players) {
+      if (active.v.fainted) {
+        continue;
+      }
+
+      if (active.base.item === "leftovers") {
+        active.recover(Math.max(1, idiv(active.base.stats.hp, 16)), active, this, "leftovers");
+      } else if (active.base.item === "mysteryberry") {
+        const slot = active.base.pp.findIndex(pp => pp === 0);
+        if (slot !== -1) {
+          active.base.pp[slot] = 5;
+          this.event({type: "item", src: active.owner.id, item: "mysteryberry"});
+          this.event({type: "pp", src: active.owner.id, move: active.base.moves[slot]});
+        }
+      }
+    }
+
     // Defrost
     if (this.gen.id >= 2) {
       for (const {active} of this.players) {
@@ -719,22 +764,14 @@ export class Battle {
     // Screens
     for (const player of this.players) {
       handleScreen(player, "safeguard");
-    }
-
-    for (const player of this.players) {
       handleScreen(player, "light_screen");
       handleScreen(player, "reflect");
     }
 
     //
-    for (const {active} of this.players) {
-      if (active.v.hasFlag(VolatileFlag.protect)) {
-        this.event({type: "sv", volatiles: [active.clearFlag(VolatileFlag.protect)]});
-      }
-      if (active.v.hasFlag(VolatileFlag.endure)) {
-        this.event({type: "sv", volatiles: [active.clearFlag(VolatileFlag.endure)]});
-      }
-    }
+    //     for (const {active} of this.players) {
+    //
+    //     }
 
     // Encore
     for (const {active} of this.players) {
@@ -1104,7 +1141,7 @@ export class ActivePokemon {
 
   handleRage(battle: Battle) {
     if (
-      this.base.hp &&
+      !this.v.fainted &&
       this.v.thrashing?.move === battle.gen.moveList.rage &&
       this.v.stages.atk < 6
     ) {
@@ -1112,6 +1149,7 @@ export class ActivePokemon {
       this.modStages([["atk", +1]], battle);
     } else if (
       battle.gen.id >= 2 &&
+      !this.v.fainted &&
       this.v.lastMove?.kind === "damage" &&
       this.v.lastMove.flag === "rage"
     ) {

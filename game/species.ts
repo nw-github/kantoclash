@@ -4,7 +4,7 @@ import __speciesList from "./species.json";
 
 export type Species = {
   readonly dexId: number;
-  readonly types: readonly [Type, ...Type[]];
+  readonly types: readonly Type[];
   readonly moves: readonly MoveId[];
   readonly stats: Stats;
   readonly name: string;
