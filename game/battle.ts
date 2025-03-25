@@ -132,6 +132,14 @@ enum TurnType {
   BatonPass,
 }
 
+enum BetweenTurns {
+  Begin,
+  FutureSight,
+  Weather,
+  PartialTrapping,
+  PerishSong,
+}
+
 export class Battle {
   readonly players: [Player, Player];
   private readonly events: BattleEvent[] = [];
@@ -143,6 +151,7 @@ export class Battle {
   finished = false;
   private turn = 0;
   gen1LastDamage = 0;
+  betweenTurns = BetweenTurns.Begin;
 
   private constructor(
     readonly gen: Generation,
@@ -165,6 +174,8 @@ export class Battle {
     mods: Mods = {},
     seed: string = crypto.randomUUID(),
   ) {
+    console.log("new battle, seed: " + seed);
+
     const self = new Battle(gen, player1, player2, mods, new Random(seed));
     self.players[0].updateOptions(self);
     self.players[1].updateOptions(self);
@@ -278,9 +289,6 @@ export class Battle {
       choices.push(...bracket);
     }
 
-    if (this.turnType === TurnType.Lead) {
-      this.turnType = TurnType.Switch;
-    }
     if (choices.every(choice => choice.move.kind === "switch")) {
       // Randomize choices to avoid leaking speed. The player always sees their pokemon switch in
       // first in a link battle on console.
@@ -293,6 +301,7 @@ export class Battle {
         user.v.protectCount = 0;
       }
 
+      user.movedThisTurn = false;
       if (move !== this.gen.moveList.pursuit || this.turnType === TurnType.BatonPass) {
         continue;
       }
@@ -448,67 +457,28 @@ export class Battle {
       if (move.kind !== "switch" && !this.gen.beforeUseMove(this, move, user, target)) {
         this.handleResidualDamage(user);
         if (this.checkFaint(user, target)) {
-          break;
+          return;
         }
 
         user.v.protectCount = 0;
         continue;
       }
 
-      const faintedBetweenTurns = user.v.faintedBetweenTurns;
-
       this.callUseMove(move, user, target, indexInMoves);
-      if (this.turnType !== TurnType.Switch) {
-        if (user.v.inBatonPass) {
+      if (this.turnType !== TurnType.Switch && this.turnType !== TurnType.Lead) {
+        if (user.v.inBatonPass || this.checkFaint(user, target)) {
           return;
-        }
-
-        if (this.checkFaint(user, target)) {
-          break;
         }
 
         this.handleResidualDamage(user);
         if (this.checkFaint(user, target)) {
-          break;
-        }
-      } else {
-        // BUG: https://www.youtube.com/watch?v=1IiPWw5fMf8&t=85s
-        // TODO: this is wrong. We should go back to wherever we were in handleBetweenTurns()
-        // after checkFaint() returned true.
-        if (!faintedBetweenTurns) {
-          if (this.checkFaint(user, target)) {
-            break;
-          }
-        } else if (user.base.hp === 0) {
-          this.event({type: "bug", bug: "bug_gen2_spikes"});
+          return;
         }
       }
     }
 
-    if (this.turnType !== TurnType.Switch) {
+    if (this.turnType !== TurnType.Lead) {
       this.handleBetweenTurns();
-    }
-
-    for (const player of this.players) {
-      player.active.v.hazed = false;
-      player.active.v.flinch = false;
-      player.active.v.inPursuit = false;
-      player.active.v.retaliateDamage = 0;
-      player.active.movedThisTurn = false;
-      if (
-        this.gen.id === 1 &&
-        player.active.v.trapped &&
-        !this.opponentOf(player).active.v.trapping
-      ) {
-        player.active.v.trapped = undefined;
-      }
-
-      if (player.active.v.hasFlag(VolatileFlag.protect)) {
-        this.event({type: "sv", volatiles: [player.active.clearFlag(VolatileFlag.protect)]});
-      }
-      if (player.active.v.hasFlag(VolatileFlag.endure)) {
-        this.event({type: "sv", volatiles: [player.active.clearFlag(VolatileFlag.endure)]});
-      }
     }
   }
 
@@ -565,7 +535,6 @@ export class Battle {
     let fainted = false;
     if (target.base.hp === 0 && !target.v.fainted) {
       target.faint(this);
-      target.v.faintedBetweenTurns = betweenTurns;
       if (!this.victor && target.owner.areAllDead()) {
         this.victor = user.owner;
       }
@@ -574,7 +543,6 @@ export class Battle {
 
     if (user.base.hp === 0 && !user.v.fainted) {
       user.faint(this);
-      user.v.faintedBetweenTurns = betweenTurns;
       if (!this.victor && user.owner.areAllDead()) {
         this.victor = target.owner;
       }
@@ -633,113 +601,120 @@ export class Battle {
   }
 
   private handleBetweenTurns() {
-    const handleScreen = (player: Player, screen: Screen) => {
-      if (player.screens[screen] && --player.screens[screen] === 0) {
-        this.event({type: "screen", src: player.id, screen, kind: "end"});
-      }
-    };
-
-    // Future Sight
-    for (const {active} of this.players) {
-      if (active.futureSight && --active.futureSight.turns === 0) {
-        if (!active.v.fainted) {
-          this.info(active, "future_sight_release");
-          if (!this.checkAccuracy(this.gen.moveList.futuresight, active, active)) {
-            // FIXME: this is lazy
-            this.events.splice(-1, 1);
-            this.info(active, "fail_generic");
-          } else {
-            active.damage(active.futureSight.damage, active, this, false, "future_sight");
-          }
-        }
-
-        active.futureSight = undefined;
-      }
-    }
-
-    if (this.checkFaint(this.players[0].active, this.players[1].active)) {
-      return;
-    }
-
-    // Weather
-    weather: if (this.weather) {
-      if (--this.weather.turns === 0) {
-        this.event({type: "weather", kind: "end", weather: this.weather.kind});
-        delete this.weather;
-        break weather;
-      } else if (this.weather.kind !== "sand") {
-        break weather;
-      }
-
-      this.event({type: "weather", kind: "continue", weather: this.weather.kind});
+    if (this.betweenTurns < BetweenTurns.FutureSight) {
       for (const {active} of this.players) {
-        if (active.v.charging === this.gen.moveList.dig || active.v.fainted) {
-          continue;
-        } else if (active.v.types.some(t => t === "steel" || t === "ground" || t === "rock")) {
-          continue;
-        }
+        if (active.futureSight && --active.futureSight.turns === 0) {
+          if (!active.v.fainted) {
+            this.info(active, "future_sight_release");
+            if (!this.checkAccuracy(this.gen.moveList.futuresight, active, active)) {
+              // FIXME: this is lazy
+              this.events.splice(-1, 1);
+              this.info(active, "fail_generic");
+            } else {
+              active.damage(active.futureSight.damage, active, this, false, "future_sight");
+            }
+          }
 
-        const dmg = Math.max(idiv(active.base.stats.hp, 8), 1);
-        active.damage(dmg, active, this, false, "sandstorm", true);
+          active.futureSight = undefined;
+        }
       }
 
+      this.betweenTurns = BetweenTurns.FutureSight;
       if (this.checkFaint(this.players[0].active, this.players[1].active, true)) {
         return;
       }
     }
 
-    // Partial trapping
-    for (const {active} of this.players) {
-      if (!active.v.trapped || active.v.trapped.turns === -1 || active.v.fainted) {
-        continue;
-      }
+    if (this.betweenTurns < BetweenTurns.Weather) {
+      weather: if (this.weather) {
+        if (--this.weather.turns === 0) {
+          this.event({type: "weather", kind: "end", weather: this.weather.kind});
+          delete this.weather;
+          break weather;
+        } else if (this.weather.kind !== "sand") {
+          break weather;
+        }
 
-      const move = this.moveIdOf(active.v.trapped.move)!;
-      if (--active.v.trapped.turns === 0) {
-        this.event({
-          type: "trap",
-          src: active.owner.id,
-          target: active.owner.id,
-          kind: "end",
-          move,
-          volatiles: [{id: active.owner.id, v: {trapped: null}}],
-        });
-        active.v.trapped = undefined;
-      } else {
-        const dmg = Math.max(idiv(active.base.stats.hp, 16), 1);
-        active.damage2(this, {dmg, src: active, why: "trap_eot", move, direct: true});
+        this.event({type: "weather", kind: "continue", weather: this.weather.kind});
+        for (const {active} of this.players) {
+          if (active.v.charging === this.gen.moveList.dig || active.v.fainted) {
+            continue;
+          } else if (active.v.types.some(t => t === "steel" || t === "ground" || t === "rock")) {
+            continue;
+          }
+
+          const dmg = Math.max(idiv(active.base.stats.hp, 8), 1);
+          active.damage(dmg, active, this, false, "sandstorm", true);
+        }
+
+        this.betweenTurns = BetweenTurns.Weather;
+        if (this.checkFaint(this.players[0].active, this.players[1].active, true)) {
+          return;
+        }
       }
     }
 
-    if (this.checkFaint(this.players[0].active, this.players[1].active)) {
-      return;
-    }
+    if (this.betweenTurns < BetweenTurns.PartialTrapping) {
+      for (const {active} of this.players) {
+        if (!active.v.trapped || active.v.trapped.turns === -1 || active.v.fainted) {
+          continue;
+        }
 
-    // Perish song
-    for (const {active, id} of this.players) {
-      if (active.v.fainted) {
-        continue;
-      }
-
-      if (active.v.perishCount) {
-        --active.v.perishCount;
-
-        const volatiles = [{id, v: {perishCount: active.v.perishCount}}];
-        if (active.v.perishCount !== 3) {
-          this.event({type: "perish", src: id, turns: active.v.perishCount, volatiles});
+        const move = this.moveIdOf(active.v.trapped.move)!;
+        if (--active.v.trapped.turns === 0) {
+          this.event({
+            type: "trap",
+            src: active.owner.id,
+            target: active.owner.id,
+            kind: "end",
+            move,
+            volatiles: [{id: active.owner.id, v: {trapped: null}}],
+          });
+          active.v.trapped = undefined;
         } else {
-          this.event({type: "sv", volatiles});
+          const dmg = Math.max(idiv(active.base.stats.hp, 16), 1);
+          active.damage2(this, {dmg, src: active, why: "trap_eot", move, direct: true});
         }
-        if (!active.v.perishCount) {
-          active.damage(active.base.hp, active, this, false, "perish_song", true);
-        }
+      }
+
+      this.betweenTurns = BetweenTurns.PartialTrapping;
+      if (this.checkFaint(this.players[0].active, this.players[1].active, true)) {
+        return;
       }
     }
 
-    if (this.checkFaint(this.players[0].active, this.players[1].active, true)) {
-      return;
+    if (this.betweenTurns < BetweenTurns.PerishSong) {
+      for (const {active, id} of this.players) {
+        if (active.v.fainted) {
+          continue;
+        }
+
+        if (active.v.perishCount) {
+          --active.v.perishCount;
+
+          const volatiles = [{id, v: {perishCount: active.v.perishCount}}];
+          if (active.v.perishCount !== 3) {
+            this.event({type: "perish", src: id, turns: active.v.perishCount, volatiles});
+          } else {
+            this.event({type: "sv", volatiles});
+          }
+          if (!active.v.perishCount) {
+            active.damage(active.base.hp, active, this, false, "perish_song", true);
+          }
+        }
+      }
+
+      this.betweenTurns = BetweenTurns.PerishSong;
+      if (this.checkFaint(this.players[0].active, this.players[1].active, true)) {
+        return;
+      }
+
+      // BUG: https://www.youtube.com/watch?v=1IiPWw5fMf8&t=85s
+      // This is the last faint check performed between turns. The pokemon that switches in here
+      // can take spikes damage and end up on 0 HP without fainting.
     }
 
+    this.betweenTurns = BetweenTurns.Begin;
     for (const {active} of this.players) {
       if (active.v.fainted) {
         continue;
@@ -769,9 +744,12 @@ export class Battle {
 
     // Screens
     for (const player of this.players) {
-      handleScreen(player, "safeguard");
-      handleScreen(player, "light_screen");
-      handleScreen(player, "reflect");
+      // technically should be safeguard, then light screen and reflect but who cares
+      for (const screen of ["safeguard", "light_screen", "reflect"] as const) {
+        if (player.screens[screen] && --player.screens[screen] === 0) {
+          this.event({type: "screen", src: player.id, screen, kind: "end"});
+        }
+      }
     }
 
     const cureStatus = (poke: ActivePokemon) => {
@@ -832,6 +810,28 @@ export class Battle {
       ) {
         active.v.encore = undefined;
         this.info(active, "encore_end", [{id: active.owner.id, v: {flags: active.v.flags}}]);
+      }
+    }
+
+    for (const {active} of this.players) {
+      if (!active.base.hp) {
+        this.event({type: "bug", bug: "bug_gen2_spikes"});
+      }
+    }
+
+    for (const {active: poke} of this.players) {
+      poke.v.hazed = false;
+      poke.v.flinch = false;
+      poke.v.inPursuit = false;
+      poke.v.retaliateDamage = 0;
+      if (this.gen.id === 1 && poke.v.trapped && !this.opponentOf(poke.owner).active.v.trapping) {
+        poke.v.trapped = undefined;
+      }
+      if (poke.v.hasFlag(VolatileFlag.protect | VolatileFlag.endure)) {
+        this.event({
+          type: "sv",
+          volatiles: [poke.clearFlag(VolatileFlag.protect | VolatileFlag.endure)],
+        });
       }
     }
   }
@@ -1343,7 +1343,6 @@ class Volatiles {
   invuln = false;
   hazed = false;
   fainted = false;
-  faintedBetweenTurns = false;
   inPursuit = false;
   inBatonPass = false;
   usedDefenseCurl = false;
