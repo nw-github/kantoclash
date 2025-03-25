@@ -208,7 +208,7 @@ export function exec(
 
   if (this.effect) {
     // eslint-disable-next-line prefer-const
-    let [chance, effect] = this.effect;
+    let [chance, effect, effectSelf] = this.effect;
     if (effect === "tri_attack") {
       effect = battle.rng.choice(["brn", "par", "frz"] as const)!;
     }
@@ -231,8 +231,11 @@ export function exec(
     } else if (hadSub) {
       return;
     } else if (Array.isArray(effect)) {
-      const poke = this.effect_self ? user : target;
-      poke.modStages(effect, battle);
+      // BUG GEN2:
+      // https://pret.github.io/pokecrystal/bugs_and_glitches.html#moves-that-do-damage-and-increase-your-stats-do-not-increase-stats-after-a-ko
+      if (!(effectSelf && dead)) {
+        (effectSelf ? user : target).modStages(effect, battle);
+      }
     } else if (effect === "flinch") {
       target.v.flinch = true;
     } else if (effect === "thief") {

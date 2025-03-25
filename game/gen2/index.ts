@@ -230,7 +230,7 @@ const createGeneration = (): Generation => {
         acc -= 20;
       }
 
-      console.log(`[${user.base.name}] ${move.name} (Acc ${acc}/255)`);
+      // console.log(`[${user.base.name}] ${move.name} (Acc ${acc}/255)`);
       if (!battle.rand255Good(acc)) {
         battle.info(user, "miss");
         return false;

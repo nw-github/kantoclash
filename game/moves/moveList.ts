@@ -1451,7 +1451,11 @@ const internalMoveList = createMoveList({
 
       if (failed) {
         battle.info(user, "fail_generic");
-      } else if (user.base.item === "kingsrock" && battle.gen.rng.tryKingsRock(battle)) {
+      }
+
+      // BUG GEN2:
+      // https://pret.github.io/pokecrystal/bugs_and_glitches.html#beat-up-may-trigger-kings-rock-even-if-it-failed
+      if (user.base.item === "kingsrock" && battle.gen.rng.tryKingsRock(battle)) {
         target.v.flinch = true;
       }
     },
@@ -1990,8 +1994,7 @@ const internalMoveList = createMoveList({
     power: 60,
     acc: 100,
     // prettier-ignore
-    effect: [10, [["atk", +1], ["def", +1], ["spa", +1], ["spd", +1], ["spe", +1]]],
-    effect_self: true,
+    effect: [10, [["atk", +1], ["def", +1], ["spa", +1], ["spd", +1], ["spe", +1]], true],
   },
   bonerush: {
     kind: "damage",
@@ -2199,8 +2202,7 @@ const internalMoveList = createMoveList({
     type: "steel",
     power: 50,
     acc: 95,
-    effect: [10, [["atk", +1]]],
-    effect_self: true,
+    effect: [10, [["atk", +1]], true],
   },
   mudslap: {
     kind: "damage",
@@ -2364,8 +2366,7 @@ const internalMoveList = createMoveList({
     type: "steel",
     power: 70,
     acc: 90,
-    effect: [10, [["def", +1]]],
-    effect_self: true,
+    effect: [10, [["def", +1]], true],
   },
   thief: {
     kind: "damage",
