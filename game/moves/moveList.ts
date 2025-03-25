@@ -18,6 +18,7 @@ const internalMoveList = createMoveList({
     pp: 10,
     type: "normal",
     noSleepTalk: true,
+    kingsRock: true,
     use(battle, user, target, moveIndex) {
       if (!user.v.bide) {
         return battle.defaultUseMove(this, user, target, moveIndex);
@@ -374,7 +375,15 @@ const internalMoveList = createMoveList({
   },
   withdraw: {kind: "stage", name: "Withdraw", pp: 40, type: "water", stages: [["def", 1]]},
   // --
-  absorb: {kind: "damage", name: "Absorb", pp: 20, type: "grass", power: 20, acc: 100},
+  absorb: {
+    kind: "damage",
+    name: "Absorb",
+    pp: 20,
+    type: "grass",
+    power: 20,
+    acc: 100,
+    kingsRock: true,
+  },
   acid: {
     kind: "damage",
     name: "Acid",
@@ -401,8 +410,17 @@ const internalMoveList = createMoveList({
     power: 15,
     acc: 85,
     flag: "multi",
+    kingsRock: true,
   },
-  bind: {kind: "damage", name: "Bind", pp: 20, type: "normal", acc: 75, power: 15, flag: "trap"},
+  bind: {
+    kind: "damage",
+    name: "Bind",
+    pp: 20,
+    type: "normal",
+    acc: 75,
+    power: 15,
+    flag: "trap",
+  },
   bodyslam: {
     kind: "damage",
     name: "Body Slam",
@@ -420,6 +438,7 @@ const internalMoveList = createMoveList({
     power: 50,
     acc: 90,
     flag: "double",
+    kingsRock: true,
   },
   bubble: {
     kind: "damage",
@@ -466,7 +485,15 @@ const internalMoveList = createMoveList({
     acc: 85,
     effect: [10.2 /* 26/256 */, "flinch"],
   },
-  clamp: {kind: "damage", name: "Clamp", pp: 10, type: "water", acc: 75, power: 35, flag: "trap"},
+  clamp: {
+    kind: "damage",
+    name: "Clamp",
+    pp: 10,
+    type: "water",
+    acc: 75,
+    power: 35,
+    flag: "trap",
+  },
   cometpunch: {
     kind: "damage",
     name: "Comet Punch",
@@ -475,6 +502,7 @@ const internalMoveList = createMoveList({
     power: 18,
     acc: 85,
     flag: "multi",
+    kingsRock: true,
   },
   confusion: {
     kind: "damage",
@@ -502,6 +530,7 @@ const internalMoveList = createMoveList({
     acc: 100,
     power: 1,
     priority: -1,
+    kingsRock: true,
     getDamage(_, user, target) {
       // https://www.youtube.com/watch?v=ftTalHMjPRY
       //  On cartrige, the move counter uses is updated whenever a player hovers over a move (even
@@ -529,8 +558,9 @@ const internalMoveList = createMoveList({
     power: 90,
     acc: 85,
     flag: "high_crit",
+    kingsRock: true,
   },
-  cut: {kind: "damage", name: "Cut", pp: 30, type: "normal", power: 50, acc: 95},
+  cut: {kind: "damage", name: "Cut", pp: 30, type: "normal", power: 50, acc: 95, kingsRock: true},
   dig: {
     kind: "damage",
     name: "Dig",
@@ -540,6 +570,7 @@ const internalMoveList = createMoveList({
     acc: 100,
     charge: "invuln",
     noSleepTalk: true,
+    kingsRock: true,
   },
   dizzypunch: {kind: "damage", name: "Dizzy Punch", pp: 10, type: "normal", power: 70, acc: 100},
   doubleedge: {
@@ -550,6 +581,7 @@ const internalMoveList = createMoveList({
     power: 100,
     acc: 100,
     recoil: 4, // 1 / 4
+    kingsRock: true,
   },
   doublekick: {
     kind: "damage",
@@ -559,6 +591,7 @@ const internalMoveList = createMoveList({
     power: 30,
     acc: 100,
     flag: "double",
+    kingsRock: true,
   },
   doubleslap: {
     kind: "damage",
@@ -568,6 +601,7 @@ const internalMoveList = createMoveList({
     power: 15,
     acc: 85,
     flag: "multi",
+    kingsRock: true,
   },
   dragonrage: {
     kind: "damage",
@@ -587,9 +621,32 @@ const internalMoveList = createMoveList({
     acc: 100,
     flag: "dream_eater",
   },
-  drillpeck: {kind: "damage", name: "Drill Peck", pp: 20, type: "flying", power: 80, acc: 100},
-  eggbomb: {kind: "damage", name: "Egg Bomb", pp: 10, type: "normal", power: 100, acc: 75},
-  earthquake: {kind: "damage", name: "Earthquake", pp: 10, type: "ground", power: 100, acc: 100},
+  drillpeck: {
+    kind: "damage",
+    name: "Drill Peck",
+    pp: 20,
+    type: "flying",
+    power: 80,
+    acc: 100,
+    kingsRock: true,
+  },
+  eggbomb: {
+    kind: "damage",
+    name: "Egg Bomb",
+    pp: 10,
+    type: "normal",
+    power: 100,
+    acc: 75,
+    kingsRock: true,
+  },
+  earthquake: {
+    kind: "damage",
+    name: "Earthquake",
+    pp: 10,
+    type: "ground",
+    power: 100,
+    acc: 100,
+  },
   ember: {
     kind: "damage",
     name: "Ember",
@@ -607,6 +664,7 @@ const internalMoveList = createMoveList({
     power: 170,
     acc: 100,
     flag: "explosion",
+    kingsRock: true,
   },
   fireblast: {
     kind: "damage",
@@ -662,6 +720,7 @@ const internalMoveList = createMoveList({
     acc: 95,
     charge: "invuln",
     noSleepTalk: true,
+    kingsRock: true,
   },
   furyattack: {
     kind: "damage",
@@ -671,6 +730,7 @@ const internalMoveList = createMoveList({
     power: 15,
     acc: 85,
     flag: "multi",
+    kingsRock: true,
   },
   furyswipes: {
     kind: "damage",
@@ -680,6 +740,7 @@ const internalMoveList = createMoveList({
     power: 18,
     acc: 80,
     flag: "multi",
+    kingsRock: true,
   },
   guillotine: {
     kind: "damage",
@@ -690,7 +751,14 @@ const internalMoveList = createMoveList({
     power: 1,
     flag: "ohko",
   },
-  gust: {kind: "damage", name: "Gust", pp: 35, type: "normal", power: 40, acc: 100},
+  gust: {
+    kind: "damage",
+    name: "Gust",
+    pp: 35,
+    type: "normal",
+    power: 40,
+    acc: 100,
+  },
   headbutt: {
     kind: "damage",
     name: "Headbutt",
@@ -708,8 +776,17 @@ const internalMoveList = createMoveList({
     power: 85,
     acc: 90,
     flag: "crash",
+    kingsRock: true,
   },
-  hornattack: {kind: "damage", name: "Horn Attack", pp: 25, type: "normal", power: 65, acc: 100},
+  hornattack: {
+    kind: "damage",
+    name: "Horn Attack",
+    pp: 25,
+    type: "normal",
+    power: 65,
+    acc: 100,
+    kingsRock: true,
+  },
   horndrill: {
     kind: "damage",
     name: "Horn Drill",
@@ -719,7 +796,15 @@ const internalMoveList = createMoveList({
     power: 1,
     flag: "ohko",
   },
-  hydropump: {kind: "damage", name: "Hydro Pump", pp: 5, type: "water", power: 120, acc: 80},
+  hydropump: {
+    kind: "damage",
+    name: "Hydro Pump",
+    pp: 5,
+    type: "water",
+    power: 120,
+    acc: 80,
+    kingsRock: true,
+  },
   hyperbeam: {
     kind: "damage",
     name: "Hyper Beam",
@@ -764,6 +849,7 @@ const internalMoveList = createMoveList({
     power: 70,
     acc: 95,
     flag: "crash",
+    kingsRock: true,
   },
   karatechop: {
     kind: "damage",
@@ -773,6 +859,7 @@ const internalMoveList = createMoveList({
     power: 50,
     acc: 100,
     flag: "high_crit",
+    kingsRock: true,
   },
   leechlife: {
     kind: "damage",
@@ -782,6 +869,7 @@ const internalMoveList = createMoveList({
     power: 20,
     acc: 100,
     flag: "drain",
+    kingsRock: true,
   },
   lick: {
     kind: "damage",
@@ -809,9 +897,26 @@ const internalMoveList = createMoveList({
     power: 40,
     acc: 100,
     flag: "drain",
+    kingsRock: true,
   },
-  megakick: {kind: "damage", name: "Mega Kick", pp: 5, type: "normal", power: 120, acc: 75},
-  megapunch: {kind: "damage", name: "Mega Punch", pp: 20, type: "normal", power: 80, acc: 85},
+  megakick: {
+    kind: "damage",
+    name: "Mega Kick",
+    pp: 5,
+    type: "normal",
+    power: 120,
+    acc: 75,
+    kingsRock: true,
+  },
+  megapunch: {
+    kind: "damage",
+    name: "Mega Punch",
+    pp: 20,
+    type: "normal",
+    power: 80,
+    acc: 85,
+    kingsRock: true,
+  },
   nightshade: {
     kind: "damage",
     name: "Night Shade",
@@ -819,6 +924,7 @@ const internalMoveList = createMoveList({
     type: "ghost",
     acc: 100,
     power: 1,
+    kingsRock: true,
     getDamage: (_, user) => user.base.level,
   },
   payday: {
@@ -829,8 +935,17 @@ const internalMoveList = createMoveList({
     power: 40,
     acc: 100,
     flag: "payday",
+    kingsRock: true,
   },
-  peck: {kind: "damage", name: "Peck", pp: 35, type: "flying", power: 35, acc: 100},
+  peck: {
+    kind: "damage",
+    name: "Peck",
+    pp: 35,
+    type: "flying",
+    power: 35,
+    acc: 100,
+    kingsRock: true,
+  },
   petaldance: {
     kind: "damage",
     name: "Petal Dance",
@@ -839,6 +954,7 @@ const internalMoveList = createMoveList({
     power: 70,
     acc: 100,
     flag: "multi_turn",
+    kingsRock: true,
   },
   pinmissile: {
     kind: "damage",
@@ -848,6 +964,7 @@ const internalMoveList = createMoveList({
     power: 14,
     acc: 85,
     flag: "multi",
+    kingsRock: true,
   },
   poisonsting: {
     kind: "damage",
@@ -858,7 +975,15 @@ const internalMoveList = createMoveList({
     acc: 100,
     effect: [20.4 /* 52/256 */, "psn"],
   },
-  pound: {kind: "damage", name: "Pound", pp: 35, type: "normal", power: 40, acc: 100},
+  pound: {
+    kind: "damage",
+    name: "Pound",
+    pp: 35,
+    type: "normal",
+    power: 40,
+    acc: 100,
+    kingsRock: true,
+  },
   psybeam: {
     kind: "damage",
     name: "Psybeam",
@@ -884,6 +1009,7 @@ const internalMoveList = createMoveList({
     type: "psychic",
     power: 1,
     acc: 80,
+    kingsRock: true,
     getDamage(battle, user) {
       // psywave has a desync glitch that we don't emulate
       return battle.rng.int(1, Math.max(Math.floor(user.base.level * 1.5 - 1), 1));
@@ -897,8 +1023,18 @@ const internalMoveList = createMoveList({
     power: 40,
     acc: 100,
     priority: +1,
+    kingsRock: true,
   },
-  rage: {kind: "damage", name: "Rage", pp: 20, type: "normal", acc: 100, power: 20, flag: "rage"},
+  rage: {
+    kind: "damage",
+    name: "Rage",
+    pp: 20,
+    type: "normal",
+    acc: 100,
+    power: 20,
+    flag: "rage",
+    kingsRock: true,
+  },
   razorleaf: {
     kind: "damage",
     name: "Razor Leaf",
@@ -907,6 +1043,7 @@ const internalMoveList = createMoveList({
     power: 55,
     acc: 95,
     flag: "high_crit",
+    kingsRock: true,
   },
   razorwind: {
     kind: "damage",
@@ -917,9 +1054,18 @@ const internalMoveList = createMoveList({
     acc: 75,
     charge: true,
     noSleepTalk: true,
+    kingsRock: true,
   },
   rockslide: {kind: "damage", name: "Rock Slide", pp: 10, type: "rock", power: 75, acc: 90},
-  rockthrow: {kind: "damage", name: "Rock Throw", pp: 15, type: "rock", power: 50, acc: 65},
+  rockthrow: {
+    kind: "damage",
+    name: "Rock Throw",
+    pp: 15,
+    type: "rock",
+    power: 50,
+    acc: 65,
+    kingsRock: true,
+  },
   rollingkick: {
     kind: "damage",
     name: "Rolling Kick",
@@ -937,8 +1083,17 @@ const internalMoveList = createMoveList({
     power: 130,
     acc: 100,
     flag: "explosion",
+    kingsRock: true,
   },
-  scratch: {kind: "damage", name: "Scratch", pp: 35, type: "normal", power: 40, acc: 100},
+  scratch: {
+    kind: "damage",
+    name: "Scratch",
+    pp: 35,
+    type: "normal",
+    power: 40,
+    acc: 100,
+    kingsRock: true,
+  },
   seismictoss: {
     kind: "damage",
     name: "Seismic Toss",
@@ -946,6 +1101,7 @@ const internalMoveList = createMoveList({
     type: "fight",
     acc: 100,
     power: 1,
+    kingsRock: true,
     getDamage: (_, user) => user.base.level,
   },
   skullbash: {
@@ -957,6 +1113,7 @@ const internalMoveList = createMoveList({
     acc: 100,
     charge: true,
     noSleepTalk: true,
+    kingsRock: true,
   },
   skyattack: {
     kind: "damage",
@@ -967,8 +1124,9 @@ const internalMoveList = createMoveList({
     acc: 90,
     charge: true,
     noSleepTalk: true,
+    kingsRock: true,
   },
-  slam: {kind: "damage", name: "Slam", pp: 20, type: "normal", power: 80, acc: 75},
+  slam: {kind: "damage", name: "Slam", pp: 20, type: "normal", power: 80, acc: 75, kingsRock: true},
   slash: {
     kind: "damage",
     name: "Slash",
@@ -977,6 +1135,7 @@ const internalMoveList = createMoveList({
     power: 70,
     acc: 100,
     flag: "high_crit",
+    kingsRock: true,
   },
   sludge: {
     kind: "damage",
@@ -1005,6 +1164,7 @@ const internalMoveList = createMoveList({
     acc: 100,
     charge: "sun",
     noSleepTalk: true,
+    kingsRock: true,
   },
   sonicboom: {
     kind: "damage",
@@ -1014,6 +1174,7 @@ const internalMoveList = createMoveList({
     acc: 90,
     power: 1,
     getDamage: 20,
+    kingsRock: true,
   },
   spikecannon: {
     kind: "damage",
@@ -1023,6 +1184,7 @@ const internalMoveList = createMoveList({
     power: 20,
     acc: 100,
     flag: "multi",
+    kingsRock: true,
   },
   stomp: {
     kind: "damage",
@@ -1033,7 +1195,15 @@ const internalMoveList = createMoveList({
     acc: 100,
     effect: [30.1 /* 77/256 */, "flinch"],
   },
-  strength: {kind: "damage", name: "Strength", pp: 15, type: "normal", power: 80, acc: 100},
+  strength: {
+    kind: "damage",
+    name: "Strength",
+    pp: 15,
+    type: "normal",
+    power: 80,
+    acc: 100,
+    kingsRock: true,
+  },
   struggle: {
     kind: "damage",
     name: "Struggle",
@@ -1044,6 +1214,7 @@ const internalMoveList = createMoveList({
     recoil: 2,
     noMetronome: true,
     noEncore: true,
+    kingsRock: true,
   },
   submission: {
     kind: "damage",
@@ -1053,6 +1224,7 @@ const internalMoveList = createMoveList({
     power: 80,
     acc: 80,
     recoil: 4,
+    kingsRock: true,
   },
   superfang: {
     kind: "damage",
@@ -1061,11 +1233,20 @@ const internalMoveList = createMoveList({
     type: "normal",
     acc: 90,
     power: 1,
+    kingsRock: true,
     getDamage: (_battle, _, target) => Math.max(Math.floor(target.base.hp / 2), 1),
   },
-  surf: {kind: "damage", name: "Surf", pp: 15, type: "water", power: 95, acc: 100},
-  swift: {kind: "damage", name: "Swift", pp: 20, type: "normal", power: 60},
-  tackle: {kind: "damage", name: "Tackle", pp: 35, type: "normal", power: 35, acc: 95},
+  surf: {kind: "damage", name: "Surf", pp: 15, type: "water", power: 95, acc: 100, kingsRock: true},
+  swift: {kind: "damage", name: "Swift", pp: 20, type: "normal", power: 60, kingsRock: true},
+  tackle: {
+    kind: "damage",
+    name: "Tackle",
+    pp: 35,
+    type: "normal",
+    power: 35,
+    acc: 95,
+    kingsRock: true,
+  },
   takedown: {
     kind: "damage",
     name: "Take Down",
@@ -1074,6 +1255,7 @@ const internalMoveList = createMoveList({
     power: 90,
     acc: 85,
     recoil: 4,
+    kingsRock: true,
   },
   thrash: {
     kind: "damage",
@@ -1083,6 +1265,7 @@ const internalMoveList = createMoveList({
     power: 90,
     acc: 100,
     flag: "multi_turn",
+    kingsRock: true,
   },
   thunder: {
     kind: "damage",
@@ -1130,13 +1313,62 @@ const internalMoveList = createMoveList({
     acc: 100,
     flag: "double",
     effect: [20 /* 51/256 [citation needed] */, "psn"],
+    kingsRock: true,
   },
-  vinewhip: {kind: "damage", name: "Vine Whip", pp: 10, type: "grass", power: 35, acc: 100},
-  vicegrip: {kind: "damage", name: "Vice Grip", pp: 30, type: "normal", power: 55, acc: 100},
-  watergun: {kind: "damage", name: "Water Gun", pp: 25, type: "water", power: 40, acc: 100},
-  waterfall: {kind: "damage", name: "Waterfall", pp: 15, type: "water", power: 80, acc: 100},
-  wingattack: {kind: "damage", name: "Wing Attack", pp: 35, type: "flying", power: 35, acc: 100},
-  wrap: {kind: "damage", name: "Wrap", pp: 20, type: "normal", acc: 85, power: 15, flag: "trap"},
+  vinewhip: {
+    kind: "damage",
+    name: "Vine Whip",
+    pp: 10,
+    type: "grass",
+    power: 35,
+    acc: 100,
+    kingsRock: true,
+  },
+  vicegrip: {
+    kind: "damage",
+    name: "Vice Grip",
+    pp: 30,
+    type: "normal",
+    power: 55,
+    acc: 100,
+    kingsRock: true,
+  },
+  watergun: {
+    kind: "damage",
+    name: "Water Gun",
+    pp: 25,
+    type: "water",
+    power: 40,
+    acc: 100,
+    kingsRock: true,
+  },
+  waterfall: {
+    kind: "damage",
+    name: "Waterfall",
+    pp: 15,
+    type: "water",
+    power: 80,
+    acc: 100,
+    kingsRock: true,
+  },
+  wingattack: {
+    kind: "damage",
+    name: "Wing Attack",
+    pp: 35,
+    type: "flying",
+    power: 35,
+    acc: 100,
+    kingsRock: true,
+  },
+  wrap: {
+    kind: "damage",
+    name: "Wrap",
+    pp: 20,
+    type: "normal",
+    acc: 85,
+    power: 15,
+    flag: "trap",
+  },
   // --
   roar: {kind: "fail", name: "Roar", pp: 20, acc: 100, type: "normal", why: "whirlwind"},
   splash: {kind: "fail", name: "Splash", pp: 40, type: "normal", why: "splash"},
@@ -1185,13 +1417,15 @@ const internalMoveList = createMoveList({
     power: 10,
     acc: 100,
     protect: true,
+    kingsRock: true,
     exec(battle, user, target) {
       if (!battle.checkAccuracy(this, user, target)) {
         return;
       }
 
       let failed = true,
-        endured = false;
+        endured = false,
+        focusBand = false;
       for (const poke of user.owner.team) {
         if (poke.status || !poke.hp) {
           continue;
@@ -1210,8 +1444,11 @@ const internalMoveList = createMoveList({
           rand: battle.rng,
         });
 
-        endured = dmg > 0 && dmg > target.base.hp && target.v.hasFlag(VolatileFlag.endure);
-        if (endured) {
+        const deadly = dmg > 0 && dmg > target.base.hp;
+        endured = deadly && target.v.hasFlag(VolatileFlag.endure);
+        focusBand =
+          !endured && user.base.item === "focusband" && battle.gen.rng.tryFocusBand(battle);
+        if (endured || focusBand) {
           dmg = Math.max(target.base.hp - 1, 0);
         }
 
@@ -1223,13 +1460,15 @@ const internalMoveList = createMoveList({
 
       if (endured) {
         battle.info(target, "endure_hit");
+      } else if (focusBand) {
+        battle.info(target, "endure_band");
       }
 
       if (failed) {
         battle.info(user, "fail_generic");
+      } else if (user.base.item === "kingsrock" && battle.gen.rng.tryKingsRock(battle)) {
+        target.v.flinch = true;
       }
-
-      // TODO: kings rock
     },
   },
   bellydrum: {
@@ -1414,6 +1653,7 @@ const internalMoveList = createMoveList({
     priority: -1,
     noMetronome: true,
     special: true,
+    kingsRock: true,
   },
   nightmare: {
     name: "Nightmare",
@@ -1744,6 +1984,7 @@ const internalMoveList = createMoveList({
     power: 100,
     acc: 95,
     flag: "high_crit",
+    kingsRock: true,
   },
   ancientpower: {
     kind: "damage",
@@ -1764,6 +2005,7 @@ const internalMoveList = createMoveList({
     power: 25,
     acc: 90,
     flag: "multi",
+    kingsRock: true,
   },
   crosschop: {
     kind: "damage",
@@ -1773,6 +2015,7 @@ const internalMoveList = createMoveList({
     power: 100,
     acc: 80,
     flag: "high_crit",
+    kingsRock: true,
   },
   crunch: {
     kind: "damage",
@@ -1809,6 +2052,7 @@ const internalMoveList = createMoveList({
     power: 80,
     acc: 100,
     priority: +1,
+    kingsRock: true,
   },
   falseswipe: {
     kind: "damage",
@@ -1818,8 +2062,16 @@ const internalMoveList = createMoveList({
     power: 40,
     acc: 100,
     flag: "false_swipe",
+    kingsRock: true,
   },
-  feintattack: {kind: "damage", name: "Faint Attack", pp: 20, type: "dark", power: 60},
+  feintattack: {
+    kind: "damage",
+    name: "Faint Attack",
+    pp: 20,
+    type: "dark",
+    power: 60,
+    kingsRock: true,
+  },
   flail: {
     kind: "damage",
     name: "Flail",
@@ -1829,6 +2081,7 @@ const internalMoveList = createMoveList({
     acc: 100,
     getPower: getFlailPower,
     flag: "flail",
+    kingsRock: true,
   },
   flamewheel: {
     kind: "damage",
@@ -1848,6 +2101,7 @@ const internalMoveList = createMoveList({
     power: 0,
     acc: 100,
     getPower: user => idiv(255 - user.friendship, 2.5),
+    kingsRock: true,
   },
   furycutter: {
     kind: "damage",
@@ -1857,6 +2111,7 @@ const internalMoveList = createMoveList({
     power: 10,
     acc: 95,
     flag: "fury_cutter",
+    kingsRock: true,
   },
   gigadrain: {
     kind: "damage",
@@ -1866,6 +2121,7 @@ const internalMoveList = createMoveList({
     power: 60,
     acc: 100,
     flag: "drain",
+    kingsRock: true,
   },
   hiddenpower: {
     kind: "damage",
@@ -1874,6 +2130,7 @@ const internalMoveList = createMoveList({
     type: "normal",
     power: 0,
     acc: 100,
+    kingsRock: true,
     getType(user) {
       // prettier-ignore
       const hpTypes: Type[] = [
@@ -1916,6 +2173,7 @@ const internalMoveList = createMoveList({
     power: 40,
     acc: 100,
     priority: +1,
+    kingsRock: true,
   },
   magnitude: {
     kind: "damage",
@@ -1927,8 +2185,17 @@ const internalMoveList = createMoveList({
     flag: "magnitude",
     ignore: ["dig"],
     punish: true,
+    kingsRock: true,
   },
-  megahorn: {kind: "damage", name: "Megahorn", pp: 10, type: "bug", power: 120, acc: 85},
+  megahorn: {
+    kind: "damage",
+    name: "Megahorn",
+    pp: 10,
+    type: "bug",
+    power: 120,
+    acc: 85,
+    kingsRock: true,
+  },
   metalclaw: {
     kind: "damage",
     name: "Metal Claw",
@@ -1965,6 +2232,7 @@ const internalMoveList = createMoveList({
     power: 90,
     acc: 100,
     flag: "multi_turn",
+    kingsRock: true,
   },
   powdersnow: {
     kind: "damage",
@@ -1983,6 +2251,7 @@ const internalMoveList = createMoveList({
     type: "normal",
     acc: 90,
     flag: "present",
+    kingsRock: true,
   },
   pursuit: {
     kind: "damage",
@@ -1991,6 +2260,7 @@ const internalMoveList = createMoveList({
     type: "dark",
     power: 40,
     acc: 100,
+    kingsRock: true,
   },
   rapidspin: {
     kind: "damage",
@@ -2000,6 +2270,7 @@ const internalMoveList = createMoveList({
     power: 20,
     acc: 100,
     flag: "rapid_spin",
+    kingsRock: true,
   },
   return: {
     kind: "damage",
@@ -2008,6 +2279,7 @@ const internalMoveList = createMoveList({
     type: "normal",
     power: 0,
     acc: 100,
+    kingsRock: true,
     getPower: user => idiv(user.friendship, 2.5),
   },
   reversal: {
@@ -2017,8 +2289,9 @@ const internalMoveList = createMoveList({
     type: "fight",
     power: 0,
     acc: 100,
-    getPower: getFlailPower,
     flag: "flail",
+    kingsRock: true,
+    getPower: getFlailPower,
   },
   rocksmash: {
     kind: "damage",
@@ -2037,6 +2310,7 @@ const internalMoveList = createMoveList({
     power: 30,
     acc: 90,
     flag: "rollout",
+    kingsRock: true,
   },
   sacredfire: {
     kind: "damage",
@@ -2076,6 +2350,7 @@ const internalMoveList = createMoveList({
     effect: [30, "flinch"],
     sleepOnly: true,
     whileAsleep: true,
+    kingsRock: true,
   },
   spark: {
     kind: "damage",
@@ -2105,6 +2380,7 @@ const internalMoveList = createMoveList({
     acc: 100,
     noMetronome: true,
     effect: [99.6, "thief"],
+    kingsRock: true,
   },
   triplekick: {
     kind: "damage",
@@ -2114,6 +2390,7 @@ const internalMoveList = createMoveList({
     power: 10,
     acc: 90,
     flag: "triple",
+    kingsRock: true,
   },
   twister: {
     kind: "damage",
@@ -2126,7 +2403,15 @@ const internalMoveList = createMoveList({
     ignore: ["fly", "bounce"],
     punish: true,
   },
-  vitalthrow: {kind: "damage", name: "Vital Throw", pp: 10, type: "fight", power: 70, priority: -1},
+  vitalthrow: {
+    kind: "damage",
+    name: "Vital Throw",
+    pp: 10,
+    type: "fight",
+    power: 70,
+    priority: -1,
+    kingsRock: true,
+  },
   whirlpool: {
     kind: "damage",
     name: "Whirlpool",

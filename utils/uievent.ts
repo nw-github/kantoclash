@@ -103,6 +103,7 @@ export const infoMessage: Record<InfoReason, string> = {
   spikes: "Spikes were scattered all around the feet of {tl}!",
   spin_spikes: "Rapid Spin blew away the Spikes around {tl}'s feet!",
   fail_present: "{} couldn't receive the gift!",
+  endure_band: "{} held on using its Focus Band!",
 };
 
 export const weatherMessage: Record<Weather, Record<WeatherEvent["kind"], string>> = {

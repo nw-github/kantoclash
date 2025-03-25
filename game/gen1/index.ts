@@ -364,7 +364,11 @@ const createGeneration = () => {
     beforeUseMove,
     isValidMove,
     tryCrit,
-    tryQuickClaw: (battle: Battle) => battle.rand255Good(60),
+    rng: {
+      tryQuickClaw: (battle: Battle) => battle.rand255Good(60),
+      tryKingsRock: (battle: Battle) => battle.rand255Good(30),
+      tryFocusBand: (battle: Battle) => battle.rand255Good(30),
+    },
     checkAccuracy,
     calcDamage,
     getDamageVariables,

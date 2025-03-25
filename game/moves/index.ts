@@ -30,6 +30,7 @@ export interface BaseMove {
   readonly protect?: boolean;
   readonly whileAsleep?: boolean;
   readonly selfThaw?: boolean;
+  readonly kingsRock?: boolean;
 }
 
 export interface CustomMove extends BaseMove {

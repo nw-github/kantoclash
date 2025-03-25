@@ -23,7 +23,7 @@ export function exec(
 
   const protect = target.v.hasFlag(VolatileFlag.protect);
   // eslint-disable-next-line prefer-const
-  let {dmg, isCrit, eff, realEff, endured, fail} = getDamage(this, battle, user, target);
+  let {dmg, isCrit, eff, realEff, endured, fail, band} = getDamage(this, battle, user, target);
   if (user.v.thrashing && --user.v.thrashing.turns === 0) {
     user.v.thrashing = undefined;
     user.v.rollout = 0;
@@ -103,12 +103,13 @@ export function exec(
     const count = counts[this.flag];
     for (let hits = 1; !dead && !endured && hits < count; hits++) {
       hadSub = target.v.substitute !== 0;
-      ({dmg, isCrit, endured} = getDamage(
+      ({dmg, isCrit, endured, band} = getDamage(
         this,
         battle,
         user,
         target,
         this.flag === "triple" ? hits + 1 : 1,
+        band,
       ));
 
       event.hitCount = 0;
@@ -142,6 +143,8 @@ export function exec(
 
   if (endured) {
     battle.info(target, "endure_hit");
+  } else if (band) {
+    battle.info(target, "endure_band");
   }
 
   if (dead && target.v.hasFlag(VolatileFlag.destinyBond)) {
@@ -156,6 +159,15 @@ export function exec(
 
   if (dead) {
     return;
+  }
+
+  if (
+    user.base.item === "kingsrock" &&
+    this.kingsRock &&
+    !hadSub &&
+    battle.gen.rng.tryKingsRock(battle)
+  ) {
+    target.v.flinch = true;
   }
 
   if (this.flag === "trap") {
@@ -193,6 +205,10 @@ export function exec(
       const poke = this.effect_self ? user : target;
       poke.modStages(effect, battle);
     } else if (effect === "flinch") {
+      if (target.base.status === "frz" || target.base.status === "slp") {
+        return;
+      }
+
       target.v.flinch = true;
     } else if (effect === "thief") {
       if (user.base.item || !target.base.item || target.base.item.includes("mail")) {

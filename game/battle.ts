@@ -259,11 +259,11 @@ export class Battle {
         const aSpe = this.gen.getStat(a.user.owner.active, "spe");
         const bSpe = this.gen.getStat(b.user.owner.active, "spe");
         // TODO: in gen 2, host checks quick claw first and if it procs the second one isnt checked
-        if (a.user.base.item === "quickclaw" && this.gen.tryQuickClaw(this)) {
+        if (a.user.base.item === "quickclaw" && this.gen.rng.tryQuickClaw(this)) {
           console.log("proc quick claw: ", a.user.base.name);
           // quick claw activates silently until gen iv
           return -1;
-        } else if (b.user.base.item === "quickclaw" && this.gen.tryQuickClaw(this)) {
+        } else if (b.user.base.item === "quickclaw" && this.gen.rng.tryQuickClaw(this)) {
           console.log("proc quick claw: ", b.user.base.name);
           // quick claw activates silently until gen iv
           return 1;

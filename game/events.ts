@@ -190,6 +190,7 @@ export type InfoReason =
   | "attract"
   | "immobilized"
   | "endure_hit"
+  | "endure_band"
   | "encore_end"
   | "heal_bell"
   | "pain_split"

@@ -67,7 +67,7 @@ const ivsRegex = /^IVs:\s*(\d+\s+\w+\s*\/?\s*)+/i;
 const moveRegex = /^-\s*(.+)/;
 
 const statRegex = /\s*(\d+)\s+(\w+)\s*/g;
-const ignoreChars = /(\s|-|\.)+/g;
+const ignoreChars = /[\s-.'`]+/g;
 const teamRegex = /^===\s*(?:\[(.+)\])?\s*(.+?)\s*===$/;
 
 export const parsePokemon = (src: string): TeamPokemonDesc => {

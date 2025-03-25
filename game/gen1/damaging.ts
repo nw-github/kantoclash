@@ -214,6 +214,19 @@ export function exec(
       poke.modStages(effect, battle);
     } else if (effect === "flinch") {
       target.v.flinch = true;
+    } else if (effect === "thief") {
+      if (user.base.item || !target.base.item || target.base.item.includes("mail")) {
+        return;
+      }
+
+      battle.event({
+        type: "thief",
+        src: user.owner.id,
+        target: target.owner.id,
+        item: target.base.item,
+      });
+      user.base.item = target.base.item;
+      target.base.item = undefined;
     } else {
       if (
         target.owner.screens.safeguard ||
@@ -242,6 +255,7 @@ export function getDamage(
   user: ActivePokemon,
   target: ActivePokemon,
   tripleKick = 1,
+  band = false,
 ) {
   const type = self.getType ? self.getType(user.base) : self.type;
   let pow = self.getPower ? self.getPower(user.base) : self.power;
@@ -345,12 +359,17 @@ export function getDamage(
 
   // TODO: What happens when a pokemon that is 0 HP as a result of the perish song+spikes bug uses
   // endure?
-  const endured = dmg > 0 && dmg > target.base.hp && target.v.hasFlag(VolatileFlag.endure);
-  if (endured) {
+  const deadly = dmg > 0 && dmg > target.base.hp;
+  const endured = deadly && target.v.hasFlag(VolatileFlag.endure);
+  band =
+    band ||
+    (deadly && !endured && target.base.item === "focusband" && battle.gen.rng.tryFocusBand(battle));
+
+  if (endured || band) {
     dmg = Math.max(target.base.hp - 1, 0);
   }
 
-  return {dmg, isCrit, eff, endured, realEff, fail};
+  return {dmg, isCrit, eff, endured, band, realEff, fail};
 }
 
 function trapTarget(self: DamagingMove, rng: Random, user: ActivePokemon, target: ActivePokemon) {
