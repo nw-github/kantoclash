@@ -166,7 +166,7 @@
               <InputWithMax
                 v-model.trim="selectedPoke.data.name"
                 :maxlength="24"
-                :placeholder="selectedPoke.species?.name ?? ''"
+                :placeholder="selectedPoke.species?.name ?? 'No Name'"
               />
               <ItemSelector v-if="gen.id >= 2" v-model="selectedPoke.data.item" class="pt-1" :gen />
             </div>

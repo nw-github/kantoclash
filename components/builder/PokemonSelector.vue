@@ -11,6 +11,7 @@
     <div class="w-full h-full flex items-center justify-center">
       <div
         class="w-[128px] h-[117px] cursor-pointer flex items-center justify-center rounded-md hover:bg-gray-200 focus:bg-gray-200 hover:dark:bg-gray-600 focus:dark:bg-gray-600"
+        :class="model && model in gen.speciesList && isIllegal(gen.speciesList[model as SpeciesId]) && 'bg-red-500 bg-opacity-50'"
         tabindex="0"
         @focus="open = true"
       >
