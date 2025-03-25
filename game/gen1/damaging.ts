@@ -56,6 +56,22 @@ export function exec(
         user.confuse(battle, true);
       }
     }
+  } else if (this.flag === "bide") {
+    if (!user.v.bide) {
+      user.v.bide = {move: this, turns: battle.rng.int(2, 3), dmg: 0};
+      return;
+    }
+
+    // TODO: bulbapedia says lastDamage includes the opponent's self-inflicted confusion damage
+    user.v.bide.dmg += user.lastDamage;
+    user.v.bide.dmg &= 0xffff;
+    if (--user.v.bide.turns !== 0) {
+      // silent on cart
+      battle.info(user, "bide_store");
+      return;
+    }
+
+    battle.info(user, "bide");
   }
 
   if (this.flag === "trap") {

@@ -15,6 +15,19 @@ export function exec(
     user.v.rollout = 0;
   } else if (this.flag === "fury_cutter") {
     user.v.furyCutter++;
+  } else if (this.flag === "bide") {
+    if (!user.v.bide) {
+      user.v.bide = {move: this, turns: battle.rng.int(2, 3), dmg: 0};
+      return;
+    }
+
+    user.v.bide.dmg += user.v.retaliateDamage;
+    if (--user.v.bide.turns !== 0) {
+      battle.info(user, "bide_store");
+      return;
+    }
+
+    battle.info(user, "bide");
   }
 
   if (this.flag === "drain" && target.v.substitute) {

@@ -21,44 +21,6 @@ export const createMoveList = <T extends Record<string, Move>>(list: T) => {
 };
 
 const internalMoveList = createMoveList({
-  bide: {
-    name: "Bide",
-    pp: 10,
-    type: "normal",
-    noSleepTalk: true,
-    kingsRock: true,
-    use(battle, user, target, moveIndex) {
-      if (!user.v.bide) {
-        return battle.defaultUseMove(this, user, target, moveIndex);
-      }
-
-      // TODO: bulbapedia says lastDamage includes the opponent's self-inflicted confusion damage
-      user.v.bide.dmg += user.lastDamage;
-      if (--user.v.bide.turns !== 0) {
-        return;
-      }
-
-      battle.info(user, "bide");
-
-      if (target.v.hasFlag(VolatileFlag.protect)) {
-        return battle.info(target, "protect");
-      }
-
-      const dmg = user.v.bide.dmg;
-      user.v.bide = undefined;
-
-      if (dmg === 0) {
-        return battle.info(user, "miss");
-      }
-
-      return target.damage(dmg * 2, user, battle, false, "attacked").dead;
-    },
-    exec(battle, user, target) {
-      target.lastDamage = 0;
-      user.v.bide = {move: this, turns: battle.rng.int(2, 3), dmg: 0};
-      return false;
-    },
-  },
   conversion: {
     name: "Conversion",
     pp: 30,
@@ -419,6 +381,21 @@ const internalMoveList = createMoveList({
     acc: 85,
     flag: "multi",
     kingsRock: true,
+  },
+  bide: {
+    kind: "damage",
+    name: "Bide",
+    pp: 10,
+    type: "normal",
+    power: 1,
+    noSleepTalk: true,
+    kingsRock: true,
+    flag: "bide",
+    getDamage(_, user) {
+      const dmg = user.v.bide?.dmg;
+      user.v.bide = undefined;
+      return (dmg ?? 0) * 2;
+    },
   },
   bind: {
     kind: "damage",

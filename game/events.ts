@@ -183,6 +183,7 @@ export type InfoReason =
   | "rage"
   | "disable_end"
   | "bide"
+  | "bide_store"
   | "trapped"
   | "ff"
   | "ff_timer"

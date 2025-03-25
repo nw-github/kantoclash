@@ -523,7 +523,7 @@ export class Battle {
       return;
     }
 
-    if (moveIndex !== undefined && !user.v.thrashing) {
+    if (moveIndex !== undefined && !user.v.thrashing && !user.v.bide) {
       user.base.pp[moveIndex]--;
       if (user.base.pp[moveIndex] < 0) {
         user.base.pp[moveIndex] = 63;
@@ -541,22 +541,24 @@ export class Battle {
       user.unstatus(this, "thaw");
     }
 
-    this.event({
-      type: "move",
-      move: moveId,
-      src: user.owner.id,
-      thrashing: user.v.thrashing && this.gen.id === 1 ? true : undefined,
-    });
+    if (!user.v.bide) {
+      this.event({
+        type: "move",
+        move: moveId,
+        src: user.owner.id,
+        thrashing: user.v.thrashing && this.gen.id === 1 ? true : undefined,
+      });
+    }
     user.v.lastMove = move;
 
     if (move.sleepOnly && user.base.status !== "slp") {
       this.info(target, "fail_generic");
-      return false;
+      return;
     }
 
     if (target.v.hasFlag(VolatileFlag.protect) && this.affectedByProtect(move)) {
       this.info(target, "protect");
-      return false;
+      return;
     }
 
     return this.callExecMove(move, user, target, moveIndex);

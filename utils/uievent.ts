@@ -80,6 +80,7 @@ export const infoMessage: Record<InfoReason, string> = {
   rage: "{}'s rage is building!",
   disable_end: "{}'s disabled no more!",
   bide: "{} unleashed energy!",
+  bide_store: "{} is storing energy!",
   trapped: "{} can't move!",
   ff: "{} forfeit the match.",
   ff_timer: "{} ran out of time.",

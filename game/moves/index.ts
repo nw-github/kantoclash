@@ -150,6 +150,7 @@ type Flag =
   | "triple"
   | "multi"
   | "dream_eater"
+  | "bide"
   | "payday"
   | "multi_turn"
   | "rage"
