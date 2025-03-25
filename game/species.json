@@ -935,7 +935,7 @@
     ],
     "evolvesFrom": "sandshrew"
   },
-  "nidoran-f": {
+  "nidoranf": {
     "dexId": 29,
     "name": "Nidoran-F",
     "types": ["poison"],
@@ -1001,7 +1001,7 @@
       "icebeam",
       "bubblebeam"
     ],
-    "evolvesFrom": "nidoran-f",
+    "evolvesFrom": "nidoranf",
     "evolvesTo": "nidoqueen"
   },
   "nidoqueen": {
@@ -1053,7 +1053,7 @@
     ],
     "evolvesFrom": "nidorina"
   },
-  "nidoran-m": {
+  "nidoranm": {
     "dexId": 32,
     "name": "Nidoran-M",
     "types": ["poison"],
@@ -1118,7 +1118,7 @@
       "icebeam",
       "bubblebeam"
     ],
-    "evolvesFrom": "nidoran-m",
+    "evolvesFrom": "nidoranm",
     "evolvesTo": "nidoking"
   },
   "nidoking": {
@@ -4383,7 +4383,7 @@
     ],
     "evolvesFrom": "staryu"
   },
-  "mr-mime": {
+  "mrmime": {
     "dexId": 122,
     "name": "Mr. Mime",
     "types": ["psychic"],
@@ -10079,7 +10079,7 @@
       "whirlpool"
     ]
   },
-  "ho-oh": {
+  "hooh": {
     "dexId": 250,
     "name": "Ho-oh",
     "types": ["fire", "flying"],

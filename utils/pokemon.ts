@@ -109,7 +109,7 @@ export const parsePokemon = (src: string): TeamPokemonDesc => {
     desc.item = item;
   }
 
-  desc.species = normalizeName2(desc.species);
+  desc.species = normalizeName(desc.species);
 
   for (const line of lines.slice(1)) {
     if ((match = line.match(levelRegex))) {
@@ -176,7 +176,7 @@ export const parseTeams = (src: string) => {
 };
 
 export const convertDesc = (desc: PokemonDesc): PokemonDesc => {
-  const species = normalizeName2(desc.species);
+  const species = normalizeName(desc.species);
   const moves: string[] = [];
   for (const move of desc.moves) {
     if (move.trim()) {
@@ -184,7 +184,11 @@ export const convertDesc = (desc: PokemonDesc): PokemonDesc => {
     }
   }
 
-  const item = desc.item && normalizeName(desc.item);
+  let item = desc.item && normalizeName(desc.item);
+  if (!item) {
+    item = undefined;
+  }
+
   const evs: Partial<Stats> = {};
   const ivs: Partial<Stats> = {};
   for (const stat of statKeys) {
@@ -197,8 +201,6 @@ export const convertDesc = (desc: PokemonDesc): PokemonDesc => {
   }
   return {evs, ivs, moves, level: desc.level ?? 100, name: desc.name, species, item};
 };
-
-const normalizeName2 = (v: string) => v.trim().toLowerCase().replaceAll(/\s+/g, "");
 
 export const normalizeName = (v: string) => v.trim().toLowerCase().replaceAll(ignoreChars, "");
 
