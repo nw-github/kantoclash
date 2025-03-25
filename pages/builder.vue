@@ -287,7 +287,9 @@ const duplicateTeam = (team: Team) => {
     }
   }
 
-  myTeams.value.splice(myTeams.value.indexOf(team) + 1, 0, newTeam);
+  const idx = myTeams.value.indexOf(team);
+  myTeams.value.splice(idx, 0, newTeam);
+  editingTeam.value = myTeams.value[idx];
 };
 
 const onImportClick = () => {

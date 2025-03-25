@@ -34,7 +34,8 @@ type AnyEvent =
   | TrapEvent
   | BeatUpEvent
   | UseItemEvent
-  | RestorePPEvent;
+  | RestorePPEvent
+  | ThiefEvent;
 
 export type ChangedVolatiles = {id: PlayerId; v: NullOrOptional<ClientVolatiles>}[];
 
@@ -256,4 +257,11 @@ type RestorePPEvent = {
   type: "pp";
   src: PlayerId;
   move: MoveId;
+};
+
+type ThiefEvent = {
+  type: "thief";
+  src: PlayerId;
+  target: PlayerId;
+  item: ItemId;
 };

@@ -128,11 +128,12 @@
   </div>
   <div v-else-if="e.type === 'beatup'">{{ e.name }}'s attack!</div>
   <div v-else-if="e.type === 'item'" class="move">
-    <p class="muted" v-if="e.item.includes('berry')">({{ pn(e.src) }} ate its {{ gen.items[e.item] }}!)</p>
-    <p class="muted" v-else-if="e.item === 'berserkgene'">{{ pn(e.src) }} used its {{ gen.items[e.item] }}!</p>
-    <p class="muted" v-else>Unknown event: <code>{{ e }}</code></p>
+    <p v-if="e.item.includes('berry')" class="muted">({{ pn(e.src) }} ate its {{ itemList[e.item] }}!)</p>
+    <p v-else-if="e.item === 'berserkgene'" class="muted">{{ pn(e.src) }} used its {{ itemList[e.item] }}!</p>
+    <p v-else class="muted">Unknown event: <code>{{ e }}</code></p>
   </div>
   <div v-else-if="e.type === 'pp'">{{ pn(e.src) }}'s <b>{{ gen.moveList[e.move].name }}</b> was restored!</div>
+  <div v-else-if="e.type === 'thief'">{{ pn(e.src) }} stole {{ pn(e.target, false) }}'s {{ itemList[e.item] }}!</div>
   <div v-else>Unknown event: <code>{{ e }}</code></div>
 </template>
 
@@ -152,6 +153,8 @@ div {
 import {hpPercentExact} from "~/game/utils";
 import type {Generation} from "~/game/gen";
 import {damageMessage} from "~/utils/uievent";
+// Use itemList since gen.items doesn't include every item.
+import {items as itemList} from "~/game/item";
 
 const {perspective, players, myId, e} = defineProps<{
   e: UIBattleEvent;

@@ -2103,8 +2103,8 @@ const internalMoveList = createMoveList({
     type: "dark",
     power: 40,
     acc: 100,
-    flag: "thief",
     noMetronome: true,
+    effect: [99.6, "thief"],
   },
   triplekick: {
     kind: "damage",

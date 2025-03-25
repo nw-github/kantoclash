@@ -610,6 +610,13 @@ const runTurn = async (live: boolean, turnIdx: number) => {
       sides[e.src] ??= {};
       sides[e.src].screens ??= {};
       sides[e.src].screens![e.screen] = e.kind === "start";
+    } else if (e.type === "thief") {
+      if (e.src === myId.value) {
+        activeInTeam.value!.item = e.item;
+      }
+      if (e.target === myId.value) {
+        activeInTeam.value!.item = undefined;
+      }
     }
 
     handleVolatiles(e);

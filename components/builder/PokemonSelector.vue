@@ -2,7 +2,7 @@
   <Selector
     v-model:open="open"
     class="grow"
-    base="w-80 sm:w-[31rem] max-h-60 sm:left-[-7rem]"
+    base="w-96 sm:w-[31rem] max-h-60 sm:left-[-7rem]"
     :items
     searchable
     :filter
@@ -28,25 +28,16 @@
 
       <div class="flex items-center gap-2">
         <TypeBadge v-for="type in species.types" :key="type" :type image />
-        <div class="flex items-center gap-0.5">
-          <UBadge
-            v-for="(name, stat) in statKeys"
-            :key="stat"
-            color="white"
-            size="xs"
-            class="w-8"
-            :ui="{rounded: 'rounded-lg', base: 'flex flex-col justify-center'}"
-          >
-            <span class="text-[0.65rem] px-0.5 -mb-1 text-gray-400 dark:text-gray-200">{{
-              name
-            }}</span>
+        <div class="flex items-center">
+          <div v-for="(name, stat) in statKeys" :key="stat" class="flex flex-col w-6 sm:w-8">
+            <span class="text-[0.6rem] text-center text-gray-400">{{ name }}</span>
             <span
-              class="text-[0.5rem] sm:text-[0.6rem] grow"
+              class="text-[0.7rem] sm:text-xs text-center"
               :style="{color: baseStatColor(species.stats[stat])}"
             >
               {{ species.stats[stat] }}
             </span>
-          </UBadge>
+          </div>
         </div>
       </div>
     </template>

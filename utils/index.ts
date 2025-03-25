@@ -207,7 +207,6 @@ const flagDesc: Record<NonNullable<DamagingMove["flag"]>, string> = {
     "Has a 20% chance to burn, paralyze, or freeze the target, and a 1/3 chance to thaw the " +
     "target if it is frozen. ",
   rapid_spin: "Removes the entry hazards and the effects of trapping moves and Leech Seed. ",
-  thief: "Has a 99.6% chance to steal the target's held item if the user does not have one. ",
   rollout:
     "Locks the user in for 5 turns, doubling in power for each consecutive hit. Boosted if " +
     "Defense Curl was previously used by the user. ",
@@ -268,6 +267,8 @@ export const describeMove = (gen: Generation, id: MoveId) => {
         buf += "confuse the target. ";
       } else if (effect === "flinch") {
         buf += "flinch the target. ";
+      } else if (effect === "thief") {
+        buf += "steal the target's item if it has one and the user does not. ";
       } else {
         buf += dmgStatusTable[effect];
       }

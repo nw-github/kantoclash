@@ -85,9 +85,7 @@ export function exec(
   }
 
   if (this.recoil) {
-    dead =
-      user.damage(Math.max(Math.floor(dealt / this.recoil), 1), user, battle, false, "recoil", true)
-        .dead || dead;
+    user.damage(Math.max(Math.floor(dealt / this.recoil), 1), user, battle, false, "recoil", true);
   }
 
   if (this.flag === "drain" || this.flag === "dream_eater") {
@@ -196,6 +194,19 @@ export function exec(
       poke.modStages(effect, battle);
     } else if (effect === "flinch") {
       target.v.flinch = true;
+    } else if (effect === "thief") {
+      if (user.base.item || !target.base.item || target.base.item.includes("mail")) {
+        return;
+      }
+
+      battle.event({
+        type: "thief",
+        src: user.owner.id,
+        target: target.owner.id,
+        item: target.base.item,
+      });
+      user.base.item = target.base.item;
+      target.base.item = undefined;
     } else {
       if (target.owner.screens.safeguard || target.base.status) {
         return;
