@@ -63,6 +63,7 @@ export interface StageMove extends BaseMove {
 export interface StatusMove extends BaseMove {
   readonly kind: "status";
   readonly status: Status;
+  readonly checkType?: boolean;
 }
 
 export interface SwitchMove extends BaseMove {

@@ -40,6 +40,15 @@ export const statusTable: Record<Status, string> = {
   brn: "was burned",
 };
 
+export const statusNameTable: Record<Status, string> = {
+  psn: "poison",
+  par: "paralysis",
+  slp: "sleep",
+  frz: "freeze",
+  tox: "poison",
+  brn: "burn",
+};
+
 export const chargeMessage: Partial<Record<MoveId, string>> = {
   skullbash: "{} lowered its head!",
   razorwind: "{} made a whirlwind!",

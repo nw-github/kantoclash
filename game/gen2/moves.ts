@@ -17,7 +17,7 @@ If the user is prevented from attacking with SolarBeam during harsh sunlight by 
 
 In this generation only, Mirror Move always fails when used by a transformed Pokémon.
 
-leech seed doesn't interact with toxic N and drains 1/8
+Mimic
 */
 
 // Does 10% chance mean 10.2 /* 26/256 */ like in gen 1?
@@ -52,7 +52,7 @@ export const moveFunctionPatches: Partial<MoveFunctions> = {
       if (target.v.substitute) {
         return battle.info(target, "fail_generic");
       } else if (
-        battle.getEffectiveness(this.type, target) === 0 ||
+        (this.checkType && battle.getEffectiveness(this.type, target) === 0) ||
         ((this.status === "psn" || this.status === "tox") && target.v.types.includes("poison"))
       ) {
         return battle.info(target, "immune");
@@ -129,14 +129,25 @@ export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
   },
   mimic: {noMetronome: true},
   // --
+  roar: {kind: "phaze", acc: 100, priority: -1},
+  whirlwind: {kind: "phaze", acc: 100, priority: -1, ignore: ["fly"]},
+  // --
+  lightscreen: {kind: "screen", screen: "light_screen"},
+  reflect: {kind: "screen", screen: "reflect"},
+  // --
+  amnesia: {stages: [["spd", 2]]},
+  glare: {checkType: true},
+  thunderwave: {checkType: true},
+  // --
+  acid: {effect: [10, [["def", -1]]]},
+  aurorabeam: {effect: [10, [["atk", -1]]]},
+  bite: {type: "dark", effect: [30, "flinch"]},
+  blizzard: {acc: 70},
+  bubble: {effect: [10, [["spe", -1]]]},
+  bubblebeam: {effect: [10, [["spe", -1]]]},
+  constrict: {effect: [10, [["spe", -1]]]},
   counter: {
-    kind: "damage",
-    name: "Counter",
     power: 0,
-    pp: 20,
-    type: "fight",
-    acc: 100,
-    priority: -1,
     noMetronome: true,
     getDamage(battle, user, target) {
       if (
@@ -150,22 +161,6 @@ export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
       return user.v.retaliateDamage * 2;
     },
   },
-  // --
-  roar: {kind: "phaze", acc: 100, priority: -1},
-  whirlwind: {kind: "phaze", acc: 100, priority: -1, ignore: ["fly"]},
-  // --
-  lightscreen: {kind: "screen", screen: "light_screen"},
-  reflect: {kind: "screen", screen: "reflect"},
-  // --
-  amnesia: {stages: [["spd", 2]]},
-  // --
-  acid: {effect: [10, [["def", -1]]]},
-  aurorabeam: {effect: [10, [["atk", -1]]]},
-  bite: {type: "dark", effect: [30, "flinch"]},
-  blizzard: {acc: 70},
-  bubble: {effect: [10, [["spe", -1]]]},
-  bubblebeam: {effect: [10, [["spe", -1]]]},
-  constrict: {effect: [10, [["spe", -1]]]},
   dig: {power: 60},
   dizzypunch: {effect: [20, "confusion"]},
   doubleedge: {power: 120},

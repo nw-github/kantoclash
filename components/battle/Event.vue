@@ -135,6 +135,11 @@
     <template v-if="e.timer">{{ players[e.user].name }} ran out of time.</template>
     <template v-else><b>{{ players[e.user].name }}</b> forfeit the match.</template>
   </div>
+  <div v-else-if="e.type === 'cure'">
+    <template v-if="e.status === 'slp'">{{ pn(e.src) }} woke up!</template>
+    <template v-else-if="e.status === 'frz'">{{ pn(e.src) }} thawed out!</template>
+    <template v-else>{{ pn(e.src) }} was cured of its {{ statusNameTable[e.status] }}!</template>
+  </div>
   <div v-else>Unknown event: <code>{{ e }}</code></div>
 </template>
 

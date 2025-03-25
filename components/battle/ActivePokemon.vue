@@ -101,23 +101,15 @@
           </template>
         </UPopover>
 
-        <!-- TODO: use vue transition -->
-        <div v-if="side?.screens?.light_screen" class="screen bg-pink-500" />
-
-        <div
-          v-if="side?.screens?.reflect"
-          class="screen bg-blue-400"
-          :class="[side?.screens?.light_screen && '-ml-2 -mt-2']"
-        />
-
-        <div
-          v-if="side?.screens?.safeguard"
-          class="screen bg-purple-500"
-          :class="[
-            side?.screens?.light_screen && side?.screens?.reflect && '-ml-4 -mt-4',
-            +!!side?.screens?.light_screen ^ +!!side?.screens?.reflect && '-ml-2 -mt-2',
-          ]"
-        />
+        <TransitionGroup name="screens">
+          <div
+            v-for="{name: key, clazz, style} in screens"
+            :key
+            :class="clazz"
+            :style
+            class="absolute w-[128px] h-[117px] opacity-30 z-30 rounded-md pointer-events-none"
+          />
+        </TransitionGroup>
       </div>
 
       <div
@@ -169,22 +161,18 @@
   }
 }
 
-@keyframes grow {
-  from {
-    transform: scale(0);
-  }
-  to {
-    transform: scale(1);
-  }
+.screens-move,
+.screens-enter-active,
+.screens-leave-active {
+  transition: all 0.4s ease-out;
 }
 
-.screen {
-  @apply absolute w-[128px] h-[117px] opacity-30 z-30 rounded-md pointer-events-none;
+.screens-enter-from {
+  transform: scale(0);
+}
 
-  transition: all 0.5s;
-
-  animation: grow 0.5s ease-out;
-  animation-duration: 0.5s;
+.screens-leave-to {
+  transform: scale(0);
 }
 </style>
 
@@ -195,8 +183,9 @@ import type {MoveId} from "~/game/moves";
 import {breakpointsTailwind} from "@vueuse/core";
 import type {Generation} from "~/game/gen1";
 import type {Side} from "./Battle.vue";
+import type {Screen} from "~/game/battle";
 
-const {poke, base, back, gen} = defineProps<{
+const {poke, base, back, gen, side} = defineProps<{
   poke?: ClientActivePokemon;
   base?: Pokemon;
   back?: boolean;
@@ -222,6 +211,38 @@ const pokeBall = ref<HTMLDivElement>();
 const ground = ref<HTMLDivElement>();
 const pbRow = ref(0);
 const pbCol = ref(3);
+const scrColor = {
+  safeguard: "bg-purple-500",
+  light_screen: "bg-pink-500",
+  reflect: "bg-blue-400",
+};
+
+const screens = computed(() => {
+  const screens = [];
+  let margin = 0;
+  if ((poke?.v.flags ?? 0) & VolatileFlag.protect) {
+    screens.push({
+      name: "protect",
+      clazz: `bg-slate-200`,
+      style: {marginTop: -margin * 0.5 + "rem", marginLeft: -margin * 0.5 + "rem"},
+    });
+    margin++;
+  }
+
+  for (const screen in scrColor) {
+    if (side?.screens?.[screen as Screen]) {
+      screens.push({
+        name: screen,
+        clazz: scrColor[screen as Screen],
+        style: {marginTop: -margin * 0.5 + "rem", marginLeft: -margin * 0.5 + "rem"},
+      });
+
+      margin++;
+    }
+  }
+
+  return screens;
+});
 
 const offsX = (number: number) => `-${number * 42 - number}px`;
 const offsY = (number: number) => `-${number * 42 - number * 2}px`;
