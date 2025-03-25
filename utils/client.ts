@@ -1,5 +1,7 @@
+import type {Move} from "~/game/moves";
 import type {Gender} from "~/game/pokemon";
 import type {SpeciesId} from "~/game/species";
+import {isSpecial, type Type} from "~/game/utils";
 
 export type ClientActivePokemon = {
   hidden?: boolean;
@@ -24,6 +26,14 @@ export type ClientPlayer = {
 };
 
 export const gen1Gender: Partial<Record<SpeciesId, Gender>> = {
-  "nidoran-f": "female",
-  "nidoran-m": "male",
+  nidoranf: "female",
+  nidoranm: "male",
+};
+
+export const getCategory = (move: Move, type?: Type) => {
+  return move.kind === "damage" || move.power
+    ? isSpecial(type ?? move.type)
+      ? "special"
+      : "physical"
+    : "status";
 };
