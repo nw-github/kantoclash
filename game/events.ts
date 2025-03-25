@@ -35,7 +35,8 @@ type AnyEvent =
   | BeatUpEvent
   | UseItemEvent
   | RestorePPEvent
-  | ThiefEvent;
+  | ThiefEvent
+  | ForfeitEvent;
 
 export type ChangedVolatiles = {id: PlayerId; v: NullOrOptional<ClientVolatiles>}[];
 
@@ -185,8 +186,6 @@ export type InfoReason =
   | "bide"
   | "bide_store"
   | "trapped"
-  | "ff"
-  | "ff_timer"
   | "faint"
   | "attract"
   | "immobilized"
@@ -266,4 +265,10 @@ type ThiefEvent = {
   src: PlayerId;
   target: PlayerId;
   item: ItemId;
+};
+
+type ForfeitEvent = {
+  type: "forfeit";
+  user: PlayerId;
+  timer: boolean;
 };

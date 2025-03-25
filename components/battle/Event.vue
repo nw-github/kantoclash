@@ -76,10 +76,7 @@
     {{ pn(e.src) }}'s {{ getStageTable(gen)[e.stat] }} {{ e.count > 0 ? "rose" : "fell" }}{{ Math.abs(e.count) > 1 ? " sharply" : "" }}!
   </div>
   <div v-else-if="e.type === 'info'" :class="{ confused: e.why === 'confused', move: e.why === 'sleep' || e.why === 'disable_end' || e.why === 'wake' }">
-    <p v-if="e.why === 'ff' || e.why === 'ff_timer'">
-      {{ infoMessage[e.why].replace("{}", players[e.src].name) }}
-    </p>
-    <p v-else :class="[e.why === 'withdraw' && 'muted']">
+    <p :class="[e.why === 'withdraw' && 'muted']">
       {{ infoMessage[e.why].replace("{}", pn(e.src)).replace("{l}", pn(e.src, false)).replace("{tl}", tn(e.src, false)) }}
     </p>
 
@@ -134,6 +131,10 @@
   </div>
   <div v-else-if="e.type === 'pp'">{{ pn(e.src) }}'s <b>{{ gen.moveList[e.move].name }}</b> was restored!</div>
   <div v-else-if="e.type === 'thief'">{{ pn(e.src) }} stole {{ pn(e.target, false) }}'s {{ itemList[e.item] }}!</div>
+  <div v-else-if="e.type === 'forfeit'">
+    <template v-if="e.timer">{{ players[e.user].name }} ran out of time.</template>
+    <template v-else><b>{{ players[e.user].name }}</b> forfeit the match.</template>
+  </div>
   <div v-else>Unknown event: <code>{{ e }}</code></div>
 </template>
 

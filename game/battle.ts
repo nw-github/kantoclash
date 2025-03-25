@@ -209,7 +209,7 @@ export class Battle {
 
   forfeit(player: Player, timer: boolean) {
     this.victor = this.opponentOf(player);
-    this.event({type: "info", src: player.id, why: timer ? "ff_timer" : "ff"});
+    this.event({type: "forfeit", user: player.id, timer});
     this.event({type: "end", victor: this.victor.id});
     for (const player of this.players) {
       player.options = undefined;
@@ -221,7 +221,7 @@ export class Battle {
     this.finished = true;
     for (const player of this.players) {
       if (why === "timer") {
-        this.event({type: "info", src: player.id, why: "ff_timer"});
+        this.event({type: "forfeit", user: player.id, timer: true});
       }
       player.options = undefined;
     }

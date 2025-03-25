@@ -82,8 +82,6 @@ export const infoMessage: Record<InfoReason, string> = {
   bide: "{} unleashed energy!",
   bide_store: "{} is storing energy!",
   trapped: "{} can't move!",
-  ff: "{} forfeit the match.",
-  ff_timer: "{} ran out of time.",
   faint: "{} fainted!",
   attract: "{} fell in love!",
   immobilized: "{} is immobilized by love!",
