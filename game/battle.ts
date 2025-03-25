@@ -142,6 +142,7 @@ export class Battle {
   weather?: {kind: Weather; turns: number};
   finished = false;
   private turn = 0;
+  gen1LastDamage = 0;
 
   private constructor(
     readonly gen: Generation,
@@ -862,7 +863,6 @@ type DamageParams = {
 export class ActivePokemon {
   v: Volatiles;
   lastChosenMove?: Move;
-  lastDamage = 0;
   movedThisTurn = false;
   futureSight?: {damage: number; turns: number};
 
@@ -994,7 +994,7 @@ export class ActivePokemon {
       why === "trap"
     ) {
       // Counter uses the damage it would've done ignoring substitutes
-      this.lastDamage = Math.min(this.base.hp, dmg);
+      battle.gen1LastDamage = Math.min(this.base.hp, dmg);
     }
 
     const shouldRage = why === "attacked" || why === "trap";

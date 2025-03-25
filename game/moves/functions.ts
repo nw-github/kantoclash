@@ -70,7 +70,7 @@ export const moveFunctions: MoveFunctions = {
   },
   stage: {
     exec(battle, user, target) {
-      target.lastDamage = 0;
+      battle.gen1LastDamage = 0;
       if (this.acc) {
         if (target.v.hasFlag(VolatileFlag.mist)) {
           return battle.info(target, "mist_protect");

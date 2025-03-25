@@ -92,8 +92,6 @@ export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
   },
   disable: {
     exec(this: Move, battle, user, target) {
-      target.lastDamage = 0;
-
       if (
         target.v.disabled ||
         !target.v.lastMove ||

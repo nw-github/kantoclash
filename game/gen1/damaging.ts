@@ -12,7 +12,7 @@ export function use(
   moveIndex?: number,
 ) {
   if (user.v.trapping && target.v.trapped) {
-    const dead = target.damage(target.lastDamage, user, battle, false, "trap").dead;
+    const dead = target.damage(battle.gen1LastDamage, user, battle, false, "trap").dead;
     if (dead || --user.v.trapping.turns === 0) {
       user.v.trapping = undefined;
     }
@@ -34,7 +34,6 @@ export function use(
 
   user.v.charging = undefined;
   user.v.trapping = undefined;
-  target.lastDamage = 0;
   if (this.charge === "invuln") {
     user.v.invuln = false;
   }
@@ -62,8 +61,7 @@ export function exec(
       return;
     }
 
-    // TODO: bulbapedia says lastDamage includes the opponent's self-inflicted confusion damage
-    user.v.bide.dmg += user.lastDamage;
+    user.v.bide.dmg += battle.gen1LastDamage;
     user.v.bide.dmg &= 0xffff;
     if (--user.v.bide.turns !== 0) {
       // silent on cart
@@ -95,6 +93,7 @@ export function exec(
   }
 
   if (dmg === 0 || !battle.checkAccuracy(this, user, target)) {
+    battle.gen1LastDamage = 0;
     if (dmg === 0) {
       if (eff === 0) {
         battle.info(target, "immune");
@@ -157,7 +156,7 @@ export function exec(
       // https://www.smogon.com/forums/threads/past-gens-research-thread.3506992/#post-5878612
       //  - DRAIN HP SIDE EFFECT
       const dmg = Math.max(Math.floor(dealt / 2), 1);
-      target.lastDamage = dmg;
+      battle.gen1LastDamage = dmg;
       user.recover(dmg, target, battle, "drain");
     } else if (this.flag === "explosion") {
       dead = user.damage(user.base.hp, user, battle, false, "explosion", true).dead || dead;
@@ -297,7 +296,9 @@ export function getDamage(
       dmg = result;
       eff = 1;
     } else {
-      eff = 1;
+      if (self.flag !== "ohko") {
+        eff = 1;
+      }
       fail = true;
     }
   } else {

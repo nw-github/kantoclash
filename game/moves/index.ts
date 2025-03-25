@@ -115,6 +115,9 @@ export interface DamagingMove extends BaseMove {
   readonly charge?: boolean | "sun" | "invuln" | [Stages, number][];
   getPower?(user: Pokemon): number;
   getType?(user: Pokemon): Type;
+  /** If a number, the amount of damage the move should do. If a function, returns the amount of
+   * damage done by the move, or false if the move failed.
+   */
   readonly getDamage?:
     | number
     | ((battle: Battle, user: ActivePokemon, target: ActivePokemon, eff: number) => number | false);

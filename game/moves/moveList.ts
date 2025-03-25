@@ -45,7 +45,7 @@ const internalMoveList = createMoveList({
     acc: 55,
     protect: true,
     exec(battle, user, target) {
-      target.lastDamage = 0;
+      battle.gen1LastDamage = 0;
 
       const options = [...target.base.moves.keys()].filter(i => target.base.pp[i] !== 0);
       if (!options.length || target.v.disabled) {
@@ -137,7 +137,7 @@ const internalMoveList = createMoveList({
     type: "normal",
     noEncore: true,
     exec(battle, user, target): boolean {
-      target.lastDamage = 0;
+      battle.gen1LastDamage = 0;
       const moves = Object.entries(battle.gen.moveList)
         .filter(([, move]) => !move.noMetronome && move.idx! <= battle.gen.lastMoveIdx)
         .filter(
@@ -174,7 +174,7 @@ const internalMoveList = createMoveList({
     type: "flying",
     noEncore: true,
     exec(battle, user, target) {
-      target.lastDamage = 0;
+      battle.gen1LastDamage = 0;
       if (!target.v.lastMove || target.v.lastMove === this) {
         battle.info(user, "fail_generic");
         return false;
@@ -209,7 +209,7 @@ const internalMoveList = createMoveList({
     type: "normal",
     noEncore: true,
     exec(battle, user, target) {
-      target.lastDamage = 0;
+      battle.gen1LastDamage = 0;
       user.base = transform(user.base.real, target.base);
 
       for (const k of stageKeys) {
@@ -394,7 +394,7 @@ const internalMoveList = createMoveList({
     getDamage(_, user) {
       const dmg = user.v.bide?.dmg;
       user.v.bide = undefined;
-      return (dmg ?? 0) * 2;
+      return dmg ? dmg * 2 : false;
     },
   },
   bind: {
@@ -516,7 +516,7 @@ const internalMoveList = createMoveList({
     power: 1,
     priority: -1,
     kingsRock: true,
-    getDamage(_, user, target) {
+    getDamage(battle, _, target) {
       // https://www.youtube.com/watch?v=ftTalHMjPRY
       //  On cartrige, the move counter uses is updated whenever a player hovers over a move (even
       //  if he doesn't select it). In a link battle, this information is not shared between both
@@ -527,12 +527,12 @@ const internalMoveList = createMoveList({
 
       const mv = target.lastChosenMove;
       if (mv && ((mv.type !== "normal" && mv.type !== "fight") || !mv.power || mv === this)) {
-        return 0;
+        return false;
       } else if (target.owner.choice?.move === this) {
-        return 0;
+        return false;
       }
       // Counter can crit, but it won't do any more damage
-      return user.lastDamage * 2;
+      return battle.gen1LastDamage * 2;
     },
   },
   crabhammer: {
