@@ -472,18 +472,14 @@ export class Battle {
           break;
         }
       } else {
+        // BUG: https://www.youtube.com/watch?v=1IiPWw5fMf8&t=85s
+        // TODO: this is wrong. We should go back to wherever we were in handleBetweenTurns()
+        // after checkFaint() returned true.
         if (!faintedBetweenTurns) {
           if (this.checkFaint(user, target)) {
             break;
           }
         } else if (user.base.hp === 0) {
-          // https://www.youtube.com/watch?v=1IiPWw5fMf8&t=85s
-          // TODO: This implements the bug where spikes does not check if the pokemon it damaged
-          // fainted, demonstrated here ()
-          // The way we have this set up right now, this bug is also triggered by for example:
-          //    - Explosion, then switch into Pokemon that dies from spikes
-          //    - Die to recoil, then switch into Pokemon that dies from spikes
-          //
           this.event({type: "bug", bug: "bug_gen2_spikes"});
         }
       }
@@ -592,42 +588,47 @@ export class Battle {
     return fainted;
   }
 
-  private handleResidualDamage(user: ActivePokemon) {
+  private handleResidualDamage(poke: ActivePokemon) {
     const tickCounter = (why: DamageReason) => {
-      const multiplier = user.base.status === "psn" && why === "psn" ? 1 : user.v.counter;
-      const dmg = Math.max(Math.floor((multiplier * user.base.stats.hp) / 16), 1);
-      const {dead} = user.damage(dmg, user, this, false, why, true);
-      const opponent = this.opponentOf(user.owner).active;
-      if (why === "seeded" && opponent.base.hp < opponent.base.stats.hp) {
-        opponent.recover(dmg, user, this, "seeder");
+      let m = poke.v.counter || 1;
+      let d = 16;
+      if (this.gen.id >= 2) {
+        m = why === "psn" && poke.base.status === "tox" ? poke.v.counter : 1;
+        d = why === "seeded" ? 8 : 16;
       }
 
-      if (user.base.status === "tox") {
-        user.v.counter++;
+      const dmg = Math.max(Math.floor((m * poke.base.stats.hp) / d), 1);
+      const {dead} = poke.damage(dmg, poke, this, false, why, true);
+      const opponent = this.opponentOf(poke.owner).active;
+      if (why === "seeded" && opponent.base.hp < opponent.base.stats.hp) {
+        opponent.recover(dmg, poke, this, "seeder");
+      }
+
+      if (poke.v.counter) {
+        poke.v.counter++;
       }
       return dead;
     };
 
-    if (user.base.hp === 0) {
+    if (poke.base.hp === 0) {
       return;
-    } else if ((user.base.status === "tox" || user.base.status === "psn") && tickCounter("psn")) {
+    } else if ((poke.base.status === "tox" || poke.base.status === "psn") && tickCounter("psn")) {
       return;
-    } else if (user.base.status === "brn" && tickCounter("brn")) {
+    } else if (poke.base.status === "brn" && tickCounter("brn")) {
       return;
-    } else if (user.v.hasFlag(VolatileFlag.seeded) && tickCounter("seeded")) {
+    } else if (poke.v.hasFlag(VolatileFlag.seeded) && tickCounter("seeded")) {
       return;
-    }
-
-    if (user.v.hasFlag(VolatileFlag.nightmare)) {
-      if (user.damage(idiv(user.base.stats.hp, 4), user, this, false, "nightmare", true).dead) {
-        return;
-      }
-    }
-
-    if (user.v.hasFlag(VolatileFlag.curse)) {
-      if (user.damage(idiv(user.base.stats.hp, 4), user, this, false, "curse", true).dead) {
-        return;
-      }
+    } else if (
+      poke.v.hasFlag(VolatileFlag.nightmare) &&
+      poke.damage(Math.max(1, idiv(poke.base.stats.hp, 4)), poke, this, false, "nightmare", true)
+        .dead
+    ) {
+      return;
+    } else if (
+      poke.v.hasFlag(VolatileFlag.curse) &&
+      poke.damage(Math.max(1, idiv(poke.base.stats.hp, 4)), poke, this, false, "curse", true).dead
+    ) {
+      return;
     }
   }
 
@@ -656,7 +657,7 @@ export class Battle {
       }
     }
 
-    if (this.checkFaint(this.players[0].active, this.players[1].active, true)) {
+    if (this.checkFaint(this.players[0].active, this.players[1].active)) {
       return;
     }
 
@@ -710,7 +711,7 @@ export class Battle {
       }
     }
 
-    if (this.checkFaint(this.players[0].active, this.players[1].active, true)) {
+    if (this.checkFaint(this.players[0].active, this.players[1].active)) {
       return;
     }
 

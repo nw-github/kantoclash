@@ -27,7 +27,14 @@
       "reflect",
       "bide",
       "rest",
-      "substitute"
+      "substitute",
+      "defensecurl",
+      "flash",
+      "headbutt",
+      "lightscreen",
+      "petaldance",
+      "razorwind",
+      "skullbash"
     ],
     "evolvesTo": "ivysaur"
   },
@@ -59,7 +66,14 @@
       "reflect",
       "bide",
       "rest",
-      "substitute"
+      "substitute",
+      "defensecurl",
+      "flash",
+      "headbutt",
+      "lightscreen",
+      "petaldance",
+      "razorwind",
+      "skullbash"
     ],
     "evolvesFrom": "bulbasaur",
     "evolvesTo": "venusaur"
@@ -93,7 +107,15 @@
       "bide",
       "rest",
       "substitute",
-      "hyperbeam"
+      "hyperbeam",
+      "defensecurl",
+      "flash",
+      "headbutt",
+      "roar",
+      "lightscreen",
+      "petaldance",
+      "razorwind",
+      "skullbash"
     ],
     "evolvesFrom": "ivysaur"
   },
@@ -133,7 +155,13 @@
       "skullbash",
       "rest",
       "slash",
-      "substitute"
+      "substitute",
+      "bite",
+      "defensecurl",
+      "firepunch",
+      "headbutt",
+      "rockslide",
+      "smokescreen"
     ],
     "evolvesTo": "charmeleon"
   },
@@ -173,7 +201,13 @@
       "skullbash",
       "rest",
       "slash",
-      "substitute"
+      "substitute",
+      "defensecurl",
+      "firepunch",
+      "headbutt",
+      "smokescreen",
+      "bite",
+      "rockslide"
     ],
     "evolvesFrom": "charmander",
     "evolvesTo": "charizard"
@@ -218,7 +252,15 @@
       "fly",
       "hyperbeam",
       "earthquake",
-      "fissure"
+      "fissure",
+      "defensecurl",
+      "firepunch",
+      "headbutt",
+      "roar",
+      "smokescreen",
+      "wingattack",
+      "bite",
+      "rockslide"
     ],
     "evolvesFrom": "charmeleon"
   },
@@ -257,7 +299,14 @@
       "skullbash",
       "bubble",
       "rest",
-      "substitute"
+      "substitute",
+      "confusion",
+      "defensecurl",
+      "haze",
+      "headbutt",
+      "icepunch",
+      "mist",
+      "waterfall"
     ],
     "evolvesTo": "wartortle"
   },
@@ -296,7 +345,14 @@
       "skullbash",
       "bubble",
       "rest",
-      "substitute"
+      "substitute",
+      "defensecurl",
+      "headbutt",
+      "icepunch",
+      "waterfall",
+      "confusion",
+      "haze",
+      "mist"
     ],
     "evolvesFrom": "squirtle",
     "evolvesTo": "blastoise"
@@ -339,7 +395,15 @@
       "substitute",
       "hyperbeam",
       "earthquake",
-      "fissure"
+      "fissure",
+      "defensecurl",
+      "headbutt",
+      "icepunch",
+      "roar",
+      "waterfall",
+      "confusion",
+      "haze",
+      "mist"
     ],
     "evolvesFrom": "wartortle"
   },
@@ -475,7 +539,8 @@
       "swift",
       "skyattack",
       "rest",
-      "substitute"
+      "substitute",
+      "tackle"
     ],
     "evolvesTo": "pidgeotto"
   },
@@ -505,7 +570,8 @@
       "swift",
       "skyattack",
       "rest",
-      "substitute"
+      "substitute",
+      "tackle"
     ],
     "evolvesFrom": "pidgey",
     "evolvesTo": "pidgeot"
@@ -537,7 +603,8 @@
       "skyattack",
       "rest",
       "substitute",
-      "hyperbeam"
+      "hyperbeam",
+      "tackle"
     ],
     "evolvesFrom": "pidgeotto"
   },
@@ -570,7 +637,13 @@
       "rest",
       "hyperfang",
       "superfang",
-      "substitute"
+      "substitute",
+      "bite",
+      "counter",
+      "defensecurl",
+      "furyswipes",
+      "headbutt",
+      "screech"
     ],
     "evolvesTo": "raticate"
   },
@@ -605,7 +678,16 @@
       "superfang",
       "substitute",
       "icebeam",
-      "hyperbeam"
+      "hyperbeam",
+      "cut",
+      "defensecurl",
+      "headbutt",
+      "roar",
+      "strength",
+      "bite",
+      "counter",
+      "furyswipes",
+      "screech"
     ],
     "evolvesFrom": "rattata"
   },
@@ -635,7 +717,10 @@
       "swift",
       "skyattack",
       "rest",
-      "substitute"
+      "substitute",
+      "quickattack",
+      "sonicboom",
+      "triattack"
     ],
     "evolvesTo": "fearow"
   },
@@ -666,7 +751,11 @@
       "skyattack",
       "rest",
       "substitute",
-      "hyperbeam"
+      "hyperbeam",
+      "payday",
+      "quickattack",
+      "sonicboom",
+      "triattack"
     ],
     "evolvesFrom": "spearow"
   },
@@ -699,7 +788,10 @@
       "glare",
       "rest",
       "rockslide",
-      "substitute"
+      "substitute",
+      "haze",
+      "headbutt",
+      "slam"
     ],
     "evolvesTo": "arbok"
   },
@@ -733,7 +825,10 @@
       "rest",
       "rockslide",
       "substitute",
-      "hyperbeam"
+      "hyperbeam",
+      "haze",
+      "headbutt",
+      "slam"
     ],
     "evolvesFrom": "ekans"
   },
@@ -757,27 +852,6 @@
       "swift",
       "flash",
       "rest",
-      "snore",
-      "curse",
-      "reversal",
-      "protect",
-      "sweetkiss",
-      "mudslap",
-      "zapcannon",
-      "detect",
-      "endure",
-      "charm",
-      "rollout",
-      "swagger",
-      "attract",
-      "sleeptalk",
-      "return",
-      "present",
-      "frustration",
-      "encore",
-      "irontail",
-      "hiddenpower",
-      "raindance",
       "megapunch",
       "payday",
       "slam",
@@ -796,7 +870,10 @@
       "lightscreen",
       "reflect",
       "skullbash",
-      "substitute"
+      "substitute",
+      "fly",
+      "strength",
+      "thunderpunch"
     ],
     "evolvesTo": "raichu"
   },
@@ -820,27 +897,6 @@
       "swift",
       "flash",
       "rest",
-      "snore",
-      "curse",
-      "reversal",
-      "protect",
-      "sweetkiss",
-      "mudslap",
-      "zapcannon",
-      "detect",
-      "endure",
-      "charm",
-      "rollout",
-      "swagger",
-      "attract",
-      "sleeptalk",
-      "return",
-      "present",
-      "frustration",
-      "encore",
-      "irontail",
-      "hiddenpower",
-      "raindance",
       "megapunch",
       "payday",
       "slam",
@@ -860,7 +916,10 @@
       "reflect",
       "skullbash",
       "substitute",
-      "hyperbeam"
+      "hyperbeam",
+      "strength",
+      "thunderpunch",
+      "fly"
     ],
     "evolvesFrom": "pikachu"
   },
@@ -895,7 +954,10 @@
       "rest",
       "rockslide",
       "slash",
-      "substitute"
+      "substitute",
+      "counter",
+      "defensecurl",
+      "headbutt"
     ],
     "evolvesTo": "sandslash"
   },
@@ -931,7 +993,10 @@
       "rockslide",
       "slash",
       "substitute",
-      "hyperbeam"
+      "hyperbeam",
+      "defensecurl",
+      "headbutt",
+      "counter"
     ],
     "evolvesFrom": "sandshrew"
   },
@@ -963,7 +1028,14 @@
       "skullbash",
       "furyswipes",
       "rest",
-      "substitute"
+      "substitute",
+      "counter",
+      "defensecurl",
+      "disable",
+      "focusenergy",
+      "headbutt",
+      "lovelykiss",
+      "supersonic"
     ],
     "evolvesTo": "nidorina"
   },
@@ -999,7 +1071,15 @@
       "horndrill",
       "watergun",
       "icebeam",
-      "bubblebeam"
+      "bubblebeam",
+      "defensecurl",
+      "headbutt",
+      "strength",
+      "counter",
+      "disable",
+      "focusenergy",
+      "lovelykiss",
+      "supersonic"
     ],
     "evolvesFrom": "nidoranf",
     "evolvesTo": "nidoqueen"
@@ -1049,7 +1129,18 @@
       "earthquake",
       "fissure",
       "fireblast",
-      "rockslide"
+      "rockslide",
+      "defensecurl",
+      "firepunch",
+      "flamethrower",
+      "headbutt",
+      "icepunch",
+      "roar",
+      "thunderpunch",
+      "disable",
+      "focusenergy",
+      "lovelykiss",
+      "supersonic"
     ],
     "evolvesFrom": "nidorina"
   },
@@ -1081,7 +1172,15 @@
       "bide",
       "skullbash",
       "rest",
-      "substitute"
+      "substitute",
+      "amnesia",
+      "confusion",
+      "counter",
+      "defensecurl",
+      "disable",
+      "headbutt",
+      "lovelykiss",
+      "supersonic"
     ],
     "evolvesTo": "nidorino"
   },
@@ -1116,7 +1215,16 @@
       "substitute",
       "watergun",
       "icebeam",
-      "bubblebeam"
+      "bubblebeam",
+      "defensecurl",
+      "headbutt",
+      "strength",
+      "amnesia",
+      "confusion",
+      "counter",
+      "disable",
+      "lovelykiss",
+      "supersonic"
     ],
     "evolvesFrom": "nidoranm",
     "evolvesTo": "nidoking"
@@ -1166,7 +1274,19 @@
       "earthquake",
       "fissure",
       "fireblast",
-      "rockslide"
+      "rockslide",
+      "defensecurl",
+      "firepunch",
+      "flamethrower",
+      "headbutt",
+      "icepunch",
+      "roar",
+      "thunderpunch",
+      "amnesia",
+      "confusion",
+      "disable",
+      "lovelykiss",
+      "supersonic"
     ],
     "evolvesFrom": "nidorino"
   },
@@ -1193,112 +1313,6 @@
       "flash",
       "splash",
       "rest",
-      "nightmare",
-      "snore",
-      "curse",
-      "protect",
-      "sweetkiss",
-      "bellydrum",
-      "mudslap",
-      "zapcannon",
-      "icywind",
-      "detect",
-      "endure",
-      "charm",
-      "rollout",
-      "swagger",
-      "attract",
-      "sleeptalk",
-      "return",
-      "present",
-      "frustration",
-      "encore",
-      "irontail",
-      "hiddenpower",
-      "raindance",
-      "sunnyday",
-      "psychup",
-      "shadowball",
-      "doubleslap",
-      "megapunch",
-      "megakick",
-      "bodyslam",
-      "takedown",
-      "doubleedge",
-      "growl",
-      "watergun",
-      "icebeam",
-      "blizzard",
-      "bubblebeam",
-      "submission",
-      "counter",
-      "seismictoss",
-      "strength",
-      "thunderbolt",
-      "thunderwave",
-      "thunder",
-      "rage",
-      "teleport",
-      "minimize",
-      "lightscreen",
-      "reflect",
-      "bide",
-      "skullbash",
-      "psywave",
-      "triattack",
-      "substitute"
-    ],
-    "evolvesTo": "clefable"
-  },
-  "clefable": {
-    "dexId": 36,
-    "name": "Clefable",
-    "types": ["normal"],
-    "stats": {"hp": 95, "atk": 70, "def": 73, "spa": 85, "spd": 0, "spe": 60},
-    "moves": [
-      "pound",
-      "headbutt",
-      "sing",
-      "flamethrower",
-      "solarbeam",
-      "toxic",
-      "psychic",
-      "mimic",
-      "doubleteam",
-      "defensecurl",
-      "metronome",
-      "fireblast",
-      "amnesia",
-      "dreameater",
-      "flash",
-      "splash",
-      "rest",
-      "nightmare",
-      "snore",
-      "curse",
-      "protect",
-      "sweetkiss",
-      "bellydrum",
-      "mudslap",
-      "zapcannon",
-      "icywind",
-      "detect",
-      "endure",
-      "charm",
-      "rollout",
-      "swagger",
-      "attract",
-      "sleeptalk",
-      "return",
-      "present",
-      "frustration",
-      "encore",
-      "irontail",
-      "hiddenpower",
-      "raindance",
-      "sunnyday",
-      "psychup",
-      "shadowball",
       "doubleslap",
       "megapunch",
       "megakick",
@@ -1327,7 +1341,67 @@
       "psywave",
       "triattack",
       "substitute",
-      "hyperbeam"
+      "firepunch",
+      "icepunch",
+      "thunderpunch"
+    ],
+    "evolvesTo": "clefable"
+  },
+  "clefable": {
+    "dexId": 36,
+    "name": "Clefable",
+    "types": ["normal"],
+    "stats": {"hp": 95, "atk": 70, "def": 73, "spa": 85, "spd": 0, "spe": 60},
+    "moves": [
+      "pound",
+      "headbutt",
+      "sing",
+      "flamethrower",
+      "solarbeam",
+      "toxic",
+      "psychic",
+      "mimic",
+      "doubleteam",
+      "defensecurl",
+      "metronome",
+      "fireblast",
+      "amnesia",
+      "dreameater",
+      "flash",
+      "splash",
+      "rest",
+      "doubleslap",
+      "megapunch",
+      "megakick",
+      "bodyslam",
+      "takedown",
+      "doubleedge",
+      "growl",
+      "watergun",
+      "icebeam",
+      "blizzard",
+      "bubblebeam",
+      "submission",
+      "counter",
+      "seismictoss",
+      "strength",
+      "thunderbolt",
+      "thunderwave",
+      "thunder",
+      "rage",
+      "teleport",
+      "minimize",
+      "lightscreen",
+      "reflect",
+      "bide",
+      "skullbash",
+      "psywave",
+      "triattack",
+      "substitute",
+      "hyperbeam",
+      "firepunch",
+      "icepunch",
+      "thunderpunch"
     ],
     "evolvesFrom": "clefairy"
   },
@@ -1358,7 +1432,10 @@
       "swift",
       "skullbash",
       "rest",
-      "substitute"
+      "substitute",
+      "disable",
+      "headbutt",
+      "hypnosis"
     ],
     "evolvesTo": "ninetales"
   },
@@ -1390,7 +1467,10 @@
       "skullbash",
       "rest",
       "substitute",
-      "hyperbeam"
+      "hyperbeam",
+      "headbutt",
+      "disable",
+      "hypnosis"
     ],
     "evolvesFrom": "vulpix"
   },
@@ -1413,105 +1493,6 @@
       "dreameater",
       "flash",
       "rest",
-      "nightmare",
-      "snore",
-      "curse",
-      "protect",
-      "feintattack",
-      "sweetkiss",
-      "mudslap",
-      "zapcannon",
-      "perishsong",
-      "icywind",
-      "detect",
-      "endure",
-      "charm",
-      "rollout",
-      "swagger",
-      "attract",
-      "sleeptalk",
-      "return",
-      "present",
-      "frustration",
-      "hiddenpower",
-      "raindance",
-      "sunnyday",
-      "psychup",
-      "shadowball",
-      "doubleslap",
-      "megapunch",
-      "megakick",
-      "bodyslam",
-      "takedown",
-      "doubleedge",
-      "disable",
-      "watergun",
-      "icebeam",
-      "blizzard",
-      "bubblebeam",
-      "submission",
-      "counter",
-      "seismictoss",
-      "strength",
-      "thunderbolt",
-      "thunderwave",
-      "thunder",
-      "rage",
-      "teleport",
-      "mimic",
-      "reflect",
-      "bide",
-      "skullbash",
-      "psywave",
-      "triattack",
-      "substitute"
-    ],
-    "evolvesTo": "wigglytuff"
-  },
-  "wigglytuff": {
-    "dexId": 40,
-    "name": "Wigglytuff",
-    "types": ["normal"],
-    "stats": {"hp": 140, "atk": 70, "def": 45, "spa": 50, "spd": 0, "spe": 45},
-    "moves": [
-      "pound",
-      "headbutt",
-      "sing",
-      "flamethrower",
-      "solarbeam",
-      "toxic",
-      "psychic",
-      "doubleteam",
-      "defensecurl",
-      "fireblast",
-      "dreameater",
-      "flash",
-      "rest",
-      "nightmare",
-      "snore",
-      "curse",
-      "protect",
-      "feintattack",
-      "sweetkiss",
-      "mudslap",
-      "zapcannon",
-      "perishsong",
-      "icywind",
-      "detect",
-      "endure",
-      "charm",
-      "rollout",
-      "swagger",
-      "attract",
-      "sleeptalk",
-      "return",
-      "present",
-      "frustration",
-      "hiddenpower",
-      "raindance",
-      "sunnyday",
-      "psychup",
-      "shadowball",
       "doubleslap",
       "megapunch",
       "megakick",
@@ -1539,7 +1520,62 @@
       "psywave",
       "triattack",
       "substitute",
-      "hyperbeam"
+      "firepunch",
+      "icepunch",
+      "thunderpunch"
+    ],
+    "evolvesTo": "wigglytuff"
+  },
+  "wigglytuff": {
+    "dexId": 40,
+    "name": "Wigglytuff",
+    "types": ["normal"],
+    "stats": {"hp": 140, "atk": 70, "def": 45, "spa": 50, "spd": 0, "spe": 45},
+    "moves": [
+      "pound",
+      "headbutt",
+      "sing",
+      "flamethrower",
+      "solarbeam",
+      "toxic",
+      "psychic",
+      "doubleteam",
+      "defensecurl",
+      "fireblast",
+      "dreameater",
+      "flash",
+      "rest",
+      "doubleslap",
+      "megapunch",
+      "megakick",
+      "bodyslam",
+      "takedown",
+      "doubleedge",
+      "disable",
+      "watergun",
+      "icebeam",
+      "blizzard",
+      "bubblebeam",
+      "submission",
+      "counter",
+      "seismictoss",
+      "strength",
+      "thunderbolt",
+      "thunderwave",
+      "thunder",
+      "rage",
+      "teleport",
+      "mimic",
+      "reflect",
+      "bide",
+      "skullbash",
+      "psywave",
+      "triattack",
+      "substitute",
+      "hyperbeam",
+      "firepunch",
+      "icepunch",
+      "thunderpunch"
     ],
     "evolvesFrom": "jigglypuff"
   },
@@ -1567,7 +1603,9 @@
       "swift",
       "leechlife",
       "rest",
-      "substitute"
+      "substitute",
+      "gust",
+      "quickattack"
     ],
     "evolvesTo": "golbat"
   },
@@ -1597,7 +1635,9 @@
       "rest",
       "substitute",
       "hyperbeam",
-      "screech"
+      "screech",
+      "gust",
+      "quickattack"
     ],
     "evolvesFrom": "zubat"
   },
@@ -1626,7 +1666,10 @@
       "reflect",
       "bide",
       "rest",
-      "substitute"
+      "substitute",
+      "flash",
+      "leechseed",
+      "razorleaf"
     ],
     "evolvesTo": "gloom"
   },
@@ -1655,7 +1698,10 @@
       "reflect",
       "bide",
       "rest",
-      "substitute"
+      "substitute",
+      "flash",
+      "leechseed",
+      "razorleaf"
     ],
     "evolvesFrom": "oddish",
     "evolvesTo": "vileplume"
@@ -1687,7 +1733,10 @@
       "rest",
       "substitute",
       "bodyslam",
-      "hyperbeam"
+      "hyperbeam",
+      "flash",
+      "leechseed",
+      "razorleaf"
     ],
     "evolvesFrom": "gloom"
   },
@@ -1719,7 +1768,13 @@
       "spore",
       "rest",
       "slash",
-      "substitute"
+      "substitute",
+      "counter",
+      "flash",
+      "lightscreen",
+      "poisonpowder",
+      "psybeam",
+      "screech"
     ],
     "evolvesTo": "parasect"
   },
@@ -1752,7 +1807,13 @@
       "rest",
       "slash",
       "substitute",
-      "hyperbeam"
+      "hyperbeam",
+      "flash",
+      "poisonpowder",
+      "counter",
+      "lightscreen",
+      "psybeam",
+      "screech"
     ],
     "evolvesFrom": "paras"
   },
@@ -1785,7 +1846,9 @@
       "flash",
       "psywave",
       "rest",
-      "substitute"
+      "substitute",
+      "screech",
+      "swift"
     ],
     "evolvesTo": "venomoth"
   },
@@ -1823,7 +1886,9 @@
       "whirlwind",
       "hyperbeam",
       "teleport",
-      "swift"
+      "swift",
+      "gust",
+      "screech"
     ],
     "evolvesFrom": "venonat"
   },
@@ -1851,7 +1916,8 @@
       "rest",
       "rockslide",
       "slash",
-      "substitute"
+      "substitute",
+      "screech"
     ],
     "evolvesTo": "dugtrio"
   },
@@ -1880,7 +1946,9 @@
       "rockslide",
       "slash",
       "substitute",
-      "hyperbeam"
+      "hyperbeam",
+      "triattack",
+      "screech"
     ],
     "evolvesFrom": "diglett"
   },
@@ -1912,7 +1980,12 @@
       "furyswipes",
       "rest",
       "slash",
-      "substitute"
+      "substitute",
+      "amnesia",
+      "defensecurl",
+      "dreameater",
+      "headbutt",
+      "hypnosis"
     ],
     "evolvesTo": "persian"
   },
@@ -1945,7 +2018,13 @@
       "rest",
       "slash",
       "substitute",
-      "hyperbeam"
+      "hyperbeam",
+      "defensecurl",
+      "dreameater",
+      "headbutt",
+      "roar",
+      "amnesia",
+      "hypnosis"
     ],
     "evolvesFrom": "meowth"
   },
@@ -1985,7 +2064,19 @@
       "skullbash",
       "furyswipes",
       "rest",
-      "substitute"
+      "substitute",
+      "amnesia",
+      "flash",
+      "headbutt",
+      "hypnosis",
+      "icepunch",
+      "lightscreen",
+      "petaldance",
+      "psybeam",
+      "psychic",
+      "screech",
+      "triattack",
+      "waterfall"
     ],
     "evolvesTo": "golduck"
   },
@@ -2026,7 +2117,19 @@
       "furyswipes",
       "rest",
       "substitute",
-      "hyperbeam"
+      "hyperbeam",
+      "flash",
+      "headbutt",
+      "icepunch",
+      "screech",
+      "waterfall",
+      "amnesia",
+      "hypnosis",
+      "lightscreen",
+      "petaldance",
+      "psybeam",
+      "psychic",
+      "triattack"
     ],
     "evolvesFrom": "psyduck"
   },
@@ -2067,7 +2170,13 @@
       "furyswipes",
       "rest",
       "rockslide",
-      "substitute"
+      "substitute",
+      "defensecurl",
+      "firepunch",
+      "headbutt",
+      "icepunch",
+      "meditate",
+      "thunderpunch"
     ],
     "evolvesTo": "primeape"
   },
@@ -2109,7 +2218,13 @@
       "rest",
       "rockslide",
       "substitute",
-      "hyperbeam"
+      "hyperbeam",
+      "defensecurl",
+      "firepunch",
+      "headbutt",
+      "icepunch",
+      "thunderpunch",
+      "meditate"
     ],
     "evolvesFrom": "mankey"
   },
@@ -2140,7 +2255,10 @@
       "swift",
       "skullbash",
       "rest",
-      "substitute"
+      "substitute",
+      "firespin",
+      "headbutt",
+      "thrash"
     ],
     "evolvesTo": "arcanine"
   },
@@ -2173,7 +2291,10 @@
       "rest",
       "substitute",
       "hyperbeam",
-      "teleport"
+      "teleport",
+      "headbutt",
+      "firespin",
+      "thrash"
     ],
     "evolvesFrom": "growlithe"
   },
@@ -2205,7 +2326,15 @@
       "bubble",
       "psywave",
       "rest",
-      "substitute"
+      "substitute",
+      "defensecurl",
+      "growth",
+      "haze",
+      "headbutt",
+      "lovelykiss",
+      "mist",
+      "splash",
+      "waterfall"
     ],
     "evolvesTo": "poliwhirl"
   },
@@ -2246,7 +2375,16 @@
       "strength",
       "earthquake",
       "fissure",
-      "metronome"
+      "metronome",
+      "defensecurl",
+      "headbutt",
+      "icepunch",
+      "waterfall",
+      "growth",
+      "haze",
+      "lovelykiss",
+      "mist",
+      "splash"
     ],
     "evolvesFrom": "poliwag",
     "evolvesTo": "poliwrath"
@@ -2289,7 +2427,16 @@
       "earthquake",
       "fissure",
       "metronome",
-      "hyperbeam"
+      "hyperbeam",
+      "defensecurl",
+      "headbutt",
+      "icepunch",
+      "waterfall",
+      "growth",
+      "haze",
+      "lovelykiss",
+      "mist",
+      "splash"
     ],
     "evolvesFrom": "poliwhirl"
   },
@@ -2322,7 +2469,14 @@
       "psywave",
       "rest",
       "triattack",
-      "substitute"
+      "substitute",
+      "barrier",
+      "dreameater",
+      "firepunch",
+      "headbutt",
+      "icepunch",
+      "lightscreen",
+      "thunderpunch"
     ],
     "evolvesTo": "kadabra"
   },
@@ -2361,7 +2515,14 @@
       "dig",
       "confusion",
       "recover",
-      "kinesis"
+      "kinesis",
+      "dreameater",
+      "firepunch",
+      "headbutt",
+      "icepunch",
+      "thunderpunch",
+      "barrier",
+      "lightscreen"
     ],
     "evolvesFrom": "abra",
     "evolvesTo": "alakazam"
@@ -2402,7 +2563,14 @@
       "confusion",
       "recover",
       "kinesis",
-      "hyperbeam"
+      "hyperbeam",
+      "dreameater",
+      "firepunch",
+      "headbutt",
+      "icepunch",
+      "thunderpunch",
+      "barrier",
+      "lightscreen"
     ],
     "evolvesFrom": "kadabra"
   },
@@ -2438,7 +2606,16 @@
       "skullbash",
       "rest",
       "rockslide",
-      "substitute"
+      "substitute",
+      "firepunch",
+      "flamethrower",
+      "headbutt",
+      "icepunch",
+      "lightscreen",
+      "meditate",
+      "rollingkick",
+      "thrash",
+      "thunderpunch"
     ],
     "evolvesTo": "machoke"
   },
@@ -2474,7 +2651,16 @@
       "skullbash",
       "rest",
       "rockslide",
-      "substitute"
+      "substitute",
+      "firepunch",
+      "flamethrower",
+      "headbutt",
+      "icepunch",
+      "thunderpunch",
+      "lightscreen",
+      "meditate",
+      "rollingkick",
+      "thrash"
     ],
     "evolvesFrom": "machop",
     "evolvesTo": "machamp"
@@ -2512,7 +2698,16 @@
       "rest",
       "rockslide",
       "substitute",
-      "hyperbeam"
+      "hyperbeam",
+      "firepunch",
+      "flamethrower",
+      "headbutt",
+      "icepunch",
+      "thunderpunch",
+      "lightscreen",
+      "meditate",
+      "rollingkick",
+      "thrash"
     ],
     "evolvesFrom": "machoke"
   },
@@ -2544,7 +2739,10 @@
       "reflect",
       "bide",
       "rest",
-      "substitute"
+      "substitute",
+      "flash",
+      "leechlife",
+      "lovelykiss"
     ],
     "evolvesTo": "weepinbell"
   },
@@ -2576,7 +2774,10 @@
       "reflect",
       "bide",
       "rest",
-      "substitute"
+      "substitute",
+      "flash",
+      "leechlife",
+      "lovelykiss"
     ],
     "evolvesFrom": "bellsprout",
     "evolvesTo": "victreebel"
@@ -2611,7 +2812,10 @@
       "rest",
       "substitute",
       "bodyslam",
-      "hyperbeam"
+      "hyperbeam",
+      "flash",
+      "leechlife",
+      "lovelykiss"
     ],
     "evolvesFrom": "weepinbell"
   },
@@ -2647,7 +2851,10 @@
       "skullbash",
       "constrict",
       "rest",
-      "substitute"
+      "substitute",
+      "aurorabeam",
+      "confuseray",
+      "haze"
     ],
     "evolvesTo": "tentacruel"
   },
@@ -2684,7 +2891,10 @@
       "constrict",
       "rest",
       "substitute",
-      "hyperbeam"
+      "hyperbeam",
+      "aurorabeam",
+      "confuseray",
+      "haze"
     ],
     "evolvesFrom": "tentacool"
   },
@@ -2720,7 +2930,10 @@
       "explosion",
       "rest",
       "rockslide",
-      "substitute"
+      "substitute",
+      "firepunch",
+      "flamethrower",
+      "headbutt"
     ],
     "evolvesTo": "graveler"
   },
@@ -2756,7 +2969,10 @@
       "explosion",
       "rest",
       "rockslide",
-      "substitute"
+      "substitute",
+      "firepunch",
+      "flamethrower",
+      "headbutt"
     ],
     "evolvesFrom": "geodude",
     "evolvesTo": "golem"
@@ -2795,7 +3011,11 @@
       "rockslide",
       "substitute",
       "megakick",
-      "hyperbeam"
+      "hyperbeam",
+      "firepunch",
+      "flamethrower",
+      "headbutt",
+      "roar"
     ],
     "evolvesFrom": "graveler"
   },
@@ -2825,7 +3045,15 @@
       "swift",
       "skullbash",
       "rest",
-      "substitute"
+      "substitute",
+      "doublekick",
+      "flamethrower",
+      "headbutt",
+      "hypnosis",
+      "lowkick",
+      "quickattack",
+      "tackle",
+      "thrash"
     ],
     "evolvesTo": "rapidash"
   },
@@ -2856,7 +3084,17 @@
       "skullbash",
       "rest",
       "substitute",
-      "hyperbeam"
+      "hyperbeam",
+      "flamethrower",
+      "furyattack",
+      "headbutt",
+      "payday",
+      "tackle",
+      "doublekick",
+      "hypnosis",
+      "lowkick",
+      "quickattack",
+      "thrash"
     ],
     "evolvesFrom": "ponyta"
   },
@@ -2900,7 +3138,11 @@
       "psywave",
       "rest",
       "triattack",
-      "substitute"
+      "substitute",
+      "dreameater",
+      "flamethrower",
+      "stomp",
+      "tackle"
     ],
     "evolvesTo": "slowbro"
   },
@@ -2951,7 +3193,12 @@
       "submission",
       "counter",
       "seismictoss",
-      "withdraw"
+      "withdraw",
+      "dreameater",
+      "flamethrower",
+      "icepunch",
+      "tackle",
+      "stomp"
     ],
     "evolvesFrom": "slowpoke"
   },
@@ -2981,7 +3228,8 @@
       "swift",
       "flash",
       "rest",
-      "substitute"
+      "substitute",
+      "agility"
     ],
     "evolvesTo": "magneton"
   },
@@ -3012,7 +3260,9 @@
       "flash",
       "rest",
       "substitute",
-      "hyperbeam"
+      "hyperbeam",
+      "triattack",
+      "agility"
     ],
     "evolvesFrom": "magnemite"
   },
@@ -3045,7 +3295,11 @@
       "skullbash",
       "rest",
       "slash",
-      "substitute"
+      "substitute",
+      "gust",
+      "headbutt",
+      "mirrormove",
+      "quickattack"
     ]
   },
   "doduo": {
@@ -3074,7 +3328,12 @@
       "skyattack",
       "rest",
       "triattack",
-      "substitute"
+      "substitute",
+      "haze",
+      "lowkick",
+      "quickattack",
+      "supersonic",
+      "swift"
     ],
     "evolvesTo": "dodrio"
   },
@@ -3105,7 +3364,12 @@
       "rest",
       "triattack",
       "substitute",
-      "hyperbeam"
+      "hyperbeam",
+      "swift",
+      "haze",
+      "lowkick",
+      "quickattack",
+      "supersonic"
     ],
     "evolvesFrom": "doduo"
   },
@@ -3136,7 +3400,12 @@
       "bide",
       "skullbash",
       "rest",
-      "substitute"
+      "substitute",
+      "disable",
+      "lick",
+      "peck",
+      "slam",
+      "waterfall"
     ],
     "evolvesTo": "dewgong"
   },
@@ -3168,7 +3437,12 @@
       "skullbash",
       "rest",
       "substitute",
-      "hyperbeam"
+      "hyperbeam",
+      "waterfall",
+      "disable",
+      "lick",
+      "peck",
+      "slam"
     ],
     "evolvesFrom": "seel"
   },
@@ -3199,7 +3473,13 @@
       "acidarmor",
       "explosion",
       "rest",
-      "substitute"
+      "substitute",
+      "firepunch",
+      "flamethrower",
+      "haze",
+      "icepunch",
+      "lick",
+      "thunderpunch"
     ],
     "evolvesTo": "muk"
   },
@@ -3231,7 +3511,13 @@
       "explosion",
       "rest",
       "substitute",
-      "hyperbeam"
+      "hyperbeam",
+      "firepunch",
+      "flamethrower",
+      "icepunch",
+      "thunderpunch",
+      "haze",
+      "lick"
     ],
     "evolvesFrom": "grimer"
   },
@@ -3266,7 +3552,9 @@
       "explosion",
       "rest",
       "triattack",
-      "substitute"
+      "substitute",
+      "barrier",
+      "screech"
     ],
     "evolvesTo": "cloyster"
   },
@@ -3303,7 +3591,9 @@
       "triattack",
       "substitute",
       "hyperbeam",
-      "spikecannon"
+      "spikecannon",
+      "barrier",
+      "screech"
     ],
     "evolvesFrom": "shellder"
   },
@@ -3331,7 +3621,8 @@
       "psywave",
       "explosion",
       "rest",
-      "substitute"
+      "substitute",
+      "haze"
     ],
     "evolvesTo": "haunter"
   },
@@ -3359,7 +3650,8 @@
       "psywave",
       "explosion",
       "rest",
-      "substitute"
+      "substitute",
+      "haze"
     ],
     "evolvesFrom": "gastly",
     "evolvesTo": "gengar"
@@ -3400,7 +3692,12 @@
       "seismictoss",
       "strength",
       "metronome",
-      "skullbash"
+      "skullbash",
+      "firepunch",
+      "headbutt",
+      "icepunch",
+      "thunderpunch",
+      "haze"
     ],
     "evolvesFrom": "haunter"
   },
@@ -3433,7 +3730,10 @@
       "explosion",
       "rest",
       "rockslide",
-      "substitute"
+      "substitute",
+      "headbutt",
+      "roar",
+      "sharpen"
     ]
   },
   "drowzee": {
@@ -3473,7 +3773,13 @@
       "psywave",
       "rest",
       "triattack",
-      "substitute"
+      "substitute",
+      "amnesia",
+      "barrier",
+      "firepunch",
+      "icepunch",
+      "lightscreen",
+      "thunderpunch"
     ],
     "evolvesTo": "hypno"
   },
@@ -3515,7 +3821,13 @@
       "rest",
       "triattack",
       "substitute",
-      "hyperbeam"
+      "hyperbeam",
+      "firepunch",
+      "icepunch",
+      "thunderpunch",
+      "amnesia",
+      "barrier",
+      "lightscreen"
     ],
     "evolvesFrom": "drowzee"
   },
@@ -3549,7 +3861,12 @@
       "bubble",
       "crabhammer",
       "rest",
-      "substitute"
+      "substitute",
+      "amnesia",
+      "dig",
+      "haze",
+      "slam",
+      "vicegrip"
     ],
     "evolvesTo": "kingler"
   },
@@ -3584,7 +3901,12 @@
       "crabhammer",
       "rest",
       "substitute",
-      "hyperbeam"
+      "hyperbeam",
+      "vicegrip",
+      "amnesia",
+      "dig",
+      "haze",
+      "slam"
     ],
     "evolvesFrom": "krabby"
   },
@@ -3614,7 +3936,9 @@
       "flash",
       "explosion",
       "rest",
-      "substitute"
+      "substitute",
+      "agility",
+      "headbutt"
     ],
     "evolvesTo": "electrode"
   },
@@ -3646,7 +3970,9 @@
       "rest",
       "substitute",
       "hyperbeam",
-      "skullbash"
+      "skullbash",
+      "headbutt",
+      "agility"
     ],
     "evolvesFrom": "voltorb"
   },
@@ -3678,7 +4004,12 @@
       "psywave",
       "explosion",
       "rest",
-      "substitute"
+      "substitute",
+      "confusion",
+      "dreameater",
+      "flash",
+      "megadrain",
+      "strength"
     ],
     "evolvesTo": "exeggutor"
   },
@@ -3714,7 +4045,11 @@
       "stomp",
       "hyperbeam",
       "strength",
-      "megadrain"
+      "megadrain",
+      "confusion",
+      "dreameater",
+      "flash",
+      "headbutt"
     ],
     "evolvesFrom": "exeggcute"
   },
@@ -3756,7 +4091,14 @@
       "skullbash",
       "bonemerang",
       "rest",
-      "substitute"
+      "substitute",
+      "firepunch",
+      "flamethrower",
+      "furyattack",
+      "rockslide",
+      "screech",
+      "swordsdance",
+      "thunderpunch"
     ],
     "evolvesTo": "marowak"
   },
@@ -3799,7 +4141,14 @@
       "bonemerang",
       "rest",
       "substitute",
-      "hyperbeam"
+      "hyperbeam",
+      "firepunch",
+      "flamethrower",
+      "thunderpunch",
+      "furyattack",
+      "rockslide",
+      "screech",
+      "swordsdance"
     ],
     "evolvesFrom": "cubone"
   },
@@ -3833,7 +4182,9 @@
       "skullbash",
       "hijumpkick",
       "rest",
-      "substitute"
+      "substitute",
+      "headbutt",
+      "hijumpkick"
     ]
   },
   "hitmonchan": {
@@ -3911,7 +4262,15 @@
       "fireblast",
       "skullbash",
       "rest",
-      "substitute"
+      "substitute",
+      "doubleslap",
+      "dreameater",
+      "firepunch",
+      "flamethrower",
+      "headbutt",
+      "icepunch",
+      "lick",
+      "thunderpunch"
     ]
   },
   "koffing": {
@@ -3936,7 +4295,12 @@
       "fireblast",
       "explosion",
       "rest",
-      "substitute"
+      "substitute",
+      "flamethrower",
+      "poisongas",
+      "psybeam",
+      "psywave",
+      "screech"
     ],
     "evolvesTo": "weezing"
   },
@@ -3963,7 +4327,12 @@
       "explosion",
       "rest",
       "substitute",
-      "hyperbeam"
+      "hyperbeam",
+      "flamethrower",
+      "poisongas",
+      "psybeam",
+      "psywave",
+      "screech"
     ],
     "evolvesFrom": "koffing"
   },
@@ -3997,7 +4366,14 @@
       "skullbash",
       "rest",
       "rockslide",
-      "substitute"
+      "substitute",
+      "blizzard",
+      "counter",
+      "flamethrower",
+      "headbutt",
+      "icebeam",
+      "roar",
+      "thrash"
     ],
     "evolvesTo": "rhydon"
   },
@@ -4043,7 +4419,13 @@
       "hyperbeam",
       "submission",
       "counter",
-      "seismictoss"
+      "seismictoss",
+      "firepunch",
+      "flamethrower",
+      "headbutt",
+      "roar",
+      "thunderpunch",
+      "thrash"
     ],
     "evolvesFrom": "rhyhorn"
   },
@@ -4096,7 +4478,10 @@
       "psywave",
       "rest",
       "triattack",
-      "substitute"
+      "substitute",
+      "dreameater",
+      "flamethrower",
+      "headbutt"
     ]
   },
   "tangela": {
@@ -4129,7 +4514,12 @@
       "skullbash",
       "constrict",
       "rest",
-      "substitute"
+      "substitute",
+      "amnesia",
+      "confusion",
+      "flash",
+      "headbutt",
+      "reflect"
     ]
   },
   "kangaskhan": {
@@ -4171,7 +4561,16 @@
       "dizzypunch",
       "rest",
       "rockslide",
-      "substitute"
+      "substitute",
+      "disable",
+      "firepunch",
+      "flamethrower",
+      "focusenergy",
+      "headbutt",
+      "icepunch",
+      "roar",
+      "stomp",
+      "thunderpunch"
     ]
   },
   "horsea": {
@@ -4200,7 +4599,14 @@
       "skullbash",
       "bubble",
       "rest",
-      "substitute"
+      "substitute",
+      "aurorabeam",
+      "disable",
+      "dragonrage",
+      "haze",
+      "headbutt",
+      "splash",
+      "waterfall"
     ],
     "evolvesTo": "seadra"
   },
@@ -4231,7 +4637,14 @@
       "bubble",
       "rest",
       "substitute",
-      "hyperbeam"
+      "hyperbeam",
+      "headbutt",
+      "waterfall",
+      "aurorabeam",
+      "disable",
+      "dragonrage",
+      "haze",
+      "splash"
     ],
     "evolvesFrom": "horsea"
   },
@@ -4264,7 +4677,11 @@
       "swift",
       "skullbash",
       "rest",
-      "substitute"
+      "substitute",
+      "haze",
+      "hydropump",
+      "psybeam",
+      "swordsdance"
     ],
     "evolvesTo": "seaking"
   },
@@ -4298,7 +4715,11 @@
       "skullbash",
       "rest",
       "substitute",
-      "hyperbeam"
+      "hyperbeam",
+      "haze",
+      "hydropump",
+      "psybeam",
+      "swordsdance"
     ],
     "evolvesFrom": "goldeen"
   },
@@ -4338,7 +4759,8 @@
       "psywave",
       "rest",
       "triattack",
-      "substitute"
+      "substitute",
+      "waterfall"
     ],
     "evolvesTo": "starmie"
   },
@@ -4379,7 +4801,10 @@
       "rest",
       "triattack",
       "substitute",
-      "hyperbeam"
+      "hyperbeam",
+      "confuseray",
+      "dreameater",
+      "waterfall"
     ],
     "evolvesFrom": "staryu"
   },
@@ -4420,7 +4845,14 @@
       "flash",
       "psywave",
       "rest",
-      "substitute"
+      "substitute",
+      "dreameater",
+      "firepunch",
+      "headbutt",
+      "hypnosis",
+      "icepunch",
+      "psybeam",
+      "thunderpunch"
     ]
   },
   "scyther": {
@@ -4448,7 +4880,12 @@
       "skullbash",
       "rest",
       "slash",
-      "substitute"
+      "substitute",
+      "counter",
+      "headbutt",
+      "lightscreen",
+      "razorwind",
+      "sonicboom"
     ]
   },
   "jynx": {
@@ -4471,29 +4908,6 @@
       "dreameater",
       "lovelykiss",
       "rest",
-      "thief",
-      "nightmare",
-      "snore",
-      "curse",
-      "powdersnow",
-      "protect",
-      "sweetkiss",
-      "mudslap",
-      "perishsong",
-      "icywind",
-      "endure",
-      "swagger",
-      "meanlook",
-      "attract",
-      "sleeptalk",
-      "return",
-      "frustration",
-      "dynamicpunch",
-      "sweetscent",
-      "hiddenpower",
-      "raindance",
-      "psychup",
-      "shadowball",
       "doubleslap",
       "megapunch",
       "megakick",
@@ -4515,7 +4929,8 @@
       "metronome",
       "skullbash",
       "psywave",
-      "substitute"
+      "substitute",
+      "headbutt"
     ]
   },
   "electabuzz": {
@@ -4544,23 +4959,6 @@
       "swift",
       "flash",
       "rest",
-      "thief",
-      "snore",
-      "curse",
-      "protect",
-      "mudslap",
-      "zapcannon",
-      "detect",
-      "endure",
-      "swagger",
-      "attract",
-      "sleeptalk",
-      "return",
-      "frustration",
-      "dynamicpunch",
-      "hiddenpower",
-      "crosschop",
-      "raindance",
       "megapunch",
       "megakick",
       "bodyslam",
@@ -4608,23 +5006,6 @@
       "smog",
       "fireblast",
       "rest",
-      "thief",
-      "snore",
-      "curse",
-      "protect",
-      "mudslap",
-      "detect",
-      "endure",
-      "swagger",
-      "attract",
-      "sleeptalk",
-      "return",
-      "frustration",
-      "dynamicpunch",
-      "irontail",
-      "hiddenpower",
-      "crosschop",
-      "sunnyday",
       "megakick",
       "bodyslam",
       "takedown",
@@ -4671,7 +5052,11 @@
       "bide",
       "rest",
       "slash",
-      "substitute"
+      "substitute",
+      "furyattack",
+      "headbutt",
+      "rockthrow",
+      "vicegrip"
     ]
   },
   "tauros": {
@@ -4704,7 +5089,13 @@
       "fireblast",
       "skullbash",
       "rest",
-      "substitute"
+      "substitute",
+      "flamethrower",
+      "headbutt",
+      "hornattack",
+      "quickattack",
+      "surf",
+      "thrash"
     ]
   },
   "magikarp": {
@@ -4712,7 +5103,7 @@
     "name": "Magikarp",
     "types": ["water"],
     "stats": {"hp": 20, "atk": 10, "def": 55, "spa": 20, "spd": 0, "spe": 80},
-    "moves": ["tackle", "splash"],
+    "moves": ["tackle", "splash", "bubble", "dragonrage"],
     "evolvesTo": "gyarados"
   },
   "gyarados": {
@@ -4748,7 +5139,13 @@
       "fireblast",
       "skullbash",
       "rest",
-      "substitute"
+      "substitute",
+      "flamethrower",
+      "headbutt",
+      "roar",
+      "thrash",
+      "waterfall",
+      "bubble"
     ],
     "evolvesFrom": "magikarp"
   },
@@ -4788,7 +5185,11 @@
       "skullbash",
       "psywave",
       "rest",
-      "substitute"
+      "substitute",
+      "aurorabeam",
+      "bite",
+      "dreameater",
+      "headbutt"
     ]
   },
   "ditto": {
@@ -4823,7 +5224,9 @@
       "swift",
       "skullbash",
       "rest",
-      "substitute"
+      "substitute",
+      "growth",
+      "headbutt"
     ],
     "evolvesTo": "flareon"
   },
@@ -4863,7 +5266,11 @@
       "skullbash",
       "acidarmor",
       "rest",
-      "substitute"
+      "substitute",
+      "headbutt",
+      "roar",
+      "waterfall",
+      "growth"
     ],
     "evolvesFrom": "eevee"
   },
@@ -4901,7 +5308,10 @@
       "skullbash",
       "flash",
       "rest",
-      "substitute"
+      "substitute",
+      "headbutt",
+      "roar",
+      "growth"
     ],
     "evolvesFrom": "eevee"
   },
@@ -4937,7 +5347,10 @@
       "hyperbeam",
       "firespin",
       "smog",
-      "fireblast"
+      "fireblast",
+      "headbutt",
+      "roar",
+      "growth"
     ],
     "evolvesFrom": "eevee"
   },
@@ -4975,7 +5388,9 @@
       "sharpen",
       "conversion",
       "triattack",
-      "substitute"
+      "substitute",
+      "barrier",
+      "dreameater"
     ]
   },
   "omanyte": {
@@ -5004,7 +5419,15 @@
       "bide",
       "spikecannon",
       "rest",
-      "substitute"
+      "substitute",
+      "aurorabeam",
+      "bite",
+      "constrict",
+      "haze",
+      "headbutt",
+      "rockthrow",
+      "slam",
+      "supersonic"
     ],
     "evolvesTo": "omastar"
   },
@@ -5039,7 +5462,15 @@
       "hyperbeam",
       "submission",
       "seismictoss",
-      "skullbash"
+      "skullbash",
+      "bite",
+      "constrict",
+      "headbutt",
+      "aurorabeam",
+      "haze",
+      "rockthrow",
+      "slam",
+      "supersonic"
     ],
     "evolvesFrom": "omanyte"
   },
@@ -5070,7 +5501,12 @@
       "bide",
       "rest",
       "slash",
-      "substitute"
+      "substitute",
+      "aurorabeam",
+      "dig",
+      "megadrain",
+      "rockthrow",
+      "sandattack"
     ],
     "evolvesTo": "kabutops"
   },
@@ -5109,7 +5545,13 @@
       "hyperbeam",
       "submission",
       "seismictoss",
-      "skullbash"
+      "skullbash",
+      "headbutt",
+      "megadrain",
+      "sandattack",
+      "aurorabeam",
+      "dig",
+      "rockthrow"
     ],
     "evolvesFrom": "kabuto"
   },
@@ -5140,7 +5582,12 @@
       "swift",
       "skyattack",
       "rest",
-      "substitute"
+      "substitute",
+      "earthquake",
+      "flamethrower",
+      "headbutt",
+      "roar",
+      "rockthrow"
     ]
   },
   "snorlax": {
@@ -5187,7 +5634,16 @@
       "psywave",
       "rest",
       "rockslide",
-      "substitute"
+      "substitute",
+      "defensecurl",
+      "firepunch",
+      "flamethrower",
+      "icepunch",
+      "lick",
+      "lovelykiss",
+      "splash",
+      "tackle",
+      "thunderpunch"
     ]
   },
   "articuno": {
@@ -5218,7 +5674,9 @@
       "swift",
       "skyattack",
       "rest",
-      "substitute"
+      "substitute",
+      "gust",
+      "roar"
     ]
   },
   "zapdos": {
@@ -5250,7 +5708,9 @@
       "skyattack",
       "flash",
       "rest",
-      "substitute"
+      "substitute",
+      "peck",
+      "roar"
     ]
   },
   "moltres": {
@@ -5279,7 +5739,11 @@
       "swift",
       "skyattack",
       "rest",
-      "substitute"
+      "substitute",
+      "ember",
+      "flamethrower",
+      "roar",
+      "wingattack"
     ]
   },
   "dratini": {
@@ -5315,7 +5779,15 @@
       "swift",
       "skullbash",
       "rest",
-      "substitute"
+      "substitute",
+      "flamethrower",
+      "haze",
+      "headbutt",
+      "hydropump",
+      "lightscreen",
+      "mist",
+      "supersonic",
+      "waterfall"
     ],
     "evolvesTo": "dragonair"
   },
@@ -5353,7 +5825,15 @@
       "skullbash",
       "rest",
       "substitute",
-      "horndrill"
+      "horndrill",
+      "flamethrower",
+      "headbutt",
+      "waterfall",
+      "haze",
+      "hydropump",
+      "lightscreen",
+      "mist",
+      "supersonic"
     ],
     "evolvesFrom": "dratini",
     "evolvesTo": "dragonite"
@@ -5394,7 +5874,20 @@
       "substitute",
       "horndrill",
       "razorwind",
-      "strength"
+      "strength",
+      "firepunch",
+      "flamethrower",
+      "fly",
+      "headbutt",
+      "icepunch",
+      "thunderpunch",
+      "waterfall",
+      "wingattack",
+      "haze",
+      "hydropump",
+      "lightscreen",
+      "mist",
+      "supersonic"
     ],
     "evolvesFrom": "dragonair"
   },
@@ -5446,7 +5939,13 @@
       "psywave",
       "rest",
       "triattack",
-      "substitute"
+      "substitute",
+      "dreameater",
+      "firepunch",
+      "flamethrower",
+      "headbutt",
+      "icepunch",
+      "thunderpunch"
     ]
   },
   "mew": {
@@ -5511,7 +6010,15 @@
       "rest",
       "rockslide",
       "triattack",
-      "substitute"
+      "substitute",
+      "defensecurl",
+      "firepunch",
+      "flamethrower",
+      "headbutt",
+      "icepunch",
+      "roar",
+      "thunderpunch",
+      "waterfall"
     ]
   },
   "chikorita": {
@@ -5557,7 +6064,8 @@
       "synthesis",
       "hiddenpower",
       "sunnyday",
-      "ancientpower"
+      "ancientpower",
+      "petaldance"
     ],
     "genderRatio": 87.5,
     "evolvesTo": "bayleef"
@@ -5608,7 +6116,8 @@
       "ancientpower",
       "strength",
       "furycutter",
-      "rocksmash"
+      "rocksmash",
+      "petaldance"
     ],
     "genderRatio": 87.5,
     "evolvesFrom": "chikorita",
@@ -5662,7 +6171,8 @@
       "furycutter",
       "rocksmash",
       "hyperbeam",
-      "earthquake"
+      "earthquake",
+      "petaldance"
     ],
     "genderRatio": 87.5,
     "evolvesFrom": "bayleef"
@@ -5708,7 +6218,8 @@
       "frustration",
       "irontail",
       "hiddenpower",
-      "sunnyday"
+      "sunnyday",
+      "doubleedge"
     ],
     "genderRatio": 87.5,
     "evolvesTo": "quilava"
@@ -5758,7 +6269,8 @@
       "roar",
       "strength",
       "furycutter",
-      "rocksmash"
+      "rocksmash",
+      "doubleedge"
     ],
     "genderRatio": 87.5,
     "evolvesFrom": "cyndaquil",
@@ -5814,7 +6326,8 @@
       "thunderpunch",
       "hyperbeam",
       "earthquake",
-      "dynamicpunch"
+      "dynamicpunch",
+      "doubleedge"
     ],
     "genderRatio": 87.5,
     "evolvesFrom": "quilava"
@@ -5865,7 +6378,8 @@
       "raindance",
       "crunch",
       "ancientpower",
-      "whirlpool"
+      "whirlpool",
+      "submission"
     ],
     "genderRatio": 87.5,
     "evolvesTo": "croconaw"
@@ -5920,7 +6434,8 @@
       "roar",
       "strength",
       "furycutter",
-      "rocksmash"
+      "rocksmash",
+      "submission"
     ],
     "genderRatio": 87.5,
     "evolvesFrom": "totodile",
@@ -5978,7 +6493,8 @@
       "furycutter",
       "rocksmash",
       "hyperbeam",
-      "earthquake"
+      "earthquake",
+      "submission"
     ],
     "genderRatio": 87.5,
     "evolvesFrom": "croconaw"
@@ -6029,7 +6545,8 @@
       "irontail",
       "hiddenpower",
       "sunnyday",
-      "shadowball"
+      "shadowball",
+      "dizzypunch"
     ],
     "genderRatio": 50,
     "evolvesTo": "furret"
@@ -6083,7 +6600,8 @@
       "shadowball",
       "scratch",
       "hyperbeam",
-      "strength"
+      "strength",
+      "dizzypunch"
     ],
     "genderRatio": 50,
     "evolvesFrom": "sentret"
@@ -6130,7 +6648,8 @@
       "return",
       "frustration",
       "hiddenpower",
-      "sunnyday"
+      "sunnyday",
+      "nightshade"
     ],
     "genderRatio": 50,
     "evolvesTo": "noctowl"
@@ -6178,7 +6697,8 @@
       "frustration",
       "hiddenpower",
       "sunnyday",
-      "hyperbeam"
+      "hyperbeam",
+      "nightshade"
     ],
     "genderRatio": 50,
     "evolvesFrom": "hoothoot"
@@ -6225,7 +6745,8 @@
       "batonpass",
       "sweetscent",
       "hiddenpower",
-      "sunnyday"
+      "sunnyday",
+      "barrier"
     ],
     "genderRatio": 50,
     "evolvesTo": "ledian"
@@ -6273,7 +6794,8 @@
       "sweetscent",
       "hiddenpower",
       "sunnyday",
-      "hyperbeam"
+      "hyperbeam",
+      "barrier"
     ],
     "genderRatio": 50,
     "evolvesFrom": "ledyba"
@@ -6319,7 +6841,8 @@
       "batonpass",
       "pursuit",
       "hiddenpower",
-      "sunnyday"
+      "sunnyday",
+      "growth"
     ],
     "genderRatio": 50,
     "evolvesTo": "ariados"
@@ -6366,7 +6889,8 @@
       "pursuit",
       "hiddenpower",
       "sunnyday",
-      "hyperbeam"
+      "hyperbeam",
+      "growth"
     ],
     "genderRatio": 50,
     "evolvesFrom": "spinarak"
@@ -6405,7 +6929,21 @@
       "return",
       "frustration",
       "hiddenpower",
-      "sunnyday"
+      "sunnyday",
+      "razorwind",
+      "whirlwind",
+      "takedown",
+      "doubleedge",
+      "megadrain",
+      "rage",
+      "mimic",
+      "bide",
+      "substitute",
+      "feintattack",
+      "flail",
+      "gust",
+      "pursuit",
+      "quickattack"
     ],
     "genderRatio": 50,
     "evolvesFrom": "golbat"
@@ -6447,7 +6985,8 @@
       "frustration",
       "hiddenpower",
       "raindance",
-      "whirlpool"
+      "whirlpool",
+      "lightscreen"
     ],
     "genderRatio": 50,
     "evolvesTo": "lanturn"
@@ -6490,7 +7029,8 @@
       "hiddenpower",
       "raindance",
       "whirlpool",
-      "hyperbeam"
+      "hyperbeam",
+      "lightscreen"
     ],
     "genderRatio": 50,
     "evolvesFrom": "chinchou"
@@ -6536,7 +7076,11 @@
       "encore",
       "irontail",
       "hiddenpower",
-      "raindance"
+      "raindance",
+      "dizzypunch",
+      "petaldance",
+      "scaryface",
+      "sing"
     ],
     "genderRatio": 50
   },
@@ -6589,7 +7133,11 @@
       "raindance",
       "sunnyday",
       "psychup",
-      "shadowball"
+      "shadowball",
+      "dizzypunch",
+      "petaldance",
+      "scaryface",
+      "swift"
     ],
     "genderRatio": 25
   },
@@ -6637,7 +7185,11 @@
       "raindance",
       "sunnyday",
       "psychup",
-      "shadowball"
+      "shadowball",
+      "dizzypunch",
+      "mimic",
+      "petaldance",
+      "scaryface"
     ],
     "genderRatio": 25
   },
@@ -6790,7 +7342,8 @@
       "hiddenpower",
       "sunnyday",
       "psychup",
-      "futuresight"
+      "futuresight",
+      "safeguard"
     ],
     "genderRatio": 50,
     "evolvesTo": "xatu"
@@ -6837,7 +7390,8 @@
       "psychup",
       "futuresight",
       "fly",
-      "hyperbeam"
+      "hyperbeam",
+      "safeguard"
     ],
     "genderRatio": 50,
     "evolvesFrom": "natu"
@@ -7011,7 +7565,25 @@
       "frustration",
       "sweetscent",
       "hiddenpower",
-      "sunnyday"
+      "sunnyday",
+      "swordsdance",
+      "takedown",
+      "doubleedge",
+      "acid",
+      "megadrain",
+      "poisonpowder",
+      "sleeppowder",
+      "rage",
+      "mimic",
+      "reflect",
+      "bide",
+      "substitute",
+      "moonlight",
+      "sludgebomb",
+      "flail",
+      "leechseed",
+      "razorleaf",
+      "synthesis"
     ],
     "genderRatio": 50,
     "evolvesFrom": "gloom"
@@ -7062,10 +7634,12 @@
       "hiddenpower",
       "raindance",
       "futuresight",
-      "whirlpool"
+      "whirlpool",
+      "dizzypunch",
+      "hydropump",
+      "scaryface"
     ],
     "genderRatio": 50,
-    "evolvesFrom": "azurill",
     "evolvesTo": "azumarill"
   },
   "azumarill": {
@@ -7117,7 +7691,10 @@
       "whirlpool",
       "hyperbeam",
       "strength",
-      "rocksmash"
+      "rocksmash",
+      "dizzypunch",
+      "hydropump",
+      "scaryface"
     ],
     "genderRatio": 50,
     "evolvesFrom": "marill"
@@ -7164,10 +7741,10 @@
       "hiddenpower",
       "sunnyday",
       "psychup",
-      "rocksmash"
+      "rocksmash",
+      "substitute"
     ],
-    "genderRatio": 50,
-    "evolvesFrom": "bonsly"
+    "genderRatio": 50
   },
   "politoed": {
     "dexId": 186,
@@ -7210,7 +7787,35 @@
       "hiddenpower",
       "raindance",
       "rocksmash",
-      "whirlpool"
+      "whirlpool",
+      "bodyslam",
+      "takedown",
+      "doubleedge",
+      "hydropump",
+      "bubblebeam",
+      "rage",
+      "mimic",
+      "bide",
+      "skullbash",
+      "amnesia",
+      "bubble",
+      "psywave",
+      "substitute",
+      "megapunch",
+      "megakick",
+      "submission",
+      "counter",
+      "seismictoss",
+      "fissure",
+      "metronome",
+      "bellydrum",
+      "growth",
+      "haze",
+      "lovelykiss",
+      "mindreader",
+      "mist",
+      "splash",
+      "sweetkiss"
     ],
     "genderRatio": 50,
     "evolvesFrom": "poliwhirl"
@@ -7257,7 +7862,8 @@
       "sweetscent",
       "synthesis",
       "hiddenpower",
-      "sunnyday"
+      "sunnyday",
+      "agility"
     ],
     "genderRatio": 50,
     "evolvesTo": "skiploom"
@@ -7304,7 +7910,8 @@
       "sweetscent",
       "synthesis",
       "hiddenpower",
-      "sunnyday"
+      "sunnyday",
+      "agility"
     ],
     "genderRatio": 50,
     "evolvesFrom": "hoppip",
@@ -7353,7 +7960,8 @@
       "synthesis",
       "hiddenpower",
       "sunnyday",
-      "hyperbeam"
+      "hyperbeam",
+      "agility"
     ],
     "genderRatio": 50,
     "evolvesFrom": "skiploom"
@@ -7411,7 +8019,8 @@
       "sunnyday",
       "shadowball",
       "rocksmash",
-      "beatup"
+      "beatup",
+      "mimic"
     ],
     "genderRatio": 50
   },
@@ -7444,7 +8053,8 @@
       "sweetscent",
       "synthesis",
       "hiddenpower",
-      "sunnyday"
+      "sunnyday",
+      "splash"
     ],
     "genderRatio": 50,
     "evolvesTo": "sunflora"
@@ -7482,7 +8092,8 @@
       "pound",
       "hyperbeam",
       "razorleaf",
-      "petaldance"
+      "petaldance",
+      "splash"
     ],
     "genderRatio": 50,
     "evolvesFrom": "sunkern"
@@ -7523,7 +8134,9 @@
       "return",
       "frustration",
       "hiddenpower",
-      "sunnyday"
+      "sunnyday",
+      "steelwing",
+      "sweetkiss"
     ],
     "genderRatio": 50
   },
@@ -7571,7 +8184,9 @@
       "raindance",
       "ancientpower",
       "rocksmash",
-      "whirlpool"
+      "whirlpool",
+      "bellydrum",
+      "scaryface"
     ],
     "genderRatio": 50,
     "evolvesTo": "quagsire"
@@ -7622,7 +8237,9 @@
       "rocksmash",
       "whirlpool",
       "hyperbeam",
-      "strength"
+      "strength",
+      "bellydrum",
+      "scaryface"
     ],
     "genderRatio": 50,
     "evolvesFrom": "wooper"
@@ -7668,7 +8285,23 @@
       "raindance",
       "sunnyday",
       "psychup",
-      "shadowball"
+      "shadowball",
+      "bodyslam",
+      "takedown",
+      "doubleedge",
+      "bite",
+      "growl",
+      "rage",
+      "mimic",
+      "reflect",
+      "focusenergy",
+      "bide",
+      "skullbash",
+      "substitute",
+      "batonpass",
+      "charm",
+      "flail",
+      "growth"
     ],
     "genderRatio": 87.5,
     "evolvesFrom": "eevee"
@@ -7717,7 +8350,23 @@
       "raindance",
       "sunnyday",
       "psychup",
-      "shadowball"
+      "shadowball",
+      "bodyslam",
+      "takedown",
+      "doubleedge",
+      "bite",
+      "growl",
+      "rage",
+      "mimic",
+      "reflect",
+      "focusenergy",
+      "bide",
+      "skullbash",
+      "substitute",
+      "batonpass",
+      "charm",
+      "flail",
+      "growth"
     ],
     "genderRatio": 87.5,
     "evolvesFrom": "eevee"
@@ -7764,7 +8413,8 @@
       "hiddenpower",
       "sunnyday",
       "psychup",
-      "shadowball"
+      "shadowball",
+      "beatup"
     ],
     "genderRatio": 50
   },
@@ -7819,7 +8469,28 @@
       "psychup",
       "shadowball",
       "rocksmash",
-      "whirlpool"
+      "whirlpool",
+      "payday",
+      "bodyslam",
+      "takedown",
+      "doubleedge",
+      "bubblebeam",
+      "thunderwave",
+      "fissure",
+      "rage",
+      "teleport",
+      "mimic",
+      "reflect",
+      "bide",
+      "skullbash",
+      "amnesia",
+      "psywave",
+      "triattack",
+      "substitute",
+      "bellydrum",
+      "futuresight",
+      "safeguard",
+      "stomp"
     ],
     "genderRatio": 50,
     "evolvesFrom": "slowpoke"
@@ -7867,7 +8538,8 @@
       "raindance",
       "sunnyday",
       "psychup",
-      "shadowball"
+      "shadowball",
+      "hypnosis"
     ],
     "genderRatio": 50
   },
@@ -7883,9 +8555,8 @@
     "name": "Wobbuffet",
     "types": ["psychic"],
     "stats": {"hp": 190, "atk": 33, "def": 58, "spa": 33, "spd": 58, "spe": 33},
-    "moves": ["counter", "destinybond", "safeguard", "mirrorcoat"],
-    "genderRatio": 50,
-    "evolvesFrom": "wynaut"
+    "moves": ["counter", "destinybond", "safeguard", "mirrorcoat", "mimic"],
+    "genderRatio": 50
   },
   "girafarig": {
     "dexId": 203,
@@ -7978,7 +8649,8 @@
       "sweetscent",
       "hiddenpower",
       "sunnyday",
-      "rocksmash"
+      "rocksmash",
+      "substitute"
     ],
     "genderRatio": 50,
     "evolvesTo": "forretress"
@@ -8024,7 +8696,8 @@
       "sunnyday",
       "rocksmash",
       "hyperbeam",
-      "sandstorm"
+      "sandstorm",
+      "substitute"
     ],
     "genderRatio": 50,
     "evolvesFrom": "pineco"
@@ -8076,7 +8749,9 @@
       "sunnyday",
       "psychup",
       "ancientpower",
-      "rocksmash"
+      "rocksmash",
+      "furyattack",
+      "horndrill"
     ],
     "genderRatio": 50
   },
@@ -8122,7 +8797,8 @@
       "metalclaw",
       "hiddenpower",
       "sunnyday",
-      "rocksmash"
+      "rocksmash",
+      "earthquake"
     ],
     "genderRatio": 50
   },
@@ -8167,7 +8843,20 @@
       "hiddenpower",
       "sunnyday",
       "crunch",
-      "rocksmash"
+      "rocksmash",
+      "bodyslam",
+      "takedown",
+      "doubleedge",
+      "fissure",
+      "mimic",
+      "bide",
+      "selfdestruct",
+      "skullbash",
+      "explosion",
+      "rockslide",
+      "substitute",
+      "flail",
+      "sharpen"
     ],
     "genderRatio": 50,
     "evolvesFrom": "onix"
@@ -8224,7 +8913,8 @@
       "sunnyday",
       "crunch",
       "shadowball",
-      "rocksmash"
+      "rocksmash",
+      "lovelykiss"
     ],
     "genderRatio": 25,
     "evolvesTo": "granbull"
@@ -8282,7 +8972,8 @@
       "crunch",
       "shadowball",
       "rocksmash",
-      "hyperbeam"
+      "hyperbeam",
+      "lovelykiss"
     ],
     "genderRatio": 25,
     "evolvesFrom": "snubbull"
@@ -8330,7 +9021,8 @@
       "frustration",
       "hiddenpower",
       "raindance",
-      "whirlpool"
+      "whirlpool",
+      "doubleedge"
     ],
     "genderRatio": 50
   },
@@ -8373,7 +9065,22 @@
       "metalclaw",
       "hiddenpower",
       "sunnyday",
-      "rocksmash"
+      "rocksmash",
+      "wingattack",
+      "takedown",
+      "doubleedge",
+      "rage",
+      "mimic",
+      "bide",
+      "skullbash",
+      "substitute",
+      "batonpass",
+      "counter",
+      "lightscreen",
+      "razorwind",
+      "reversal",
+      "safeguard",
+      "sonicboom"
     ],
     "genderRatio": 50,
     "evolvesFrom": "scyther"
@@ -8457,7 +9164,8 @@
       "megahorn",
       "hiddenpower",
       "sunnyday",
-      "rocksmash"
+      "rocksmash",
+      "seismictoss"
     ],
     "genderRatio": 50
   },
@@ -8517,7 +9225,8 @@
       "psychup",
       "shadowball",
       "rocksmash",
-      "beatup"
+      "beatup",
+      "moonlight"
     ],
     "genderRatio": 50
   },
@@ -8571,7 +9280,8 @@
       "hiddenpower",
       "sunnyday",
       "crunch",
-      "rocksmash"
+      "rocksmash",
+      "sweetscent"
     ],
     "genderRatio": 50,
     "evolvesTo": "ursaring"
@@ -8627,7 +9337,8 @@
       "sunnyday",
       "crunch",
       "rocksmash",
-      "hyperbeam"
+      "hyperbeam",
+      "sweetscent"
     ],
     "genderRatio": 50,
     "evolvesFrom": "teddiursa"
@@ -8750,7 +9461,8 @@
       "hiddenpower",
       "raindance",
       "ancientpower",
-      "rocksmash"
+      "rocksmash",
+      "whirlwind"
     ],
     "genderRatio": 50,
     "evolvesTo": "piloswine"
@@ -8797,7 +9509,8 @@
       "rocksmash",
       "hornattack",
       "furyattack",
-      "hyperbeam"
+      "hyperbeam",
+      "whirlwind"
     ],
     "genderRatio": 50,
     "evolvesFrom": "swinub"
@@ -8889,7 +9602,9 @@
       "frustration",
       "hiddenpower",
       "raindance",
-      "whirlpool"
+      "whirlpool",
+      "amnesia",
+      "mist"
     ],
     "genderRatio": 50,
     "evolvesTo": "octillery"
@@ -8933,7 +9648,9 @@
       "hiddenpower",
       "raindance",
       "whirlpool",
-      "constrict"
+      "constrict",
+      "amnesia",
+      "mist"
     ],
     "genderRatio": 50,
     "evolvesFrom": "remoraid"
@@ -8972,7 +9689,9 @@
       "rapidspin",
       "hiddenpower",
       "raindance",
-      "futuresight"
+      "futuresight",
+      "payday",
+      "spikes"
     ],
     "genderRatio": 50
   },
@@ -9016,10 +9735,10 @@
       "hiddenpower",
       "twister",
       "raindance",
-      "whirlpool"
+      "whirlpool",
+      "gust"
     ],
-    "genderRatio": 50,
-    "evolvesFrom": "mantyke"
+    "genderRatio": 50
   },
   "skarmory": {
     "dexId": 227,
@@ -9057,7 +9776,8 @@
       "frustration",
       "pursuit",
       "hiddenpower",
-      "sunnyday"
+      "sunnyday",
+      "furycutter"
     ],
     "genderRatio": 50
   },
@@ -9203,7 +9923,22 @@
       "hiddenpower",
       "twister",
       "raindance",
-      "whirlpool"
+      "whirlpool",
+      "takedown",
+      "doubleedge",
+      "bubblebeam",
+      "rage",
+      "mimic",
+      "bide",
+      "skullbash",
+      "substitute",
+      "aurorabeam",
+      "disable",
+      "dragonrage",
+      "flail",
+      "haze",
+      "octazooka",
+      "splash"
     ],
     "genderRatio": 50,
     "evolvesFrom": "seadra"
@@ -9245,7 +9980,9 @@
       "hiddenpower",
       "sunnyday",
       "ancientpower",
-      "rocksmash"
+      "rocksmash",
+      "absorb",
+      "encore"
     ],
     "genderRatio": 50,
     "evolvesTo": "donphan"
@@ -9291,7 +10028,9 @@
       "hornattack",
       "furyattack",
       "hyperbeam",
-      "rapidspin"
+      "rapidspin",
+      "absorb",
+      "encore"
     ],
     "genderRatio": 50,
     "evolvesFrom": "phanpy"
@@ -9339,7 +10078,20 @@
       "hiddenpower",
       "raindance",
       "sunnyday",
-      "psychup"
+      "psychup",
+      "takedown",
+      "doubleedge",
+      "thunderwave",
+      "rage",
+      "teleport",
+      "mimic",
+      "reflect",
+      "bide",
+      "skullbash",
+      "psywave",
+      "sharpen",
+      "substitute",
+      "barrier"
     ],
     "evolvesFrom": "porygon"
   },
@@ -9387,7 +10139,8 @@
       "hiddenpower",
       "raindance",
       "sunnyday",
-      "psychup"
+      "psychup",
+      "safeguard"
     ],
     "genderRatio": 50
   },
@@ -9431,7 +10184,10 @@
       "rapidspin",
       "hiddenpower",
       "sunnyday",
-      "rocksmash"
+      "rocksmash",
+      "dizzypunch",
+      "hijumpkick",
+      "rage"
     ],
     "genderRatio": 100
   },
@@ -9474,7 +10230,10 @@
       "quickattack",
       "focusenergy",
       "triplekick",
-      "pursuit"
+      "pursuit",
+      "dizzypunch",
+      "hijumpkick",
+      "rage"
     ],
     "genderRatio": 100,
     "evolvesFrom": "tyrogue"
@@ -9522,7 +10281,10 @@
       "hiddenpower",
       "raindance",
       "psychup",
-      "shadowball"
+      "shadowball",
+      "dizzypunch",
+      "metronome",
+      "petaldance"
     ],
     "genderRatio": 0
   },
@@ -9569,7 +10331,9 @@
       "dynamicpunch",
       "hiddenpower",
       "crosschop",
-      "raindance"
+      "raindance",
+      "dizzypunch",
+      "pursuit"
     ],
     "genderRatio": 75
   },
@@ -9614,7 +10378,9 @@
       "irontail",
       "hiddenpower",
       "crosschop",
-      "sunnyday"
+      "sunnyday",
+      "dizzypunch",
+      "feintattack"
     ],
     "genderRatio": 75
   },
@@ -9672,7 +10438,8 @@
       "sunnyday",
       "psychup",
       "shadowball",
-      "rocksmash"
+      "rocksmash",
+      "megakick"
     ],
     "genderRatio": 0
   },
@@ -9728,7 +10495,32 @@
       "raindance",
       "sunnyday",
       "shadowball",
-      "rocksmash"
+      "rocksmash",
+      "megapunch",
+      "megakick",
+      "bodyslam",
+      "takedown",
+      "watergun",
+      "bubblebeam",
+      "submission",
+      "counter",
+      "seismictoss",
+      "thunderwave",
+      "rage",
+      "teleport",
+      "mimic",
+      "reflect",
+      "bide",
+      "metronome",
+      "skullbash",
+      "psywave",
+      "triattack",
+      "substitute",
+      "healbell",
+      "irontail",
+      "present",
+      "psychup",
+      "sweetscent"
     ],
     "genderRatio": 0,
     "evolvesFrom": "chansey"
@@ -9911,7 +10703,8 @@
       "raindance",
       "sunnyday",
       "crunch",
-      "ancientpower"
+      "ancientpower",
+      "rage"
     ],
     "genderRatio": 50,
     "evolvesTo": "pupitar"
@@ -9955,7 +10748,8 @@
       "raindance",
       "sunnyday",
       "crunch",
-      "ancientpower"
+      "ancientpower",
+      "rage"
     ],
     "genderRatio": 50,
     "evolvesFrom": "larvitar",
@@ -10015,7 +10809,8 @@
       "dynamicpunch",
       "dragonbreath",
       "irontail",
-      "rocksmash"
+      "rocksmash",
+      "rage"
     ],
     "genderRatio": 50,
     "evolvesFrom": "pupitar"
