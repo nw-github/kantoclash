@@ -20,7 +20,9 @@
     <template #panel>
       <ul class="list-none p-2 m-0 w-max max-w-[300px]">
         <li>
-          <h4 class="inline-block w-8 text-center">{{ info[1] || "--" }}</h4>
+          <h4 class="inline-block w-8 text-center" :class="[move.power !== info[1] && 'font-bold']">
+            {{ info[1] || "--" }}
+          </h4>
           Power
         </li>
         <li>
@@ -61,6 +63,10 @@ const info = computed(() => {
   if (move.value.kind === "damage" && poke && move.value.getType) {
     type = move.value.getType(poke);
   }
+  if (pow && pow !== 1 && poke?.item && gen.itemTypeBoost[poke.item] === type) {
+    pow += Math.floor(pow / 10);
+  }
+
   return [type, pow] as const;
 });
 </script>

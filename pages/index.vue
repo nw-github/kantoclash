@@ -47,10 +47,10 @@
           cancelling
             ? "Cancelling..."
             : findingMatch
-              ? "Cancel"
-              : challengeUser
-                ? "Send Challenge"
-                : "Find Match"
+            ? "Cancel"
+            : challengeUser
+            ? "Send Challenge"
+            : "Find Match"
         }}
 
         <template v-if="findingMatch || cancelling" #leading>
@@ -213,6 +213,13 @@ onUnmounted(() => {
 });
 
 const enterMatchmaking = () => {
+  if (!$conn.connected) {
+    return toast.add({
+      title: "Disconnected",
+      description: "You are not currently connected to the server! Try refreshing the page.",
+    });
+  }
+
   if (!user.value) {
     return emit("requestLogin");
   }

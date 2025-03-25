@@ -66,20 +66,36 @@
           <template v-if="poke && !poke.hidden" #panel>
             <div class="p-2">
               <PokemonTTContent v-if="base && !poke.transformed" :poke="base" :active="poke" />
-              <div v-else class="flex flex-col gap-5 items-center">
+              <div v-else class="flex flex-col items-center">
                 <div class="flex gap-10">
-                  <span>
+                  <div class="flex gap-0.5 items-center justify-center">
                     {{ species!.name }}
                     <span v-if="poke.transformed">
                       (Was: {{ gen.speciesList[poke.speciesId].name }})
                     </span>
-                  </span>
+
+                    <template v-if="base && poke.transformed && base.item">
+                      <ItemSprite :item="base.item" />
+                      <span class="text-xs">{{ base.gen.items[base.item] }}</span>
+                    </template>
+                  </div>
                   <div class="flex gap-1">
                     <TypeBadge v-for="type in species!.types" :key="type" :type image />
                   </div>
                 </div>
+                <div v-if="base && poke.transformed" class="pt-1.5 space-y-1.5 w-full">
+                  <UProgress :max="base.stats.hp" :value="base.hp" />
+                  <div class="flex justify-between gap-4">
+                    <span>
+                      {{ base.hp }}/{{ base.stats.hp }} HP ({{
+                        roundTo(hpPercentExact(base.hp, base.stats.hp), 2)
+                      }}%)
+                    </span>
 
-                <span class="italic text-center">{{ minSpe }} to {{ maxSpe }} Spe</span>
+                    <StatusOrFaint :poke="base" :faint="!poke || poke.fainted" />
+                  </div>
+                </div>
+                <span class="pt-5 italic text-center">{{ minSpe }} to {{ maxSpe }} Spe</span>
               </div>
             </div>
           </template>
@@ -173,7 +189,7 @@
 </style>
 
 <script setup lang="ts">
-import {stageMultipliers, VolatileFlag} from "~/game/utils";
+import {stageMultipliers, VolatileFlag, hpPercentExact} from "~/game/utils";
 import {calcStat, type Pokemon} from "~/game/pokemon";
 import type {MoveId} from "~/game/moves";
 import {breakpointsTailwind} from "@vueuse/core";

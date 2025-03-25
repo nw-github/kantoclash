@@ -7,8 +7,9 @@ import {z} from "zod";
 import {isValidSketchMove, type FormatId} from "~/utils/shared";
 import {type Generation, GENERATION1} from "~/game/gen";
 import {GENERATION2} from "~/game/gen2";
-import {ItemId} from "~/game/item";
+import {statusBerry, type ItemId} from "~/game/item";
 import {itemDesc} from "~/utils";
+import {profanityMatcher} from "~/utils/schema";
 
 export type TeamProblems = {path: (string | number)[]; message: string}[];
 
@@ -33,7 +34,49 @@ const getRandomPokemon = (
     .filter(id => gen.validSpecies(gen.speciesList[id]) && validSpecies(gen.speciesList[id], id))
     .sort(() => Math.random() - 0.5)
     .slice(0, count)
-    .map(id => customize(gen.speciesList[id], id));
+    .map(id => {
+      const species = gen.speciesList[id];
+      const poke = customize(species, id);
+      const items = (Object.keys(gen.items) as ItemId[]).filter(item => {
+        if (!(item in itemDesc)) {
+          return false;
+        } else if (
+          (item === "metalpowder" && id !== "ditto") ||
+          (item === "lightball" && id !== "pikachu") ||
+          (item === "thickclub" && id !== "marowak") ||
+          (item === "luckypunch" && id !== "chansey") ||
+          (item === "stick" && id !== "farfetchd")
+        ) {
+          return false;
+        } else if (
+          (statusBerry[item] === "frz" && species.types.includes("ice")) ||
+          (statusBerry[item] === "psn" && species.types.includes("psn")) ||
+          (statusBerry[item] === "psn" && species.types.includes("steel")) ||
+          (statusBerry[item] === "brn" && species.types.includes("fire"))
+        ) {
+          return false;
+        } else if (item === "mysteryberry" && !poke.moves.some(m => gen.moveList[m].pp === 5)) {
+          return false;
+        }
+
+        if (poke.moves[0] === "metronome" && poke.moves.length === 1) {
+          return true;
+        }
+
+        const type = gen.itemTypeBoost[item];
+        if (
+          type &&
+          !poke.moves.some(m => gen.moveList[m].kind === "damage" && gen.moveList[m].type === type)
+        ) {
+          return false;
+        }
+
+        return true;
+      });
+      poke.item = random.choice(items);
+      poke.friendship = poke.moves.includes("frustration") ? 0 : 255;
+      return poke;
+    });
 };
 
 const getRandomMoves = (
@@ -47,7 +90,7 @@ const getRandomMoves = (
     .slice(0, count);
 };
 
-const isBadMove = (move: Move, id: MoveId) => {
+const isBadMove = (s: Species, move: Move, id: MoveId) => {
   const eva = ([stat, c]: [string, number]) =>
     (stat === "acc" && c < 0) || (stat === "eva" && c > 0);
 
@@ -56,6 +99,10 @@ const isBadMove = (move: Move, id: MoveId) => {
   }
 
   if (move.kind === "damage" && Array.isArray(move.effect?.[1]) && move.effect[1].some(eva)) {
+    return true;
+  }
+
+  if (id === "attract" && s.genderRatio === undefined) {
     return true;
   }
 
@@ -73,7 +120,7 @@ export const randoms = (
       valid = Object.keys(gen.moveList).filter(id => isValidSketchMove(gen, id)) as MoveId[];
     }
 
-    const moves = getRandomMoves(4, s.moves, (move, id) => !isBadMove(move, id));
+    const moves = getRandomMoves(4, s.moves, (move, id) => !isBadMove(s, move, id));
     const stab = s.moves.filter(m => {
       const move = moveList[m];
       return (move.power ?? 0) > 40 && s.types.includes(move.type) && !moves.includes(m);
@@ -81,22 +128,19 @@ export const randoms = (
     if (stab.length) {
       moves[0] = random.choice(stab)!;
     }
-
-    const items = (Object.keys(gen.items) as ItemId[]).filter(item => item in itemDesc);
-    let item = random.choice(items);
-    let friendship = 255;
-    if (moves.includes("frustration")) {
-      friendship = 0;
-    }
-
-    return {species: id, level, moves, friendship, item};
+    return {species: id, level, moves};
   });
 };
 
 const createValidator = (gen: Generation) => {
   return z
     .object({
-      name: z.string().trim().max(24, "Name must be at most 24 characters").optional(),
+      name: z
+        .string()
+        .trim()
+        .max(24, "Name must be at most 24 characters")
+        .refine(text => !profanityMatcher.hasMatch(text), "Name must not contain obscenities")
+        .optional(),
       level: z.number().min(1).max(100).optional(),
       species: z.string().refine(s => s in gen.speciesList, "Species is invalid"),
       moves: z
@@ -185,12 +229,12 @@ export const formatDescs: Record<FormatId, FormatFunctions> = {
         GENERATION1,
         6,
         s => !s.evolvesTo,
-        (_, species) => ({
+        (s, species) => ({
           species,
           moves: getRandomMoves(
             4,
             Object.keys(moveList) as MoveId[],
-            (move, id) => !isBadMove(move, id),
+            (move, id) => !isBadMove(s, move, id),
           ),
         }),
       );

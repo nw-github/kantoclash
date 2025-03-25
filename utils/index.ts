@@ -107,7 +107,7 @@ const descriptions: Partial<Record<MoveId, string>> = {
   leechseed:
     "Plants a seed on the target. After the target attacks, it will lose 1/16 of its max " +
     "HP, and it will be restored to the user. Ends if the target switches out.",
-  metronome: "Selects any move except Struggle for the user to use at random.",
+  metronome: "Selects a move for the user to use at random.",
   mirrormove: "Uses the last move targeted at the user by a pokemon still on the field.",
   substitute:
     "The user sacrifices 1/4 its HP to create a substitute with 1/4 its HP + 1. The " +

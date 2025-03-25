@@ -3,7 +3,9 @@
     <USelectMenu
       v-model="model"
       searchable
-      placeholder="Select team..."
+      :placeholder="
+        formatInfo[format].needsTeam ? 'Select team...' : 'No team required for this mode...'
+      "
       :options="validTeams"
       :disabled="!formatInfo[format].needsTeam || disabled"
       option-attribute="name"
