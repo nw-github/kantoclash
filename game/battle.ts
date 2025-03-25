@@ -558,10 +558,18 @@ export class Battle {
 
   private handleResidualDamage(poke: ActivePokemon) {
     const tickCounter = (why: DamageReason) => {
+      // BUG GEN1: Toxic, Leech Seed, and brn/psn share the same routine. If a Pokemon rests, its
+      // toxic counter will not be reset and brn, poison, and leech seed will use and update it.
+
+      // BUG GEN2: Same as above, but Leech Seed is fixed and Rest resets the counter. Heal Bell
+      // and Baton Pass don't though, so the same bug can happen.
       let m = poke.v.counter || 1;
       let d = 16;
       if (this.gen.id >= 2) {
-        m = why === "psn" && poke.base.status === "tox" ? poke.v.counter : 1;
+        m =
+          why !== "seeded" && (this.gen.id === 2 || poke.base.status === "tox")
+            ? poke.v.counter || 1
+            : 1;
         d = why === "seeded" ? 8 : 16;
       }
 
@@ -1130,9 +1138,7 @@ export class ActivePokemon {
 
   unstatus(battle: Battle, why: InfoReason) {
     this.base.status = undefined;
-    if (battle.gen.id === 1 && why === "thaw") {
-      this.v.hazed = true;
-    }
+    this.v.hazed = this.v.hazed || why === "thaw";
     this.v.clearFlag(VolatileFlag.nightmare);
     return battle.info(this, why, [{id: this.owner.id, v: {status: null, flags: this.v.flags}}]);
   }
