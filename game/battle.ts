@@ -778,7 +778,7 @@ export class Battle {
         type: "cure",
         src: poke.owner.id,
         status,
-        volatiles: [{id: poke.owner.id, v: {status: null, stats: poke.dmgCalcStats(this)}}],
+        volatiles: [{id: poke.owner.id, v: {status: null, stats: poke.clientStats(this)}}],
       });
       poke.base.item = undefined;
     };
@@ -1061,7 +1061,7 @@ export class ActivePokemon {
     if (v) {
       volatiles.push({
         id: this.owner.id,
-        v: {status: this.base.status || null, stats: this.dmgCalcStats(battle)},
+        v: {status: this.base.status || null, stats: this.clientStats(battle)},
       });
     }
 
@@ -1098,7 +1098,9 @@ export class ActivePokemon {
         return true;
       }
 
-      this.v.recharge = undefined;
+      if (battle.gen.id === 1) {
+        this.v.recharge = undefined;
+      }
       this.base.sleepTurns = battle.gen.getSleepTurns(battle);
       opp.sleepClausePoke = this.base;
     } else if (status === "tox") {
@@ -1117,7 +1119,7 @@ export class ActivePokemon {
       type: "status",
       src: this.owner.id,
       status,
-      volatiles: [{id: this.owner.id, v: {stats: this.dmgCalcStats(battle), status}}],
+      volatiles: [{id: this.owner.id, v: {stats: this.clientStats(battle), status}}],
     });
 
     return true;
@@ -1147,12 +1149,12 @@ export class ActivePokemon {
     }
 
     const v: ChangedVolatiles = [
-      {id: this.owner.id, v: {stats: this.dmgCalcStats(battle), stages: {...this.v.stages}}},
+      {id: this.owner.id, v: {stats: this.clientStats(battle), stages: {...this.v.stages}}},
     ];
     if (battle.gen.id === 1) {
       // https://bulbapedia.bulbagarden.net/wiki/List_of_battle_glitches_(Generation_I)#Stat_modification_errors
       opponent.applyStatusDebuff();
-      v.push({id: opponent.owner.id, v: {stats: opponent.dmgCalcStats(battle)}});
+      v.push({id: opponent.owner.id, v: {stats: opponent.clientStats(battle)}});
     }
 
     return v;
@@ -1303,17 +1305,19 @@ export class ActivePokemon {
     return {id: this.owner.id, v: {flags: this.v.flags}};
   }
 
-  dmgCalcStats(battle: Battle) {
-    return Object.fromEntries(
-      stageStatKeys.map(key => [key, battle.gen.getStat(this, key)]),
-    ) as VolatileStats;
+  clientStats(battle: Battle) {
+    if (!this.base.transformed) {
+      return Object.fromEntries(
+        stageStatKeys.map(key => [key, battle.gen.getStat(this, key)]),
+      ) as VolatileStats;
+    }
   }
 
   getClientVolatiles(base: Pokemon, battle: Battle): ChangedVolatiles[number]["v"] {
     return {
       status: base.status || null,
       stages: {...this.v.stages},
-      stats: this.dmgCalcStats(battle),
+      stats: this.clientStats(battle),
       charging: this.v.charging ? battle.moveIdOf(this.v.charging) : undefined,
       trapped: this.v.trapped ? battle.moveIdOf(this.v.trapped.move) : undefined,
       types: !arraysEqual(this.v.types, base.species.types) ? [...this.v.types] : undefined,

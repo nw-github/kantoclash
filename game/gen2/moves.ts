@@ -2,9 +2,6 @@ import type {Move, MoveFunctions, MoveId} from "../moves";
 import {isSpecial, stageKeys} from "../utils";
 import {exec as execDamagingMove} from "./damaging";
 
-// FLAG: multi | final strike only kings rock
-// FLAG: thief | implement
-
 /*
 https://bulbapedia.bulbagarden.net/wiki/Bide_(move)
 
@@ -131,8 +128,8 @@ export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
       }
 
       battle.info(user, "haze", [
-        {id: user.owner.id, v: {stages: null, stats: user.dmgCalcStats(battle)}},
-        {id: target.owner.id, v: {stages: null, stats: target.dmgCalcStats(battle)}},
+        {id: user.owner.id, v: {stages: null, stats: user.clientStats(battle)}},
+        {id: target.owner.id, v: {stages: null, stats: target.clientStats(battle)}},
       ]);
     },
   },

@@ -80,7 +80,8 @@ const beforeUseMove = (battle: Battle, move: Move, user: ActivePokemon, _: Activ
       user.v.thrashing = undefined;
     }
     user.v.trapping = undefined;
-    // Rollout & fury cutter
+    user.v.furyCutter = 0;
+    user.v.rollout = 0;
   };
 
   if (user.v.recharge) {
@@ -89,16 +90,17 @@ const beforeUseMove = (battle: Battle, move: Move, user: ActivePokemon, _: Activ
     resetVolatiles();
     return false;
   } else if (user.base.status === "slp") {
-    const done = --user.base.sleepTurns === 0;
-    if (done) {
+    if (--user.base.sleepTurns === 0) {
       const opp = battle.opponentOf(user.owner);
       if (opp.sleepClausePoke === user.base) {
         opp.sleepClausePoke = undefined;
       }
       user.unstatus(battle, "wake");
+      resetVolatiles();
     } else {
       battle.info(user, "sleep");
       if (!move.whileAsleep) {
+        resetVolatiles();
         return false;
       }
     }
@@ -228,6 +230,7 @@ const createGeneration = (): Generation => {
         acc -= 20;
       }
 
+      console.log(`[${user.base.name}] ${move.name} (Acc ${acc}/255)`);
       if (!battle.rand255Good(acc)) {
         battle.info(user, "miss");
         return false;

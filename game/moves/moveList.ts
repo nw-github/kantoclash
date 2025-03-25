@@ -1746,7 +1746,7 @@ const internalMoveList = createMoveList({
         src: user.owner.id,
         target: target.owner.id,
         volatiles: [
-          {id: user.owner.id, v: {stats: user.dmgCalcStats(battle), stages: {...user.v.stages}}},
+          {id: user.owner.id, v: {stats: user.clientStats(battle), stages: {...user.v.stages}}},
         ],
       });
     },
