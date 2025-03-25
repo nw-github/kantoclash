@@ -1,6 +1,6 @@
 import type {CustomMove, Move} from ".";
 import type {InfoReason} from "../events";
-import {isSpecial, VolatileFlag} from "../utils";
+import {VolatileFlag} from "../utils";
 import {exec as execDamagingMove, use as useDamagingMove} from "../gen1/damaging";
 
 type UseMoveFn = Required<CustomMove>["use"];
@@ -203,23 +203,6 @@ export const moveFunctions: MoveFunctions = {
         target: target.owner.id,
         volatiles: [target.setFlag(VolatileFlag.lockon)],
       });
-    },
-  },
-  retaliate: {
-    exec(battle, user, target) {
-      if (!battle.checkAccuracy(this, user, target)) {
-        return;
-      } else if (!user.v.retaliateDamage || !target.v.lastMove) {
-        return battle.info(user, "fail_generic");
-      }
-
-      const type =
-        target.v.lastMove === battle.gen.moveList.beatup ? "???" : target.v.lastMove.type;
-      if (isSpecial(type) !== this.special) {
-        return battle.info(user, "fail_generic");
-      }
-
-      target.damage2(battle, {dmg: user.v.retaliateDamage * 2, src: user, why: "attacked", eff: 1});
     },
   },
 };

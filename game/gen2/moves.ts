@@ -1,5 +1,5 @@
 import type {Move, MoveFunctions, MoveId} from "../moves";
-import {stageKeys} from "../utils";
+import {isSpecial, stageKeys} from "../utils";
 import {exec as execDamagingMove} from "./damaging";
 
 // FLAG: multi | final strike only kings rock
@@ -139,14 +139,25 @@ export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
   mimic: {noMetronome: true},
   // --
   counter: {
-    kind: "retaliate",
+    kind: "damage",
     name: "Counter",
+    power: 0,
     pp: 20,
     type: "fight",
     acc: 100,
     priority: -1,
     noMetronome: true,
-    special: false,
+    getDamage(battle, user, target) {
+      if (
+        !user.v.retaliateDamage ||
+        !target.v.lastMove ||
+        (isSpecial(target.v.lastMove.type) && target.v.lastMove !== battle.gen.moveList.beatup)
+      ) {
+        return false;
+      }
+
+      return user.v.retaliateDamage * 2;
+    },
   },
   // --
   roar: {kind: "phaze", acc: 100, priority: -1},

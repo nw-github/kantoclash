@@ -1,6 +1,14 @@
 import type {DamagingMove, Move} from "./index";
 import {type Pokemon, transform} from "../pokemon";
-import {hpPercentExact, idiv, stageKeys, stageStatKeys, VolatileFlag, type Type} from "../utils";
+import {
+  hpPercentExact,
+  idiv,
+  isSpecial,
+  stageKeys,
+  stageStatKeys,
+  VolatileFlag,
+  type Type,
+} from "../utils";
 
 export type MoveId = keyof typeof internalMoveList;
 
@@ -1645,15 +1653,26 @@ const internalMoveList = createMoveList({
     },
   },
   mirrorcoat: {
-    kind: "retaliate",
+    kind: "damage",
     name: "Mirror Coat",
+    power: 0,
     pp: 20,
     type: "psychic",
     acc: 100,
     priority: -1,
     noMetronome: true,
-    special: true,
     kingsRock: true,
+    getDamage(battle, user, target) {
+      if (
+        !user.v.retaliateDamage ||
+        !target.v.lastMove ||
+        !isSpecial(target.v.lastMove.type) ||
+        target.v.lastMove === battle.gen.moveList.beatup
+      ) {
+        return false;
+      }
+      return user.v.retaliateDamage * 2;
+    },
   },
   nightmare: {
     name: "Nightmare",
