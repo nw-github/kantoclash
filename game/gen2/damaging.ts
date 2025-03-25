@@ -10,13 +10,9 @@ export function exec(
 ) {
   if (this.flag === "multi_turn" && !user.v.thrashing) {
     user.v.thrashing = {move: this, turns: battle.rng.int(2, 3)};
-  } else if (this.flag === "rollout") {
-    if (!user.v.thrashing) {
-      user.v.thrashing = {move: this, turns: 5};
-      user.v.rollout = 1;
-    } else {
-      user.v.rollout++;
-    }
+  } else if (this.flag === "rollout" && !user.v.thrashing) {
+    user.v.thrashing = {move: this, turns: 5};
+    user.v.rollout = 0;
   } else if (this.flag === "fury_cutter") {
     user.v.furyCutter++;
   }

@@ -1,6 +1,5 @@
 import items from "./items.json";
 import type {Status} from "./pokemon";
-import type {Type} from "./utils";
 
 export type ItemId = keyof typeof items;
 export {items};

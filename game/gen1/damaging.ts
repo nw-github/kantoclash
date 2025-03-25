@@ -316,6 +316,7 @@ export function getDamage(
     let moveMod = 1;
     if (self.flag === "rollout") {
       moveMod = 2 ** (user.v.rollout + +user.v.usedDefenseCurl);
+      user.v.rollout++;
     } else if (self.flag === "rage") {
       moveMod = user.v.rage;
     } else if (self.flag === "fury_cutter") {
