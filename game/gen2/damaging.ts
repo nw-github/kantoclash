@@ -184,7 +184,13 @@ export function exec(
   }
 
   if (this.effect) {
-    const [chance, effect] = this.effect;
+    // eslint-disable-next-line prefer-const
+    let [chance, effect] = this.effect;
+    const wasTriAttack = effect === "tri_attack";
+    if (effect === "tri_attack") {
+      effect = battle.rng.choice(["brn", "par", "frz"] as const)!;
+    }
+
     if (effect === "brn" && target.base.status === "frz") {
       target.unstatus(battle, "thaw");
       // TODO: can you thaw and then burn?
@@ -226,9 +232,9 @@ export function exec(
     } else {
       if (target.owner.screens.safeguard || target.base.status) {
         return;
-      } else if (effect === "brn" && target.v.types.includes("fire")) {
+      } else if (!wasTriAttack && effect === "brn" && target.v.types.includes("fire")) {
         return;
-      } else if (effect === "frz" && target.v.types.includes("ice")) {
+      } else if (!wasTriAttack && effect === "frz" && target.v.types.includes("ice")) {
         return;
       } else if ((effect === "psn" || effect === "tox") && target.v.types.includes("poison")) {
         return;
@@ -241,14 +247,6 @@ export function exec(
       } else {
         target.status(effect, battle);
       }
-    }
-  } else if (this.flag === "tri_attack") {
-    const choice = battle.rng.choice(["brn", "par", "frz"] as const)!;
-    if (target.base.status === "frz" && choice === "brn") {
-      target.unstatus(battle, "thaw");
-    } else if (!target.base.status && !target.owner.screens.safeguard && battle.rand100(20)) {
-      // In Gen 2, tri attack can burn fire types and freeze ice types
-      target.status(choice, battle);
     }
   }
 }

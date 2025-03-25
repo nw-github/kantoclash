@@ -144,7 +144,7 @@ export type Move =
   | LockOnMove
   | RetaliateMove;
 
-type Effect = Status | [Stages, number][] | "confusion" | "flinch" | "thief";
+type Effect = Status | [Stages, number][] | "confusion" | "flinch" | "thief" | "tri_attack";
 
 type Flag =
   | "high_crit"
@@ -164,7 +164,6 @@ type Flag =
   | "flail"
   | "magnitude"
   | "false_swipe"
-  | "tri_attack"
   | "rapid_spin"
   | "fury_cutter"
   | "rollout"

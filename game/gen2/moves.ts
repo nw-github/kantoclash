@@ -185,6 +185,6 @@ export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
   stomp: {flag: "minimize"},
   struggle: {type: "???", recoil: 4, pp: 1},
   thunder: {ignore: ["fly", "bounce"], effect: [30, "par"], rainAcc: true},
-  triattack: {flag: "tri_attack"},
+  triattack: {effect: [20, "tri_attack"]},
   wingattack: {power: 60},
 };
