@@ -118,8 +118,8 @@
             <BoxSprite
               v-for="(poke, j) in team.pokemon"
               :key="j"
-              :species="poke.species as SpeciesId"
-              :scale="isXS ? 1.5 : 2"
+              :species="(poke.species as SpeciesId)"
+              :scale="isXS ? 1.2 : !isMdOrGreater ? 1.5 : 2"
             />
           </div>
         </div>
@@ -191,9 +191,10 @@ const open = computed({
 });
 const importOpen = ref(false);
 const exportMode = ref(false);
-const isXS = useMediaQuery("(max-width: 480px)");
 const breakpoints = useBreakpoints(breakpointsTailwind);
 const isLgOrGreater = breakpoints.greaterOrEqual("lg");
+const isXS = breakpoints.smaller("sm");
+const isMdOrGreater = breakpoints.greaterOrEqual("md");
 const query = ref("");
 const formats = ref<string[]>([]);
 const pageCount = computed(() => (isLgOrGreater.value ? 10 : 5));

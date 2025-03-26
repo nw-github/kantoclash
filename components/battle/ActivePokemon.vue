@@ -17,7 +17,10 @@
         <div class="w-full text-center text-gray-100 text-xs sm:text-sm z-30">{{ hp }}%</div>
       </div>
       <div class="relative">
-        <div v-if="poke" class="flex gap-1 flex-wrap absolute *:px-[0.2rem] *:py-[0.1rem]">
+        <div
+          v-if="poke"
+          class="flex gap-1 flex-wrap absolute *:px-[0.2rem] *:py-[0.1rem] *:text-[0.6rem] sm:*:text-xs"
+        >
           <UBadge v-if="poke.transformed" color="black" label="Transformed" variant="subtle" />
 
           <UBadge
@@ -83,21 +86,21 @@
 
             <img
               v-if="poke && !poke.fainted && ((poke.v.flags ?? 0) & VF.cConfused) !== 0"
-              class="absolute size-20 -top-6 z-30 visible dark:invisible"
+              class="absolute size-10 sm:size-20 -top-3 sm:-top-6 z-30 dark:invisible"
               src="/dizzy-light.gif"
               alt="confused"
             />
 
             <img
               v-if="poke && !poke.fainted && ((poke.v.flags ?? 0) & VF.cConfused) !== 0"
-              class="absolute size-20 -top-6 z-30 invisible dark:visible"
+              class="absolute size-10 sm:size-20 -top-3 sm:-top-6 z-30 invisible dark:visible"
               src="/dizzy.gif"
               alt="confused"
             />
 
             <img
               v-if="poke?.v.status === 'slp'"
-              class="absolute size-10 -top-4 z-30 invert dark:invert-0 rotate-180 ml-20"
+              class="absolute size-6 sm:size-10 -top-4 z-30 invert dark:invert-0 rotate-180 ml-20"
               src="/zzz.gif"
               alt="confused"
             />
@@ -203,6 +206,10 @@
   image-rendering: pixelated;
   image-rendering: -moz-crisp-edges;
   image-rendering: crisp-edges;
+
+  @media (max-width: theme("screens.sm")) {
+    scale: 0.5;
+  }
 }
 
 .screens-move,
