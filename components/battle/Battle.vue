@@ -29,22 +29,18 @@
       </div>
 
       <div class="flex">
-        <ActivePokemon
-          ref="frontPokemon"
-          class="order-2"
-          :poke="players[opponent]?.active"
-          :side="sides[opponent]"
-          :gen
-        />
-        <ActivePokemon
-          ref="backPokemon"
-          class="pt-10 sm:pt-14 pb-2 sm:pb-0"
-          :poke="players[perspective]?.active"
-          :base="perspective === myId ? activeInTeam : undefined"
-          :side="sides[perspective]"
-          :gen
-          back
-        />
+        <template v-for="(player, id) in players" :key="id">
+          <ActivePokemon
+            v-if="!player.isSpectator"
+            ref="activePokemon"
+            :class="id === perspective ? 'pt-10 sm:pt-14 pb-2 sm:pb-0' : 'order-2'"
+            :base="id === myId ? activeInTeam : undefined"
+            :poke="player?.active"
+            :side="sides[id]"
+            :back="id === perspective"
+            :gen
+          />
+        </template>
       </div>
 
       <div class="relative w-full">
@@ -256,10 +252,10 @@ import type {BattleEvent} from "~/game/events";
 import type {SpeciesId} from "~/game/species";
 import type {BattleTimer, InfoRecord} from "~/server/gameServer";
 import type {ActivePokemon} from "#build/components";
-import type {AnimationType} from "./ActivePokemon.vue";
 import criesSpritesheet from "~/public/effects/cries.json";
 import {GENERATIONS} from "~/game/gen";
 import type {Weather, Screen} from "~/game/utils";
+import type {AnimationParams} from "./ActivePokemon.vue";
 
 const weatherData = {
   rain: {icon: "material-symbols:rainy", tooltip: "Raining", class: "text-sky-400"},
@@ -307,8 +303,7 @@ const currentTurnNo = ref(0);
 const weather = ref<Weather>();
 const sides = reactive<Record<string, Side>>({});
 
-const backPokemon = ref<InstanceType<typeof ActivePokemon>>();
-const frontPokemon = ref<InstanceType<typeof ActivePokemon>>();
+const activePokemon = useTemplateRef<InstanceType<typeof ActivePokemon>[]>("activePokemon");
 
 const activeIndex = ref(-1);
 const activeInTeam = computed(() => (isBattler.value ? team?.[activeIndex.value] : undefined));
@@ -364,18 +359,6 @@ watchImmediate([battlers, myId], () => {
     perspective.value = myId.value;
   } else {
     perspective.value = randChoice(battlers) ?? "";
-  }
-});
-
-watch(perspective, () => {
-  const back = players[perspective.value]?.active;
-  if (backPokemon.value && back) {
-    backPokemon.value.reset(back.hpPercent !== 0);
-  }
-
-  const front = players[opponent.value]?.active;
-  if (frontPokemon.value && front) {
-    frontPokemon.value.reset(front.hpPercent !== 0);
   }
 });
 
@@ -437,20 +420,12 @@ const runTurn = async (live: boolean, turnIdx: number) => {
     }
   };
 
-  const playAnimation = async (id: string, anim: AnimationType, name?: string, cb?: () => void) => {
-    const component = id === perspective.value ? backPokemon.value : frontPokemon.value;
-    if (!isLive()) {
-      if (cb) {
-        cb();
-      }
-
-      if ((anim === "faint" || anim === "retract") && component) {
-        component.reset(false);
-      } else if (anim === "sendin" && component) {
-        component.reset(true);
-      }
-    } else if (component) {
-      await component.playAnimation(anim, name, cb);
+  const playAnimation = async (id: string, params: AnimationParams) => {
+    const isMe = id === perspective.value;
+    const component = activePokemon.value!.find(a => a.isBack() === isMe);
+    await component!.playAnimation(!isLive(), params);
+    if (isMe) {
+      console.log("finished anim: ", params.anim);
     }
   };
 
@@ -477,7 +452,11 @@ const runTurn = async (live: boolean, turnIdx: number) => {
           if (e.why !== "phaze") {
             pushEvent({type: "retract", src: e.src, name: player.active.name});
           }
-          await playAnimation(e.src, e.why === "phaze" ? "phaze" : "retract", player.active.name);
+          await playAnimation(e.src, {
+            anim: e.why === "phaze" ? "phaze" : "retract",
+            batonPass: false,
+            name: player.active.name,
+          });
         }
 
         // preload the image
@@ -497,18 +476,23 @@ const runTurn = async (live: boolean, turnIdx: number) => {
 
       pushEvent(e);
 
-      await playAnimation(e.src, "sendin", e.name, () => {
-        player.active = {...e, v: {stages: {}}, fainted: false};
-        if (e.src === myId.value) {
-          activeIndex.value = e.indexInTeam;
-          activeInTeam.value!.hp = e.hp!;
-        }
-        handleVolatiles(e);
-        playCry(e.speciesId)?.then(() => {
-          if (e.shiny) {
-            return sound.play("shiny", {volume: sfxVol.value});
+      await playAnimation(e.src, {
+        anim: "sendin",
+        name: e.name,
+        batonPass: e.why === "baton_pass",
+        cb() {
+          player.active = {...e, v: {stages: {}}, fainted: false};
+          if (e.src === myId.value) {
+            activeIndex.value = e.indexInTeam;
+            activeInTeam.value!.hp = e.hp!;
           }
-        });
+          handleVolatiles(e);
+          playCry(e.speciesId)?.then(() => {
+            if (e.shiny) {
+              return sound.play("shiny", {volume: sfxVol.value});
+            }
+          });
+        },
       });
       return;
     } else if (e.type === "damage" || e.type === "recover") {
@@ -531,9 +515,12 @@ const runTurn = async (live: boolean, turnIdx: number) => {
 
       if (e.type === "damage" && (e.why === "attacked" || e.why === "ohko" || e.why === "trap")) {
         const eff = e.why === "ohko" || !e.eff ? 1 : e.eff;
-        await playAnimation(e.src, "bodyslam", undefined, () => {
-          update();
-          playDmg(eff);
+        await playAnimation(e.src, {
+          anim: "attack",
+          cb() {
+            update();
+            playDmg(eff);
+          },
         });
       } else {
         update();
@@ -544,17 +531,14 @@ const runTurn = async (live: boolean, turnIdx: number) => {
 
       if (e.why === "substitute") {
         pushEvent({type: "get_sub", src: e.target});
-        await playAnimation(e.target, "get_sub", undefined, () => {
-          handleVolatiles(e);
-        });
+        await playAnimation(e.target, {anim: "get_sub", cb: () => handleVolatiles(e)});
       }
-
       return;
     } else if (e.type === "info") {
       if (e.why === "faint") {
         playCry(players[e.src].active!.speciesId, true);
         pushEvent(e);
-        await playAnimation(e.src, "faint");
+        await playAnimation(e.src, {anim: "faint"});
         if (isLive()) {
           await delay(400);
         }
@@ -568,9 +552,12 @@ const runTurn = async (live: boolean, turnIdx: number) => {
         }
       } else if (e.why === "spikes") {
         const opp = Object.keys(players).filter(id => id !== e.src && !players[id].isSpectator)[0];
-        await playAnimation(opp, "spikes", undefined, () => {
-          sides[e.src] ??= {};
-          sides[e.src].spikes = true;
+        await playAnimation(opp, {
+          anim: "spikes",
+          cb: () => {
+            sides[e.src] ??= {};
+            sides[e.src].spikes = true;
+          },
         });
       } else if (e.why === "spin_spikes") {
         sides[e.src] ??= {};
@@ -581,15 +568,16 @@ const runTurn = async (live: boolean, turnIdx: number) => {
       const src = players[e.src].active!;
       src.transformed = target.transformed ?? target.speciesId;
     } else if (e.type === "hit_sub") {
-      await playAnimation(e.src, "bodyslam", undefined, () => {
-        pushEvent(e);
-        playDmg(e.eff ?? 1);
+      await playAnimation(e.src, {
+        anim: "attack",
+        cb() {
+          pushEvent(e);
+          playDmg(e.eff ?? 1);
+        },
       });
       if (e.broken) {
         pushEvent({type: "sub_break", target: e.target});
-        await playAnimation(e.target, "lose_sub", undefined, () => {
-          handleVolatiles(e);
-        });
+        await playAnimation(e.src, {anim: "lose_sub", cb: () => handleVolatiles(e)});
       }
       return;
     } else if (e.type === "end") {
@@ -617,7 +605,11 @@ const runTurn = async (live: boolean, turnIdx: number) => {
       }
     } else if (e.type === "baton_pass") {
       handleVolatiles(e);
-      await playAnimation(e.src, "retract", players[e.src].active!.name);
+      await playAnimation(e.src, {
+        anim: "retract",
+        name: players[e.src].active!.name,
+        batonPass: true,
+      });
       return;
     }
 
@@ -667,8 +659,7 @@ const turnNoToIndex = (turn: number) => {
 const skipTo = (index: number) => {
   // console.log(`skipTo() | index: ${index} currentTurn: ${currentTurn}`);
 
-  frontPokemon.value!.skipAnimation();
-  backPokemon.value!.skipAnimation();
+  activePokemon.value?.forEach(poke => poke.skipAnimation());
   // TODO: mute current sounds
 
   if (index < currentTurn) {
