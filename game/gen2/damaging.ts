@@ -8,10 +8,22 @@ export function exec(
   user: ActivePokemon,
   target: ActivePokemon,
 ) {
+  const checkThrashing = () => {
+    if (user.v.thrashing && --user.v.thrashing.turns === 0) {
+      user.v.rollout = 0;
+      user.v.furyCutter = 0;
+      if (!user.owner.screens.safeguard && this.flag !== "rollout") {
+        user.confuse(battle, user.v.thrashing.max ? "cConfusedFatigueMax" : "cConfusedFatigue");
+      }
+      user.v.thrashing = undefined;
+    }
+  };
+
   if (this.flag === "multi_turn" && !user.v.thrashing) {
-    user.v.thrashing = {move: this, turns: battle.rng.int(2, 3)};
+    user.v.thrashing = {move: this, turns: battle.rng.int(2, 3), max: false};
+    user.v.thrashing.max = user.v.thrashing.turns == 3;
   } else if (this.flag === "rollout" && !user.v.thrashing) {
-    user.v.thrashing = {move: this, turns: 5};
+    user.v.thrashing = {move: this, turns: 5, max: false};
     user.v.rollout = 0;
   } else if (this.flag === "fury_cutter") {
     user.v.furyCutter++;
@@ -34,40 +46,33 @@ export function exec(
     return battle.info(user, "miss");
   }
 
-  const protect = target.v.hasFlag(VF.protect);
   // eslint-disable-next-line prefer-const
   let {dmg, isCrit, eff, realEff, endured, fail, band} = getDamage(this, battle, user, target);
-  if (user.v.thrashing && --user.v.thrashing.turns === 0) {
-    user.v.thrashing = undefined;
-    user.v.rollout = 0;
-    user.v.furyCutter = 0;
-    if (!user.owner.screens.safeguard && this.flag !== "rollout") {
-      user.confuse(battle, true);
-    }
-  }
-
   if (dmg < 0) {
     if (target.base.hp === target.base.stats.hp) {
       return battle.info(target, "fail_present");
     }
 
-    target.recover(Math.max(idiv(target.base.stats.hp, 4), 1), user, battle, "present");
-    return;
+    return target.recover(Math.max(idiv(target.base.stats.hp, 4), 1), user, battle, "present");
   }
 
+  const protect = target.v.hasFlag(VF.protect);
   if (eff === 0 || realEff === 0 || (this.flag === "ohko" && user.base.level < target.base.level)) {
     user.v.rollout = 0;
     user.v.furyCutter = 0;
-    return battle.info(target, "immune");
+    battle.info(target, "immune");
+    return checkThrashing();
   } else if (fail) {
     user.v.rollout = 0;
     user.v.furyCutter = 0;
-    return battle.info(user, "fail_generic");
+    battle.info(user, "miss");
+    return checkThrashing();
   } else if (protect || !battle.checkAccuracy(this, user, target)) {
     user.v.rollout = 0;
     user.v.furyCutter = 0;
     if (protect) {
-      return battle.info(target, "protect");
+      battle.info(target, "protect");
+      return checkThrashing();
     }
 
     if (this.flag === "crash") {
@@ -78,7 +83,7 @@ export function exec(
       // In Gen 2, Horn Drill and Fissure can be countered for max damage on miss
       target.v.retaliateDamage = 65535;
     }
-    return;
+    return checkThrashing();
   }
 
   let hadSub = target.v.substitute !== 0;
@@ -93,6 +98,7 @@ export function exec(
     eff,
   );
 
+  checkThrashing();
   if (this.flag === "multi" || this.flag === "double") {
     event.hitCount = 1;
   }

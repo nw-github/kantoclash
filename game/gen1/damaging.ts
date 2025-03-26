@@ -46,15 +46,20 @@ export function exec(
   user: ActivePokemon,
   target: ActivePokemon,
 ) {
-  if (this.flag === "multi_turn" && !user.v.thrashing) {
-    user.v.thrashing = {move: this, turns: battle.rng.int(2, 3)};
-  } else if (user.v.thrashing && user.v.thrashing.turns !== -1) {
-    if (--user.v.thrashing.turns === 0) {
-      user.v.thrashing = undefined;
-      if (!user.owner.screens.safeguard) {
-        user.confuse(battle, true);
+  const checkThrashing = () => {
+    if (user.v.thrashing && user.v.thrashing.turns !== -1 && --user.v.thrashing.turns === 0) {
+      user.v.rollout = 0;
+      user.v.furyCutter = 0;
+      if (!user.owner.screens.safeguard && this.flag !== "rollout") {
+        user.confuse(battle, user.v.thrashing.max ? "cConfusedFatigueMax" : "cConfusedFatigue");
       }
+      user.v.thrashing = undefined;
     }
+  };
+
+  if (this.flag === "multi_turn" && !user.v.thrashing) {
+    user.v.thrashing = {move: this, turns: battle.rng.int(2, 3), max: false};
+    user.v.thrashing.max = user.v.thrashing.turns == 3;
   } else if (this.flag === "bide") {
     if (!user.v.bide) {
       user.v.bide = {move: this, turns: battle.rng.int(2, 3), dmg: 0};
@@ -78,6 +83,7 @@ export function exec(
 
   if (target.v.hasFlag(VF.protect)) {
     battle.info(target, "protect");
+    checkThrashing();
     return false;
   }
 
@@ -88,8 +94,7 @@ export function exec(
       return battle.info(target, "fail_present");
     }
 
-    target.recover(Math.max(idiv(target.base.stats.hp, 4), 1), user, battle, "present");
-    return;
+    return target.recover(Math.max(idiv(target.base.stats.hp, 4), 1), user, battle, "present");
   }
 
   if (dmg === 0 || !battle.checkAccuracy(this, user, target)) {
@@ -105,7 +110,7 @@ export function exec(
       }
 
       if (this.flag === "crash" && eff === 0) {
-        return;
+        return checkThrashing();
       }
     }
 
@@ -116,11 +121,12 @@ export function exec(
       target.handleRage(battle);
       user.damage(user.base.hp, user, battle, false, "explosion", true);
     }
-    return;
+    return checkThrashing();
   }
 
+  checkThrashing();
   if (this.flag === "rage") {
-    user.v.thrashing = {move: this, turns: -1};
+    user.v.thrashing = {move: this, max: false, turns: -1};
   }
 
   const hadSub = target.v.substitute !== 0;

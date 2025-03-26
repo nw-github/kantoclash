@@ -1519,7 +1519,7 @@ const internalMoveList = createMoveList({
           return;
         }
         // prettier-ignore
-        user.modStages([["atk", +1], ["def", +1], ["spe", -1]], battle);
+        user.modStages([["spe", -1], ["atk", +1], ["def", +1]], battle);
       } else {
         if (!battle.checkAccuracy(this, user, target)) {
           return;

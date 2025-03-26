@@ -415,6 +415,10 @@ export class Battle {
         result[i] = {...e, hpBefore: undefined, hpAfter: undefined};
       } else if (e.type === "switch" && e.src !== player?.id) {
         result[i] = {...e, hp: undefined, indexInTeam: -1};
+      } else if (e.type === "info" && e.why === "cConfusedFatigue" && e.src !== player?.id) {
+        // don't leak short outrage/petal dance/thrash/etc. to the opponent
+        result[i] = {type: "sv"};
+        continue;
       }
 
       if (e.volatiles) {
@@ -964,9 +968,9 @@ export class ActivePokemon {
     if (this.base.item === "berserkgene") {
       battle.event({type: "item", item: "berserkgene", src: this.owner.id});
       this.modStages([["atk", +2]], battle);
-      // Intentional Bug: If you baton pass into a pokemon with a berserk gene, the confusion value
+      // BUG GEN2: If you baton pass into a pokemon with a berserk gene, the confusion value
       // is not updated.
-      this.confuse(battle, false, 256);
+      this.confuse(battle, undefined, 256);
       this.base.item = undefined;
     }
 
@@ -1189,15 +1193,13 @@ export class ActivePokemon {
     return mods.length !== 0;
   }
 
-  confuse(battle: Battle, thrashing?: boolean, turns?: number) {
-    if (!thrashing && this.v.confusion) {
+  confuse(battle: Battle, reason?: InfoReason, turns?: number) {
+    if (reason !== "cConfusedFatigue" && reason !== "cConfusedFatigueMax" && this.v.confusion) {
       return false;
     }
 
     this.v.confusion = turns ?? battle.rng.int(2, 5);
-    if (!thrashing) {
-      battle.info(this, "cConfused", [{id: this.owner.id, v: {flags: this.v.cflags}}]);
-    }
+    battle.info(this, reason ?? "cConfused", [{id: this.owner.id, v: {flags: this.v.cflags}}]);
     return true;
   }
 
@@ -1365,7 +1367,7 @@ class Volatiles {
   lastMoveIndex?: number;
   charging?: Move;
   recharge?: Move;
-  thrashing?: {move: DamagingMove; turns: number; acc?: number};
+  thrashing?: {move: DamagingMove; turns: number; max: boolean; acc?: number};
   bide?: {move: Move; turns: number; dmg: number};
   disabled?: {turns: number; indexInMoves: number};
   encore?: {turns: number; indexInMoves: number};

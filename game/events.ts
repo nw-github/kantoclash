@@ -170,6 +170,8 @@ export type InfoReason =
   | FailReason
   | VFReason
   | "payday"
+  | "cConfusedFatigue"
+  | "cConfusedFatigueMax"
   | "confused"
   | "confused_end"
   | "recharge"

@@ -76,6 +76,8 @@ export const infoMessage: Record<InfoReason, string> = {
   focus: "{} is getting pumped!",
   payday: "Coins scattered everywhere!",
   cConfused: "{} became confused!",
+  cConfusedFatigue: "{} became confused due to fatigue!",
+  cConfusedFatigueMax: "{} became confused due to fatigue!",
   confused: "{} is confused!",
   confused_end: "{} is no longer confused!",
   recharge: "{} must recharge!",
