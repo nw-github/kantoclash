@@ -1488,9 +1488,9 @@ const internalMoveList = createMoveList({
     name: "Conversion2",
     pp: 30,
     type: "normal",
-    exec(battle, user, target) {
-      const lastMove = target.v.lastMove;
-      if (!lastMove) {
+    exec(battle, user) {
+      const lastMove = user.v.lastHitBy;
+      if (!lastMove || lastMove.type === "???") {
         battle.info(user, "fail_generic");
         return;
       }
@@ -1615,9 +1615,14 @@ const internalMoveList = createMoveList({
     name: "Heal Bell",
     pp: 5,
     type: "normal",
-    exec(battle, user) {
+    exec(battle, user, target) {
       user.unstatus(battle, "heal_bell");
-      user.owner.team.forEach(poke => (poke.status = undefined));
+      user.owner.team.forEach(poke => {
+        poke.status = undefined;
+        if (target.owner.sleepClausePoke === poke) {
+          target.owner.sleepClausePoke = undefined;
+        }
+      });
     },
   },
   mirrorcoat: {

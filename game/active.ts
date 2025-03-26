@@ -505,7 +505,7 @@ class Volatiles {
   types: Type[];
   substitute = 0;
   confusion = 0;
-  counter = 1;
+  counter = 0;
   flinch = false;
   invuln = false;
   hazed = false;
@@ -522,6 +522,7 @@ class Volatiles {
   retaliateDamage = 0;
   meanLook?: ActivePokemon;
   attract?: ActivePokemon;
+  lastHitBy?: Move;
   lastMove?: Move;
   lastMoveIndex?: number;
   charging?: Move;

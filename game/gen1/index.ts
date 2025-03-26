@@ -1,8 +1,8 @@
 import type {Random} from "random";
-import type {ActivePokemon, Battle, VolatileStats} from "../battle";
+import type {ActivePokemon, Battle} from "../battle";
 import {moveFunctions, moveList, type Move, type MoveId} from "../moves";
 import {speciesList, type Species} from "../species";
-import {floatTo255, idiv, scaleAccuracy255, VF, type Type} from "../utils";
+import {floatTo255, idiv, scaleAccuracy255, VF, type StatStages, type Type} from "../utils";
 import type {ItemId} from "../item";
 
 export type TypeChart = Record<Type, Partial<Record<Type, number>>>;
@@ -316,12 +316,7 @@ const beforeUseMove = (battle: Battle, move: Move, user: ActivePokemon, target: 
   return true;
 };
 
-const getStat = (
-  poke: ActivePokemon,
-  stat: keyof VolatileStats,
-  isCrit?: boolean,
-  def?: boolean,
-) => {
+const getStat = (poke: ActivePokemon, stat: StatStages, isCrit?: boolean, def?: boolean) => {
   // In gen 1, a crit against a transformed pokemon will use its untransformed stats
   let value = poke.v.stats[stat];
   if (def && isCrit && poke.base.transformed) {

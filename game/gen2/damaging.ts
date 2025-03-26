@@ -86,6 +86,8 @@ export function exec(
     return checkThrashing();
   }
 
+  target.v.lastHitBy = this;
+
   let hadSub = target.v.substitute !== 0;
   // eslint-disable-next-line prefer-const
   let {dealt, dead, event} = target.damage(

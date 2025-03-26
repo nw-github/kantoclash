@@ -124,6 +124,8 @@ export function exec(
     return checkThrashing();
   }
 
+  target.v.lastHitBy = this;
+
   checkThrashing();
   if (this.flag === "rage") {
     user.v.thrashing = {move: this, max: false, turns: -1};
