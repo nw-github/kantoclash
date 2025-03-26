@@ -1,40 +1,34 @@
-import type { BattleEvent, DamageEvent, InfoReason, RecoverEvent } from "~/game/events";
-import type { MoveId } from "~/game/moveList";
-import type { Status } from "~/game/pokemon";
+import type {
+  BattleEvent,
+  BugType,
+  DamageEvent,
+  DamageReason,
+  InfoReason,
+  RecoverEvent,
+  ScreenEvent,
+  WeatherEvent,
+} from "~/game/events";
+import type {MoveId} from "~/game/moves";
+import type {Status} from "~/game/pokemon";
+import type {Weather, Screen} from "~/game/utils";
 
 export type RawUIBattleEvent =
   | BattleEvent
   | RetractEvent
   | SubBroke
-  | FaintEvent
   | GetSubstitute
   | UIDamageEvent
   | UIRecoverEvent;
-export type UIBattleEvent = RawUIBattleEvent & { time: number } & { [id: string]: string };
+export type UIBattleEvent = RawUIBattleEvent & {time: number} & {[id: string]: string};
 
-export type RetractEvent = {
-  type: "retract";
-  src: string;
-  name: string;
-};
+export type RetractEvent = {type: "retract"; src: string; name: string};
 
-export type SubBroke = {
-  type: "sub_break";
-  target: string;
-};
+export type SubBroke = {type: "sub_break"; target: string};
 
-export type FaintEvent = {
-  type: "faint";
-  src: string;
-};
+export type GetSubstitute = {type: "get_sub"; src: string};
 
-export type GetSubstitute = {
-  type: "get_sub";
-  src: string;
-};
-
-export type UIDamageEvent = DamageEvent & { maxHp?: number };
-export type UIRecoverEvent = RecoverEvent & { maxHp?: number };
+export type UIDamageEvent = DamageEvent & {maxHp?: number};
+export type UIRecoverEvent = RecoverEvent & {maxHp?: number};
 
 export const statusTable: Record<Status, string> = {
   psn: "was poisoned",
@@ -43,6 +37,15 @@ export const statusTable: Record<Status, string> = {
   frz: "was frozen solid",
   tox: "was badly poisoned",
   brn: "was burned",
+};
+
+export const statusNameTable: Record<Status, string> = {
+  psn: "poison",
+  par: "paralysis",
+  slp: "sleep",
+  frz: "freeze",
+  tox: "poison",
+  brn: "burn",
 };
 
 export const chargeMessage: Partial<Record<MoveId, string>> = {
@@ -66,14 +69,17 @@ export const infoMessage: Record<InfoReason, string> = {
   splash: "No effect!",
   seeded: "{} was seeded!",
   mist_protect: "{} is protected by the mist!",
+  safeguard_protect: "{} is protected by Safeguard!",
   mist: "{}'s shrouded in mist!",
-  light_screen: "{}'s protected against special attacks!",
+  lightScreen: "{}'s protected against special attacks!",
   reflect: "{} is gained armor!",
   focus: "{} is getting pumped!",
   payday: "Coins scattered everywhere!",
-  became_confused: "{} became confused!",
+  cConfused: "{} became confused!",
+  cConfusedFatigue: "{} became confused due to fatigue!",
+  cConfusedFatigueMax: "{} became confused due to fatigue!",
   confused: "{} is confused!",
-  confused_end: "{}'s confused no more!",
+  confused_end: "{} is no longer confused!",
   recharge: "{} must recharge!",
   frozen: "{} is frozen solid!",
   sleep: "{} is fast asleep!",
@@ -84,7 +90,92 @@ export const infoMessage: Record<InfoReason, string> = {
   rage: "{}'s rage is building!",
   disable_end: "{}'s disabled no more!",
   bide: "{} unleashed energy!",
+  bide_store: "{} is storing energy!",
   trapped: "{} can't move!",
-  ff: "{} forfeit the match.",
-  ff_timer: "{} ran out of time.",
+  faint: "{} fainted!",
+  cAttract: "{} fell in love!",
+  immobilized: "{} is immobilized by love!",
+  destinyBond: "{} is trying to take its foe with it!",
+  protect: "{} protected itself!",
+  endure: "{} braced itself!",
+  endure_hit: "{} endured the hit!",
+  cEncore: "{} received an encore!",
+  encore_end: "{}'s encore ended!",
+  cMeanLook: "{} can no longer escape!",
+  nightmare: "{} fell into a nightmare!",
+  heal_bell: "A bell chimed!",
+  pain_split: "The battlers shared their pain!",
+  perish_song: "All affected pokemon will faint in three turns!",
+  future_sight: "{} foresaw an attack!",
+  future_sight_release: "{} took the Future Sight attack!",
+  withdraw: "({} is trying to switch out...)",
+  spikes: "Spikes were scattered all around the feet of {tl}!",
+  spin_spikes: "Rapid Spin blew away the Spikes around {tl}'s feet!",
+  fail_present: "{} couldn't receive the gift!",
+  endure_band: "{} held on using its Focus Band!",
+};
+
+export const weatherMessage: Record<Weather, Record<WeatherEvent["kind"], string>> = {
+  rain: {
+    start: "A downpour started!",
+    continue: "Rain continues to fall.",
+    end: "The rain stopped.",
+  },
+  sun: {
+    start: "The sunlight got bright!",
+    continue: "The sunlight is strong.",
+    end: "The sunlight faded.",
+  },
+  sand: {
+    start: "A sandstorm brewed!",
+    continue: "The sandstorm rages.",
+    end: "The sandstorm subsided.",
+  },
+};
+
+export const screenMessage: Record<Screen, Record<ScreenEvent["kind"], string>> = {
+  safeguard: {
+    start: "{} became cloaked in a mystical veil!",
+    end: "{}'s Safeguard wore off...",
+  },
+  light_screen: {
+    start: "Light Screen raised {l}'s Special Defense!",
+    end: "{}'s Light Screen wore off...",
+  },
+  reflect: {
+    start: "Reflect raised {l}'s Defense!",
+    end: "{}'s Reflect wore off...",
+  },
+};
+
+export const damageMessage: Partial<Record<DamageReason, string>> = {
+  recoil: "{} was hurt by recoil!",
+  psn: "{} is hurt by poison!",
+  brn: "{} is hurt by its burn!",
+  spikes: "{} is hurt by the spikes!",
+  confusion: "It hurt itself in its confusion!",
+  crash: "{} kept going and crashed!",
+  trap: "{}'s attack continues!",
+  ohko: "It's a one-hit KO!",
+  nightmare: "{} is locked in a Nightmare!",
+  sandstorm: "{} is buffeted by the sandstorm!",
+  seeded: "{}'s health was sapped by Leech Seed!",
+  belly_drum: "{} cut its own HP and maximized its Attack!",
+  set_curse: "{t} cut its own HP and laid a curse on {l}!",
+  curse: "{} is afflicted by the Curse!",
+  destiny_bond: "{} took {tl} with it!",
+};
+
+export const trapStart: Partial<Record<MoveId, string>> = {
+  wrap: "{t} was wrapped by {s}!",
+  whirlpool: "{t} was trapped in the vortex!",
+  bind: "{t} was squeezed by {s}!",
+  clamp: "{t} was clamped by {s}!",
+  firespin: "{t} was trapped in the vortex!",
+};
+
+export const bugMessage: Record<BugType, string> = {
+  bug_gen2_bellydrum: "In Gen 2, Belly Drum still raises Atk by 2 on failure due to a bug.",
+  bug_gen2_spikes:
+    "In Gen 2, Pokémon take damage but do not faint after a previous Pokémon fainted to certain end-of-turn effects.",
 };

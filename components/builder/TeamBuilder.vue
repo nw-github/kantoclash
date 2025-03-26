@@ -1,5 +1,5 @@
 <template>
-  <UCard :ui="{ header: { padding: 'p-4 sm:p-4' }, body: { padding: 'p-0 sm:p-0' } }">
+  <UCard :ui="{header: {padding: 'p-4 sm:p-4'}, body: {padding: 'p-0 sm:p-0'}}">
     <template #header>
       <div class="flex gap-1">
         <FormatDropdown v-model="team.format" class="w-1/2" placeholder="Format" team-only />
@@ -55,17 +55,13 @@
             list: {
               width: 'w-min',
               rounded: 'rounded-tl-none rounded-r-none',
-              tab: { height: 'h-min' },
+              tab: {height: 'h-min'},
             },
           }"
         >
-          <template #default="{ item }">
-            <div class="size-[48px] m-1">
-              <Sprite
-                :species="(speciesList as Record<string, Species>)[item.species]"
-                :scale="2"
-                kind="box"
-              />
+          <template #default="{item}">
+            <div class="size-[64px] m-1">
+              <BoxSprite :species="item.species" :scale="2" />
             </div>
           </template>
         </UTabs>
@@ -76,15 +72,11 @@
           v-model="selectedPokeIdx"
           class="px-2 pt-2"
           :items="items"
-          :ui="{ container: 'hidden' }"
+          :ui="{container: 'hidden'}"
         >
-          <template #default="{ item }">
+          <template #default="{item}">
             <div class="size-[32px] m-1 flex items-center">
-              <Sprite
-                :species="(speciesList as Record<string, Species>)[item.species]"
-                :scale="1"
-                kind="box"
-              />
+              <BoxSprite :species="item.species" />
             </div>
           </template>
         </UTabs>
@@ -141,26 +133,59 @@
 
         <UCard
           v-if="selectedTab === 0"
-          class="flex grow"
-          :ui="{
-            body: { base: 'flex flex-col gap-2 grow justify-between', padding: 'p-2 sm:p-2' },
-          }"
+          class="flex grow h-full min-h-[23.5rem]"
+          :ui="{body: {base: 'flex flex-col gap-2 grow justify-between', padding: 'p-2 sm:p-2'}}"
         >
           <div class="flex gap-2">
-            <div class="flex flex-col">
-              <PokemonSelector v-model="selectedPoke.data.species" :team="team" />
+            <div class="flex flex-col relative grow">
+              <div
+                v-if="gen.id > 1 && gen.speciesList[selectedPoke.data.species as SpeciesId]"
+                class="absolute p-2 flex flex-col gap-1"
+              >
+                <GenderIcon
+                  class="size-6"
+                  :gender="getGender(
+                    gen.speciesList[selectedPoke.data.species as SpeciesId],
+                    ivToDv(selectedPoke.data.ivs.atk),
+                  )"
+                />
+
+                <UIcon
+                  v-if="getShiny(ivsToDvs(selectedPoke.data))"
+                  name="tabler:sparkles"
+                  class="size-6"
+                />
+              </div>
+
+              <PokemonSelector
+                v-model="selectedPoke.data.species"
+                :team
+                :gen
+                :shiny="getShiny(ivsToDvs(selectedPoke.data))"
+              />
               <InputWithMax
                 v-model.trim="selectedPoke.data.name"
                 :maxlength="24"
-                :placeholder="selectedPoke.species?.name ?? ''"
+                :placeholder="selectedPoke.species?.name ?? 'No Name'"
               />
+              <ItemSelector v-if="gen.id >= 2" v-model="selectedPoke.data.item" class="pt-1" :gen />
             </div>
             <div class="flex flex-col justify-between gap-1">
+              <div v-if="gen.id > 1" class="flex justify-between items-center">
+                <span class="text-sm">Friendship</span>
+                <NumericInput
+                  v-model="selectedPoke.data.friendship"
+                  class="w-12"
+                  placeholder="255"
+                  :min="0"
+                  :max="255"
+                />
+              </div>
               <div class="flex justify-between items-center">
-                <span>Level</span>
+                <span class="text-sm">Level</span>
                 <NumericInput
                   v-model="selectedPoke.data.level"
-                  class="w-20"
+                  class="w-12"
                   placeholder="100"
                   :min="1"
                   :max="100"
@@ -171,29 +196,37 @@
                 :key="i"
                 v-model="selectedPoke.data.moves[i]"
                 :poke="selectedPoke.data"
+                :gen
               />
             </div>
           </div>
-          <div class="grid items-center grid-cols-[auto,1fr,auto,auto,auto,auto] gap-1">
-            <template v-for="stat in statKeys" :key="stat">
-              <span class="px-1.5">{{ statName[stat] }}</span>
-              <URange v-model="selectedPoke.evProxy[stat]" :min="0" :max="255" color="green" />
+          <div class="grid items-center grid-cols-[auto,1fr,auto,auto,auto,auto] gap-1 grow">
+            <template v-for="(name, stat) in statKeys" :key="stat">
+              <span class="px-1.5">{{ name }}</span>
+              <URange
+                v-model="selectedPoke.evProxy[stat === 'spd' ? 'spa' : stat]"
+                :min="0"
+                :max="255"
+                color="green"
+                :disabled="stat === 'spd'"
+              />
               <span class="text-center px-1.5 min-w-8 text-xs">
-                {{ selectedPoke.evProxy[stat] }}
+                {{ selectedPoke.evProxy[stat === "spd" ? "spa" : stat] }}
               </span>
               <NumericInput
                 v-if="stat === 'hp'"
                 class="w-10"
                 disabled
-                :placeholder="String(dvToIv(getHpDvFromEvs(selectedPoke.data)))"
+                :placeholder="String(dvToIv(getHpDv(ivsToDvs(selectedPoke.data))))"
               />
               <NumericInput
                 v-else
-                v-model="selectedPoke.data.ivs[stat]"
+                v-model="selectedPoke.data.ivs[stat === 'spd' ? 'spa' : stat]"
                 class="w-10"
                 placeholder="31"
                 :min="0"
                 :max="31"
+                :disabled="stat === 'spd'"
               />
 
               <template v-if="selectedPoke.species">
@@ -205,7 +238,7 @@
                 </span>
                 <span
                   class="text-center px-1.5 min-w-8 text-xs"
-                  :style="{ color: baseStatColor(selectedPoke.species.stats[stat] ?? 0) }"
+                  :style="{color: baseStatColor(selectedPoke.species.stats[stat] ?? 0)}"
                 >
                   {{ selectedPoke.species.stats[stat] ?? 0 }}
                 </span>
@@ -221,13 +254,13 @@
           v-else
           v-model="currentPokeText"
           class="grow"
-          :ui="{ base: 'h-full min-h-[23.5rem]', rounded: 'rounded-lg' }"
+          :ui="{base: 'h-full min-h-[23.5rem]', rounded: 'rounded-lg'}"
           autofocus
           @change="team.pokemon[selectedPokeIdx] = parsePokemon(currentPokeText.trim())"
         >
           <TooltipButton
             text="Copy"
-            :popper="{ placement: 'bottom-end', offsetDistance: 40 }"
+            :popper="{placement: 'bottom-end', offsetDistance: 40}"
             class="absolute top-2 right-2"
             icon="material-symbols:content-copy-outline"
             variant="ghost"
@@ -241,7 +274,7 @@
       <UTextarea
         v-model="teamText"
         class="h-full"
-        :ui="{ base: 'h-full', rounded: 'rounded-lg' }"
+        :ui="{base: 'h-full', rounded: 'rounded-lg'}"
         placeholder="Paste your team here..."
         variant="none"
         autofocus
@@ -249,7 +282,7 @@
       >
         <TooltipButton
           text="Copy"
-          :popper="{ placement: 'bottom-end', offsetDistance: 40 }"
+          :popper="{placement: 'bottom-end', offsetDistance: 40}"
           class="absolute top-1 right-2"
           icon="material-symbols:content-copy-outline"
           variant="ghost"
@@ -262,32 +295,26 @@
 </template>
 
 <script setup lang="ts">
-import { calcStat, getHpDv } from "@/game/pokemon";
-import { speciesList, type Species, type SpeciesId } from "@/game/species";
-import { statKeys, type Stats } from "@/game/utils";
-import { evToStatexp, ivToDv } from "~/utils/pokemon";
+import {calcStat, getGender, getHpDv, getShiny} from "~/game/pokemon";
+import type {Species, SpeciesId} from "~/game/species";
+import type {Stats} from "~/game/utils";
+import {GENERATIONS} from "~/game/gen";
 
-defineEmits<{ (e: "delete" | "close"): void }>();
+defineEmits<{(e: "delete" | "close"): void}>();
 
-const statName: Record<keyof Stats, string> = {
-  hp: "HP",
-  atk: "Atk",
-  def: "Def",
-  spc: "Spc",
-  spe: "Spe",
-};
-
-const { team } = defineProps<{ team: Team }>();
+const {team} = defineProps<{team: Team}>();
 const toast = useToast();
 const items = computed(() => {
-  return team.pokemon.map(poke => ({ label: poke.name ?? "", species: poke.species }));
+  return team.pokemon.map(poke => ({label: poke.name ?? "", species: poke.species}));
 });
 const teamText = ref("");
 const currentPokeText = ref("");
 const selectedPokeIdx = ref(0);
+const gen = computed(() => GENERATIONS[formatInfo[team.format].generation]!);
+const statKeys = computed(() => getStatKeys(gen.value));
 const selectedPoke = computed(() => ({
   data: team.pokemon[selectedPokeIdx.value],
-  species: speciesList[team.pokemon[selectedPokeIdx.value].species as SpeciesId] as
+  species: gen.value.speciesList[team.pokemon[selectedPokeIdx.value].species as SpeciesId] as
     | Species
     | undefined,
   evProxy: reactive(
@@ -296,7 +323,8 @@ const selectedPoke = computed(() => ({
         return target[prop as keyof Stats] ?? 255;
       },
       set(target, prop, val) {
-        return (target[prop as keyof Stats] = val);
+        target[prop as keyof Stats] = val;
+        return true;
       },
     }),
   ),
@@ -324,24 +352,24 @@ for (const poke of team.pokemon) {
 
 const copyTextArea = (text: string) => {
   navigator.clipboard.writeText(text);
-  toast.add({ title: `Copied to clipboard!` });
+  toast.add({title: `Copied to clipboard!`});
 };
 
-const getHpDvFromEvs = (poke: PokemonDesc) => {
+const ivsToDvs = (poke: TeamPokemonDesc) => {
   const dvs: Partial<Stats> = {};
-  for (const stat of statKeys) {
-    dvs[stat] = ivToDv(poke.ivs[stat]);
+  for (const stat in statKeys.value) {
+    dvs[stat as keyof Stats] = ivToDv(poke.ivs[stat as keyof Stats]);
   }
-  return getHpDv(dvs);
+  return dvs;
 };
 
-const calcPokeStat = (stat: keyof Stats, poke: PokemonDesc) => {
+const calcPokeStat = (stat: keyof Stats, poke: TeamPokemonDesc) => {
   return calcStat(
-    stat === "hp",
-    speciesList[poke.species as SpeciesId].stats[stat],
+    stat,
+    gen.value.speciesList[poke.species as SpeciesId].stats,
     poke.level ?? 100,
-    stat === "hp" ? getHpDvFromEvs(poke) : ivToDv(poke.ivs[stat]),
-    evToStatexp(poke.evs[stat]),
+    ivsToDvs(poke),
+    {[stat]: evToStatexp(poke.evs[stat])},
   );
 };
 
@@ -355,10 +383,11 @@ const deletePokemon = (i: number) => {
     selectedPokeIdx.value = team.pokemon.length - 1;
   }
 
-  const name = poke.name || speciesList[poke.species as SpeciesId]?.name || `Pokemon ${i + 1}`;
+  const name =
+    poke.name || gen.value.speciesList[poke.species as SpeciesId]?.name || `Pokemon ${i + 1}`;
   toast.add({
     title: `${name} deleted!`,
-    actions: [{ label: "Undo", click: () => team.pokemon.splice(i, 0, poke) }],
+    actions: [{label: "Undo", click: () => team.pokemon.splice(i, 0, poke)}],
   });
 };
 

@@ -1,34 +1,17 @@
-import { moveList, type MoveId } from "~/game/moveList";
-import type { Move } from "~/game/moves";
-import { speciesList, type SpeciesId } from "~/game/species";
-import { statKeys, type Stats } from "~/game/utils";
-import { battleFormats } from "./data";
+import {moveList, type MoveId, type Move} from "~/game/moves";
+import {speciesList, type SpeciesId} from "~/game/species";
+import {statKeys, type Stats} from "~/game/utils";
+import {battleFormats} from "./shared";
+import type {PokemonDesc} from "~/game/pokemon";
+import type {Generation} from "~/game/gen";
 
-export type Gen1PokemonDesc = {
-  dvs: Partial<Stats>;
-  statexp: Partial<Stats>;
-  level: number;
-  name?: string;
-  species: SpeciesId;
-  moves: MoveId[];
-};
+type WithRequired<T, K extends keyof T> = T & {[P in K]-?: T[P]};
 
-export type PokemonDesc = {
-  evs: Partial<Stats>;
-  ivs: Partial<Stats>;
-  level?: number;
-  name?: string;
-  species: string;
-  moves: string[];
-};
+export type TeamPokemonDesc = WithRequired<PokemonDesc, "evs" | "ivs">;
 
-export type Team = {
-  name: string;
-  pokemon: PokemonDesc[];
-  format: FormatId;
-};
+export type Team = {name: string; pokemon: TeamPokemonDesc[]; format: FormatId};
 
-export const teamToString = ({ name, pokemon, format }: Team) => {
+export const teamToString = ({name, pokemon, format}: Team) => {
   return `=== [${format}] ${name} ===\n\n` + pokemon.map(descToString).join("\n");
 };
 
@@ -46,19 +29,25 @@ export const descToString = (poke: PokemonDesc) => {
 
   const species = poke.species in speciesList ? speciesList[poke.species as SpeciesId] : undefined;
 
+  const item = poke.item ? ` @ ${poke.item}` : "";
+
   let result = "";
   if (poke.name !== species?.name && poke.name) {
-    result += `${poke.name} (${species?.name})\n`;
+    result += `${poke.name} (${species?.name})${item}\n`;
   } else {
-    result += `${species?.name ?? poke.name}\n`;
+    result += `${species?.name ?? poke.name}${item}\n`;
   }
 
   if (poke.level !== 100 && poke.level !== undefined) {
     result += `Level: ${poke.level}\n`;
   }
 
-  result += stats(poke.evs, 255, "EVs");
-  result += stats(poke.ivs, 31, "IVs");
+  if (poke.friendship !== 255 && poke.friendship !== undefined) {
+    result += `Happiness: ${poke.friendship}\n`;
+  }
+
+  result += poke.evs ? stats(poke.evs, 255, "EVs") : "";
+  result += poke.ivs ? stats(poke.ivs, 31, "IVs") : "";
   for (const move of poke.moves) {
     const id = normalizeName(move);
     if ((moveList as Record<string, Move>)[id]) {
@@ -70,57 +59,109 @@ export const descToString = (poke: PokemonDesc) => {
   return result;
 };
 
-const nameWithSpeciesRegex = /^\s*(.*?)\s*\((\w+)\)/;
-const levelRegex = /^\s*Level:\s*(\d+)/i;
+const nameRegex = /^(.+?)(?:\s*\(([^()]+)\))?(?:\s*\(([^()]+)\))?(?:\s*@\s*([^()]+))?$/;
+const levelRegex = /^Level:\s*(\d+)/i;
+const happinessRegex = /^Happiness:\s*(\d+)/i;
 const evsRegex = /^EVs:\s*(\d+\s+\w+\s*\/?\s*)+/i;
 const ivsRegex = /^IVs:\s*(\d+\s+\w+\s*\/?\s*)+/i;
-const moveRegex = /^\s*-\s*(.+)\s*/;
+const moveRegex = /^-\s*(.+)/;
+
 const statRegex = /\s*(\d+)\s+(\w+)\s*/g;
-const ignoreChars = /(\s|-)+/g;
+const ignoreChars = /[\s-.'`]+/g;
 const teamRegex = /^===\s*(?:\[(.+)\])?\s*(.+?)\s*===$/;
 
-export const parsePokemon = (src: string): PokemonDesc => {
-  const moves: string[] = [];
-  const ivs: Partial<Stats> = {};
-  const evs: Partial<Stats> = {};
-  let level = undefined;
-  let name = "";
-  let speciesName = "";
+export const parsePokemon = (src: string): TeamPokemonDesc => {
+  const getHpDvs = (name: string) => {
+    name = normalizeName(name);
+    if (!name.startsWith("hiddenpower")) {
+      return;
+    }
+    const type = name.slice(11).replace("fighting", "fight");
+    // prettier-ignore
+    const hpTypes = [
+      "fight", "flying", "poison", "ground", "rock", "bug", "ghost", "steel", "fire", "water",
+      "grass", "electric", "psychic", "ice", "dragon", "dark",
+    ];
 
-  const lines = src.split("\n");
+    const pos = hpTypes.indexOf(type);
+    if (pos === -1) {
+      return;
+    }
 
-  let match;
-  if ((match = lines[0].match(nameWithSpeciesRegex))) {
-    speciesName = match[2].toLowerCase();
-    name = match[1];
-  } else {
-    speciesName = lines[0].toLowerCase();
+    return [0b1100 | (pos >> 2), 0b1100 | (pos & 3)];
+  };
+
+  const desc: TeamPokemonDesc = {species: "", evs: {}, ivs: {}, moves: [], name: ""};
+
+  // prettier-ignore
+  const lines = src.split("\n").map(line => line.trim()).filter(line => line);
+  if (!lines.length) {
+    return desc;
   }
+
+  // TODO: shiny, nature, gender in gen 3
+
+  let match = lines[0].match(nameRegex);
+  if (match) {
+    const [, nameOrSpecies, speciesOrGender, gender, item] = match;
+    if (speciesOrGender && gender) {
+      // FIXME: This is broken: Name (with parens) (Misdreavus)
+
+      // Custom Name (Misdreavus) (F)
+      desc.name = nameOrSpecies;
+      desc.species = speciesOrGender;
+      // desc.gender = gender;
+    } else if (speciesOrGender) {
+      if (speciesOrGender.toLowerCase() === "f" || speciesOrGender.toLowerCase() === "m") {
+        // Misdreavus (F)
+        desc.species = nameOrSpecies;
+        // desc.gender = gender;
+      } else {
+        // Custom Name (Misdreavus)
+        desc.name = nameOrSpecies;
+        desc.species = speciesOrGender;
+      }
+    } else {
+      // Misdreavus
+      desc.species = nameOrSpecies;
+    }
+
+    desc.item = item;
+  }
+
+  desc.species = normalizeName(desc.species);
 
   for (const line of lines.slice(1)) {
     if ((match = line.match(levelRegex))) {
-      level = +match[1];
+      desc.level = +match[1];
+    } else if ((match = line.match(happinessRegex))) {
+      desc.friendship = +match[1];
+    } else if ((match = line.match(moveRegex))) {
+      desc.moves.push(match[1]);
+      const dvs = getHpDvs(match[1]);
+      if (dvs) {
+        desc.moves[desc.moves.length - 1] = "Hidden Power";
+        desc.ivs.atk = dvToIv(dvs[0]);
+        desc.ivs.def = dvToIv(dvs[1]);
+      }
     } else if ((match = line.match(evsRegex)) || (match = line.match(ivsRegex))) {
-      // EVs and IVs for smogon compatibility
-      const isEvs = match[0].toLowerCase().includes("evs");
-      for (const [, v, s] of match[1].matchAll(statRegex)) {
+      const isEvs = match[0].toLowerCase().startsWith("evs");
+      for (const [, v, s] of match[0].matchAll(statRegex)) {
         const value = +v;
         const stat = s.toLowerCase();
-        if (!(statKeys as readonly string[]).includes(stat)) {
+        if (!statKeys.includes(stat)) {
           continue;
         }
 
         if (isEvs) {
-          evs[stat as keyof Stats] = value;
+          desc.evs[stat] = value;
         } else {
-          ivs[stat as keyof Stats] = value;
+          desc.ivs[stat] = value;
         }
       }
-    } else if ((match = line.match(moveRegex))) {
-      moves.push(match[1]);
     }
   }
-  return { species: speciesName, evs, ivs, level, moves, name };
+  return desc;
 };
 
 export const parseTeams = (src: string) => {
@@ -138,8 +179,8 @@ export const parseTeams = (src: string) => {
       name = match[2];
 
       const fmt = match[1]?.trim();
-      if (fmt && (battleFormats as readonly string[]).includes(fmt)) {
-        format = fmt as FormatId;
+      if (fmt && battleFormats.includes(fmt)) {
+        format = fmt;
       } else if (fmt === "gen1ou") {
         format = "g1_standard";
       }
@@ -155,27 +196,36 @@ export const parseTeams = (src: string) => {
 
       pokemon.push(parsePokemon(res[i]));
     }
-    teams.push({ name, pokemon, format });
+    teams.push({name, pokemon, format});
   }
   return teams;
 };
 
-export const convertDesc = (desc: PokemonDesc): Gen1PokemonDesc => {
-  const species = normalizeName(desc.species) as SpeciesId;
-  const moves: MoveId[] = [];
+export const convertDesc = (desc: PokemonDesc): PokemonDesc => {
+  const species = normalizeName(desc.species);
+  const moves: string[] = [];
   for (const move of desc.moves) {
     if (move.trim()) {
-      moves.push(normalizeName(move) as MoveId);
+      moves.push(normalizeName(move));
     }
   }
 
-  const statexp: Partial<Stats> = {};
-  const dvs: Partial<Stats> = {};
-  for (const stat of statKeys) {
-    statexp[stat] = evToStatexp(desc.evs[stat]);
-    dvs[stat] = ivToDv(desc.ivs[stat]);
+  let item = desc.item && normalizeName(desc.item);
+  if (!item) {
+    item = undefined;
   }
-  return { statexp, dvs, moves, level: desc.level ?? 100, name: desc.name, species };
+
+  const evs: Partial<Stats> = {};
+  const ivs: Partial<Stats> = {};
+  for (const stat of statKeys) {
+    if (desc.evs) {
+      evs[stat] = evToStatexp(desc.evs[stat]);
+    }
+    if (desc.ivs) {
+      ivs[stat] = ivToDv(desc.ivs[stat]);
+    }
+  }
+  return {evs, ivs, moves, level: desc.level ?? 100, name: desc.name, species, item};
 };
 
 export const normalizeName = (v: string) => v.trim().toLowerCase().replaceAll(ignoreChars, "");
@@ -185,3 +235,11 @@ export const dvToIv = (v?: number) => (v ?? 15) * 2;
 // FIXME: showdown parity
 export const evToStatexp = (v?: number) => (v ?? 255) * 257;
 export const statexpToEv = (v?: number) => Math.floor((v ?? 65535) / 257);
+
+export const ivsToDvs = (gen: Generation, ivs: Partial<Stats>) => {
+  const dvs: Partial<Stats> = {};
+  for (const stat in getStatKeys(gen)) {
+    dvs[stat as keyof Stats] = ivToDv(ivs[stat as keyof Stats]);
+  }
+  return dvs;
+};

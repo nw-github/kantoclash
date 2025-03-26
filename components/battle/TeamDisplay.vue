@@ -23,5 +23,5 @@
 </template>
 
 <script setup lang="ts">
-defineProps<{ player: ClientPlayer }>();
+defineProps<{player: ClientPlayer}>();
 </script>

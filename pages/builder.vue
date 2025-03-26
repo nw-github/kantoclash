@@ -1,5 +1,5 @@
 <template>
-  <UCard class="h-full flex flex-col" :ui="{ body: { base: 'grow overflow-auto' } }">
+  <UCard class="h-full flex flex-col" :ui="{body: {base: 'grow overflow-auto'}}">
     <template #header>
       <h1 class="text-2xl text-center pb-5">Your Teams</h1>
       <div class="flex flex-col sm:flex-row gap-1">
@@ -115,12 +115,11 @@
             </div>
           </div>
           <div class="flex justify-center">
-            <Sprite
+            <BoxSprite
               v-for="(poke, j) in team.pokemon"
               :key="j"
-              :species="(speciesList as Record<string, Species>)[poke.species]"
-              :scale="isXS ? 1.5 : 2"
-              kind="box"
+              :species="(poke.species as SpeciesId)"
+              :scale="isXS ? 1.2 : !isMdOrGreater ? 1.5 : 2"
             />
           </div>
         </div>
@@ -145,14 +144,14 @@
     <UModal v-model="importOpen">
       <UTextarea
         v-model="importText"
-        :ui="{ base: 'h-full min-h-[23.5rem]', rounded: 'rounded-lg' }"
+        :ui="{base: 'h-full min-h-[23.5rem]', rounded: 'rounded-lg'}"
         :placeholder="exportMode ? undefined : 'Paste your team(s) here...'"
         variant="none"
       >
         <TooltipButton
           v-if="!exportMode"
           text="Import"
-          :popper="{ placement: 'bottom-end', offsetDistance: 40 }"
+          :popper="{placement: 'bottom-end', offsetDistance: 40}"
           class="absolute top-2 right-2"
           icon="heroicons:arrow-down-tray-20-solid"
           variant="ghost"
@@ -162,7 +161,7 @@
         <TooltipButton
           v-else
           text="Copy"
-          :popper="{ placement: 'bottom-end', offsetDistance: 40 }"
+          :popper="{placement: 'bottom-end', offsetDistance: 40}"
           class="absolute top-2 right-2"
           icon="material-symbols:content-copy-outline"
           variant="ghost"
@@ -175,8 +174,8 @@
 </template>
 
 <script setup lang="ts">
-import { breakpointsTailwind } from "@vueuse/core";
-import { speciesList, type Species } from "~/game/species";
+import {breakpointsTailwind} from "@vueuse/core";
+import type {SpeciesId} from "~/game/species";
 
 const toast = useToast();
 const myTeams = useMyTeams();
@@ -192,9 +191,10 @@ const open = computed({
 });
 const importOpen = ref(false);
 const exportMode = ref(false);
-const isXS = useMediaQuery("(max-width: 480px)");
 const breakpoints = useBreakpoints(breakpointsTailwind);
 const isLgOrGreater = breakpoints.greaterOrEqual("lg");
+const isXS = breakpoints.smaller("sm");
+const isMdOrGreater = breakpoints.greaterOrEqual("md");
 const query = ref("");
 const formats = ref<string[]>([]);
 const pageCount = computed(() => (isLgOrGreater.value ? 10 : 5));
@@ -208,13 +208,28 @@ const filteredTeams = computed(() => {
 });
 watch([pageCount, filteredTeams], () => (page.value = 1));
 
+const route = useRoute();
+const router = useRouter();
+
+watch(editingTeam, team => {
+  if (team) {
+    router.replace({query: {editing: myTeams.value.indexOf(team)}});
+  } else {
+    router.replace({query: {}});
+  }
+});
+
 onMounted(() => {
   useTitle("Team Builder");
 
-  const format = String(useRoute().query.new_team);
-  useRouter().replace({ query: {} });
-  if ((battleFormats as readonly string[]).includes(format)) {
-    newTeam(format as FormatId);
+  const format = String(route.query.new_team);
+  const editing = +String(route.query.editing);
+
+  router.replace({query: {}});
+  if (battleFormats.includes(format)) {
+    newTeam(format);
+  } else if (myTeams.value[editing]) {
+    editingTeam.value = myTeams.value[editing];
   }
 });
 
@@ -222,7 +237,7 @@ const importOrCopy = async () => {
   importOpen.value = false;
   if (exportMode.value) {
     await navigator.clipboard.writeText(importText.value);
-    toast.add({ title: `Copied to clipboard!` });
+    toast.add({title: `Copied to clipboard!`});
     return;
   }
 
@@ -230,7 +245,7 @@ const importOrCopy = async () => {
   importText.value = "";
   myTeams.value.unshift(...teams);
   if (teams.length === 1) {
-    editingTeam.value = myTeams.value.at(-1);
+    editingTeam.value = myTeams.value.at(0);
   } else if (!teams.length) {
     toast.add({
       title: "Malformed Input!",
@@ -246,22 +261,18 @@ const deleteTeam = (team: Team) => {
   const [removed] = myTeams.value.splice(idx, 1);
   toast.add({
     title: `'${team.name}' deleted!`,
-    actions: [{ label: "Undo", click: () => myTeams.value.splice(idx, 0, removed) }],
+    actions: [{label: "Undo", click: () => myTeams.value.splice(idx, 0, removed)}],
   });
 };
 
 const newTeam = (format: FormatId = "g1_standard") => {
-  myTeams.value.unshift({
-    name: "New Team",
-    format,
-    pokemon: [parsePokemon("")],
-  });
+  myTeams.value.unshift({name: "New Team", format, pokemon: [parsePokemon("")]});
   editingTeam.value = myTeams.value[0];
 };
 
 const copyTeam = async (team: Team) => {
   await navigator.clipboard.writeText(teamToString(team));
-  toast.add({ title: `'${team.name}' copied to clipboard!` });
+  toast.add({title: `'${team.name}' copied to clipboard!`});
 };
 
 const duplicateTeam = (team: Team) => {
@@ -277,7 +288,9 @@ const duplicateTeam = (team: Team) => {
     }
   }
 
-  myTeams.value.splice(myTeams.value.indexOf(team) + 1, 0, newTeam);
+  const idx = myTeams.value.indexOf(team);
+  myTeams.value.splice(idx, 0, newTeam);
+  editingTeam.value = myTeams.value[idx];
 };
 
 const onImportClick = () => {

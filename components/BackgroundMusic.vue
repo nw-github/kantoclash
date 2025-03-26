@@ -7,15 +7,29 @@
 import loops from "@/public/music/loops.json";
 
 const toast = useToast();
-const { volume, track, fadeOutRequested } = useBGMusic();
+const {volume, track, fadeOutRequested} = useBGMusic();
 const musicController = ref<HTMLAudioElement>();
-const context = useAudioContext();
+
+let playWasBlocked = false;
+const context = useAudioContext(() => {
+  if (playWasBlocked && source) {
+    source.start();
+    showToast();
+  }
+});
 
 let notified = false;
 onMounted(() => {
-  context!.addEventListener("statechange", showToast);
-
   musicController.value!.volume = 0;
+  if (track.value) {
+    play(track.value);
+  }
+});
+
+onUnmounted(() => {
+  source?.stop();
+  source = undefined;
+  gain = undefined;
 });
 
 let source: AudioBufferSourceNode | undefined;
@@ -29,6 +43,8 @@ watch(fadeOutRequested, async req => {
     track.value = undefined;
   }
 });
+
+let stopping: Promise<void> | undefined;
 
 const stop = async (fade: boolean) => {
   if (!context || !source) {
@@ -57,24 +73,25 @@ const stop = async (fade: boolean) => {
     src.stop();
     source = undefined;
     gain = undefined;
-    context.suspend();
   }
 };
 
 const play = async (next: string) => {
-  type Loops = Record<string, { start: string; end: string }>;
+  type Loops = Record<string, {start: string; end: string}>;
 
   if (!context) {
     return;
   }
 
-  const stopping = stop(true);
+  stopping = stopping ?? stop(true);
 
-  const blob = await $fetch<Blob>(trackToPath(next));
+  const path = "/" + next.split("/").slice(2).map(encodeURIComponent).join("/");
+  const blob = await $fetch<Blob>(path);
   const loop = (loops as Loops)[next.slice(next.lastIndexOf("/") + 1)];
   const buffer = await context.decodeAudioData(await blob.arrayBuffer());
 
   await stopping;
+  stopping = undefined;
 
   if (track.value !== next) {
     return;
@@ -87,24 +104,25 @@ const play = async (next: string) => {
 
   source = context.createBufferSource();
   source.buffer = buffer;
-  source.loopStart = toSeconds(loop.start);
-  source.loopEnd = toSeconds(loop.end);
+  if (loop) {
+    source.loopStart = toSeconds(loop.start);
+    source.loopEnd = toSeconds(loop.end);
+  }
   source.loop = true;
   source.connect(gain);
-  source.start();
 
-  await context.resume();
+  if (!context.unlocked) {
+    playWasBlocked = true;
+  } else {
+    source.start();
+    showToast();
+  }
 };
 
-const trackToPath = (tr: string) => "/" + tr.split("/").slice(2).map(encodeURIComponent).join("/");
-
 const showToast = () => {
-  if (context?.state === "running" && track.value && !notified) {
+  if (track.value && !notified) {
     const name = musicTrackName(track.value);
-    toast.add({
-      title: `Now Playing: ${name}`,
-      icon: "heroicons-outline:speaker-wave",
-    });
+    toast.add({title: `Now Playing: ${name}`, icon: "heroicons-outline:speaker-wave"});
     notified = true;
 
     if (!navigator.mediaSession) {
@@ -113,9 +131,9 @@ const showToast = () => {
 
     const [title, game] = name.split("(").map(s => s.trim());
     const artist = game.split(")")[0];
-    navigator.mediaSession.metadata = new MediaMetadata({ title, artist });
+    navigator.mediaSession.metadata = new MediaMetadata({title, artist});
     navigator.mediaSession.playbackState = "playing";
-    navigator.mediaSession.setPositionState({ duration: 0, playbackRate: 1, position: 0 });
+    navigator.mediaSession.setPositionState({duration: 0, playbackRate: 1, position: 0});
   }
 };
 </script>

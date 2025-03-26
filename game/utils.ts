@@ -1,5 +1,8 @@
-import type { Random } from "random";
-import type { ActivePokemon } from "./battle";
+import type {Random} from "random";
+import type {ActivePokemon} from "./battle";
+import type {TypeChart} from "./gen";
+
+export type Weather = "rain" | "sun" | "sand";
 
 export type Type =
   | "normal"
@@ -16,18 +19,54 @@ export type Type =
   | "electric"
   | "ice"
   | "psychic"
-  | "dragon";
+  | "dragon"
+  | "dark"
+  | "steel"
+  | "???";
 export type Stages = (typeof stageKeys)[number];
-export type Stats = Record<(typeof statKeys)[number], number>;
-export type StageStats = Record<(typeof stageStatKeys)[number], number>;
+export type StatStages = (typeof stageStatKeys)[number];
 
-export const stageStatKeys = ["atk", "def", "spc", "spe"] as const;
+export type Stats = Record<(typeof statKeys)[number], number>;
+export type StageStats = Record<StatStages, number>;
+
+export const stageStatKeys = ["atk", "def", "spa", "spd", "spe"] as const;
 export const statKeys = ["hp", ...stageStatKeys] as const;
 export const stageKeys = [...stageStatKeys, "acc", "eva"] as const;
 
-export type VolatileFlag = (typeof volatileFlags)[number];
+export const screens = ["light_screen", "reflect", "safeguard"] as const;
+export type Screen = (typeof screens)[number];
 
-export const volatileFlags = ["light_screen", "reflect", "mist", "focus", "seeded"] as const;
+// prettier-ignore
+export enum VF {
+  none         = 0,
+  /** Gen 1 only */
+  lightScreen  = 0x0000_0001,
+  /** Gen 1 only */
+  reflect      = 0x0000_0002,
+  mist         = 0x0000_0004,
+  focus        = 0x0000_0008,
+  seeded       = 0x0000_0010,
+  destinyBond  = 0x0000_0020,
+  curse        = 0x0000_0040,
+  protect      = 0x0000_0080,
+  endure       = 0x0000_0100,
+  nightmare    = 0x0000_0200,
+  foresight    = 0x0000_0400,
+  lockon       = 0x0000_0800,
+
+  /** Client only */
+  cConfused     = 0x8000_0000,
+  /** Client only */
+  cDisabled     = 0x4000_0000,
+  /** Client only */
+  cAttract      = 0x2000_0000,
+  /** Client only */
+  cSubstitute   = 0x1000_0000,
+  /** Client only */
+  cEncore       = 0x0800_0000,
+  /** Client only */
+  cMeanLook     = 0x0400_0000,
+}
 
 export const floatTo255 = (num: number) => Math.floor((num / 100) * 255);
 
@@ -46,57 +85,18 @@ export const hpPercent = (current: number, max: number) => {
 
 export const scaleAccuracy255 = (acc: number, user: ActivePokemon, target: ActivePokemon) => {
   // https://bulbapedia.bulbagarden.net/wiki/Accuracy#Generation_I_and_II
-  acc *=
-    (stageMultipliers[user.v.stages["acc"]] / 100) *
-    (stageMultipliers[-target.v.stages["eva"]] / 100);
+  let userStages = user.v.stages["acc"];
+  let targetStages = target.v.stages["eva"];
+  if (userStages < targetStages && target.v.hasFlag(VF.foresight)) {
+    userStages = 0;
+    targetStages = 0;
+  }
+
+  acc *= (stageMultipliers[userStages] / 100) * (stageMultipliers[-targetStages] / 100);
   return clamp(Math.floor(acc), 1, 255);
 };
 
-export const calcDamage = ({
-  lvl,
-  pow,
-  atk,
-  def,
-  eff,
-  isCrit,
-  isStab,
-  rand,
-}: {
-  lvl: number;
-  pow: number;
-  atk: number;
-  def: number;
-  eff: number;
-  isCrit: boolean;
-  isStab: boolean;
-  rand: number | Random | false;
-}) => {
-  if (eff === 0) {
-    return 0;
-  }
-
-  lvl *= isCrit ? 2 : 1;
-  let dmg = Math.min(idiv(idiv((idiv(2 * lvl, 5) + 2) * pow * atk, def), 50), 997) + 2;
-  if (isStab) {
-    dmg += idiv(dmg, 2);
-  }
-
-  if (eff > 1) {
-    dmg = idiv(dmg * 20, 10);
-    dmg = eff > 2 ? idiv(dmg * 20, 10) : dmg;
-  } else if (eff < 1) {
-    dmg = idiv(dmg * 5, 10);
-    dmg = eff < 0.5 ? idiv(dmg * 5, 10) : dmg;
-  }
-
-  let r = typeof rand === "number" ? rand : 255;
-  if (rand && typeof rand !== "number" && dmg > 1) {
-    r = rand.int(217, 255);
-  }
-  return idiv(dmg * r, 255);
-};
-
-export const getEffectiveness = (atk: Type, def: Type[]) => {
+export const getEffectiveness = (typeChart: TypeChart, atk: Type, def: readonly Type[]) => {
   return def.reduce((eff, def) => eff * (typeChart[atk][def] ?? 1), 1);
 };
 
@@ -110,6 +110,8 @@ export const isSpecial = (atk: Type) => {
     case "bug":
     case "flying":
     case "fight":
+    case "steel":
+    case "???":
       return false;
     case "water":
     case "grass":
@@ -118,11 +120,14 @@ export const isSpecial = (atk: Type) => {
     case "ice":
     case "psychic":
     case "dragon":
+    case "dark":
       return true;
   }
 };
 
 export const idiv = (a: number, b: number) => Math.floor(a / b);
+
+export const imul = (a: number, b: number) => Math.floor(a * b);
 
 export const stageMultipliers: Record<number, number> = {
   [-6]: 25,
@@ -140,39 +145,32 @@ export const stageMultipliers: Record<number, number> = {
   6: 400,
 };
 
-export const typeChart: Record<Type, Partial<Record<Type, number>>> = {
-  normal: { ghost: 0, rock: 0.5 },
-  rock: { bug: 2, fire: 2, flying: 2, ice: 2, fight: 0.5, ground: 0.5 },
-  ground: { rock: 2, poison: 2, bug: 0.5, flying: 0, grass: 0.5, fire: 2, electric: 2 },
-  ghost: { normal: 0, ghost: 2, psychic: 0 },
-  poison: { rock: 0.5, ground: 0.5, ghost: 0.5, grass: 2, bug: 2, poison: 0.5 },
-  bug: { ghost: 0.5, flying: 0.5, fight: 0.5, grass: 2, fire: 0.5, psychic: 2, poison: 2 },
-  flying: { rock: 0.5, bug: 2, fight: 2, grass: 2, electric: 0.5 },
-  fight: {
-    normal: 2,
-    rock: 2,
-    ghost: 0,
-    poison: 0.5,
-    bug: 0.5,
-    flying: 0.5,
-    ice: 2,
-    psychic: 0.5,
-  },
-  water: { rock: 2, ground: 2, water: 0.5, grass: 0.5, fire: 2, dragon: 0.5 },
-  grass: {
-    rock: 2,
-    ground: 2,
-    poison: 0.5,
-    bug: 0.5,
-    flying: 0.5,
-    water: 2,
-    fire: 0.5,
-    dragon: 0.5,
-    grass: 0.5,
-  },
-  fire: { rock: 0.5, bug: 2, water: 0.5, grass: 2, fire: 0.5, ice: 2, dragon: 0.5 },
-  electric: { ground: 0, flying: 2, water: 2, grass: 0.5, electric: 0.5, dragon: 0.5 },
-  ice: { ground: 2, flying: 2, water: 0.5, grass: 2, ice: 0.5, dragon: 2 },
-  psychic: { poison: 2, fight: 2, psychic: 0.5 },
-  dragon: { dragon: 2 },
+export const arraysEqual = <T>(a: readonly T[], b: readonly T[]) => {
+  return a.length === b.length && a.every((item, i) => b[i] === item);
 };
+
+export const randChoiceWeighted = <T>(rng: Random, arr: readonly T[], weights: number[]) => {
+  let i;
+  for (i = 1; i < weights.length; i++) {
+    weights[i] += weights[i - 1];
+  }
+
+  const random = rng.float() * weights.at(-1)!;
+  for (i = 0; i < weights.length; i++) {
+    if (weights[i] > random) {
+      break;
+    }
+  }
+
+  return arr[i];
+};
+
+declare global {
+  interface ReadonlyArray<T> {
+    includes(x: any): x is T;
+  }
+
+  interface Array<T> {
+    includes(x: any): x is T;
+  }
+}

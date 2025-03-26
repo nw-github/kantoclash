@@ -1,6 +1,7 @@
-type Sprites = Record<string, { start: number; end: number }>;
+type Sprites = Record<string, {start: number; end: number}>;
 
-let context: AudioContext | undefined;
+let context: (AudioContext & {unlocked?: boolean}) | undefined;
+const onUnlocks: (() => void)[] = [];
 
 const unlock = () => {
   if (context) {
@@ -10,46 +11,64 @@ const unlock = () => {
     document.removeEventListener("keydown", unlock, true);
 
     context.resume().catch(() => {});
+
+    context.unlocked = true;
+    onUnlocks.forEach(f => f());
+
+    console.log("unlocked audio context");
   }
 };
 
-export const useAudioContext = () => {
+export const useAudioContext = (onUnlock?: () => void) => {
   if (import.meta.client && !context) {
     context = new AudioContext();
-    context.suspend();
-
     document.addEventListener("touchstart", unlock, true);
     document.addEventListener("touchend", unlock, true);
     document.addEventListener("click", unlock, true);
     document.addEventListener("keydown", unlock, true);
   }
 
+  if (onUnlock) {
+    onUnlocks.push(onUnlock);
+  }
   return context;
 };
 
-export const useAudio = (sounds: Record<string, { src: string; sprites?: Sprites }>) => {
+export const useAudio = (sounds: Record<string, {src: string; sprites?: Sprites}>) => {
   const saved: Record<string, [AudioBuffer, Sprites | undefined]> = {};
   const context = useAudioContext();
+  const playing: AudioBufferSourceNode[] = [];
+  let mounted = false;
 
   onMounted(() => {
     for (const name in sounds) {
       load(name, sounds[name].src, sounds[name].sprites);
     }
+
+    mounted = true;
+  });
+
+  onUnmounted(() => {
+    for (const item of playing.splice(0, playing.length)) {
+      item.stop();
+    }
+
+    mounted = false;
   });
 
   const load = async (name: string, src: string, sprites?: Sprites) => {
     if (!context) {
-      sounds[name] = { src, sprites };
+      sounds[name] = {src, sprites};
       return;
     }
 
-    const sound = await $fetch<Blob>(src, { method: "GET" }).then(s => s.arrayBuffer());
+    const sound = await $fetch<Blob>(src, {method: "GET"}).then(s => s.arrayBuffer());
     saved[name] = [await context.decodeAudioData(sound), sprites];
   };
 
-  const play = (name: string, opts: { sprite?: string; volume?: number; detune?: number }) => {
+  const play = (name: string, opts: {sprite?: string; volume?: number; detune?: number}) => {
     const audio = saved[name];
-    if (!context || !audio) {
+    if (!context || !audio || !mounted) {
       return;
     }
 
@@ -70,10 +89,14 @@ export const useAudio = (sounds: Record<string, { src: string; sprites?: Sprites
     source.detune.value = opts.detune ?? 0;
     source.connect(gain);
     return new Promise<void>(resolve => {
-      source.onended = resolve as () => void;
+      playing.push(source);
+      source.onended = () => {
+        playing.splice(playing.indexOf(source), 1);
+        resolve();
+      };
       source.start(0, offset, duration);
     });
   };
 
-  return { load, play };
+  return {load, play};
 };

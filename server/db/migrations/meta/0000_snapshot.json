@@ -52,9 +52,7 @@
         "users_username_unique": {
           "name": "users_username_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "username"
-          ]
+          "columns": ["username"]
         }
       },
       "policies": {},
@@ -68,9 +66,5 @@
   "roles": {},
   "policies": {},
   "views": {},
-  "_meta": {
-    "columns": {},
-    "schemas": {},
-    "tables": {}
-  }
+  "_meta": {"columns": {}, "schemas": {}, "tables": {}}
 }

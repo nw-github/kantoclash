@@ -9,7 +9,7 @@
 </template>
 
 <script setup lang="ts">
-import type { UInput } from "#components";
+import type {UInput} from "#components";
 
 type InputProps = InstanceType<typeof UInput>["$props"];
 

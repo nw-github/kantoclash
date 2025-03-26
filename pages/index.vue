@@ -96,15 +96,15 @@
       </div>
       <UCheckbox v-model="recentlyPlayed" label="Recently Played" />
       <UTable :rows="filteredRooms" :columns="roomsCols" :empty-state="emptyState">
-        <template #live-data="{ row }">
-          <UCheckbox :value="!row.finished" />
+        <template #live-data="{row}">
+          <UCheckbox v-model="row.live" disabled />
         </template>
 
-        <template #name-data="{ row }">
+        <template #name-data="{row}">
           <UButton :to="row.to">{{ row.name }}</UButton>
         </template>
 
-        <template #type-data="{ row }">
+        <template #type-data="{row}">
           <div class="flex items-center gap-1">
             <UIcon :name="formatInfo[row.format as FormatId].icon" class="size-5" />
             <span>{{ formatInfo[row.format as FormatId].name }}</span>
@@ -119,7 +119,7 @@
         :actions="[
           // Bring user to teambuilder
           // { variant: 'solid', color: 'primary', label: 'Fix', click: () =>  },
-          { variant: 'solid', color: 'primary', label: 'OK', click: () => (modalOpen = false) },
+          {variant: 'solid', color: 'primary', label: 'OK', click: () => (modalOpen = false)},
         ]"
       >
         <template #description>
@@ -138,14 +138,15 @@
 </template>
 
 <script setup lang="ts">
-import type { TeamSelector } from "#components";
-import { speciesList } from "~/game/species";
-import type { Battler, Challenge, MMError } from "~/server/gameServer";
+import type {TeamSelector} from "#components";
+import type {PokemonDesc} from "~/game/pokemon";
+import {speciesList, type SpeciesId} from "~/game/species";
+import type {Battler, Challenge, MMError} from "~/server/gameServer";
 
-const emit = defineEmits<{ (e: "requestLogin"): void }>();
+const emit = defineEmits<{(e: "requestLogin"): void}>();
 
-const { $conn } = useNuxtApp();
-const { user } = useUserSession();
+const {$conn} = useNuxtApp();
+const {user} = useUserSession();
 const toast = useToast();
 
 const findingMatch = ref(false);
@@ -159,7 +160,7 @@ const selectedTeam = ref<Team | undefined>();
 const errors = ref<Record<number, [string, string[]]>>({});
 const selectTeamMenu = ref<InstanceType<typeof TeamSelector>>();
 
-const rooms = ref<{ to: string; name: string; format: FormatId; finished: boolean }[]>([]);
+const rooms = ref<{to: string; name: string; format: FormatId; live: boolean}[]>([]);
 const filterFormats = ref<string[]>([]);
 const battleQuery = ref("");
 const challengeUser = ref<Battler>();
@@ -170,13 +171,13 @@ const filteredRooms = computed(() => {
   return rooms.value
     .filter(room => !q || room.name.toLowerCase().includes(q.toLowerCase()))
     .filter(room => !f.length || f.includes(room.format))
-    .filter(room => recentlyPlayed.value || !room.finished);
+    .filter(room => recentlyPlayed.value || room.live);
 });
 
 const roomsCols = [
-  { key: "live", label: "Live" },
-  { key: "type", label: "Type" },
-  { key: "name", label: "Players" },
+  {key: "live", label: "Live"},
+  {key: "type", label: "Type"},
+  {key: "name", label: "Players"},
 ];
 const emptyStateEmpty = {
   label: "There are currently no active battles. Be the first!",
@@ -212,6 +213,13 @@ onUnmounted(() => {
 });
 
 const enterMatchmaking = () => {
+  if (!$conn.connected) {
+    return toast.add({
+      title: "Disconnected",
+      description: "You are not currently connected to the server! Try refreshing the page.",
+    });
+  }
+
   if (!user.value) {
     return emit("requestLogin");
   }
@@ -264,7 +272,7 @@ const loadRooms = () => {
         name: room.battlers.map(pl => pl.name).join(" vs. "),
         to: "/room/" + room.id,
         format: room.format,
-        finished: room.finished,
+        live: !room.finished,
       })),
     );
     loadingRooms.value = false;
@@ -284,7 +292,7 @@ const searchUsers = async (q: string) => {
   });
 };
 
-const enterMMCallback = (team?: Gen1PokemonDesc[], err?: MMError, problems?: TeamProblems) => {
+const enterMMCallback = (team?: PokemonDesc[], err?: MMError, problems?: TeamProblems) => {
   if (!err) {
     return;
   }
@@ -323,11 +331,12 @@ const enterMMCallback = (team?: Gen1PokemonDesc[], err?: MMError, problems?: Tea
   }
 
   const issues: Record<number, [string, string[]]> = {};
-  for (const { path, message } of problems) {
+  for (const {path, message} of problems) {
     const [pokemon, category, index] = path as [number, string, number | string];
+    // We're just getting name, fine to use generic speciesList here
     const name =
       team![pokemon]?.name ||
-      speciesList[team![pokemon]?.species]?.name ||
+      speciesList[team![pokemon]?.species as SpeciesId]?.name ||
       (pokemon !== undefined && `Pokemon ${pokemon + 1}`) ||
       "General";
     const arr = (issues[pokemon] ??= [name, []]);

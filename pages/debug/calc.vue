@@ -1,5 +1,26 @@
 <template>
   <div class="overflow-y-auto h-full overflow-x-hidden p-2">
+    <code>
+      {{ getHiddenPower(dvs) }}
+    </code>
+
+    <div class="pb-10 flex gap-1">
+      <UFormGroup label="Atk">
+        <NumericInput v-model="dvs.atk" :min="0" :max="15" />
+      </UFormGroup>
+      <UFormGroup label="Def">
+        <NumericInput v-model="dvs.def" :min="0" :max="15" />
+      </UFormGroup>
+
+      <UFormGroup label="Spa">
+        <NumericInput v-model="dvs.spa" :min="0" :max="15" />
+      </UFormGroup>
+
+      <UFormGroup label="Spe">
+        <NumericInput v-model="dvs.spe" :min="0" :max="15" />
+      </UFormGroup>
+    </div>
+
     <div class="flex justify-between gap-2">
       <USelectMenu
         v-model="userSpecies"
@@ -38,7 +59,7 @@
 
     <div v-for="[id, move, rolls, min, max] in moves.map(getRolls)" :key="id" class="py-5">
       <div>
-        {{ id }} ({{ move.power ?? 0 }}), {{ move.type }}, {{ move.category }} | {{ min }}% -
+        {{ id }} ({{ move.power ?? 0 }}), {{ move.type }}, {{ getCategory(move) }} | {{ min }}% -
         {{ max }}%
       </div>
       <code class="text-sm">
@@ -53,19 +74,21 @@
 </template>
 
 <script setup lang="ts">
-import { moveList, type MoveId } from "~/game/moveList";
-import { Pokemon } from "~/game/pokemon";
-import { type SpeciesId, speciesList } from "~/game/species";
+import {getCategory, moveList, type MoveId} from "~/game/moves";
+import {getHiddenPower, Pokemon} from "~/game/pokemon";
+import {type SpeciesId, speciesList} from "~/game/species";
 import {
   calcDamage,
   getEffectiveness,
   hpPercentExact,
   isSpecial,
+  type StageStats,
   type Stats,
-  type Type,
 } from "~/game/utils";
 
-definePageMeta({ middleware: ["admin"] });
+definePageMeta({middleware: ["admin"]});
+
+const dvs = reactive<Partial<StageStats>>({atk: 15, def: 15, spa: 15, spe: 15});
 
 const allMoves = Object.keys(moveList) as MoveId[];
 const allSpecies = Object.keys(speciesList) as MoveId[];
@@ -133,8 +156,8 @@ const getRolls = (id: MoveId) => {
   }
 
   const eff = getEffectiveness(move.type, speciesList[target.value.speciesId].types);
-  let atk = getStat(user.value, isSpecial(move.type) ? "spc" : "atk");
-  let def = getStat(target.value, isSpecial(move.type) ? "spc" : "def");
+  let atk = getStat(user.value, isSpecial(move.type) ? "spa" : "atk");
+  let def = getStat(target.value, isSpecial(move.type) ? "spa" : "def");
   if (atk >= 256 || def >= 256) {
     atk = Math.max(Math.floor(atk / 4) % 256, 1);
     // defense doesn't get capped here on cart, potentially causing divide by 0
@@ -145,7 +168,7 @@ const getRolls = (id: MoveId) => {
     def = Math.max(Math.floor(def / 2), 1);
   }
 
-  const isStab = (speciesList[user.value.speciesId].types as Type[]).includes(move.type);
+  const isStab = speciesList[user.value.speciesId].types.includes(move.type);
   const rolls = [];
   for (let rand = 217; rand <= 255; rand++) {
     rolls.push(

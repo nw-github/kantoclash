@@ -1,12 +1,12 @@
 import tailwindColors from "tailwindcss/colors";
-import type { Status } from "~/game/pokemon";
-import type { Type } from "~/game/utils";
+import type {Type} from "~/game/utils";
 
 export const typeColor: Record<Type, string> = {
   normal: "#8F98A0",
   rock: "#C6B68A",
   ground: "#D87646",
   ghost: "#5168AB",
+  "???": "#5168AB",
   poison: "#AA69C7",
   bug: "#8FC02B",
   flying: "#8EA7DC",
@@ -18,16 +18,18 @@ export const typeColor: Record<Type, string> = {
   ice: "#73CDBF",
   psychic: "#F97075",
   dragon: "#096CC3",
+  dark: "#595265",
+  steel: "#598DA0",
 };
 
-export const statusColor: Record<Status, string> = {
-  psn: "#E879F9",
-  tox: "#E879F9",
-  brn: "#FB923C",
-  frz: "#8bb4e6",
-  slp: "#a4a48b",
-  par: "#F59E0B",
-};
+export const statusColor = {
+  brn: "orange",
+  psn: "fuchsia",
+  tox: "fuchsia",
+  frz: "sky",
+  par: "amber",
+  slp: "gray",
+} as const;
 
 const lerp = (a: number, b: number, t: number) => a * (1 - t) + b * t;
 
@@ -41,7 +43,7 @@ export const colorInterp = (
     const v = Math.max(r, g, b);
     const c = v - Math.min(r, g, b);
     const h = c && (v == r ? (g - b) / c : v == g ? 2 + (b - r) / c : 4 + (r - g) / c);
-    return { h: 60 * (h < 0 ? h + 6 : h), s: v && c / v, v };
+    return {h: 60 * (h < 0 ? h + 6 : h), s: v && c / v, v};
   };
 
   const hsv2rgb = (h: number, s: number, v: number) => {

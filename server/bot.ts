@@ -1,16 +1,16 @@
-import { io, type Socket } from "socket.io-client";
-import type { ClientMessage, JoinRoomResponse, ServerMessage } from "./gameServer";
-import type { BattleEvent } from "../game/events";
-import type { Options, Turn } from "../game/battle";
-import { randoms } from "~/server/utils/formats";
-import { formatInfo, type ClientPlayer } from "~/utils/shared";
-import { Pokemon } from "~/game/pokemon";
-import { clamp, getEffectiveness, type Type } from "../game/utils";
+import {io, type Socket} from "socket.io-client";
+import type {ClientMessage, JoinRoomResponse, ServerMessage} from "./gameServer";
+import type {BattleEvent} from "~/game/events";
+import type {Options, Turn} from "~/game/battle";
+import {randoms} from "~/server/utils/formats";
+import {type ClientVolatiles, type FormatId, formatInfo, mergeVolatiles} from "~/utils/shared";
+import {Pokemon} from "~/game/pokemon";
+import {getEffectiveness, VF} from "~/game/utils";
 import random from "random";
-import { convertDesc, parseTeams, type Team } from "~/utils/pokemon";
-import type { FormatId } from "~/utils/data";
-import { type MoveId, moveList } from "~/game/moveList";
-import { ConfusionMove, RecoveryMove, StageMove, StatusMove } from "~/game/moves";
+import {convertDesc, parseTeams, type Team} from "~/utils/pokemon";
+import type {MoveId} from "~/game/moves";
+import {type Generation, GENERATIONS} from "~/game/gen";
+import type {ClientPlayer} from "~/utils/client";
 
 export type BotParams = {
   team: Pokemon[];
@@ -19,6 +19,7 @@ export type BotParams = {
   me: string;
   activePokemon: number;
   opponent: string;
+  gen: Generation;
 };
 
 export type BotFunction = (params: BotParams) => readonly [number, "switch" | "move"];
@@ -36,12 +37,12 @@ export async function startBot(format?: FormatId, botFunction: BotFunction = ran
     return;
   }
 
-  const { cookie, myId, name } = result;
+  const {cookie, myId, name} = result;
 
   const url = import.meta.dev
     ? "http://localhost:3000"
     : process.env.SELF_URL || `https://localhost:${process.env.PORT}`;
-  const $conn: S = io(url, { extraHeaders: { cookie }, secure: !import.meta.dev });
+  const $conn: S = io(url, {extraHeaders: {cookie}, secure: !import.meta.dev});
   const games: Record<string, (turn: Turn, opts?: Options) => void> = {};
   $conn.on("connect", () => {
     activeBots.push(myId);
@@ -53,7 +54,9 @@ export async function startBot(format?: FormatId, botFunction: BotFunction = ran
           return;
         }
 
-        $conn.emit("startTimer", roomId, () => {});
+        if (!import.meta.dev) {
+          $conn.emit("startTimer", roomId, () => {});
+        }
 
         console.log(`[${name}] found a match for '${resp.format}': ${roomId}`);
         playGame(roomId, resp, botFunction, () => {
@@ -79,7 +82,7 @@ export async function startBot(format?: FormatId, botFunction: BotFunction = ran
       }
     });
 
-    $conn.on("challengeReceived", ({ format, from }) => {
+    $conn.on("challengeReceived", ({format, from}) => {
       $conn.emit("respondToChallenge", from.id, true, createBotTeam(format), () => {});
     });
 
@@ -90,18 +93,18 @@ export async function startBot(format?: FormatId, botFunction: BotFunction = ran
     let attempts = 3;
     while (attempts--) {
       const name = "BOT " + ++nBots;
-      await $fetch("/api/_auth/session", { method: "DELETE" }).catch(() => {});
+      await $fetch("/api/_auth/session", {method: "DELETE"}).catch(() => {});
       let resp;
       try {
         resp = await $fetch.raw("/api/register", {
           method: "POST",
-          body: { username: name, password: process.env.BOT_PASSWORD },
+          body: {username: name, password: process.env.BOT_PASSWORD},
         });
       } catch {
         try {
           resp = await $fetch.raw("/api/login", {
             method: "POST",
-            body: { username: name, password: process.env.BOT_PASSWORD },
+            body: {username: name, password: process.env.BOT_PASSWORD},
           });
         } catch {
           console.log(`[${name}] Login failed!...`);
@@ -110,9 +113,9 @@ export async function startBot(format?: FormatId, botFunction: BotFunction = ran
       }
 
       const cookie = resp.headers.getSetCookie().at(-1)!.split(";")[0];
-      const { user } = await $fetch("/api/_auth/session", { method: "GET", headers: { cookie } });
+      const {user} = await $fetch("/api/_auth/session", {method: "GET", headers: {cookie}});
       if (user) {
-        return { cookie, myId: user.id, name };
+        return {cookie, myId: user.id, name};
       }
 
       console.log(`[${name}] Login failed!...`);
@@ -134,87 +137,47 @@ export async function startBot(format?: FormatId, botFunction: BotFunction = ran
 
   function playGame(
     room: string,
-    { team, options, chats, turns, battlers }: JoinRoomResponse,
+    {team: teamDesc, options, chats, turns, battlers, format}: JoinRoomResponse,
     ai: BotFunction,
     gameOver: () => void,
   ) {
     const players: Record<string, ClientPlayer> = {};
+    const gen = GENERATIONS[formatInfo[format].generation]!;
     let activePokemon = -1;
     let turnNo = 0;
     let opponent = "";
+    const team = teamDesc!.map(poke => new Pokemon(gen, poke));
 
     const handleEvent = (e: BattleEvent) => {
       // TODO: unify this and Battle.vue:handleEvent
       if (e.type === "switch") {
         const player = players[e.src];
-        player.active = { ...e, stages: {}, flags: {}, fainted: false };
+        player.active = {...e, v: {stages: {}}, fainted: false};
         if (e.src === myId) {
           if (team?.[activePokemon]?.status === "tox") {
             team[activePokemon].status = "psn";
           }
 
           activePokemon = e.indexInTeam;
-          player.active.stats = undefined;
+          player.active.v.stats = undefined;
         }
       } else if (e.type === "damage" || e.type === "recover") {
         players[e.target].active!.hpPercent = e.hpPercentAfter;
         if (e.target === myId) {
-          team![activePokemon].hp = e.hpAfter!;
+          team[activePokemon].hp = e.hpAfter!;
         }
+      } else if (e.type === "info" && e.why === "faint") {
+        players[e.src].active!.fainted = true;
+        players[e.src].nFainted++;
+      }
 
-        if (e.dead) {
-          players[e.target].nFainted++;
-        }
-
-        if (e.why === "rest") {
-          players[e.target].active!.status = "slp";
-        }
-
-        // if (e.why === "substitute") {
-        // }
-      } else if (e.type === "status") {
-        players[e.src].active!.status = e.status;
-        if (e.src === myId) {
-          players[e.src].active!.stats = e.stats;
-          team![activePokemon].status = e.status;
-        }
-      } else if (e.type === "stages") {
-        players[myId].active!.stats = e.stats;
-        const active = players[e.src].active!;
-        for (const [stat, val] of e.stages) {
-          active.stages[stat] = clamp((active.stages[stat] ?? 0) + val, -6, 6);
-        }
-      } else if (e.type === "transform") {
-        const target = players[e.target].active!;
-        const src = players[e.src].active!;
-        src.transformed = target.transformed ?? target.speciesId;
-        src.stages = { ...target.stages };
-      } else if (e.type === "info") {
-        if (e.why === "haze") {
-          for (const player in players) {
-            const active = players[player].active;
-            if (!active) {
-              continue;
-            }
-
-            if (player === e.src && active.status === "tox") {
-              active.status = "psn";
-            } else if (player !== e.src) {
-              active.status = undefined;
-            }
-
-            active.stages = {};
+      if (e.volatiles) {
+        for (const {v, id} of e.volatiles) {
+          players[id].active!.v = mergeVolatiles(v, players[id].active!.v) as ClientVolatiles;
+          if (id === myId) {
+            team[activePokemon].status = players[id].active!.v.status;
           }
-
-          players[myId].active!.stats = undefined;
-        } else if (e.why === "wake" || e.why === "thaw") {
-          players[e.src].active!.status = undefined;
         }
-      } else if (e.type === "conversion") {
-        players[e.user].active!.conversion = e.types;
-      } else if (e.type === "hit_sub") {
-        // if (e.broken) {
-        // }
       }
     };
 
@@ -228,7 +191,7 @@ export async function startBot(format?: FormatId, botFunction: BotFunction = ran
         return;
       }
 
-      const [idx, opt] = ai({ team: team!, options, players, me: myId, activePokemon, opponent });
+      const [idx, opt] = ai({team, options, players, me: myId, activePokemon, opponent, gen});
       $conn.emit("choose", room, idx, opt, turnNo, err => {
         if (err) {
           if (opt === "switch") {
@@ -243,7 +206,7 @@ export async function startBot(format?: FormatId, botFunction: BotFunction = ran
 
     const processMessage = (message: InfoMessage) => {
       if (message.type === "userJoin") {
-        const { name, isSpectator, nPokemon, id } = message;
+        const {name, isSpectator, nPokemon, id} = message;
         players[id] = {
           name,
           isSpectator,
@@ -256,8 +219,8 @@ export async function startBot(format?: FormatId, botFunction: BotFunction = ran
       }
     };
 
-    for (const { id, name, nPokemon } of battlers) {
-      players[id] = { name, isSpectator: false, connected: false, nPokemon, nFainted: 0 };
+    for (const {id, name, nPokemon} of battlers) {
+      players[id] = {name, isSpectator: false, connected: false, nPokemon, nFainted: 0};
       if (id !== myId) {
         opponent = id;
       }
@@ -297,27 +260,27 @@ export async function startBot(format?: FormatId, botFunction: BotFunction = ran
   }
 }
 
-let ouTeams: Team[] = [];
+const teams: Team[] = [];
 export function createBotTeam(format: FormatId) {
-  if (!ouTeams.length) {
-    ouTeams = parseTeams(teams);
+  if (!teams.length) {
+    teams.push(...parseTeams(gen1ou));
+    teams.push(...parseTeams(gen2ou));
   }
 
-  let team = undefined;
   if (formatInfo[format].needsTeam) {
-    if (format === "g1_standard") {
-      team = random.choice(ouTeams)!.pokemon.map(convertDesc);
+    const team = random.choice(teams.filter(team => team.format === format));
+    if (team) {
+      return team.pokemon.map(convertDesc);
     } else {
-      team = randoms(s => (format === "g1_nfe") === s.evolves).map(
-        ({ moves, speciesId: species, level }) => ({ dvs: {}, statexp: {}, level, species, moves }),
-      );
+      const gen = GENERATIONS[formatInfo[format].generation]!;
+      return randoms(gen, s => format.includes("nfe") === !!s.evolvesTo);
     }
   }
-  return team;
+  return;
 }
 
-export function randomBot({ team, options, activePokemon }: BotParams) {
-  const validSwitches = team!.filter((poke, i) => poke.hp !== 0 && i !== activePokemon);
+export function randomBot({team, options, activePokemon}: BotParams) {
+  const validSwitches = team.filter((poke, i) => poke.hp !== 0 && i !== activePokemon);
   const validMoves = options.moves.filter(move => move.valid);
   const switchRandomly = random.int(0, 11) === 1;
   if (!validMoves.length || (options.canSwitch && validSwitches.length && switchRandomly)) {
@@ -327,26 +290,34 @@ export function randomBot({ team, options, activePokemon }: BotParams) {
   }
 }
 
-export function rankBot({ team, options, players, activePokemon, opponent: id, me }: BotParams) {
+export function rankBot({team, options, players, activePokemon, opponent: id, me, gen}: BotParams) {
   const rank = <T>(arr: T[], sort: (t: T, i: number) => number) => {
     const result = arr
-      .map((item, i) => ({ score: sort(item, i), i }))
+      .map((item, i) => ({score: sort(item, i), i}))
       .sort((a, b) => b.score - a.score)
       .filter((move, _, arr) => move.score >= 0 && move.score === arr[0].score);
-    return result.length ? random.choice(result)! : { score: -1, i: -1 };
+    return result.length ? random.choice(result)! : {score: -1, i: -1};
   };
 
-  const rankMove = ({ move: id, valid }: { move: MoveId; valid: boolean }) => {
+  const rankMove = ({move: id, valid}: {move: MoveId; valid: boolean}) => {
     if (!valid) {
       return -1;
     }
 
-    const opponentPoke = new Pokemon(opponentActive.speciesId, {}, {}, opponentActive.level, []);
+    const opponentPoke = new Pokemon(gen, {
+      species: opponentActive.speciesId,
+      level: opponentActive.level,
+      moves: [],
+    });
     opponentPoke.hp *= opponentActive.hpPercent / 100;
 
-    const move = moveList[id];
+    const move = gen.moveList[id];
     if ((move.power ?? 0) > 1) {
-      const eff = getEffectiveness(move.type, opponentPoke.species.types);
+      const eff = getEffectiveness(
+        gen.typeChart,
+        move.type,
+        opponentActive.v.types ?? opponentPoke.species.types,
+      );
       if (eff > 1) {
         return 15;
       } else if (eff < 1) {
@@ -354,21 +325,31 @@ export function rankBot({ team, options, players, activePokemon, opponent: id, m
       } else if (eff === 0) {
         return 0;
       }
-    } else if (move instanceof RecoveryMove) {
+      return 10;
+    } else if (move.kind === "recover") {
       if (self.hpPercent === 100) {
         return 0;
       } else if (self.hpPercent <= 25) {
-        return 20;
+        return 15;
       } else {
         return 5;
       }
     } else {
+      const confused = (opponentActive.v.flags || 0) & VF.cConfused;
+      const seeded = (opponentActive.v.flags || 0) & VF.seeded;
+      const cursed = (opponentActive.v.flags || 0) & VF.curse;
+      const dbond = (self.v.flags || 0) & VF.destinyBond;
+      const selfSub = (self.v.flags || 0) & VF.cSubstitute;
+      const sub = (opponentActive.v.flags || 0) & VF.cSubstitute;
+
       // prettier-ignore
-      const useless = (move instanceof ConfusionMove && opponentActive.flags.confused) ||
-        (move instanceof StatusMove && opponentActive.status) ||
-        (id === "leechseed" && (opponentActive.flags.seeded || (opponentPoke.species.types as Type[]).includes("grass"))) ||
-        (id === "substitute" && self.flags.substitute) ||
-        (move instanceof StageMove && move.acc && opponentActive.flags.substitute);
+      const useless = (move.kind === "confuse" && confused) ||
+        (move.kind === "status" && (opponentActive.v.status || (gen.id === 2 && sub))) ||
+        (id === "leechseed" && (seeded || opponentPoke.species.types.includes("grass"))) ||
+        (id === "curse" && cursed) ||
+        (id === "destinybond" && dbond) ||
+        (id === "substitute" && selfSub) ||
+        (move.kind === "stage" && move.acc && sub);
       if (useless) {
         return 0;
       }
@@ -381,12 +362,12 @@ export function rankBot({ team, options, players, activePokemon, opponent: id, m
   const opponentActive = players[id].active!;
   // const selfPoke = team[activePokemon];
 
-  const { score, i: bestMove } = rank(options.moves, rankMove);
+  const {score, i: bestMove} = rank(options.moves, rankMove);
   if ((bestMove !== -1 && score > 5) || !options.canSwitch) {
     return [bestMove, "move"] as const;
   }
 
-  const { i: bestSwitch } = rank(team, (poke, i) => {
+  const {i: bestSwitch} = rank(team, (poke, i) => {
     if (poke.hp === 0 || i === activePokemon) {
       return -1;
     } else if (!opponentActive) {
@@ -395,7 +376,7 @@ export function rankBot({ team, options, players, activePokemon, opponent: id, m
       return 0;
     }
 
-    return Math.max(...poke.moves.map(move => rankMove({ move, valid: true })));
+    return Math.max(...poke.moves.map(move => rankMove({move, valid: true})));
   });
   if (bestSwitch === -1) {
     return [bestMove, "move"] as const;
@@ -405,7 +386,7 @@ export function rankBot({ team, options, players, activePokemon, opponent: id, m
 }
 
 /// From: https://gist.github.com/scheibo/7c9172f3379bbf795a5e61a802caf2f0
-const teams = `
+const gen1ou = `
 === [gen1ou] marcoasd 2014 ===
 
 Gengar
@@ -1530,4 +1511,320 @@ Zapdos
 - Thunder Wave
 - Thunderbolt
 - Thunder
+`;
+
+// Generated with https://www.pokeaimmd.com/randomizer
+const gen2ou = `
+=== [g2_standard] New Team ===
+
+Typhlosion @ Leftovers
+IVs: 28 atk / 28 def
+ - Fire Blast
+ - DynamicPunch
+ - Hidden Power
+ - Earthquake
+
+Zapdos @ Leftovers
+IVs: 30 atk / 26 def
+ - Thunder
+ - Hidden Power
+ - Rest
+ - Sleep Talk
+
+Entei @ Leftovers
+IVs: 24 atk / 24 def
+ - Sunny Day
+ - Fire Blast
+ - SolarBeam
+ - Hidden Power
+
+Machamp @ Leftovers
+ - Cross Chop
+ - Rock Slide
+ - Earthquake
+ - Fire Blast
+
+Clefable @ Leftovers
+ - Belly Drum
+ - Moonlight
+ - Return
+ - Fire Blast
+
+Heracross @ Leftovers
+ - Rest
+ - Sleep Talk
+ - Megahorn
+ - Curse
+
+=== [g2_standard] New Team ===
+
+Golem @ Leftovers
+ - Earthquake
+ - Rapid Spin
+ - Explosion
+ - Roar
+
+Suicune @ Leftovers
+ - Surf
+ - Toxic
+ - Roar
+ - Rest
+
+Kangaskhan @ Leftovers
+ - Curse
+ - Rest
+ - Return
+ - Roar
+
+Houndoom @ Leftovers
+ - Crunch
+ - Fire Blast
+ - Pursuit
+ - Counter
+
+Lapras @ Leftovers
+ - Ice Beam
+ - Thunderbolt
+ - Rest
+ - Sleep Talk
+
+Vaporeon @ Leftovers
+ - Surf
+ - Growth
+ - Rest
+ - Sleep Talk
+
+=== [g2_standard] New Team ===
+
+Forretress @ Leftovers
+IVs: 28 atk / 24 def
+ - Spikes
+ - Rapid Spin
+ - Toxic
+ - Hidden Power
+
+Clefable @ Leftovers
+ - Belly Drum
+ - Moonlight
+ - Return
+ - Fire Blast
+
+Scizor @ Leftovers
+IVs: 26 atk / 26 def
+ - Swords Dance
+ - Baton Pass
+ - Agility
+ - Hidden Power
+
+Tentacruel @ Leftovers
+ - Swords Dance
+ - Substitute
+ - Sludge Bomb
+ - Hydro Pump
+
+Kingdra @ Leftovers
+ - Rest
+ - Sleep Talk
+ - Double Edge
+ - Surf
+
+Nidoking @ Leftovers
+ - Earthquake
+ - Lovely Kiss
+ - Ice Beam
+ - Thunder
+
+=== [g2_standard] New Team ===
+
+Clefable @ Leftovers
+ - Return
+ - Fire Blast
+ - Ice Beam
+ - Moonlight
+
+Charizard @ Leftovers
+ - Belly Drum
+ - Earthquake
+ - Rock Slide
+ - Fire Blast
+
+Umbreon @ Leftovers
+ - Charm
+ - Pursuit
+ - Toxic
+ - Rest
+
+Marowak @ Thick Club
+IVs: 26 atk / 26 def
+ - Earthquake
+ - Rock Slide
+ - Hidden Power
+ - Swords Dance
+
+Venusaur @ Leftovers
+ - Swords Dance
+ - Body Slam
+ - Giga Drain
+ - Sleep Powder
+
+Tauros @ Leftovers
+ - Double Edge
+ - Earthquake
+ - Rest
+ - Sleep Talk
+
+=== [g2_standard] New Team ===
+
+Miltank @ Leftovers
+ - Heal Bell
+ - Milk Drink
+ - Growl
+ - Body Slam
+
+Muk @ Leftovers
+ - Sludge Bomb
+ - Fire Blast
+ - Explosion
+ - Curse
+
+Cloyster @ Leftovers
+ - Spikes
+ - Surf
+ - Toxic
+ - Explosion
+
+Dragonite @ Leftovers
+ - Haze
+ - Reflect
+ - Rest
+ - Sleep Talk
+
+Heracross @ Leftovers
+ - Rest
+ - Sleep Talk
+ - Megahorn
+ - Curse
+
+Rhydon @ Leftovers
+ - Earthquake
+ - Rock Slide
+ - Curse
+ - Roar
+
+=== [g2_standard] New Team ===
+
+Heracross @ Leftovers
+ - Rest
+ - Sleep Talk
+ - Megahorn
+ - Curse
+
+Umbreon @ Leftovers
+ - Charm
+ - Pursuit
+ - Toxic
+ - Rest
+
+Entei @ Leftovers
+IVs: 24 atk / 24 def
+ - Sunny Day
+ - Fire Blast
+ - SolarBeam
+ - Hidden Power
+
+Raikou @ Leftovers
+IVs: 30 atk / 26 def
+ - Thunderbolt
+ - Hidden Power
+ - Rest
+ - Sleep Talk
+
+Snorlax @ Leftovers
+ - Double Edge
+ - Flamethrower
+ - Toxic
+ - Rest
+
+Alakazam @ Leftovers
+ - Recover
+ - Thunder Wave
+ - Fire Punch
+ - Psychic
+
+=== [g2_standard] New Team ===
+
+Scizor @ Leftovers
+IVs: 26 atk / 26 def
+ - Swords Dance
+ - Baton Pass
+ - Agility
+ - Hidden Power
+
+Articuno @ Leftovers
+ - Rest
+ - Sleep Talk
+ - Ice Beam
+ - Toxic
+
+Porygon2 @ Leftovers
+ - Curse
+ - Double Edge
+ - Recover
+ - Ice Beam
+
+Exeggutor @ Leftovers
+ - Sleep Powder
+ - Psychic
+ - Giga Drain
+ - Explosion
+
+Tyranitar @ Leftovers
+ - DynamicPunch
+ - Rock Slide
+ - Fire Blast
+ - Pursuit
+
+Machamp @ Leftovers
+ - Cross Chop
+ - Rock Slide
+ - Earthquake
+ - Fire Blast
+
+=== [g2_standard] New Team ===
+
+Vaporeon @ Leftovers
+ - Surf
+ - Growth
+ - Rest
+ - Sleep Talk
+
+Blissey @ Leftovers
+ - Softboiled
+ - Heal Bell
+ - Light Screen
+ - Sing
+
+Espeon @ Leftovers
+ - Psychic
+ - Growth
+ - Baton Pass
+ - Substitute
+
+Cloyster @ Leftovers
+ - Spikes
+ - Surf
+ - Toxic
+ - Explosion
+
+Porygon2 @ Leftovers
+ - Thunder Wave
+ - Double Edge
+ - Ice Beam
+ - Recover
+
+Ursaring @ Leftovers
+ - Curse
+ - Return
+ - Earthquake
+ - Roar
 `;

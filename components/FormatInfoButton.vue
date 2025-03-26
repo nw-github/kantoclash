@@ -22,5 +22,5 @@
 </template>
 
 <script setup lang="ts">
-defineProps<{ format: FormatId }>();
+defineProps<{format: FormatId}>();
 </script>

@@ -56,8 +56,8 @@
 </style>
 
 <script setup lang="ts" generic="T">
-const modelQuery = defineModel<string>("query", { default: "" });
-const open = defineModel<boolean>("open", { default: false });
+const modelQuery = defineModel<string>("query", {default: ""});
+const open = defineModel<boolean>("open", {default: false});
 const {
   items,
   filter,
@@ -68,7 +68,7 @@ const {
   base?: string;
   searchable?: boolean;
 }>();
-const emit = defineEmits<{ (e: "chose", item: T): void }>();
+const emit = defineEmits<{(e: "chose", item: T): void}>();
 const container = ref<HTMLUListElement>();
 const hovered = ref(0);
 const query = useDebounce(modelQuery, 100);
@@ -104,7 +104,7 @@ const trySetHovered = (offset: number) => {
   }
 
   nextTick(() => {
-    document.querySelector(".hovered")?.scrollIntoView({ block: "nearest", inline: "nearest" });
+    document.querySelector(".hovered")?.scrollIntoView({block: "nearest", inline: "nearest"});
   });
 };
 

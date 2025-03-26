@@ -15,9 +15,16 @@
       @focus="open = true"
       @update:model-value="open = true"
       @keydown.tab="open = false"
-    />
+    >
+      <template v-if="trailing" #trailing>
+        <div class="gap-1 flex items-center justify-center">
+          <TypeBadge :type="trailing[0]" class="size-[16px] sm:size-[16px]" image />
+          <span class="text-sm">{{ trailing[1] }}</span>
+        </div>
+      </template>
+    </UInput>
 
-    <template #item="{ item: [id, move] }">
+    <template #item="{item: [id, move]}">
       <span class="text-sm" :class="[isIllegal(id) && 'text-red-500']">{{ move.name }}</span>
 
       <div class="flex justify-end gap-2">
@@ -25,7 +32,7 @@
           <TypeBadge :type="move.type" image />
         </div>
         <div class="flex items-center">
-          <MoveCategory :category="move.category" image />
+          <MoveCategory :category="getCategory(move)" image />
         </div>
         <div class="flex flex-col w-8">
           <span class="text-[0.6rem] text-center text-gray-400">Power</span>
@@ -35,6 +42,10 @@
           <span class="text-[0.6rem] text-center text-gray-400">Acc</span>
           <span class="text-sm text-center">{{ move.acc ?? "--" }}</span>
         </div>
+        <div class="flex flex-col w-8">
+          <span class="text-[0.6rem] text-center text-gray-400">PP</span>
+          <span class="text-sm text-center">{{ gen.getMaxPP(move) }}</span>
+        </div>
       </div>
     </template>
 
@@ -43,17 +54,40 @@
 </template>
 
 <script setup lang="ts">
-import type { MoveId } from "@/game/moveList";
-import { speciesList, type Species, type SpeciesId } from "@/game/species";
-import type { Move } from "@/game/moves";
-import { moveListEntries as items } from "#imports";
+import type {Species, SpeciesId} from "~/game/species";
+import type {Move, MoveId} from "~/game/moves";
+import {Pokemon, type PokemonDesc} from "~/game/pokemon";
+import type {Generation} from "~/game/gen";
+import {ivsToDvs} from "~/utils/pokemon";
 
-const query = defineModel<string>({ default: "" });
-const { poke } = defineProps<{ poke?: PokemonDesc }>();
+const query = defineModel<string>({default: ""});
+const {poke, gen} = defineProps<{poke: PokemonDesc; gen: Generation}>();
 const open = ref(false);
-const species = computed<Species | undefined>(() => speciesList[poke?.species as SpeciesId]);
+const species = computed<Species | undefined>(() => gen.speciesList[poke?.species as SpeciesId]);
+const items = computed(() => Object.entries(gen.moveList) as [MoveId, Move][]);
+const trailing = computed(() => {
+  const q = normalizeName(query.value);
+  const move = q && q in gen.moveList ? gen.moveList[q as MoveId] : undefined;
+  if (!move || move.kind !== "damage") {
+    return;
+  }
 
-const filter = (moves: typeof items, query: string) => {
+  const base = new Pokemon(gen, {
+    species: "abra",
+    moves: [],
+    ivs: ivsToDvs(gen, poke.ivs ?? {}),
+    friendship: poke.friendship,
+  });
+  const type = move.getType ? move.getType(base) : move.type;
+  const pow = move.getPower ? move.getPower(base) : move.power;
+  if (type === move.type && pow === move.power) {
+    return;
+  }
+
+  return [type, pow] as const;
+});
+
+const filter = (moves: [MoveId, Move][], query: string) => {
   const q = normalizeName(query);
   const all = moves.filter(([id, _]) => id.includes(q));
   if (poke) {
@@ -61,7 +95,7 @@ const filter = (moves: typeof items, query: string) => {
 
     let subset = all.filter(([id, _]) => !currentMoves.includes(id));
     if (species.value) {
-      subset = subset.filter(([id, _]) => (species.value!.moves as string[]).includes(id));
+      subset = subset.filter(([id, _]) => !isIllegal(id));
     }
 
     if (subset.length) {
@@ -76,7 +110,13 @@ const onChoose = ([_, move]: [string, Move]) => (query.value = move.name);
 const isIllegal = (id: string) => {
   if (!id) {
     return false;
+  } else if (!species.value) {
+    return true;
+  } else if (species.value.moves.includes(id)) {
+    return false;
+  } else if (species.value.moves.includes("sketch")) {
+    return !isValidSketchMove(gen, id);
   }
-  return species.value ? !species.value.moves.includes(id as MoveId) : true;
+  return true;
 };
 </script>

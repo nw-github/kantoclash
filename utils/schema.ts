@@ -1,5 +1,5 @@
-import { z } from "zod";
-import { RegExpMatcher, englishDataset, englishRecommendedTransformers } from "obscenity";
+import {z} from "zod";
+import {RegExpMatcher, englishDataset, englishRecommendedTransformers} from "obscenity";
 
 export const profanityMatcher = new RegExpMatcher({
   ...englishDataset.build(),

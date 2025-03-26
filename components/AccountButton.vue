@@ -1,9 +1,9 @@
 <template>
-  <UPopover v-model="model" mode="click" :popper="{ placement: 'bottom-end' }">
+  <UPopover v-model="model" mode="click" :popper="{placement: 'bottom-end'}">
     <UButton icon="material-symbols:account-circle-full" variant="ghost" color="gray" />
     <template #panel>
       <div class="p-4">
-        <AuthState v-slot="{ user }">
+        <AuthState v-slot="{user}">
           <div v-if="user">
             <div class="flex items-center gap-2">
               <UIcon name="material-symbols:account-circle-full" class="size-5" />
@@ -31,15 +31,15 @@
 </template>
 
 <script setup lang="ts">
-import { UButton } from "#components";
+import {UButton} from "#components";
 
-const { $conn } = useNuxtApp();
-const { clear } = useUserSession();
+const {$conn} = useNuxtApp();
+const {clear} = useUserSession();
 const filter = useChatCensorEnabled();
 const challenges = useIgnoreChallenges();
 const autoMute = useAutoMuteMusic();
 const loading = ref(false);
-const model = defineModel<{ open: boolean }>();
+const model = defineModel<{open: boolean}>();
 
 const logout = async () => {
   await clear();

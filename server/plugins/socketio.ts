@@ -1,11 +1,11 @@
-import { Server as Engine } from "engine.io";
-import { defineEventHandler } from "h3";
-import { GameServer } from "../gameServer";
-import { rankBot, startBot } from "../bot";
-import { battles } from "../db/schema";
+import {Server as Engine} from "engine.io";
+import {defineEventHandler} from "h3";
+import {GameServer} from "../gameServer";
+import {rankBot, startBot} from "../bot";
+import {battles} from "../db/schema";
 
 export default defineNitroPlugin(nitro => {
-  const engine = new Engine({ pingInterval: 5000, pingTimeout: 5000 });
+  const engine = new Engine({pingInterval: 5000, pingTimeout: 5000});
   const io = new GameServer(undefined, {
     async onBattleComplete(format, battle) {
       const battlers = battle.players.map(pl => pl.id);
@@ -38,7 +38,7 @@ export default defineNitroPlugin(nitro => {
       websocket: {
         open(peer) {
           // @ts-expect-error private method and property
-          const { nodeReq } = peer._internal;
+          const {nodeReq} = peer._internal;
           // @ts-expect-error private method and property
           engine.prepare(nodeReq);
           // @ts-expect-error private method and property

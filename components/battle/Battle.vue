@@ -3,14 +3,21 @@
     class="flex h-full flex-col sm:flex-row p-4 overflow-auto rounded-lg gap-4 dark:divide-gray-800 ring-1 ring-gray-200 dark:ring-gray-800 shadow"
   >
     <div class="flex flex-col w-full items-center">
-      <div class="flex w-full relative justify-between">
-        <div>
+      <div class="flex w-full relative justify-between items-start">
+        <div class="flex gap-2 items-center">
           <div
-            class="rounded-md bg-gray-300 dark:bg-gray-700 flex justify-center py-0.5 px-1"
             :class="[!currentTurnNo && 'invisible']"
+            class="rounded-md bg-gray-300 dark:bg-gray-700 flex justify-center py-0.5 px-1"
           >
             <span class="text-lg font-medium">Turn {{ currentTurnNo }}</span>
           </div>
+          <UTooltip v-if="weather" :text="weatherData[weather].tooltip">
+            <UIcon
+              class="size-6"
+              :class="weatherData[weather].class"
+              :name="weatherData[weather].icon"
+            />
+          </UTooltip>
         </div>
 
         <div v-if="opponent" class="absolute sm:static right-0 flex flex-col items-end gap-1">
@@ -22,12 +29,20 @@
       </div>
 
       <div class="flex">
-        <ActivePokemon ref="frontPokemon" class="order-2" :poke="players[opponent]?.active" />
+        <ActivePokemon
+          ref="frontPokemon"
+          class="order-2"
+          :poke="players[opponent]?.active"
+          :side="sides[opponent]"
+          :gen
+        />
         <ActivePokemon
           ref="backPokemon"
           class="pt-10 sm:pt-14 pb-2 sm:pb-0"
           :poke="players[perspective]?.active"
           :base="perspective === myId ? activeInTeam : undefined"
+          :side="sides[perspective]"
+          :gen
           back
         />
       </div>
@@ -40,7 +55,7 @@
               :key="e.time"
               class="w-full bg-gray-300/90 dark:bg-gray-700/95 rounded-lg px-2 pb-0.5"
             >
-              <Event :e :my-id :players :perspective class="first:pt-0" />
+              <Event class="first:pt-0" :e :my-id :players :perspective :gen />
             </div>
           </TransitionGroup>
         </div>
@@ -54,7 +69,7 @@
           <div class="flex flex-row">
             <UTooltip
               :text="timer === undefined ? 'Start Timer' : 'Timer is on'"
-              :popper="{ placement: 'top' }"
+              :popper="{placement: 'top'}"
             >
               <UButton
                 :key="updateMarker"
@@ -68,11 +83,7 @@
               />
             </UTooltip>
 
-            <UTooltip
-              text="Open Chat"
-              :popper="{ placement: 'top' }"
-              class="min-[900px]:hidden px-2"
-            >
+            <UTooltip text="Open Chat" :popper="{placement: 'top'}" class="min-[900px]:hidden px-2">
               <UChip :show="unseen !== 0" :text="unseen" size="xl">
                 <UButton
                   ref="menuButton"
@@ -94,7 +105,14 @@
           <div class="grid gap-2 sm:grid-cols-[1fr,1.5fr] h-min">
             <div class="flex flex-col gap-1 sm:gap-2">
               <template v-for="(option, i) in options.moves">
-                <MoveButton v-if="option.display" :key="i" :option @click="selectMove(i)" />
+                <MoveButton
+                  v-if="option.display"
+                  :key="i"
+                  :option
+                  :gen
+                  :poke="activeInTeam"
+                  @click="selectMove(i)"
+                />
               </template>
               <div v-if="!options.moves.length && activeIndex === -1">Choose your lead</div>
             </div>
@@ -232,23 +250,35 @@
 </style>
 
 <script setup lang="ts">
-import type { Options, Turn } from "@/game/battle";
-import type { Pokemon } from "@/game/pokemon";
-import type { BattleEvent, InfoReason } from "@/game/events";
-import { speciesList, type SpeciesId } from "@/game/species";
-import { clamp } from "@/game/utils";
-import { moveList } from "@/game/moveList";
-import type { BattleTimer, InfoRecord } from "~/server/gameServer";
-import type { ActivePokemon } from "#build/components";
-import type { AnimationType } from "./ActivePokemon.vue";
+import type {Options, Turn} from "~/game/battle";
+import type {Pokemon} from "~/game/pokemon";
+import type {BattleEvent} from "~/game/events";
+import type {SpeciesId} from "~/game/species";
+import type {BattleTimer, InfoRecord} from "~/server/gameServer";
+import type {ActivePokemon} from "#build/components";
+import type {AnimationType} from "./ActivePokemon.vue";
 import criesSpritesheet from "~/public/effects/cries.json";
+import {GENERATIONS} from "~/game/gen";
+import type {Weather, Screen} from "~/game/utils";
+
+const weatherData = {
+  rain: {icon: "material-symbols:rainy", tooltip: "Raining", class: "text-sky-400"},
+  sun: {icon: "material-symbols:clear-day-rounded", tooltip: "Harsh Sun", class: "text-orange-500"},
+  sand: {icon: "mingcute:sandstorm-fill", tooltip: "Sandstorm", class: "text-amber-700"},
+  // material-symbols:weather-hail
+} satisfies Record<Weather, any>;
+
+export type Side = {
+  spikes?: boolean;
+  screens?: Partial<Record<Screen, boolean>>;
+};
 
 const emit = defineEmits<{
   (e: "chat", message: string): void;
   (e: "forfeit" | "timer" | "cancel"): void;
   (e: "move" | "switch", index: number): void;
 }>();
-const { team, options, players, turns, chats, battlers, timer, finished } = defineProps<{
+const {team, options, players, turns, chats, battlers, timer, finished, format} = defineProps<{
   team?: Pokemon[];
   options?: Options;
   players: Record<string, ClientPlayer>;
@@ -261,8 +291,9 @@ const { team, options, players, turns, chats, battlers, timer, finished } = defi
 }>();
 const myId = useMyId();
 const sfxVol = useSfxVolume();
-const { fadeOut } = useBGMusic();
+const {fadeOut} = useBGMusic();
 const isMounted = useMounted();
+const gen = computed(() => GENERATIONS[formatInfo[format].generation]!);
 const selectionText = ref("");
 const menuButton = ref<HTMLElement>();
 const isMenuVisible = useElementVisibility(menuButton);
@@ -273,6 +304,8 @@ const smoothScroll = ref(true);
 const skippingToTurn = ref(0);
 const updateMarker = ref(0);
 const currentTurnNo = ref(0);
+const weather = ref<Weather>();
+const sides = reactive<Record<string, Side>>({});
 
 const backPokemon = ref<InstanceType<typeof ActivePokemon>>();
 const frontPokemon = ref<InstanceType<typeof ActivePokemon>>();
@@ -290,10 +323,11 @@ const liveEvents = ref<UIBattleEvent[]>([]);
 const paused = ref(isBattleOver.value);
 
 const sound = useAudio({
-  cries: { src: "/effects/cries.wav", sprites: criesSpritesheet },
-  supereffective: { src: "/effects/supereffective.mp3" },
-  ineffective: { src: "/effects/ineffective.mp3" },
-  neutral: { src: "/effects/neutral.mp3" },
+  cries: {src: "/effects/cries.wav", sprites: criesSpritesheet},
+  supereffective: {src: "/effects/supereffective.mp3"},
+  ineffective: {src: "/effects/ineffective.mp3"},
+  neutral: {src: "/effects/neutral.mp3"},
+  shiny: {src: "/effects/shiny.mp3"},
 });
 
 useIntervalFn(() => {
@@ -305,7 +339,7 @@ watch(
   () => options,
   options => {
     if (options && activeInTeam.value) {
-      for (const { pp, indexInMoves } of options.moves) {
+      for (const {pp, indexInMoves} of options.moves) {
         if (indexInMoves !== undefined && pp !== undefined) {
           activeInTeam.value.pp[indexInMoves] = pp;
         }
@@ -347,7 +381,7 @@ watch(perspective, () => {
 
 const selectMove = (index: number) => {
   selectionText.value = `${players[myId.value].active!.name} will use ${
-    moveList[options!.moves[index].move].name
+    gen.value.moveList[options!.moves[index].move].name
   }`;
 
   emit("move", index);
@@ -375,20 +409,31 @@ const timeLeft = () => {
   return timer ? Math.floor((timer.startedAt + timer.duration - Date.now()) / 1000) : 1000;
 };
 
+const handleVolatiles = (e: BattleEvent) => {
+  if (e.volatiles) {
+    for (const {v, id} of e.volatiles) {
+      players[id].active!.v = mergeVolatiles(v, players[id].active!.v) as ClientVolatiles;
+      if (id === myId.value) {
+        activeInTeam.value!.status = players[id].active!.v.status;
+      }
+    }
+  }
+};
+
 const runTurn = async (live: boolean, turnIdx: number) => {
   const isLive = () => live && skippingToTurn.value <= turnIdx && isMounted.value;
 
   const playCry = (speciesId: SpeciesId, pitchDown = false) => {
     if (isLive()) {
-      const sprite = speciesList[speciesId].dexId.toString().padStart(3, "0");
-      return sound.play("cries", { sprite, volume: sfxVol.value, detune: pitchDown ? -350 : 0 });
+      const sprite = gen.value.speciesList[speciesId].dexId.toString().padStart(3, "0");
+      return sound.play("cries", {sprite, volume: sfxVol.value, detune: pitchDown ? -350 : 0});
     }
   };
 
   const playDmg = (eff: number) => {
     if (isLive()) {
       const name = eff > 1 ? "supereffective" : eff < 1 ? "ineffective" : "neutral";
-      return sound.play(name, { volume: sfxVol.value });
+      return sound.play(name, {volume: sfxVol.value});
     }
   };
 
@@ -399,7 +444,7 @@ const runTurn = async (live: boolean, turnIdx: number) => {
         cb();
       }
 
-      if (anim === "faint" && component) {
+      if ((anim === "faint" || anim === "retract") && component) {
         component.reset(false);
       } else if (anim === "sendin" && component) {
         component.reset(true);
@@ -410,11 +455,11 @@ const runTurn = async (live: boolean, turnIdx: number) => {
   };
 
   const pushEvent = (e: RawUIBattleEvent) => {
-    const ev = { ...e, time: Date.now() } as UIBattleEvent;
+    const ev = {...e, time: Date.now()} as UIBattleEvent;
     if ("src" in ev) {
       ev[ev.src] = players[ev.src].active!.name;
     }
-    if ("target" in ev) {
+    if ("target" in ev && ev.target) {
       ev[ev.target] = players[ev.target].active!.name;
     }
 
@@ -428,19 +473,21 @@ const runTurn = async (live: boolean, turnIdx: number) => {
     if (e.type === "switch") {
       const player = players[e.src];
       if (player.active) {
-        if (!player.active.fainted) {
-          pushEvent({ type: "retract", src: e.src, name: player.active.name });
-          await playAnimation(e.src, "retract", player.active.name);
+        if (!player.active.fainted && e.why !== "baton_pass") {
+          if (e.why !== "phaze") {
+            pushEvent({type: "retract", src: e.src, name: player.active.name});
+          }
+          await playAnimation(e.src, e.why === "phaze" ? "phaze" : "retract", player.active.name);
         }
 
         // preload the image
         player.active!.speciesId = e.speciesId;
+        player.active!.shiny = e.shiny;
       } else {
         player.active = {
           speciesId: e.speciesId,
           hidden: true,
-          stages: {},
-          flags: {},
+          v: {stages: {}},
           fainted: true,
           name: "",
           hpPercent: 0,
@@ -449,24 +496,24 @@ const runTurn = async (live: boolean, turnIdx: number) => {
       }
 
       pushEvent(e);
-      await playAnimation(e.src, "sendin", e.name, () => {
-        player.active = { ...e, stages: {}, flags: {}, fainted: false };
-        if (e.src === myId.value) {
-          if (activeInTeam.value?.status === "tox") {
-            activeInTeam.value.status = "psn";
-          }
 
+      await playAnimation(e.src, "sendin", e.name, () => {
+        player.active = {...e, v: {stages: {}}, fainted: false};
+        if (e.src === myId.value) {
           activeIndex.value = e.indexInTeam;
           activeInTeam.value!.hp = e.hp!;
-          player.active.stats = undefined;
         }
-        playCry(e.speciesId);
+        handleVolatiles(e);
+        playCry(e.speciesId)?.then(() => {
+          if (e.shiny) {
+            return sound.play("shiny", {volume: sfxVol.value});
+          }
+        });
       });
       return;
     } else if (e.type === "damage" || e.type === "recover") {
       const update = () => {
         players[e.target].active!.hpPercent = e.hpPercentAfter;
-        players[e.target].active!.fainted = e.dead;
 
         const ev = e as UIDamageEvent | UIRecoverEvent;
         if (e.target === myId.value) {
@@ -474,6 +521,9 @@ const runTurn = async (live: boolean, turnIdx: number) => {
           ev.maxHp = activeInTeam.value!.stats.hp;
         }
 
+        if (e.why !== "substitute") {
+          handleVolatiles(ev);
+        }
         if (e.why !== "explosion" || (e.eff ?? 1) !== 1) {
           pushEvent(ev);
         }
@@ -487,140 +537,94 @@ const runTurn = async (live: boolean, turnIdx: number) => {
         });
       } else {
         update();
-        if (e.why === "confusion") {
+        if (e.why === "confusion" || e.why === "sandstorm" || e.why === "future_sight") {
           await playDmg(e.eff ?? 1);
         }
       }
 
       if (e.why === "substitute") {
-        pushEvent({ type: "get_sub", src: e.target });
+        pushEvent({type: "get_sub", src: e.target});
         await playAnimation(e.target, "get_sub", undefined, () => {
-          players[e.target].active!.flags.substitute = true;
+          handleVolatiles(e);
         });
       }
 
-      if (e.dead) {
-        if (isLive()) {
-          await delay(250);
-        }
-
-        playCry(players[e.target].active!.speciesId, true);
-        pushEvent({ type: "faint", src: e.target });
-        await playAnimation(e.target, "faint");
+      return;
+    } else if (e.type === "info") {
+      if (e.why === "faint") {
+        playCry(players[e.src].active!.speciesId, true);
+        pushEvent(e);
+        await playAnimation(e.src, "faint");
         if (isLive()) {
           await delay(400);
         }
-        players[e.target].nFainted++;
-      }
 
-      if (e.why === "rest") {
-        players[e.target].active!.status = "slp";
-        if (e.target === myId.value) {
-          activeInTeam.value!.status = "slp";
+        players[e.src].active!.fainted = true;
+        players[e.src].nFainted++;
+        return;
+      } else if (e.why === "heal_bell") {
+        if (e.src === myId.value && team) {
+          team.forEach(poke => (poke.status = undefined));
         }
-      }
-      return;
-    } else if (e.type === "status") {
-      players[e.src].active!.status = e.status;
-      if (e.src === myId.value) {
-        players[e.src].active!.stats = e.stats;
-        activeInTeam.value!.status = e.status;
-      }
-    } else if (e.type === "stages") {
-      if (isBattler.value) {
-        players[myId.value].active!.stats = e.stats;
-      }
-
-      const active = players[e.src].active!;
-      for (const [stat, val] of e.stages) {
-        active.stages[stat] = clamp((active.stages[stat] ?? 0) + val, -6, 6);
+      } else if (e.why === "spikes") {
+        const opp = Object.keys(players).filter(id => id !== e.src && !players[id].isSpectator)[0];
+        await playAnimation(opp, "spikes", undefined, () => {
+          sides[e.src] ??= {};
+          sides[e.src].spikes = true;
+        });
+      } else if (e.why === "spin_spikes") {
+        sides[e.src] ??= {};
+        sides[e.src].spikes = false;
       }
     } else if (e.type === "transform") {
       const target = players[e.target].active!;
       const src = players[e.src].active!;
       src.transformed = target.transformed ?? target.speciesId;
-      src.stages = { ...target.stages };
-    } else if (e.type === "info") {
-      const enableFlag: Partial<Record<InfoReason, ClientVolatileFlag>> = {
-        became_confused: "confused",
-        confused: "confused", // thrash, petal dance
-        light_screen: "light_screen",
-        reflect: "reflect",
-        seeded: "seeded",
-        focus: "focus",
-        mist: "mist",
-      };
-
-      if (e.why === "haze") {
-        for (const player in players) {
-          const active = players[player].active;
-          if (!active) {
-            continue;
-          }
-
-          if (player === e.src && active.status === "tox") {
-            active.status = "psn";
-            if (player === myId.value) {
-              activeInTeam.value!.status = "psn";
-            }
-          } else if (player !== e.src) {
-            active.status = undefined;
-            if (player === myId.value) {
-              activeInTeam.value!.status = undefined;
-            }
-          }
-
-          active.stages = {};
-          active.flags.confused = false;
-          active.flags.reflect = false;
-          active.flags.light_screen = false;
-          active.flags.focus = false;
-          active.flags.mist = false;
-          active.flags.seeded = false;
-          active.flags.disabled = false;
-        }
-
-        if (isBattler.value) {
-          players[myId.value].active!.stats = undefined;
-        }
-      } else if (e.why === "wake" || e.why === "thaw") {
-        players[e.src].active!.status = undefined;
-        if (e.src === myId.value) {
-          activeInTeam.value!.status = undefined;
-        }
-      } else if (e.why === "disable_end") {
-        players[e.src].active!.flags.disabled = false;
-      } else if (e.why === "confused_end") {
-        players[e.src].active!.flags.confused = false;
-      } else if (enableFlag[e.why]) {
-        players[e.src].active!.flags[enableFlag[e.why]!] = true;
-      } else if (e.why === "paralyze") {
-        players[e.src].active!.charging = undefined;
-      }
-    } else if (e.type === "conversion") {
-      players[e.user].active!.conversion = e.types;
-    } else if (e.type === "end") {
-      victor.value = e.victor ?? "draw";
     } else if (e.type === "hit_sub") {
       await playAnimation(e.src, "bodyslam", undefined, () => {
         pushEvent(e);
         playDmg(e.eff ?? 1);
       });
       if (e.broken) {
-        pushEvent({ type: "sub_break", target: e.target });
+        pushEvent({type: "sub_break", target: e.target});
         await playAnimation(e.target, "lose_sub", undefined, () => {
-          players[e.target].active!.flags.substitute = false;
+          handleVolatiles(e);
         });
       }
       return;
-    } else if (e.type === "disable") {
-      players[e.src].active!.flags.disabled = true;
-    } else if (e.type === "charge") {
-      players[e.src].active!.charging = e.move;
-    } else if (e.type === "move") {
-      players[e.src].active!.charging = undefined;
+    } else if (e.type === "end") {
+      victor.value = e.victor ?? "draw";
+    } else if (e.type === "weather") {
+      if (e.kind === "start") {
+        weather.value = e.weather;
+      } else if (e.kind === "end") {
+        weather.value = undefined;
+      }
+    } else if (e.type === "item") {
+      if (e.src === myId.value) {
+        activeInTeam.value!.item = undefined;
+      }
+    } else if (e.type === "screen") {
+      sides[e.src] ??= {};
+      sides[e.src].screens ??= {};
+      sides[e.src].screens![e.screen] = e.kind === "start";
+    } else if (e.type === "thief") {
+      if (e.src === myId.value) {
+        activeInTeam.value!.item = e.item;
+      }
+      if (e.target === myId.value) {
+        activeInTeam.value!.item = undefined;
+      }
+    } else if (e.type === "baton_pass") {
+      handleVolatiles(e);
+      await playAnimation(e.src, "retract", players[e.src].active!.name);
+      return;
     }
-    pushEvent(e);
+
+    handleVolatiles(e);
+    if (e.type !== "sv") {
+      pushEvent(e);
+    }
   };
 
   liveEvents.value.length = 0;
@@ -635,8 +639,8 @@ const runTurn = async (live: boolean, turnIdx: number) => {
   htmlTurns.value.push([[], turn.switchTurn, currentTurnNo.value]);
   for (const e of turn.events) {
     await handleEvent(e);
-    if (isLive()) {
-      await delay(250);
+    if (isLive() && e.type !== "sv") {
+      await delay(e.type === "weather" && e.kind === "continue" ? 450 : 250);
     }
   }
 
@@ -747,5 +751,5 @@ const onConnect = async (startAt?: number) => {
   onTurnsReceived(turns.length - currentTurn);
 };
 
-defineExpose({ onTurnsReceived, onConnect });
+defineExpose({onTurnsReceived, onConnect});
 </script>
