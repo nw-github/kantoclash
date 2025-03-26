@@ -238,7 +238,7 @@ const enterMatchmaking = () => {
 
   findingMatch.value = true;
 
-  const team = selectedTeam.value ? selectedTeam.value.pokemon.map(convertDesc) : undefined;
+  const team = selectedTeam.value && convertTeam(selectedTeam.value);
   $conn.emit(
     "enterMatchmaking",
     team,
@@ -251,7 +251,7 @@ const enterMatchmaking = () => {
 const respondToChallenge = (accept: boolean, challenge: Challenge, selected?: Team) => {
   acceptingChallenge.value = true;
 
-  const team = accept && selected ? selected.pokemon.map(convertDesc) : undefined;
+  const team = accept && selected ? convertTeam(selected) : undefined;
   $conn.emit("respondToChallenge", challenge.from.id, accept, team, (err, problems) => {
     acceptingChallenge.value = false;
     let idx;

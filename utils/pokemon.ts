@@ -1,9 +1,9 @@
 import {moveList, type MoveId, type Move} from "~/game/moves";
 import {speciesList, type SpeciesId} from "~/game/species";
 import {statKeys, type Stats} from "~/game/utils";
-import {battleFormats} from "./shared";
+import {battleFormats, formatInfo} from "./shared";
 import type {PokemonDesc} from "~/game/pokemon";
-import type {Generation} from "~/game/gen";
+import {GENERATIONS, type Generation} from "~/game/gen";
 
 type WithRequired<T, K extends keyof T> = T & {[P in K]-?: T[P]};
 
@@ -201,7 +201,7 @@ export const parseTeams = (src: string) => {
   return teams;
 };
 
-export const convertDesc = (desc: PokemonDesc): PokemonDesc => {
+export const convertDesc = (gen: Generation, desc: PokemonDesc): PokemonDesc => {
   const species = normalizeName(desc.species);
   const moves: string[] = [];
   for (const move of desc.moves) {
@@ -211,7 +211,7 @@ export const convertDesc = (desc: PokemonDesc): PokemonDesc => {
   }
 
   let item = desc.item && normalizeName(desc.item);
-  if (!item) {
+  if (!item || gen.id === 1) {
     item = undefined;
   }
 
@@ -226,6 +226,14 @@ export const convertDesc = (desc: PokemonDesc): PokemonDesc => {
     }
   }
   return {evs, ivs, moves, level: desc.level ?? 100, name: desc.name, species, item};
+};
+
+export const convertTeam = (team: Team) => {
+  const gen = GENERATIONS[formatInfo[team.format].generation];
+  if (!gen) {
+    return [];
+  }
+  return team.pokemon.map(poke => convertDesc(gen, poke));
 };
 
 export const normalizeName = (v: string) => v.trim().toLowerCase().replaceAll(ignoreChars, "");

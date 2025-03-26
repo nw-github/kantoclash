@@ -7,7 +7,7 @@ import {type ClientVolatiles, type FormatId, formatInfo, mergeVolatiles} from "~
 import {Pokemon} from "~/game/pokemon";
 import {getEffectiveness, VF} from "~/game/utils";
 import random from "random";
-import {convertDesc, parseTeams, type Team} from "~/utils/pokemon";
+import {convertTeam, parseTeams, type Team} from "~/utils/pokemon";
 import type {MoveId} from "~/game/moves";
 import {type Generation, GENERATIONS} from "~/game/gen";
 import type {ClientPlayer} from "~/utils/client";
@@ -270,7 +270,7 @@ export function createBotTeam(format: FormatId) {
   if (formatInfo[format].needsTeam) {
     const team = random.choice(teams.filter(team => team.format === format));
     if (team) {
-      return team.pokemon.map(convertDesc);
+      return convertTeam(team);
     } else {
       const gen = GENERATIONS[formatInfo[format].generation]!;
       return randoms(gen, s => format.includes("nfe") === !!s.evolvesTo);
