@@ -567,8 +567,11 @@ const runTurn = async (live: boolean, turnIdx: number) => {
           team.forEach(poke => (poke.status = undefined));
         }
       } else if (e.why === "spikes") {
-        sides[e.src] ??= {};
-        sides[e.src].spikes = true;
+        const opp = Object.keys(players).filter(id => id !== e.src && !players[id].isSpectator)[0];
+        await playAnimation(opp, "spikes", undefined, () => {
+          sides[e.src] ??= {};
+          sides[e.src].spikes = true;
+        });
       } else if (e.why === "spin_spikes") {
         sides[e.src] ??= {};
         sides[e.src].spikes = false;
@@ -591,11 +594,6 @@ const runTurn = async (live: boolean, turnIdx: number) => {
       return;
     } else if (e.type === "end") {
       victor.value = e.victor ?? "draw";
-    } else if (e.type === "move" && e.move === "batonpass") {
-      pushEvent(e);
-      handleVolatiles(e);
-      await playAnimation(e.src, "retract", players[e.src].active!.name);
-      return;
     } else if (e.type === "weather") {
       if (e.kind === "start") {
         weather.value = e.weather;
@@ -617,6 +615,10 @@ const runTurn = async (live: boolean, turnIdx: number) => {
       if (e.target === myId.value) {
         activeInTeam.value!.item = undefined;
       }
+    } else if (e.type === "baton_pass") {
+      handleVolatiles(e);
+      await playAnimation(e.src, "retract", players[e.src].active!.name);
+      return;
     }
 
     handleVolatiles(e);

@@ -1380,6 +1380,7 @@ const internalMoveList = createMoveList({
       }
 
       user.v.inBatonPass = true;
+      battle.event({type: "baton_pass", src: user.owner.id});
     },
   },
   bellydrum: {

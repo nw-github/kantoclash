@@ -154,16 +154,36 @@
 
       <div
         ref="ground"
-        class="absolute bottom-4 sm:bottom-8 bg-gray-200 dark:bg-gray-600 h-10 w-20 sm:h-16 sm:w-40 rounded-[100%]"
+        class="ground absolute bottom-4 sm:bottom-8 bg-gray-200 dark:bg-gray-600 h-10 w-20 sm:h-16 sm:w-40 rounded-[100%]"
+        :class="{back, front: !back}"
       />
 
       <img
         v-if="side?.spikes"
-        class="absolute size-8 bottom-10 sm:bottom-14 opacity-80"
+        class="absolute size-7 bottom-10 sm:bottom-14 opacity-80"
         src="/caltrop.svg"
       />
 
-      <div ref="pokeBall" class="pokeball absolute size-[42px] z-10 opacity-0" />
+      <div
+        ref="pokeBall"
+        class="pokeball absolute size-[42px] z-10 opacity-0 scale-50 sm:scale-100"
+      />
+
+      <img
+        ref="caltrop1"
+        class="absolute bottom-4 sm:bottom-8 size-7 opacity-0"
+        src="/caltrop.svg"
+      />
+      <img
+        ref="caltrop2"
+        class="absolute bottom-4 sm:bottom-8 size-7 opacity-0"
+        src="/caltrop.svg"
+      />
+      <img
+        ref="caltrop3"
+        class="absolute bottom-4 sm:bottom-8 size-7 opacity-0"
+        src="/caltrop.svg"
+      />
     </div>
   </div>
 </template>
@@ -177,28 +197,12 @@
   transition: width 0.5s, background-color 0.5s;
 }
 
-.status {
-  background-color: v-bind("poke?.v.status ? statusColor[poke.v.status] : 'transparent'");
-}
-
-.down {
-  background-color: var(--stat-down);
-}
-
-.up {
-  background-color: var(--stat-up);
-}
-
 .pokeball {
   background: url("/sprites/pokeballs.png") v-bind("offsX(pbCol)") v-bind("offsY(pbRow)");
 
   image-rendering: pixelated;
   image-rendering: -moz-crisp-edges;
   image-rendering: crisp-edges;
-
-  @media (max-width: theme("screens.sm")) {
-    scale: 0.5;
-  }
 }
 
 .screens-move,
@@ -293,6 +297,11 @@ const screens = computed(() => {
 
 const offsX = (number: number) => `-${number * 42 - number}px`;
 const offsY = (number: number) => `-${number * 42 - number * 2}px`;
+const relativePos = (src: DOMRect, x: number, y: number) => [x - src.left, y - src.top];
+
+const caltrop1 = ref<HTMLImageElement>();
+const caltrop2 = ref<HTMLImageElement>();
+const caltrop3 = ref<HTMLImageElement>();
 
 /*
 "red" | "pink" | "emerald" | "teal" | "lime" | "gray" | "black" | "sky" | "white" | "green" |
@@ -334,6 +343,30 @@ export type AnimationType =
 
 const rem = (rem: number) => parseFloat(getComputedStyle(document.documentElement).fontSize) * rem;
 
+const arcTo = (
+  self: Element,
+  other: Element,
+  duration: number,
+  height = 50,
+  offs?: [number, number],
+) => {
+  const myRect = self.getBoundingClientRect();
+  const otherRect = other.getBoundingClientRect();
+
+  const [x, y] = relativePos(myRect, otherRect.x, otherRect.y);
+  const midYRel = otherRect.top < myRect.top ? y - height : -height;
+  const xOffs = offs?.[0] ?? 0;
+  const yOffs = offs?.[1] ?? 0;
+
+  return {
+    translateX: {value: x + xOffs, duration, easing: "linear"},
+    translateY: [
+      {value: midYRel, duration: duration * (3 / 4), easing: "easeOutQuart"},
+      {value: y + yOffs, duration: duration / 4, easing: "easeInQuart"},
+    ],
+  };
+};
+
 let timeline: anime.AnimeTimelineInstance | undefined;
 const playAnimation = (anim: AnimationType, name?: string, cb?: () => void) => {
   return new Promise<void>(resolve => {
@@ -341,8 +374,6 @@ const playAnimation = (anim: AnimationType, name?: string, cb?: () => void) => {
     if (!sprite.value || !pokeBall.value) {
       return;
     }
-
-    const relativePos = (src: DOMRect, x: number, y: number) => [x - src.left, y - src.top];
 
     pbCol.value = name ? [...name].reduce((acc, x) => x.charCodeAt(0) + acc, 0) % 17 : 3;
 
@@ -506,24 +537,54 @@ const playAnimation = (anim: AnimationType, name?: string, cb?: () => void) => {
           resolve();
         },
       });
+    } else if (anim === "spikes") {
+      const other = document.querySelector<HTMLDivElement>(`.ground${back ? ".front" : ".back"}`)!;
+      const sprites = [caltrop1.value!, caltrop2.value!, caltrop3.value!];
+
+      let delay = 0;
+      for (let i = 0; i < sprites.length; i++) {
+        const duration = 250;
+        let xOffs = [0, -30, 30][i];
+        if (i !== 0) {
+          xOffs += Math.sign(xOffs) * Math.random() * 20;
+        }
+
+        const caltrop = sprites[i];
+        const params: anime.AnimeParams = {
+          targets: caltrop,
+          ...arcTo(caltrop, other, duration, Math.random() * 20 + 50, [
+            other.getBoundingClientRect().width / 2 + xOffs,
+            20,
+          ]),
+          opacity: {value: 1, duration: 0},
+          complete: () => {
+            useAnime({
+              targets: caltrop,
+              opacity: [{value: 1, duration: 250}, {value: 0}],
+              complete: () => useAnime.set(caltrop, {translateX: 0, translateY: 0, opacity: 0}),
+            });
+
+            if (i === 0 && cb) {
+              cb();
+            } else if (i === 2) {
+              resolve();
+            }
+          },
+        };
+
+        timeline.add(params, delay);
+
+        delay += 80;
+      }
     } else if (gen.moveList[anim].kind !== "damage") {
       return resolve();
     } else {
-      const sprRect = sprite.value.getBoundingClientRect();
-      const oppRect = other.getBoundingClientRect();
-
-      const [x, y] = relativePos(sprRect, oppRect.x, oppRect.y);
-      const midYRel = oppRect.top < sprRect.top ? y - 50 : -50;
       const duration = 240;
       let ran = false;
       timeline.direction = "alternate";
       timeline.add({
         targets: sprite.value,
-        translateX: {value: x, duration, easing: "linear"},
-        translateY: [
-          {value: midYRel, duration: duration * (3 / 4), easing: "easeOutQuart"},
-          {value: y, duration: duration * (1 / 4), easing: "easeInQuart"},
-        ],
+        ...arcTo(sprite.value, other, duration),
         loopComplete: () => {
           if (!ran && cb) {
             cb();

@@ -35,7 +35,8 @@ type AnyEvent =
   | UseItemEvent
   | RestorePPEvent
   | ThiefEvent
-  | ForfeitEvent;
+  | ForfeitEvent
+  | BatonPass;
 
 export type ChangedVolatiles = {id: PlayerId; v: NullOrOptional<ClientVolatiles>}[];
 
@@ -271,3 +272,5 @@ type ForfeitEvent = {
   user: PlayerId;
   timer: boolean;
 };
+
+type BatonPass = {type: "baton_pass"; src: PlayerId};
