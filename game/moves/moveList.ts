@@ -1382,71 +1382,6 @@ const internalMoveList = createMoveList({
       user.v.inBatonPass = true;
     },
   },
-  beatup: {
-    name: "Beat Up",
-    pp: 10,
-    type: "dark",
-    power: 10,
-    acc: 100,
-    protect: true,
-    kingsRock: true,
-    exec(battle, user, target) {
-      if (!battle.checkAccuracy(this, user, target)) {
-        return;
-      }
-
-      let failed = true,
-        endured = false,
-        focusBand = false;
-      for (const poke of user.owner.team) {
-        if (poke.status || !poke.hp) {
-          continue;
-        }
-
-        failed = false;
-        const isCrit = battle.gen.tryCrit(battle, user, false);
-        let dmg = battle.gen.calcDamage({
-          pow: this.power,
-          atk: poke.stats.atk,
-          def: target.base.stats.def,
-          lvl: poke.level,
-          eff: 1,
-          isCrit,
-          isStab: false,
-          rand: battle.rng,
-        });
-
-        const deadly = dmg > 0 && dmg > target.base.hp;
-        endured = deadly && target.v.hasFlag(VF.endure);
-        focusBand =
-          !endured && user.base.item === "focusband" && battle.gen.rng.tryFocusBand(battle);
-        if (endured || focusBand) {
-          dmg = Math.max(target.base.hp - 1, 0);
-        }
-
-        battle.event({type: "beatup", name: poke.name});
-        if (target.damage2(battle, {dmg, src: user, why: "attacked", isCrit}).dead) {
-          break;
-        }
-      }
-
-      if (endured) {
-        battle.info(target, "endure_hit");
-      } else if (focusBand) {
-        battle.info(target, "endure_band");
-      }
-
-      if (failed) {
-        battle.info(user, "fail_generic");
-      }
-
-      // BUG GEN2:
-      // https://pret.github.io/pokecrystal/bugs_and_glitches.html#beat-up-may-trigger-kings-rock-even-if-it-failed
-      if (user.base.item === "kingsrock" && battle.gen.rng.tryKingsRock(battle)) {
-        target.v.flinch = true;
-      }
-    },
-  },
   bellydrum: {
     name: "Belly Drum",
     pp: 10,
@@ -1623,28 +1558,6 @@ const internalMoveList = createMoveList({
           target.owner.sleepClausePoke = undefined;
         }
       });
-    },
-  },
-  mirrorcoat: {
-    kind: "damage",
-    name: "Mirror Coat",
-    power: 0,
-    pp: 20,
-    type: "psychic",
-    acc: 100,
-    priority: -1,
-    noMetronome: true,
-    kingsRock: true,
-    getDamage(battle, user, target) {
-      if (
-        !user.v.retaliateDamage ||
-        !target.v.lastMove ||
-        !isSpecial(target.v.lastMove.type) ||
-        target.v.lastMove === battle.gen.moveList.beatup
-      ) {
-        return false;
-      }
-      return user.v.retaliateDamage * 2;
     },
   },
   nightmare: {
@@ -1988,6 +1901,16 @@ const internalMoveList = createMoveList({
     // prettier-ignore
     effect: [10, [["atk", +1], ["def", +1], ["spa", +1], ["spd", +1], ["spe", +1]], true],
   },
+  beatup: {
+    kind: "damage",
+    name: "Beat Up",
+    pp: 10,
+    type: "dark",
+    power: 10,
+    acc: 100,
+    kingsRock: true,
+    flag: "beatup",
+  },
   bonerush: {
     kind: "damage",
     name: "Bone Rush",
@@ -2195,6 +2118,28 @@ const internalMoveList = createMoveList({
     power: 50,
     acc: 95,
     effect: [10, [["atk", +1]], true],
+  },
+  mirrorcoat: {
+    kind: "damage",
+    name: "Mirror Coat",
+    power: 0,
+    pp: 20,
+    type: "psychic",
+    acc: 100,
+    priority: -1,
+    noMetronome: true,
+    kingsRock: true,
+    getDamage(battle, user, target) {
+      if (
+        !user.v.retaliateDamage ||
+        !target.v.lastMove ||
+        !isSpecial(target.v.lastMove.type) ||
+        target.v.lastMove === battle.gen.moveList.beatup
+      ) {
+        return false;
+      }
+      return user.v.retaliateDamage * 2;
+    },
   },
   mudslap: {
     kind: "damage",

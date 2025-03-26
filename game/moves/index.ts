@@ -166,4 +166,5 @@ type Flag =
   | "fury_cutter"
   | "rollout"
   | "minimize"
-  | "present";
+  | "present"
+  | "beatup";

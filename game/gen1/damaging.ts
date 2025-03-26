@@ -3,6 +3,7 @@ import {idiv, isSpecial, randChoiceWeighted, VF} from "../utils";
 import type {Random} from "random";
 import type {CalcDamageParams} from "../gen";
 import type {DamagingMove} from "../moves";
+import type {Pokemon} from "../pokemon";
 
 export function use(
   this: DamagingMove,
@@ -62,7 +63,7 @@ export function exec(
     user.v.thrashing.max = user.v.thrashing.turns == 3;
   } else if (this.flag === "bide") {
     if (!user.v.bide) {
-      user.v.bide = {move: this, turns: battle.rng.int(2, 3), dmg: 0};
+      user.v.bide = {move: this, turns: battle.rng.int(2, 3) + 1, dmg: 0};
       return;
     }
 
@@ -279,8 +280,13 @@ export function getDamage(
   target: ActivePokemon,
   tripleKick = 1,
   band = false,
+  beatUp?: Pokemon,
 ) {
-  const type = self.getType ? self.getType(user.base) : self.type;
+  let type = self.getType ? self.getType(user.base) : self.type;
+  if (beatUp) {
+    type = "???";
+  }
+
   let pow = self.getPower ? self.getPower(user.base) : self.power;
   let eff = battle.getEffectiveness(type, target);
   const realEff = eff;
@@ -351,7 +357,9 @@ export function getDamage(
     }
 
     const explosion = self.flag === "explosion" ? 2 : 1;
-    const [atk, def] = battle.gen.getDamageVariables(isSpecial(type), user, target, isCrit);
+    const [atk, def] = beatUp
+      ? ([beatUp.stats.atk, target.base.stats.def] as const)
+      : battle.gen.getDamageVariables(isSpecial(type), user, target, isCrit);
     let moveMod = 1;
     if (self.flag === "rollout") {
       moveMod = 2 ** (user.v.rollout + +user.v.usedDefenseCurl);
@@ -363,7 +371,7 @@ export function getDamage(
     }
 
     dmg = battle.gen.calcDamage({
-      lvl: user.base.level,
+      lvl: beatUp ? beatUp.level : user.base.level,
       pow,
       atk,
       def: Math.max(Math.floor(def / explosion), 1),

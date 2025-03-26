@@ -29,7 +29,7 @@ export function exec(
     user.v.furyCutter++;
   } else if (this.flag === "bide") {
     if (!user.v.bide) {
-      user.v.bide = {move: this, turns: battle.rng.int(2, 3), dmg: 0};
+      user.v.bide = {move: this, turns: battle.rng.int(2, 3) + 1, dmg: 0};
       return;
     }
 
@@ -61,6 +61,9 @@ export function exec(
     user.v.rollout = 0;
     user.v.furyCutter = 0;
     battle.info(target, "immune");
+    if (this.flag === "explosion") {
+      user.damage(user.base.hp, user, battle, false, "explosion", true);
+    }
     return checkThrashing();
   } else if (fail) {
     user.v.rollout = 0;
@@ -88,23 +91,38 @@ export function exec(
 
   target.v.lastHitBy = this;
 
-  let hadSub = target.v.substitute !== 0;
-  // eslint-disable-next-line prefer-const
-  let {dealt, dead, event} = target.damage(
-    dmg,
-    user,
-    battle,
-    isCrit,
-    this.flag === "ohko" ? "ohko" : "attacked",
-    false,
-    eff,
-  );
+  let hadSub = target.v.substitute !== 0,
+    dealt = 0,
+    dead = false,
+    event;
+  if (this.flag !== "beatup") {
+    ({dealt, dead, event} = target.damage(
+      dmg,
+      user,
+      battle,
+      isCrit,
+      this.flag === "ohko" ? "ohko" : "attacked",
+      false,
+      eff,
+    ));
+  } else {
+    for (const poke of user.owner.team) {
+      if (poke.status || !poke.hp) {
+        continue;
+      }
 
-  checkThrashing();
-  if (this.flag === "multi" || this.flag === "double") {
-    event.hitCount = 1;
+      battle.event({type: "beatup", name: poke.name});
+
+      hadSub = target.v.substitute !== 0;
+      ({dmg, isCrit, endured, band} = getDamage(this, battle, user, target, undefined, band, poke));
+      ({dead, event} = target.damage2(battle, {dmg, src: user, why: "attacked", isCrit}));
+      if (dead) {
+        break;
+      }
+    }
   }
 
+  checkThrashing();
   if (this.recoil) {
     user.damage(Math.max(Math.floor(dealt / this.recoil), 1), user, battle, false, "recoil", true);
   }
@@ -112,6 +130,7 @@ export function exec(
   if (this.flag === "drain" || this.flag === "dream_eater") {
     user.recover(Math.max(Math.floor(dealt / 2), 1), target, battle, "drain");
   } else if (this.flag === "explosion") {
+    // Explosion into destiny bond, who dies first?
     dead = user.damage(user.base.hp, user, battle, false, "explosion", true).dead || dead;
   } else if (this.flag === "double" || this.flag === "triple" || this.flag === "multi") {
     const counts = {
@@ -119,7 +138,7 @@ export function exec(
       triple: battle.rng.int(1, 3),
       multi: multiHitCount(battle.rng),
     };
-    event.hitCount = 1;
+    event!.hitCount = 1;
 
     const count = counts[this.flag];
     for (let hits = 1; !dead && !endured && hits < count; hits++) {
@@ -133,7 +152,7 @@ export function exec(
         band,
       ));
 
-      event.hitCount = 0;
+      event!.hitCount = 0;
       ({dead, event} = target.damage(dmg, user, battle, isCrit, "attacked", false, eff));
       event.hitCount = hits + 1;
     }
@@ -182,6 +201,8 @@ export function exec(
     return;
   }
 
+  // BUG GEN2:
+  // https://pret.github.io/pokecrystal/bugs_and_glitches.html#beat-up-may-trigger-kings-rock-even-if-it-failed
   if (
     user.base.item === "kingsrock" &&
     this.kingsRock &&
@@ -189,6 +210,11 @@ export function exec(
     battle.gen.rng.tryKingsRock(battle)
   ) {
     target.v.flinch = true;
+  }
+
+  if (!event) {
+    // beat up failure
+    battle.info(user, "fail_generic");
   }
 
   if (this.flag === "trap") {
