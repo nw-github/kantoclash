@@ -3,12 +3,6 @@
 </template>
 
 <style scoped>
-@import url("/assets/box-sprites.css");
-
-.pokesprite {
-  background-repeat: no-repeat;
-}
-
 img {
   image-rendering: pixelated;
   image-rendering: -moz-crisp-edges;

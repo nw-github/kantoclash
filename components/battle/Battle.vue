@@ -637,7 +637,7 @@ const runTurn = async (live: boolean, turnIdx: number) => {
   htmlTurns.value.push([[], turn.switchTurn, currentTurnNo.value]);
   for (const e of turn.events) {
     await handleEvent(e);
-    if (isLive()) {
+    if (isLive() && e.type !== "sv") {
       await delay(e.type === "weather" && e.kind === "continue" ? 450 : 250);
     }
   }

@@ -1,5 +1,4 @@
 import tailwindColors from "tailwindcss/colors";
-import type {Status} from "~/game/pokemon";
 import type {Type} from "~/game/utils";
 
 export const typeColor: Record<Type, string> = {
@@ -23,14 +22,14 @@ export const typeColor: Record<Type, string> = {
   steel: "#598DA0",
 };
 
-export const statusColor: Record<Status, string> = {
-  psn: "#E879F9",
-  tox: "#E879F9",
-  brn: "#FB923C",
-  frz: "#8bb4e6",
-  slp: "#a4a48b",
-  par: "#F59E0B",
-};
+export const statusColor = {
+  brn: "orange",
+  psn: "fuchsia",
+  tox: "fuchsia",
+  frz: "sky",
+  par: "amber",
+  slp: "gray",
+} as const;
 
 const lerp = (a: number, b: number, t: number) => a * (1 - t) + b * t;
 

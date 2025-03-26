@@ -15,7 +15,7 @@ div {
 }
 
 span {
-  transform: scale(var(--scale)) translateY(v-bind("scale ? '25%' : '0%'"));
+  transform: scale(var(--scale));
 }
 </style>
 

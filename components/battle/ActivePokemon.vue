@@ -1,7 +1,7 @@
 <template>
   <div class="w-full flex flex-col items-center">
     <div
-      class="w-11/12 sm:w-3/4 flex flex-col gap-0.5 sm:gap-1 text-sm z-30"
+      class="w-11/12 sm:w-3/4 flex flex-col gap-0.5 sm:gap-1 text-sm z-40"
       :class="{invisible: !poke || poke.hidden}"
     >
       <div class="flex justify-between flex-col sm:flex-row">
@@ -18,7 +18,17 @@
       </div>
       <div class="relative">
         <div v-if="poke" class="flex gap-1 flex-wrap absolute *:px-[0.2rem] *:py-[0.1rem]">
-          <UBadge v-if="poke.transformed" color="black">Transformed</UBadge>
+          <UBadge v-if="poke.transformed" color="black" label="Transformed" variant="subtle" />
+
+          <UBadge
+            v-if="poke.v.status"
+            :color="statusColor[poke.v.status]"
+            :label="poke.v.status.toUpperCase()"
+          />
+
+          <template v-if="!species!.types.every((ty, i) => ty === poke.v.types?.[i])">
+            <TypeBadge v-for="type in poke.v.types" :key="type" :type />
+          </template>
 
           <TypeBadge
             v-if="poke.v.charging"
@@ -26,23 +36,28 @@
             :label="gen.moveList[poke.v.charging].name"
           />
 
-          <template v-if="!species!.types.every((ty, i) => ty === poke.v.types?.[i])">
-            <TypeBadge v-for="type in poke.v.types" :key="type" :type="type" />
-          </template>
+          <UBadge
+            v-if="poke.v.trapped"
+            color="red"
+            icon="tabler:prison"
+            :label="gen.moveList[poke.v.trapped].name"
+            variant="subtle"
+          />
 
-          <UBadge v-if="poke.v.status" :style="{backgroundColor: statusColor[poke.v.status]}">
-            {{ poke.v.status.toUpperCase() }}
-          </UBadge>
+          <UBadge
+            v-if="poke.v.perishCount"
+            color="red"
+            icon="material-symbols:skull"
+            :label="poke.v.perishCount"
+            variant="subtle"
+          />
 
-          <UBadge v-if="poke.v.perishCount" color="red" :label="`Perish: ${poke.v.perishCount}`" />
-          <UBadge v-if="poke.v.trapped" color="red" :label="gen.moveList[poke.v.trapped].name" />
-
-          <template v-for="{name, color, flag} in badges">
-            <UBadge v-if="((poke.v.flags ?? 0) & flag) !== 0" :key="flag" :color :label="name" />
+          <template v-for="{flag, props} in badges">
+            <UBadge v-if="((poke.v.flags ?? 0) & flag) !== 0" :key="flag" v-bind="props" />
           </template>
 
           <template v-for="(val, stage) in poke.v.stages">
-            <UBadge v-if="val" :key="stage" :class="val > 0 ? 'up' : 'down'">
+            <UBadge v-if="val" :key="stage" :color="val > 0 ? 'lime' : 'red'">
               {{ roundTo(stageMultipliers[val] / 100, 2) }}x {{ statShortName[stage] }}
             </UBadge>
           </template>
@@ -53,13 +68,38 @@
     <div class="flex flex-col items-center relative">
       <div class="w-[128px] h-[117px] sm:w-[256px] sm:h-[234px] items-center justify-center flex">
         <UPopover mode="hover" :popper="{placement: 'top'}">
-          <div ref="sprite" class="sprite z-20" :class="{back, front: !back, invisible: !poke}">
+          <div
+            ref="sprite"
+            class="sprite relative z-20 flex justify-center"
+            :class="{back, front: !back, invisible: !poke}"
+          >
             <Sprite
               :species="poke?.transformed ?? poke?.speciesId"
               :substitute="((poke?.v.flags || 0) & VF.cSubstitute) !== 0"
               :scale="lessThanSm ? 1 : 2"
               :shiny="poke?.shiny"
               :back
+            />
+
+            <img
+              v-if="poke && !poke.fainted && ((poke.v.flags ?? 0) & VF.cConfused) !== 0"
+              class="absolute size-20 -top-6 z-30 visible dark:invisible"
+              src="/dizzy-light.gif"
+              alt="confused"
+            />
+
+            <img
+              v-if="poke && !poke.fainted && ((poke.v.flags ?? 0) & VF.cConfused) !== 0"
+              class="absolute size-20 -top-6 z-30 invisible dark:visible"
+              src="/dizzy.gif"
+              alt="confused"
+            />
+
+            <img
+              v-if="poke?.v.status === 'slp'"
+              class="absolute size-10 -top-4 z-30 invert dark:invert-0 rotate-180 ml-20"
+              src="/zzz.gif"
+              alt="confused"
             />
           </div>
 
@@ -181,8 +221,10 @@ import {stageMultipliers, VF, hpPercentExact, type Screen} from "~/game/utils";
 import {calcStat, type Pokemon} from "~/game/pokemon";
 import type {MoveId} from "~/game/moves";
 import {breakpointsTailwind} from "@vueuse/core";
-import type {Generation} from "~/game/gen1";
+import type {Generation} from "~/game/gen";
 import type {Side} from "./Battle.vue";
+import type {UBadge} from "#components";
+import type {StyleValue} from "vue";
 
 const {poke, base, back, gen, side} = defineProps<{
   poke?: ClientActivePokemon;
@@ -217,26 +259,32 @@ const scrColor: Record<Screen, string> = {
 };
 
 const screens = computed(() => {
-  const screens = [];
+  const screens: {name: string; clazz: string; style: StyleValue}[] = [];
   let margin = 0;
-  if ((poke?.v.flags ?? 0) & VF.protect) {
+  const addScreen = (name: string, clazz: string) => {
     screens.push({
-      name: "protect",
-      clazz: `bg-slate-200`,
+      name,
+      clazz,
       style: {marginTop: -margin * 0.5 + "rem", marginLeft: -margin * 0.5 + "rem"},
     });
     margin++;
+  };
+
+  if ((poke?.v.flags ?? 0) & VF.protect) {
+    addScreen("protect", "bg-slate-200");
+  }
+
+  if ((poke?.v.flags ?? 0) & VF.lightScreen) {
+    addScreen("light_screen", scrColor.light_screen);
+  }
+
+  if ((poke?.v.flags ?? 0) & VF.lightScreen) {
+    addScreen("reflect", scrColor.reflect);
   }
 
   for (const screen in scrColor) {
     if (side?.screens?.[screen as Screen]) {
-      screens.push({
-        name: screen,
-        clazz: scrColor[screen as Screen],
-        style: {marginTop: -margin * 0.5 + "rem", marginLeft: -margin * 0.5 + "rem"},
-      });
-
-      margin++;
+      addScreen(screen, scrColor[screen as Screen]);
     }
   }
 
@@ -251,24 +299,29 @@ const offsY = (number: number) => `-${number * 42 - number * 2}px`;
 "orange" | "amber" | "yellow" | "cyan" | "blue" | "indigo" | "violet" | "purple" | "fuchsia" |
 "rose" | "primary"
 */
-const badges = [
-  {flag: VF.cConfused, color: "red", name: "Confused"},
-  {flag: VF.cDisabled, color: "red", name: "Disable"},
-  {flag: VF.cAttract, color: "pink", name: "Attract"},
-  {flag: VF.focus, color: "emerald", name: "Focus Energy"},
-  {flag: VF.lightScreen, color: "pink", name: "Light Screen"},
-  {flag: VF.reflect, color: "pink", name: "Reflect"},
-  {flag: VF.mist, color: "teal", name: "Mist"},
-  {flag: VF.seeded, color: "lime", name: "Leech Seed"},
-  {flag: VF.destinyBond, color: "gray", name: "Destiny Bond"},
-  {flag: VF.protect, color: "black", name: "Protect"},
-  {flag: VF.endure, color: "black", name: "Endure"},
-  {flag: VF.cEncore, color: "sky", name: "Encore"},
-  {flag: VF.cMeanLook, color: "red", name: "Can't Escape"},
-  {flag: VF.nightmare, color: "black", name: "Nightmare"},
-  {flag: VF.foresight, color: "violet", name: "Foresight"},
-  {flag: VF.lockon, color: "red", name: "Locked Onto"},
-] as const;
+const badges: {flag: VF; props: InstanceType<typeof UBadge>["$props"]}[] = [
+  {flag: VF.cAttract, props: {color: "pink", icon: "material-symbols:favorite", variant: "subtle"}},
+  {flag: VF.lockon, props: {color: "red", icon: "ri:crosshair-2-line", variant: "subtle"}},
+  {flag: VF.cMeanLook, props: {color: "red", icon: "tabler:prison", variant: "subtle"}},
+  {
+    flag: VF.foresight,
+    props: {
+      color: "violet",
+      icon: "material-symbols:search-rounded",
+      variant: "subtle",
+      class: "ring-violet-500 dark:ring-violet-400",
+    },
+  },
+  {flag: VF.cDisabled, props: {color: "red", label: "Disable"}},
+  {flag: VF.focus, props: {color: "emerald", label: "Focus Energy"}},
+  {flag: VF.mist, props: {color: "teal", label: "Mist"}},
+  {flag: VF.seeded, props: {color: "lime", label: "Seeded"}},
+  {flag: VF.destinyBond, props: {color: "gray", label: "Destiny Bond"}},
+  {flag: VF.protect, props: {color: "black", label: "Protect"}},
+  {flag: VF.endure, props: {color: "black", label: "Endure"}},
+  {flag: VF.cEncore, props: {color: "sky", label: "Encore"}},
+  {flag: VF.nightmare, props: {color: "black", label: "Nightmare"}},
+];
 
 export type AnimationType =
   | "faint"

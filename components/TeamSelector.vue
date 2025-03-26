@@ -15,7 +15,7 @@
         <div>
           <span class="truncate text-xs sm:text-base">{{ team.name }}</span>
 
-          <div class="flex justify-center pb-1">
+          <div class="flex justify-center">
             <BoxSprite
               v-for="(poke, i) in team.pokemon"
               :key="i"
