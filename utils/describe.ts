@@ -82,8 +82,6 @@ const descriptions: Partial<Record<MoveId, string>> = {
     "accuracy stages if the target's evasion is greater than the user's accuracy, and Normal and " +
     "Fighting-type moves deal neutral damage to Ghost types. Switching removes this effect. ",
   batonpass: "Switches while retaining stages and certain volatile status conditions. ",
-  beatup:
-    "Hits with a typeless 10 power attack for each Pokémon in the user's party without a non-volatile status condition. ",
   nightmare:
     "The target loses 1/4 its max HP at the end of every turn while asleep. Fails if the " +
     "target is not asleep. ",
@@ -140,6 +138,8 @@ const flagDesc: Record<NonNullable<DamagingMove["flag"]>, string> = {
   bide:
     "The user sits dormant for 2-3 turns, then damages the opponent for 2x the damage received " +
     "during the idling period.",
+  beatup:
+    "Hits with a typeless 10 power attack for each Pokémon in the user's party without a non-volatile status condition. ",
 };
 
 const formatStages = (gen: Generation, stages: [Stages, number][]) => {
