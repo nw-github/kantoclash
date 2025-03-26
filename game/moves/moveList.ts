@@ -1,14 +1,6 @@
 import type {DamagingMove, Move} from "./index";
 import {type Pokemon, transform} from "../pokemon";
-import {
-  hpPercentExact,
-  idiv,
-  isSpecial,
-  stageKeys,
-  stageStatKeys,
-  VolatileFlag,
-  type Type,
-} from "../utils";
+import {hpPercentExact, idiv, isSpecial, stageKeys, stageStatKeys, VF, type Type} from "../utils";
 
 export type MoveId = keyof typeof internalMoveList;
 
@@ -63,7 +55,7 @@ const internalMoveList = createMoveList({
         type: "disable",
         src: target.owner.id,
         move: target.base.moves[indexInMoves],
-        volatiles: [{id: target.owner.id, v: {flags: target.v.flags}}],
+        volatiles: [{id: target.owner.id, v: {flags: target.v.cflags}}],
       });
       target.handleRage(battle);
       return false;
@@ -78,12 +70,7 @@ const internalMoveList = createMoveList({
         user.v.stages[k] = target.v.stages[k] = 0;
       }
 
-      const flags =
-        VolatileFlag.light_screen |
-        VolatileFlag.reflect |
-        VolatileFlag.mist |
-        VolatileFlag.focus |
-        VolatileFlag.seeded;
+      const flags = VF.lightScreen | VF.reflect | VF.mist | VF.focus | VF.seeded;
       user.v.clearFlag(flags);
       target.v.clearFlag(flags);
 
@@ -120,7 +107,7 @@ const internalMoveList = createMoveList({
     exec(battle, user, target) {
       if (target.v.types.includes(this.type)) {
         return battle.info(target, "immune");
-      } else if (target.v.hasFlag(VolatileFlag.seeded)) {
+      } else if (target.v.hasFlag(VF.seeded)) {
         return battle.info(target, "fail_generic");
       } else if (battle.gen.id >= 2 && target.v.substitute) {
         return battle.info(target, "fail_generic");
@@ -128,7 +115,7 @@ const internalMoveList = createMoveList({
         return;
       }
 
-      battle.info(target, "seeded", [target.setFlag(VolatileFlag.seeded)]);
+      battle.info(target, "seeded", [target.setFlag(VF.seeded)]);
     },
   },
   metronome: {
@@ -199,7 +186,7 @@ const internalMoveList = createMoveList({
 
       user.v.substitute = hp + 1;
       user.damage(hp, user, battle, false, "substitute", true, undefined, [
-        {id: user.owner.id, v: {flags: user.v.flags}},
+        {id: user.owner.id, v: {flags: user.v.cflags}},
       ]);
     },
   },
@@ -235,17 +222,17 @@ const internalMoveList = createMoveList({
     name: "Focus Energy",
     pp: 30,
     type: "normal",
-    flag: VolatileFlag.focus,
+    flag: VF.focus,
   },
   lightscreen: {
     kind: "volatile",
     name: "Light Screen",
     pp: 30,
     type: "psychic",
-    flag: VolatileFlag.light_screen,
+    flag: VF.lightScreen,
   },
-  mist: {kind: "volatile", name: "Mist", pp: 30, type: "ice", flag: VolatileFlag.mist},
-  reflect: {kind: "volatile", name: "Reflect", pp: 20, type: "psychic", flag: VolatileFlag.reflect},
+  mist: {kind: "volatile", name: "Mist", pp: 30, type: "ice", flag: VF.mist},
+  reflect: {kind: "volatile", name: "Reflect", pp: 20, type: "psychic", flag: VF.reflect},
   // --
   recover: {kind: "recover", name: "Recover", pp: 20, type: "normal", why: "recover"},
   rest: {kind: "recover", name: "Rest", pp: 10, type: "psychic", why: "rest"},
@@ -1380,7 +1367,7 @@ const internalMoveList = createMoveList({
       }
 
       target.v.attract = user;
-      battle.info(target, "attract", [{id: target.owner.id, v: {flags: target.v.flags}}]);
+      battle.info(target, "cAttract", [{id: target.owner.id, v: {flags: target.v.cflags}}]);
     },
   },
   batonpass: {
@@ -1430,7 +1417,7 @@ const internalMoveList = createMoveList({
         });
 
         const deadly = dmg > 0 && dmg > target.base.hp;
-        endured = deadly && target.v.hasFlag(VolatileFlag.endure);
+        endured = deadly && target.v.hasFlag(VF.endure);
         focusBand =
           !endured && user.base.item === "focusband" && battle.gen.rng.tryFocusBand(battle);
         if (endured || focusBand) {
@@ -1549,7 +1536,7 @@ const internalMoveList = createMoveList({
           "set_curse",
           true,
           undefined,
-          [target.setFlag(VolatileFlag.curse)],
+          [target.setFlag(VF.curse)],
         );
       }
     },
@@ -1574,7 +1561,7 @@ const internalMoveList = createMoveList({
       }
 
       target.v.encore = {indexInMoves: target.v.lastMoveIndex, turns: battle.rng.int(2, 6) + 1};
-      battle.info(target, "encore", [{id: target.owner.id, v: {flags: target.v.flags}}]);
+      battle.info(target, "cEncore", [{id: target.owner.id, v: {flags: target.v.cflags}}]);
     },
   },
   foresight: {
@@ -1584,7 +1571,7 @@ const internalMoveList = createMoveList({
     type: "normal",
     protect: true,
     exec(battle, user, target) {
-      if (user.v.hasFlag(VolatileFlag.foresight)) {
+      if (user.v.hasFlag(VF.foresight)) {
         return battle.info(user, "fail_generic");
       } else if (!battle.checkAccuracy(this, user, target)) {
         return;
@@ -1594,7 +1581,7 @@ const internalMoveList = createMoveList({
         type: "foresight",
         src: user.owner.id,
         target: target.owner.id,
-        volatiles: [target.setFlag(VolatileFlag.foresight)],
+        volatiles: [target.setFlag(VF.foresight)],
       });
     },
   },
@@ -1660,13 +1647,13 @@ const internalMoveList = createMoveList({
     pp: 15,
     type: "ghost",
     exec(battle, user, target) {
-      if (target.v.hasFlag(VolatileFlag.nightmare) || target.base.status !== "slp") {
+      if (target.v.hasFlag(VF.nightmare) || target.base.status !== "slp") {
         return battle.info(user, "fail_generic");
       } else if (!battle.checkAccuracy(this, user, target)) {
         return;
       }
 
-      battle.info(target, "nightmare", [target.setFlag(VolatileFlag.nightmare)]);
+      battle.info(target, "nightmare", [target.setFlag(VF.nightmare)]);
     },
   },
   painsplit: {
@@ -1938,7 +1925,7 @@ const internalMoveList = createMoveList({
     pp: 5,
     type: "ghost",
     noMetronome: true,
-    flag: VolatileFlag.destinyBond,
+    flag: VF.destinyBond,
   },
   safeguard: {kind: "screen", name: "Safeguard", pp: 25, type: "normal", screen: "safeguard"},
   // --

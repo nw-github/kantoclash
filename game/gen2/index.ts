@@ -1,7 +1,7 @@
 import {createDefu} from "defu";
 import {GENERATION1, type CalcDamageParams, type Generation} from "../gen1";
 import type {Species, SpeciesId} from "../species";
-import {floatTo255, scaleAccuracy255, idiv, imul, VolatileFlag} from "../utils";
+import {floatTo255, scaleAccuracy255, idiv, imul, VF} from "../utils";
 import {moveFunctionPatches, movePatches} from "./moves";
 import __speciesPatches from "./species.json";
 import type {ActivePokemon, Battle} from "../battle";
@@ -118,12 +118,12 @@ const beforeUseMove = (battle: Battle, move: Move, user: ActivePokemon, _: Activ
 
   if (user.v.disabled && --user.v.disabled.turns === 0) {
     user.v.disabled = undefined;
-    battle.info(user, "disable_end", [{id: user.owner.id, v: {flags: user.v.flags}}]);
+    battle.info(user, "disable_end", [{id: user.owner.id, v: {flags: user.v.cflags}}]);
   }
 
   if (user.v.confusion) {
     const done = --user.v.confusion === 0;
-    const v = [{id: user.owner.id, v: {flags: user.v.flags}}];
+    const v = [{id: user.owner.id, v: {flags: user.v.cflags}}];
     battle.info(user, done ? "confused_end" : "confused", v);
     if (!done && battle.rng.bool()) {
       const move = user.owner.choice?.move;
@@ -191,7 +191,7 @@ const createGeneration = (): Generation => {
     },
     tryCrit(battle, user, hc) {
       let stages = hc ? 2 : 0;
-      if (user.v.hasFlag(VolatileFlag.focus)) {
+      if (user.v.hasFlag(VF.focus)) {
         stages++;
       }
       if (user.base.item === "scopelens") {

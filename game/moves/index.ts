@@ -1,7 +1,7 @@
-import type {ActivePokemon, Battle, Screen} from "../battle";
+import type {ActivePokemon, Battle} from "../battle";
 import type {FailReason, RecoveryReason} from "../events";
 import type {Pokemon, Status} from "../pokemon";
-import type {Stages, Type, VolatileFlag, Weather} from "../utils";
+import type {Stages, Type, VF, Weather, Screen} from "../utils";
 
 export * from "../gen1/damaging";
 export * from "./functions";
@@ -42,7 +42,7 @@ export interface CustomMove extends BaseMove {
 
 export interface VolatileFlagMove extends BaseMove {
   readonly kind: "volatile";
-  readonly flag: VolatileFlag;
+  readonly flag: VF;
 }
 
 export interface ConfuseMove extends BaseMove {

@@ -2,7 +2,7 @@ import type {Random} from "random";
 import type {ActivePokemon, Battle, VolatileStats} from "../battle";
 import {moveFunctions, moveList, type Move, type MoveId} from "../moves";
 import {speciesList, type Species} from "../species";
-import {floatTo255, idiv, scaleAccuracy255, VolatileFlag, type Type} from "../utils";
+import {floatTo255, idiv, scaleAccuracy255, VF, type Type} from "../utils";
 import type {ItemId} from "../item";
 
 export type TypeChart = Record<Type, Partial<Record<Type, number>>>;
@@ -103,7 +103,7 @@ const checkAccuracy = (move: Move, battle: Battle, user: ActivePokemon, target: 
 
 const tryCrit = (battle: Battle, user: ActivePokemon, hc: boolean) => {
   const baseSpe = user.base.species.stats.spe;
-  const focus = user.v.hasFlag(VolatileFlag.focus);
+  const focus = user.v.hasFlag(VF.focus);
   if (hc) {
     return battle.rand255(focus ? 4 * Math.floor(baseSpe / 4) : 8 * Math.floor(baseSpe / 2));
   } else {
@@ -258,12 +258,12 @@ const beforeUseMove = (battle: Battle, move: Move, user: ActivePokemon, target: 
 
   if (user.v.disabled && --user.v.disabled.turns === 0) {
     user.v.disabled = undefined;
-    battle.info(user, "disable_end", [{id: user.owner.id, v: {flags: user.v.flags}}]);
+    battle.info(user, "disable_end", [{id: user.owner.id, v: {flags: user.v.cflags}}]);
   }
 
   if (user.v.confusion) {
     const done = --user.v.confusion === 0;
-    const v = [{id: user.owner.id, v: {flags: user.v.flags}}];
+    const v = [{id: user.owner.id, v: {flags: user.v.cflags}}];
     battle.info(user, done ? "confused_end" : "confused", v);
   }
 
@@ -328,8 +328,7 @@ const getStat = (
     return poke.base.real.stats[stat];
   }
 
-  const screen =
-    def && poke.v.hasFlag(stat === "def" ? VolatileFlag.reflect : VolatileFlag.light_screen);
+  const screen = def && poke.v.hasFlag(stat === "def" ? VF.reflect : VF.lightScreen);
   if (isCrit) {
     value = poke.base.stats[stat];
   } else if (screen) {

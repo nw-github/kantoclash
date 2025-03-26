@@ -1,9 +1,8 @@
 import type {ClientVolatiles} from "~/utils/shared";
-import type {Screen} from "./battle";
 import type {MoveId} from "./moves";
 import type {Gender, Status} from "./pokemon";
 import type {SpeciesId} from "./species";
-import type {Stages, Type, VolatileFlag, Weather} from "./utils";
+import type {Stages, Type, VF, Weather, Screen} from "./utils";
 import type {ItemId} from "./item";
 
 type NullOrOptional<T> = {[P in keyof T]?: T[P] | null};
@@ -162,16 +161,15 @@ export type FailReason =
 
 export type BugType = "bug_gen2_bellydrum" | "bug_gen2_spikes";
 
-type VF = Exclude<
-  keyof typeof VolatileFlag,
-  "substitute" | "curse" | "none" | "disabled" | "foresight" | "lockon"
+type VFReason = Exclude<
+  keyof typeof VF,
+  "cSubstitute" | "curse" | "none" | "cDisabled" | "foresight" | "lockon"
 >;
 
 export type InfoReason =
   | FailReason
-  | VF
+  | VFReason
   | "payday"
-  | "became_confused"
   | "confused"
   | "confused_end"
   | "recharge"
@@ -187,7 +185,6 @@ export type InfoReason =
   | "bide_store"
   | "trapped"
   | "faint"
-  | "attract"
   | "immobilized"
   | "endure_hit"
   | "endure_band"

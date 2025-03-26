@@ -1,4 +1,4 @@
-import type {Stages} from "~/game/utils";
+import type {Screen, Stages} from "~/game/utils";
 import type {Status} from "../game/pokemon";
 import type {DamagingMove, MoveId} from "~/game/moves";
 import type {Generation} from "~/game/gen1";
@@ -256,7 +256,7 @@ export const describeMove = (gen: Generation, id: MoveId) => {
     }
     return base;
   } else if (move.kind === "screen") {
-    const msg = {
+    const msg: Record<Screen, string> = {
       light_screen:
         "Halves damage dealt by special attacks for all pokemon on the user's side for 5 turns. ",
       reflect:

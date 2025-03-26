@@ -5,7 +5,7 @@ import type {Options, Turn} from "~/game/battle";
 import {randoms} from "~/server/utils/formats";
 import {type ClientVolatiles, type FormatId, formatInfo, mergeVolatiles} from "~/utils/shared";
 import {Pokemon} from "~/game/pokemon";
-import {getEffectiveness, VolatileFlag} from "~/game/utils";
+import {getEffectiveness, VF} from "~/game/utils";
 import random from "random";
 import {convertDesc, parseTeams, type Team} from "~/utils/pokemon";
 import type {MoveId} from "~/game/moves";
@@ -260,22 +260,23 @@ export async function startBot(format?: FormatId, botFunction: BotFunction = ran
   }
 }
 
-let ouTeams: Team[] = [];
+const teams: Team[] = [];
 export function createBotTeam(format: FormatId) {
-  if (!ouTeams.length) {
-    ouTeams = parseTeams(teams);
+  if (!teams.length) {
+    teams.push(...parseTeams(gen1ou));
+    teams.push(...parseTeams(gen2ou));
   }
 
-  let team = undefined;
   if (formatInfo[format].needsTeam) {
-    if (format === "g1_standard") {
-      team = random.choice(ouTeams)!.pokemon.map(convertDesc);
+    const team = random.choice(teams.filter(team => team.format === format));
+    if (team) {
+      return team.pokemon.map(convertDesc);
     } else {
       const gen = GENERATIONS[formatInfo[format].generation]!;
-      team = randoms(gen, s => format.includes("nfe") === !!s.evolvesTo);
+      return randoms(gen, s => format.includes("nfe") === !!s.evolvesTo);
     }
   }
-  return team;
+  return;
 }
 
 export function randomBot({team, options, activePokemon}: BotParams) {
@@ -334,12 +335,12 @@ export function rankBot({team, options, players, activePokemon, opponent: id, me
         return 5;
       }
     } else {
-      const confused = (opponentActive.v.flags || 0) & VolatileFlag.confused;
-      const seeded = (opponentActive.v.flags || 0) & VolatileFlag.seeded;
-      const cursed = (opponentActive.v.flags || 0) & VolatileFlag.curse;
-      const dbond = (self.v.flags || 0) & VolatileFlag.destinyBond;
-      const selfSub = (self.v.flags || 0) & VolatileFlag.substitute;
-      const sub = (opponentActive.v.flags || 0) & VolatileFlag.substitute;
+      const confused = (opponentActive.v.flags || 0) & VF.cConfused;
+      const seeded = (opponentActive.v.flags || 0) & VF.seeded;
+      const cursed = (opponentActive.v.flags || 0) & VF.curse;
+      const dbond = (self.v.flags || 0) & VF.destinyBond;
+      const selfSub = (self.v.flags || 0) & VF.cSubstitute;
+      const sub = (opponentActive.v.flags || 0) & VF.cSubstitute;
 
       // prettier-ignore
       const useless = (move.kind === "confuse" && confused) ||
@@ -385,7 +386,7 @@ export function rankBot({team, options, players, activePokemon, opponent: id, me
 }
 
 /// From: https://gist.github.com/scheibo/7c9172f3379bbf795a5e61a802caf2f0
-const teams = `
+const gen1ou = `
 === [gen1ou] marcoasd 2014 ===
 
 Gengar
@@ -1510,4 +1511,320 @@ Zapdos
 - Thunder Wave
 - Thunderbolt
 - Thunder
+`;
+
+// Generated with https://www.pokeaimmd.com/randomizer
+const gen2ou = `
+=== [g2_standard] New Team ===
+
+Typhlosion @ Leftovers
+IVs: 28 atk / 28 def
+ - Fire Blast
+ - DynamicPunch
+ - Hidden Power
+ - Earthquake
+
+Zapdos @ Leftovers
+IVs: 30 atk / 26 def
+ - Thunder
+ - Hidden Power
+ - Rest
+ - Sleep Talk
+
+Entei @ Leftovers
+IVs: 24 atk / 24 def
+ - Sunny Day
+ - Fire Blast
+ - SolarBeam
+ - Hidden Power
+
+Machamp @ Leftovers
+ - Cross Chop
+ - Rock Slide
+ - Earthquake
+ - Fire Blast
+
+Clefable @ Leftovers
+ - Belly Drum
+ - Moonlight
+ - Return
+ - Fire Blast
+
+Heracross @ Leftovers
+ - Rest
+ - Sleep Talk
+ - Megahorn
+ - Curse
+
+=== [g2_standard] New Team ===
+
+Golem @ Leftovers
+ - Earthquake
+ - Rapid Spin
+ - Explosion
+ - Roar
+
+Suicune @ Leftovers
+ - Surf
+ - Toxic
+ - Roar
+ - Rest
+
+Kangaskhan @ Leftovers
+ - Curse
+ - Rest
+ - Return
+ - Roar
+
+Houndoom @ Leftovers
+ - Crunch
+ - Fire Blast
+ - Pursuit
+ - Counter
+
+Lapras @ Leftovers
+ - Ice Beam
+ - Thunderbolt
+ - Rest
+ - Sleep Talk
+
+Vaporeon @ Leftovers
+ - Surf
+ - Growth
+ - Rest
+ - Sleep Talk
+
+=== [g2_standard] New Team ===
+
+Forretress @ Leftovers
+IVs: 28 atk / 24 def
+ - Spikes
+ - Rapid Spin
+ - Toxic
+ - Hidden Power
+
+Clefable @ Leftovers
+ - Belly Drum
+ - Moonlight
+ - Return
+ - Fire Blast
+
+Scizor @ Leftovers
+IVs: 26 atk / 26 def
+ - Swords Dance
+ - Baton Pass
+ - Agility
+ - Hidden Power
+
+Tentacruel @ Leftovers
+ - Swords Dance
+ - Substitute
+ - Sludge Bomb
+ - Hydro Pump
+
+Kingdra @ Leftovers
+ - Rest
+ - Sleep Talk
+ - Double Edge
+ - Surf
+
+Nidoking @ Leftovers
+ - Earthquake
+ - Lovely Kiss
+ - Ice Beam
+ - Thunder
+
+=== [g2_standard] New Team ===
+
+Clefable @ Leftovers
+ - Return
+ - Fire Blast
+ - Ice Beam
+ - Moonlight
+
+Charizard @ Leftovers
+ - Belly Drum
+ - Earthquake
+ - Rock Slide
+ - Fire Blast
+
+Umbreon @ Leftovers
+ - Charm
+ - Pursuit
+ - Toxic
+ - Rest
+
+Marowak @ Thick Club
+IVs: 26 atk / 26 def
+ - Earthquake
+ - Rock Slide
+ - Hidden Power
+ - Swords Dance
+
+Venusaur @ Leftovers
+ - Swords Dance
+ - Body Slam
+ - Giga Drain
+ - Sleep Powder
+
+Tauros @ Leftovers
+ - Double Edge
+ - Earthquake
+ - Rest
+ - Sleep Talk
+
+=== [g2_standard] New Team ===
+
+Miltank @ Leftovers
+ - Heal Bell
+ - Milk Drink
+ - Growl
+ - Body Slam
+
+Muk @ Leftovers
+ - Sludge Bomb
+ - Fire Blast
+ - Explosion
+ - Curse
+
+Cloyster @ Leftovers
+ - Spikes
+ - Surf
+ - Toxic
+ - Explosion
+
+Dragonite @ Leftovers
+ - Haze
+ - Reflect
+ - Rest
+ - Sleep Talk
+
+Heracross @ Leftovers
+ - Rest
+ - Sleep Talk
+ - Megahorn
+ - Curse
+
+Rhydon @ Leftovers
+ - Earthquake
+ - Rock Slide
+ - Curse
+ - Roar
+
+=== [g2_standard] New Team ===
+
+Heracross @ Leftovers
+ - Rest
+ - Sleep Talk
+ - Megahorn
+ - Curse
+
+Umbreon @ Leftovers
+ - Charm
+ - Pursuit
+ - Toxic
+ - Rest
+
+Entei @ Leftovers
+IVs: 24 atk / 24 def
+ - Sunny Day
+ - Fire Blast
+ - SolarBeam
+ - Hidden Power
+
+Raikou @ Leftovers
+IVs: 30 atk / 26 def
+ - Thunderbolt
+ - Hidden Power
+ - Rest
+ - Sleep Talk
+
+Snorlax @ Leftovers
+ - Double Edge
+ - Flamethrower
+ - Toxic
+ - Rest
+
+Alakazam @ Leftovers
+ - Recover
+ - Thunder Wave
+ - Fire Punch
+ - Psychic
+
+=== [g2_standard] New Team ===
+
+Scizor @ Leftovers
+IVs: 26 atk / 26 def
+ - Swords Dance
+ - Baton Pass
+ - Agility
+ - Hidden Power
+
+Articuno @ Leftovers
+ - Rest
+ - Sleep Talk
+ - Ice Beam
+ - Toxic
+
+Porygon2 @ Leftovers
+ - Curse
+ - Double Edge
+ - Recover
+ - Ice Beam
+
+Exeggutor @ Leftovers
+ - Sleep Powder
+ - Psychic
+ - Giga Drain
+ - Explosion
+
+Tyranitar @ Leftovers
+ - DynamicPunch
+ - Rock Slide
+ - Fire Blast
+ - Pursuit
+
+Machamp @ Leftovers
+ - Cross Chop
+ - Rock Slide
+ - Earthquake
+ - Fire Blast
+
+=== [g2_standard] New Team ===
+
+Vaporeon @ Leftovers
+ - Surf
+ - Growth
+ - Rest
+ - Sleep Talk
+
+Blissey @ Leftovers
+ - Softboiled
+ - Heal Bell
+ - Light Screen
+ - Sing
+
+Espeon @ Leftovers
+ - Psychic
+ - Growth
+ - Baton Pass
+ - Substitute
+
+Cloyster @ Leftovers
+ - Spikes
+ - Surf
+ - Toxic
+ - Explosion
+
+Porygon2 @ Leftovers
+ - Thunder Wave
+ - Double Edge
+ - Ice Beam
+ - Recover
+
+Ursaring @ Leftovers
+ - Curse
+ - Return
+ - Earthquake
+ - Roar
 `;

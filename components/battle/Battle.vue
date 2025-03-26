@@ -250,7 +250,7 @@
 </style>
 
 <script setup lang="ts">
-import type {Options, Screen, Turn} from "~/game/battle";
+import type {Options, Turn} from "~/game/battle";
 import type {Pokemon} from "~/game/pokemon";
 import type {BattleEvent} from "~/game/events";
 import type {SpeciesId} from "~/game/species";
@@ -259,7 +259,7 @@ import type {ActivePokemon} from "#build/components";
 import type {AnimationType} from "./ActivePokemon.vue";
 import criesSpritesheet from "~/public/effects/cries.json";
 import {GENERATIONS} from "~/game/gen";
-import type {Weather} from "~/game/utils";
+import type {Weather, Screen} from "~/game/utils";
 
 const weatherData = {
   rain: {icon: "material-symbols:rainy", tooltip: "Raining", class: "text-sky-400"},

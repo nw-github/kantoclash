@@ -33,11 +33,14 @@ export const stageStatKeys = ["atk", "def", "spa", "spd", "spe"] as const;
 export const statKeys = ["hp", ...stageStatKeys] as const;
 export const stageKeys = [...stageStatKeys, "acc", "eva"] as const;
 
+export const screens = ["light_screen", "reflect", "safeguard"] as const;
+export type Screen = (typeof screens)[number];
+
 // prettier-ignore
-export enum VolatileFlag {
+export enum VF {
   none         = 0,
   /** Gen 1 only */
-  light_screen = 0x0000_0001,
+  lightScreen  = 0x0000_0001,
   /** Gen 1 only */
   reflect      = 0x0000_0002,
   mist         = 0x0000_0004,
@@ -52,17 +55,17 @@ export enum VolatileFlag {
   lockon       = 0x0000_0800,
 
   /** Client only */
-  confused     = 0x8000_0000,
+  cConfused     = 0x8000_0000,
   /** Client only */
-  disabled     = 0x4000_0000,
+  cDisabled     = 0x4000_0000,
   /** Client only */
-  attract      = 0x2000_0000,
+  cAttract      = 0x2000_0000,
   /** Client only */
-  substitute   = 0x1000_0000,
+  cSubstitute   = 0x1000_0000,
   /** Client only */
-  encore       = 0x0800_0000,
+  cEncore       = 0x0800_0000,
   /** Client only */
-  meanLook     = 0x0400_0000,
+  cMeanLook     = 0x0400_0000,
 }
 
 export const floatTo255 = (num: number) => Math.floor((num / 100) * 255);
@@ -84,7 +87,7 @@ export const scaleAccuracy255 = (acc: number, user: ActivePokemon, target: Activ
   // https://bulbapedia.bulbagarden.net/wiki/Accuracy#Generation_I_and_II
   let userStages = user.v.stages["acc"];
   let targetStages = target.v.stages["eva"];
-  if (userStages < targetStages && target.v.hasFlag(VolatileFlag.foresight)) {
+  if (userStages < targetStages && target.v.hasFlag(VF.foresight)) {
     userStages = 0;
     targetStages = 0;
   }

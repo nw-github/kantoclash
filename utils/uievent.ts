@@ -1,4 +1,3 @@
-import type {Screen} from "~/game/battle";
 import type {
   BattleEvent,
   BugType,
@@ -11,7 +10,7 @@ import type {
 } from "~/game/events";
 import type {MoveId} from "~/game/moves";
 import type {Status} from "~/game/pokemon";
-import type {Weather} from "~/game/utils";
+import type {Weather, Screen} from "~/game/utils";
 
 export type RawUIBattleEvent =
   | BattleEvent
@@ -72,11 +71,11 @@ export const infoMessage: Record<InfoReason, string> = {
   mist_protect: "{} is protected by the mist!",
   safeguard_protect: "{} is protected by Safeguard!",
   mist: "{}'s shrouded in mist!",
-  light_screen: "{}'s protected against special attacks!",
+  lightScreen: "{}'s protected against special attacks!",
   reflect: "{} is gained armor!",
   focus: "{} is getting pumped!",
   payday: "Coins scattered everywhere!",
-  became_confused: "{} became confused!",
+  cConfused: "{} became confused!",
   confused: "{} is confused!",
   confused_end: "{} is no longer confused!",
   recharge: "{} must recharge!",
@@ -92,15 +91,15 @@ export const infoMessage: Record<InfoReason, string> = {
   bide_store: "{} is storing energy!",
   trapped: "{} can't move!",
   faint: "{} fainted!",
-  attract: "{} fell in love!",
+  cAttract: "{} fell in love!",
   immobilized: "{} is immobilized by love!",
   destinyBond: "{} is trying to take its foe with it!",
   protect: "{} protected itself!",
   endure: "{} braced itself!",
   endure_hit: "{} endured the hit!",
-  encore: "{} received an encore!",
+  cEncore: "{} received an encore!",
   encore_end: "{}'s encore ended!",
-  meanLook: "{} can no longer escape!",
+  cMeanLook: "{} can no longer escape!",
   nightmare: "{} fell into a nightmare!",
   heal_bell: "A bell chimed!",
   pain_split: "The battlers shared their pain!",

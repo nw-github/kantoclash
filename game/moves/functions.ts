@@ -1,6 +1,6 @@
 import type {CustomMove, Move} from ".";
 import type {InfoReason} from "../events";
-import {VolatileFlag} from "../utils";
+import {VF} from "../utils";
 import {exec as execDamagingMove, use as useDamagingMove} from "../gen1/damaging";
 
 type UseMoveFn = Required<CustomMove>["use"];
@@ -20,13 +20,12 @@ export const moveFunctions: MoveFunctions = {
         return battle.info(user, "fail_generic");
       }
 
-      for (const [key, flag] of Object.entries(VolatileFlag)) {
-        if (flag === this.flag) {
-          return battle.info(user, key as InfoReason, [user.setFlag(this.flag)]);
-        }
+      const key = VF[this.flag];
+      if (!key) {
+        console.error("Attempt to set invalid VolatileFlag value: " + this.flag);
+        return battle.info(user, "fail_generic");
       }
-
-      console.error("Attempt to set invalid VolatileFlag value: " + this.flag);
+      return battle.info(user, key as InfoReason, [user.setFlag(this.flag)]);
     },
   },
   confuse: {
@@ -72,7 +71,7 @@ export const moveFunctions: MoveFunctions = {
     exec(battle, user, target) {
       battle.gen1LastDamage = 0;
       if (this.acc) {
-        if (target.v.hasFlag(VolatileFlag.mist)) {
+        if (target.v.hasFlag(VF.mist)) {
           return battle.info(target, "mist_protect");
         } else if (target.v.substitute) {
           return battle.info(target, "fail_generic");
@@ -171,9 +170,9 @@ export const moveFunctions: MoveFunctions = {
 
       user.v.protectCount++;
       if (!this.endure) {
-        battle.info(user, "protect", [user.setFlag(VolatileFlag.protect)]);
+        battle.info(user, "protect", [user.setFlag(VF.protect)]);
       } else {
-        battle.info(user, "endure", [user.setFlag(VolatileFlag.endure)]);
+        battle.info(user, "endure", [user.setFlag(VF.endure)]);
       }
     },
   },
@@ -186,7 +185,7 @@ export const moveFunctions: MoveFunctions = {
       }
 
       target.v.meanLook = user;
-      battle.info(target, "meanLook", [{id: target.owner.id, v: {flags: target.v.flags}}]);
+      battle.info(target, "cMeanLook", [{id: target.owner.id, v: {flags: target.v.cflags}}]);
     },
   },
   lockOn: {
@@ -201,7 +200,7 @@ export const moveFunctions: MoveFunctions = {
         type: "lock_on",
         src: user.owner.id,
         target: target.owner.id,
-        volatiles: [target.setFlag(VolatileFlag.lockon)],
+        volatiles: [target.setFlag(VF.lockon)],
       });
     },
   },

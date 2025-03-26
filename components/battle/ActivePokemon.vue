@@ -56,7 +56,7 @@
           <div ref="sprite" class="sprite z-20" :class="{back, front: !back, invisible: !poke}">
             <Sprite
               :species="poke?.transformed ?? poke?.speciesId"
-              :substitute="((poke?.v.flags || 0) & VolatileFlag.substitute) !== 0"
+              :substitute="((poke?.v.flags || 0) & VF.cSubstitute) !== 0"
               :scale="lessThanSm ? 1 : 2"
               :shiny="poke?.shiny"
               :back
@@ -177,13 +177,12 @@
 </style>
 
 <script setup lang="ts">
-import {stageMultipliers, VolatileFlag, hpPercentExact} from "~/game/utils";
+import {stageMultipliers, VF, hpPercentExact, type Screen} from "~/game/utils";
 import {calcStat, type Pokemon} from "~/game/pokemon";
 import type {MoveId} from "~/game/moves";
 import {breakpointsTailwind} from "@vueuse/core";
 import type {Generation} from "~/game/gen1";
 import type {Side} from "./Battle.vue";
-import type {Screen} from "~/game/battle";
 
 const {poke, base, back, gen, side} = defineProps<{
   poke?: ClientActivePokemon;
@@ -211,7 +210,7 @@ const pokeBall = ref<HTMLDivElement>();
 const ground = ref<HTMLDivElement>();
 const pbRow = ref(0);
 const pbCol = ref(3);
-const scrColor = {
+const scrColor: Record<Screen, string> = {
   safeguard: "bg-purple-500",
   light_screen: "bg-pink-500",
   reflect: "bg-blue-400",
@@ -220,7 +219,7 @@ const scrColor = {
 const screens = computed(() => {
   const screens = [];
   let margin = 0;
-  if ((poke?.v.flags ?? 0) & VolatileFlag.protect) {
+  if ((poke?.v.flags ?? 0) & VF.protect) {
     screens.push({
       name: "protect",
       clazz: `bg-slate-200`,
@@ -253,22 +252,22 @@ const offsY = (number: number) => `-${number * 42 - number * 2}px`;
 "rose" | "primary"
 */
 const badges = [
-  {flag: VolatileFlag.confused, color: "red", name: "Confused"},
-  {flag: VolatileFlag.disabled, color: "red", name: "Disable"},
-  {flag: VolatileFlag.attract, color: "pink", name: "Attract"},
-  {flag: VolatileFlag.focus, color: "emerald", name: "Focus Energy"},
-  {flag: VolatileFlag.light_screen, color: "pink", name: "Light Screen"},
-  {flag: VolatileFlag.reflect, color: "pink", name: "Reflect"},
-  {flag: VolatileFlag.mist, color: "teal", name: "Mist"},
-  {flag: VolatileFlag.seeded, color: "lime", name: "Leech Seed"},
-  {flag: VolatileFlag.destinyBond, color: "gray", name: "Destiny Bond"},
-  {flag: VolatileFlag.protect, color: "black", name: "Protect"},
-  {flag: VolatileFlag.endure, color: "black", name: "Endure"},
-  {flag: VolatileFlag.encore, color: "sky", name: "Encore"},
-  {flag: VolatileFlag.meanLook, color: "red", name: "Can't Escape"},
-  {flag: VolatileFlag.nightmare, color: "black", name: "Nightmare"},
-  {flag: VolatileFlag.foresight, color: "violet", name: "Foresight"},
-  {flag: VolatileFlag.lockon, color: "red", name: "Locked Onto"},
+  {flag: VF.cConfused, color: "red", name: "Confused"},
+  {flag: VF.cDisabled, color: "red", name: "Disable"},
+  {flag: VF.cAttract, color: "pink", name: "Attract"},
+  {flag: VF.focus, color: "emerald", name: "Focus Energy"},
+  {flag: VF.lightScreen, color: "pink", name: "Light Screen"},
+  {flag: VF.reflect, color: "pink", name: "Reflect"},
+  {flag: VF.mist, color: "teal", name: "Mist"},
+  {flag: VF.seeded, color: "lime", name: "Leech Seed"},
+  {flag: VF.destinyBond, color: "gray", name: "Destiny Bond"},
+  {flag: VF.protect, color: "black", name: "Protect"},
+  {flag: VF.endure, color: "black", name: "Endure"},
+  {flag: VF.cEncore, color: "sky", name: "Encore"},
+  {flag: VF.cMeanLook, color: "red", name: "Can't Escape"},
+  {flag: VF.nightmare, color: "black", name: "Nightmare"},
+  {flag: VF.foresight, color: "violet", name: "Foresight"},
+  {flag: VF.lockon, color: "red", name: "Locked Onto"},
 ] as const;
 
 export type AnimationType =
@@ -353,7 +352,7 @@ const playAnimation = (anim: AnimationType, name?: string, cb?: () => void) => {
         complete: () => resolve(),
       });
     } else if (anim === "retract") {
-      if (((poke?.v.flags || 0) & VolatileFlag.substitute) === 0) {
+      if (((poke?.v.flags || 0) & VF.cSubstitute) === 0) {
         reset(true);
       }
       useAnime.set(pokeBall.value, {translateX: 0, translateY: 0, opacity: 1});

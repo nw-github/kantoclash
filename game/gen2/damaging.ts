@@ -1,6 +1,6 @@
 import type {ActivePokemon, Battle} from "../battle";
 import {getDamage, multiHitCount, type DamagingMove} from "../moves";
-import {idiv, VolatileFlag} from "../utils";
+import {idiv, VF} from "../utils";
 
 export function exec(
   this: DamagingMove,
@@ -34,7 +34,7 @@ export function exec(
     return battle.info(user, "miss");
   }
 
-  const protect = target.v.hasFlag(VolatileFlag.protect);
+  const protect = target.v.hasFlag(VF.protect);
   // eslint-disable-next-line prefer-const
   let {dmg, isCrit, eff, realEff, endured, fail, band} = getDamage(this, battle, user, target);
   if (user.v.thrashing && --user.v.thrashing.turns === 0) {
@@ -137,8 +137,8 @@ export function exec(
       battle.info(user, "spin_spikes");
     }
 
-    if (user.v.hasFlag(VolatileFlag.seeded)) {
-      battle.event({type: "sv", volatiles: [user.clearFlag(VolatileFlag.seeded)]});
+    if (user.v.hasFlag(VF.seeded)) {
+      battle.event({type: "sv", volatiles: [user.clearFlag(VF.seeded)]});
     }
 
     if (user.v.trapped) {
@@ -160,7 +160,7 @@ export function exec(
     battle.info(target, "endure_band");
   }
 
-  if (dead && target.v.hasFlag(VolatileFlag.destinyBond)) {
+  if (dead && target.v.hasFlag(VF.destinyBond)) {
     user.damage(user.base.hp, target, battle, false, "destiny_bond", true);
     // user should die first
     battle.checkFaint(target, user);
@@ -219,7 +219,7 @@ export function exec(
     } else if (Array.isArray(effect)) {
       // BUG GEN2:
       // https://pret.github.io/pokecrystal/bugs_and_glitches.html#moves-that-do-damage-and-increase-your-stats-do-not-increase-stats-after-a-ko
-      if ((!effectSelf && target.v.hasFlag(VolatileFlag.mist)) || (effectSelf && dead)) {
+      if ((!effectSelf && target.v.hasFlag(VF.mist)) || (effectSelf && dead)) {
         return;
       }
 

@@ -18,13 +18,15 @@ import {
   getEffectiveness,
   hpPercent,
   idiv,
+  screens,
   stageMultipliers,
   stageStatKeys,
-  VolatileFlag,
+  VF,
   type Stages,
   type StatStages,
   type Type,
   type Weather,
+  type Screen,
 } from "./utils";
 import type {Generation} from "./gen";
 import {healBerry, statusBerry} from "./item";
@@ -44,8 +46,6 @@ export type Options = NonNullable<Player["options"]>;
 export type Turn = {events: BattleEvent[]; switchTurn: boolean};
 
 export type PlayerParams = {readonly id: PlayerId; readonly team: ValidatedPokemonDesc[]};
-
-export type Screen = "light_screen" | "reflect" | "safeguard";
 
 class Player {
   readonly id: PlayerId;
@@ -368,7 +368,7 @@ export class Battle {
   }
 
   getEffectiveness(atk: Type, target: ActivePokemon) {
-    if (target.v.hasFlag(VolatileFlag.foresight)) {
+    if (target.v.hasFlag(VF.foresight)) {
       // FIXME: this is lazy
       const chart = structuredClone(this.gen.typeChart);
       chart.normal.ghost = 1;
@@ -391,8 +391,8 @@ export class Battle {
   }
 
   checkAccuracy(move: Move, user: ActivePokemon, target: ActivePokemon) {
-    if (target.v.hasFlag(VolatileFlag.lockon)) {
-      this.event({type: "sv", volatiles: [target.clearFlag(VolatileFlag.lockon)]});
+    if (target.v.hasFlag(VF.lockon)) {
+      this.event({type: "sv", volatiles: [target.clearFlag(VF.lockon)]});
 
       const moveId = this.moveIdOf(move);
       if (moveId === "earthquake" || moveId === "fissure" || moveId === "magnitude") {
@@ -439,8 +439,8 @@ export class Battle {
     // eslint-disable-next-line prefer-const
     for (let {move, user, target, indexInMoves} of choices) {
       user.movedThisTurn = true;
-      if (user.v.hasFlag(VolatileFlag.destinyBond)) {
-        this.event({type: "sv", volatiles: [user.clearFlag(VolatileFlag.destinyBond)]});
+      if (user.v.hasFlag(VF.destinyBond)) {
+        this.event({type: "sv", volatiles: [user.clearFlag(VF.destinyBond)]});
       }
 
       if (move.kind !== "switch" && user.v.encore) {
@@ -523,7 +523,7 @@ export class Battle {
       return;
     }
 
-    if (target.v.hasFlag(VolatileFlag.protect) && this.affectedByProtect(move)) {
+    if (target.v.hasFlag(VF.protect) && this.affectedByProtect(move)) {
       this.info(target, "protect");
       return;
     }
@@ -592,16 +592,16 @@ export class Battle {
       return;
     } else if (poke.base.status === "brn" && tickCounter("brn")) {
       return;
-    } else if (poke.v.hasFlag(VolatileFlag.seeded) && tickCounter("seeded")) {
+    } else if (poke.v.hasFlag(VF.seeded) && tickCounter("seeded")) {
       return;
     } else if (
-      poke.v.hasFlag(VolatileFlag.nightmare) &&
+      poke.v.hasFlag(VF.nightmare) &&
       poke.damage(Math.max(1, idiv(poke.base.stats.hp, 4)), poke, this, false, "nightmare", true)
         .dead
     ) {
       return;
     } else if (
-      poke.v.hasFlag(VolatileFlag.curse) &&
+      poke.v.hasFlag(VF.curse) &&
       poke.damage(Math.max(1, idiv(poke.base.stats.hp, 4)), poke, this, false, "curse", true).dead
     ) {
       return;
@@ -753,7 +753,7 @@ export class Battle {
     // Screens
     for (const player of this.players) {
       // technically should be safeguard, then light screen and reflect but who cares
-      for (const screen of ["safeguard", "light_screen", "reflect"] as const) {
+      for (const screen of screens) {
         if (player.screens[screen] && --player.screens[screen] === 0) {
           this.event({type: "screen", src: player.id, screen, kind: "end"});
         }
@@ -775,7 +775,7 @@ export class Battle {
 
     const cureConfuse = (poke: ActivePokemon) => {
       poke.v.confusion = 0;
-      const v = [{id: poke.owner.id, v: {flags: poke.v.flags}}];
+      const v = [{id: poke.owner.id, v: {flags: poke.v.cflags}}];
       this.info(poke, "confused_end", v);
       poke.base.item = undefined;
     };
@@ -817,7 +817,7 @@ export class Battle {
         (--active.v.encore.turns === 0 || !active.base.pp[active.v.encore.indexInMoves])
       ) {
         active.v.encore = undefined;
-        this.info(active, "encore_end", [{id: active.owner.id, v: {flags: active.v.flags}}]);
+        this.info(active, "encore_end", [{id: active.owner.id, v: {flags: active.v.cflags}}]);
       }
     }
 
@@ -835,10 +835,10 @@ export class Battle {
       if (this.gen.id === 1 && poke.v.trapped && !this.opponentOf(poke.owner).active.v.trapping) {
         poke.v.trapped = undefined;
       }
-      if (poke.v.hasFlag(VolatileFlag.protect | VolatileFlag.endure)) {
+      if (poke.v.hasFlag(VF.protect | VF.endure)) {
         this.event({
           type: "sv",
-          volatiles: [poke.clearFlag(VolatileFlag.protect | VolatileFlag.endure)],
+          volatiles: [poke.clearFlag(VF.protect | VF.endure)],
         });
       }
     }
@@ -900,15 +900,15 @@ export class ActivePokemon {
       this.v.counter = old.counter;
 
       const passedFlags =
-        VolatileFlag.light_screen |
-        VolatileFlag.reflect |
-        VolatileFlag.mist |
-        VolatileFlag.focus |
-        VolatileFlag.seeded |
-        VolatileFlag.curse |
-        VolatileFlag.foresight |
-        VolatileFlag.lockon;
-      this.v.setFlag(old.flags & passedFlags);
+        VF.lightScreen |
+        VF.reflect |
+        VF.mist |
+        VF.focus |
+        VF.seeded |
+        VF.curse |
+        VF.foresight |
+        VF.lockon;
+      this.v.setFlag(old.cflags & passedFlags);
 
       // Is trapping passed? Encore? Nightmare?
 
@@ -921,14 +921,14 @@ export class ActivePokemon {
 
     const v: ChangedVolatiles[number]["v"] = {};
 
-    const {active, id} = battle.opponentOf(this.owner);
-    if (active.v.attract === this) {
-      active.v.attract = undefined;
-      v.flags = active.v.flags;
+    const {active: opp, id} = battle.opponentOf(this.owner);
+    if (opp.v.attract === this) {
+      opp.v.attract = undefined;
+      v.flags = opp.v.cflags;
     }
-    if (active.v.meanLook === this) {
-      active.v.meanLook = undefined;
-      v.flags = active.v.flags;
+    if (opp.v.meanLook === this) {
+      opp.v.meanLook = undefined;
+      v.flags = opp.v.cflags;
     }
 
     battle.event({
@@ -949,16 +949,16 @@ export class ActivePokemon {
       ],
     });
 
-    if (active.v.trapped && active.v.trapped.user === this) {
+    if (opp.v.trapped && opp.v.trapped.user === this && !opp.v.fainted) {
       battle.event({
         type: "trap",
-        src: active.owner.id,
-        target: active.owner.id,
+        src: opp.owner.id,
+        target: opp.owner.id,
         kind: "end",
-        move: battle.moveIdOf(active.v.trapped.move)!,
+        move: battle.moveIdOf(opp.v.trapped.move)!,
         volatiles: [{id, v: {trapped: null}}],
       });
-      active.v.trapped = undefined;
+      opp.v.trapped = undefined;
     }
 
     if (this.base.item === "berserkgene") {
@@ -1012,7 +1012,7 @@ export class ActivePokemon {
       this.v.substitute = Math.max(this.v.substitute - dmg, 0);
       if (this.v.substitute === 0) {
         volatiles ??= [];
-        volatiles.push({id: this.owner.id, v: {flags: this.v.flags}});
+        volatiles.push({id: this.owner.id, v: {flags: this.v.cflags}});
       }
 
       const event = battle.event<HitSubstituteEvent>({
@@ -1139,8 +1139,8 @@ export class ActivePokemon {
   unstatus(battle: Battle, why: InfoReason) {
     this.base.status = undefined;
     this.v.hazed = this.v.hazed || why === "thaw";
-    this.v.clearFlag(VolatileFlag.nightmare);
-    return battle.info(this, why, [{id: this.owner.id, v: {status: null, flags: this.v.flags}}]);
+    this.v.clearFlag(VF.nightmare);
+    return battle.info(this, why, [{id: this.owner.id, v: {status: null, flags: this.v.cflags}}]);
   }
 
   setStage(
@@ -1196,7 +1196,7 @@ export class ActivePokemon {
 
     this.v.confusion = turns ?? battle.rng.int(2, 5);
     if (!thrashing) {
-      battle.info(this, "became_confused", [{id: this.owner.id, v: {flags: this.v.flags}}]);
+      battle.info(this, "cConfused", [{id: this.owner.id, v: {flags: this.v.cflags}}]);
     }
     return true;
   }
@@ -1304,14 +1304,14 @@ export class ActivePokemon {
     }
   }
 
-  setFlag(flag: VolatileFlag) {
+  setFlag(flag: VF) {
     this.v.setFlag(flag);
-    return {id: this.owner.id, v: {flags: this.v.flags}};
+    return {id: this.owner.id, v: {flags: this.v.cflags}};
   }
 
-  clearFlag(flag: VolatileFlag) {
+  clearFlag(flag: VF) {
     this.v.clearFlag(flag);
-    return {id: this.owner.id, v: {flags: this.v.flags}};
+    return {id: this.owner.id, v: {flags: this.v.cflags}};
   }
 
   clientStats(battle: Battle) {
@@ -1330,7 +1330,7 @@ export class ActivePokemon {
       charging: this.v.charging ? battle.moveIdOf(this.v.charging) : undefined,
       trapped: this.v.trapped ? battle.moveIdOf(this.v.trapped.move) : undefined,
       types: !arraysEqual(this.v.types, base.species.types) ? [...this.v.types] : undefined,
-      flags: this.v.flags,
+      flags: this.v.cflags,
       perishCount: this.v.perishCount,
     };
   }
@@ -1372,7 +1372,7 @@ class Volatiles {
   mimic?: {move: MoveId; indexInMoves: number};
   trapping?: {move: Move; turns: number};
   trapped?: {user: ActivePokemon; move: Move; turns: number};
-  private _flags = VolatileFlag.none;
+  private _flags = VF.none;
 
   constructor(base: Pokemon) {
     this.types = [...base.species.types];
@@ -1395,37 +1395,37 @@ class Volatiles {
     );
   }
 
-  setFlag(flag: VolatileFlag) {
+  setFlag(flag: VF) {
     this._flags |= flag;
   }
 
-  clearFlag(flag: VolatileFlag) {
+  clearFlag(flag: VF) {
     this._flags &= ~flag;
   }
 
-  hasFlag(flag: VolatileFlag) {
-    return (this.flags & flag) !== 0;
+  hasFlag(flag: VF) {
+    return (this.cflags & flag) !== 0;
   }
 
-  get flags() {
+  get cflags() {
     let flags = this._flags;
     if (this.disabled) {
-      flags |= VolatileFlag.disabled;
+      flags |= VF.cDisabled;
     }
     if (this.attract) {
-      flags |= VolatileFlag.attract;
+      flags |= VF.cAttract;
     }
     if (this.confusion) {
-      flags |= VolatileFlag.confused;
+      flags |= VF.cConfused;
     }
     if (this.substitute) {
-      flags |= VolatileFlag.substitute;
+      flags |= VF.cSubstitute;
     }
     if (this.encore) {
-      flags |= VolatileFlag.encore;
+      flags |= VF.cEncore;
     }
     if (this.meanLook) {
-      flags |= VolatileFlag.meanLook;
+      flags |= VF.cMeanLook;
     }
     return flags;
   }

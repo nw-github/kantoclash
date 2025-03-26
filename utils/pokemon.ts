@@ -1,6 +1,6 @@
 import {moveList, type MoveId, type Move} from "~/game/moves";
 import {speciesList, type SpeciesId} from "~/game/species";
-import {statKeys, type Stats, type Type} from "~/game/utils";
+import {statKeys, type Stats} from "~/game/utils";
 import {battleFormats} from "./shared";
 import type {PokemonDesc} from "~/game/pokemon";
 import type {Generation} from "~/game/gen";

@@ -1,5 +1,5 @@
 import type {ActivePokemon, Battle} from "../battle";
-import {idiv, isSpecial, randChoiceWeighted, VolatileFlag} from "../utils";
+import {idiv, isSpecial, randChoiceWeighted, VF} from "../utils";
 import type {Random} from "random";
 import type {CalcDamageParams} from "../gen";
 import type {DamagingMove} from "../moves";
@@ -76,7 +76,7 @@ export function exec(
     target.v.recharge = undefined;
   }
 
-  if (target.v.hasFlag(VolatileFlag.protect)) {
+  if (target.v.hasFlag(VF.protect)) {
     battle.info(target, "protect");
     return false;
   }
@@ -163,7 +163,7 @@ export function exec(
     } else if (this.flag === "double" || this.flag === "multi") {
       const count = this.flag === "double" ? 2 : multiHitCount(battle.rng);
       for (let hits = 1; !dead && !brokeSub && !endured && hits < count; hits++) {
-        if (dmg > 0 && dmg > target.base.hp && target.v.hasFlag(VolatileFlag.endure)) {
+        if (dmg > 0 && dmg > target.base.hp && target.v.hasFlag(VF.endure)) {
           dmg = Math.max(target.base.hp - 1, 0);
           endured = true;
         }
@@ -189,7 +189,7 @@ export function exec(
     battle.info(target, "endure_hit");
   }
 
-  if (dead && target.v.hasFlag(VolatileFlag.destinyBond)) {
+  if (dead && target.v.hasFlag(VF.destinyBond)) {
     user.damage(user.base.hp, target, battle, false, "destiny_bond", true);
     // user should die first
     battle.checkFaint(target, user);
@@ -377,7 +377,7 @@ export function getDamage(
   // TODO: What happens when a pokemon that is 0 HP as a result of the perish song+spikes bug uses
   // endure?
   const deadly = dmg > 0 && dmg > target.base.hp;
-  const endured = deadly && target.v.hasFlag(VolatileFlag.endure);
+  const endured = deadly && target.v.hasFlag(VF.endure);
   band =
     band ||
     (deadly && !endured && target.base.item === "focusband" && battle.gen.rng.tryFocusBand(battle));

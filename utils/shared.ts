@@ -1,6 +1,6 @@
 import type {Status} from "~/game/pokemon";
 import type {Mods, VolatileStats} from "../game/battle";
-import type {Stages, Type, VolatileFlag} from "../game/utils";
+import type {Stages, Type, VF} from "../game/utils";
 import type {MoveId} from "~/game/moves";
 import type {Generation} from "~/game/gen1";
 
@@ -12,7 +12,7 @@ export type ClientVolatiles = {
   charging?: MoveId;
   trapped?: MoveId;
   types?: Type[];
-  flags?: VolatileFlag;
+  flags?: VF;
   perishCount?: number;
 };
 
