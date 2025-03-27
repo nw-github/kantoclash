@@ -1,6 +1,9 @@
 <template>
-  <UContainer class="h-screen py-6">
-    <UCard class="h-full flex flex-col" :ui="{body: {base: 'grow overflow-hidden'}}">
+  <UContainer class="h-dvh sm:py-6" :ui="{padding: 'px-0'}">
+    <UCard
+      class="h-full flex flex-col"
+      :ui="{body: {base: 'grow overflow-hidden'}, rounded: 'rounded-none sm:rounded-lg'}"
+    >
       <template #header>
         <nav class="flex justify-between">
           <UHorizontalNavigation class="hidden md:block" :links>

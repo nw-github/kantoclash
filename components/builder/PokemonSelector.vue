@@ -2,7 +2,7 @@
   <Selector
     v-model:open="open"
     class="grow"
-    base="w-96 sm:w-[31rem] max-h-60 sm:left-[-7rem]"
+    base="w-92 sm:w-[31rem] h-60 sm:left-[-7rem]"
     :items
     searchable
     :filter
@@ -20,24 +20,26 @@
     </div>
 
     <template #item="{item: [id, species]}">
-      <div class="flex items-center gap-1">
-        <BoxSprite :species="id" />
-        <span class="text-xs sm:text-sm truncate" :class="[isIllegal(species) && 'text-red-500']">
-          {{ species.name }}
-        </span>
-      </div>
+      <div class="flex justify-between gap-16 w-full">
+        <div class="flex items-center gap-1">
+          <BoxSprite :species="id" />
+          <span class="text-xs sm:text-sm truncate" :class="[isIllegal(species) && 'text-red-500']">
+            {{ species.name }}
+          </span>
+        </div>
 
-      <div class="flex items-center gap-2">
-        <TypeBadge v-for="type in species.types" :key="type" :type image />
-        <div class="flex items-center">
-          <div v-for="(name, stat) in statKeys" :key="stat" class="flex flex-col w-6 sm:w-8">
-            <span class="text-[0.6rem] text-center text-gray-400">{{ name }}</span>
-            <span
-              class="text-[0.7rem] sm:text-xs text-center"
-              :style="{color: baseStatColor(species.stats[stat])}"
-            >
-              {{ species.stats[stat] }}
-            </span>
+        <div class="flex items-center gap-2 justify-end">
+          <TypeBadge v-for="type in species.types" :key="type" :type image />
+          <div class="flex items-center">
+            <div v-for="(name, stat) in statKeys" :key="stat" class="flex flex-col w-6 sm:w-8">
+              <span class="text-[0.6rem] text-center text-gray-400">{{ name }}</span>
+              <span
+                class="text-[0.7rem] sm:text-xs text-center"
+                :style="{color: baseStatColor(species.stats[stat])}"
+              >
+                {{ species.stats[stat] }}
+              </span>
+            </div>
           </div>
         </div>
       </div>
