@@ -150,7 +150,7 @@
             :key
             :class="clazz"
             :style
-            class="absolute w-[128px] h-[117px] opacity-30 z-30 rounded-md pointer-events-none"
+            class="absolute w-16 h-14 sm:w-32 sm:h-28 opacity-30 z-30 rounded-md pointer-events-none"
           />
         </TransitionGroup>
       </div>
@@ -163,7 +163,7 @@
 
       <img
         v-if="side?.spikes"
-        class="absolute size-7 bottom-10 sm:bottom-14 opacity-80"
+        class="absolute size-4 sm:size-7 bottom-10 sm:bottom-14 opacity-80"
         src="/caltrop.svg"
       />
 
@@ -174,17 +174,17 @@
 
       <img
         ref="caltrop1"
-        class="absolute bottom-4 sm:bottom-8 size-7 opacity-0"
+        class="absolute bottom-4 sm:bottom-8 size-4 sm:size-7 opacity-0"
         src="/caltrop.svg"
       />
       <img
         ref="caltrop2"
-        class="absolute bottom-4 sm:bottom-8 size-7 opacity-0"
+        class="absolute bottom-4 sm:bottom-8 size-4 sm:size-7 opacity-0"
         src="/caltrop.svg"
       />
       <img
         ref="caltrop3"
-        class="absolute bottom-4 sm:bottom-8 size-7 opacity-0"
+        class="absolute bottom-4 sm:bottom-8 size-4 sm:size-7 opacity-0"
         src="/caltrop.svg"
       />
     </div>
