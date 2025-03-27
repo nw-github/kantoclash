@@ -256,6 +256,7 @@ import criesSpritesheet from "~/public/effects/cries.json";
 import {GENERATIONS} from "~/game/gen";
 import type {Weather, Screen} from "~/game/utils";
 import type {AnimationParams} from "./ActivePokemon.vue";
+import type {AnimationPlaybackControls} from "motion-v";
 
 const weatherData = {
   rain: {icon: "material-symbols:rainy", tooltip: "Raining", class: "text-sky-400"},
@@ -403,6 +404,8 @@ const handleVolatiles = (e: BattleEvent) => {
   }
 };
 
+const animations: AnimationPlaybackControls[] = [];
+
 const runTurn = async (live: boolean, turnIdx: number) => {
   const isLive = () => live && skippingToTurn.value <= turnIdx && isMounted.value;
 
@@ -423,7 +426,20 @@ const runTurn = async (live: boolean, turnIdx: number) => {
   const playAnimation = async (id: string, params: AnimationParams) => {
     const isMe = id === perspective.value;
     const component = activePokemon.value!.find(a => a.isBack() === isMe);
-    await component!.playAnimation(!isLive(), params);
+
+    if (!isLive()) {
+      params.cb?.();
+      params.cb = undefined;
+      component!.playAnimation(params)!.complete();
+    } else {
+      const animation = component!.playAnimation(params);
+      animations.push(animation);
+      await animation;
+      const idx = animations.indexOf(animation);
+      if (idx !== -1) {
+        animations.splice(idx, 1);
+      }
+    }
   };
 
   const pushEvent = (e: RawUIBattleEvent) => {
@@ -656,9 +672,10 @@ const turnNoToIndex = (turn: number) => {
 const skipTo = (index: number) => {
   // console.log(`skipTo() | index: ${index} currentTurn: ${currentTurn}`);
 
-  activePokemon.value?.forEach(poke => poke.skipAnimation());
-  // TODO: mute current sounds
+  animations.forEach(anim => anim.complete());
+  animations.length = 0;
 
+  // TODO: mute current sounds
   if (index < currentTurn) {
     skippingToTurn.value = currentTurn + 1;
     onConnect(index);

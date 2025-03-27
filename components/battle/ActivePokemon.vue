@@ -332,11 +332,11 @@ onMounted(async () => {
   //     name: "l",
   //     cb: () => log("cb called"),
   //   });
-  await playAnimation({
-    anim: "sendin",
-    batonPass: false,
-    name: "l",
-  });
+  // await playAnimation({
+  //   anim: "sendin",
+  //   batonPass: false,
+  //   name: "l",
+  // });
 });
 
 /*
@@ -516,7 +516,7 @@ const animations = {
       ".pokeball",
       {
         x: [back ? -rem(6) : rem(6), 0],
-        y: [-rem(2), -rem(5), -rem(1)],
+        y: [-rem(2), -rem(5), -rem(1.25)],
         rotateZ: [0, 360 * 5 * (back ? 1 : -1)],
         opacity: [1, 0],
       },
@@ -525,7 +525,7 @@ const animations = {
         y: {times: [0, 0.4, 1], ease: ["easeOut", "backIn"]},
         rotateZ: {ease: "linear"},
         opacity: {ease: steps(1)},
-        duration: ms(700),
+        duration: ms(650),
       },
     ]);
     if (cb) {
