@@ -78,7 +78,6 @@
           >
             <Sprite
               :species="poke?.transformed ?? poke?.speciesId"
-              :substitute="((poke?.v.flags || 0) & VF.cSubstitute) !== 0"
               :scale="lessThanSm ? 1 : 2"
               :shiny="poke?.shiny"
               :back
@@ -157,34 +156,42 @@
 
       <div
         ref="ground"
-        class="ground absolute bottom-4 sm:bottom-8 bg-gray-200 dark:bg-gray-600 h-10 w-20 sm:h-16 sm:w-40 rounded-[100%]"
+        class="ground absolute bottom-4 sm:bottom-8 bg-gray-200 dark:bg-gray-600 h-10 w-20 sm:h-16 sm:w-40 rounded-[100%] flex justify-center"
         :class="{back, front: !back}"
-      />
+      >
+        <div
+          ref="pokeBall"
+          class="pokeball absolute size-[42px] z-10 opacity-0 pointer-events-none"
+        />
+
+        <div
+          ref="substitute"
+          class="absolute opacity-0 bottom-[50%] pointer-events-none"
+          :class="!back && 'z-40'"
+        >
+          <Sprite species="marowak" substitute :scale="lessThanSm ? 1 : 2" :back />
+        </div>
+      </div>
 
       <img
         v-if="side?.spikes"
-        class="absolute size-4 sm:size-7 bottom-10 sm:bottom-14 opacity-80"
+        class="absolute size-4 sm:size-7 bottom-10 sm:bottom-14 opacity-80 pointer-events-none"
         src="/caltrop.svg"
-      />
-
-      <div
-        ref="pokeBall"
-        class="pokeball absolute size-[42px] z-10 opacity-0 scale-50 sm:scale-100"
       />
 
       <img
         ref="caltrop1"
-        class="absolute bottom-4 sm:bottom-8 size-4 sm:size-7 opacity-0"
+        class="absolute bottom-4 sm:bottom-8 size-4 sm:size-7 opacity-0 pointer-events-none"
         src="/caltrop.svg"
       />
       <img
         ref="caltrop2"
-        class="absolute bottom-4 sm:bottom-8 size-4 sm:size-7 opacity-0"
+        class="absolute bottom-4 sm:bottom-8 size-4 sm:size-7 opacity-0 pointer-events-none"
         src="/caltrop.svg"
       />
       <img
         ref="caltrop3"
-        class="absolute bottom-4 sm:bottom-8 size-4 sm:size-7 opacity-0"
+        class="absolute bottom-4 sm:bottom-8 size-4 sm:size-7 opacity-0 pointer-events-none"
         src="/caltrop.svg"
       />
     </div>
@@ -230,7 +237,6 @@
 <script setup lang="ts">
 import {stageMultipliers, VF, hpPercentExact, type Screen} from "~/game/utils";
 import {calcStat, type Pokemon} from "~/game/pokemon";
-import type {MoveId} from "~/game/moves";
 import {breakpointsTailwind} from "@vueuse/core";
 import type {Generation} from "~/game/gen";
 import type {Side} from "./Battle.vue";
@@ -310,6 +316,15 @@ const caltrop1 = ref<HTMLImageElement>();
 const caltrop2 = ref<HTMLImageElement>();
 const caltrop3 = ref<HTMLImageElement>();
 
+const substitute = ref<HTMLDivElement>();
+
+onMounted(async () => {
+  // await playAnimation(false, {anim: "get_sub", batonPass: false, name: ""});
+  // await playAnimation(false, {anim: "lose_sub", batonPass: false, name: ""});
+  // await playAnimation(false, {anim: "attack", batonPass: false, name: ""});
+  // await playAnimation(false, {anim: "attack", batonPass: false, name: ""});
+});
+
 /*
 "red" | "pink" | "emerald" | "teal" | "lime" | "gray" | "black" | "sky" | "white" | "green" |
 "orange" | "amber" | "yellow" | "cyan" | "blue" | "indigo" | "violet" | "purple" | "fuchsia" |
@@ -339,15 +354,6 @@ const badges: {flag: VF; props: InstanceType<typeof UBadge>["$props"]}[] = [
   {flag: VF.nightmare, props: {color: "black", label: "Nightmare"}},
 ];
 
-export type AnimationType =
-  | "faint"
-  | "sendin"
-  | "retract"
-  | "get_sub"
-  | "lose_sub"
-  | "phaze"
-  | MoveId;
-
 const rem = (rem: number) => parseFloat(getComputedStyle(document.documentElement).fontSize) * rem;
 
 const arcTo = (
@@ -374,243 +380,303 @@ const arcTo = (
   };
 };
 
+export type AnimationParams =
+  | SwitchAnim
+  | {
+      anim: "faint" | "get_sub" | "lose_sub" | "spikes" | "attack";
+      cb?: () => void;
+      batonPass?: boolean;
+      name?: string;
+    }
+  | SwitchAnim;
+
+export type SwitchAnim = {
+  anim: "sendin" | "retract" | "phaze";
+  cb?: () => void;
+  batonPass: boolean;
+  name: string;
+};
+
 let timeline: anime.AnimeTimelineInstance | undefined;
-const playAnimation = (anim: AnimationType, name?: string, cb?: () => void) => {
-  return new Promise<void>(resolve => {
-    const other = document.querySelector(`.sprite${back ? ".front" : ".back"}`)!;
-    if (!sprite.value || !pokeBall.value) {
-      return;
+let hasSubstitute = false;
+const playAnimation = (skip: boolean, {anim, cb, batonPass, name}: AnimationParams) => {
+  if (!sprite.value || !pokeBall.value || !substitute.value) {
+    return;
+  }
+  if (name) {
+    pbCol.value = name ? [...name].reduce((acc, x) => x.charCodeAt(0) + acc, 0) % 17 : 3;
+  }
+
+  const subOpacity = 0.5;
+  const [subOffsetX, subOffsetY] = [rem(1.5), rem(0.5)];
+
+  timeline = useAnime.timeline();
+  if (anim === "faint") {
+    if (hasSubstitute) {
+      playLoseSub(timeline);
     }
 
-    pbCol.value = name ? [...name].reduce((acc, x) => x.charCodeAt(0) + acc, 0) % 17 : 3;
+    timeline.add({
+      targets: sprite.value,
+      duration: 250,
+      translateY: {value: rem(7), duration: 250},
+      easing: "easeInExpo",
+      opacity: 0,
+      complete: () => useAnime.set(sprite.value!, {translateX: 0, translateY: 0, scale: 1}),
+    });
+  } else if (anim === "sendin") {
+    pbRow.value = 0;
+    timeline.add({
+      targets: pokeBall.value,
+      translateX: [
+        {value: back ? -rem(6) : rem(6), duration: 0},
+        {value: 0, duration: 700, easing: "linear"},
+      ],
+      translateY: [
+        {value: -rem(2.5), duration: 0},
+        {value: -rem(4 * 1.4), duration: 450, easing: "easeOutQuad"},
+        {value: -rem(0.5), duration: 250, easing: "easeInQuad"},
+      ],
+      rotateZ: [
+        {value: 0, duration: 0},
+        {value: 360 * 4 * (back ? 1 : -1), duration: 800, easing: "linear"},
+      ],
+      opacity: [
+        {value: 100, duration: 800},
+        {value: 0, duration: 0},
+      ],
+      complete: cb,
+    });
+    timeline.add({
+      targets: sprite.value,
+      easing: "easeOutExpo",
+      opacity: [{value: 0, duration: 0}, {value: 1}],
+      translateX: {value: 0, duration: 0},
+      translateY: {value: 0, duration: 0},
+      scale: [{value: 0, duration: 0}, {value: 1}],
+      duration: 800,
+    });
 
-    skipAnimation();
-    timeline = useAnime.timeline();
-    if (anim === "faint") {
-      timeline.add({
-        targets: sprite.value,
-        duration: 250,
-        translateY: {value: rem(7), duration: 250},
-        easing: "easeInExpo",
-        opacity: 0,
-        complete: () => {
-          useAnime.set(sprite.value!, {translateX: 0, translateY: 0, scale: 1});
-          resolve();
-        },
-      });
-    } else if (anim === "sendin") {
-      reset(false);
-      useAnime.set(pokeBall.value, {translateX: 0, translateY: 0, rotateZ: 0});
-
-      const pbRect = pokeBall.value.getBoundingClientRect();
-      const sprRect = sprite.value.getBoundingClientRect();
-      const gRect = ground.value!.getBoundingClientRect();
-      const myCenterX = sprRect.left + sprRect.width / 2;
-      const myCenterY = sprRect.top + sprRect.height / 2;
-      const [x, y] = relativePos(pbRect, myCenterX, myCenterY);
-      const startX = relativePos(
-        pbRect,
-        back ? gRect.left - rem(1.25) : gRect.right + rem(1),
-        0,
-      )[0];
-      const endX = back ? x - 15 : x - 10;
-
-      pbRow.value = 0;
-      timeline.add({
-        targets: pokeBall.value,
-        translateX: [
-          {value: startX, duration: 0},
-          {value: endX, duration: 700, easing: "linear"},
-        ],
-        translateY: [
-          {value: y - 10, duration: 0},
-          {value: y - 60, duration: 450, easing: "easeOutQuad"},
-          {value: y, duration: 250, easing: "easeInQuad"},
-        ],
-        rotateZ: {value: 360 * 4 * (back ? 1 : -1), duration: 800, easing: "linear"},
-        opacity: [
-          {value: 100, duration: 800},
-          {value: 0, duration: 0},
-        ],
-        complete: cb,
-      });
+    if (hasSubstitute) {
       timeline.add({
         targets: sprite.value,
         easing: "easeOutExpo",
-        opacity: 1,
-        scale: [{value: 0, duration: 0}, {value: 1}],
-        duration: 800,
-        complete: () => resolve(),
+        duration: 250,
+        opacity: subOpacity,
+        translateX: back ? -subOffsetX : subOffsetX,
+        translateY: back ? subOffsetY : -subOffsetY,
       });
-    } else if (anim === "retract") {
-      if (((poke?.v.flags || 0) & VF.cSubstitute) === 0) {
-        reset(true);
-      }
-      useAnime.set(pokeBall.value, {translateX: 0, translateY: 0, opacity: 1});
-
-      const sprRect = sprite.value.getBoundingClientRect();
-      const pbRect = pokeBall.value.getBoundingClientRect();
-      const gRect = ground.value!.getBoundingClientRect();
-
-      const [x, y] = relativePos(
-        pbRect,
-        gRect.left + gRect.width / 2,
-        gRect.top + rem(lessThanSm.value ? 3 : 0),
-      );
-      const [_, sprY] = relativePos(sprRect, 0, gRect.top - rem(lessThanSm.value ? 1.2 : 2.8));
-
-      pbRow.value = 10;
-
+      // prettier-ignore
       timeline.add({
-        targets: pokeBall.value,
-        easing: "steps(2)",
-        translateX: [{value: x - pbRect.width / 2, duration: 0}],
-        translateY: [{value: y, duration: 0}],
-        duration: 800,
-      });
+        targets: substitute.value,
+        duration: 250,
+        easing: "easeOutExpo",
+        translateX: 0,
+        translateY: 0,
+        opacity: 1,
+      }, "+=0");
+    }
+  } else if (anim === "retract") {
+    if (hasSubstitute) {
+      if (batonPass) {
+        playStartAttack(timeline, subOffsetX, subOffsetY);
+      } else {
+        playLoseSub(timeline);
+      }
+    }
+
+    const sprRect = sprite.value.getBoundingClientRect();
+    const gRect = ground.value!.getBoundingClientRect();
+    const [_, sprY] = relativePos(sprRect, 0, gRect.top - rem(lessThanSm.value ? 1.2 : 2.8));
+
+    pbRow.value = 10;
+
+    timeline.add({
+      targets: pokeBall.value,
+      easing: "steps(2)",
+      translateX: [{value: 0, duration: 0}],
+      translateY: [{value: 0, duration: 0}],
+      opacity: [{value: 1, duration: 0}],
+      duration: 800,
+    });
+    timeline.add(
+      {
+        targets: sprite.value,
+        easing: "easeOutQuart",
+        scale: 0.45,
+        opacity: [{value: 0, easing: "easeInCubic"}],
+        translateY: sprY,
+        duration: 550,
+        complete: () => {
+          useAnime.set(sprite.value!, {opacity: 0, translateX: 0, translateY: 0, scale: 1});
+        },
+      },
+      "+=0",
+    );
+    timeline.add({
+      targets: pokeBall.value,
+      opacity: 0,
+      duration: 300,
+      easing: "linear",
+      begin: () => (pbRow.value = 9),
+    });
+  } else if (anim === "get_sub") {
+    hasSubstitute = true;
+    timeline.add({
+      targets: sprite.value,
+      easing: "easeOutExpo",
+      duration: 800,
+      opacity: subOpacity,
+      translateX: back ? -subOffsetX : subOffsetX,
+      translateY: back ? subOffsetY : -subOffsetY,
+      complete: () => {
+        useAnime.set(substitute.value!, {opacity: 1});
+        cb?.();
+      },
+    });
+    timeline.add({
+      targets: substitute.value,
+      duration: 350,
+      scaleX: {value: 1, duration: 0},
+      translateX: {value: 0, duration: 0},
+      translateY: [
+        {value: -rem(8), duration: 0},
+        {value: 0, duration: 350},
+      ],
+      easing: "easeOutBounce",
+    });
+  } else if (anim === "lose_sub") {
+    hasSubstitute = false;
+    playLoseSub(timeline, cb);
+  } else if (anim === "phaze") {
+    timeline.add({
+      targets: sprite.value,
+      duration: 450,
+      translateX: [{value: back ? -120 : 120, easing: "easeOutQuart"}],
+      opacity: [{value: 0, easing: "easeOutExpo"}],
+      complete: () => useAnime.set(sprite.value!, {translateX: 0, translateY: 0, scale: 1}),
+    });
+
+    if (hasSubstitute) {
+      hasSubstitute = false;
       timeline.add(
         {
-          targets: sprite.value,
-          easing: "easeOutQuart",
-          scale: 0.45,
-          opacity: [{value: 0, easing: "easeInCubic"}],
-          translateY: sprY,
-          duration: 550,
+          targets: substitute.value,
+          duration: 450,
+          translateX: [{value: back ? -120 : 120, easing: "easeOutQuart"}],
+          opacity: [{value: 0, easing: "easeOutExpo"}],
+          complete: () => useAnime.set(substitute.value!, {translateX: 0, translateY: 0, scale: 1}),
         },
         0,
       );
-      timeline.add({
-        targets: pokeBall.value,
-        opacity: 0,
-        duration: 300,
-        easing: "linear",
-        begin: () => (pbRow.value = 9),
-        complete: () => resolve(),
-      });
-    } else if (anim === "get_sub") {
-      // preload the substitute graphic
-      const img = new Image();
-      img.src = `/sprites/battle/${back ? "back/" : ""}substitute.gif`;
+    }
+  } else if (anim === "spikes") {
+    const other = document.querySelector<HTMLDivElement>(`.ground${back ? ".front" : ".back"}`)!;
+    const sprites = [caltrop1.value!, caltrop2.value!, caltrop3.value!];
 
-      const sprRect = sprite.value.getBoundingClientRect();
-      const groundRect = ground.value!.getBoundingClientRect();
-      const [_, sprY] = relativePos(sprRect, 0, groundRect.top - sprRect.height / 2);
-
-      timeline.add({
-        targets: sprite.value,
-        duration: 1000,
-        easing: "easeInExpo",
-        opacity: 0,
-        translateY: [{value: 0, duration: 500}],
-        complete: cb,
-      });
-      timeline.add({
-        targets: sprite.value,
-        duration: 250,
-        translateY: [
-          {value: -rem(8), duration: 0},
-          {value: sprY, duration: 250},
-        ],
-        easing: "easeOutBounce",
-        opacity: {value: 1, duration: 0},
-        complete: () => resolve(),
-      });
-    } else if (anim === "lose_sub") {
-      timeline.add({
-        targets: sprite.value,
-        duration: 750,
-        easing: "easeInExpo",
-        opacity: 0,
-        complete: () => {
-          cb!();
-          useAnime.set(sprite.value!, {translateY: 0});
-        },
-      });
-      timeline.add({
-        targets: sprite.value,
-        duration: 750,
-        easing: "easeInExpo",
-        opacity: 1,
-        complete: () => resolve(),
-      });
-    } else if (anim === "phaze") {
-      timeline.add({
-        targets: sprite.value,
-        duration: 450,
-        translateX: [{value: back ? -120 : 120, easing: "easeOutQuart"}],
-        opacity: [{value: 0, easing: "easeOutExpo"}],
-        complete: () => {
-          useAnime.set(sprite.value!, {translateX: 0, translateY: 0, scale: 1});
-          resolve();
-        },
-      });
-    } else if (anim === "spikes") {
-      const other = document.querySelector<HTMLDivElement>(`.ground${back ? ".front" : ".back"}`)!;
-      const sprites = [caltrop1.value!, caltrop2.value!, caltrop3.value!];
-
-      let delay = 0;
-      for (let i = 0; i < sprites.length; i++) {
-        const duration = 250;
-        let xOffs = [0, -30, 30][i];
-        if (i !== 0) {
-          xOffs += Math.sign(xOffs) * Math.random() * 20;
-        }
-
-        const caltrop = sprites[i];
-        const params: anime.AnimeParams = {
-          targets: caltrop,
-          ...arcTo(caltrop, other, duration, Math.random() * 20 + 50, [
-            other.getBoundingClientRect().width / 2 + xOffs,
-            20,
-          ]),
-          opacity: {value: 1, duration: 0},
-          complete: () => {
-            useAnime({
-              targets: caltrop,
-              opacity: [{value: 1, duration: 250}, {value: 0}],
-              complete: () => useAnime.set(caltrop, {translateX: 0, translateY: 0, opacity: 0}),
-            });
-
-            if (i === 0 && cb) {
-              cb();
-            } else if (i === 2) {
-              resolve();
-            }
-          },
-        };
-
-        timeline.add(params, delay);
-
-        delay += 80;
+    let delay = 0;
+    for (let i = 0; i < sprites.length; i++) {
+      const duration = 250;
+      let xOffs = [0, -30, 30][i];
+      if (i !== 0) {
+        xOffs += Math.sign(xOffs) * Math.random() * 20;
       }
-    } else if (gen.moveList[anim].kind !== "damage") {
-      return resolve();
-    } else {
-      const duration = 240;
-      let ran = false;
-      timeline.direction = "alternate";
-      timeline.add({
-        targets: sprite.value,
-        ...arcTo(sprite.value, other, duration),
-        loopComplete: () => {
-          if (!ran && cb) {
+
+      const caltrop = sprites[i];
+      const params: anime.AnimeParams = {
+        targets: caltrop,
+        ...arcTo(caltrop, other, duration, Math.random() * 20 + 50, [
+          other.getBoundingClientRect().width / 2 + xOffs,
+          20,
+        ]),
+        opacity: {value: 1, duration: 0},
+        complete: () => {
+          useAnime({
+            targets: caltrop,
+            opacity: [{value: 1, duration: 250}, {value: 0}],
+            complete: () => useAnime.set(caltrop, {translateX: 0, translateY: 0, opacity: 0}),
+          });
+
+          if (i === 0 && cb) {
             cb();
-            ran = true;
           }
         },
-        complete: () => resolve(),
-      });
-      return;
+      };
+
+      timeline.add(params, delay);
+      delay += 80;
+    }
+  } else {
+    if (hasSubstitute) {
+      playStartAttack(timeline, subOffsetX, subOffsetY);
     }
 
-    timeline.play();
+    const other = document.querySelector(`.sprite${back ? ".front" : ".back"}`)!;
+
+    const duration = 240;
+    let ran = false;
+    timeline.direction = "alternate";
+    timeline.add({
+      targets: sprite.value,
+      ...arcTo(sprite.value, other, duration),
+      loopComplete: () => {
+        if (!ran && cb) {
+          cb();
+          ran = true;
+        }
+      },
+    });
+  }
+
+  if (skip) {
+    timeline.seek(timeline.duration);
+    return;
+  }
+
+  return timeline.finished;
+};
+
+const playLoseSub = (timeline: anime.AnimeTimelineInstance, cb?: () => void) => {
+  hasSubstitute = false;
+  timeline.add({
+    targets: substitute.value,
+    duration: 300,
+    easing: "easeInExpo",
+    opacity: 0,
+    scaleX: 0,
+    complete: () => {
+      cb?.();
+      useAnime.set(sprite.value!, {scaleX: 1});
+    },
+  });
+  timeline.add({
+    targets: sprite.value,
+    duration: 500,
+    easing: "easeInExpo",
+    translateX: 0,
+    translateY: 0,
+    opacity: 1,
   });
 };
 
-const reset = (visible: boolean) => {
-  if (sprite.value) {
-    useAnime.set(sprite.value, {opacity: +visible, translateX: 0, translateY: 0, scale: 1});
-  }
+const playStartAttack = (timeline: anime.AnimeTimelineInstance, x: number, y: number) => {
+  timeline.add({
+    targets: substitute.value,
+    duration: 350,
+    easing: "easeOutExpo",
+    translateX: back ? -x : x,
+    translateY: back ? y : -y,
+    opacity: 0.5,
+  });
+  // prettier-ignore
+  timeline.add({
+    targets: sprite.value,
+    duration: 350,
+    easing: "easeOutExpo",
+    translateX: back ? x / 2 : -x / 2,
+    translateY: back ? -y / 2 : y / 2,
+    opacity: 1,
+  }, 0);
 };
 
 const skipAnimation = () => {
@@ -620,5 +686,7 @@ const skipAnimation = () => {
   }
 };
 
-defineExpose({playAnimation, skipAnimation, reset});
+const isBack = () => back;
+
+defineExpose({playAnimation, skipAnimation, isBack});
 </script>

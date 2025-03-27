@@ -11,9 +11,10 @@ const {volume, track, fadeOutRequested} = useBGMusic();
 const musicController = ref<HTMLAudioElement>();
 
 let playWasBlocked = false;
+let offset = 0;
 const context = useAudioContext(() => {
   if (playWasBlocked && source) {
-    source.start();
+    source.start(0, offset);
     showToast();
   }
 });
@@ -103,6 +104,8 @@ const play = async (next: string) => {
   gain.connect(context.destination);
 
   source = context.createBufferSource();
+  // TODO: just remove the leading silence
+  offset = next.includes("Cipher Peon Battle (Pokémon Colosseum)") ? 1.95 : 0;
   source.buffer = buffer;
   if (loop) {
     source.loopStart = toSeconds(loop.start);
@@ -114,7 +117,7 @@ const play = async (next: string) => {
   if (!context.unlocked) {
     playWasBlocked = true;
   } else {
-    source.start();
+    source.start(0, offset);
     showToast();
   }
 };
