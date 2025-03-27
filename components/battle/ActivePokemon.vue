@@ -530,13 +530,14 @@ const playAnimation = (skip: boolean, {anim, cb, batonPass, name}: AnimationPara
       translateX: back ? -subOffsetX : subOffsetX,
       translateY: back ? subOffsetY : -subOffsetY,
       complete: () => {
-        useAnime.set(substitute.value!, {opacity: 1, scaleX: 1});
+        useAnime.set(substitute.value!, {opacity: 1});
         cb?.();
       },
     });
     timeline.add({
       targets: substitute.value,
       duration: 350,
+      scaleX: {value: 1, duration: 0},
       translateX: {value: 0, duration: 0},
       translateY: [
         {value: -rem(8), duration: 0},
