@@ -289,7 +289,7 @@ const screens = computed(() => {
     addScreen("light_screen", scrColor.light_screen);
   }
 
-  if ((poke?.v.flags ?? 0) & VF.lightScreen) {
+  if ((poke?.v.flags ?? 0) & VF.reflect) {
     addScreen("reflect", scrColor.reflect);
   }
 

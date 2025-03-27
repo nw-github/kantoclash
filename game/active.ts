@@ -357,7 +357,7 @@ export class ActivePokemon {
       return false;
     }
 
-    this.v.confusion = turns ?? battle.rng.int(2, 5);
+    this.v.confusion = turns ?? battle.rng.int(2, 5) + 1;
     battle.info(this, reason ?? "cConfused", [{id: this.owner.id, v: {flags: this.v.cflags}}]);
     return true;
   }
