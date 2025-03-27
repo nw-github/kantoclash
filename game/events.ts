@@ -8,6 +8,7 @@ import type {ItemId} from "./item";
 type NullOrOptional<T> = {[P in keyof T]?: T[P] | null};
 
 type AnyEvent =
+  | NextTurnEvent
   | SwitchEvent
   | DamageEvent
   | RecoverEvent
@@ -43,6 +44,8 @@ export type ChangedVolatiles = {id: PlayerId; v: NullOrOptional<ClientVolatiles>
 export type BattleEvent = AnyEvent & {volatiles?: ChangedVolatiles};
 
 export type PlayerId = string;
+
+type NextTurnEvent = {type: "next_turn"; turn: number};
 
 type SwitchEvent = {
   type: "switch";

@@ -75,9 +75,9 @@
     </template>
 
     <template #default>
-      <template v-for="([turn, switchTurn, turnNo], i) in turns" :key="i">
-        <div v-if="i && !switchTurn" class="bg-gray-300 dark:bg-gray-700 w-full px-1 py-0.5">
-          <h2 class="text-xl font-bold">Turn {{ turnNo }}</h2>
+      <template v-for="(turn, i) in turns" :key="i">
+        <div v-if="i" class="bg-gray-300 dark:bg-gray-700 w-full px-1 py-0.5">
+          <h2 class="text-xl font-bold">Turn {{ i }}</h2>
         </div>
         <div class="events p-1">
           <template v-if="i > 0">
@@ -175,7 +175,7 @@ import type {InfoRecord} from "~/server/gameServer";
 import {until} from "@vueuse/core";
 
 const props = defineProps<{
-  turns: [UIBattleEvent[], boolean, number][];
+  turns: UIBattleEvent[][];
   players: Record<string, ClientPlayer>;
   perspective: string;
   chats: InfoRecord;
@@ -201,19 +201,6 @@ onMounted(async () => {
   useEventListener(scrollPoint.value?.parentElement, "wheel", () => (lastScroll = Date.now()));
   useEventListener(scrollPoint.value?.parentElement, "touchmove", () => (lastScroll = Date.now()));
   useEventListener(scrollPoint.value?.parentElement, "mousedown", () => (lastScroll = Date.now()));
-});
-
-watch([props.chats, props.turns], async () => {
-  if (Date.now() - lastScroll < 3500) {
-    return;
-  }
-
-  await nextTick();
-  scrollPoint.value?.scrollIntoView({
-    behavior: props.smoothScroll ? "smooth" : "instant",
-    block: "center",
-    inline: "center",
-  });
 });
 
 const sendMessage = () => {
@@ -243,4 +230,20 @@ const toggleMute = (id: string) => {
     mutedPlayers.value.push(id);
   }
 };
+
+const tryScroll = async () => {
+  if (Date.now() - lastScroll < 3500) {
+    return;
+  }
+
+  await nextTick();
+  scrollPoint.value?.scrollIntoView({
+    behavior: props.smoothScroll ? "smooth" : "instant",
+    block: "center",
+    inline: "center",
+  });
+};
+
+watch(props.chats, tryScroll);
+watch(() => props.turns, tryScroll, {deep: true});
 </script>

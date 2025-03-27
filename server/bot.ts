@@ -1,7 +1,7 @@
 import {io, type Socket} from "socket.io-client";
 import type {ClientMessage, JoinRoomResponse, ServerMessage} from "./gameServer";
 import type {BattleEvent} from "~/game/events";
-import type {Options, Turn} from "~/game/battle";
+import type {Options} from "~/game/battle";
 import {randoms} from "~/server/utils/formats";
 import {type ClientVolatiles, type FormatId, formatInfo, mergeVolatiles} from "~/utils/shared";
 import {Pokemon} from "~/game/pokemon";
@@ -43,7 +43,7 @@ export async function startBot(format?: FormatId, botFunction: BotFunction = ran
     ? "http://localhost:3000"
     : process.env.SELF_URL || `https://localhost:${process.env.PORT}`;
   const $conn: S = io(url, {extraHeaders: {cookie}, secure: !import.meta.dev});
-  const games: Record<string, (turn: Turn, opts?: Options) => void> = {};
+  const games: Record<string, (turn: BattleEvent[], opts?: Options) => void> = {};
   $conn.on("connect", () => {
     activeBots.push(myId);
 
@@ -137,14 +137,14 @@ export async function startBot(format?: FormatId, botFunction: BotFunction = ran
 
   function playGame(
     room: string,
-    {team: teamDesc, options, chats, turns, battlers, format}: JoinRoomResponse,
+    {team: teamDesc, options, chats, events, battlers, format}: JoinRoomResponse,
     ai: BotFunction,
     gameOver: () => void,
   ) {
     const players: Record<string, ClientPlayer> = {};
     const gen = GENERATIONS[formatInfo[format].generation]!;
     let activePokemon = -1;
-    let turnNo = 0;
+    let eventNo = 0;
     let opponent = "";
     const team = teamDesc!.map(poke => new Pokemon(gen, poke));
 
@@ -185,14 +185,14 @@ export async function startBot(format?: FormatId, botFunction: BotFunction = ran
       if (tries === 0) {
         console.error(`[${name}] Couldn't make a valid move after 3 tries, abandoning ${room}.`);
         // $conn.emit("chat", room, "Sorry, I couldn't figure out a move and must forfeit!", () => {});
-        $conn.emit("choose", room, 0, "forfeit", turnNo, () => {});
+        $conn.emit("choose", room, 0, "forfeit", eventNo, () => {});
 
         gameOver();
         return;
       }
 
       const [idx, opt] = ai({team, options, players, me: myId, activePokemon, opponent, gen});
-      $conn.emit("choose", room, idx, opt, turnNo, err => {
+      $conn.emit("choose", room, idx, opt, eventNo, err => {
         if (err) {
           if (opt === "switch") {
             console.error(`[${name}] bad switch '${err}' (to: ${idx}|`, team?.[idx], ")");
@@ -226,11 +226,10 @@ export async function startBot(format?: FormatId, botFunction: BotFunction = ran
       }
     }
 
-    games[room] = (turn: Turn, options?: Options) => {
-      turnNo++;
-
+    games[room] = (turn: BattleEvent[], options?: Options) => {
       let done = false;
-      for (const event of turn.events) {
+      for (const event of turn) {
+        eventNo++;
         handleEvent(event);
 
         if (event.type === "end") {
@@ -254,9 +253,7 @@ export async function startBot(format?: FormatId, botFunction: BotFunction = ran
       }
     }
 
-    for (let i = 0; i < turns.length; i++) {
-      games[room](turns[i], i + 1 === turns.length ? options : undefined);
-    }
+    games[room](events, options);
   }
 }
 

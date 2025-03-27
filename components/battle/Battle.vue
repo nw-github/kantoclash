@@ -72,9 +72,9 @@
                 class="my-1"
                 leading-icon="material-symbols:alarm-outline"
                 variant="ghost"
-                :color="options && timeLeft() <= 10 ? 'red' : 'gray'"
+                :color="currentOptions && timeLeft() <= 10 ? 'red' : 'gray'"
                 :disabled="!players[myId] || players[myId].isSpectator || !!victor || !!timer"
-                :label="timer && !options ? '--' : timer ? `${Math.max(timeLeft(), 0)}` : ''"
+                :label="timer && !currentOptions ? '--' : timer ? `${Math.max(timeLeft(), 0)}` : ''"
                 @click="$emit('timer')"
               />
             </UTooltip>
@@ -97,10 +97,10 @@
       <UDivider class="pb-2" />
 
       <div class="w-full pb-2">
-        <template v-if="options && !selectionText.length && !isRunningTurn">
+        <template v-if="currentOptions && !selectionText.length && !isRunningTurn">
           <div class="grid gap-2 sm:grid-cols-[1fr,1.5fr] h-min">
             <div class="flex flex-col gap-1 sm:gap-2">
-              <template v-for="(option, i) in options.moves">
+              <template v-for="(option, i) in currentOptions.moves">
                 <MoveButton
                   v-if="option.display"
                   :key="i"
@@ -110,7 +110,7 @@
                   @click="selectMove(i)"
                 />
               </template>
-              <div v-if="!options.moves.length && activeIndex === -1">Choose your lead</div>
+              <div v-if="!currentOptions.moves.length && activeIndex === -1">Choose your lead</div>
             </div>
 
             <div class="grid grid-cols-2 gap-1 sm:gap-2 items-center">
@@ -118,14 +118,14 @@
                 v-for="(poke, i) in team"
                 :key="i"
                 :poke
-                :disabled="i === activeIndex || !options.canSwitch"
+                :disabled="i === activeIndex || !currentOptions.canSwitch"
                 :active="i === activeIndex"
                 @click="selectSwitch(i)"
               />
             </div>
           </div>
         </template>
-        <div v-else-if="options && !isRunningTurn">
+        <div v-else-if="currentOptions && !isRunningTurn">
           <div class="italic">{{ selectionText }}...</div>
           <TooltipButton icon="material-symbols:cancel" label="Cancel" @click="cancelMove" />
         </div>
@@ -148,20 +148,20 @@
               text="Switch Sides"
               @click="perspective = opponent"
             />
-            <!-- <TooltipButton
+            <TooltipButton
               icon="material-symbols:fast-rewind"
               text="First Turn"
               variant="ghost"
               color="gray"
-              @click="skipTo(0)"
+              @click="skipToTurn(0)"
             />
             <TooltipButton
               icon="material-symbols:skip-previous"
               text="Previous Turn"
               variant="ghost"
               color="gray"
-              @click="skipTo(turnNoToIndex(currentTurnNo - 1))"
-            /> -->
+              @click="skipToTurn(Math.max(0, currentTurnNo - 1))"
+            />
             <TooltipButton
               v-if="isBattleOver"
               :icon="paused ? 'material-symbols:play-arrow' : 'material-symbols:pause'"
@@ -177,14 +177,14 @@
               text="Skip Turn"
               variant="ghost"
               color="gray"
-              @click="skipTo(turnNoToIndex(currentTurnNo + 1))"
+              @click="skipToTurn(currentTurnNo + 1)"
             />
             <TooltipButton
               icon="material-symbols:fast-forward"
               text="Skip All"
               variant="ghost"
               color="gray"
-              @click="skipTo(turns.length)"
+              @click="skipToTurn(-1)"
             />
           </template>
         </div>
@@ -246,7 +246,7 @@
 </style>
 
 <script setup lang="ts">
-import type {Options, Turn} from "~/game/battle";
+import type {Options} from "~/game/battle";
 import type {Pokemon} from "~/game/pokemon";
 import type {BattleEvent} from "~/game/events";
 import type {SpeciesId} from "~/game/species";
@@ -275,11 +275,11 @@ const emit = defineEmits<{
   (e: "forfeit" | "timer" | "cancel"): void;
   (e: "move" | "switch", index: number): void;
 }>();
-const {team, options, players, turns, chats, battlers, timer, finished, format} = defineProps<{
+const {team, options, players, events, chats, battlers, timer, finished, format} = defineProps<{
   team?: Pokemon[];
-  options?: Options;
+  options: Partial<Record<number, Options>>;
   players: Record<string, ClientPlayer>;
-  turns: Turn[];
+  events: BattleEvent[];
   chats: InfoRecord;
   battlers: string[];
   timer?: BattleTimer;
@@ -298,11 +298,12 @@ const unseen = ref(0);
 const slideoverOpen = ref(false);
 const isRunningTurn = ref(false);
 const smoothScroll = ref(true);
-const skippingToTurn = ref(0);
+const skipToEvent = ref(0);
 const updateMarker = ref(0);
 const currentTurnNo = ref(0);
 const weather = ref<Weather>();
 const sides = reactive<Record<string, Side>>({});
+const currentOptions = computed(() => (!isRunningTurn.value ? options[events.length] : undefined));
 
 const activePokemon = useTemplateRef<InstanceType<typeof ActivePokemon>[]>("activePokemon");
 
@@ -314,7 +315,7 @@ const isBattleOver = computed(() => finished || !!victor.value);
 const isBattler = computed(() => battlers.includes(myId.value));
 const perspective = ref("");
 const opponent = computed(() => battlers.find(v => v != perspective.value) ?? "");
-const htmlTurns = ref<[UIBattleEvent[], boolean, number][]>([]);
+const htmlTurns = ref<UIBattleEvent[][]>([[]]);
 const liveEvents = ref<UIBattleEvent[]>([]);
 const paused = ref(isBattleOver.value);
 
@@ -332,19 +333,6 @@ useIntervalFn(() => {
 useIntervalFn(() => updateMarker.value++, 1000);
 
 watch(
-  () => options,
-  options => {
-    if (options && activeInTeam.value) {
-      for (const {pp, indexInMoves} of options.moves) {
-        if (indexInMoves !== undefined && pp !== undefined) {
-          activeInTeam.value.pp[indexInMoves] = pp;
-        }
-      }
-    }
-  },
-);
-
-watch(
   () => chats,
   () => {
     if (isMenuVisible.value && !slideoverOpen.value) {
@@ -352,8 +340,6 @@ watch(
     }
   },
 );
-
-watch(paused, paused => !paused && onTurnsReceived(Math.max(turns.length - currentTurn, 0)));
 
 watchImmediate([battlers, myId], () => {
   if (battlers.includes(myId.value)) {
@@ -365,7 +351,7 @@ watchImmediate([battlers, myId], () => {
 
 const selectMove = (index: number) => {
   selectionText.value = `${players[myId.value].active!.name} will use ${
-    gen.value.moveList[options!.moves[index].move].name
+    gen.value.moveList[currentOptions.value!.moves[index].move].name
   }`;
 
   emit("move", index);
@@ -406,8 +392,8 @@ const handleVolatiles = (e: BattleEvent) => {
 
 const animations: AnimationPlaybackControls[] = [];
 
-const runTurn = async (live: boolean, turnIdx: number) => {
-  const isLive = () => live && skippingToTurn.value <= turnIdx && isMounted.value;
+const runEvent = async (e: BattleEvent) => {
+  const isLive = () => skipToEvent.value <= nextEvent.value && isMounted.value;
 
   const playCry = (speciesId: SpeciesId, pitchDown = false) => {
     if (isLive()) {
@@ -430,7 +416,7 @@ const runTurn = async (live: boolean, turnIdx: number) => {
     if (!isLive()) {
       params.cb?.();
       params.cb = undefined;
-      component!.playAnimation(params)!.complete();
+      component?.playAnimation(params)?.complete();
     } else {
       const animation = component!.playAnimation(params);
       animations.push(animation);
@@ -451,7 +437,7 @@ const runTurn = async (live: boolean, turnIdx: number) => {
       ev[ev.target] = players[ev.target].active!.name;
     }
 
-    htmlTurns.value.at(-1)![0].push(ev);
+    htmlTurns.value.at(-1)!.push(ev);
     if (isLive()) {
       liveEvents.value.push(ev);
     }
@@ -632,129 +618,103 @@ const runTurn = async (live: boolean, turnIdx: number) => {
     }
   };
 
-  liveEvents.value.length = 0;
+  if (e.type === "next_turn") {
+    currentTurnNo.value = e.turn;
+    htmlTurns.value.push([]);
+    liveEvents.value.length = 0;
+    return;
+  }
+
   selectionText.value = "";
   smoothScroll.value = isLive();
 
-  const turn = turns[turnIdx];
-  if (!turn.switchTurn) {
-    currentTurnNo.value++;
+  await handleEvent(e);
+  if (isLive() && e.type !== "sv") {
+    await delay(e.type === "weather" && e.kind === "continue" ? 450 : 250);
   }
 
-  htmlTurns.value.push([[], turn.switchTurn, currentTurnNo.value]);
-  for (const e of turn.events) {
-    await handleEvent(e);
-    if (isLive() && e.type !== "sv") {
-      await delay(e.type === "weather" && e.kind === "continue" ? 450 : 250);
-    }
-  }
-
-  if (isBattleOver.value && turnIdx === turns.length - 1 && useAutoMuteMusic().value) {
+  if ((e.type === "end" || e.type === "forfeit") && useAutoMuteMusic().value) {
     fadeOut();
   }
 };
 
-let reconnecting = false;
-let currentTurn = 0;
-let turnQueue = 0;
+const nextEvent = ref(0);
+const reset = ref(false);
+const shouldUpdate = ref(false);
 
-const turnNoToIndex = (turn: number) => {
-  let index = 0;
-  for (let turnNo = -(turn === 1); index < turns.length; index++) {
-    if (!turns[index].switchTurn && ++turnNo >= turn) {
-      break;
+watch([nextEvent, paused, () => events.length], () => {
+  if (!isMounted.value || (!paused.value && nextEvent.value < events.length)) {
+    shouldUpdate.value = true;
+  }
+});
+
+onMounted(async () => {
+  while (true) {
+    await until(shouldUpdate).toBe(true);
+    if (!isMounted.value) {
+      return;
+    }
+
+    shouldUpdate.value = false;
+    if (reset.value) {
+      reset.value = false;
+
+      htmlTurns.value = [[]];
+      currentTurnNo.value = 0;
+
+      for (const k in players) {
+        players[k].nFainted = 0;
+        players[k].active = undefined;
+      }
+    }
+
+    // console.log("playing event ", nextEvent.value);
+    const event = events[nextEvent.value];
+    const idx = ++nextEvent.value;
+    isRunningTurn.value = true;
+    await runEvent(event);
+    if (idx === events.length) {
+      isRunningTurn.value = false;
+    }
+
+    const opts = options[idx];
+    if (opts && activeInTeam.value) {
+      for (const {pp, indexInMoves} of opts.moves) {
+        if (indexInMoves !== undefined && pp !== undefined) {
+          activeInTeam.value.pp[indexInMoves] = pp;
+        }
+      }
     }
   }
-  // console.log(`turnNoToIndex() | Turn NO: ${turn} -> Turn IDX: ${index}`);
-  return index;
-};
+});
 
-const skipTo = (index: number) => {
+const skipToTurn = (turn: number) => {
   // console.log(`skipTo() | index: ${index} currentTurn: ${currentTurn}`);
 
-  animations.forEach(anim => anim.complete());
-  animations.length = 0;
+  let index = 0;
+  if (turn < 0) {
+    index = events.length + 1;
+  } else if (turn !== 0) {
+    index = events.findIndex(event => event.type === "next_turn" && event.turn === turn);
+    if (index === -1) {
+      index = events.length + 1;
+    } else {
+      index++;
+    }
+  }
 
   // TODO: mute current sounds
-  if (index < currentTurn) {
-    skippingToTurn.value = currentTurn + 1;
-    onConnect(index);
+  if (index < nextEvent.value) {
+    reset.value = true;
+    nextEvent.value = 0;
+    skipToEvent.value = index;
   } else {
-    skippingToTurn.value = index;
+    skipToEvent.value = index;
     liveEvents.value.length = 0;
-    smoothScroll.value = false;
   }
+  animations.forEach(anim => anim.complete());
+  animations.length = 0;
 };
 
-const onTurnsReceived = async (count: number) => {
-  // console.log("onTurnsReceived() | count:" + count);
-  if (reconnecting) {
-    return;
-  }
-
-  // hack to make sure turns.value is updated
-  await nextTick();
-
-  if (turnQueue) {
-    turnQueue += count;
-    return;
-  }
-
-  turnQueue += count;
-  isRunningTurn.value = true;
-  while (turnQueue) {
-    if (currentTurn >= turns.length || !isMounted.value) {
-      turnQueue = 0;
-      break;
-    }
-
-    await runTurn(true, currentTurn++);
-    turnQueue--;
-
-    if (paused.value) {
-      turnQueue = 0;
-      break;
-    }
-
-    if (turnQueue && skippingToTurn.value <= currentTurn - 1 && isBattleOver.value) {
-      await delay(200);
-    }
-  }
-  isRunningTurn.value = false;
-  smoothScroll.value = true;
-};
-
-const onConnect = async (startAt?: number) => {
-  // console.log(`onConnect() | startAt=${startAt} currentTurn=${currentTurn}`);
-  currentTurn = startAt ?? currentTurn;
-  if (reconnecting) {
-    return;
-  }
-
-  reconnecting = true;
-  turnQueue = 0;
-  if (isRunningTurn.value) {
-    await new Promise(resolve => watchOnce(isRunningTurn, resolve));
-  }
-
-  // hack to make sure turns.value is updated
-  await nextTick();
-
-  htmlTurns.value.length = 0;
-  currentTurnNo.value = 0;
-  skippingToTurn.value = 0;
-  for (const k in players) {
-    players[k].nFainted = 0;
-    players[k].active = undefined;
-  }
-
-  for (let i = 0; i < currentTurn; i++) {
-    await runTurn(false, i);
-  }
-
-  reconnecting = false;
-  onTurnsReceived(turns.length - currentTurn);
-};
-
-defineExpose({onTurnsReceived, onConnect});
+defineExpose({skipToTurn});
 </script>

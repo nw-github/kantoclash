@@ -12,7 +12,7 @@
       :team
       :options
       :players
-      :turns
+      :events
       :chats
       :battlers
       :timer
@@ -40,7 +40,8 @@
 <script setup lang="ts">
 import type {Battle} from "#components";
 import type {Socket} from "socket.io-client";
-import type {Options, Turn} from "~/game/battle";
+import type {Options} from "~/game/battle";
+import type {BattleEvent} from "~/game/events";
 import {GENERATIONS} from "~/game/gen";
 import {Pokemon} from "~/game/pokemon";
 import type {BattleTimer, InfoRecord, JoinRoomResponse} from "~/server/gameServer";
@@ -57,8 +58,8 @@ const battle = ref<InstanceType<typeof Battle>>();
 const loading = ref(true);
 const players = reactive<Record<string, ClientPlayer>>({});
 const battlers = ref<string[]>([]);
-const turns = ref<Turn[]>([]);
-const options = ref<Options>();
+const events = ref<BattleEvent[]>([]);
+const options = reactive<Partial<Record<number, Options>>>({});
 const chats = reactive<InfoRecord>({});
 const team = ref<Pokemon[]>();
 const timer = ref<BattleTimer>();
@@ -178,7 +179,7 @@ const processMessage = (message: InfoMessage) => {
 
 // Event listeners
 
-const onJoinRoom = (resp: JoinRoomResponse | "bad_room") => {
+const onJoinRoom = async (resp: JoinRoomResponse | "bad_room") => {
   const clearObj = (foo: Record<string, any>) => {
     for (const k in foo) {
       // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
@@ -211,15 +212,15 @@ const onJoinRoom = (resp: JoinRoomResponse | "bad_room") => {
   if (needsFreshStart) {
     const gen = GENERATIONS[formatInfo[resp.format].generation]!;
 
-    sequenceNo = resp.turns.length;
-    turns.value = resp.turns;
+    sequenceNo = resp.events.length;
+    events.value = resp.events;
     team.value = resp.team?.map(poke => new Pokemon(gen, poke));
   } else {
-    sequenceNo += resp.turns.length;
-    turns.value.push(...resp.turns);
+    sequenceNo += resp.events.length;
+    events.value.push(...resp.events);
   }
 
-  options.value = resp.options;
+  options[sequenceNo] = resp.options;
   timer.value = resp.timer;
   format.value = resp.format;
 
@@ -243,7 +244,7 @@ const onJoinRoom = (resp: JoinRoomResponse | "bad_room") => {
     (firstConnect &&
       !!user.value &&
       battlers.value.includes(user.value.id) &&
-      turns.value.length === 1) ||
+      events.value.reduce((acc, x) => acc + +(x.type === "next_turn"), 0) === 0) ||
     resp.finished
   ) {
     isFirstConnect = false;
@@ -251,16 +252,19 @@ const onJoinRoom = (resp: JoinRoomResponse | "bad_room") => {
 
   firstConnect = false;
   if (needsFreshStart) {
-    battle.value!.onConnect(isFirstConnect ? resp.turns.length : undefined);
-  } else {
-    battle.value!.onTurnsReceived(resp.turns.length);
+    await nextTick();
+    battle.value!.skipToTurn(isFirstConnect ? -1 : 0);
   }
 };
 
 const onConnect = () => {
   loading.value = true;
-  options.value = undefined;
   timer.value = undefined;
+
+  for (const k in options) {
+    // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+    delete options[k];
+  }
 
   const sq = needsFreshStart ? 0 : sequenceNo;
   $conn.emit("joinRoom", room, sq, onJoinRoom);
@@ -270,13 +274,14 @@ const onDisconnect = (reason: Socket.DisconnectReason) => {
   needsFreshStart = reason === "io client disconnect";
 };
 
-const onNextTurn = (roomId: string, turn: Turn, opts?: Options, tmr?: BattleTimer) => {
+const onNextTurn = (roomId: string, turn: BattleEvent[], opts?: Options, tmr?: BattleTimer) => {
   timer.value = tmr || undefined;
   if (roomId === room) {
-    turns.value.push(turn);
-    options.value = opts || undefined;
-    sequenceNo++;
-    battle.value!.onTurnsReceived(1);
+    events.value.push(...turn);
+    sequenceNo += turn.length;
+    options[sequenceNo] = opts;
+
+    console.log("next turn, got", turn.length, "events");
   }
 };
 
@@ -286,8 +291,6 @@ const onInfo = (roomId: string, message: InfoMessage, turn: number) => {
   }
 
   processMessage(message);
-
-  turn ??= Math.max(turns.value.length - 1, 0);
   if (!chats[turn]) {
     chats[turn] = [];
   }
