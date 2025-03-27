@@ -304,8 +304,8 @@ export function getDamage(
   } else if (self.getDamage || self.flag === "ohko") {
     isCrit = false;
     const result = self.getDamage
-      ? self.getDamage(battle, user, target, eff)
-      : battle.gen.getOHKODamage(user, target, eff);
+      ? self.getDamage(battle, user, target)
+      : battle.gen.getOHKODamage(user, target);
     if (typeof result === "number") {
       dmg = result;
       eff = 1;

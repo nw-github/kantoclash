@@ -121,7 +121,7 @@ export interface DamagingMove extends BaseMove {
    */
   readonly getDamage?:
     | number
-    | ((battle: Battle, user: ActivePokemon, target: ActivePokemon, eff: number) => number | false);
+    | ((battle: Battle, user: ActivePokemon, target: ActivePokemon) => number | false);
 }
 
 export type Move =

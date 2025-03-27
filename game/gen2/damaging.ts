@@ -57,7 +57,7 @@ export function exec(
   }
 
   const protect = target.v.hasFlag(VF.protect);
-  if (eff === 0 || realEff === 0 || (this.flag === "ohko" && user.base.level < target.base.level)) {
+  if (eff === 0 || realEff === 0) {
     user.v.rollout = 0;
     user.v.furyCutter = 0;
     battle.info(target, "immune");

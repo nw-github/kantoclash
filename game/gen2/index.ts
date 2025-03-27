@@ -218,14 +218,14 @@ const createGeneration = (): Generation => {
         return true;
       }
 
-      let chance = move.acc;
+      let chance = floatTo255(move.acc);
       if (move.kind === "damage" && move.flag === "ohko") {
-        chance = idiv((user.base.level - target.base.level) * 2 + 76, 256) * 100;
+        chance = (user.base.level - target.base.level) * 2 + 76;
       } else if (move.rainAcc && battle.weather?.kind === "sun") {
-        chance = 50;
+        chance = 127;
       }
 
-      let acc = scaleAccuracy255(floatTo255(chance), user, target);
+      let acc = scaleAccuracy255(chance, user, target);
       if (target.base.item === "brightpowder") {
         acc -= 20;
       }
@@ -266,9 +266,7 @@ const createGeneration = (): Generation => {
       }
       return sleepTurns;
     },
-    getOHKODamage(user, target, eff) {
-      return target.base.level > user.base.level || !eff ? false : 65535;
-    },
+    getOHKODamage: (user, target) => (target.base.level > user.base.level ? false : 65535),
     getStat(poke, stat, isCrit) {
       const def = stat === "def" || stat === "spd";
       const screen = def && !!poke.owner.screens[stat === "def" ? "reflect" : "light_screen"];
