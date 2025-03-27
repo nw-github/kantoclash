@@ -424,9 +424,6 @@ const runTurn = async (live: boolean, turnIdx: number) => {
     const isMe = id === perspective.value;
     const component = activePokemon.value!.find(a => a.isBack() === isMe);
     await component!.playAnimation(!isLive(), params);
-    if (isMe) {
-      console.log("finished anim: ", params.anim);
-    }
   };
 
   const pushEvent = (e: RawUIBattleEvent) => {
@@ -577,7 +574,7 @@ const runTurn = async (live: boolean, turnIdx: number) => {
       });
       if (e.broken) {
         pushEvent({type: "sub_break", target: e.target});
-        await playAnimation(e.src, {anim: "lose_sub", cb: () => handleVolatiles(e)});
+        await playAnimation(e.target, {anim: "lose_sub", cb: () => handleVolatiles(e)});
       }
       return;
     } else if (e.type === "end") {

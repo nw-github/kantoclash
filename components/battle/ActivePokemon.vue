@@ -403,8 +403,6 @@ const playAnimation = (skip: boolean, {anim, cb, batonPass, name}: AnimationPara
   if (!sprite.value || !pokeBall.value || !substitute.value) {
     return;
   }
-  log("play ", anim, " (skip=", skip, ", hasSubstitute=", hasSubstitute, ")");
-
   if (name) {
     pbCol.value = name ? [...name].reduce((acc, x) => x.charCodeAt(0) + acc, 0) % 17 : 3;
   }
@@ -414,7 +412,6 @@ const playAnimation = (skip: boolean, {anim, cb, batonPass, name}: AnimationPara
 
   timeline = useAnime.timeline();
   if (anim === "faint") {
-    log("fainting, hasSubstitute?: ", hasSubstitute);
     if (hasSubstitute) {
       playLoseSub(timeline);
     }
@@ -460,7 +457,6 @@ const playAnimation = (skip: boolean, {anim, cb, batonPass, name}: AnimationPara
       duration: 800,
     });
 
-    log("sendin, hasSubstitute?: ", hasSubstitute);
     if (hasSubstitute) {
       timeline.add({
         targets: sprite.value,
@@ -481,7 +477,6 @@ const playAnimation = (skip: boolean, {anim, cb, batonPass, name}: AnimationPara
       }, "+=0");
     }
   } else if (anim === "retract") {
-    log("retract, hasSubstitute?: ", hasSubstitute);
     if (hasSubstitute) {
       if (batonPass) {
         playStartAttack(timeline, subOffsetX, subOffsetY);
@@ -527,8 +522,6 @@ const playAnimation = (skip: boolean, {anim, cb, batonPass, name}: AnimationPara
     });
   } else if (anim === "get_sub") {
     hasSubstitute = true;
-    log("setting hasSubstitute to true (get_sub)!", hasSubstitute);
-
     timeline.add({
       targets: sprite.value,
       easing: "easeOutExpo",
@@ -553,8 +546,6 @@ const playAnimation = (skip: boolean, {anim, cb, batonPass, name}: AnimationPara
     });
   } else if (anim === "lose_sub") {
     hasSubstitute = false;
-    log("setting hasSubstitute to false (lose_sub)!", hasSubstitute);
-
     playLoseSub(timeline, cb);
   } else if (anim === "phaze") {
     timeline.add({
@@ -565,11 +556,8 @@ const playAnimation = (skip: boolean, {anim, cb, batonPass, name}: AnimationPara
       complete: () => useAnime.set(sprite.value!, {translateX: 0, translateY: 0, scale: 1}),
     });
 
-    log("phaze, hasSubstitute?: ", hasSubstitute);
     if (hasSubstitute) {
       hasSubstitute = false;
-      log("setting hasSubstitute to false (phaze)!", hasSubstitute);
-
       timeline.add(
         {
           targets: substitute.value,
@@ -618,7 +606,6 @@ const playAnimation = (skip: boolean, {anim, cb, batonPass, name}: AnimationPara
       delay += 80;
     }
   } else {
-    log("attack, hasSubstitute?: ", hasSubstitute);
     if (hasSubstitute) {
       playStartAttack(timeline, subOffsetX, subOffsetY);
     }
@@ -648,17 +635,7 @@ const playAnimation = (skip: boolean, {anim, cb, batonPass, name}: AnimationPara
   return timeline.finished;
 };
 
-const log = (...args: any[]) => {
-  if (!back) {
-    return;
-  }
-
-  console.log(...args);
-};
-
 const playLoseSub = (timeline: anime.AnimeTimelineInstance, cb?: () => void) => {
-  log("losing substitute");
-
   hasSubstitute = false;
   timeline.add({
     targets: substitute.value,
@@ -669,7 +646,6 @@ const playLoseSub = (timeline: anime.AnimeTimelineInstance, cb?: () => void) => 
     complete: () => {
       cb?.();
       useAnime.set(sprite.value!, {scaleX: 1});
-      log("losing sub callback");
     },
   });
   timeline.add({
