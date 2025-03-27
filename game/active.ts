@@ -139,7 +139,9 @@ export class ActivePokemon {
   }
 
   faint(battle: Battle) {
-    battle.info(this, "faint");
+    battle.info(this, "faint", [
+      this.clearFlag(VF.protect | VF.mist | VF.lightScreen | VF.reflect),
+    ]);
     this.v.fainted = true;
   }
 

@@ -508,6 +508,7 @@ const animations = {
 
   faint(seq: AnimationSequence) {
     seq.push([".sprite", {y: rem(7), opacity: 0}, {ease: easeInExpo, duration: ms(250)}]);
+    seq.push([".sprite", {y: 0}, {ease: steps(1), duration: 0.01}]);
   },
   sendIn(seq: AnimationSequence, cb?: () => void) {
     pbRow.value = 0;
