@@ -112,39 +112,37 @@
           </div>
 
           <template v-if="poke && !poke.hidden" #panel>
-            <div class="p-2">
-              <PokemonTTContent v-if="base && !poke.transformed" :poke="base" :active="poke" />
-              <div v-else class="flex flex-col items-center">
-                <div class="flex gap-10">
-                  <div class="flex gap-0.5 items-center justify-center">
-                    {{ species!.name }}
-                    <span v-if="poke.transformed">
-                      (Was: {{ gen.speciesList[poke.speciesId].name }})
-                    </span>
+            <PokemonTTContent v-if="base && !poke.transformed" :poke="base" :active="poke" />
+            <div v-else class="p-2 flex flex-col items-center">
+              <div class="flex gap-10">
+                <div class="flex gap-0.5 items-center justify-center">
+                  {{ species!.name }}
+                  <span v-if="poke.transformed">
+                    (Was: {{ gen.speciesList[poke.speciesId].name }})
+                  </span>
 
-                    <template v-if="base && poke.transformed && base.item">
-                      <ItemSprite :item="base.item" />
-                      <span class="text-xs">{{ base.gen.items[base.item] }}</span>
-                    </template>
-                  </div>
-                  <div class="flex gap-1">
-                    <TypeBadge v-for="type in species!.types" :key="type" :type image />
-                  </div>
+                  <template v-if="base && poke.transformed && base.item">
+                    <ItemSprite :item="base.item" />
+                    <span class="text-xs">{{ base.gen.items[base.item] }}</span>
+                  </template>
                 </div>
-                <div v-if="base && poke.transformed" class="pt-1.5 space-y-1.5 w-full">
-                  <UProgress :max="base.stats.hp" :value="base.hp" />
-                  <div class="flex justify-between gap-4">
-                    <span>
-                      {{ base.hp }}/{{ base.stats.hp }} HP ({{
-                        roundTo(hpPercentExact(base.hp, base.stats.hp), 2)
-                      }}%)
-                    </span>
-
-                    <StatusOrFaint :poke="base" :faint="!poke || poke.fainted" />
-                  </div>
+                <div class="flex gap-1">
+                  <TypeBadge v-for="type in species!.types" :key="type" :type image />
                 </div>
-                <span class="pt-5 italic text-center">{{ minSpe }} to {{ maxSpe }} Spe</span>
               </div>
+              <div v-if="base && poke.transformed" class="pt-1.5 space-y-1.5 w-full">
+                <UProgress :max="base.stats.hp" :value="base.hp" />
+                <div class="flex justify-between gap-4">
+                  <span>
+                    {{ base.hp }}/{{ base.stats.hp }} HP ({{
+                      roundTo(hpPercentExact(base.hp, base.stats.hp), 2)
+                    }}%)
+                  </span>
+
+                  <StatusOrFaint :poke="base" :faint="!poke || poke.fainted" />
+                </div>
+              </div>
+              <span class="pt-5 italic text-center">{{ minSpe }} to {{ maxSpe }} Spe</span>
             </div>
           </template>
         </UPopover>
