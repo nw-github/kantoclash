@@ -70,7 +70,7 @@
 
     <div ref="scope" class="flex flex-col items-center relative">
       <div class="w-[128px] h-[117px] sm:w-[256px] sm:h-[234px] items-center justify-center flex">
-        <TouchPopover :popper="{placement: 'top'}">
+        <UPopover mode="hover" :popper="{placement: 'top'}">
           <div
             ref="sprite"
             class="sprite relative z-20 flex justify-center"
@@ -147,7 +147,7 @@
               </div>
             </div>
           </template>
-        </TouchPopover>
+        </UPopover>
 
         <AnimatePresence>
           <motion.div
@@ -225,7 +225,7 @@ import {stageMultipliers, VF, hpPercentExact, type Screen} from "~/game/utils";
 import {calcStat, type Pokemon} from "~/game/pokemon";
 import {breakpointsTailwind} from "@vueuse/core";
 import type {Generation} from "~/game/gen";
-import type {UBadge} from "#components";
+import {UPopover, type UBadge} from "#components";
 import {
   steps,
   motion,

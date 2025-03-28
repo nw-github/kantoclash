@@ -32,3 +32,7 @@ export const useIgnoreChallenges = () => useLocalStorage<boolean>("ignoreChallen
 export const useAutoMuteMusic = () => useLocalStorage<boolean>("autoMuteMusic", false);
 
 export const useChallenges = () => useState<Challenge[]>("challenges", () => []);
+
+const touchFocus = ref<HTMLElement>();
+
+export const useTouchedElement = () => touchFocus;
