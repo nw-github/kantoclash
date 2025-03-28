@@ -1,8 +1,37 @@
-import {type DamagingMove, type Move, Range} from "./index";
+import type {DamagingMove, Move} from "./index";
 import {type Pokemon, transform} from "../pokemon";
 import {hpPercentExact, idiv, isSpecial, stageKeys, stageStatKeys, VF, type Type} from "../utils";
 
 export type MoveId = keyof typeof internalMoveList;
+
+export enum Range {
+  /** Targets the user */
+  Self,
+  /** Targets a random opponent */
+  Random,
+
+  /** Targets any adjacent pokemon */
+  Adjacent,
+  /** Targets any adjacent pokemon, including allies (Earthquake) */
+  AllAdjacent,
+  /** Targets any adjacent pokemon, excluding allies (Rock Slide) */
+  AllAdjacentFoe,
+
+  /** Targets one ally */
+  Ally,
+  /** Targets self or one ally */
+  SelfOrAlly,
+  /** Targets all allies except the user */
+  AllAllies,
+
+  /** Targets any pokemon except the user */
+  Any,
+  /** Targets all pokemon */
+  All,
+
+  /** User/Target field or Battle */
+  Field,
+}
 
 export const createMoveList = <T extends Record<string, Move>>(list: T) => {
   let id = 0;

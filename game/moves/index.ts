@@ -2,6 +2,7 @@ import type {ActivePokemon, Battle} from "../battle";
 import type {FailReason, RecoveryReason} from "../events";
 import type {Pokemon, Status} from "../pokemon";
 import type {Stages, Type, VF, Weather, Screen} from "../utils";
+import type {Range} from "./moveList";
 
 export * from "../gen1/damaging";
 export * from "./functions";
@@ -169,32 +170,3 @@ type Flag =
   | "minimize"
   | "present"
   | "beatup";
-
-export enum Range {
-  /** Targets the user */
-  Self,
-  /** Targets a random opponent */
-  Random,
-
-  /** Targets any adjacent pokemon */
-  Adjacent,
-  /** Targets any adjacent pokemon, including allies (Earthquake) */
-  AllAdjacent,
-  /** Targets any adjacent pokemon, excluding allies (Rock Slide) */
-  AllAdjacentFoe,
-
-  /** Targets one ally */
-  Ally,
-  /** Targets self or one ally */
-  SelfOrAlly,
-  /** Targets all allies except the user */
-  AllAllies,
-
-  /** Targets any pokemon except the user */
-  Any,
-  /** Targets all pokemon */
-  All,
-
-  /** User/Target field or Battle */
-  Field,
-}
