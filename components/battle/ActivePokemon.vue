@@ -97,12 +97,18 @@
               alt="confused"
             />
 
-            <img
-              v-if="poke?.v.status === 'slp'"
-              class="absolute size-6 sm:size-10 -top-4 z-30 invert dark:invert-0 rotate-180 ml-20"
-              src="/zzz.gif"
-              alt="confused"
-            />
+            <AnimatePresence>
+              <motion.img
+                v-if="poke?.v.status === 'slp'"
+                class="absolute size-6 sm:size-10 -top-4 z-30 invert dark:invert-0 rotate-180 ml-20"
+                src="/zzz.gif"
+                alt="confused"
+                :initial="{opacity: 0}"
+                :transition="{duration: 0.2}"
+                :animate="{opacity: 1}"
+                :exit="{opacity: 0}"
+              />
+            </AnimatePresence>
           </div>
 
           <template v-if="poke && !poke.hidden" #panel>
@@ -143,15 +149,19 @@
           </template>
         </UPopover>
 
-        <TransitionGroup name="screens">
-          <div
-            v-for="{name: key, clazz, style} in screens"
+        <AnimatePresence>
+          <motion.div
+            v-for="({name: key, clazz}, i) in screens"
             :key
-            :class="clazz"
-            :style
             class="absolute w-16 h-14 sm:w-32 sm:h-28 opacity-30 z-30 rounded-md pointer-events-none"
+            :class="clazz"
+            :transition="{duration: 0.35, ease: 'easeOut'}"
+            :initial="{scale: 0}"
+            :animate="{scale: 1, y: i * -5, x: i * -5}"
+            :exit="{scale: 0}"
+            layout
           />
-        </TransitionGroup>
+        </AnimatePresence>
       </div>
 
       <div
@@ -208,20 +218,6 @@
     scale: 0.5;
   }
 }
-
-.screens-move,
-.screens-enter-active,
-.screens-leave-active {
-  transition: all 0.4s ease-out;
-}
-
-.screens-enter-from {
-  transform: scale(0);
-}
-
-.screens-leave-to {
-  transform: scale(0);
-}
 </style>
 
 <script setup lang="ts">
@@ -230,9 +226,9 @@ import {calcStat, type Pokemon} from "~/game/pokemon";
 import {breakpointsTailwind} from "@vueuse/core";
 import type {Generation} from "~/game/gen";
 import type {UBadge} from "#components";
-import type {StyleValue} from "vue";
 import {
   steps,
+  motion,
   type AnimationSequence,
   type Segment,
   type SequenceOptions,
@@ -271,32 +267,22 @@ const scrColor: Record<Screen, string> = {
 };
 
 const screens = computed(() => {
-  const screens: {name: string; clazz: string; style: StyleValue}[] = [];
-  let margin = 0;
-  const addScreen = (name: string, clazz: string) => {
-    screens.push({
-      name,
-      clazz,
-      style: {marginTop: -margin * 0.5 + "rem", marginLeft: -margin * 0.5 + "rem"},
-    });
-    margin++;
-  };
-
+  const screens: {name: string; clazz: string}[] = [];
   if ((poke?.v.flags ?? 0) & VF.protect) {
-    addScreen("protect", "bg-slate-200");
+    screens.push({name: "protect", clazz: "bg-slate-200"});
   }
 
   if ((poke?.v.flags ?? 0) & VF.lightScreen) {
-    addScreen("light_screen", scrColor.light_screen);
+    screens.push({name: "light_screen", clazz: scrColor.light_screen});
   }
 
   if ((poke?.v.flags ?? 0) & VF.reflect) {
-    addScreen("reflect", scrColor.reflect);
+    screens.push({name: "reflect", clazz: scrColor.reflect});
   }
 
   for (const screen in scrColor) {
     if (player?.screens?.[screen as Screen]) {
-      addScreen(screen, scrColor[screen as Screen]);
+      screens.push({name: screen, clazz: scrColor[screen as Screen]});
     }
   }
 
@@ -473,9 +459,9 @@ const animations = {
       {
         x: back ? -rem(subOffsetX) : rem(subOffsetX),
         y: back ? rem(subOffsetY) : -rem(subOffsetY),
-        opacity: 0.5,
+        opacity: [1, 0.5],
       },
-      {duration: ms(350), ease: easeOutExpo},
+      {duration: ms(300), ease: easeOutExpo},
     ]);
     seq.push([
       ".sprite",
@@ -484,7 +470,7 @@ const animations = {
         y: back ? -rem(subOffsetY) / 2 : rem(subOffsetY) / 2,
         opacity: 1,
       },
-      {duration: ms(350), ease: easeOutExpo, at: "<"},
+      {duration: ms(300), ease: easeOutExpo, at: "<"},
     ]);
   },
 
@@ -507,7 +493,7 @@ const animations = {
 
   faint(seq: AnimationSequence) {
     seq.push([".sprite", {y: rem(7), opacity: 0}, {ease: easeInExpo, duration: ms(250)}]);
-    seq.push([".sprite", {y: 0}, {ease: steps(1), duration: 0.01}]);
+    seq.push([".sprite", {y: 0}, {ease: steps(1, "start"), duration: 0.01}]);
   },
   sendIn(seq: AnimationSequence, cb?: () => void) {
     pbRow.value = 0;
@@ -545,7 +531,6 @@ const animations = {
         opacity: [0, subOpacity],
         x: back ? -rem(subOffsetX) : rem(subOffsetX),
         y: back ? rem(subOffsetY) : -rem(subOffsetY),
-        scaleX: [1, 1],
       },
       {duration: ms(800), ease: easeOutExpo},
     ]);
@@ -558,6 +543,7 @@ const animations = {
         x: [0, 0],
         y: [-rem(8), 0],
         opacity: 1,
+        scaleX: [1, 1],
       },
       {duration: ms(350), ease: easeOutBounce},
     ]);

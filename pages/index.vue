@@ -4,11 +4,11 @@
       <h1 class="text-center">
         {{ user ? `Welcome ${user.name}!` : "You must first log in to find a battle" }}
       </h1>
-      <div class="flex items-center gap-2">
-        <FormatDropdown v-model="selectedFormat" :disabled="findingMatch" class="grow" />
-        <FormatInfoButton :format="selectedFormat" />
-      </div>
       <ClientOnly>
+        <div class="flex items-center gap-2">
+          <FormatDropdown v-model="selectedFormat" :disabled="findingMatch" class="grow" />
+          <FormatInfoButton :format="selectedFormat" />
+        </div>
         <TeamSelector
           ref="selectTeamMenu"
           v-model="selectedTeam"
@@ -155,7 +155,7 @@ const loadingRooms = ref(false);
 const acceptingChallenge = ref(false);
 const modalOpen = ref(false);
 const recentlyPlayed = useLocalStorage("showRecentlyPlayed", true);
-const selectedFormat = useLocalStorage<FormatId>("lastFormat", () => "g1_randoms");
+const selectedFormat = useLocalStorage<FormatId>("lastFormat", "g2_randoms");
 const selectedTeam = ref<Team | undefined>();
 const errors = ref<Record<number, [string, string[]]>>({});
 const selectTeamMenu = ref<InstanceType<typeof TeamSelector>>();

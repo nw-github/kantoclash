@@ -38,11 +38,14 @@
       </template>
     </div>
 
-    <ul class="pl-10 list-disc">
-      <li v-for="(id, i) in poke.moves" :key="id">
-        {{ poke.gen.moveList[id].name }} ({{ poke.pp[i] }}/{{
-          poke.gen.getMaxPP(poke.gen.moveList[id])
-        }})
+    <ul class="pl-8 flex flex-col gap-1">
+      <li v-for="(id, i) in poke.moves" :key="id" class="flex items-center gap-1">
+        <TypeBadge :type="getTypeAndPower(poke.gen, poke.gen.moveList[id], poke)[0]" image />
+        <span>
+          {{ poke.gen.moveList[id].name }} ({{ poke.pp[i] }}/{{
+            poke.gen.getMaxPP(poke.gen.moveList[id])
+          }})
+        </span>
       </li>
     </ul>
   </div>
@@ -52,6 +55,7 @@
 import type {Pokemon} from "~/game/pokemon";
 import {hpPercentExact, type StatStages} from "~/game/utils";
 import "assets/colors.css";
+import {getTypeAndPower} from "~/utils/client";
 
 const {active, poke} = defineProps<{active?: ClientActivePokemon; poke: Pokemon}>();
 const statKeys = computed(() => getStatKeys(poke.gen));
