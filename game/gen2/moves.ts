@@ -1,4 +1,4 @@
-import type {Move, MoveFunctions, MoveId} from "../moves";
+import {Range, type Move, type MoveFunctions, type MoveId} from "../moves";
 import {isSpecial, stageKeys} from "../utils";
 import {exec as execDamagingMove} from "./damaging";
 
@@ -76,6 +76,7 @@ export const moveFunctionPatches: Partial<MoveFunctions> = {
 export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
   bide: {acc: 100, power: 0},
   conversion: {
+    range: Range.Self,
     exec(battle, user) {
       const type = battle.rng.choice(
         user.base.moves
@@ -133,8 +134,8 @@ export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
   roar: {kind: "phaze", acc: 100, priority: -1},
   whirlwind: {kind: "phaze", acc: 100, priority: -1, ignore: ["fly"]},
   // --
-  lightscreen: {kind: "screen", screen: "light_screen"},
-  reflect: {kind: "screen", screen: "reflect"},
+  lightscreen: {kind: "screen", screen: "light_screen", range: Range.Field},
+  reflect: {kind: "screen", screen: "reflect", range: Range.Field},
   // --
   amnesia: {stages: [["spd", 2]]},
   glare: {checkType: true},

@@ -12,6 +12,7 @@ export interface BaseMove {
   readonly name: string;
   readonly pp: number;
   readonly type: Type;
+  readonly range?: Range;
   readonly acc?: number;
   readonly priority?: number;
   readonly power?: number;
@@ -168,3 +169,32 @@ type Flag =
   | "minimize"
   | "present"
   | "beatup";
+
+export enum Range {
+  /** Targets the user */
+  Self,
+  /** Targets a random opponent */
+  Random,
+
+  /** Targets any adjacent pokemon */
+  Adjacent,
+  /** Targets any adjacent pokemon, including allies (Earthquake) */
+  AllAdjacent,
+  /** Targets any adjacent pokemon, excluding allies (Rock Slide) */
+  AllAdjacentFoe,
+
+  /** Targets one ally */
+  Ally,
+  /** Targets self or one ally */
+  SelfOrAlly,
+  /** Targets all allies except the user */
+  AllAllies,
+
+  /** Targets any pokemon except the user */
+  Any,
+  /** Targets all pokemon */
+  All,
+
+  /** User/Target field or Battle */
+  Field,
+}
