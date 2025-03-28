@@ -8,9 +8,10 @@ import {Pokemon} from "~/game/pokemon";
 import {getEffectiveness, VF} from "~/game/utils";
 import random from "random";
 import {convertTeam, parseTeams, type Team} from "~/utils/pokemon";
-import type {MoveId} from "~/game/moves";
+import type {DamagingMove, MoveId} from "~/game/moves";
 import {type Generation, GENERATIONS} from "~/game/gen";
 import type {ClientPlayer} from "~/utils/client";
+import type {InfoMessage} from "./utils/info";
 
 export type BotParams = {
   team: Pokemon[];
@@ -30,6 +31,11 @@ let nBots = 0;
 
 export const activeBots: string[] = [];
 
+type Game = {
+  nextTurn(turn: BattleEvent[], opts?: Options): void;
+  chat(message: InfoMessage): void;
+};
+
 export async function startBot(format?: FormatId, botFunction: BotFunction = randomBot) {
   const result = await login();
   if (!result) {
@@ -43,7 +49,7 @@ export async function startBot(format?: FormatId, botFunction: BotFunction = ran
     ? "http://localhost:3000"
     : process.env.SELF_URL || `https://localhost:${process.env.PORT}`;
   const $conn: S = io(url, {extraHeaders: {cookie}, secure: !import.meta.dev});
-  const games: Record<string, (turn: BattleEvent[], opts?: Options) => void> = {};
+  const games: Record<string, Game> = {};
   $conn.on("connect", () => {
     activeBots.push(myId);
 
@@ -72,7 +78,13 @@ export async function startBot(format?: FormatId, botFunction: BotFunction = ran
 
     $conn.on("nextTurn", async (roomId, turn, opts) => {
       if (games[roomId]) {
-        games[roomId](turn, opts);
+        games[roomId].nextTurn(turn, opts);
+      }
+    });
+
+    $conn.on("info", (roomId, message) => {
+      if (games[roomId]) {
+        games[roomId].chat(message);
       }
     });
 
@@ -226,25 +238,51 @@ export async function startBot(format?: FormatId, botFunction: BotFunction = ran
       }
     }
 
-    games[room] = (turn: BattleEvent[], options?: Options) => {
-      let done = false;
-      for (const event of turn) {
-        eventNo++;
-        handleEvent(event);
+    games[room] = {
+      nextTurn(turn, options) {
+        let done = false;
+        for (const event of turn) {
+          eventNo++;
+          handleEvent(event);
 
-        if (event.type === "end") {
-          done = true;
+          if (event.type === "end") {
+            done = true;
+          }
         }
-      }
 
-      if (done && games[room]) {
-        gameOver();
-        return;
-      }
+        if (done && games[room]) {
+          gameOver();
+          return;
+        }
 
-      if (options) {
-        makeDecision(options);
-      }
+        if (options) {
+          makeDecision(options);
+        }
+      },
+      chat(message) {
+        const dox = (a: Pokemon) => {
+          const name = (m: string) => {
+            if (m === "hiddenpower") {
+              return "hiddenpower" + (gen.moveList.hiddenpower as DamagingMove).getType!(a);
+            } else {
+              return m;
+            }
+          };
+
+          $conn.emit("chat", room, `${a.species.name} @ ${a.item}`, () => {});
+          $conn.emit("chat", room, `- ${a.moves.map(name).join("/")}`, () => {});
+        };
+
+        if (message.id !== myId && message.type === "chat" && message.message.startsWith("/dox")) {
+          if (message.message.includes("team")) {
+            team.forEach(dox);
+          } else {
+            if (team[activePokemon]) {
+              dox(team[activePokemon]);
+            }
+          }
+        }
+      },
     };
 
     for (const k in chats) {
@@ -253,7 +291,7 @@ export async function startBot(format?: FormatId, botFunction: BotFunction = ran
       }
     }
 
-    games[room](events, options);
+    games[room].nextTurn(events, options);
   }
 }
 

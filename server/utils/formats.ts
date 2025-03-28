@@ -1,7 +1,7 @@
 import type {ValidatedPokemonDesc} from "~/game/pokemon";
 import {moveList, type MoveId, type Move} from "~/game/moves";
 import {speciesList, type Species, type SpeciesId} from "~/game/species";
-import {statKeys} from "~/game/utils";
+import {statKeys, type Stats} from "~/game/utils";
 import random from "random";
 import {z} from "zod";
 import {isValidSketchMove, type FormatId} from "~/utils/shared";
@@ -128,7 +128,12 @@ export const randoms = (
     if (stab.length) {
       moves[0] = random.choice(stab)!;
     }
-    return {species: id, level, moves};
+    const ivs: Partial<Stats> = {};
+    if (moves.includes("hiddenpower")) {
+      ivs.atk = 0b1100 | Math.floor(Math.random() * 4);
+      ivs.def = 0b1100 | Math.floor(Math.random() * 4);
+    }
+    return {species: id, level, moves, ivs};
   });
 };
 
