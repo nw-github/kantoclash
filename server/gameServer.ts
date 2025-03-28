@@ -224,6 +224,9 @@ class Room {
       socket.join(this.spectatorRoom);
       return;
     } else if (this.accounts.has(socket.account)) {
+      if (!this.battle.findPlayer(socket.account.id)) {
+        socket.join(this.spectatorRoom);
+      }
       return;
     }
 
@@ -254,10 +257,8 @@ class Room {
 
   async onSocketLeave(socket: Socket, server: GameServer, sockets?: Socket[]) {
     socket.leave(this.id);
-    if (!socket.account) {
-      socket.leave(this.spectatorRoom);
-      return;
-    } else if (!this.accounts.has(socket.account)) {
+    socket.leave(this.spectatorRoom);
+    if (!socket.account || !this.accounts.has(socket.account)) {
       return;
     }
 
@@ -274,12 +275,12 @@ export type Telemetry = {onBattleComplete(format: FormatId, battle: Battle): voi
 export type ServerConfig = {maintenance?: boolean; botMatchmaking?: boolean};
 
 export class GameServer extends Server<ClientMessage, ServerMessage> {
-  private accounts = new Map<string, Account>();
-  private mmWaiting: Partial<Record<FormatId, PlayerParams>> = {};
-  private rooms = new Map<string, Room>();
+  private readonly accounts = new Map<string, Account>();
+  private readonly mmWaiting: Partial<Record<FormatId, PlayerParams>> = {};
+  private readonly rooms = new Map<string, Room>();
   private config: ServerConfig = {botMatchmaking: true};
 
-  constructor(opts?: Partial<ServerOptions>, public telemetry?: Telemetry) {
+  constructor(opts?: Partial<ServerOptions>, public readonly telemetry?: Telemetry) {
     super(opts);
     this.on("connection", socket => this.newConnection(socket));
     this.on("error", console.error);
