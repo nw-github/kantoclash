@@ -120,7 +120,7 @@ export const randoms = (
       valid = Object.keys(gen.moveList).filter(id => isValidSketchMove(gen, id)) as MoveId[];
     }
 
-    const moves = getRandomMoves(4, s.moves, (move, id) => !isBadMove(s, move, id));
+    const moves = getRandomMoves(4, valid, (move, id) => !isBadMove(s, move, id));
     const stab = s.moves.filter(m => {
       const move = moveList[m];
       return (move.power ?? 0) > 40 && s.types.includes(move.type) && !moves.includes(m);
