@@ -173,7 +173,7 @@
       </div>
 
       <img
-        v-if="side?.spikes"
+        v-if="player?.spikes"
         class="absolute size-4 sm:size-7 bottom-10 sm:bottom-14 opacity-80 pointer-events-none"
         src="/caltrop.svg"
       />
@@ -229,7 +229,6 @@ import {stageMultipliers, VF, hpPercentExact, type Screen} from "~/game/utils";
 import {calcStat, type Pokemon} from "~/game/pokemon";
 import {breakpointsTailwind} from "@vueuse/core";
 import type {Generation} from "~/game/gen";
-import type {Side} from "./Battle.vue";
 import type {UBadge} from "#components";
 import type {StyleValue} from "vue";
 import {
@@ -240,11 +239,11 @@ import {
   type SequenceTime,
 } from "motion-v";
 
-const {poke, base, back, gen, side} = defineProps<{
+const {poke, base, back, gen, player} = defineProps<{
+  player?: ClientPlayer;
   poke?: ClientActivePokemon;
   base?: Pokemon;
   back?: boolean;
-  side?: Side;
   gen: Generation;
 }>();
 const species = computed(() => poke && gen.speciesList[poke.transformed ?? poke.speciesId]);
@@ -296,7 +295,7 @@ const screens = computed(() => {
   }
 
   for (const screen in scrColor) {
-    if (side?.screens?.[screen as Screen]) {
+    if (player?.screens?.[screen as Screen]) {
       addScreen(screen, scrColor[screen as Screen]);
     }
   }
