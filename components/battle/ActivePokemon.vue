@@ -68,7 +68,7 @@
       </div>
     </div>
 
-    <div class="flex flex-col items-center relative">
+    <div ref="scope" class="flex flex-col items-center relative">
       <div class="w-[128px] h-[117px] sm:w-[256px] sm:h-[234px] items-center justify-center flex">
         <UPopover mode="hover" :popper="{placement: 'top'}">
           <div
@@ -97,12 +97,18 @@
               alt="confused"
             />
 
-            <img
-              v-if="poke?.v.status === 'slp'"
-              class="absolute size-6 sm:size-10 -top-4 z-30 invert dark:invert-0 rotate-180 ml-20"
-              src="/zzz.gif"
-              alt="confused"
-            />
+            <AnimatePresence>
+              <motion.img
+                v-if="poke?.v.status === 'slp'"
+                class="absolute size-6 sm:size-10 -top-4 z-30 invert dark:invert-0 rotate-180 ml-20"
+                src="/zzz.gif"
+                alt="confused"
+                :initial="{opacity: 0}"
+                :transition="{duration: 0.2}"
+                :animate="{opacity: 1}"
+                :exit="{opacity: 0}"
+              />
+            </AnimatePresence>
           </div>
 
           <template v-if="poke && !poke.hidden" #panel>
@@ -143,15 +149,19 @@
           </template>
         </UPopover>
 
-        <TransitionGroup name="screens">
-          <div
-            v-for="{name: key, clazz, style} in screens"
+        <AnimatePresence>
+          <motion.div
+            v-for="({name: key, clazz}, i) in screens"
             :key
-            :class="clazz"
-            :style
             class="absolute w-16 h-14 sm:w-32 sm:h-28 opacity-30 z-30 rounded-md pointer-events-none"
+            :class="clazz"
+            :transition="{duration: 0.35, ease: 'easeOut'}"
+            :initial="{scale: 0}"
+            :animate="{scale: 1, y: i * -5, x: i * -5}"
+            :exit="{scale: 0}"
+            layout
           />
-        </TransitionGroup>
+        </AnimatePresence>
       </div>
 
       <div
@@ -165,8 +175,7 @@
         />
 
         <div
-          ref="substitute"
-          class="absolute opacity-0 bottom-[50%] pointer-events-none"
+          class="substitute absolute opacity-0 bottom-[50%] pointer-events-none"
           :class="!back && 'z-40'"
         >
           <Sprite species="marowak" substitute :scale="lessThanSm ? 1 : 2" :back />
@@ -174,24 +183,15 @@
       </div>
 
       <img
-        v-if="side?.spikes"
+        v-if="player?.spikes"
         class="absolute size-4 sm:size-7 bottom-10 sm:bottom-14 opacity-80 pointer-events-none"
         src="/caltrop.svg"
       />
 
       <img
-        ref="caltrop1"
-        class="absolute bottom-4 sm:bottom-8 size-4 sm:size-7 opacity-0 pointer-events-none"
-        src="/caltrop.svg"
-      />
-      <img
-        ref="caltrop2"
-        class="absolute bottom-4 sm:bottom-8 size-4 sm:size-7 opacity-0 pointer-events-none"
-        src="/caltrop.svg"
-      />
-      <img
-        ref="caltrop3"
-        class="absolute bottom-4 sm:bottom-8 size-4 sm:size-7 opacity-0 pointer-events-none"
+        v-for="i in 3"
+        :key="i"
+        class="caltrop absolute bottom-4 sm:bottom-8 size-4 sm:size-7 opacity-0 pointer-events-none"
         src="/caltrop.svg"
       />
     </div>
@@ -218,20 +218,6 @@
     scale: 0.5;
   }
 }
-
-.screens-move,
-.screens-enter-active,
-.screens-leave-active {
-  transition: all 0.4s ease-out;
-}
-
-.screens-enter-from {
-  transform: scale(0);
-}
-
-.screens-leave-to {
-  transform: scale(0);
-}
 </style>
 
 <script setup lang="ts">
@@ -239,15 +225,21 @@ import {stageMultipliers, VF, hpPercentExact, type Screen} from "~/game/utils";
 import {calcStat, type Pokemon} from "~/game/pokemon";
 import {breakpointsTailwind} from "@vueuse/core";
 import type {Generation} from "~/game/gen";
-import type {Side} from "./Battle.vue";
 import type {UBadge} from "#components";
-import type {StyleValue} from "vue";
+import {
+  steps,
+  motion,
+  type AnimationSequence,
+  type Segment,
+  type SequenceOptions,
+  type SequenceTime,
+} from "motion-v";
 
-const {poke, base, back, gen, side} = defineProps<{
+const {poke, base, back, gen, player} = defineProps<{
+  player?: ClientPlayer;
   poke?: ClientActivePokemon;
   base?: Pokemon;
   back?: boolean;
-  side?: Side;
   gen: Generation;
 }>();
 const species = computed(() => poke && gen.speciesList[poke.transformed ?? poke.speciesId]);
@@ -265,7 +257,6 @@ const breakpoint = useBreakpoints(breakpointsTailwind);
 const lessThanSm = breakpoint.smaller("sm");
 
 const sprite = ref<HTMLDivElement>();
-const pokeBall = ref<HTMLDivElement>();
 const ground = ref<HTMLDivElement>();
 const pbRow = ref(0);
 const pbCol = ref(3);
@@ -276,53 +267,61 @@ const scrColor: Record<Screen, string> = {
 };
 
 const screens = computed(() => {
-  const screens: {name: string; clazz: string; style: StyleValue}[] = [];
-  let margin = 0;
-  const addScreen = (name: string, clazz: string) => {
-    screens.push({
-      name,
-      clazz,
-      style: {marginTop: -margin * 0.5 + "rem", marginLeft: -margin * 0.5 + "rem"},
-    });
-    margin++;
-  };
-
+  const screens: {name: string; clazz: string}[] = [];
   if ((poke?.v.flags ?? 0) & VF.protect) {
-    addScreen("protect", "bg-slate-200");
+    screens.push({name: "protect", clazz: "bg-slate-200"});
   }
 
   if ((poke?.v.flags ?? 0) & VF.lightScreen) {
-    addScreen("light_screen", scrColor.light_screen);
+    screens.push({name: "light_screen", clazz: scrColor.light_screen});
   }
 
   if ((poke?.v.flags ?? 0) & VF.reflect) {
-    addScreen("reflect", scrColor.reflect);
+    screens.push({name: "reflect", clazz: scrColor.reflect});
   }
 
   for (const screen in scrColor) {
-    if (side?.screens?.[screen as Screen]) {
-      addScreen(screen, scrColor[screen as Screen]);
+    if (player?.screens?.[screen as Screen]) {
+      screens.push({name: screen, clazz: scrColor[screen as Screen]});
     }
   }
 
   return screens;
 });
 
+const [scope, animate] = useAnimate();
+
 const offsX = (number: number) => `-${number * 42 - number}px`;
 const offsY = (number: number) => `-${number * 42 - number * 2}px`;
 const relativePos = (src: DOMRect, x: number, y: number) => [x - src.left, y - src.top];
 
-const caltrop1 = ref<HTMLImageElement>();
-const caltrop2 = ref<HTMLImageElement>();
-const caltrop3 = ref<HTMLImageElement>();
-
-const substitute = ref<HTMLDivElement>();
-
 onMounted(async () => {
-  // await playAnimation(false, {anim: "get_sub", batonPass: false, name: ""});
-  // await playAnimation(false, {anim: "lose_sub", batonPass: false, name: ""});
-  // await playAnimation(false, {anim: "attack", batonPass: false, name: ""});
-  // await playAnimation(false, {anim: "attack", batonPass: false, name: ""});
+  // await playAnimation({anim: "get_sub", batonPass: true, name: ""});
+  // await playAnimation({anim: "retract", batonPass: true, name: ""});
+  // await playAnimation({anim: "sendin", batonPass: true, name: ""});
+  // await playAnimation({anim: "attack", batonPass: false, name: ""});
+  // await playAnimation({anim: "lose_sub", batonPass: false, name: ""});
+  // await playAnimation({anim: "attack", batonPass: false, name: ""});
+  // await playAnimation({anim: "retract", batonPass: false, name: ""});
+  // await playAnimation({anim: "sendin", batonPass: false, name: ""});
+  //   await playAnimation({
+  //     anim: "get_sub",
+  //     batonPass: false,
+  //     name: "l",
+  //     cb: () => log("cb called"),
+  //   });
+  //
+  //   await playAnimation({
+  //     anim: "lose_sub",
+  //     batonPass: false,
+  //     name: "l",
+  //     cb: () => log("cb called"),
+  //   });
+  // await playAnimation({
+  //   anim: "sendin",
+  //   batonPass: false,
+  //   name: "l",
+  // });
 });
 
 /*
@@ -343,6 +342,7 @@ const badges: {flag: VF; props: InstanceType<typeof UBadge>["$props"]}[] = [
       class: "ring-violet-500 dark:ring-violet-400",
     },
   },
+  {flag: VF.curse, props: {color: "red", label: "Curse"}},
   {flag: VF.cDisabled, props: {color: "red", label: "Disable"}},
   {flag: VF.focus, props: {color: "emerald", label: "Focus Energy"}},
   {flag: VF.mist, props: {color: "teal", label: "Mist"}},
@@ -356,30 +356,6 @@ const badges: {flag: VF; props: InstanceType<typeof UBadge>["$props"]}[] = [
 
 const rem = (rem: number) => parseFloat(getComputedStyle(document.documentElement).fontSize) * rem;
 
-const arcTo = (
-  self: Element,
-  other: Element,
-  duration: number,
-  height = 50,
-  offs?: [number, number],
-) => {
-  const myRect = self.getBoundingClientRect();
-  const otherRect = other.getBoundingClientRect();
-
-  const [x, y] = relativePos(myRect, otherRect.x, otherRect.y);
-  const midYRel = otherRect.top < myRect.top ? y - height : -height;
-  const xOffs = offs?.[0] ?? 0;
-  const yOffs = offs?.[1] ?? 0;
-
-  return {
-    translateX: {value: x + xOffs, duration, easing: "linear"},
-    translateY: [
-      {value: midYRel, duration: duration * (3 / 4), easing: "easeOutQuart"},
-      {value: y + yOffs, duration: duration / 4, easing: "easeInQuart"},
-    ],
-  };
-};
-
 export type AnimationParams =
   | SwitchAnim
   | {
@@ -387,8 +363,7 @@ export type AnimationParams =
       cb?: () => void;
       batonPass?: boolean;
       name?: string;
-    }
-  | SwitchAnim;
+    };
 
 export type SwitchAnim = {
   anim: "sendin" | "retract" | "phaze";
@@ -397,296 +372,304 @@ export type SwitchAnim = {
   name: string;
 };
 
-let timeline: anime.AnimeTimelineInstance | undefined;
+const subOpacity = 0.5;
+const [subOffsetX, subOffsetY] = [1.5, 0.5];
+
 let hasSubstitute = false;
-const playAnimation = (skip: boolean, {anim, cb, batonPass, name}: AnimationParams) => {
-  if (!sprite.value || !pokeBall.value || !substitute.value) {
-    return;
-  }
+const playAnimation = ({anim, cb, batonPass, name}: AnimationParams) => {
   if (name) {
     pbCol.value = name ? [...name].reduce((acc, x) => x.charCodeAt(0) + acc, 0) % 17 : 3;
   }
 
-  const subOpacity = 0.5;
-  const [subOffsetX, subOffsetY] = [rem(1.5), rem(0.5)];
-
-  timeline = useAnime.timeline();
+  const seq: AnimationSequence = [];
+  const opts: SequenceOptions = {};
   if (anim === "faint") {
     if (hasSubstitute) {
-      playLoseSub(timeline);
+      animations.loseSub(seq);
     }
-
-    timeline.add({
-      targets: sprite.value,
-      duration: 250,
-      translateY: {value: rem(7), duration: 250},
-      easing: "easeInExpo",
-      opacity: 0,
-      complete: () => useAnime.set(sprite.value!, {translateX: 0, translateY: 0, scale: 1}),
-    });
+    animations.faint(seq);
   } else if (anim === "sendin") {
-    pbRow.value = 0;
-    timeline.add({
-      targets: pokeBall.value,
-      translateX: [
-        {value: back ? -rem(6) : rem(6), duration: 0},
-        {value: 0, duration: 700, easing: "linear"},
-      ],
-      translateY: [
-        {value: -rem(2.5), duration: 0},
-        {value: -rem(4 * 1.4), duration: 450, easing: "easeOutQuad"},
-        {value: -rem(0.5), duration: 250, easing: "easeInQuad"},
-      ],
-      rotateZ: [
-        {value: 0, duration: 0},
-        {value: 360 * 4 * (back ? 1 : -1), duration: 800, easing: "linear"},
-      ],
-      opacity: [
-        {value: 100, duration: 800},
-        {value: 0, duration: 0},
-      ],
-      complete: cb,
-    });
-    timeline.add({
-      targets: sprite.value,
-      easing: "easeOutExpo",
-      opacity: [{value: 0, duration: 0}, {value: 1}],
-      translateX: {value: 0, duration: 0},
-      translateY: {value: 0, duration: 0},
-      scale: [{value: 0, duration: 0}, {value: 1}],
-      duration: 800,
-    });
-
+    animations.sendIn(seq, cb);
     if (hasSubstitute) {
-      timeline.add({
-        targets: sprite.value,
-        easing: "easeOutExpo",
-        duration: 250,
-        opacity: subOpacity,
-        translateX: back ? -subOffsetX : subOffsetX,
-        translateY: back ? subOffsetY : -subOffsetY,
-      });
-      // prettier-ignore
-      timeline.add({
-        targets: substitute.value,
-        duration: 250,
-        easing: "easeOutExpo",
-        translateX: 0,
-        translateY: 0,
-        opacity: 1,
-      }, "+=0");
+      animations.subAfterBatonPass(seq);
     }
   } else if (anim === "retract") {
     if (hasSubstitute) {
       if (batonPass) {
-        playStartAttack(timeline, subOffsetX, subOffsetY);
+        animations.startSubAttack(seq);
       } else {
-        playLoseSub(timeline);
+        hasSubstitute = false;
+        animations.loseSub(seq);
       }
     }
+    animations.retract(seq);
+  } else if (anim === "get_sub") {
+    hasSubstitute = true;
+    animations.getSub(seq);
+  } else if (anim === "lose_sub") {
+    hasSubstitute = false;
+    animations.loseSub(seq, cb);
+  } else if (anim === "phaze") {
+    animations.phaze(seq, ".sprite");
+    if (hasSubstitute) {
+      hasSubstitute = false;
+      animations.phaze(seq, ".substitute", "<");
+    }
+  } else if (anim === "spikes") {
+    animations.spikes(seq, cb);
+  } else {
+    if (hasSubstitute) {
+      animations.startSubAttack(seq);
+    }
 
-    const sprRect = sprite.value.getBoundingClientRect();
+    animations.attack(seq, cb);
+    opts.repeat = 1;
+    opts.repeatType = "reverse";
+  }
+
+  return animate(seq, opts);
+};
+
+const ms = (ms: number) => ms / 1000;
+
+const onComplete = (cb: () => void): Segment => {
+  let once = false;
+  let value = 0;
+  const obj = {
+    get value() {
+      return value;
+    },
+    set value(v) {
+      value = v;
+      if (v !== 0 && !once) {
+        cb();
+        once = true;
+      }
+    },
+  };
+  // XXX: For some reason motion decides to run animations with 0 duration at the start of the
+  // sequence
+  return [obj, {value: 5}, {duration: 0.01}];
+};
+
+const animations = {
+  startSubAttack(seq: AnimationSequence) {
+    seq.push([
+      ".substitute",
+      {
+        x: back ? -rem(subOffsetX) : rem(subOffsetX),
+        y: back ? rem(subOffsetY) : -rem(subOffsetY),
+        opacity: [1, 0.5],
+      },
+      {duration: ms(300), ease: easeOutExpo},
+    ]);
+    seq.push([
+      ".sprite",
+      {
+        x: back ? rem(subOffsetX) / 2 : -rem(subOffsetX) / 2,
+        y: back ? -rem(subOffsetY) / 2 : rem(subOffsetY) / 2,
+        opacity: 1,
+      },
+      {duration: ms(300), ease: easeOutExpo, at: "<"},
+    ]);
+  },
+
+  subAfterBatonPass(seq: AnimationSequence) {
+    seq.push([
+      ".sprite",
+      {
+        opacity: subOpacity,
+        x: back ? -rem(subOffsetX) : rem(subOffsetX),
+        y: back ? rem(subOffsetY) : -rem(subOffsetY),
+      },
+      {duration: ms(250), ease: easeOutExpo},
+    ]);
+    seq.push([
+      ".substitute",
+      {x: 0, y: 0, opacity: 1},
+      {duration: ms(250), ease: easeOutExpo, at: "+0"},
+    ]);
+  },
+
+  faint(seq: AnimationSequence) {
+    seq.push([".sprite", {y: rem(7), opacity: 0}, {ease: easeInExpo, duration: ms(250)}]);
+    seq.push([".sprite", {y: 0}, {ease: steps(1, "start"), duration: 0.01}]);
+  },
+  sendIn(seq: AnimationSequence, cb?: () => void) {
+    pbRow.value = 0;
+
+    seq.push([
+      ".pokeball",
+      {
+        x: [back ? -rem(6) : rem(6), 0],
+        y: [-rem(2), -rem(5), -rem(1.25)],
+        rotateZ: [0, 360 * 5 * (back ? 1 : -1)],
+        opacity: [1, 0],
+      },
+      {
+        x: {ease: "linear"},
+        y: {times: [0, 0.4, 1], ease: ["easeOut", "backIn"]},
+        rotateZ: {ease: "linear"},
+        opacity: {ease: steps(1)},
+        duration: ms(650),
+      },
+    ]);
+    if (cb) {
+      seq.push(onComplete(cb));
+    }
+
+    seq.push([
+      ".sprite",
+      {opacity: [0, 1], x: [0, 0], y: [0, 0], scale: [0, 1]},
+      {duration: ms(650), ease: easeOutExpo},
+    ]);
+  },
+  getSub(seq: AnimationSequence, cb?: () => void) {
+    seq.push([
+      ".sprite",
+      {
+        opacity: [0, subOpacity],
+        x: back ? -rem(subOffsetX) : rem(subOffsetX),
+        y: back ? rem(subOffsetY) : -rem(subOffsetY),
+      },
+      {duration: ms(800), ease: easeOutExpo},
+    ]);
+    if (cb) {
+      seq.push(onComplete(cb));
+    }
+    seq.push([
+      ".substitute",
+      {
+        x: [0, 0],
+        y: [-rem(8), 0],
+        opacity: 1,
+        scaleX: [1, 1],
+      },
+      {duration: ms(350), ease: easeOutBounce},
+    ]);
+  },
+  loseSub(seq: AnimationSequence, cb?: () => void) {
+    seq.push([".substitute", {opacity: 0, scaleX: 0}, {duration: ms(300), ease: easeInExpo}]);
+    if (cb) {
+      seq.push(onComplete(cb));
+    }
+    seq.push([".sprite", {x: 0, y: 0, opacity: 1}, {duration: ms(500), ease: easeInExpo}]);
+  },
+  phaze(seq: AnimationSequence, target: any, at?: SequenceTime) {
+    const x = back ? -rem(8) : rem(8); // 120
+    seq.push([
+      target,
+      {x, opacity: 0},
+      {duration: ms(450), x: {ease: easeOutQuart}, opacity: {ease: easeOutExpo}, at},
+    ]);
+  },
+  retract(seq: AnimationSequence) {
+    const sprite = scope.value.querySelector(".sprite")!;
+    const sprRect = sprite.getBoundingClientRect();
     const gRect = ground.value!.getBoundingClientRect();
     const [_, sprY] = relativePos(sprRect, 0, gRect.top - rem(lessThanSm.value ? 1.2 : 2.8));
 
     pbRow.value = 10;
 
-    timeline.add({
-      targets: pokeBall.value,
-      easing: "steps(2)",
-      translateX: [{value: 0, duration: 0}],
-      translateY: [{value: 0, duration: 0}],
-      opacity: [{value: 1, duration: 0}],
-      duration: 800,
-    });
-    timeline.add(
-      {
-        targets: sprite.value,
-        easing: "easeOutQuart",
-        scale: 0.45,
-        opacity: [{value: 0, easing: "easeInCubic"}],
-        translateY: sprY,
-        duration: 550,
-        complete: () => {
-          useAnime.set(sprite.value!, {opacity: 0, translateX: 0, translateY: 0, scale: 1});
-        },
-      },
-      "+=0",
-    );
-    timeline.add({
-      targets: pokeBall.value,
-      opacity: 0,
-      duration: 300,
-      easing: "linear",
-      begin: () => (pbRow.value = 9),
-    });
-  } else if (anim === "get_sub") {
-    hasSubstitute = true;
-    timeline.add({
-      targets: sprite.value,
-      easing: "easeOutExpo",
-      duration: 800,
-      opacity: subOpacity,
-      translateX: back ? -subOffsetX : subOffsetX,
-      translateY: back ? subOffsetY : -subOffsetY,
-      complete: () => {
-        useAnime.set(substitute.value!, {opacity: 1});
-        cb?.();
-      },
-    });
-    timeline.add({
-      targets: substitute.value,
-      duration: 350,
-      scaleX: {value: 1, duration: 0},
-      translateX: {value: 0, duration: 0},
-      translateY: [
-        {value: -rem(8), duration: 0},
-        {value: 0, duration: 350},
-      ],
-      easing: "easeOutBounce",
-    });
-  } else if (anim === "lose_sub") {
-    hasSubstitute = false;
-    playLoseSub(timeline, cb);
-  } else if (anim === "phaze") {
-    timeline.add({
-      targets: sprite.value,
-      duration: 450,
-      translateX: [{value: back ? -120 : 120, easing: "easeOutQuart"}],
-      opacity: [{value: 0, easing: "easeOutExpo"}],
-      complete: () => useAnime.set(sprite.value!, {translateX: 0, translateY: 0, scale: 1}),
-    });
+    seq.push([".pokeball", {x: 0, y: 0, opacity: 1}, {ease: steps(1, "start"), duration: 0}]);
+    seq.push([
+      sprite,
+      {scale: 0.45, opacity: 0, y: sprY},
+      {duration: ms(550), at: "<", ease: easeOutQuart, opacity: {ease: easeInCubic}},
+    ]);
+    seq.push(onComplete(() => (pbRow.value = 9)));
+    seq.push([".pokeball", {opacity: 0}, {duration: ms(200), ease: "linear"}]);
+  },
+  spikes(seq: AnimationSequence, cb?: () => void) {
+    const ground = document.querySelector<HTMLDivElement>(`.ground${back ? ".front" : ".back"}`)!;
+    const sprites = scope.value.querySelectorAll(".caltrop");
 
-    if (hasSubstitute) {
-      hasSubstitute = false;
-      timeline.add(
-        {
-          targets: substitute.value,
-          duration: 450,
-          translateX: [{value: back ? -120 : 120, easing: "easeOutQuart"}],
-          opacity: [{value: 0, easing: "easeOutExpo"}],
-          complete: () => useAnime.set(substitute.value!, {translateX: 0, translateY: 0, scale: 1}),
-        },
-        0,
-      );
-    }
-  } else if (anim === "spikes") {
-    const other = document.querySelector<HTMLDivElement>(`.ground${back ? ".front" : ".back"}`)!;
-    const sprites = [caltrop1.value!, caltrop2.value!, caltrop3.value!];
-
-    let delay = 0;
     for (let i = 0; i < sprites.length; i++) {
-      const duration = 250;
       let xOffs = [0, -30, 30][i];
       if (i !== 0) {
         xOffs += Math.sign(xOffs) * Math.random() * 20;
       }
+      const height = Math.random() * 20 + 50;
+      const offs = [ground.getBoundingClientRect().width / 2 + xOffs, 20] as const;
 
-      const caltrop = sprites[i];
-      const params: anime.AnimeParams = {
-        targets: caltrop,
-        ...arcTo(caltrop, other, duration, Math.random() * 20 + 50, [
-          other.getBoundingClientRect().width / 2 + xOffs,
-          20,
-        ]),
-        opacity: {value: 1, duration: 0},
-        complete: () => {
-          useAnime({
-            targets: caltrop,
-            opacity: [{value: 1, duration: 250}, {value: 0}],
-            complete: () => useAnime.set(caltrop, {translateX: 0, translateY: 0, opacity: 0}),
-          });
+      const caltrop = sprites[i] as HTMLImageElement;
 
-          if (i === 0 && cb) {
-            cb();
-          }
+      const [x, y] = arcTo(caltrop, ground, height, offs);
+      seq.push([
+        caltrop,
+        {opacity: [1, 1], x: [0, x], y: [0, ...y]}, //
+        {
+          x: {ease: "linear"},
+          y: {times: [0, 0.75, 1], ease: [easeOutQuart, easeInQuart]},
+          duration: ms(250),
+          at: i * 0.1,
         },
-      };
-
-      timeline.add(params, delay);
-      delay += 80;
+      ]);
+      if (cb && i === 0) {
+        seq.push(onComplete(cb));
+      }
+      seq.push([
+        caltrop,
+        {opacity: 0, x: 0, y: 0},
+        {ease: "easeOut", duration: ms(350), x: {ease: steps(1)}, y: {ease: steps(1)}},
+      ]);
     }
-  } else {
-    if (hasSubstitute) {
-      playStartAttack(timeline, subOffsetX, subOffsetY);
-    }
-
+  },
+  attack(seq: AnimationSequence, cb?: () => void) {
     const other = document.querySelector(`.sprite${back ? ".front" : ".back"}`)!;
+    const sprite = scope.value.querySelector(".sprite")!;
 
-    const duration = 240;
-    let ran = false;
-    timeline.direction = "alternate";
-    timeline.add({
-      targets: sprite.value,
-      ...arcTo(sprite.value, other, duration),
-      loopComplete: () => {
-        if (!ran && cb) {
-          cb();
-          ran = true;
-        }
+    const [x, y] = arcTo(sprite, other);
+    seq.push([
+      sprite,
+      {x: [0, x], y: [0, ...y]},
+      {
+        x: {ease: "linear"},
+        y: {times: [0, 0.75, 1], ease: [easeOutQuart, easeInQuart]},
+        duration: ms(240),
       },
-    });
-  }
-
-  if (skip) {
-    timeline.seek(timeline.duration);
-    return;
-  }
-
-  return timeline.finished;
+    ]);
+    if (cb) {
+      seq.push(onComplete(cb));
+    }
+  },
 };
 
-const playLoseSub = (timeline: anime.AnimeTimelineInstance, cb?: () => void) => {
-  hasSubstitute = false;
-  timeline.add({
-    targets: substitute.value,
-    duration: 300,
-    easing: "easeInExpo",
-    opacity: 0,
-    scaleX: 0,
-    complete: () => {
-      cb?.();
-      useAnime.set(sprite.value!, {scaleX: 1});
-    },
-  });
-  timeline.add({
-    targets: sprite.value,
-    duration: 500,
-    easing: "easeInExpo",
-    translateX: 0,
-    translateY: 0,
-    opacity: 1,
-  });
-};
+const arcTo = (self: Element, other: Element, height = 50, offs?: readonly [number, number]) => {
+  const myRect = self.getBoundingClientRect();
+  const otherRect = other.getBoundingClientRect();
 
-const playStartAttack = (timeline: anime.AnimeTimelineInstance, x: number, y: number) => {
-  timeline.add({
-    targets: substitute.value,
-    duration: 350,
-    easing: "easeOutExpo",
-    translateX: back ? -x : x,
-    translateY: back ? y : -y,
-    opacity: 0.5,
-  });
-  // prettier-ignore
-  timeline.add({
-    targets: sprite.value,
-    duration: 350,
-    easing: "easeOutExpo",
-    translateX: back ? x / 2 : -x / 2,
-    translateY: back ? -y / 2 : y / 2,
-    opacity: 1,
-  }, 0);
-};
-
-const skipAnimation = () => {
-  if (timeline && !timeline.paused) {
-    timeline.seek(timeline.duration);
-    timeline = undefined;
-  }
+  const [x, y] = relativePos(myRect, otherRect.x, otherRect.y);
+  const midYRel = otherRect.top < myRect.top ? y - height : -height;
+  const xOffs = offs?.[0] ?? 0;
+  const yOffs = offs?.[1] ?? 0;
+  return [x + xOffs, [midYRel, y + yOffs]] as const;
 };
 
 const isBack = () => back;
 
-defineExpose({playAnimation, skipAnimation, isBack});
+// https://easings.net
+
+const easeInExpo = [0.7, 0, 0.84, 0] as const;
+const easeOutExpo = [0.16, 1, 0.3, 1] as const;
+const easeOutQuart = [0.25, 1, 0.5, 1] as const;
+const easeInQuart = [0.5, 0, 0.75, 0] as const;
+const easeInCubic = [0.32, 0, 0.67, 0] as const;
+
+function easeOutBounce(x: number): number {
+  const n1 = 7.5625;
+  const d1 = 2.75;
+
+  if (x < 1 / d1) {
+    return n1 * x * x;
+  } else if (x < 2 / d1) {
+    return n1 * (x -= 1.5 / d1) * x + 0.75;
+  } else if (x < 2.5 / d1) {
+    return n1 * (x -= 2.25 / d1) * x + 0.9375;
+  } else {
+    return n1 * (x -= 2.625 / d1) * x + 0.984375;
+  }
+}
+
+defineExpose({playAnimation, isBack});
 </script>

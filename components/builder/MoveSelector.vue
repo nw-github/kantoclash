@@ -11,7 +11,7 @@
     <UInput
       v-model="query"
       placeholder="Add move..."
-      :color="isIllegal(normalizeName(query)) ? 'red' : undefined"
+      :color="isIllegal(normalizeName(query)) || hasConflict() ? 'red' : undefined"
       @focus="open = true"
       @update:model-value="open = true"
       @keydown.tab="open = false"
@@ -61,7 +61,7 @@ import type {Generation} from "~/game/gen";
 import {ivsToDvs} from "~/utils/pokemon";
 
 const query = defineModel<string>({default: ""});
-const {poke, gen} = defineProps<{poke: PokemonDesc; gen: Generation}>();
+const {poke, gen, idx} = defineProps<{poke: PokemonDesc; gen: Generation; idx: number}>();
 const open = ref(false);
 const species = computed<Species | undefined>(() => gen.speciesList[poke?.species as SpeciesId]);
 const items = computed(() => Object.entries(gen.moveList) as [MoveId, Move][]);
@@ -106,6 +106,14 @@ const filter = (moves: [MoveId, Move][], query: string) => {
 };
 
 const onChoose = ([_, move]: [string, Move]) => (query.value = move.name);
+
+const hasConflict = () => {
+  const q = normalizeName(query.value);
+  if (!q) {
+    return false;
+  }
+  return poke.moves.findIndex((m, i) => normalizeName(m) === q && i !== idx) !== -1;
+};
 
 const isIllegal = (id: string) => {
   if (!id) {

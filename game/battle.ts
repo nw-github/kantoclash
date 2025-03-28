@@ -28,8 +28,6 @@ type ChosenMove = {move: Move; indexInMoves?: number; user: ActivePokemon; targe
 
 export type Options = NonNullable<Player["options"]>;
 
-export type Turn = {events: BattleEvent[]; switchTurn: boolean};
-
 export type PlayerParams = {readonly id: PlayerId; readonly team: ValidatedPokemonDesc[]};
 
 export class Player {
@@ -132,9 +130,9 @@ export class Battle {
   turnType = TurnType.Lead;
 
   private _victor?: Player;
+  private _turn = 0;
   weather?: {kind: Weather; turns: number};
   finished = false;
-  private turn = 0;
   gen1LastDamage = 0;
   betweenTurns = BetweenTurns.Begin;
 
@@ -165,7 +163,7 @@ export class Battle {
     self.players[0].updateOptions(self);
     self.players[1].updateOptions(self);
     if (chooseLead) {
-      return [self, {events: [], switchTurn: true} satisfies Turn] as const;
+      return [self, [] as BattleEvent[]] as const;
     }
 
     self.players[0].chooseSwitch(self, 0);
@@ -175,6 +173,10 @@ export class Battle {
 
   get victor(): Player | undefined {
     return this._victor;
+  }
+
+  get turn() {
+    return this._turn;
   }
 
   private set victor(value: Player) {
@@ -210,7 +212,7 @@ export class Battle {
     for (const player of this.players) {
       player.options = undefined;
     }
-    return {events: this.events.splice(0), switchTurn: false};
+    return this.events.splice(0);
   }
 
   draw(why: VictoryEvent["why"]) {
@@ -223,7 +225,7 @@ export class Battle {
     }
 
     this.event({type: "end", why});
-    return {events: this.events.splice(0), switchTurn: false};
+    return this.events.splice(0);
   }
 
   nextTurn() {
@@ -244,7 +246,8 @@ export class Battle {
     }
 
     if (this.turnType === TurnType.Normal) {
-      this.turn++;
+      this._turn++;
+      this.event({type: "next_turn", turn: this._turn});
     }
 
     const tmp = this.players
@@ -301,13 +304,12 @@ export class Battle {
 
     this.runTurn(choices);
 
-    const switchTurn = this.turnType === TurnType.Switch || this.turnType === TurnType.BatonPass;
     if (this.players.some(pl => pl.active.v.inBatonPass)) {
       this.turnType = TurnType.BatonPass;
     } else {
       if (this.victor) {
         this.event({type: "end", victor: this.victor.id});
-      } else if (this.turn >= 1000 && this.mods.endlessBattle) {
+      } else if (this._turn >= 1000 && this.mods.endlessBattle) {
         return this.draw("too_long");
       }
 
@@ -326,7 +328,7 @@ export class Battle {
       }
       player.updateOptions(this);
     }
-    return {events: this.events.splice(0), switchTurn};
+    return this.events.splice(0);
   }
 
   // --

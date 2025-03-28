@@ -1,6 +1,6 @@
 import {type ServerOptions, Server, type Socket as SocketIoClient} from "socket.io";
 import type {PokemonDesc, ValidatedPokemonDesc} from "../game/pokemon";
-import {Battle, type PlayerParams, type Options, type Turn} from "../game/battle";
+import {Battle, type PlayerParams, type Options} from "../game/battle";
 import {type TeamProblems, formatDescs} from "./utils/formats";
 import type {User} from "#auth-utils";
 import type {InfoMessage} from "./utils/info";
@@ -9,11 +9,12 @@ import type {FormatId} from "~/utils/shared";
 import {activeBots, createBotTeam} from "./bot";
 import random from "random";
 import {GENERATIONS} from "~/game/gen";
+import type {BattleEvent} from "~/game/events";
 
 export type JoinRoomResponse = {
   team?: ValidatedPokemonDesc[];
   options?: Options;
-  turns: Turn[];
+  events: BattleEvent[];
   chats: InfoRecord;
   format: FormatId;
   timer?: BattleTimer;
@@ -87,7 +88,7 @@ export interface ServerMessage {
   challengeRetracted: (by: Battler) => void;
   challengeRejected: (by: Battler) => void;
 
-  nextTurn: (room: string, turn: Turn, options?: Options, timer?: BattleTimer) => void;
+  nextTurn: (room: string, events: BattleEvent[], options?: Options, timer?: BattleTimer) => void;
   timerStart: (room: string, who: string, timer: BattleTimer) => void;
   info: (room: string, message: InfoMessage, turn: number) => void;
 
@@ -119,7 +120,6 @@ type Account = {
 };
 
 class Room {
-  turns: Turn[];
   accounts = new Set<Account>();
   chats: InfoRecord = {};
   timer?: NodeJS.Timeout;
@@ -129,11 +129,10 @@ class Room {
   constructor(
     public id: string,
     public battle: Battle,
-    init: Turn,
+    public events: BattleEvent[],
     public format: FormatId,
     public server: GameServer,
   ) {
-    this.turns = [init];
     this.spectatorRoom = `spectator:${this.id}`;
   }
 
@@ -186,25 +185,21 @@ class Room {
       : undefined;
   }
 
-  broadcastTurn(turn: Turn) {
-    this.turns.push(turn);
+  broadcastTurn(turn: BattleEvent[]) {
+    this.events.push(...turn);
     this.resetTimerState();
 
-    const {switchTurn, events} = turn;
-    for (const account of this.accounts) {
-      const player = this.battle.findPlayer(account.id);
-      if (player) {
-        const result = {switchTurn, events: Battle.censorEvents(events, player)};
+    for (const player of this.battle.players) {
+      const account = this.server.getAccount(player.id);
+      if (account) {
+        const result = Battle.censorEvents(turn, player);
         this.server
           .to(account.userRoom)
           .emit("nextTurn", this.id, result, player?.options, this.timerInfo(account));
       }
     }
 
-    this.server
-      .to(this.spectatorRoom)
-      .emit("nextTurn", this.id, {switchTurn, events: Battle.censorEvents(events)});
-
+    this.server.to(this.spectatorRoom).emit("nextTurn", this.id, Battle.censorEvents(turn));
     if (this.battle.finished) {
       for (const player of this.battle.players) {
         this.server.onBattleEnded(player.id, this);
@@ -215,7 +210,7 @@ class Room {
   }
 
   sendMessage(message: InfoMessage) {
-    const turn = Math.max(this.turns.length - 1, 0);
+    const turn = this.battle.turn;
     if (!this.chats[turn]) {
       this.chats[turn] = [];
     }
@@ -229,6 +224,9 @@ class Room {
       socket.join(this.spectatorRoom);
       return;
     } else if (this.accounts.has(socket.account)) {
+      if (!this.battle.findPlayer(socket.account.id)) {
+        socket.join(this.spectatorRoom);
+      }
       return;
     }
 
@@ -259,10 +257,8 @@ class Room {
 
   async onSocketLeave(socket: Socket, server: GameServer, sockets?: Socket[]) {
     socket.leave(this.id);
-    if (!socket.account) {
-      socket.leave(this.spectatorRoom);
-      return;
-    } else if (!this.accounts.has(socket.account)) {
+    socket.leave(this.spectatorRoom);
+    if (!socket.account || !this.accounts.has(socket.account)) {
       return;
     }
 
@@ -279,15 +275,12 @@ export type Telemetry = {onBattleComplete(format: FormatId, battle: Battle): voi
 export type ServerConfig = {maintenance?: boolean; botMatchmaking?: boolean};
 
 export class GameServer extends Server<ClientMessage, ServerMessage> {
-  private accounts = new Map<string, Account>();
-  private mmWaiting: Partial<Record<FormatId, PlayerParams>> = {};
-  private rooms = new Map<string, Room>();
+  private readonly accounts = new Map<string, Account>();
+  private readonly mmWaiting: Partial<Record<FormatId, PlayerParams>> = {};
+  private readonly rooms = new Map<string, Room>();
   private config: ServerConfig = {botMatchmaking: true};
 
-  constructor(
-    opts?: Partial<ServerOptions>,
-    public telemetry?: Telemetry,
-  ) {
+  constructor(opts?: Partial<ServerOptions>, public readonly telemetry?: Telemetry) {
     super(opts);
     this.on("connection", socket => this.newConnection(socket));
     this.on("error", console.error);
@@ -414,7 +407,7 @@ export class GameServer extends Server<ClientMessage, ServerMessage> {
       }
       ack();
     });
-    socket.on("joinRoom", (roomId, turn, ack) => {
+    socket.on("joinRoom", (roomId, eventStartIndex, ack) => {
       const room = this.rooms.get(roomId);
       if (!room) {
         return ack("bad_room");
@@ -426,12 +419,7 @@ export class GameServer extends Server<ClientMessage, ServerMessage> {
       return ack({
         team: player?.teamDesc,
         options: player?.options,
-        turns: room.turns
-          .slice(turn)
-          .map(({events, switchTurn}) => ({
-            events: Battle.censorEvents(events, player),
-            switchTurn,
-          })),
+        events: Battle.censorEvents(room.events.slice(eventStartIndex), player),
         chats: room.chats,
         format: room.format,
         timer: socket.account && room.timerInfo(socket.account),
@@ -702,7 +690,7 @@ export class GameServer extends Server<ClientMessage, ServerMessage> {
     const player = room.battle.findPlayer(socket.account.id);
     if (!player) {
       return "not_in_battle";
-    } else if (sequenceNo !== room.turns.length) {
+    } else if (sequenceNo !== room.events.length) {
       return "too_late";
     }
 
@@ -727,6 +715,10 @@ export class GameServer extends Server<ClientMessage, ServerMessage> {
       const acc = this.accounts.get(pl.id)!;
       return {name: acc.name, id: acc.id, nPokemon: pl.teamDesc.length};
     });
+  }
+
+  getAccount(id: string) {
+    return this.accounts.get(id);
   }
 
   onBattleEnded(player: string, room: Room) {

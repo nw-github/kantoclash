@@ -118,6 +118,17 @@
   margin: 0;
   padding: 0;
 }
+
+body {
+  --grid-color: #e4e4e4;
+  background-image: linear-gradient(to right, var(--grid-color) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid-color) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+.dark body {
+  --grid-color: #18181b;
+}
 </style>
 
 <script setup lang="ts">

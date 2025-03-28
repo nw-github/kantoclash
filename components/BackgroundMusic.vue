@@ -5,6 +5,7 @@
 <script setup lang="ts">
 // Loops auto-generated with: https://github.com/arkrow/PyMusicLooper
 import loops from "@/public/music/loops.json";
+import {animate} from "motion-v";
 
 const toast = useToast();
 const {volume, track, fadeOutRequested} = useBGMusic();
@@ -54,15 +55,7 @@ const stop = async (fade: boolean) => {
 
   const src = source;
   if (fade) {
-    await new Promise(resolve => {
-      useAnime({
-        targets: gain!.gain,
-        value: 0,
-        easing: "easeOutCubic",
-        duration: 3000,
-        complete: resolve,
-      });
-    });
+    await animate(gain!.gain, {value: 0}, {duration: 3, ease: [0.33, 1, 0.68, 1]}); // easeOutCubic
   }
 
   if (navigator.mediaSession) {

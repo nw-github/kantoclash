@@ -196,6 +196,7 @@
                 :key="i"
                 v-model="selectedPoke.data.moves[i]"
                 :poke="selectedPoke.data"
+                :idx="i"
                 :gen
               />
             </div>

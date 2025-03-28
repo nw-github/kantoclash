@@ -4,11 +4,11 @@
       <h1 class="text-center">
         {{ user ? `Welcome ${user.name}!` : "You must first log in to find a battle" }}
       </h1>
-      <div class="flex items-center gap-2">
-        <FormatDropdown v-model="selectedFormat" :disabled="findingMatch" class="grow" />
-        <FormatInfoButton :format="selectedFormat" />
-      </div>
       <ClientOnly>
+        <div class="flex items-center gap-2">
+          <FormatDropdown v-model="selectedFormat" :disabled="findingMatch" class="grow" />
+          <FormatInfoButton :format="selectedFormat" />
+        </div>
         <TeamSelector
           ref="selectTeamMenu"
           v-model="selectedTeam"
@@ -97,7 +97,11 @@
       <UCheckbox v-model="recentlyPlayed" label="Recently Played" />
       <UTable :rows="filteredRooms" :columns="roomsCols" :empty-state="emptyState">
         <template #live-data="{row}">
-          <UCheckbox v-model="row.live" disabled />
+          <UIcon
+            class="size-6"
+            :name="row.live ? 'material-symbols:check' : 'material-symbols:add-2'"
+            :class="!row.live && 'rotate-45'"
+          />
         </template>
 
         <template #name-data="{row}">
@@ -155,7 +159,7 @@ const loadingRooms = ref(false);
 const acceptingChallenge = ref(false);
 const modalOpen = ref(false);
 const recentlyPlayed = useLocalStorage("showRecentlyPlayed", true);
-const selectedFormat = useLocalStorage<FormatId>("lastFormat", () => "g1_randoms");
+const selectedFormat = useLocalStorage<FormatId>("lastFormat", "g2_randoms");
 const selectedTeam = ref<Team | undefined>();
 const errors = ref<Record<number, [string, string[]]>>({});
 const selectTeamMenu = ref<InstanceType<typeof TeamSelector>>();

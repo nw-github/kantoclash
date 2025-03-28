@@ -6,12 +6,11 @@ export default defineNuxtConfig({
     "@nuxt/ui",
     "@nuxt/image",
     "@vueuse/nuxt",
-    "@hypernym/nuxt-anime",
     "nuxt-auth-utils",
     "@nuxt/eslint",
+    "motion-v/nuxt",
   ],
   nitro: {experimental: {websocket: true}, esbuild: {options: {target: "es2022"}}},
-  anime: {composables: true},
   components: [{path: "~/components", pathPrefix: false}],
   runtimeConfig: {
     session: {
