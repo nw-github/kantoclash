@@ -281,7 +281,7 @@ const onNextTurn = (roomId: string, turn: BattleEvent[], opts?: Options, tmr?: B
     sequenceNo += turn.length;
     options[sequenceNo] = opts;
 
-    console.log("next turn, got", turn.length, "events");
+    // console.log("next turn, got", turn.length, "events");
   }
 };
 

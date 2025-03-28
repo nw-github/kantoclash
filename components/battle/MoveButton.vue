@@ -1,5 +1,5 @@
 <template>
-  <UPopover mode="hover" :popper="{placement: 'auto'}">
+  <TouchPopover :popper="{placement: 'auto'}">
     <UButton
       :disabled="!option.valid"
       class="flex justify-between content-center w-full p-1 text-black"
@@ -42,13 +42,14 @@
         </li>
       </ul>
     </template>
-  </UPopover>
+  </TouchPopover>
 </template>
 
 <script setup lang="ts">
 import type {MoveOption} from "~/game/battle";
 import type {Generation} from "~/game/gen1";
 import type {Pokemon} from "~/game/pokemon";
+import TouchPopover from "../TouchPopover.vue";
 
 defineEmits<{(e: "click"): void}>();
 

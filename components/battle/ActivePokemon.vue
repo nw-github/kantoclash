@@ -70,7 +70,7 @@
 
     <div ref="scope" class="flex flex-col items-center relative">
       <div class="w-[128px] h-[117px] sm:w-[256px] sm:h-[234px] items-center justify-center flex">
-        <UPopover mode="hover" :popper="{placement: 'top'}">
+        <TouchPopover :popper="{placement: 'top'}">
           <div
             ref="sprite"
             class="sprite relative z-20 flex justify-center"
@@ -147,7 +147,7 @@
               </div>
             </div>
           </template>
-        </UPopover>
+        </TouchPopover>
 
         <AnimatePresence>
           <motion.div

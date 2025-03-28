@@ -1,5 +1,5 @@
 <template>
-  <UPopover mode="hover">
+  <TouchPopover>
     <UButton :icon="formatInfo[format].icon" color="gray" variant="ghost" />
     <template #panel>
       <div class="flex flex-col gap-2 p-1 max-w-96">
@@ -18,7 +18,7 @@
         </div>
       </div>
     </template>
-  </UPopover>
+  </TouchPopover>
 </template>
 
 <script setup lang="ts">

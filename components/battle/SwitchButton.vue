@@ -1,5 +1,5 @@
 <template>
-  <UPopover mode="hover" :popper="{placement: 'auto'}">
+  <TouchPopover :popper="{placement: 'auto'}">
     <UButton
       class="w-full"
       :disabled="disabled || !poke.hp"
@@ -19,7 +19,7 @@
     <template #panel>
       <PokemonTTContent :poke />
     </template>
-  </UPopover>
+  </TouchPopover>
 </template>
 
 <script setup lang="ts">

@@ -40,7 +40,7 @@
           <FormatInfoButton :format />
         </div>
 
-        <UPopover mode="hover" :popper="{placement: 'bottom-start'}">
+        <TouchPopover :popper="{placement: 'bottom-end'}">
           <UButton
             color="white"
             variant="ghost"
@@ -54,6 +54,7 @@
                 :key="id"
                 :color="players[id].connected ? 'lime' : 'red'"
                 class="text-left"
+                :ui="{wrapper: 'justify-between'}"
               >
                 <span class="px-2">{{ playerInfo(player, id) }}</span>
                 <TooltipButton
@@ -70,7 +71,7 @@
               </UChip>
             </div>
           </template>
-        </UPopover>
+        </TouchPopover>
       </div>
     </template>
 
