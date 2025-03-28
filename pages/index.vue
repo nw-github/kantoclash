@@ -97,7 +97,11 @@
       <UCheckbox v-model="recentlyPlayed" label="Recently Played" />
       <UTable :rows="filteredRooms" :columns="roomsCols" :empty-state="emptyState">
         <template #live-data="{row}">
-          <UCheckbox v-model="row.live" disabled />
+          <UIcon
+            class="size-6"
+            :name="row.live ? 'material-symbols:check' : 'material-symbols:add-2'"
+            :class="!row.live && 'rotate-45'"
+          />
         </template>
 
         <template #name-data="{row}">

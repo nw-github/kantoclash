@@ -597,6 +597,10 @@ const runEvent = async (e: BattleEvent) => {
         batonPass: true,
       });
       return;
+    } else if (e.type === "sketch") {
+      if (e.src === myId.value) {
+        activeInTeam.value!.moves[activeInTeam.value!.moves.indexOf("sketch")] = e.move;
+      }
     }
 
     handleVolatiles(e);
