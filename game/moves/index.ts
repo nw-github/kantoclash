@@ -13,7 +13,7 @@ export interface BaseMove {
   readonly name: string;
   readonly pp: number;
   readonly type: Type;
-  readonly range?: Range;
+  readonly range: Range;
   readonly acc?: number;
   readonly priority?: number;
   readonly power?: number;
@@ -38,23 +38,26 @@ export interface BaseMove {
 export interface CustomMove extends BaseMove {
   readonly kind?: never;
 
-  use?(battle: Battle, user: ActivePokemon, target: ActivePokemon, moveIndex?: number): void;
-  exec(battle: Battle, user: ActivePokemon, target: ActivePokemon, moveIndex?: number): void;
+  use?(battle: Battle, user: ActivePokemon, targets: ActivePokemon[], moveIndex?: number): void;
+  exec(battle: Battle, user: ActivePokemon, targets: ActivePokemon[], moveIndex?: number): void;
 }
 
 export interface VolatileFlagMove extends BaseMove {
   readonly kind: "volatile";
   readonly flag: VF;
+  readonly range: Range.Self;
 }
 
 export interface ConfuseMove extends BaseMove {
   readonly kind: "confuse";
+  readonly range: Range.Adjacent;
 }
 
 export interface RecoveryMove extends BaseMove {
   readonly kind: "recover";
   readonly why: RecoveryReason;
   readonly weather?: boolean;
+  readonly range: Range.Self;
 }
 
 export interface StageMove extends BaseMove {
@@ -66,6 +69,7 @@ export interface StatusMove extends BaseMove {
   readonly kind: "status";
   readonly status: Status;
   readonly checkType?: boolean;
+  readonly range: Range.Adjacent | Range.Any;
 }
 
 export interface SwitchMove extends BaseMove {
@@ -101,10 +105,12 @@ export interface ProtectMove extends BaseMove {
 
 export interface PreventEscapeMove extends BaseMove {
   readonly kind: "noSwitch";
+  readonly range: Range.Adjacent;
 }
 
 export interface LockOnMove extends BaseMove {
   readonly kind: "lockOn";
+  readonly range: Range.Adjacent;
 }
 
 export interface DamagingMove extends BaseMove {

@@ -12,15 +12,17 @@ export enum Range {
 
   /** Targets any adjacent pokemon */
   Adjacent,
+  /** Targets any adjacent excluding allies */
+  AdjacentFoe,
   /** Targets any adjacent pokemon, including allies (Earthquake) */
   AllAdjacent,
   /** Targets any adjacent pokemon, excluding allies (Rock Slide) */
   AllAdjacentFoe,
 
   /** Targets one ally */
-  Ally,
-  /** Targets self or one ally */
-  SelfOrAlly,
+  AdjacentAlly,
+  /** Targets self or one adjacent ally */
+  SelfOrAdjacentAlly,
   /** Targets all allies except the user */
   AllAllies,
 
@@ -47,7 +49,7 @@ const internalMoveList = createMoveList({
     pp: 30,
     type: "normal",
     range: Range.Adjacent,
-    exec(battle, user, target) {
+    exec(battle, user, [target]) {
       user.v.types = [...target.v.types];
       battle.event({
         type: "conversion",
@@ -67,7 +69,7 @@ const internalMoveList = createMoveList({
     range: Range.Adjacent,
     acc: 55,
     protect: true,
-    exec(battle, user, target) {
+    exec(battle, user, [target]) {
       battle.gen1LastDamage = 0;
 
       const options = [...target.base.moves.keys()].filter(i => target.base.pp[i] !== 0);
@@ -97,36 +99,38 @@ const internalMoveList = createMoveList({
     pp: 30,
     type: "ice",
     range: Range.All,
-    exec(battle, user, target) {
-      for (const k of stageKeys) {
-        user.v.stages[k] = target.v.stages[k] = 0;
+    exec(battle, user, targets) {
+      for (const target of targets) {
+        target.v.clearFlag(VF.lightScreen | VF.reflect | VF.mist | VF.focus);
+        for (const k of stageKeys) {
+          target.v.stages[k] = 0;
+        }
+        target.v.counter = 0;
+        target.v.confusion = 0;
+        target.v.disabled = undefined;
+        target.v.seededBy = undefined;
+        target.v.stats = {...target.base.stats};
+        if (target === user) {
+          continue;
+        }
+
+        if (target.base.status === "frz" || target.base.status === "slp") {
+          target.base.sleepTurns = 0;
+          target.v.hazed = true;
+        }
+
+        target.base.status = undefined;
       }
-
-      const flags = VF.lightScreen | VF.reflect | VF.mist | VF.focus | VF.seeded;
-      user.v.clearFlag(flags);
-      target.v.clearFlag(flags);
-
-      user.v.counter = target.v.counter = 0;
-      user.v.confusion = target.v.confusion = 0;
-      user.v.disabled = target.v.disabled = undefined;
-      user.v.stats = {...user.base.stats};
-      target.v.stats = {...target.base.stats};
 
       if (user.base.status === "tox") {
         user.base.status = "psn";
       }
 
-      if (target.base.status === "frz" || target.base.status === "slp") {
-        target.base.sleepTurns = 0;
-        target.v.hazed = true;
-      }
-
-      target.base.status = undefined;
-
-      battle.info(user, "haze", [
-        {id: user.owner.id, v: user.getClientVolatiles(user.base, battle)},
-        {id: target.owner.id, v: target.getClientVolatiles(target.base, battle)},
-      ]);
+      battle.info(
+        user,
+        "haze",
+        targets.map(t => ({id: user.owner.id, v: t.getClientVolatiles(user.base, battle)})),
+      );
       return false;
     },
   },
@@ -137,10 +141,10 @@ const internalMoveList = createMoveList({
     range: Range.Adjacent,
     acc: 90,
     protect: true,
-    exec(battle, user, target) {
+    exec(battle, user, [target]) {
       if (target.v.types.includes(this.type)) {
         return battle.info(target, "immune");
-      } else if (target.v.hasFlag(VF.seeded)) {
+      } else if (target.v.seededBy) {
         return battle.info(target, "fail_generic");
       } else if (battle.gen.id >= 2 && target.v.substitute) {
         return battle.info(target, "fail_generic");
@@ -148,7 +152,8 @@ const internalMoveList = createMoveList({
         return;
       }
 
-      battle.info(target, "seeded", [target.setFlag(VF.seeded)]);
+      target.v.seededBy = user;
+      battle.info(target, "seeded", [{id: target.owner.id, v: {flags: target.v.cflags}}]);
     },
   },
   metronome: {
@@ -178,7 +183,7 @@ const internalMoveList = createMoveList({
     acc: 100,
     noEncore: true,
     noSleepTalk: true,
-    exec(battle, user, target, indexInMoves) {
+    exec(battle, user, [target], indexInMoves) {
       if (!battle.checkAccuracy(this, user, target)) {
         return false;
       }
@@ -202,15 +207,17 @@ const internalMoveList = createMoveList({
     type: "flying",
     range: Range.Self,
     noEncore: true,
-    exec(battle, user, target) {
+    exec(battle, user) {
       battle.gen1LastDamage = 0;
-      if (!target.v.lastMove || target.v.lastMove === this) {
-        battle.info(user, "fail_generic");
-        return false;
-      }
-
+      battle.info(user, "fail_generic");
       // TODO: targeting
-      return battle.callUseMove(target.v.lastMove, user, target);
+      return;
+      //       if (!target.v.lastMove || target.v.lastMove === this) {
+      //         battle.info(user, "fail_generic");
+      //         return false;
+      //       }
+      //
+      //       return battle.callUseMove(target.v.lastMove, user, target);
     },
   },
   substitute: {
@@ -240,7 +247,7 @@ const internalMoveList = createMoveList({
     type: "normal",
     range: Range.Adjacent,
     noEncore: true,
-    exec(battle, user, target) {
+    exec(battle, user, [target]) {
       battle.gen1LastDamage = 0;
       user.base = transform(user.base.real, target.base);
 
@@ -819,7 +826,7 @@ const internalMoveList = createMoveList({
       const mv = target.lastChosenMove;
       if (mv && ((mv.type !== "normal" && mv.type !== "fight") || !mv.power || mv === this)) {
         return false;
-      } else if (target.owner.choice?.move === this) {
+      } else if (target.choice?.move === this) {
         return false;
       }
       // Counter can crit, but it won't do any more damage
@@ -1832,7 +1839,7 @@ const internalMoveList = createMoveList({
     type: "normal",
     range: Range.Adjacent,
     protect: true,
-    exec(battle, user, target) {
+    exec(battle, user, [target]) {
       if (
         !user.base.gender ||
         !target.base.gender ||
@@ -1930,9 +1937,9 @@ const internalMoveList = createMoveList({
     name: "Curse",
     pp: 10,
     type: "???",
-    // TODO: targeting if switch types mid-turn
+    // TODO: Adjacent if ghost type, self otherwise, target directly across if switch types mid-turn
     range: Range.Adjacent,
-    exec(battle, user, target) {
+    exec(battle, user, [target]) {
       if (!user.v.types.includes("ghost")) {
         if (user.v.stages.atk >= 6 && user.v.stages.def >= 6) {
           battle.info(user, "fail_generic");
@@ -1969,7 +1976,7 @@ const internalMoveList = createMoveList({
     range: Range.Adjacent,
     noEncore: true,
     protect: true,
-    exec(battle, user, target) {
+    exec(battle, user, [target]) {
       if (
         target.v.lastMoveIndex === undefined ||
         target.v.encore ||
@@ -1992,7 +1999,7 @@ const internalMoveList = createMoveList({
     type: "normal",
     range: Range.Adjacent,
     protect: true,
-    exec(battle, user, target) {
+    exec(battle, user, [target]) {
       if (user.v.hasFlag(VF.foresight)) {
         return battle.info(user, "fail_generic");
       } else if (!battle.checkAccuracy(this, user, target)) {
@@ -2014,7 +2021,7 @@ const internalMoveList = createMoveList({
     acc: 90,
     type: "psychic",
     range: Range.Adjacent,
-    exec(battle, user, target) {
+    exec(battle, user, [target]) {
       if (target.futureSight) {
         return battle.info(user, "fail_generic");
       }
@@ -2039,12 +2046,16 @@ const internalMoveList = createMoveList({
     pp: 5,
     type: "normal",
     range: Range.AllAllies,
-    exec(battle, user, target) {
-      user.unstatus(battle, "heal_bell");
+    exec(battle, user) {
+      // TODO GEN3: dont send two unstatus events
+      for (const active of user.owner.active) {
+        active.unstatus(battle, "heal_bell");
+      }
+      const opp = battle.opponentOf(user.owner);
       user.owner.team.forEach(poke => {
         poke.status = undefined;
-        if (target.owner.sleepClausePoke === poke) {
-          target.owner.sleepClausePoke = undefined;
+        if (opp.sleepClausePoke === poke) {
+          opp.sleepClausePoke = undefined;
         }
       });
     },
@@ -2054,7 +2065,7 @@ const internalMoveList = createMoveList({
     pp: 15,
     type: "ghost",
     range: Range.Adjacent,
-    exec(battle, user, target) {
+    exec(battle, user, [target]) {
       if (target.v.hasFlag(VF.nightmare) || target.base.status !== "slp") {
         return battle.info(user, "fail_generic");
       } else if (!battle.checkAccuracy(this, user, target)) {
@@ -2070,7 +2081,7 @@ const internalMoveList = createMoveList({
     acc: 100,
     type: "ghost",
     range: Range.Adjacent,
-    exec(battle, user, target) {
+    exec(battle, user, [target]) {
       if (!battle.checkAccuracy(this, user, target)) {
         return;
       }
@@ -2096,12 +2107,15 @@ const internalMoveList = createMoveList({
     pp: 5,
     type: "normal",
     range: Range.All,
-    exec(battle, user, target) {
-      user.v.perishCount = target.v.perishCount = 4;
-      battle.info(user, "perish_song", [
-        {id: user.owner.id, v: {perishCount: 4}},
-        {id: target.owner.id, v: {perishCount: 4}},
-      ]);
+    exec(battle, user, targets) {
+      for (const poke of targets) {
+        poke.v.perishCount = 4;
+      }
+      battle.info(
+        user,
+        "perish_song",
+        targets.map(poke => ({id: poke.owner.id, v: {perishCount: 4}})),
+      );
     },
   },
   psychup: {
@@ -2109,7 +2123,7 @@ const internalMoveList = createMoveList({
     pp: 10,
     type: "normal",
     range: Range.Adjacent,
-    exec(battle, user, target) {
+    exec(battle, user, [target]) {
       if (Object.values(target.v.stages).every(v => v === 0)) {
         return battle.info(user, "fail_generic");
       } else if (!battle.checkAccuracy(this, user, target)) {
@@ -2137,7 +2151,7 @@ const internalMoveList = createMoveList({
     range: Range.Adjacent,
     noMetronome: true,
     noEncore: true,
-    exec(battle, user, target, moveIndex) {
+    exec(battle, user, [target], moveIndex) {
       if (!battle.checkAccuracy(this, user, target)) {
         return;
       }
@@ -2202,13 +2216,14 @@ const internalMoveList = createMoveList({
     pp: 20,
     type: "ground",
     range: Range.Field,
-    exec(battle, user, target) {
-      if (target.owner.spikes) {
+    exec(battle, user) {
+      const target = battle.opponentOf(user.owner);
+      if (target.spikes) {
         return battle.info(user, "fail_generic");
       }
 
-      battle.info(target, "spikes");
-      target.owner.spikes = true;
+      battle.info(target.active[0], "spikes");
+      target.spikes = true;
     },
   },
   spite: {
@@ -2218,7 +2233,7 @@ const internalMoveList = createMoveList({
     type: "ghost",
     range: Range.Adjacent,
     protect: true,
-    exec(battle, user, target) {
+    exec(battle, user, [target]) {
       if (!battle.checkAccuracy(this, user, target)) {
         return;
       } else if (!target.v.lastMove) {
@@ -2244,7 +2259,7 @@ const internalMoveList = createMoveList({
     type: "normal",
     range: Range.Adjacent,
     protect: true,
-    exec(battle, user, target) {
+    exec(battle, user, [target]) {
       if (target.owner.screens.safeguard) {
         target.modStages([["atk", +2]], battle);
         return battle.info(user, "safeguard_protect");

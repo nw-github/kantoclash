@@ -24,6 +24,7 @@ type FormatInfo = {
   mods: Mods;
   chooseLead?: boolean;
   generation: number;
+  doubles?: boolean;
 };
 
 export const battleFormats = [

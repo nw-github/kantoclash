@@ -11,9 +11,11 @@ import random from "random";
 import {GENERATIONS} from "~/game/gen";
 import type {BattleEvent} from "~/game/events";
 
+export type OptionsArray = (Options | null)[];
+
 export type JoinRoomResponse = {
   team?: ValidatedPokemonDesc[];
-  options?: Options;
+  options?: OptionsArray;
   events: BattleEvent[];
   chats: InfoRecord;
   format: FormatId;
@@ -32,6 +34,25 @@ export type Challenge = {from: Battler; format: FormatId};
 
 export type RoomDescriptor = {id: string; battlers: Battler[]; format: FormatId; finished: boolean};
 export type MMError = "must_login" | "invalid_team" | "too_many" | "maintenance" | "bad_user";
+
+export type MoveChoice = {
+  type: "move";
+  who: number;
+  moveIndex: number;
+  target?: [string, number];
+};
+
+export type SwitchChoice = {
+  type: "switch";
+  who: number;
+  pokeIndex: number;
+};
+
+export type ForfeitChoice = {
+  type: "forfeit";
+};
+
+export type Choice = MoveChoice | SwitchChoice | ForfeitChoice;
 
 export interface ClientMessage {
   getRoom: (id: string, ack: (resp: "bad_room" | RoomDescriptor) => void) => void;
@@ -60,13 +81,7 @@ export interface ClientMessage {
     ack: (resp: JoinRoomResponse | "bad_room") => void,
   ) => void;
   leaveRoom: (room: string, ack: (resp?: "bad_room") => void) => void;
-  choose: (
-    room: string,
-    idx: number,
-    type: "move" | "switch" | "forfeit",
-    turn: number,
-    ack: (err?: ChoiceError) => void,
-  ) => void;
+  choose: (room: string, turn: number, choice: Choice, ack: (err?: ChoiceError) => void) => void;
   cancel: (room: string, turn: number, ack: (err?: ChoiceError) => void) => void;
   chat: (
     room: string,
@@ -88,7 +103,12 @@ export interface ServerMessage {
   challengeRetracted: (by: Battler) => void;
   challengeRejected: (by: Battler) => void;
 
-  nextTurn: (room: string, events: BattleEvent[], options?: Options, timer?: BattleTimer) => void;
+  nextTurn: (
+    room: string,
+    events: BattleEvent[],
+    options?: OptionsArray,
+    timer?: BattleTimer,
+  ) => void;
   timerStart: (room: string, who: string, timer: BattleTimer) => void;
   info: (room: string, message: InfoMessage, turn: number) => void;
 
@@ -159,7 +179,7 @@ class Room {
 
       let loser;
       for (const player of this.battle.players) {
-        if (!player.choice && player.options) {
+        if (!player.hasChosen()) {
           loser = loser ? undefined : player;
         }
       }
@@ -193,9 +213,10 @@ class Room {
       const account = this.server.getAccount(player.id);
       if (account) {
         const result = Battle.censorEvents(turn, player);
+        const opts = player.active.map(a => a.options || null);
         this.server
           .to(account.userRoom)
-          .emit("nextTurn", this.id, result, player?.options, this.timerInfo(account));
+          .emit("nextTurn", this.id, result, opts, this.timerInfo(account));
       }
     }
 
@@ -418,7 +439,7 @@ export class GameServer extends Server<ClientMessage, ServerMessage> {
       const player = socket.account && room.battle.findPlayer(socket.account.id);
       return ack({
         team: player?.teamDesc,
-        options: player?.options,
+        options: player?.active?.map(a => a.options || null),
         events: Battle.censorEvents(room.events.slice(eventStartIndex), player),
         chats: room.chats,
         format: room.format,
@@ -436,29 +457,30 @@ export class GameServer extends Server<ClientMessage, ServerMessage> {
       await room.onSocketLeave(socket, this);
       return ack();
     });
-    socket.on("choose", (roomId, index, type, sequenceNo, ack) => {
+    socket.on("choose", (roomId, sequenceNo, choice, ack) => {
       const info = this.validateMove(socket, roomId, sequenceNo);
       if (typeof info === "string") {
         return ack(info);
       }
 
       const [player, room] = info;
-      if (type === "move") {
-        if (!player.chooseMove(room.battle, index)) {
+      if (choice.type === "move") {
+        if (!player.chooseMove(choice.who, room.battle, choice.moveIndex, choice.target)) {
           return ack("invalid_choice");
         }
-      } else if (type === "switch") {
-        if (!player.chooseSwitch(room.battle, index)) {
+      } else if (choice.type === "switch") {
+        if (!player.chooseSwitch(choice.who, room.battle, choice.pokeIndex)) {
           return ack("invalid_choice");
         }
-      } else if (type !== "forfeit") {
+      } else if (choice.type !== "forfeit") {
         return ack("invalid_choice");
       } else if (room.battle.finished) {
         return ack("finished");
       }
 
       ack();
-      const turn = type === "forfeit" ? room.battle.forfeit(player, false) : room.battle.nextTurn();
+      const turn =
+        choice.type === "forfeit" ? room.battle.forfeit(player, false) : room.battle.nextTurn();
       if (turn) {
         room.broadcastTurn(turn);
       }
@@ -670,6 +692,7 @@ export class GameServer extends Server<ClientMessage, ServerMessage> {
       player,
       opponent,
       fmt.chooseLead ?? false,
+      fmt.doubles ?? false,
       fmt.mods,
     );
     const room = new Room(crypto.randomUUID(), battle, turn0, format, this);

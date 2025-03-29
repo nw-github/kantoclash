@@ -217,7 +217,7 @@ const handleCrashDamage = (
   }
 };
 
-const beforeUseMove = (battle: Battle, move: Move, user: ActivePokemon, target: ActivePokemon) => {
+const beforeUseMove = (battle: Battle, move: Move, user: ActivePokemon) => {
   // Order of events comes from here:
   //  https://www.smogon.com/forums/threads/past-gens-research-thread.3506992/#post-5878612
   if (user.v.hazed) {
@@ -298,12 +298,17 @@ const beforeUseMove = (battle: Battle, move: Move, user: ActivePokemon, target: 
       isStab: false,
     });
 
-    if (user.v.substitute && target.v.substitute) {
-      target.damage(dmg, user, battle, false, "confusion");
-    } else if (!user.v.substitute) {
+    if (!user.v.substitute) {
       user.damage(dmg, user, battle, false, "confusion");
+    } else {
+      // TODO: ?
+      for (const target of battle.opponentOf(user.owner).active) {
+        if (target.v.substitute) {
+          target.damage(dmg, user, battle, false, "confusion");
+          return false;
+        }
+      }
     }
-
     return false;
   } else if (attract) {
     battle.info(user, "immobilized");

@@ -48,7 +48,7 @@ export const moveFunctionPatches: Partial<MoveFunctions> = {
     },
   },
   status: {
-    exec(battle, user, target) {
+    exec(battle, user, [target]) {
       if (target.v.substitute) {
         return battle.info(target, "fail_generic");
       } else if (
@@ -93,7 +93,7 @@ export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
     },
   },
   disable: {
-    exec(this: Move, battle, user, target) {
+    exec(this: Move, battle, user, [target]) {
       if (
         target.v.disabled ||
         !target.v.lastMove ||
@@ -117,16 +117,22 @@ export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
     },
   },
   haze: {
-    exec(battle, user, target) {
-      for (const k of stageKeys) {
-        user.setStage(k, 0, battle, false);
-        target.setStage(k, 0, battle, false);
+    exec(battle, user, targets) {
+      for (const target of targets) {
+        for (const k of stageKeys) {
+          user.setStage(k, 0, battle, false);
+          target.setStage(k, 0, battle, false);
+        }
       }
 
-      battle.info(user, "haze", [
-        {id: user.owner.id, v: {stages: null, stats: user.clientStats(battle)}},
-        {id: target.owner.id, v: {stages: null, stats: target.clientStats(battle)}},
-      ]);
+      battle.info(
+        user,
+        "haze",
+        targets.map(user => ({
+          id: user.owner.id,
+          v: {stages: null, stats: user.clientStats(battle)},
+        })),
+      );
     },
   },
   mimic: {noMetronome: true},

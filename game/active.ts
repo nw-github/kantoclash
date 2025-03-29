@@ -32,11 +32,20 @@ export type DamageParams = {
   volatiles?: ChangedVolatiles;
 };
 
+export type ChosenMove = {
+  move: Move;
+  indexInMoves?: number;
+  user: ActivePokemon;
+  targets: ActivePokemon[];
+};
+
 export class ActivePokemon {
   v: Volatiles;
   lastChosenMove?: Move;
   movedThisTurn = false;
   futureSight?: {damage: number; turns: number};
+  choice?: ChosenMove;
+  options?: {canSwitch: boolean; moves: MoveOption[]};
 
   constructor(public base: Pokemon, public readonly owner: Player) {
     this.base = base;
@@ -61,16 +70,10 @@ export class ActivePokemon {
       this.v.perishCount = old.perishCount;
       this.v.meanLook = old.meanLook;
       this.v.counter = old.counter;
+      this.v.seededBy = old.seededBy;
 
       const passedFlags =
-        VF.lightScreen |
-        VF.reflect |
-        VF.mist |
-        VF.focus |
-        VF.seeded |
-        VF.curse |
-        VF.foresight |
-        VF.lockon;
+        VF.lightScreen | VF.reflect | VF.mist | VF.focus | VF.curse | VF.foresight | VF.lockon;
       this.v.setFlag(old.cflags & passedFlags);
 
       // Is trapping passed? Encore? Nightmare?
@@ -84,14 +87,16 @@ export class ActivePokemon {
 
     const v: ChangedVolatiles[number]["v"] = {};
 
-    const {active: opp, id} = battle.opponentOf(this.owner);
-    if (opp.v.attract === this) {
-      opp.v.attract = undefined;
-      v.flags = opp.v.cflags;
-    }
-    if (opp.v.meanLook === this) {
-      opp.v.meanLook = undefined;
-      v.flags = opp.v.cflags;
+    const {active: oppActive, id} = battle.opponentOf(this.owner);
+    for (const opp of oppActive) {
+      if (opp.v.attract === this) {
+        opp.v.attract = undefined;
+        v.flags = opp.v.cflags;
+      }
+      if (opp.v.meanLook === this) {
+        opp.v.meanLook = undefined;
+        v.flags = opp.v.cflags;
+      }
     }
 
     battle.event({
@@ -112,16 +117,18 @@ export class ActivePokemon {
       ],
     });
 
-    if (opp.v.trapped && opp.v.trapped.user === this && !opp.v.fainted) {
-      battle.event({
-        type: "trap",
-        src: opp.owner.id,
-        target: opp.owner.id,
-        kind: "end",
-        move: battle.moveIdOf(opp.v.trapped.move)!,
-        volatiles: [{id, v: {trapped: null}}],
-      });
-      opp.v.trapped = undefined;
+    for (const opp of oppActive) {
+      if (opp.v.trapped && opp.v.trapped.user === this && !opp.v.fainted) {
+        battle.event({
+          type: "trap",
+          src: opp.owner.id,
+          target: opp.owner.id,
+          kind: "end",
+          move: battle.moveIdOf(opp.v.trapped.move)!,
+          volatiles: [{id, v: {trapped: null}}],
+        });
+        opp.v.trapped = undefined;
+      }
     }
 
     if (this.base.item === "berserkgene") {
@@ -308,16 +315,9 @@ export class ActivePokemon {
     return battle.info(this, why, [{id: this.owner.id, v: {status: null, flags: this.v.cflags}}]);
   }
 
-  setStage(
-    stat: Stages,
-    value: number,
-    battle: Battle,
-    negative: boolean,
-    opponent?: ActivePokemon,
-  ) {
+  setStage(stat: Stages, value: number, battle: Battle, negative: boolean) {
     this.v.stages[stat] = value;
 
-    opponent ??= battle.opponentOf(this.owner).active;
     if (stageStatKeys.includes(stat)) {
       this.recalculateStat(battle, stat, negative);
     }
@@ -326,15 +326,18 @@ export class ActivePokemon {
       {id: this.owner.id, v: {stats: this.clientStats(battle), stages: {...this.v.stages}}},
     ];
     if (battle.gen.id === 1) {
-      // https://bulbapedia.bulbagarden.net/wiki/List_of_battle_glitches_(Generation_I)#Stat_modification_errors
-      opponent.applyStatusDebuff();
-      v.push({id: opponent.owner.id, v: {stats: opponent.clientStats(battle)}});
+      for (const other of battle.allActive) {
+        if (other !== this) {
+          // https://bulbapedia.bulbagarden.net/wiki/List_of_battle_glitches_(Generation_I)#Stat_modification_errors
+          other.applyStatusDebuff();
+          v.push({id: other.owner.id, v: {stats: other.clientStats(battle)}});
+        }
+      }
     }
-
     return v;
   }
 
-  modStages(mods: [Stages, number][], battle: Battle, opponent?: ActivePokemon) {
+  modStages(mods: [Stages, number][], battle: Battle) {
     mods = mods.filter(([stat]) => Math.abs(this.v.stages[stat]) !== 6);
     for (const [stat, count] of mods) {
       battle.event({
@@ -347,7 +350,6 @@ export class ActivePokemon {
           clamp(this.v.stages[stat] + count, -6, 6),
           battle,
           count < 0,
-          opponent,
         ),
       });
     }
@@ -413,7 +415,7 @@ export class ActivePokemon {
   }
 
   getOptions(battle: Battle): Options | undefined {
-    if (battle.finished || (battle.opponentOf(this.owner).active.v.fainted && !this.v.fainted)) {
+    if (battle.finished || (battle.allActive.some(p => p.v.fainted) && !this.v.fainted)) {
       return;
     } else if (battle.turnType === TurnType.Lead) {
       return {canSwitch: true, moves: []};
@@ -456,6 +458,10 @@ export class ActivePokemon {
     const moveLocked = !!(this.v.bide || this.v.trapping);
     const cantEscape = !!this.v.meanLook || (battle.gen.id >= 2 && !!this.v.trapped);
     return {canSwitch: ((!lockedIn || moveLocked) && !cantEscape) || this.v.fainted, moves};
+  }
+
+  updateOptions(battle: Battle) {
+    this.options = this.getOptions(battle);
   }
 
   setVolatile<T extends keyof Volatiles>(key: T, val: Volatiles[T]) {
@@ -524,6 +530,7 @@ class Volatiles {
   retaliateDamage = 0;
   meanLook?: ActivePokemon;
   attract?: ActivePokemon;
+  seededBy?: ActivePokemon;
   lastHitBy?: Move;
   lastMove?: Move;
   lastMoveIndex?: number;
@@ -590,6 +597,9 @@ class Volatiles {
     }
     if (this.meanLook) {
       flags |= VF.cMeanLook;
+    }
+    if (this.seededBy) {
+      flags |= VF.cSeeded;
     }
     return flags;
   }

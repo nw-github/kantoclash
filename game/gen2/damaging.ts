@@ -6,7 +6,7 @@ export function exec(
   this: DamagingMove,
   battle: Battle,
   user: ActivePokemon,
-  target: ActivePokemon,
+  [target]: ActivePokemon[],
 ) {
   const checkThrashing = () => {
     if (user.v.thrashing && --user.v.thrashing.turns === 0) {
@@ -164,8 +164,9 @@ export function exec(
       battle.info(user, "spin_spikes");
     }
 
-    if (user.v.hasFlag(VF.seeded)) {
-      battle.event({type: "sv", volatiles: [user.clearFlag(VF.seeded)]});
+    if (user.v.seededBy) {
+      user.v.seededBy = undefined;
+      battle.event({type: "sv", volatiles: [{id: user.owner.id, v: {flags: user.v.cflags}}]});
     }
 
     if (user.v.trapped) {
@@ -190,7 +191,7 @@ export function exec(
   if (dead && target.v.hasFlag(VF.destinyBond)) {
     user.damage(user.base.hp, target, battle, false, "destiny_bond", true);
     // user should die first
-    battle.checkFaint(target, user);
+    battle.checkFaint(target, [user]);
   }
 
   if (this.flag === "recharge") {

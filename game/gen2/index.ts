@@ -71,7 +71,7 @@ const merge = createDefu((obj, key, value) => {
   }
 });
 
-const beforeUseMove = (battle: Battle, move: Move, user: ActivePokemon, _: ActivePokemon) => {
+const beforeUseMove = (battle: Battle, move: Move, user: ActivePokemon) => {
   const resetVolatiles = () => {
     user.v.charging = undefined;
     user.v.invuln = false;
@@ -126,7 +126,7 @@ const beforeUseMove = (battle: Battle, move: Move, user: ActivePokemon, _: Activ
     const v = [{id: user.owner.id, v: {flags: user.v.cflags}}];
     battle.info(user, done ? "confused_end" : "confused", v);
     if (!done && battle.rng.bool()) {
-      const move = user.owner.choice?.move;
+      const move = user.choice?.move;
       const explosion = move?.kind === "damage" && move.flag === "explosion" ? 2 : 1;
       const [atk, def] = battle.gen.getDamageVariables(false, user, user, false);
       const dmg = battle.gen.calcDamage({

@@ -9,11 +9,11 @@ export function use(
   this: DamagingMove,
   battle: Battle,
   user: ActivePokemon,
-  target: ActivePokemon,
+  targets: ActivePokemon[],
   moveIndex?: number,
 ) {
-  if (user.v.trapping && target.v.trapped) {
-    const dead = target.damage(battle.gen1LastDamage, user, battle, false, "trap").dead;
+  if (user.v.trapping && targets[0].v.trapped) {
+    const dead = targets[0].damage(battle.gen1LastDamage, user, battle, false, "trap").dead;
     if (dead || --user.v.trapping.turns === 0) {
       user.v.trapping = undefined;
     }
@@ -38,14 +38,14 @@ export function use(
   if (this.charge === "invuln") {
     user.v.invuln = false;
   }
-  return battle.defaultUseMove(this, user, target, moveIndex);
+  return battle.defaultUseMove(this, user, targets, moveIndex);
 }
 
 export function exec(
   this: DamagingMove,
   battle: Battle,
   user: ActivePokemon,
-  target: ActivePokemon,
+  [target]: ActivePokemon[],
 ) {
   const checkThrashing = () => {
     if (user.v.thrashing && user.v.thrashing.turns !== -1 && --user.v.thrashing.turns === 0) {
@@ -201,7 +201,7 @@ export function exec(
   if (dead && target.v.hasFlag(VF.destinyBond)) {
     user.damage(user.base.hp, target, battle, false, "destiny_bond", true);
     // user should die first
-    battle.checkFaint(target, user);
+    battle.checkFaint(target, [user]);
   }
 
   if (dead || brokeSub) {

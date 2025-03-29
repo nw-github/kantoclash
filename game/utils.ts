@@ -45,14 +45,14 @@ export enum VF {
   reflect      = 0x0000_0002,
   mist         = 0x0000_0004,
   focus        = 0x0000_0008,
-  seeded       = 0x0000_0010,
-  destinyBond  = 0x0000_0020,
-  curse        = 0x0000_0040,
-  protect      = 0x0000_0080,
-  endure       = 0x0000_0100,
-  nightmare    = 0x0000_0200,
-  foresight    = 0x0000_0400,
-  lockon       = 0x0000_0800,
+  destinyBond  = 0x0000_0010,
+  curse        = 0x0000_0020,
+  protect      = 0x0000_0040,
+  endure       = 0x0000_0080,
+  nightmare    = 0x0000_0100,
+  foresight    = 0x0000_0200,
+  lockon       = 0x0000_0400,
+
 
   /** Client only */
   cConfused     = 0x8000_0000,
@@ -66,6 +66,8 @@ export enum VF {
   cEncore       = 0x0800_0000,
   /** Client only */
   cMeanLook     = 0x0400_0000,
+  /** Client only */
+  cSeeded       = 0x0200_0000,
 }
 
 export const floatTo255 = (num: number) => Math.floor((num / 100) * 255);
@@ -173,4 +175,6 @@ declare global {
   interface Array<T> {
     includes(x: any): x is T;
   }
+
+  type bool = boolean;
 }

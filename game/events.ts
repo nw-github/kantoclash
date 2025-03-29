@@ -203,7 +203,8 @@ export type InfoReason =
   | "withdraw"
   | "spikes"
   | "spin_spikes"
-  | "fail_present";
+  | "fail_present"
+  | "seeded";
 
 type InfoEvent = {type: "info"; src: PlayerId; why: InfoReason};
 

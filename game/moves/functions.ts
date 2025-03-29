@@ -29,7 +29,7 @@ export const moveFunctions: MoveFunctions = {
     },
   },
   confuse: {
-    exec(battle, user, target) {
+    exec(battle, user, [target]) {
       if (target.v.substitute) {
         return battle.info(target, "fail_generic");
       } else if (target.owner.screens.safeguard) {
@@ -68,33 +68,40 @@ export const moveFunctions: MoveFunctions = {
     },
   },
   stage: {
-    exec(battle, user, target) {
+    exec(battle, user, targets) {
       battle.gen1LastDamage = 0;
-      if (this.acc) {
-        if (target.v.hasFlag(VF.mist)) {
-          return battle.info(target, "mist_protect");
-        } else if (target.v.substitute) {
-          return battle.info(target, "fail_generic");
+      let failed = true;
+      for (const target of targets) {
+        if (this.acc) {
+          if (target.v.hasFlag(VF.mist)) {
+            failed = false;
+            return battle.info(target, "mist_protect");
+          } else if (target.v.substitute) {
+            continue;
+          }
+
+          if (!battle.checkAccuracy(this, user, target)) {
+            failed = false;
+            continue;
+          }
         }
 
-        if (!battle.checkAccuracy(this, user, target)) {
-          return;
+        if (target.modStages(this.stages, battle)) {
+          failed = false;
         }
-      } else {
-        target = user;
+      }
+
+      if (failed) {
+        return battle.info(user, "fail_generic");
       }
 
       const id = battle.moveIdOf(this)!;
       user.v.usedMinimize = user.v.usedMinimize || id === "minimize";
       user.v.usedDefenseCurl = user.v.usedDefenseCurl || id === "defensecurl";
-
-      if (!target.modStages(this.stages, battle, user)) {
-        battle.info(target, "fail_generic");
-      }
     },
   },
   status: {
-    exec(battle, user, target) {
+    exec(battle, user, [target]) {
       if (target.v.substitute && this.status !== "par" && this.status !== "slp") {
         return battle.info(target, "fail_generic");
       } else if (
@@ -144,7 +151,7 @@ export const moveFunctions: MoveFunctions = {
     },
   },
   phaze: {
-    exec(battle, user, target) {
+    exec(battle, user, [target]) {
       const next = battle.rng.choice(target.owner.team.filter(p => p.hp && p != target.base.real));
       if (!next || !target.movedThisTurn) {
         return battle.info(user, "fail_generic");
@@ -156,8 +163,8 @@ export const moveFunctions: MoveFunctions = {
     },
   },
   protect: {
-    exec(battle, user, target) {
-      if (user.v.substitute || (target.movedThisTurn && !this.endure)) {
+    exec(battle, user) {
+      if (user.v.substitute || (battle.turnOrder.at(-1)?.user === user && !this.endure)) {
         user.v.protectCount = 0;
         return battle.info(user, "fail_generic");
       }
@@ -177,7 +184,7 @@ export const moveFunctions: MoveFunctions = {
     },
   },
   noSwitch: {
-    exec(battle, user, target) {
+    exec(battle, user, [target]) {
       if (target.v.meanLook) {
         return battle.info(user, "fail_generic");
       } else if (!battle.checkAccuracy(this, user, target)) {
@@ -189,7 +196,7 @@ export const moveFunctions: MoveFunctions = {
     },
   },
   lockOn: {
-    exec(battle, user, target) {
+    exec(battle, user, [target]) {
       if (target.v.substitute) {
         return battle.info(user, "fail_generic");
       } else if (!battle.checkAccuracy(this, user, target)) {

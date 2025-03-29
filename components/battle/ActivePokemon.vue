@@ -331,6 +331,7 @@ const badges: {flag: VF; props: InstanceType<typeof UBadge>["$props"]}[] = [
   {flag: VF.cAttract, props: {color: "pink", icon: "material-symbols:favorite", variant: "subtle"}},
   {flag: VF.lockon, props: {color: "red", icon: "ri:crosshair-2-line", variant: "subtle"}},
   {flag: VF.cMeanLook, props: {color: "red", icon: "tabler:prison", variant: "subtle"}},
+  {flag: VF.cSeeded, props: {color: "lime", icon: "tabler:seedling-filled", variant: "subtle"}},
   {
     flag: VF.foresight,
     props: {
@@ -344,7 +345,6 @@ const badges: {flag: VF; props: InstanceType<typeof UBadge>["$props"]}[] = [
   {flag: VF.cDisabled, props: {color: "red", label: "Disable"}},
   {flag: VF.focus, props: {color: "emerald", label: "Focus Energy"}},
   {flag: VF.mist, props: {color: "teal", label: "Mist"}},
-  {flag: VF.seeded, props: {color: "lime", label: "Seeded"}},
   {flag: VF.destinyBond, props: {color: "gray", label: "Destiny Bond"}},
   {flag: VF.protect, props: {color: "black", label: "Protect"}},
   {flag: VF.endure, props: {color: "black", label: "Endure"}},

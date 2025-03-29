@@ -7,12 +7,12 @@ import type {
   VictoryEvent,
   ChangedVolatiles,
 } from "./events";
-import type {MoveId, Move} from "./moves";
+import {type MoveId, type Move, Range} from "./moves";
 import {Pokemon, type ValidatedPokemonDesc} from "./pokemon";
 import {getEffectiveness, idiv, screens, VF, type Type, type Weather, type Screen} from "./utils";
 import type {Generation} from "./gen";
 import {healBerry, statusBerry} from "./item";
-import {ActivePokemon, type VolatileStats} from "./active";
+import {ActivePokemon, type ChosenMove, type VolatileStats} from "./active";
 
 export {ActivePokemon, type VolatileStats};
 
@@ -24,81 +24,109 @@ export type MoveOption = {
   indexInMoves?: number;
 };
 
-type ChosenMove = {move: Move; indexInMoves?: number; user: ActivePokemon; target: ActivePokemon};
-
-export type Options = NonNullable<Player["options"]>;
+export type Options = NonNullable<ActivePokemon["options"]>;
 
 export type PlayerParams = {readonly id: PlayerId; readonly team: ValidatedPokemonDesc[]};
 
+export type NonEmptyArray<T> = [T, ...T[]];
+
 export class Player {
   readonly id: PlayerId;
-  readonly active: ActivePokemon;
+  readonly active: NonEmptyArray<ActivePokemon>;
   readonly team: Pokemon[];
   readonly teamDesc: ValidatedPokemonDesc[];
-  choice?: ChosenMove;
-  options?: {canSwitch: boolean; moves: MoveOption[]};
-  sleepClausePoke?: Pokemon;
+  readonly screens: Partial<Record<Screen, number>> = {};
 
-  screens: Partial<Record<Screen, number>> = {};
+  sleepClausePoke?: Pokemon;
   spikes = false;
 
-  constructor(gen: Generation, {id, team}: PlayerParams) {
+  constructor(gen: Generation, {id, team}: PlayerParams, format?: "doubles") {
     this.id = id;
     this.team = team.map(p => new Pokemon(gen, p));
     this.teamDesc = team;
-    this.active = new ActivePokemon(this.team[0], this);
+    this.active = [new ActivePokemon(this.team[0], this)];
+    if (format === "doubles") {
+      this.active.push(new ActivePokemon(this.team[1], this));
+    }
   }
 
   cancel() {
-    this.choice = undefined;
+    this.active.forEach(p => p.options && (p.choice = undefined));
   }
 
-  chooseMove(battle: Battle, index: number) {
-    const choice = this.options?.moves[index];
+  /**
+   * @param who The Pokémon being chosen for
+   * @param battle The battle
+   * @param index The index into the Choice move array
+   * @param target The player id and active index of the target, if applicable
+   * @returns Is this choice valid
+   */
+  chooseMove(who: number, battle: Battle, index: number, target?: [string, number]) {
+    const choice = this.active[who]?.options?.moves[index];
     if (!choice?.valid) {
       return false;
     }
 
-    this.choice = {
+    const move = battle.gen.moveList[choice.move];
+    const targets = battle.getTargets(move, this.active[who], target);
+    if (targets === false) {
+      return false;
+    }
+
+    this.active[who].choice = {
       indexInMoves: choice.indexInMoves,
-      move: battle.gen.moveList[choice.move],
-      user: this.active,
-      target: battle.opponentOf(this).active,
+      move,
+      user: this.active[who],
+      targets,
     };
     return true;
   }
 
-  chooseSwitch(battle: Battle, index: number) {
-    if (!this.options?.canSwitch) {
+  chooseSwitch(who: number, battle: Battle, index: number) {
+    const active = this.active[who];
+    if (!active?.options?.canSwitch) {
       return false;
     }
 
-    const poke = this.team[index];
+    const base = this.team[index];
     if (battle.turnType !== TurnType.Lead) {
-      const current = this.active.base;
-      if (!poke || poke === current || !poke.hp || poke === current.real) {
+      const current = active.base;
+      if (!base || base === current || !base.hp || this.active.some(a => a.base.real === base)) {
         return false;
       }
     }
 
-    this.choice = {
+    if (
+      this.active.some(
+        a => a !== active && a.choice?.move?.kind === "switch" && a.choice.move.poke.real === base,
+      )
+    ) {
+      return false;
+    }
+
+    active.choice = {
       move: {
         kind: "switch",
         type: "normal",
         name: "",
+        range: Range.Self,
         pp: 0,
         priority: +7,
-        poke,
-        batonPass: this.active.v.inBatonPass,
+        poke: base,
+        batonPass: this.active[who].v.inBatonPass,
       },
-      user: this.active,
-      target: this.active,
+      user: this.active[who],
+      targets: [],
     };
     return true;
   }
 
+  hasChosen() {
+    return this.active.every(p => !p.options || p.choice);
+  }
+
   updateOptions(battle: Battle) {
-    this.options = this.active.getOptions(battle);
+    this.active.forEach(active => active.updateOptions(battle));
   }
 
   areAllDead() {
@@ -135,6 +163,8 @@ export class Battle {
   finished = false;
   gen1LastDamage = 0;
   betweenTurns = BetweenTurns.Begin;
+  allActive: ActivePokemon[];
+  turnOrder: ChosenMove[] = [];
 
   private constructor(
     readonly gen: Generation,
@@ -147,12 +177,14 @@ export class Battle {
     for (const k in this.gen.moveList) {
       this.moveListToId.set(this.gen.moveList[k as MoveId], k as MoveId);
     }
+    this.allActive = this.players.flatMap(pl => pl.active);
   }
 
   static start(
     gen: Generation,
     player1: PlayerParams,
     player2: PlayerParams,
+    doubles: boolean,
     chooseLead?: boolean,
     mods: Mods = {},
     seed: string = crypto.randomUUID(),
@@ -166,8 +198,10 @@ export class Battle {
       return [self, [] as BattleEvent[]] as const;
     }
 
-    self.players[0].chooseSwitch(self, 0);
-    self.players[1].chooseSwitch(self, 0);
+    for (let i = 0; i < (doubles ? 2 : 1); i++) {
+      self.players[0].chooseSwitch(i, self, i);
+      self.players[1].chooseSwitch(i, self, i);
+    }
     return [self, self.nextTurn()!] as const;
   }
 
@@ -210,7 +244,7 @@ export class Battle {
     this.event({type: "forfeit", user: player.id, timer});
     this.event({type: "end", victor: this.victor.id});
     for (const player of this.players) {
-      player.options = undefined;
+      player.updateOptions(this);
     }
     return this.events.splice(0);
   }
@@ -221,7 +255,7 @@ export class Battle {
       if (why === "timer") {
         this.event({type: "forfeit", user: player.id, timer: true});
       }
-      player.options = undefined;
+      player.updateOptions(this);
     }
 
     this.event({type: "end", why});
@@ -229,19 +263,7 @@ export class Battle {
   }
 
   nextTurn() {
-    const priorityBrackets = (choices: ChosenMove[]) => {
-      const brackets = [];
-      let start = 0;
-      for (let i = 0; i < choices.length; i++) {
-        if (i === choices.length - 1 || choices[i].move.priority !== choices[i + 1].move.priority) {
-          brackets.push([start, i] as const);
-          start = i + 1;
-        }
-      }
-      return brackets;
-    };
-
-    if (!this.players.every(player => !player.options || player.choice)) {
+    if (!this.allActive.every(poke => !poke.options || poke.choice)) {
       return;
     }
 
@@ -250,61 +272,61 @@ export class Battle {
       this.event({type: "next_turn", turn: this._turn});
     }
 
-    const tmp = this.players
+    const choices = this.allActive
       .flatMap(({choice}) => (choice ? [choice] : []))
-      .sort((a, b) => (b.move.priority ?? 0) - (a.move.priority ?? 0));
-    const choices = [];
-    for (const [start, end] of priorityBrackets(tmp)) {
-      const bracket = tmp.slice(start, end + 1).sort((a, b) => {
-        const aSpe = this.gen.getStat(a.user.owner.active, "spe");
-        const bSpe = this.gen.getStat(b.user.owner.active, "spe");
-        // TODO: in gen 2, host checks quick claw first and if it procs the second one isnt checked
-        if (a.user.base.item === "quickclaw" && this.gen.rng.tryQuickClaw(this)) {
-          console.log("proc quick claw: ", a.user.base.name);
-          // quick claw activates silently until gen iv
-          return -1;
-        } else if (b.user.base.item === "quickclaw" && this.gen.rng.tryQuickClaw(this)) {
-          console.log("proc quick claw: ", b.user.base.name);
-          // quick claw activates silently until gen iv
-          return 1;
-        } else if (aSpe === bSpe) {
-          return +this.rng.bool() || -1;
+      .sort((a, b) => {
+        if (b.move.priority !== a.move.priority) {
+          return (b.move.priority ?? 0) - (a.move.priority ?? 0);
         }
 
+        const aSpe = this.gen.getStat(a.user, "spe");
+        const bSpe = this.gen.getStat(b.user, "spe");
+        if (aSpe === bSpe) {
+          return +this.rng.bool() || -1;
+        }
         return bSpe - aSpe;
       });
-
-      choices.push(...bracket);
-    }
-
-    if (choices.every(choice => choice.move.kind === "switch")) {
-      // Randomize choices to avoid leaking speed. The player always sees their pokemon switch in
-      // first in a link battle on console.
-      choices.sort(() => (this.rng.bool() ? -1 : 1));
-    }
-
+    let startBracket = 0;
     for (let i = 0; i < choices.length; i++) {
-      const {move, user, target} = choices[i];
+      // prettier-ignore
+      const {move, user, targets: [target]} = choices[i];
+      if ((move.priority ?? 0) !== (choices[startBracket].move.priority ?? 0)) {
+        startBracket = i;
+      }
+
       if (move.kind !== "protect") {
         user.v.protectCount = 0;
       }
-
       user.movedThisTurn = false;
+
+      if (user.base.item === "quickclaw" && this.gen.rng.tryQuickClaw(this)) {
+        // quick claw activates silently until gen iv
+        console.log("proc quick claw: ", user.base.name);
+        choices.splice(startBracket, 0, ...choices.splice(i, 1));
+      }
+
       if (move !== this.gen.moveList.pursuit || this.turnType === TurnType.BatonPass) {
         continue;
       }
 
-      const ti = choices.findIndex(choice => choice.user === target);
-      if (choices[ti].move.kind === "switch") {
+      if (target?.choice?.move?.kind === "switch" && target.owner !== user.owner) {
         console.log(user.base.name + " is pursuing ", target.base.name);
-        [choices[i], choices[ti]] = [choices[ti], choices[i]];
+        choices.splice(choices.indexOf(target.choice), 0, ...choices.splice(i, 1));
         user.v.inPursuit = true;
       }
     }
 
+    // TODO GEN3: ?
+    // if (choices.every(choice => choice.move.kind === "switch")) {
+    //   // Randomize choices to avoid leaking speed. The player always sees their pokemon switch in
+    //   // first in a link battle on console.
+    //   choices.sort(() => (this.rng.bool() ? -1 : 1));
+    // }
+
+    this.turnOrder = choices;
     this.runTurn(choices);
 
-    if (this.players.some(pl => pl.active.v.inBatonPass)) {
+    if (this.allActive.some(poke => poke.v.inBatonPass)) {
       this.turnType = TurnType.BatonPass;
     } else {
       if (this.victor) {
@@ -313,44 +335,121 @@ export class Battle {
         return this.draw("too_long");
       }
 
-      this.turnType = this.players.some(pl => pl.active.v.fainted)
+      this.turnType = this.allActive.some(poke => poke.v.fainted)
         ? TurnType.Switch
         : TurnType.Normal;
     }
 
-    for (const player of this.players) {
-      if (
-        this.turnType !== TurnType.BatonPass ||
-        player.active.v.inBatonPass ||
-        player.active.movedThisTurn
-      ) {
-        player.choice = undefined;
+    for (const poke of this.allActive) {
+      if (this.turnType !== TurnType.BatonPass || poke.v.inBatonPass || poke.movedThisTurn) {
+        poke.choice = undefined;
       }
-      player.updateOptions(this);
+      poke.updateOptions(this);
     }
     return this.events.splice(0);
   }
 
-  // --
+  getTargets(move: Move, user: ActivePokemon, target?: [string, number]) {
+    type GetTarget = {allyOnly?: bool; oppOnly?: bool; adjacent?: bool; self?: boolean};
 
-  callUseMove(move: Move, user: ActivePokemon, target: ActivePokemon, moveIndex?: number) {
-    if (!move.kind && move.use) {
-      return move.use.call(move, this, user, target, moveIndex);
-    } else {
-      const func = move.kind && (this as any).gen.moveFunctions[move.kind].use;
-      if (typeof func === "function") {
-        return func.call(move, this, user, target, moveIndex);
+    const getTarget = ({allyOnly, oppOnly, adjacent, self}: GetTarget) => {
+      if (!target) {
+        return false;
       }
-      return this.defaultUseMove(move, user, target, moveIndex);
+
+      const player = this.players.find(pl => pl.id === target[0]);
+      if (!player || (allyOnly && player !== user.owner) || (oppOnly && player === user.owner)) {
+        return false;
+      }
+
+      const poke = player.active[target[1]];
+      if (!poke) {
+        return false;
+      }
+
+      if (adjacent) {
+        const idx = poke.owner.active.indexOf(poke);
+        const self = user.owner.active.indexOf(user);
+        if (Math.abs(idx - self) > 1) {
+          return false;
+        }
+      }
+
+      if (!self && poke === user) {
+        return false;
+      }
+
+      return [poke];
+    };
+
+    // prettier-ignore
+    switch (move.range) {
+    case Range.Field:
+    case Range.Random:
+      return [];
+    case Range.Self:
+      return [user];
+    case Range.Adjacent:
+      return getTarget({ adjacent: true });
+    case Range.AdjacentFoe:
+      return getTarget({ oppOnly: true, adjacent: true });
+    case Range.AdjacentAlly:
+      return getTarget({ allyOnly: true, adjacent: true });
+    case Range.SelfOrAdjacentAlly:
+      return getTarget({ allyOnly: true, adjacent: true, self: true });
+    case Range.Any:
+      return getTarget({ });
+    case Range.AllAdjacent:
+    case Range.AllAdjacentFoe: {
+      const targets = [];
+      const opponent = this.opponentOf(user.owner);
+      const myIndex = user.owner.active.indexOf(user);
+      if (opponent.active[myIndex]) {
+        targets.push(opponent.active[myIndex]);
+      }
+      if (opponent.active[myIndex - 1]) {
+        targets.push(opponent.active[myIndex - 1]);
+      }
+      if (opponent.active[myIndex + 1]) {
+        targets.push(opponent.active[myIndex + 1]);
+      }
+      if (move.range === Range.AllAdjacent && user.owner.active[myIndex + 1]) {
+        targets.push(user.owner.active[myIndex + 1]);
+      }
+      if (move.range === Range.AllAdjacent && user.owner.active[myIndex - 1]) {
+        targets.push(user.owner.active[myIndex - 1]);
+      }
+      return targets;
+    }
+    case Range.All:
+      return [...this.allActive];
+    case Range.AllAllies:
+      return user.owner.active.filter(a => a !== user);
+    default:
+      return false;
     }
   }
 
-  callExecMove(move: Move, user: ActivePokemon, target: ActivePokemon, moveIndex?: number) {
+  // --
+
+  callUseMove(move: Move, user: ActivePokemon, targets: ActivePokemon[], moveIndex?: number) {
+    if (!move.kind && move.use) {
+      return move.use.call(move, this, user, targets, moveIndex);
+    } else {
+      const func = move.kind && (this as any).gen.moveFunctions[move.kind].use;
+      if (typeof func === "function") {
+        return func.call(move, this, user, targets, moveIndex);
+      }
+      return this.defaultUseMove(move, user, targets, moveIndex);
+    }
+  }
+
+  callExecMove(move: Move, user: ActivePokemon, targets: ActivePokemon[], moveIndex?: number) {
     if (!move.kind) {
-      return move.exec.call(move, this, user, target, moveIndex);
+      return move.exec.call(move, this, user, targets, moveIndex);
     } else {
       const func = (this as any).gen.moveFunctions[move.kind];
-      return func.exec.call(move, this, user, target, moveIndex);
+      return func.exec.call(move, this, user, targets, moveIndex);
     }
   }
 
@@ -428,7 +527,7 @@ export class Battle {
 
   private runTurn(choices: ChosenMove[]) {
     // eslint-disable-next-line prefer-const
-    for (let {move, user, target, indexInMoves} of choices) {
+    for (let {move, user, targets, indexInMoves} of choices) {
       user.movedThisTurn = true;
       if (user.v.hasFlag(VF.destinyBond)) {
         this.event({type: "sv", volatiles: [user.clearFlag(VF.destinyBond)]});
@@ -442,12 +541,12 @@ export class Battle {
       if (user.v.inPursuit) {
         // This isnt present in the original games, but showdown has it and it's cool without giving
         // any advantage
-        this.info(target, "withdraw");
+        this.info(targets[0], "withdraw");
       }
 
-      if (move.kind !== "switch" && !this.gen.beforeUseMove(this, move, user, target)) {
+      if (move.kind !== "switch" && !this.gen.beforeUseMove(this, move, user)) {
         this.handleResidualDamage(user);
-        if (this.checkFaint(user, target)) {
+        if (this.checkFaint(user, targets)) {
           return;
         }
 
@@ -455,14 +554,14 @@ export class Battle {
         continue;
       }
 
-      this.callUseMove(move, user, target, indexInMoves);
+      this.callUseMove(move, user, targets, indexInMoves);
       if (this.turnType !== TurnType.Switch && this.turnType !== TurnType.Lead) {
-        if (user.v.inBatonPass || this.checkFaint(user, target)) {
+        if (user.v.inBatonPass || this.checkFaint(user, targets)) {
           return;
         }
 
         this.handleResidualDamage(user);
-        if (this.checkFaint(user, target)) {
+        if (this.checkFaint(user, targets)) {
           return;
         }
       }
@@ -473,7 +572,7 @@ export class Battle {
     }
   }
 
-  defaultUseMove(move: Move, user: ActivePokemon, target: ActivePokemon, moveIndex?: number) {
+  defaultUseMove(move: Move, user: ActivePokemon, targets: ActivePokemon[], moveIndex?: number) {
     const moveId = this.moveIdOf(move)!;
     if (moveId === user.base.moves[user.v.disabled?.indexInMoves ?? -1]) {
       this.event({move: moveId, type: "move", src: user.owner.id, disabled: true});
@@ -510,38 +609,48 @@ export class Battle {
     user.v.lastMove = move;
 
     if (move.sleepOnly && user.base.status !== "slp") {
-      this.info(target, "fail_generic");
+      this.info(user, "fail_generic");
       return;
     }
 
-    if (target.v.hasFlag(VF.protect) && this.affectedByProtect(move)) {
-      this.info(target, "protect");
+    let removed = false;
+    for (let i = 0; i < targets.length; i++) {
+      if (targets[i].v.hasFlag(VF.protect) && this.affectedByProtect(move)) {
+        this.info(targets[i], "protect");
+        targets.splice(i--, 1);
+        removed = true;
+      }
+    }
+
+    if (removed && !targets.length) {
       return;
     }
 
-    return this.callExecMove(move, user, target, moveIndex);
+    return this.callExecMove(move, user, targets, moveIndex);
   }
 
-  checkFaint(user: ActivePokemon, target: ActivePokemon, betweenTurns = false) {
+  checkFaint(user: ActivePokemon, targets: ActivePokemon[], causedFaint = false) {
     let fainted = false;
-    if (target.base.hp === 0 && !target.v.fainted) {
-      target.faint(this);
-      if (!this.victor && target.owner.areAllDead()) {
-        this.victor = user.owner;
+    for (const target of targets) {
+      if (target.base.hp === 0 && !target.v.fainted) {
+        target.faint(this);
+        if (!this.victor && target.owner.areAllDead()) {
+          this.victor = user.owner;
+        }
+        fainted = true;
       }
-      fainted = true;
     }
 
     if (user.base.hp === 0 && !user.v.fainted) {
       user.faint(this);
       if (!this.victor && user.owner.areAllDead()) {
-        this.victor = target.owner;
+        this.victor = this.opponentOf(user.owner);
       }
       fainted = true;
     }
 
-    if (!betweenTurns) {
-      return user.base.hp === 0 || target.base.hp === 0;
+    if (!causedFaint) {
+      return user.base.hp === 0 || targets.some(t => t.base.hp === 0);
     }
 
     return fainted;
@@ -566,9 +675,12 @@ export class Battle {
 
       const dmg = Math.max(Math.floor((m * poke.base.stats.hp) / d), 1);
       const {dead} = poke.damage(dmg, poke, this, false, why, true);
-      const opponent = this.opponentOf(poke.owner).active;
-      if (why === "seeded" && opponent.base.hp < opponent.base.stats.hp) {
-        opponent.recover(dmg, poke, this, "seeder");
+      if (
+        why === "seeded" &&
+        poke.v.seededBy &&
+        poke.v.seededBy.base.hp < poke.v.seededBy.base.stats.hp
+      ) {
+        poke.v.seededBy.recover(dmg, poke, this, "seeder");
       }
 
       if (poke.v.counter) {
@@ -583,7 +695,7 @@ export class Battle {
       return;
     } else if (poke.base.status === "brn" && tickCounter("brn")) {
       return;
-    } else if (poke.v.hasFlag(VF.seeded) && tickCounter("seeded")) {
+    } else if (poke.v.seededBy && tickCounter("seeded")) {
       return;
     } else if (
       poke.v.hasFlag(VF.nightmare) &&
@@ -600,26 +712,53 @@ export class Battle {
   }
 
   private handleBetweenTurns() {
+    const checkFaint = () => {
+      for (const poke of this.players[0].active) {
+        if (this.checkFaint(poke, this.players[1].active, true)) {
+          return true;
+        }
+      }
+
+      return false;
+    };
+
+    for (const poke of this.allActive) {
+      poke.v.hazed = false;
+      poke.v.flinch = false;
+      poke.v.inPursuit = false;
+      poke.v.retaliateDamage = 0;
+      if (poke.v.trapped && !poke.v.trapped.user.v.trapping) {
+        poke.v.trapped = undefined;
+      }
+      if (poke.v.hasFlag(VF.protect | VF.endure)) {
+        this.event({
+          type: "sv",
+          volatiles: [poke.clearFlag(VF.protect | VF.endure)],
+        });
+      }
+    }
+
+    // FIXME: in gen 3 should be based on speed
     if (this.betweenTurns < BetweenTurns.FutureSight) {
-      for (const {active} of this.players) {
-        if (active.futureSight && --active.futureSight.turns === 0) {
-          if (!active.v.fainted) {
-            this.info(active, "future_sight_release");
-            if (!this.checkAccuracy(this.gen.moveList.futuresight, active, active)) {
+      for (const poke of this.allActive) {
+        if (poke.futureSight && --poke.futureSight.turns === 0) {
+          if (!poke.v.fainted) {
+            this.info(poke, "future_sight_release");
+            if (!this.checkAccuracy(this.gen.moveList.futuresight, poke, poke)) {
               // FIXME: this is lazy
               this.events.splice(-1, 1);
-              this.info(active, "fail_generic");
+              this.info(poke, "fail_generic");
             } else {
-              active.damage(active.futureSight.damage, active, this, false, "future_sight");
+              poke.damage(poke.futureSight.damage, poke, this, false, "future_sight");
             }
           }
 
-          active.futureSight = undefined;
+          poke.futureSight = undefined;
         }
       }
 
       this.betweenTurns = BetweenTurns.FutureSight;
-      if (this.checkFaint(this.players[0].active, this.players[1].active, true)) {
+      if (checkFaint()) {
         return;
       }
     }
@@ -635,7 +774,7 @@ export class Battle {
         }
 
         this.event({type: "weather", kind: "continue", weather: this.weather.kind});
-        for (const {active} of this.players) {
+        for (const active of this.allActive) {
           if (active.v.charging === this.gen.moveList.dig || active.v.fainted) {
             continue;
           } else if (active.v.types.some(t => t === "steel" || t === "ground" || t === "rock")) {
@@ -647,64 +786,64 @@ export class Battle {
         }
 
         this.betweenTurns = BetweenTurns.Weather;
-        if (this.checkFaint(this.players[0].active, this.players[1].active, true)) {
+        if (checkFaint()) {
           return;
         }
       }
     }
 
     if (this.betweenTurns < BetweenTurns.PartialTrapping) {
-      for (const {active} of this.players) {
-        if (!active.v.trapped || active.v.trapped.turns === -1 || active.v.fainted) {
+      for (const poke of this.allActive) {
+        if (!poke.v.trapped || poke.v.trapped.turns === -1 || poke.v.fainted) {
           continue;
         }
 
-        const move = this.moveIdOf(active.v.trapped.move)!;
-        if (--active.v.trapped.turns === 0) {
+        const move = this.moveIdOf(poke.v.trapped.move)!;
+        if (--poke.v.trapped.turns === 0) {
           this.event({
             type: "trap",
-            src: active.owner.id,
-            target: active.owner.id,
+            src: poke.owner.id,
+            target: poke.owner.id,
             kind: "end",
             move,
-            volatiles: [{id: active.owner.id, v: {trapped: null}}],
+            volatiles: [{id: poke.owner.id, v: {trapped: null}}],
           });
-          active.v.trapped = undefined;
+          poke.v.trapped = undefined;
         } else {
-          const dmg = Math.max(idiv(active.base.stats.hp, 16), 1);
-          active.damage2(this, {dmg, src: active, why: "trap_eot", move, direct: true});
+          const dmg = Math.max(idiv(poke.base.stats.hp, 16), 1);
+          poke.damage2(this, {dmg, src: poke, why: "trap_eot", move, direct: true});
         }
       }
 
       this.betweenTurns = BetweenTurns.PartialTrapping;
-      if (this.checkFaint(this.players[0].active, this.players[1].active, true)) {
+      if (checkFaint()) {
         return;
       }
     }
 
     if (this.betweenTurns < BetweenTurns.PerishSong) {
-      for (const {active, id} of this.players) {
-        if (active.v.fainted) {
+      for (const poke of this.allActive) {
+        if (poke.v.fainted) {
           continue;
         }
 
-        if (active.v.perishCount) {
-          --active.v.perishCount;
+        if (poke.v.perishCount) {
+          --poke.v.perishCount;
 
-          const volatiles = [{id, v: {perishCount: active.v.perishCount}}];
-          if (active.v.perishCount !== 3) {
-            this.event({type: "perish", src: id, turns: active.v.perishCount, volatiles});
+          const volatiles = [{id: poke.owner.id, v: {perishCount: poke.v.perishCount}}];
+          if (poke.v.perishCount !== 3) {
+            this.event({type: "perish", src: poke.owner.id, turns: poke.v.perishCount, volatiles});
           } else {
             this.event({type: "sv", volatiles});
           }
-          if (!active.v.perishCount) {
-            active.damage(active.base.hp, active, this, false, "perish_song", true);
+          if (!poke.v.perishCount) {
+            poke.damage(poke.base.hp, poke, this, false, "perish_song", true);
           }
         }
       }
 
       this.betweenTurns = BetweenTurns.PerishSong;
-      if (this.checkFaint(this.players[0].active, this.players[1].active, true)) {
+      if (checkFaint()) {
         return;
       }
 
@@ -714,29 +853,29 @@ export class Battle {
     }
 
     this.betweenTurns = BetweenTurns.Begin;
-    for (const {active} of this.players) {
-      if (active.v.fainted) {
+    for (const poke of this.allActive) {
+      if (poke.v.fainted) {
         continue;
       }
 
-      if (active.base.item === "leftovers") {
-        active.recover(Math.max(1, idiv(active.base.stats.hp, 16)), active, this, "leftovers");
-      } else if (active.base.item === "mysteryberry") {
-        const slot = active.base.pp.findIndex(pp => pp === 0);
+      if (poke.base.item === "leftovers") {
+        poke.recover(Math.max(1, idiv(poke.base.stats.hp, 16)), poke, this, "leftovers");
+      } else if (poke.base.item === "mysteryberry") {
+        const slot = poke.base.pp.findIndex(pp => pp === 0);
         if (slot !== -1) {
-          active.base.pp[slot] = 5;
-          this.event({type: "item", src: active.owner.id, item: "mysteryberry"});
-          this.event({type: "pp", src: active.owner.id, move: active.base.moves[slot]});
-          active.base.item = undefined;
+          poke.base.pp[slot] = 5;
+          this.event({type: "item", src: poke.owner.id, item: "mysteryberry"});
+          this.event({type: "pp", src: poke.owner.id, move: poke.base.moves[slot]});
+          poke.base.item = undefined;
         }
       }
     }
 
     // Defrost
     if (this.gen.id >= 2) {
-      for (const {active} of this.players) {
-        if (!active.v.fainted && active.base.status === "frz" && this.rand100((25 / 256) * 100)) {
-          active.unstatus(this, "thaw");
+      for (const poke of this.allActive) {
+        if (!poke.v.fainted && poke.base.status === "frz" && this.rand100((25 / 256) * 100)) {
+          poke.unstatus(this, "thaw");
         }
       }
     }
@@ -772,65 +911,47 @@ export class Battle {
     };
 
     //
-    for (const {active} of this.players) {
-      if (active.v.fainted) {
+    for (const poke of this.allActive) {
+      if (poke.v.fainted) {
         continue;
       }
 
-      if (statusBerry[active.base.item!] && statusBerry[active.base.item!] === active.base.status) {
-        cureStatus(active);
-      } else if (active.base.item === "miracleberry") {
-        if (active.base.status) {
-          cureStatus(active);
+      if (statusBerry[poke.base.item!] && statusBerry[poke.base.item!] === poke.base.status) {
+        cureStatus(poke);
+      } else if (poke.base.item === "miracleberry") {
+        if (poke.base.status) {
+          cureStatus(poke);
         }
 
-        if (active.v.confusion) {
-          if (active.base.item) {
-            this.event({type: "item", src: active.owner.id, item: active.base.item!});
+        if (poke.v.confusion) {
+          if (poke.base.item) {
+            this.event({type: "item", src: poke.owner.id, item: poke.base.item!});
           }
-          cureConfuse(active);
+          cureConfuse(poke);
         }
-      } else if (active.base.item === "bitterberry" && active.v.confusion) {
-        this.event({type: "item", src: active.owner.id, item: active.base.item!});
-        cureConfuse(active);
-      } else if (healBerry[active.base.item!] && active.base.hp < idiv(active.base.stats.hp, 2)) {
-        this.event({type: "item", src: active.owner.id, item: active.base.item!});
-        active.recover(healBerry[active.base.item!]!, active, this, "item");
-        active.base.item = undefined;
+      } else if (poke.base.item === "bitterberry" && poke.v.confusion) {
+        this.event({type: "item", src: poke.owner.id, item: poke.base.item!});
+        cureConfuse(poke);
+      } else if (healBerry[poke.base.item!] && poke.base.hp < idiv(poke.base.stats.hp, 2)) {
+        this.event({type: "item", src: poke.owner.id, item: poke.base.item!});
+        poke.recover(healBerry[poke.base.item!]!, poke, this, "item");
+        poke.base.item = undefined;
       }
     }
 
     // Encore
-    for (const {active} of this.players) {
+    for (const poke of this.allActive) {
       if (
-        !active.v.fainted &&
-        active.v.encore &&
-        (--active.v.encore.turns === 0 || !active.base.pp[active.v.encore.indexInMoves])
+        !poke.v.fainted &&
+        poke.v.encore &&
+        (--poke.v.encore.turns === 0 || !poke.base.pp[poke.v.encore.indexInMoves])
       ) {
-        active.v.encore = undefined;
-        this.info(active, "encore_end", [{id: active.owner.id, v: {flags: active.v.cflags}}]);
+        poke.v.encore = undefined;
+        this.info(poke, "encore_end", [{id: poke.owner.id, v: {flags: poke.v.cflags}}]);
       }
-    }
 
-    for (const {active} of this.players) {
-      if (!active.base.hp) {
+      if (!poke.base.hp) {
         this.event({type: "bug", bug: "bug_gen2_spikes"});
-      }
-    }
-
-    for (const {active: poke} of this.players) {
-      poke.v.hazed = false;
-      poke.v.flinch = false;
-      poke.v.inPursuit = false;
-      poke.v.retaliateDamage = 0;
-      if (this.gen.id === 1 && poke.v.trapped && !this.opponentOf(poke.owner).active.v.trapping) {
-        poke.v.trapped = undefined;
-      }
-      if (poke.v.hasFlag(VF.protect | VF.endure)) {
-        this.event({
-          type: "sv",
-          volatiles: [poke.clearFlag(VF.protect | VF.endure)],
-        });
       }
     }
   }
