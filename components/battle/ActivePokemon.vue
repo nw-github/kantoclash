@@ -383,6 +383,7 @@ const playAnimation = ({anim, cb, batonPass, name}: AnimationParams) => {
   const opts: SequenceOptions = {};
   if (anim === "faint") {
     if (hasSubstitute) {
+      hasSubstitute = false;
       animations.loseSub(seq);
     }
     animations.faint(seq);
