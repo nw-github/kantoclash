@@ -213,6 +213,9 @@ const validateTeam = (
 };
 
 export const formatDescs: Record<FormatId, FormatFunctions> = {
+  g3_randoms_doubles: {
+    generate: () => randoms(GENERATION2, (s, id) => !s.evolvesTo && id !== "mewtwo"),
+  },
   g2_standard: {validate: team => validateTeam(VALIDATOR_GEN2, team)},
   g2_randoms: {
     generate: () => randoms(GENERATION2, (s, id) => !s.evolvesTo && id !== "mewtwo"),

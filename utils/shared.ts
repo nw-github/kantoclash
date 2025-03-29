@@ -28,6 +28,7 @@ type FormatInfo = {
 };
 
 export const battleFormats = [
+  "g3_randoms_doubles",
   "g2_standard",
   "g2_randoms",
   "g2_metronome",
@@ -42,6 +43,15 @@ export const battleFormats = [
 export type FormatId = (typeof battleFormats)[number];
 
 export const formatInfo: Record<FormatId, FormatInfo> = {
+  g3_randoms_doubles: {
+    name: "[ADV] Random Doubles",
+    icon: "mdi:dice-3-outline",
+    desc: "A random double battle.",
+    chooseLead: true,
+    mods: {sleepClause: true, endlessBattle: true},
+    generation: 2,
+    doubles: true,
+  },
   g2_standard: {
     name: "[GSC] Standard Battle",
     icon: "akar-icons:sword",

@@ -50,12 +50,12 @@ export class Player {
   sleepClausePoke?: Pokemon;
   spikes = false;
 
-  constructor(gen: Generation, {id, team}: PlayerParams, format?: "doubles") {
+  constructor(gen: Generation, {id, team}: PlayerParams, doubles: bool) {
     this.id = id;
     this.team = team.map(p => new Pokemon(gen, p));
     this.teamDesc = team;
     this.active = [new ActivePokemon(this.team[0], this, 0)];
-    if (format === "doubles") {
+    if (doubles) {
       this.active.push(new ActivePokemon(this.team[1], this, 1));
     }
   }
@@ -180,10 +180,11 @@ export class Battle {
     readonly gen: Generation,
     p1: PlayerParams,
     p2: PlayerParams,
+    doubles: bool,
     readonly mods: Mods,
     readonly rng: Random,
   ) {
-    this.players = [new Player(gen, p1), new Player(gen, p2)];
+    this.players = [new Player(gen, p1, doubles), new Player(gen, p2, doubles)];
     for (const k in this.gen.moveList) {
       this.moveListToId.set(this.gen.moveList[k as MoveId], k as MoveId);
     }
@@ -194,21 +195,21 @@ export class Battle {
     gen: Generation,
     player1: PlayerParams,
     player2: PlayerParams,
-    doubles: boolean,
-    chooseLead?: boolean,
+    doubles: bool,
+    chooseLead?: bool,
     mods: Mods = {},
     seed: string = crypto.randomUUID(),
   ) {
     console.log("new battle, seed: " + seed);
 
-    const self = new Battle(gen, player1, player2, mods, new Random(seed));
+    const self = new Battle(gen, player1, player2, doubles, mods, new Random(seed));
     self.players[0].updateOptions(self);
     self.players[1].updateOptions(self);
     if (chooseLead) {
       return [self, [] as BattleEvent[]] as const;
     }
 
-    for (let i = 0; i < (doubles ? 2 : 1); i++) {
+    for (let i = 0; i < self.players[0].active.length; i++) {
       self.players[0].chooseSwitch(i, self, i);
       self.players[1].chooseSwitch(i, self, i);
     }
