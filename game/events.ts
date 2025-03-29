@@ -37,7 +37,8 @@ type AnyEvent =
   | RestorePPEvent
   | ThiefEvent
   | ForfeitEvent
-  | BatonPass;
+  | BatonPass
+  | SpikesEvent;
 
 export type ChangedVolatiles = {id: PokeId; v: NullOrOptional<ClientVolatiles>}[];
 
@@ -202,10 +203,7 @@ export type InfoReason =
   | "future_sight"
   | "future_sight_release"
   | "withdraw"
-  | "spikes"
-  | "spin_spikes"
-  | "fail_present"
-  | "seeded";
+  | "fail_present";
 
 type InfoEvent = {type: "info"; src: PokeId; why: InfoReason};
 
@@ -215,6 +213,13 @@ type SrcTargetEvent = {
   type: "transform" | "in_love" | "psych_up" | "foresight" | "lock_on";
   src: PokeId;
   target: PokeId;
+};
+
+type SpikesEvent = {
+  type: "spikes";
+  src: PokeId;
+  player: PlayerId;
+  spin: bool;
 };
 
 // For some reason making these 1 thing causes MoveId to become a recursive type

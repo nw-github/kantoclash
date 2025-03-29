@@ -2,12 +2,12 @@
 <template>
   <div v-if="e.type === 'retract'" class="move">
     <template v-if="e.src === perspective">Come back! {{ e.name }}!</template>
-    <template v-else>{{ players[e.src].name }} withdrew {{ e.name }}!</template>
+    <template v-else>{{ players.byPokeId(e.src).name }} withdrew {{ e.name }}!</template>
   </div>
   <div v-else-if="e.type === 'switch'" class="move">
     <template v-if="e.why === 'phaze'"><b>{{ e.name }}</b> was dragged out!</template>
     <template v-else-if="e.src === perspective">Go! <b>{{ e.name }}</b>!</template>
-    <template v-else>{{ players[e.src].name }} sent in <b>{{ e.name }}</b>!</template>
+    <template v-else>{{ players.byPokeId(e.src).name }} sent in <b>{{ e.name }}</b>!</template>
   </div>
   <div v-else-if="e.type === 'damage'">
     <p v-if="e.why === 'attacked' && e.isCrit">A critical hit!</p>
@@ -60,7 +60,7 @@
   </div>
   <div v-else-if="e.type === 'end'">
     <template v-if="e.victor === myId">You win!</template>
-    <template v-else-if="e.victor"><b>{{ players[e.victor].name }}</b> wins!</template>
+    <template v-else-if="e.victor"><b>{{ players.get(e.victor).name }}</b> wins!</template>
     <template v-else-if="e.why === 'too_long'">It's a draw! (Turn limit reached!)</template>
     <template v-else-if="e.why === 'endless'">It's a draw! (Endless battle detected!)</template>
     <template v-else>It's a draw!</template>
@@ -132,13 +132,17 @@
   <div v-else-if="e.type === 'pp'">{{ pn(e.src) }}'s <b>{{ gen.moveList[e.move].name }}</b> was restored!</div>
   <div v-else-if="e.type === 'thief'">{{ pn(e.src) }} stole {{ pn(e.target, false) }}'s {{ itemList[e.item] }}!</div>
   <div v-else-if="e.type === 'forfeit'">
-    <template v-if="e.timer">{{ players[e.user].name }} ran out of time.</template>
-    <template v-else><b>{{ players[e.user].name }}</b> forfeit the match.</template>
+    <template v-if="e.timer">{{ players.get(e.user).name }} ran out of time.</template>
+    <template v-else><b>{{ players.get(e.user).name }}</b> forfeit the match.</template>
   </div>
   <div v-else-if="e.type === 'cure'">
     <template v-if="e.status === 'slp'">{{ pn(e.src) }} woke up!</template>
     <template v-else-if="e.status === 'frz'">{{ pn(e.src) }} thawed out!</template>
     <template v-else>{{ pn(e.src) }} was cured of its {{ statusNameTable[e.status] }}!</template>
+  </div>
+  <div v-else-if="e.type === 'spikes'">
+    <template v-if="e.spin">Rapid Spin blew away the Spikes around {{ tn(e.setOn, false) }}'s feet!</template>
+    <template v-else>Spikes were scattered all around the feet of {{ tn(e.setOn, false) }}!</template>
   </div>
   <div v-else>Unknown event: <code>{{ e }}</code></div>
 </template>
@@ -161,16 +165,17 @@ import type {Generation} from "~/game/gen";
 import {damageMessage} from "~/utils/uievent";
 // Use itemList since gen.items doesn't include every item.
 import {items as itemList} from "~/game/item";
+import type {PlayerId, PokeId} from "~/game/events";
 
 const {perspective, players, myId, e} = defineProps<{
   e: UIBattleEvent;
-  players: Record<string, ClientPlayer>;
+  players: Players;
   perspective: string;
   myId: string;
   gen: Generation;
 }>();
 
-const pn = (id: string, title = true) => {
+const pn = (id: PokeId, title = true) => {
   if (id === perspective) {
     return e[id];
   } else {
@@ -178,8 +183,8 @@ const pn = (id: string, title = true) => {
   }
 };
 
-const tn = (id: string, title = true) => {
-  if (id === perspective) {
+const tn = (id: PokeId | PlayerId, title = true) => {
+  if (id.split(":")[0] === perspective) {
     return title ? "Your team" : "your team";
   } else {
     return title ? "The opposing team" : "the opposing team";

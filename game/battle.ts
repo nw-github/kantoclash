@@ -6,6 +6,7 @@ import type {
   InfoReason,
   VictoryEvent,
   ChangedVolatiles,
+  PokeId,
 } from "./events";
 import {type MoveId, type Move, Range} from "./moves";
 import {Pokemon, type ValidatedPokemonDesc} from "./pokemon";
@@ -44,9 +45,9 @@ export class Player {
     this.id = id;
     this.team = team.map(p => new Pokemon(gen, p));
     this.teamDesc = team;
-    this.active = [new ActivePokemon(this.team[0], this)];
+    this.active = [new ActivePokemon(this.team[0], this, 0)];
     if (format === "doubles") {
-      this.active.push(new ActivePokemon(this.team[1], this));
+      this.active.push(new ActivePokemon(this.team[1], this, 1));
     }
   }
 
@@ -61,7 +62,7 @@ export class Player {
    * @param target The player id and active index of the target, if applicable
    * @returns Is this choice valid
    */
-  chooseMove(who: number, battle: Battle, index: number, target?: [string, number]) {
+  chooseMove(who: number, battle: Battle, index: number, target?: PokeId) {
     const choice = this.active[who]?.options?.moves[index];
     if (!choice?.valid) {
       return false;
@@ -349,7 +350,7 @@ export class Battle {
     return this.events.splice(0);
   }
 
-  getTargets(move: Move, user: ActivePokemon, target?: [string, number]) {
+  getTargets(move: Move, user: ActivePokemon, target?: PokeId) {
     type GetTarget = {allyOnly?: bool; oppOnly?: bool; adjacent?: bool; self?: boolean};
 
     const getTarget = ({allyOnly, oppOnly, adjacent, self}: GetTarget) => {
@@ -357,12 +358,13 @@ export class Battle {
         return false;
       }
 
-      const player = this.players.find(pl => pl.id === target[0]);
+      const [playerId, pokeIndex] = target.split(":");
+      const player = this.players.find(pl => pl.id === playerId);
       if (!player || (allyOnly && player !== user.owner) || (oppOnly && player === user.owner)) {
         return false;
       }
 
-      const poke = player.active[target[1]];
+      const poke = player.active[+pokeIndex];
       if (!poke) {
         return false;
       }

@@ -161,7 +161,7 @@ export function exec(
   } else if (this.flag === "rapid_spin" && user.base.hp) {
     if (user.owner.spikes) {
       user.owner.spikes = false;
-      battle.info(user, "spin_spikes");
+      battle.event({type: "spikes", src: user.id, player: user.owner.id, spin: true});
     }
 
     if (user.v.seededBy) {

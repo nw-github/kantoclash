@@ -46,14 +46,14 @@ export class ActivePokemon {
   movedThisTurn = false;
   futureSight?: {damage: number; turns: number};
   choice?: ChosenMove;
-  options?: {canSwitch: boolean; moves: MoveOption[]};
+  options?: {canSwitch: boolean; moves: MoveOption[]; id: PokeId};
   id: PokeId;
 
-  constructor(public base: Pokemon, public readonly owner: Player) {
+  constructor(public base: Pokemon, public readonly owner: Player, idx: number) {
     this.base = base;
     this.owner = owner;
     this.v = new Volatiles(base);
-    this.id = `${this.owner.id}:${this.owner.active.indexOf(this)}`;
+    this.id = `${this.owner.id}:${idx}`;
   }
 
   switchTo(next: Pokemon, battle: Battle, why?: "phaze" | "baton_pass") {
@@ -422,9 +422,9 @@ export class ActivePokemon {
     if (battle.finished || (battle.allActive.some(p => p.v.fainted) && !this.v.fainted)) {
       return;
     } else if (battle.turnType === TurnType.Lead) {
-      return {canSwitch: true, moves: []};
+      return {canSwitch: true, moves: [], id: this.id};
     } else if (battle.turnType === TurnType.BatonPass) {
-      return this.v.inBatonPass ? {canSwitch: true, moves: []} : undefined;
+      return this.v.inBatonPass ? {canSwitch: true, moves: [], id: this.id} : undefined;
     }
 
     // send all moves so PP can be updated
@@ -461,7 +461,11 @@ export class ActivePokemon {
 
     const moveLocked = !!(this.v.bide || this.v.trapping);
     const cantEscape = !!this.v.meanLook || (battle.gen.id >= 2 && !!this.v.trapped);
-    return {canSwitch: ((!lockedIn || moveLocked) && !cantEscape) || this.v.fainted, moves};
+    return {
+      canSwitch: ((!lockedIn || moveLocked) && !cantEscape) || this.v.fainted,
+      moves,
+      id: this.id,
+    };
   }
 
   updateOptions(battle: Battle) {

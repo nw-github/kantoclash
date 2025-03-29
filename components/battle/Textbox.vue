@@ -26,7 +26,7 @@
             variant="link"
             color="red"
             size="lg"
-            :disabled="!players[myId] || players[myId].isSpectator || !!victor"
+            :disabled="!players.get(myId) || players.get(myId).isSpectator || !!victor"
             @click="forfeitModalOpen = true"
           />
           <!-- <TooltipButton
@@ -50,9 +50,9 @@
           <template #panel>
             <div class="p-2 gap-1 flex flex-col">
               <UChip
-                v-for="(player, id) in players"
+                v-for="(player, id) in players.items"
                 :key="id"
-                :color="players[id].connected ? 'lime' : 'red'"
+                :color="player.connected ? 'lime' : 'red'"
                 class="text-left"
                 :ui="{wrapper: 'justify-between'}"
               >
@@ -177,7 +177,7 @@ import {until} from "@vueuse/core";
 
 const props = defineProps<{
   turns: UIBattleEvent[][];
-  players: Record<string, ClientPlayer>;
+  players: Players;
   perspective: string;
   chats: InfoRecord;
   victor?: string;

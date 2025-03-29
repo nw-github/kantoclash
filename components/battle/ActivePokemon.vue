@@ -112,7 +112,11 @@
           </div>
 
           <template v-if="poke && !poke.hidden" #panel>
-            <PokemonTTContent v-if="base && !poke.transformed" :poke="base" :active="poke" />
+            <PokemonTTContent
+              v-if="poke?.base && !poke.transformed"
+              :poke="poke?.base"
+              :active="poke"
+            />
             <div v-else class="p-2 flex flex-col items-center">
               <div class="flex gap-10">
                 <div class="flex gap-0.5 items-center justify-center">
@@ -121,25 +125,25 @@
                     (Was: {{ gen.speciesList[poke.speciesId].name }})
                   </span>
 
-                  <template v-if="base && poke.transformed && base.item">
-                    <ItemSprite :item="base.item" />
-                    <span class="text-xs">{{ base.gen.items[base.item] }}</span>
+                  <template v-if="poke?.base && poke.transformed && poke?.base.item">
+                    <ItemSprite :item="poke?.base.item" />
+                    <span class="text-xs">{{ poke?.base.gen.items[poke?.base.item] }}</span>
                   </template>
                 </div>
                 <div class="flex gap-1">
                   <TypeBadge v-for="type in species!.types" :key="type" :type image />
                 </div>
               </div>
-              <div v-if="base && poke.transformed" class="pt-1.5 space-y-1.5 w-full">
-                <UProgress :max="base.stats.hp" :value="base.hp" />
+              <div v-if="poke?.base && poke.transformed" class="pt-1.5 space-y-1.5 w-full">
+                <UProgress :max="poke?.base.stats.hp" :value="poke?.base.hp" />
                 <div class="flex justify-between gap-4">
                   <span>
-                    {{ base.hp }}/{{ base.stats.hp }} HP ({{
-                      roundTo(hpPercentExact(base.hp, base.stats.hp), 2)
+                    {{ poke?.base.hp }}/{{ poke?.base.stats.hp }} HP ({{
+                      roundTo(hpPercentExact(poke?.base.hp, poke?.base.stats.hp), 2)
                     }}%)
                   </span>
 
-                  <StatusOrFaint :poke="base" :faint="!poke || poke.fainted" />
+                  <StatusOrFaint :poke="poke?.base" :faint="!poke || poke.fainted" />
                 </div>
               </div>
               <span class="pt-5 italic text-center">{{ minSpe }} to {{ maxSpe }} Spe</span>
@@ -220,7 +224,7 @@
 
 <script setup lang="ts">
 import {stageMultipliers, VF, hpPercentExact, type Screen} from "~/game/utils";
-import {calcStat, type Pokemon} from "~/game/pokemon";
+import {calcStat} from "~/game/pokemon";
 import {breakpointsTailwind} from "@vueuse/core";
 import type {Generation} from "~/game/gen";
 import {UPopover, type UBadge} from "#components";
@@ -232,13 +236,14 @@ import {
   type SequenceOptions,
   type SequenceTime,
 } from "motion-v";
+import type {PokeId} from "~/game/events";
 
-const {poke, base, back, gen, player} = defineProps<{
+const {poke, back, gen, player, pokeId} = defineProps<{
   player?: ClientPlayer;
   poke?: ClientActivePokemon;
-  base?: Pokemon;
   back?: boolean;
   gen: Generation;
+  pokeId: PokeId;
 }>();
 const species = computed(() => poke && gen.speciesList[poke.transformed ?? poke.speciesId]);
 const minSpe = computed(
@@ -292,35 +297,6 @@ const [scope, animate] = useAnimate();
 const offsX = (number: number) => `-${number * 42 - number}px`;
 const offsY = (number: number) => `-${number * 42 - number * 2}px`;
 const relativePos = (src: DOMRect, x: number, y: number) => [x - src.left, y - src.top];
-
-onMounted(async () => {
-  // await playAnimation({anim: "get_sub", batonPass: true, name: ""});
-  // await playAnimation({anim: "retract", batonPass: true, name: ""});
-  // await playAnimation({anim: "sendin", batonPass: true, name: ""});
-  // await playAnimation({anim: "attack", batonPass: false, name: ""});
-  // await playAnimation({anim: "lose_sub", batonPass: false, name: ""});
-  // await playAnimation({anim: "attack", batonPass: false, name: ""});
-  // await playAnimation({anim: "retract", batonPass: false, name: ""});
-  // await playAnimation({anim: "sendin", batonPass: false, name: ""});
-  //   await playAnimation({
-  //     anim: "get_sub",
-  //     batonPass: false,
-  //     name: "l",
-  //     cb: () => log("cb called"),
-  //   });
-  //
-  //   await playAnimation({
-  //     anim: "lose_sub",
-  //     batonPass: false,
-  //     name: "l",
-  //     cb: () => log("cb called"),
-  //   });
-  // await playAnimation({
-  //   anim: "sendin",
-  //   batonPass: false,
-  //   name: "l",
-  // });
-});
 
 /*
 "red" | "pink" | "emerald" | "teal" | "lime" | "gray" | "black" | "sky" | "white" | "green" |
@@ -645,8 +621,6 @@ const arcTo = (self: Element, other: Element, height = 50, offs?: readonly [numb
   return [x + xOffs, [midYRel, y + yOffs]] as const;
 };
 
-const isBack = () => back;
-
 // https://easings.net
 
 const easeInExpo = [0.7, 0, 0.84, 0] as const;
@@ -670,5 +644,7 @@ function easeOutBounce(x: number): number {
   }
 }
 
-defineExpose({playAnimation, isBack});
+const getId = () => pokeId;
+
+defineExpose({playAnimation, getId});
 </script>

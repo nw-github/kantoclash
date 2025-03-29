@@ -153,7 +153,7 @@ const internalMoveList = createMoveList({
       }
 
       target.v.seededBy = user;
-      battle.info(target, "seeded", [{id: target.id, v: {flags: target.v.cflags}}]);
+      battle.info(target, "cSeeded", [{id: target.id, v: {flags: target.v.cflags}}]);
     },
   },
   metronome: {
@@ -2222,7 +2222,7 @@ const internalMoveList = createMoveList({
         return battle.info(user, "fail_generic");
       }
 
-      battle.info(target.active[0], "spikes");
+      battle.event({type: "spikes", src: user.id, player: target.id, spin: false});
       target.spikes = true;
     },
   },

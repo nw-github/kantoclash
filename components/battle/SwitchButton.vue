@@ -1,11 +1,6 @@
 <template>
   <TouchPopover :popper="{placement: 'auto'}">
-    <UButton
-      class="w-full"
-      :disabled="disabled || !poke.hp"
-      :color="active ? 'blue' : 'primary'"
-      @click="$emit('click')"
-    >
+    <UButton class="w-full" :disabled :color="active ? 'blue' : 'primary'" @click="$emit('click')">
       <div class="w-full space-y-0.5">
         <div class="flex items-center gap-1 w-full justify-start">
           <BoxSprite :species="poke.speciesId" />

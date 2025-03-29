@@ -9,13 +9,11 @@ import type {FormatId} from "~/utils/shared";
 import {activeBots, createBotTeam} from "./bot";
 import random from "random";
 import {GENERATIONS} from "~/game/gen";
-import type {BattleEvent} from "~/game/events";
-
-export type OptionsArray = (Options | null)[];
+import type {BattleEvent, PokeId} from "~/game/events";
 
 export type JoinRoomResponse = {
   team?: ValidatedPokemonDesc[];
-  options?: OptionsArray;
+  options?: Options[];
   events: BattleEvent[];
   chats: InfoRecord;
   format: FormatId;
@@ -39,7 +37,7 @@ export type MoveChoice = {
   type: "move";
   who: number;
   moveIndex: number;
-  target?: [string, number];
+  target?: PokeId;
 };
 
 export type SwitchChoice = {
@@ -103,12 +101,7 @@ export interface ServerMessage {
   challengeRetracted: (by: Battler) => void;
   challengeRejected: (by: Battler) => void;
 
-  nextTurn: (
-    room: string,
-    events: BattleEvent[],
-    options?: OptionsArray,
-    timer?: BattleTimer,
-  ) => void;
+  nextTurn: (room: string, events: BattleEvent[], options?: Options[], timer?: BattleTimer) => void;
   timerStart: (room: string, who: string, timer: BattleTimer) => void;
   info: (room: string, message: InfoMessage, turn: number) => void;
 
@@ -213,7 +206,7 @@ class Room {
       const account = this.server.getAccount(player.id);
       if (account) {
         const result = Battle.censorEvents(turn, player);
-        const opts = player.active.map(a => a.options || null);
+        const opts = player.active.map(a => a.options).filter(a => !!a);
         this.server
           .to(account.userRoom)
           .emit("nextTurn", this.id, result, opts, this.timerInfo(account));
@@ -439,7 +432,7 @@ export class GameServer extends Server<ClientMessage, ServerMessage> {
       const player = socket.account && room.battle.findPlayer(socket.account.id);
       return ack({
         team: player?.teamDesc,
-        options: player?.active?.map(a => a.options || null),
+        options: player?.active?.map(a => a.options)?.filter(a => !!a),
         events: Battle.censorEvents(room.events.slice(eventStartIndex), player),
         chats: room.chats,
         format: room.format,

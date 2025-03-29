@@ -1,3 +1,4 @@
+import type {PlayerId, PokeId} from "~/game/events";
 import type {Generation} from "~/game/gen1";
 import type {Move} from "~/game/moves";
 import type {Gender, Pokemon} from "~/game/pokemon";
@@ -15,6 +16,8 @@ export type ClientActivePokemon = {
   transformed?: SpeciesId;
   shiny?: boolean;
   v: ClientVolatiles;
+  base?: Pokemon;
+  indexInTeam: number;
 };
 
 export type ClientPlayer = {
@@ -22,12 +25,39 @@ export type ClientPlayer = {
   isSpectator: boolean;
   connected: boolean;
 
-  active?: ClientActivePokemon;
+  active: (ClientActivePokemon | undefined)[];
   nPokemon: number;
   nFainted: number;
   spikes?: boolean;
   screens?: Partial<Record<Screen, boolean>>;
 };
+
+export class Players {
+  items: Record<string, ClientPlayer> = {};
+
+  get(id: PlayerId) {
+    return this.items[id];
+  }
+
+  byPokeId(id: PlayerId) {
+    const [player] = id.split(":");
+    return this.items[player];
+  }
+
+  poke(id: PokeId) {
+    const [player, pos] = id.split(":");
+    return this.items[player]?.active[Number(pos)];
+  }
+
+  setPoke(id: PokeId, active: ClientActivePokemon | undefined) {
+    const [player, pos] = id.split(":");
+    this.items[player].active[Number(pos)] = active;
+  }
+
+  add(id: PlayerId, player: ClientPlayer) {
+    this.items[id] = player;
+  }
+}
 
 export const gen1Gender: Partial<Record<SpeciesId, Gender>> = {
   nidoranf: "female",

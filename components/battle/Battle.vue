@@ -22,24 +22,27 @@
 
         <div v-if="opponent" class="absolute sm:static right-0 flex flex-col items-end gap-1">
           <span class="text-xs pr-0.5 pb-1 sm:order-1 font-semibold">
-            {{ players[opponent].name }}
+            {{ players.get(opponent).name }}
           </span>
-          <TeamDisplay :player="players[opponent]" class="flex-col sm:flex-row" />
+          <TeamDisplay :player="players.get(opponent)" class="flex-col sm:flex-row" />
         </div>
       </div>
 
       <div class="flex">
-        <template v-for="(player, id) in players" :key="id">
-          <ActivePokemon
-            v-if="!player.isSpectator"
-            ref="activePokemon"
-            :class="id === perspective ? 'pt-10 sm:pt-14 pb-2 sm:pb-0' : 'order-2'"
-            :base="id === myId ? activeInTeam : undefined"
-            :poke="player?.active"
-            :player
-            :back="id === perspective"
-            :gen
-          />
+        <template v-for="(player, id) in players.items" :key="id">
+          <template v-if="!player.isSpectator">
+            <ActivePokemon
+              v-for="(active, i) in player.active"
+              :key="i"
+              :ref="(c) => activePokemon.push(c as any)"
+              :class="id === perspective ? 'pt-10 sm:pt-14 pb-2 sm:pb-0' : 'order-2'"
+              :poke="active"
+              :back="id === perspective"
+              :poke-id="`${id}:${i}`"
+              :player
+              :gen
+            />
+          </template>
         </template>
       </div>
 
@@ -57,10 +60,13 @@
         </div>
 
         <div
-          v-if="players[perspective]"
+          v-if="players.get(perspective)"
           class="absolute bottom-0 z-0 flex flex-row justify-between w-full p-0.5 items-end"
         >
-          <TeamDisplay :player="players[perspective]" class="self-end flex-col sm:flex-row p-2" />
+          <TeamDisplay
+            :player="players.get(perspective)"
+            class="self-end flex-col sm:flex-row p-2"
+          />
 
           <div class="flex flex-row">
             <UTooltip
@@ -72,9 +78,11 @@
                 class="my-1"
                 leading-icon="material-symbols:alarm-outline"
                 variant="ghost"
-                :color="currentOptions && timeLeft() <= 10 ? 'red' : 'gray'"
-                :disabled="!players[myId] || players[myId].isSpectator || !!victor || !!timer"
-                :label="timer && !currentOptions ? '--' : timer ? `${Math.max(timeLeft(), 0)}` : ''"
+                :color="currOptions && timeLeft() <= 10 ? 'red' : 'gray'"
+                :disabled="
+                  !players.get(myId) || players.get(myId).isSpectator || !!victor || !!timer
+                "
+                :label="timer && !currOptions ? '--' : timer ? `${Math.max(timeLeft(), 0)}` : ''"
                 @click="$emit('timer')"
               />
             </UTooltip>
@@ -97,20 +105,34 @@
       <UDivider class="pb-2" />
 
       <div class="w-full pb-2">
-        <template v-if="currentOptions && !selectionText.length && !playingEvents">
+        <div v-if="currChoices.length" class="flex flex-col gap-1">
+          <span v-for="(choice, i) in currChoices" :key="i" class="italic">
+            <div class="italic">{{ choiceMessage(i, choice) }}...</div>
+          </span>
+          <TooltipButton
+            v-if="currChoices.length === currOptions?.length"
+            icon="material-symbols:cancel"
+            label="Cancel"
+            @click="cancelMove"
+          />
+        </div>
+
+        <template v-if="currOption">
           <div class="grid gap-2 sm:grid-cols-[1fr,1.5fr] h-min">
             <div class="flex flex-col gap-1 sm:gap-2">
-              <template v-for="(option, i) in currentOptions.moves">
+              <template v-for="(option, i) in currOption.moves">
                 <MoveButton
                   v-if="option.display"
                   :key="i"
                   :option
                   :gen
-                  :poke="activeInTeam"
-                  @click="selectMove(i)"
+                  :poke="players.poke(currOption.id)!.base!"
+                  @click="selectMove(currOption, i)"
                 />
               </template>
-              <div v-if="!currentOptions.moves.length && activeIndex === -1">Choose your lead</div>
+              <div v-if="!currOption.moves.length && players.get(myId).active.every(a => !a)">
+                Choose your lead
+              </div>
             </div>
 
             <div class="grid grid-cols-2 gap-1 sm:gap-2 items-center">
@@ -118,21 +140,20 @@
                 v-for="(poke, i) in team"
                 :key="i"
                 :poke
-                :disabled="i === activeIndex || !currentOptions.canSwitch"
-                :active="i === activeIndex"
-                @click="selectSwitch(i)"
+                :disabled="!currOption.canSwitch || !isValidSwitch(i, poke)"
+                :active="players.get(myId).active.some(p => p?.indexInTeam === i)"
+                @click="selectSwitch(currOption, i)"
               />
             </div>
           </div>
         </template>
-        <div v-else-if="currentOptions && !playingEvents">
-          <div class="italic">{{ selectionText }}...</div>
-          <TooltipButton icon="material-symbols:cancel" label="Cancel" @click="cancelMove" />
-        </div>
-        <div v-else-if="!isBattleOver && isBattler && !playingEvents" class="italic">
+        <div
+          v-else-if="!isBattleOver && isBattler && !playingEvents && !currOptions"
+          class="italic"
+        >
           Waiting for opponent...
         </div>
-        <div v-else class="flex flex-wrap gap-0.5">
+        <div v-else-if="!currOptions" class="flex flex-wrap gap-0.5">
           <template v-if="!isBattler || isBattleOver">
             <TooltipButton
               icon="heroicons:home"
@@ -203,7 +224,7 @@
         :turns="htmlTurns"
         :smooth-scroll="smoothScroll"
         @chat="message => $emit('chat', message)"
-        @forfeit="$emit('forfeit')"
+        @forfeit="$emit('choice', {type: 'forfeit'})"
       />
     </div>
 
@@ -248,17 +269,17 @@
 </style>
 
 <script setup lang="ts">
-import type {Options} from "~/game/battle";
 import type {Pokemon} from "~/game/pokemon";
-import type {BattleEvent} from "~/game/events";
+import type {BattleEvent, PokeId} from "~/game/events";
 import type {SpeciesId} from "~/game/species";
-import type {BattleTimer, InfoRecord} from "~/server/gameServer";
+import type {BattleTimer, Choice, InfoRecord} from "~/server/gameServer";
 import type {ActivePokemon} from "#build/components";
 import criesSpritesheet from "~/public/effects/cries.json";
 import {GENERATIONS} from "~/game/gen";
 import type {Weather} from "~/game/utils";
 import type {AnimationParams} from "./ActivePokemon.vue";
 import type {AnimationPlaybackControls} from "motion-v";
+import type {Options} from "~/game/battle";
 
 const weatherData = {
   rain: {icon: "material-symbols:rainy", tooltip: "Raining", class: "text-sky-400"},
@@ -270,25 +291,24 @@ const weatherData = {
 const emit = defineEmits<{
   (e: "chat", message: string): void;
   (e: "forfeit" | "timer" | "cancel"): void;
-  (e: "move" | "switch", index: number): void;
+  (e: "choice", choice: Choice): void;
 }>();
-const {team, options, players, events, chats, battlers, timer, finished, format} = defineProps<{
+const {team, options, players, events, chats, timer, finished, format, ready} = defineProps<{
   team?: Pokemon[];
-  options: Partial<Record<number, Options>>;
-  players: Record<string, ClientPlayer>;
+  options: Partial<Record<number, Options[]>>;
+  players: Players;
   events: BattleEvent[];
   chats: InfoRecord;
-  battlers: string[];
   timer?: BattleTimer;
   finished: boolean;
   format: FormatId;
+  ready: bool;
 }>();
 const myId = useMyId();
 const sfxVol = useSfxVolume();
 const {fadeOut} = useBGMusic();
 const isMounted = useMounted();
 const gen = computed(() => GENERATIONS[formatInfo[format].generation]!);
-const selectionText = ref("");
 const menuButton = ref<HTMLElement>();
 const isMenuVisible = useElementVisibility(menuButton);
 const unseenChats = ref(0);
@@ -298,24 +318,41 @@ const skipToEvent = ref(0);
 const updateMarker = ref(0);
 const currentTurnNo = ref(0);
 const weather = ref<Weather>();
-const activePokemon = useTemplateRef<InstanceType<typeof ActivePokemon>[]>("activePokemon");
+const activePokemon = ref<InstanceType<typeof ActivePokemon>[]>([]);
 
 const nextEvent = ref(0);
 const playToIndex = ref(0);
 const paused = ref(false);
-const playingEvents = ref(false);
-
-const activeIndex = ref(-1);
-const activeInTeam = computed(() => (isBattler.value ? team?.[activeIndex.value] : undefined));
+const playingEvents = ref(true);
 
 const victor = ref<string>();
-const currentOptions = computed(() => (!playingEvents.value ? options[events.length] : undefined));
 const isBattleOver = computed(() => finished || !!victor.value);
-const isBattler = computed(() => battlers.includes(myId.value));
+const isBattler = computed(() => players.get(myId.value) && !players.get(myId.value).isSpectator);
 const perspective = ref("");
-const opponent = computed(() => battlers.find(v => v != perspective.value) ?? "");
+
+watchImmediate([isBattler, () => players.items, myId], () => {
+  perspective.value = isBattler.value
+    ? myId.value
+    : randChoice(Object.keys(players.items).filter(id => !players.get(id).isSpectator)) ?? "";
+});
+
+const opponent = computed(() => {
+  for (const id in players.items) {
+    if (!players.get(id).isSpectator && id !== perspective.value) {
+      return id;
+    }
+  }
+  return "";
+});
 const htmlTurns = ref<UIBattleEvent[][]>([[]]);
 const liveEvents = ref<UIBattleEvent[]>([]);
+
+const currOptions = computed(() =>
+  !playingEvents.value && !isBattleOver.value ? options[events.length] : undefined,
+);
+const currChoices = ref<Choice[]>([]);
+const currOptionIdx = ref(-1);
+const currOption = computed(() => currOptions.value?.[currOptionIdx.value]);
 
 const sound = useAudio({
   cries: {src: "/effects/cries.wav", sprites: criesSpritesheet},
@@ -336,53 +373,59 @@ watchDeep(chats, () => {
   }
 });
 
-watchImmediate([battlers, myId], () => {
-  if (battlers.includes(myId.value)) {
-    perspective.value = myId.value;
-  } else {
-    perspective.value = randChoice(battlers) ?? "";
-  }
-});
-
-const selectMove = (index: number) => {
-  selectionText.value = `${players[myId.value].active!.name} will use ${
-    gen.value.moveList[currentOptions.value!.moves[index].move].name
-  }`;
-
-  emit("move", index);
+const selectMove = (options: Options, index: number) => {
+  const choice: Choice = {
+    type: "move",
+    who: Number(options.id.split(":")[1]),
+    moveIndex: index,
+    // TODO: target
+    target: `${opponent.value}:0`,
+  };
+  currChoices.value.push(choice);
+  currOptionIdx.value++;
+  emit("choice", choice);
 };
 
-const selectSwitch = (index: number) => {
-  if (players[myId.value].active) {
-    selectionText.value = `${players[myId.value].active!.name} will be replaced by ${
-      team![index].name
-    }`;
-  } else {
-    selectionText.value = `${team![index].name} will be sent out first`;
-  }
-
-  emit("switch", index);
+const selectSwitch = (options: Options, index: number) => {
+  const choice: Choice = {type: "switch", who: Number(options.id.split(":")[1]), pokeIndex: index};
+  currChoices.value.push(choice);
+  currOptionIdx.value++;
+  emit("choice", choice);
 };
 
 const cancelMove = () => {
-  selectionText.value = "";
-
+  currChoices.value = [];
+  currOptionIdx.value = 0;
   emit("cancel");
+};
+
+const choiceMessage = (i: number, choice: Choice) => {
+  const self = players.get(myId.value);
+  if (choice.type === "switch") {
+    const active = self.active[choice.who];
+    if (active?.base) {
+      return `${active.base.name} will be replaced by ${team![choice.pokeIndex].name}`;
+    } else {
+      return `${team![choice.pokeIndex].name} will be sent out ${i === 0 ? "first" : "second"}`;
+    }
+  } else if (choice.type === "move") {
+    const active = self.active[choice.who];
+    const move = currOptions.value![i].moves[choice.moveIndex].move;
+    return `${active!.name} will use ${gen.value.moveList[move].name}`;
+  }
+};
+
+const isValidSwitch = (i: number, poke: Pokemon) => {
+  if (players.get(myId.value).active.some(p => p?.indexInTeam === i)) {
+    return false;
+  } else if (currChoices.value.some(c => c.type === "switch" && c.pokeIndex === i)) {
+    return false;
+  }
+  return !!poke.hp;
 };
 
 const timeLeft = () => {
   return timer ? Math.floor((timer.startedAt + timer.duration - Date.now()) / 1000) : 1000;
-};
-
-const handleVolatiles = (e: BattleEvent) => {
-  if (e.volatiles) {
-    for (const {v, id} of e.volatiles) {
-      players[id].active!.v = mergeVolatiles(v, players[id].active!.v) as ClientVolatiles;
-      if (id === myId.value) {
-        activeInTeam.value!.status = players[id].active!.v.status;
-      }
-    }
-  }
 };
 
 const animations: AnimationPlaybackControls[] = [];
@@ -404,14 +447,19 @@ const runEvent = async (e: BattleEvent) => {
     }
   };
 
-  const playAnimation = async (id: string, params: AnimationParams) => {
-    const isMe = id === perspective.value;
-    const component = activePokemon.value!.find(a => a.isBack() === isMe);
+  const playAnimation = async (id: PokeId, params: AnimationParams) => {
+    const component = activePokemon.value.find(a => a.getId() === id);
+    if (!component) {
+      console.log("wtf");
+      return;
+    }
 
     if (!isLive()) {
       params.cb?.();
       params.cb = undefined;
-      component?.playAnimation(params)?.complete();
+      if (params.anim !== "attack" && params.anim !== "spikes") {
+        component?.playAnimation(params)?.complete();
+      }
     } else {
       const animation = component!.playAnimation(params);
       animations.push(animation);
@@ -423,13 +471,25 @@ const runEvent = async (e: BattleEvent) => {
     }
   };
 
+  const handleVolatiles = (e: BattleEvent) => {
+    if (e.volatiles) {
+      for (const {v, id} of e.volatiles) {
+        const poke = players.poke(id)!;
+        poke.v = mergeVolatiles(v, poke.v) as ClientVolatiles;
+        if (poke.base) {
+          poke.base.status = poke.v.status;
+        }
+      }
+    }
+  };
+
   const pushEvent = (e: RawUIBattleEvent) => {
     const ev = {...e, time: Date.now()} as UIBattleEvent;
     if ("src" in ev) {
-      ev[ev.src] = players[ev.src].active!.name;
+      ev[ev.src] = players.poke(ev.src as PokeId)!.name;
     }
     if ("target" in ev && ev.target) {
-      ev[ev.target] = players[ev.target].active!.name;
+      ev[ev.target] = players.poke(ev.target as PokeId)!.name;
     }
 
     htmlTurns.value.at(-1)!.push(ev);
@@ -440,24 +500,24 @@ const runEvent = async (e: BattleEvent) => {
 
   const handleEvent = async (e: BattleEvent) => {
     if (e.type === "switch") {
-      const player = players[e.src];
-      if (player.active) {
-        if (!player.active.fainted && e.why !== "baton_pass") {
+      const poke = players.poke(e.src);
+      if (poke) {
+        if (!poke.fainted && e.why !== "baton_pass") {
           if (e.why !== "phaze") {
-            pushEvent({type: "retract", src: e.src, name: player.active.name});
+            pushEvent({type: "retract", src: e.src, name: poke.name});
           }
           await playAnimation(e.src, {
             anim: e.why === "phaze" ? "phaze" : "retract",
             batonPass: false,
-            name: player.active.name,
+            name: poke.name,
           });
         }
 
         // preload the image
-        player.active!.speciesId = e.speciesId;
-        player.active!.shiny = e.shiny;
+        poke.speciesId = e.speciesId;
+        poke.shiny = e.shiny;
       } else {
-        player.active = {
+        players.setPoke(e.src, {
           speciesId: e.speciesId,
           hidden: true,
           v: {stages: {}},
@@ -465,7 +525,8 @@ const runEvent = async (e: BattleEvent) => {
           name: "",
           hpPercent: 0,
           level: 100,
-        };
+          indexInTeam: -1,
+        });
       }
 
       pushEvent(e);
@@ -475,10 +536,10 @@ const runEvent = async (e: BattleEvent) => {
         name: e.name,
         batonPass: e.why === "baton_pass",
         cb() {
-          player.active = {...e, v: {stages: {}}, fainted: false};
-          if (e.src === myId.value) {
-            activeIndex.value = e.indexInTeam;
-            activeInTeam.value!.hp = e.hp!;
+          const base = e.indexInTeam !== -1 ? team?.[e.indexInTeam] : undefined;
+          players.setPoke(e.src, {...e, base, v: {stages: {}}, fainted: false});
+          if (base) {
+            base.hp = e.hp!;
           }
           handleVolatiles(e);
           playCry(e.speciesId)?.then(() => {
@@ -491,12 +552,13 @@ const runEvent = async (e: BattleEvent) => {
       return;
     } else if (e.type === "damage" || e.type === "recover") {
       const update = () => {
-        players[e.target].active!.hpPercent = e.hpPercentAfter;
+        const target = players.poke(e.target)!;
+        target.hpPercent = e.hpPercentAfter;
 
         const ev = e as UIDamageEvent | UIRecoverEvent;
-        if (e.target === myId.value) {
-          activeInTeam.value!.hp = e.hpAfter!;
-          ev.maxHp = activeInTeam.value!.stats.hp;
+        if (target.base) {
+          target.base.hp = e.hpAfter!;
+          ev.maxHp = target.base.stats.hp;
         }
 
         if (e.why !== "substitute") {
@@ -530,29 +592,24 @@ const runEvent = async (e: BattleEvent) => {
       return;
     } else if (e.type === "info") {
       if (e.why === "faint") {
-        playCry(players[e.src].active!.speciesId, true);
+        playCry(players.poke(e.src)!.speciesId, true);
         pushEvent(e);
         await playAnimation(e.src, {anim: "faint"});
         if (isLive()) {
           await delay(400);
         }
 
-        players[e.src].active!.fainted = true;
-        players[e.src].nFainted++;
+        players.poke(e.src)!.fainted = true;
+        players.byPokeId(e.src).nFainted++;
         return;
       } else if (e.why === "heal_bell") {
-        if (e.src === myId.value && team) {
+        if (e.src.split(":")[0] === myId.value && team) {
           team.forEach(poke => (poke.status = undefined));
         }
-      } else if (e.why === "spikes") {
-        const opp = Object.keys(players).filter(id => id !== e.src && !players[id].isSpectator)[0];
-        await playAnimation(opp, {anim: "spikes", cb: () => (players[e.src].spikes = true)});
-      } else if (e.why === "spin_spikes") {
-        players[e.src].spikes = false;
       }
     } else if (e.type === "transform") {
-      const target = players[e.target].active!;
-      const src = players[e.src].active!;
+      const target = players.poke(e.target)!;
+      const src = players.poke(e.src)!;
       src.transformed = target.transformed ?? target.speciesId;
     } else if (e.type === "hit_sub") {
       await playAnimation(e.src, {
@@ -576,30 +633,41 @@ const runEvent = async (e: BattleEvent) => {
         weather.value = undefined;
       }
     } else if (e.type === "item") {
-      if (e.src === myId.value) {
-        activeInTeam.value!.item = undefined;
+      const src = players.poke(e.src)?.base;
+      if (src) {
+        src.item = undefined;
       }
     } else if (e.type === "screen") {
-      players[e.src].screens ??= {};
-      players[e.src].screens![e.screen] = e.kind === "start";
+      players.get(e.user).screens ??= {};
+      players.get(e.user).screens![e.screen] = e.kind === "start";
     } else if (e.type === "thief") {
-      if (e.src === myId.value) {
-        activeInTeam.value!.item = e.item;
+      const src = players.poke(e.src)?.base;
+      const target = players.poke(e.target)?.base;
+      if (src) {
+        src.item = e.item;
       }
-      if (e.target === myId.value) {
-        activeInTeam.value!.item = undefined;
+      if (target) {
+        target.item = undefined;
       }
     } else if (e.type === "baton_pass") {
       handleVolatiles(e);
       await playAnimation(e.src, {
         anim: "retract",
-        name: players[e.src].active!.name,
+        name: players.poke(e.src)!.name,
         batonPass: true,
       });
       return;
     } else if (e.type === "sketch") {
-      if (e.src === myId.value) {
-        activeInTeam.value!.moves[activeInTeam.value!.moves.indexOf("sketch")] = e.move;
+      const src = players.poke(e.src)?.base;
+      if (src) {
+        src.moves[src.moves.indexOf("sketch")] = e.move;
+      }
+    } else if (e.type === "spikes") {
+      const player = players.get(e.player);
+      if (e.spin) {
+        player.spikes = false;
+      } else {
+        await playAnimation(e.src, {anim: "spikes", cb: () => (player.spikes = true)});
       }
     }
 
@@ -619,7 +687,6 @@ const runEvent = async (e: BattleEvent) => {
     return;
   }
 
-  selectionText.value = "";
   smoothScroll.value = isLive();
 
   await handleEvent(e);
@@ -634,9 +701,6 @@ const runEvent = async (e: BattleEvent) => {
 
 const skipToTurn = (turn: number) => {
   // console.log(`skipTo() | index: ${index} currentTurn: ${currentTurn}`);
-
-  console.log("skip to turn: ", turn);
-
   let index = 0;
   if (turn < 0) {
     index = events.length + 1;
@@ -675,8 +739,9 @@ watchImmediate([isMounted, paused, () => events.length], ([mounted, paused, nEve
 });
 
 onMounted(async () => {
+  await until(() => ready).toBe(true);
+
   while (true) {
-    await until([playToIndex, nextEvent]).changed();
     if (!isMounted.value) {
       return;
     }
@@ -686,13 +751,15 @@ onMounted(async () => {
       currentTurnNo.value = 0;
       weather.value = undefined;
 
-      for (const k in players) {
-        players[k].nFainted = 0;
-        players[k].active = undefined;
-        players[k].screens = undefined;
-        players[k].spikes = undefined;
+      for (const k in players.items) {
+        players.items[k].nFainted = 0;
+        players.items[k].active = Array(players.items[k].active.length);
+        players.items[k].screens = undefined;
+        players.items[k].spikes = undefined;
       }
     }
+
+    currChoices.value = [];
 
     while (nextEvent.value < playToIndex.value && nextEvent.value < events.length) {
       playingEvents.value = true;
@@ -700,16 +767,21 @@ onMounted(async () => {
       const idx = ++nextEvent.value;
       await runEvent(event);
 
-      const opts = options[idx];
-      if (opts && activeInTeam.value) {
-        for (const {pp, indexInMoves} of opts.moves) {
+      for (const opt of options[idx] ?? []) {
+        for (const {pp, indexInMoves} of opt.moves) {
           if (indexInMoves !== undefined && pp !== undefined) {
-            activeInTeam.value.pp[indexInMoves] = pp;
+            const poke = players.poke(opt.id)?.base;
+            if (poke) {
+              poke.pp[indexInMoves] = pp;
+            }
           }
         }
       }
     }
     playingEvents.value = false;
+    currOptionIdx.value = 0;
+
+    await until([playToIndex, nextEvent]).changed();
   }
 });
 

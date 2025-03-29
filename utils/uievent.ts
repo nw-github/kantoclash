@@ -4,6 +4,7 @@ import type {
   DamageEvent,
   DamageReason,
   InfoReason,
+  PokeId,
   RecoverEvent,
   ScreenEvent,
   WeatherEvent,
@@ -21,11 +22,11 @@ export type RawUIBattleEvent =
   | UIRecoverEvent;
 export type UIBattleEvent = RawUIBattleEvent & {time: number} & {[id: string]: string};
 
-export type RetractEvent = {type: "retract"; src: string; name: string};
+export type RetractEvent = {type: "retract"; src: PokeId; name: string};
 
-export type SubBroke = {type: "sub_break"; target: string};
+export type SubBroke = {type: "sub_break"; target: PokeId};
 
-export type GetSubstitute = {type: "get_sub"; src: string};
+export type GetSubstitute = {type: "get_sub"; src: PokeId};
 
 export type UIDamageEvent = DamageEvent & {maxHp?: number};
 export type UIRecoverEvent = RecoverEvent & {maxHp?: number};
@@ -67,7 +68,7 @@ export const infoMessage: Record<InfoReason, string> = {
   whirlwind: "But it failed!",
   flinch: "{} flinched!",
   splash: "No effect!",
-  seeded: "{} was seeded!",
+  cSeeded: "{} was seeded!",
   mist_protect: "{} is protected by the mist!",
   safeguard_protect: "{} is protected by Safeguard!",
   mist: "{}'s shrouded in mist!",
@@ -109,8 +110,6 @@ export const infoMessage: Record<InfoReason, string> = {
   future_sight: "{} foresaw an attack!",
   future_sight_release: "{} took the Future Sight attack!",
   withdraw: "({} is trying to switch out...)",
-  spikes: "Spikes were scattered all around the feet of {tl}!",
-  spin_spikes: "Rapid Spin blew away the Spikes around {tl}'s feet!",
   fail_present: "{} couldn't receive the gift!",
   endure_band: "{} held on using its Focus Band!",
 };
