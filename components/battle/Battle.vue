@@ -110,55 +110,18 @@
       <UDivider class="pb-2" />
 
       <div class="w-full pb-2">
-        <div v-if="currChoices.length" class="flex flex-col gap-1">
-          <span v-for="([opts, choice], i) in currChoices" :key="i" class="italic">
-            <div class="italic">{{ choiceMessage(i, choice, opts) }}...</div>
-          </span>
-          <TooltipButton
-            v-if="currChoices.length === currOptions?.length"
-            icon="material-symbols:cancel"
-            label="Cancel"
-            @click="cancelMove"
-          />
-        </div>
-
-        <template v-if="currOption">
-          <div class="grid gap-2 sm:grid-cols-[1fr,1.5fr] h-min">
-            <div class="flex flex-col gap-1 sm:gap-2">
-              <template v-for="(option, i) in currOption.moves">
-                <MoveButton
-                  v-if="option.display"
-                  :key="i"
-                  :option
-                  :gen
-                  :poke="players.poke(currOption.id)!.base!"
-                  @click="selectMove(currOption, i)"
-                />
-              </template>
-              <div v-if="!currOption.moves.length && players.get(myId).active.every(a => !a)">
-                Choose your lead
-              </div>
-            </div>
-
-            <div class="grid grid-cols-2 gap-1 sm:gap-2 items-center">
-              <SwitchButton
-                v-for="(poke, i) in team"
-                :key="i"
-                :poke
-                :disabled="!currOption.canSwitch || !isValidSwitch(i, poke)"
-                :active="players.get(myId).active.some(p => p?.indexInTeam === i)"
-                @click="selectSwitch(currOption, i)"
-              />
-            </div>
-          </div>
-        </template>
-        <div
-          v-else-if="!isBattleOver && isBattler && !playingEvents && !currOptions"
-          class="italic"
-        >
-          Waiting for opponent...
-        </div>
-        <div v-else-if="!currOptions" class="flex flex-wrap gap-0.5">
+        <OptionSelector
+          v-if="team && !playingEvents"
+          :team
+          :options="currOptions"
+          :players
+          :my-id
+          :gen
+          :opponent
+          @cancel="$emit('cancel')"
+          @choice="$emit('choice', $event)"
+        />
+        <div v-else class="flex flex-wrap gap-0.5">
           <template v-if="!isBattler || isBattleOver">
             <TooltipButton
               icon="heroicons:home"
@@ -244,7 +207,7 @@
         :smooth-scroll="smoothScroll"
         closable
         @chat="message => $emit('chat', message)"
-        @forfeit="$emit('forfeit')"
+        @forfeit="$emit('choice', {type: 'forfeit'})"
         @close="slideoverOpen = false"
       />
     </USlideover>
@@ -273,7 +236,7 @@ const weatherData = {
 
 const emit = defineEmits<{
   (e: "chat", message: string): void;
-  (e: "forfeit" | "timer" | "cancel"): void;
+  (e: "timer" | "cancel"): void;
   (e: "choice", choice: Choice): void;
 }>();
 const {team, options, players, events, chats, timer, finished, format, ready} = defineProps<{
@@ -333,9 +296,6 @@ const liveEvents = ref<UIBattleEvent[]>([]);
 const currOptions = computed(() =>
   !playingEvents.value && !isBattleOver.value ? options[events.length] : undefined,
 );
-const currChoices = ref<[Options, Choice][]>([]);
-const currOptionIdx = ref(-1);
-const currOption = computed(() => currOptions.value?.[currOptionIdx.value]);
 
 const sound = useAudio({
   cries: {src: "/effects/cries.wav", sprites: criesSpritesheet},
@@ -355,57 +315,6 @@ watchDeep(chats, () => {
     unseenChats.value++;
   }
 });
-
-const selectMove = (options: Options, index: number) => {
-  const choice: Choice = {
-    type: "move",
-    who: Number(options.id.split(":")[1]),
-    moveIndex: index,
-    // TODO: target
-    target: `${opponent.value}:0`,
-  };
-  currChoices.value.push([options, choice]);
-  currOptionIdx.value++;
-  emit("choice", choice);
-};
-
-const selectSwitch = (options: Options, index: number) => {
-  const choice: Choice = {type: "switch", who: Number(options.id.split(":")[1]), pokeIndex: index};
-  currChoices.value.push([options, choice]);
-  currOptionIdx.value++;
-  emit("choice", choice);
-};
-
-const cancelMove = () => {
-  currChoices.value = [];
-  currOptionIdx.value = 0;
-  emit("cancel");
-};
-
-const choiceMessage = (i: number, choice: Choice, options: Options) => {
-  const self = players.get(myId.value);
-  if (choice.type === "switch") {
-    const active = self.active[choice.who];
-    if (active?.base) {
-      return `${active.base.name} will be replaced by ${team![choice.pokeIndex].name}`;
-    } else {
-      return `${team![choice.pokeIndex].name} will be sent out ${i === 0 ? "first" : "second"}`;
-    }
-  } else if (choice.type === "move") {
-    const active = self.active[choice.who];
-    const move = options.moves[choice.moveIndex].move;
-    return `${active!.name} will use ${gen.value.moveList[move].name}`;
-  }
-};
-
-const isValidSwitch = (i: number, poke: Pokemon) => {
-  if (players.get(myId.value).active.some(p => p?.indexInTeam === i)) {
-    return false;
-  } else if (currChoices.value.some(([, c]) => c.type === "switch" && c.pokeIndex === i)) {
-    return false;
-  }
-  return !!poke.hp;
-};
 
 const timeLeft = () => {
   return timer ? Math.floor((timer.startedAt + timer.duration - Date.now()) / 1000) : 1000;
@@ -726,11 +635,7 @@ watchImmediate([isMounted, paused, () => events.length], ([mounted, paused, nEve
 onMounted(async () => {
   await until(() => ready).toBe(true);
 
-  while (true) {
-    if (!isMounted.value) {
-      return;
-    }
-
+  while (isMounted.value) {
     if (nextEvent.value === 0) {
       htmlTurns.value = [[]];
       currentTurnNo.value = 0;
@@ -743,8 +648,6 @@ onMounted(async () => {
         players.items[k].spikes = undefined;
       }
     }
-
-    currChoices.value = [];
 
     while (nextEvent.value < playToIndex.value && nextEvent.value < events.length) {
       playingEvents.value = true;
@@ -764,7 +667,6 @@ onMounted(async () => {
       }
     }
     playingEvents.value = false;
-    currOptionIdx.value = 0;
 
     await until([playToIndex, nextEvent]).changed();
   }

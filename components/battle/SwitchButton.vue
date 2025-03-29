@@ -5,7 +5,7 @@
         <div class="flex items-center gap-1 w-full justify-start">
           <BoxSprite :species="poke.speciesId" />
           <span class="truncate">{{ poke.name }}</span>
-          <StatusOrFaint :poke="poke" size="xs" class="ml-auto" />
+          <StatusOrFaint :poke size="xs" class="ml-auto" />
         </div>
         <UProgress :max="poke.stats.hp" :value="poke.hp" :color="colorForHp" class="w-full h-1" />
       </div>
