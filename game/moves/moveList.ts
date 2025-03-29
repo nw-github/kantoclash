@@ -53,10 +53,10 @@ const internalMoveList = createMoveList({
       user.v.types = [...target.v.types];
       battle.event({
         type: "conversion",
-        src: user.owner.id,
-        target: target.owner.id,
+        src: user.id,
+        target: target.id,
         types: [...user.v.types],
-        volatiles: [{id: user.owner.id, v: {types: [...user.v.types]}}],
+        volatiles: [{id: user.id, v: {types: [...user.v.types]}}],
       });
 
       return false;
@@ -86,9 +86,9 @@ const internalMoveList = createMoveList({
       target.v.disabled = {indexInMoves, turns: battle.rng.int(1, 8)};
       battle.event({
         type: "disable",
-        src: target.owner.id,
+        src: target.id,
         move: target.base.moves[indexInMoves],
-        volatiles: [{id: target.owner.id, v: {flags: target.v.cflags}}],
+        volatiles: [{id: target.id, v: {flags: target.v.cflags}}],
       });
       target.handleRage(battle);
       return false;
@@ -129,7 +129,7 @@ const internalMoveList = createMoveList({
       battle.info(
         user,
         "haze",
-        targets.map(t => ({id: user.owner.id, v: t.getClientVolatiles(user.base, battle)})),
+        targets.map(t => ({id: user.id, v: t.getClientVolatiles(user.base, battle)})),
       );
       return false;
     },
@@ -153,7 +153,7 @@ const internalMoveList = createMoveList({
       }
 
       target.v.seededBy = user;
-      battle.info(target, "seeded", [{id: target.owner.id, v: {flags: target.v.cflags}}]);
+      battle.info(target, "seeded", [{id: target.id, v: {flags: target.v.cflags}}]);
     },
   },
   metronome: {
@@ -195,7 +195,7 @@ const internalMoveList = createMoveList({
 
       battle.event({
         type: "mimic",
-        src: user.owner.id,
+        src: user.id,
         move: user.v.mimic.move,
       });
       return false;
@@ -237,7 +237,7 @@ const internalMoveList = createMoveList({
 
       user.v.substitute = hp + 1;
       user.damage(hp, user, battle, false, "substitute", true, undefined, [
-        {id: user.owner.id, v: {flags: user.v.cflags}},
+        {id: user.id, v: {flags: user.v.cflags}},
       ]);
     },
   },
@@ -261,9 +261,9 @@ const internalMoveList = createMoveList({
       user.v.types = [...target.v.types];
       battle.event({
         type: "transform",
-        src: user.owner.id,
-        target: target.owner.id,
-        volatiles: [{id: user.owner.id, v: user.getClientVolatiles(user.base, battle)}],
+        src: user.id,
+        target: target.id,
+        volatiles: [{id: user.id, v: user.getClientVolatiles(user.base, battle)}],
       });
       return false;
     },
@@ -1853,7 +1853,7 @@ const internalMoveList = createMoveList({
       }
 
       target.v.attract = user;
-      battle.info(target, "cAttract", [{id: target.owner.id, v: {flags: target.v.cflags}}]);
+      battle.info(target, "cAttract", [{id: target.id, v: {flags: target.v.cflags}}]);
     },
   },
   batonpass: {
@@ -1867,7 +1867,7 @@ const internalMoveList = createMoveList({
       }
 
       user.v.inBatonPass = true;
-      battle.event({type: "baton_pass", src: user.owner.id});
+      battle.event({type: "baton_pass", src: user.id});
     },
   },
   bellydrum: {
@@ -1927,7 +1927,7 @@ const internalMoveList = createMoveList({
       const v = user.setVolatile("types", [battle.rng.choice(types)!]);
       battle.event({
         type: "conversion",
-        src: user.owner.id,
+        src: user.id,
         types: [...user.v.types],
         volatiles: [v],
       });
@@ -1989,7 +1989,7 @@ const internalMoveList = createMoveList({
       }
 
       target.v.encore = {indexInMoves: target.v.lastMoveIndex, turns: battle.rng.int(2, 6) + 1};
-      battle.info(target, "cEncore", [{id: target.owner.id, v: {flags: target.v.cflags}}]);
+      battle.info(target, "cEncore", [{id: target.id, v: {flags: target.v.cflags}}]);
     },
   },
   foresight: {
@@ -2008,8 +2008,8 @@ const internalMoveList = createMoveList({
 
       battle.event({
         type: "foresight",
-        src: user.owner.id,
-        target: target.owner.id,
+        src: user.id,
+        target: target.id,
         volatiles: [target.setFlag(VF.foresight)],
       });
     },
@@ -2114,7 +2114,7 @@ const internalMoveList = createMoveList({
       battle.info(
         user,
         "perish_song",
-        targets.map(poke => ({id: poke.owner.id, v: {perishCount: 4}})),
+        targets.map(poke => ({id: poke.id, v: {perishCount: 4}})),
       );
     },
   },
@@ -2136,10 +2136,10 @@ const internalMoveList = createMoveList({
       }
       battle.event({
         type: "psych_up",
-        src: user.owner.id,
-        target: target.owner.id,
+        src: user.id,
+        target: target.id,
         volatiles: [
-          {id: user.owner.id, v: {stats: user.clientStats(battle), stages: {...user.v.stages}}},
+          {id: user.id, v: {stats: user.clientStats(battle), stages: {...user.v.stages}}},
         ],
       });
     },
@@ -2184,7 +2184,7 @@ const internalMoveList = createMoveList({
 
       user.base.moves[moveIndex] = id;
       user.base.pp[moveIndex] = battle.gen.getMaxPP(target.v.lastMove);
-      battle.event({type: "sketch", src: user.owner.id, move: id});
+      battle.event({type: "sketch", src: user.id, move: id});
     },
   },
   sleeptalk: {
@@ -2249,7 +2249,7 @@ const internalMoveList = createMoveList({
 
       const amount = Math.min(battle.rng.int(2, 5), target.base.pp[idx]);
       target.base.pp[idx] -= amount;
-      battle.event({type: "spite", src: target.owner.id, move: id, amount});
+      battle.event({type: "spite", src: target.id, move: id, amount});
     },
   },
   swagger: {

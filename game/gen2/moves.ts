@@ -89,7 +89,7 @@ export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
       }
 
       const v = user.setVolatile("types", [type]);
-      battle.event({type: "conversion", src: user.owner.id, types: [type], volatiles: [v]});
+      battle.event({type: "conversion", src: user.id, types: [type], volatiles: [v]});
     },
   },
   disable: {
@@ -110,9 +110,9 @@ export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
       target.v.disabled = {indexInMoves, turns: battle.rng.int(2, 8) + 1};
       battle.event({
         type: "disable",
-        src: target.owner.id,
+        src: target.id,
         move: target.base.moves[indexInMoves],
-        volatiles: [{id: target.owner.id, v: {flags: target.v.cflags}}],
+        volatiles: [{id: target.id, v: {flags: target.v.cflags}}],
       });
     },
   },
@@ -128,10 +128,7 @@ export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
       battle.info(
         user,
         "haze",
-        targets.map(user => ({
-          id: user.owner.id,
-          v: {stages: null, stats: user.clientStats(battle)},
-        })),
+        targets.map(user => ({id: user.id, v: {stages: null, stats: user.clientStats(battle)}})),
       );
     },
   },

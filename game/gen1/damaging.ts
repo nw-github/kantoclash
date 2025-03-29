@@ -21,7 +21,7 @@ export function use(
   }
 
   if (this.charge && user.v.charging !== this) {
-    battle.event({type: "charge", src: user.owner.id, move: battle.moveIdOf(this)!});
+    battle.event({type: "charge", src: user.id, move: battle.moveIdOf(this)!});
     if (Array.isArray(this.charge)) {
       user.modStages(this.charge, battle);
     }
@@ -251,12 +251,7 @@ export function exec(
         return;
       }
 
-      battle.event({
-        type: "thief",
-        src: user.owner.id,
-        target: target.owner.id,
-        item: target.base.item,
-      });
+      battle.event({type: "thief", src: user.id, target: target.id, item: target.base.item});
       user.base.item = target.base.item;
       target.base.item = undefined;
     } else {

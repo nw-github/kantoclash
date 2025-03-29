@@ -147,7 +147,7 @@ export const moveFunctions: MoveFunctions = {
       }
 
       user.owner.screens[this.screen] = 5;
-      battle.event({type: "screen", screen: this.screen, kind: "start", src: user.owner.id});
+      battle.event({type: "screen", screen: this.screen, kind: "start", user: user.owner.id});
     },
   },
   phaze: {
@@ -192,7 +192,7 @@ export const moveFunctions: MoveFunctions = {
       }
 
       target.v.meanLook = user;
-      battle.info(target, "cMeanLook", [{id: target.owner.id, v: {flags: target.v.cflags}}]);
+      battle.info(target, "cMeanLook", [{id: target.id, v: {flags: target.v.cflags}}]);
     },
   },
   lockOn: {
@@ -205,8 +205,8 @@ export const moveFunctions: MoveFunctions = {
 
       battle.event({
         type: "lock_on",
-        src: user.owner.id,
-        target: target.owner.id,
+        src: user.id,
+        target: target.id,
         volatiles: [target.setFlag(VF.lockon)],
       });
     },

@@ -39,17 +39,18 @@ type AnyEvent =
   | ForfeitEvent
   | BatonPass;
 
-export type ChangedVolatiles = {id: PlayerId; v: NullOrOptional<ClientVolatiles>}[];
+export type ChangedVolatiles = {id: PokeId; v: NullOrOptional<ClientVolatiles>}[];
 
 export type BattleEvent = AnyEvent & {volatiles?: ChangedVolatiles};
 
 export type PlayerId = string;
+export type PokeId = `${PlayerId}:${number}`;
 
 type NextTurnEvent = {type: "next_turn"; turn: number};
 
 type SwitchEvent = {
   type: "switch";
-  src: PlayerId;
+  src: PokeId;
   speciesId: SpeciesId;
   level: number;
   hpPercent: number;
@@ -97,8 +98,8 @@ export type RecoveryReason =
 
 export type DamageEvent = {
   type: "damage";
-  src: PlayerId;
-  target: PlayerId;
+  src: PokeId;
+  target: PokeId;
   hpPercentBefore: number;
   hpPercentAfter: number;
   hpBefore?: number;
@@ -118,8 +119,8 @@ export type DamageEvent = {
 
 export type RecoverEvent = {
   type: "recover";
-  src: PlayerId;
-  target: PlayerId;
+  src: PokeId;
+  target: PokeId;
   hpPercentBefore: number;
   hpPercentAfter: number;
   hpBefore?: number;
@@ -129,15 +130,15 @@ export type RecoverEvent = {
 
 export type HitSubstituteEvent = {
   type: "hit_sub";
-  src: PlayerId;
-  target: PlayerId;
+  src: PokeId;
+  target: PokeId;
   broken: boolean;
   confusion: boolean;
   hitCount?: number;
   eff?: number;
 };
 
-type UseMoveEvent = {type: "move"; src: PlayerId; move: MoveId; disabled?: true; thrashing?: true};
+type UseMoveEvent = {type: "move"; src: PokeId; move: MoveId; disabled?: true; thrashing?: true};
 
 export type VictoryEvent = {
   type: "end";
@@ -146,9 +147,9 @@ export type VictoryEvent = {
   why?: "endless" | "too_long" | "timer";
 };
 
-type StatusEvent = {type: "status" | "cure"; src: PlayerId; status: Status};
+type StatusEvent = {type: "status" | "cure"; src: PokeId; status: Status};
 
-type StagesEvent = {type: "stages"; src: PlayerId; stat: Stages; count: number};
+type StagesEvent = {type: "stages"; src: PokeId; stat: Stages; count: number};
 
 export type FailReason =
   | "immune"
@@ -206,68 +207,68 @@ export type InfoReason =
   | "fail_present"
   | "seeded";
 
-type InfoEvent = {type: "info"; src: PlayerId; why: InfoReason};
+type InfoEvent = {type: "info"; src: PokeId; why: InfoReason};
 
 type BugEvent = {type: "bug"; bug: BugType};
 
 type SrcTargetEvent = {
   type: "transform" | "in_love" | "psych_up" | "foresight" | "lock_on";
-  src: PlayerId;
-  target: PlayerId;
+  src: PokeId;
+  target: PokeId;
 };
 
 // For some reason making these 1 thing causes MoveId to become a recursive type
 // type SrcMoveEvent = {
 //   type: "disable" | "charge" | "sketch" | "mimic";
-//   src: PlayerId;
+//   src: PokeId;
 //   move: MoveId;
 // };
 
-type DisableEvent = {type: "disable"; src: PlayerId; move: MoveId};
-type ChargeEvent = {type: "charge"; src: PlayerId; move: MoveId};
-type SketchEvent = {type: "sketch"; src: PlayerId; move: MoveId};
-type MimicEvent = {type: "mimic"; src: PlayerId; move: MoveId};
+type DisableEvent = {type: "disable"; src: PokeId; move: MoveId};
+type ChargeEvent = {type: "charge"; src: PokeId; move: MoveId};
+type SketchEvent = {type: "sketch"; src: PokeId; move: MoveId};
+type MimicEvent = {type: "mimic"; src: PokeId; move: MoveId};
 
 type TrapEvent = {
   type: "trap";
   kind: "start" | "end";
-  src: PlayerId;
-  target: PlayerId;
+  src: PokeId;
+  target: PokeId;
   move: MoveId;
 };
 
-type ConversionEvent = {type: "conversion"; src: PlayerId; target?: PlayerId; types: Type[]};
+type ConversionEvent = {type: "conversion"; src: PokeId; target?: PokeId; types: Type[]};
 
 type MagnitudeEvent = {type: "magnitude"; magnitude: number};
 
-export type ScreenEvent = {type: "screen"; kind: "start" | "end"; screen: Screen; src: PlayerId};
+export type ScreenEvent = {type: "screen"; kind: "start" | "end"; screen: Screen; user: PlayerId};
 
 type SetVolatilesEvent = {type: "sv"};
 
-type SpiteEvent = {type: "spite"; src: PlayerId; move: MoveId; amount: number};
+type SpiteEvent = {type: "spite"; src: PokeId; move: MoveId; amount: number};
 
 type BeatUpEvent = {type: "beatup"; name: string};
 
 export type WeatherEvent = {type: "weather"; kind: "start" | "end" | "continue"; weather: Weather};
 
-type PerishSongEvent = {type: "perish"; src: PlayerId; turns: number};
+type PerishSongEvent = {type: "perish"; src: PokeId; turns: number};
 
 type UseItemEvent = {
   type: "item";
-  src: PlayerId;
+  src: PokeId;
   item: ItemId;
 };
 
 type RestorePPEvent = {
   type: "pp";
-  src: PlayerId;
+  src: PokeId;
   move: MoveId;
 };
 
 type ThiefEvent = {
   type: "thief";
-  src: PlayerId;
-  target: PlayerId;
+  src: PokeId;
+  target: PokeId;
   item: ItemId;
 };
 
@@ -277,4 +278,4 @@ type ForfeitEvent = {
   timer: boolean;
 };
 
-type BatonPass = {type: "baton_pass"; src: PlayerId};
+type BatonPass = {type: "baton_pass"; src: PokeId};

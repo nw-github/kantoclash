@@ -224,7 +224,7 @@ export class Battle {
   }
 
   info(src: ActivePokemon, why: InfoReason, volatiles?: ChangedVolatiles) {
-    return this.event({type: "info", src: src.owner.id, why, volatiles});
+    return this.event({type: "info", src: src.id, why, volatiles});
   }
 
   opponentOf(player: Player): Player {
@@ -575,7 +575,7 @@ export class Battle {
   defaultUseMove(move: Move, user: ActivePokemon, targets: ActivePokemon[], moveIndex?: number) {
     const moveId = this.moveIdOf(move)!;
     if (moveId === user.base.moves[user.v.disabled?.indexInMoves ?? -1]) {
-      this.event({move: moveId, type: "move", src: user.owner.id, disabled: true});
+      this.event({move: moveId, type: "move", src: user.id, disabled: true});
       user.v.charging = undefined;
       return;
     }
@@ -602,7 +602,7 @@ export class Battle {
       this.event({
         type: "move",
         move: moveId,
-        src: user.owner.id,
+        src: user.id,
         thrashing: user.v.thrashing && this.gen.id === 1 ? true : undefined,
       });
     }
@@ -802,11 +802,11 @@ export class Battle {
         if (--poke.v.trapped.turns === 0) {
           this.event({
             type: "trap",
-            src: poke.owner.id,
-            target: poke.owner.id,
+            src: poke.id,
+            target: poke.id,
             kind: "end",
             move,
-            volatiles: [{id: poke.owner.id, v: {trapped: null}}],
+            volatiles: [{id: poke.id, v: {trapped: null}}],
           });
           poke.v.trapped = undefined;
         } else {
@@ -830,9 +830,9 @@ export class Battle {
         if (poke.v.perishCount) {
           --poke.v.perishCount;
 
-          const volatiles = [{id: poke.owner.id, v: {perishCount: poke.v.perishCount}}];
+          const volatiles = [{id: poke.id, v: {perishCount: poke.v.perishCount}}];
           if (poke.v.perishCount !== 3) {
-            this.event({type: "perish", src: poke.owner.id, turns: poke.v.perishCount, volatiles});
+            this.event({type: "perish", src: poke.id, turns: poke.v.perishCount, volatiles});
           } else {
             this.event({type: "sv", volatiles});
           }
@@ -864,8 +864,8 @@ export class Battle {
         const slot = poke.base.pp.findIndex(pp => pp === 0);
         if (slot !== -1) {
           poke.base.pp[slot] = 5;
-          this.event({type: "item", src: poke.owner.id, item: "mysteryberry"});
-          this.event({type: "pp", src: poke.owner.id, move: poke.base.moves[slot]});
+          this.event({type: "item", src: poke.id, item: "mysteryberry"});
+          this.event({type: "pp", src: poke.id, move: poke.base.moves[slot]});
           poke.base.item = undefined;
         }
       }
@@ -885,7 +885,7 @@ export class Battle {
       // technically should be safeguard, then light screen and reflect but who cares
       for (const screen of screens) {
         if (player.screens[screen] && --player.screens[screen] === 0) {
-          this.event({type: "screen", src: player.id, screen, kind: "end"});
+          this.event({type: "screen", user: player.id, screen, kind: "end"});
         }
       }
     }
@@ -893,19 +893,19 @@ export class Battle {
     const cureStatus = (poke: ActivePokemon) => {
       const status = poke.base.status!;
       poke.clearStatusAndRecalculate(this);
-      this.event({type: "item", src: poke.owner.id, item: poke.base.item!});
+      this.event({type: "item", src: poke.id, item: poke.base.item!});
       this.event({
         type: "cure",
-        src: poke.owner.id,
+        src: poke.id,
         status,
-        volatiles: [{id: poke.owner.id, v: {status: null, stats: poke.clientStats(this)}}],
+        volatiles: [{id: poke.id, v: {status: null, stats: poke.clientStats(this)}}],
       });
       poke.base.item = undefined;
     };
 
     const cureConfuse = (poke: ActivePokemon) => {
       poke.v.confusion = 0;
-      const v = [{id: poke.owner.id, v: {flags: poke.v.cflags}}];
+      const v = [{id: poke.id, v: {flags: poke.v.cflags}}];
       this.info(poke, "confused_end", v);
       poke.base.item = undefined;
     };
@@ -925,15 +925,15 @@ export class Battle {
 
         if (poke.v.confusion) {
           if (poke.base.item) {
-            this.event({type: "item", src: poke.owner.id, item: poke.base.item!});
+            this.event({type: "item", src: poke.id, item: poke.base.item!});
           }
           cureConfuse(poke);
         }
       } else if (poke.base.item === "bitterberry" && poke.v.confusion) {
-        this.event({type: "item", src: poke.owner.id, item: poke.base.item!});
+        this.event({type: "item", src: poke.id, item: poke.base.item!});
         cureConfuse(poke);
       } else if (healBerry[poke.base.item!] && poke.base.hp < idiv(poke.base.stats.hp, 2)) {
-        this.event({type: "item", src: poke.owner.id, item: poke.base.item!});
+        this.event({type: "item", src: poke.id, item: poke.base.item!});
         poke.recover(healBerry[poke.base.item!]!, poke, this, "item");
         poke.base.item = undefined;
       }
@@ -947,7 +947,7 @@ export class Battle {
         (--poke.v.encore.turns === 0 || !poke.base.pp[poke.v.encore.indexInMoves])
       ) {
         poke.v.encore = undefined;
-        this.info(poke, "encore_end", [{id: poke.owner.id, v: {flags: poke.v.cflags}}]);
+        this.info(poke, "encore_end", [{id: poke.id, v: {flags: poke.v.cflags}}]);
       }
 
       if (!poke.base.hp) {

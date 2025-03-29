@@ -166,17 +166,17 @@ export function exec(
 
     if (user.v.seededBy) {
       user.v.seededBy = undefined;
-      battle.event({type: "sv", volatiles: [{id: user.owner.id, v: {flags: user.v.cflags}}]});
+      battle.event({type: "sv", volatiles: [{id: user.id, v: {flags: user.v.cflags}}]});
     }
 
     if (user.v.trapped) {
       battle.event({
         type: "trap",
-        src: user.owner.id,
-        target: user.owner.id,
+        src: user.id,
+        target: user.id,
         kind: "end",
         move: battle.moveIdOf(user.v.trapped.move)!,
-        volatiles: [{id: user.owner.id, v: {trapped: null}}],
+        volatiles: [{id: user.id, v: {trapped: null}}],
       });
       user.v.trapped = undefined;
     }
@@ -223,11 +223,11 @@ export function exec(
     const move = battle.moveIdOf(this)!;
     battle.event({
       type: "trap",
-      src: user.owner.id,
-      target: target.owner.id,
+      src: user.id,
+      target: target.id,
       kind: "start",
       move,
-      volatiles: [{id: target.owner.id, v: {trapped: move}}],
+      volatiles: [{id: target.id, v: {trapped: move}}],
     });
   }
 
@@ -272,8 +272,8 @@ export function exec(
 
       battle.event({
         type: "thief",
-        src: user.owner.id,
-        target: target.owner.id,
+        src: user.id,
+        target: target.id,
         item: target.base.item,
       });
       user.base.item = target.base.item;

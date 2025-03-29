@@ -118,12 +118,12 @@ const beforeUseMove = (battle: Battle, move: Move, user: ActivePokemon) => {
 
   if (user.v.disabled && --user.v.disabled.turns === 0) {
     user.v.disabled = undefined;
-    battle.info(user, "disable_end", [{id: user.owner.id, v: {flags: user.v.cflags}}]);
+    battle.info(user, "disable_end", [{id: user.id, v: {flags: user.v.cflags}}]);
   }
 
   if (user.v.confusion) {
     const done = --user.v.confusion === 0;
-    const v = [{id: user.owner.id, v: {flags: user.v.cflags}}];
+    const v = [{id: user.id, v: {flags: user.v.cflags}}];
     battle.info(user, done ? "confused_end" : "confused", v);
     if (!done && battle.rng.bool()) {
       const move = user.choice?.move;
@@ -147,7 +147,7 @@ const beforeUseMove = (battle: Battle, move: Move, user: ActivePokemon) => {
   }
 
   if (user.v.attract) {
-    battle.event({type: "in_love", src: user.owner.id, target: user.v.attract.owner.id});
+    battle.event({type: "in_love", src: user.id, target: user.v.attract.id});
 
     if (battle.rand100(50)) {
       battle.info(user, "immobilized");
