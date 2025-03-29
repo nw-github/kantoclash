@@ -165,8 +165,16 @@ const beforeUseMove = (battle: Battle, move: Move, user: ActivePokemon) => {
   return true;
 };
 
+type GenPatches = {
+  [P in keyof Generation]: Generation[P] extends object
+    ? Generation[P] extends (...params: any[]) => any
+      ? Generation[P]
+      : Partial<Generation[P]>
+    : Generation[P];
+};
+
 const createGeneration = (): Generation => {
-  const patches: Partial<Generation> = {
+  const patches: Partial<GenPatches> = {
     id: 2,
     speciesList: speciesPatches as typeof GENERATION1.speciesList,
     moveList: movePatches as typeof GENERATION1.moveList,
@@ -174,6 +182,33 @@ const createGeneration = (): Generation => {
     lastMoveIdx: GENERATION1.moveList.zapcannon.idx!,
     moveFunctions: moveFunctionPatches as typeof GENERATION1.moveFunctions,
     items,
+    rng: {
+      tryCrit(battle, user, hc) {
+        let stages = hc ? 2 : 0;
+        if (user.v.hasFlag(VF.focus)) {
+          stages++;
+        }
+        if (user.base.item === "scopelens") {
+          stages++;
+        }
+        if (user.base.item === "stick" && user.base.real.speciesId === "farfetchd") {
+          stages += 2;
+        }
+        if (user.base.item === "luckypunch" && user.base.real.speciesId === "chansey") {
+          stages += 2;
+        }
+        return battle.rand255Good(floatTo255(critStages[Math.min(stages, 4)] * 100));
+      },
+      sleepTurns(battle) {
+        let rng = battle.rng.int(0, 255);
+        let sleepTurns = rng & 7;
+        while (!sleepTurns || sleepTurns === 7) {
+          rng = (rng * 5 + 1) & 255;
+          sleepTurns = rng & 7;
+        }
+        return sleepTurns;
+      },
+    },
     canSubstitute: (user, hp) => hp < user.base.hp,
     beforeUseMove,
     isValidMove(battle, user, move, i) {
@@ -188,22 +223,6 @@ const createGeneration = (): Generation => {
       }
 
       return true;
-    },
-    tryCrit(battle, user, hc) {
-      let stages = hc ? 2 : 0;
-      if (user.v.hasFlag(VF.focus)) {
-        stages++;
-      }
-      if (user.base.item === "scopelens") {
-        stages++;
-      }
-      if (user.base.item === "stick" && user.base.real.speciesId === "farfetchd") {
-        stages += 2;
-      }
-      if (user.base.item === "luckypunch" && user.base.real.speciesId === "chansey") {
-        stages += 2;
-      }
-      return battle.rand255Good(floatTo255(critStages[Math.min(stages, 4)] * 100));
     },
     checkAccuracy(move, battle, user, target) {
       if (target.v.invuln) {
@@ -257,15 +276,6 @@ const createGeneration = (): Generation => {
       user.damage(Math.floor(dmg / 8), user, battle, false, "crash", true);
     },
     validSpecies: species => species.dexId <= 251,
-    getSleepTurns(battle) {
-      let rng = battle.rng.int(0, 255);
-      let sleepTurns = rng & 7;
-      while (!sleepTurns || sleepTurns === 7) {
-        rng = (rng * 5 + 1) & 255;
-        sleepTurns = rng & 7;
-      }
-      return sleepTurns;
-    },
     getOHKODamage: (user, target) => (target.base.level > user.base.level ? false : 65535),
     getStat(poke, stat, isCrit) {
       const def = stat === "def" || stat === "spd";
@@ -305,7 +315,7 @@ const createGeneration = (): Generation => {
     },
   };
 
-  return merge(patches, GENERATION1);
+  return merge(patches as any, GENERATION1);
 };
 
 export const GENERATION2 = createGeneration();

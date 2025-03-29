@@ -286,7 +286,7 @@ export function getDamage(
   let eff = battle.getEffectiveness(type, target);
   const realEff = eff;
   let dmg = 0;
-  let isCrit = battle.gen.tryCrit(battle, user, self.flag === "high_crit");
+  let isCrit = battle.gen.rng.tryCrit(battle, user, self.flag === "high_crit");
   let fail = false;
   if (self.flag === "dream_eater" && target.base.status !== "slp") {
     eff = 1;

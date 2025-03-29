@@ -288,7 +288,7 @@ export class ActivePokemon {
       if (battle.gen.id === 1) {
         this.v.recharge = undefined;
       }
-      this.base.sleepTurns = battle.gen.getSleepTurns(battle);
+      this.base.sleepTurns = battle.gen.rng.sleepTurns(battle);
       opp.sleepClausePoke = this.base;
     } else if (status === "tox") {
       this.v.counter = 1;

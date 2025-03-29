@@ -361,11 +361,21 @@ const createGeneration = () => {
     canSubstitute: (user: ActivePokemon, hp: number) => hp <= user.base.hp,
     beforeUseMove,
     isValidMove,
-    tryCrit,
     rng: {
       tryQuickClaw: (battle: Battle) => battle.rand255Good(60),
       tryKingsRock: (battle: Battle) => battle.rand255Good(30),
       tryFocusBand: (battle: Battle) => battle.rand255Good(30),
+      tryCrit,
+      sleepTurns(battle: Battle) {
+        // https://www.smogon.com/forums/threads/outdated-new-rby-sleep-mechanics-discovery.3745689/
+        let rng = battle.rng.int(0, 255);
+        let sleepTurns = rng & 7;
+        while (!sleepTurns) {
+          rng = (rng * 5 + 1) & 255;
+          sleepTurns = rng & 7;
+        }
+        return sleepTurns;
+      },
     },
     checkAccuracy,
     calcDamage,
@@ -374,16 +384,6 @@ const createGeneration = () => {
     getStat,
     validSpecies: (species: Species) => species.dexId <= 151,
     getMaxPP: (move: Move) => (move.pp === 1 ? 1 : Math.min(Math.floor((move.pp * 8) / 5), 61)),
-    getSleepTurns(battle: Battle) {
-      // https://www.smogon.com/forums/threads/outdated-new-rby-sleep-mechanics-discovery.3745689/
-      let rng = battle.rng.int(0, 255);
-      let sleepTurns = rng & 7;
-      while (!sleepTurns) {
-        rng = (rng * 5 + 1) & 255;
-        sleepTurns = rng & 7;
-      }
-      return sleepTurns;
-    },
     getOHKODamage(user: ActivePokemon, target: ActivePokemon) {
       return getStat(target, "spe") > getStat(user, "spe") ? false : 65535;
     },
