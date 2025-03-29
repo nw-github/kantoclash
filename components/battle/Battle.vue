@@ -47,16 +47,21 @@
       </div>
 
       <div class="relative w-full">
-        <div class="absolute w-full flex flex-col bottom-1 gap-0.5 z-30">
-          <TransitionGroup name="list">
-            <div
+        <div class="absolute w-full flex flex-col bottom-1 gap-1 z-30">
+          <AnimatePresence>
+            <motion.div
               v-for="e in liveEvents"
               :key="e.time"
               class="w-full bg-gray-300/90 dark:bg-gray-700/95 rounded-lg px-2 pb-0.5"
+              :initial="{opacity: 0, y: 20}"
+              :animate="{opacity: 1, y: 0}"
+              :exit="{opacity: 0, y: -10}"
+              :transition="{duration: 0.5, ease: 'easeOut'}"
+              layout
             >
               <Event class="first:pt-0" :e :my-id :players :perspective :gen />
-            </div>
-          </TransitionGroup>
+            </motion.div>
+          </AnimatePresence>
         </div>
 
         <div
@@ -246,28 +251,6 @@
   </div>
 </template>
 
-<style scoped>
-.list-move,
-.list-enter-active,
-.list-leave-active {
-  transition: all 0.5s ease;
-}
-
-.list-enter-from {
-  opacity: 0;
-  transform: translateY(20px);
-}
-
-.list-leave-to {
-  opacity: 0;
-  transform: translateY(-10px);
-}
-
-.list-leave-active {
-  position: relative;
-}
-</style>
-
 <script setup lang="ts">
 import type {Pokemon} from "~/game/pokemon";
 import type {BattleEvent, PokeId} from "~/game/events";
@@ -278,7 +261,7 @@ import criesSpritesheet from "~/public/effects/cries.json";
 import {GENERATIONS} from "~/game/gen";
 import {playerId, type Weather} from "~/game/utils";
 import type {AnimationParams} from "./ActivePokemon.vue";
-import type {AnimationPlaybackControls} from "motion-v";
+import {AnimatePresence, motion, type AnimationPlaybackControls} from "motion-v";
 import type {Options} from "~/game/battle";
 
 const weatherData = {
@@ -582,7 +565,7 @@ const runEvent = async (e: BattleEvent) => {
       } else {
         update();
         if (e.why === "confusion" || e.why === "sandstorm" || e.why === "future_sight") {
-          await playDmg(e.eff ?? 1);
+          await Promise.allSettled([playDmg(e.eff ?? 1), playAnimation(e.src, {anim: "hurt"})]);
         }
       }
 

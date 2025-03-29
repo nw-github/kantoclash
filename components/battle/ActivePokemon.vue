@@ -354,7 +354,7 @@ export type AttackAnim = {
 };
 
 export type OtherAnim = {
-  anim: "faint" | "get_sub" | "lose_sub" | "spikes";
+  anim: "faint" | "get_sub" | "lose_sub" | "spikes" | "hurt";
   cb?: () => void;
   batonPass?: boolean;
   name?: string;
@@ -416,6 +416,8 @@ const playAnimation = (params: AnimationParams) => {
     animations.attack(seq, other, cb);
     opts.repeat = 1;
     opts.repeatType = "reverse";
+  } else if (params.anim === "hurt") {
+    animations.hurt(".sprite", seq);
   }
 
   return animate(seq, opts);
@@ -619,9 +621,20 @@ const animations = {
         duration: ms(240),
       },
     ]);
+    seq.push(
+      onComplete(() => {
+        const seq: AnimationSequence = [];
+        this.hurt(other, seq);
+        animate(seq);
+      }),
+    );
+
     if (cb) {
       seq.push(onComplete(cb));
     }
+  },
+  hurt(target: any, seq: AnimationSequence) {
+    seq.push([target, {opacity: [0, 1, 0, 1, 0, 1]}, {opacity: {ease: steps(6)}, duration: 0.35}]);
   },
 };
 
