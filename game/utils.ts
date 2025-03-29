@@ -1,6 +1,7 @@
 import type {Random} from "random";
 import type {ActivePokemon} from "./battle";
 import type {TypeChart} from "./gen";
+import type {PlayerId, PokeId} from "./events";
 
 export type Weather = "rain" | "sun" | "sand";
 
@@ -166,6 +167,8 @@ export const randChoiceWeighted = <T>(rng: Random, arr: readonly T[], weights: n
 
   return arr[i];
 };
+
+export const playerId = (poke: PokeId): PlayerId => poke.split(":")[0];
 
 declare global {
   interface ReadonlyArray<T> {

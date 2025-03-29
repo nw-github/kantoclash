@@ -74,7 +74,8 @@
           <div
             ref="sprite"
             class="sprite relative z-20 flex justify-center"
-            :class="{back, front: !back, invisible: !poke}"
+            :class="!poke && 'invisible'"
+            :data-poke-id="pokeId"
           >
             <Sprite
               :species="poke?.transformed ?? poke?.speciesId"
@@ -330,47 +331,61 @@ const badges: {flag: VF; props: InstanceType<typeof UBadge>["$props"]}[] = [
 
 const rem = (rem: number) => parseFloat(getComputedStyle(document.documentElement).fontSize) * rem;
 
-export type AnimationParams =
-  | SwitchAnim
-  | {
-      anim: "faint" | "get_sub" | "lose_sub" | "spikes" | "attack";
-      cb?: () => void;
-      batonPass?: boolean;
-      name?: string;
-    };
+export type AnimationParams = SwitchAnim | RetractAnim | AttackAnim | OtherAnim;
 
 export type SwitchAnim = {
+  anim: "sendin";
+  cb?: () => void;
+  name: string;
+};
+
+export type RetractAnim = {
   anim: "sendin" | "retract" | "phaze";
   cb?: () => void;
   batonPass: boolean;
   name: string;
 };
 
+export type AttackAnim = {
+  anim: "attack";
+  cb?: () => void;
+  target: PokeId;
+  name?: string;
+};
+
+export type OtherAnim = {
+  anim: "faint" | "get_sub" | "lose_sub" | "spikes";
+  cb?: () => void;
+  batonPass?: boolean;
+  name?: string;
+};
+
 const subOpacity = 0.5;
 const [subOffsetX, subOffsetY] = [1.5, 0.5];
 
 let hasSubstitute = false;
-const playAnimation = ({anim, cb, batonPass, name}: AnimationParams) => {
+const playAnimation = (params: AnimationParams) => {
+  const {cb, name} = params;
   if (name) {
     pbCol.value = name ? [...name].reduce((acc, x) => x.charCodeAt(0) + acc, 0) % 17 : 3;
   }
 
   const seq: AnimationSequence = [];
   const opts: SequenceOptions = {};
-  if (anim === "faint") {
+  if (params.anim === "faint") {
     if (hasSubstitute) {
       hasSubstitute = false;
       animations.loseSub(seq);
     }
     animations.faint(seq);
-  } else if (anim === "sendin") {
+  } else if (params.anim === "sendin") {
     animations.sendIn(seq, cb);
     if (hasSubstitute) {
       animations.subAfterBatonPass(seq);
     }
-  } else if (anim === "retract") {
+  } else if (params.anim === "retract") {
     if (hasSubstitute) {
-      if (batonPass) {
+      if (params.batonPass) {
         animations.startSubAttack(seq);
       } else {
         hasSubstitute = false;
@@ -378,26 +393,27 @@ const playAnimation = ({anim, cb, batonPass, name}: AnimationParams) => {
       }
     }
     animations.retract(seq);
-  } else if (anim === "get_sub") {
+  } else if (params.anim === "get_sub") {
     hasSubstitute = true;
     animations.getSub(seq);
-  } else if (anim === "lose_sub") {
+  } else if (params.anim === "lose_sub") {
     hasSubstitute = false;
     animations.loseSub(seq, cb);
-  } else if (anim === "phaze") {
+  } else if (params.anim === "phaze") {
     animations.phaze(seq, ".sprite");
     if (hasSubstitute) {
       hasSubstitute = false;
       animations.phaze(seq, ".substitute", "<");
     }
-  } else if (anim === "spikes") {
+  } else if (params.anim === "spikes") {
     animations.spikes(seq, cb);
-  } else {
+  } else if (params.anim === "attack") {
     if (hasSubstitute) {
       animations.startSubAttack(seq);
     }
 
-    animations.attack(seq, cb);
+    const other = document.querySelector(`.sprite[data-poke-id="${params.target}"]`)!;
+    animations.attack(seq, other, cb);
     opts.repeat = 1;
     opts.repeatType = "reverse";
   }
@@ -590,8 +606,7 @@ const animations = {
       ]);
     }
   },
-  attack(seq: AnimationSequence, cb?: () => void) {
-    const other = document.querySelector(`.sprite${back ? ".front" : ".back"}`)!;
+  attack(seq: AnimationSequence, other: Element, cb?: () => void) {
     const sprite = scope.value.querySelector(".sprite")!;
 
     const [x, y] = arcTo(sprite, other);

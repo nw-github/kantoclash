@@ -106,8 +106,8 @@
 
       <div class="w-full pb-2">
         <div v-if="currChoices.length" class="flex flex-col gap-1">
-          <span v-for="(choice, i) in currChoices" :key="i" class="italic">
-            <div class="italic">{{ choiceMessage(i, choice) }}...</div>
+          <span v-for="([opts, choice], i) in currChoices" :key="i" class="italic">
+            <div class="italic">{{ choiceMessage(i, choice, opts) }}...</div>
           </span>
           <TooltipButton
             v-if="currChoices.length === currOptions?.length"
@@ -276,7 +276,7 @@ import type {BattleTimer, Choice, InfoRecord} from "~/server/gameServer";
 import type {ActivePokemon} from "#build/components";
 import criesSpritesheet from "~/public/effects/cries.json";
 import {GENERATIONS} from "~/game/gen";
-import type {Weather} from "~/game/utils";
+import {playerId, type Weather} from "~/game/utils";
 import type {AnimationParams} from "./ActivePokemon.vue";
 import type {AnimationPlaybackControls} from "motion-v";
 import type {Options} from "~/game/battle";
@@ -350,7 +350,7 @@ const liveEvents = ref<UIBattleEvent[]>([]);
 const currOptions = computed(() =>
   !playingEvents.value && !isBattleOver.value ? options[events.length] : undefined,
 );
-const currChoices = ref<Choice[]>([]);
+const currChoices = ref<[Options, Choice][]>([]);
 const currOptionIdx = ref(-1);
 const currOption = computed(() => currOptions.value?.[currOptionIdx.value]);
 
@@ -381,14 +381,14 @@ const selectMove = (options: Options, index: number) => {
     // TODO: target
     target: `${opponent.value}:0`,
   };
-  currChoices.value.push(choice);
+  currChoices.value.push([options, choice]);
   currOptionIdx.value++;
   emit("choice", choice);
 };
 
 const selectSwitch = (options: Options, index: number) => {
   const choice: Choice = {type: "switch", who: Number(options.id.split(":")[1]), pokeIndex: index};
-  currChoices.value.push(choice);
+  currChoices.value.push([options, choice]);
   currOptionIdx.value++;
   emit("choice", choice);
 };
@@ -399,7 +399,7 @@ const cancelMove = () => {
   emit("cancel");
 };
 
-const choiceMessage = (i: number, choice: Choice) => {
+const choiceMessage = (i: number, choice: Choice, options: Options) => {
   const self = players.get(myId.value);
   if (choice.type === "switch") {
     const active = self.active[choice.who];
@@ -410,7 +410,7 @@ const choiceMessage = (i: number, choice: Choice) => {
     }
   } else if (choice.type === "move") {
     const active = self.active[choice.who];
-    const move = currOptions.value![i].moves[choice.moveIndex].move;
+    const move = options.moves[choice.moveIndex].move;
     return `${active!.name} will use ${gen.value.moveList[move].name}`;
   }
 };
@@ -418,7 +418,7 @@ const choiceMessage = (i: number, choice: Choice) => {
 const isValidSwitch = (i: number, poke: Pokemon) => {
   if (players.get(myId.value).active.some(p => p?.indexInTeam === i)) {
     return false;
-  } else if (currChoices.value.some(c => c.type === "switch" && c.pokeIndex === i)) {
+  } else if (currChoices.value.some(([, c]) => c.type === "switch" && c.pokeIndex === i)) {
     return false;
   }
   return !!poke.hp;
@@ -573,6 +573,7 @@ const runEvent = async (e: BattleEvent) => {
         const eff = e.why === "ohko" || !e.eff ? 1 : e.eff;
         await playAnimation(e.src, {
           anim: "attack",
+          target: e.target,
           cb() {
             update();
             playDmg(eff);
@@ -603,7 +604,7 @@ const runEvent = async (e: BattleEvent) => {
         players.byPokeId(e.src).nFainted++;
         return;
       } else if (e.why === "heal_bell") {
-        if (e.src.split(":")[0] === myId.value && team) {
+        if (playerId(e.src) === myId.value && team) {
           team.forEach(poke => (poke.status = undefined));
         }
       }
@@ -614,6 +615,7 @@ const runEvent = async (e: BattleEvent) => {
     } else if (e.type === "hit_sub") {
       await playAnimation(e.src, {
         anim: "attack",
+        target: e.target,
         cb() {
           pushEvent(e);
           playDmg(e.eff ?? 1);

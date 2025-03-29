@@ -5,7 +5,7 @@ import type {Options} from "~/game/battle";
 import {randoms} from "~/server/utils/formats";
 import {type ClientVolatiles, type FormatId, formatInfo, mergeVolatiles} from "~/utils/shared";
 import {Pokemon} from "~/game/pokemon";
-import {getEffectiveness, VF} from "~/game/utils";
+import {getEffectiveness, playerId, VF} from "~/game/utils";
 import random from "random";
 import {convertTeam, parseTeams, type Team} from "~/utils/pokemon";
 import type {DamagingMove, MoveId} from "~/game/moves";
@@ -188,7 +188,7 @@ export async function startBot(format?: FormatId, botFunction: BotFunction = ran
           players.poke(e.src)!.fainted = true;
           players.byPokeId(e.src).nFainted++;
         } else if (e.why === "heal_bell") {
-          if (e.src.split(":")[0] === myId && team) {
+          if (playerId(e.src) === myId && team) {
             team.forEach(poke => (poke.status = undefined));
           }
         }

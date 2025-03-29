@@ -10,7 +10,16 @@ import type {
 } from "./events";
 import {type MoveId, type Move, Range} from "./moves";
 import {Pokemon, type ValidatedPokemonDesc} from "./pokemon";
-import {getEffectiveness, idiv, screens, VF, type Type, type Weather, type Screen} from "./utils";
+import {
+  getEffectiveness,
+  playerId,
+  idiv,
+  screens,
+  VF,
+  type Type,
+  type Weather,
+  type Screen,
+} from "./utils";
 import type {Generation} from "./gen";
 import {healBerry, statusBerry} from "./item";
 import {ActivePokemon, type ChosenMove, type VolatileStats} from "./active";
@@ -499,11 +508,15 @@ export class Battle {
     const result = [...events];
     for (let i = 0; i < result.length; i++) {
       const e = result[i];
-      if ((e.type === "damage" || e.type === "recover") && e.target !== player?.id) {
+      if ((e.type === "damage" || e.type === "recover") && playerId(e.target) !== player?.id) {
         result[i] = {...e, hpBefore: undefined, hpAfter: undefined};
-      } else if (e.type === "switch" && e.src !== player?.id) {
+      } else if (e.type === "switch" && playerId(e.src) !== player?.id) {
         result[i] = {...e, hp: undefined, indexInTeam: -1};
-      } else if (e.type === "info" && e.why === "cConfusedFatigue" && e.src !== player?.id) {
+      } else if (
+        e.type === "info" &&
+        e.why === "cConfusedFatigue" &&
+        playerId(e.src) !== player?.id
+      ) {
         // don't leak short outrage/petal dance/thrash/etc. to the opponent
         result[i] = {type: "sv"};
         continue;
@@ -514,7 +527,7 @@ export class Battle {
           ...result[i],
           volatiles: e.volatiles.map(foo => {
             const result = structuredClone(foo);
-            if (foo.id !== player?.id) {
+            if (playerId(foo.id) !== player?.id) {
               result.v.stats = undefined;
             }
             return result;

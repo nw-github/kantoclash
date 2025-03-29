@@ -1,12 +1,12 @@
 <!-- prettier-ignore -->
 <template>
   <div v-if="e.type === 'retract'" class="move">
-    <template v-if="e.src === perspective">Come back! {{ e.name }}!</template>
+    <template v-if="playerId(e.src) === perspective">Come back! {{ e.name }}!</template>
     <template v-else>{{ players.byPokeId(e.src).name }} withdrew {{ e.name }}!</template>
   </div>
   <div v-else-if="e.type === 'switch'" class="move">
     <template v-if="e.why === 'phaze'"><b>{{ e.name }}</b> was dragged out!</template>
-    <template v-else-if="e.src === perspective">Go! <b>{{ e.name }}</b>!</template>
+    <template v-else-if="playerId(e.src) === perspective">Go! <b>{{ e.name }}</b>!</template>
     <template v-else>{{ players.byPokeId(e.src).name }} sent in <b>{{ e.name }}</b>!</template>
   </div>
   <div v-else-if="e.type === 'damage'">
@@ -99,7 +99,7 @@
   <div v-else-if="e.type === 'magnitude'">Magnitude {{ e.magnitude }}!</div>
   <div v-else-if="e.type === 'weather'">{{ weatherMessage[e.weather][e.kind] }}</div>
   <div v-else-if="e.type === 'screen'">
-    {{ screenMessage[e.screen][e.kind].replace("{}", tn(e.src, true)).replace("{l}", tn(e.src, false)) }}
+    {{ screenMessage[e.screen][e.kind].replace("{}", tn(e.user, true)).replace("{l}", tn(e.user, false)) }}
   </div>
   <div v-else-if="e.type === 'in_love'" class="move">{{ pn(e.src) }} is in love with {{ pn(e.target, false) }}!</div>
   <div v-else-if="e.type === 'bug'">
@@ -160,7 +160,7 @@ div {
 </style>
 
 <script setup lang="ts">
-import {hpPercentExact} from "~/game/utils";
+import {hpPercentExact, playerId} from "~/game/utils";
 import type {Generation} from "~/game/gen";
 import {damageMessage} from "~/utils/uievent";
 // Use itemList since gen.items doesn't include every item.
@@ -176,7 +176,7 @@ const {perspective, players, myId, e} = defineProps<{
 }>();
 
 const pn = (id: PokeId, title = true) => {
-  if (id === perspective) {
+  if (playerId(id) === perspective) {
     return e[id];
   } else {
     return title ? `The opposing ${e[id]}` : `the opposing ${e[id]}`;
@@ -184,7 +184,7 @@ const pn = (id: PokeId, title = true) => {
 };
 
 const tn = (id: PokeId | PlayerId, title = true) => {
-  if (id.split(":")[0] === perspective) {
+  if (playerId(id as PokeId) === perspective) {
     return title ? "Your team" : "your team";
   } else {
     return title ? "The opposing team" : "the opposing team";
