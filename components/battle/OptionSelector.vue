@@ -1,16 +1,19 @@
 <template>
   <div>
     <div v-if="players.get(myId).active.every(a => !a)" class="pb-2">Choose your lead</div>
+    <div v-else-if="currOption" class="pb-2">
+      What will {{ players.poke(currOption.id)!.name }} do?
+    </div>
 
     <div v-if="!options || !options.length" class="italic">Waiting for opponent...</div>
     <div v-else-if="choices.length" class="flex flex-col gap-1 pb-2">
       <div
-        v-for="([opts, choice], i) in choices"
+        v-for="([opts, choice, targets], i) in choices"
         :key="i"
         class="italic flex gap-1"
         :class="choices.length === options.length ? 'flex-col' : 'items-center'"
       >
-        <div class="italic">{{ choiceMessage(i, choice, opts) }}...</div>
+        <div class="italic">{{ choiceMessage(i, choice, opts, targets) }}...</div>
         <TooltipButton
           v-if="i === choices.length - 1"
           icon="material-symbols:cancel"
@@ -53,7 +56,7 @@
       <div class="flex flex-col gap-1 sm:gap-2">
         <template v-for="(option, i) in currOption.moves">
           <MoveButton
-            v-if="option.display"
+            v-if="option.display && players.poke(currOption.id)?.base"
             :key="i"
             :option
             :gen
@@ -81,9 +84,9 @@
 import type {Options} from "~/game/battle";
 import type {Pokemon} from "~/game/pokemon";
 import type {Choice, MoveChoice} from "~/server/gameServer";
-import {Range, type Move} from "~/game/moves";
 import type {Generation} from "~/game/gen";
 import type {PokeId} from "~/game/events";
+import {playerId} from "~/game/utils";
 
 const emit = defineEmits<{(e: "choice", choice: Choice): void; (e: "cancel"): void}>();
 const {players, myId, options, team, opponent, gen} = defineProps<{
@@ -95,12 +98,11 @@ const {players, myId, options, team, opponent, gen} = defineProps<{
   team: Pokemon[];
 }>();
 
-const choices = ref<[Options, Choice][]>([]);
+const choices = ref<[Options, Choice, PokeId[]][]>([]);
 const currOptionIdx = ref(0);
 const currOption = computed(() => options?.[currOptionIdx.value]);
 const currMoveChoice = ref<MoveChoice>();
 const currTargets = ref<PokeId[]>([]);
-const isSingles = computed(() => players.get(myId).active.length === 1);
 
 watch(
   () => options,
@@ -112,59 +114,8 @@ watch(
   },
 );
 
-const getTargets = (userIndex: number, move: Move) => {
-  type GetTarget = {allyOnly?: bool; oppOnly?: bool; adjacent?: bool; self?: boolean};
-
-  const getTarget = ({allyOnly, oppOnly, adjacent, self}: GetTarget) => {
-    const targets: PokeId[] = [];
-    const opp = players.get(opponent);
-    const me = players.get(myId);
-    if (adjacent) {
-      for (let i = userIndex - 1; i <= userIndex + 1; i++) {
-        if (!allyOnly && opp.active[i]) {
-          targets.push(`${opponent}:${i}`);
-        }
-        if (!oppOnly && me.active[i]) {
-          targets.push(`${myId}:${i}`);
-        }
-      }
-    } else {
-      targets.push(...me.active.filter(v => !!v).map((_, i) => `${myId}:${i}` as const));
-      targets.push(...opp.active.filter(v => !!v).map((_, i) => `${myId}:${i}` as const));
-    }
-
-    let idx = targets.indexOf(`${myId}:${userIndex}`);
-    if (!self && idx !== -1) {
-      targets.splice(idx, 1);
-    }
-    return targets;
-  };
-
-  // prettier-ignore
-  switch (move.range) {
-  case Range.Field:
-  case Range.Random:
-  case Range.Self:
-  case Range.AllAdjacent:
-  case Range.AllAdjacentFoe:
-  case Range.All:
-  case Range.AllAllies:
-    return [];
-  case Range.Adjacent:
-    return getTarget({ adjacent: true });
-  case Range.AdjacentFoe:
-    return getTarget({ oppOnly: true, adjacent: true });
-  case Range.AdjacentAlly:
-    return getTarget({ allyOnly: true, adjacent: true });
-  case Range.SelfOrAdjacentAlly:
-    return getTarget({ allyOnly: true, adjacent: true, self: true });
-  case Range.Any:
-    return getTarget({ });
-  }
-};
-
 const makeChoice = (options: Options, choice: Choice) => {
-  choices.value.push([options, choice]);
+  choices.value.push([options, choice, currTargets.value]);
   currOptionIdx.value++;
   emit("choice", choice);
   currMoveChoice.value = undefined;
@@ -177,13 +128,9 @@ const selectTarget = (target: PokeId) => {
 };
 
 const selectMove = (options: Options, index: number) => {
-  const choice = {
-    type: "move",
-    who: Number(options.id.split(":")[1]),
-    moveIndex: index,
-    target: `${opponent}:0`,
-  } as const;
-  const targets = getTargets(choice.who, gen.moveList[options.moves[index].move]);
+  const who = Number(options.id.split(":")[1]);
+  const targets = getTargets(players, who, gen.moveList[options.moves[index].move], myId, opponent);
+  const choice = {type: "move", who, moveIndex: index, target: targets[0]} as const;
   if (targets.length > 1) {
     currMoveChoice.value = choice;
     currTargets.value = targets;
@@ -195,7 +142,7 @@ const selectMove = (options: Options, index: number) => {
 
 const selectSwitch = (options: Options, index: number) => {
   const choice: Choice = {type: "switch", who: Number(options.id.split(":")[1]), pokeIndex: index};
-  choices.value.push([options, choice]);
+  choices.value.push([options, choice, []]);
   currOptionIdx.value++;
   emit("choice", choice);
 };
@@ -213,7 +160,7 @@ const cancelTarget = () => {
   currTargets.value = [];
 };
 
-const choiceMessage = (i: number, choice: Choice, options: Options) => {
+const choiceMessage = (i: number, choice: Choice, options: Options, ptargets: PokeId[]) => {
   const self = players.get(myId);
   if (choice.type === "switch") {
     const active = self.active[choice.who];
@@ -225,7 +172,14 @@ const choiceMessage = (i: number, choice: Choice, options: Options) => {
   } else if (choice.type === "move") {
     const active = self.active[choice.who];
     const move = options.moves[choice.moveIndex].move;
-    return `${active!.name} will use ${gen.moveList[move].name}`;
+    if (ptargets.length && choice.target) {
+      const ally = playerId(choice.target) === myId ? " ally " : " ";
+      return `${active!.name} will use ${gen.moveList[move].name} on${ally}${
+        players.poke(choice.target)!.name
+      }`;
+    } else {
+      return `${active!.name} will use ${gen.moveList[move].name}`;
+    }
   }
 };
 

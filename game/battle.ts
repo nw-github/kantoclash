@@ -161,6 +161,16 @@ enum BetweenTurns {
   PerishSong,
 }
 
+type BattleParams = {
+  gen: Generation;
+  player1: PlayerParams;
+  player2: PlayerParams;
+  doubles?: bool;
+  chooseLead?: bool;
+  mods?: Mods;
+  seed?: string;
+};
+
 export class Battle {
   readonly players: [Player, Player];
   private readonly events: BattleEvent[] = [];
@@ -191,18 +201,11 @@ export class Battle {
     this.allActive = this.players.flatMap(pl => pl.active);
   }
 
-  static start(
-    gen: Generation,
-    player1: PlayerParams,
-    player2: PlayerParams,
-    doubles: bool,
-    chooseLead?: bool,
-    mods: Mods = {},
-    seed: string = crypto.randomUUID(),
-  ) {
+  static start({gen, player1, player2, doubles, chooseLead, mods, seed}: BattleParams) {
+    seed ??= crypto.randomUUID();
     console.log("new battle, seed: " + seed);
 
-    const self = new Battle(gen, player1, player2, doubles, mods, new Random(seed));
+    const self = new Battle(gen, player1, player2, doubles ?? false, mods ?? {}, new Random(seed));
     self.players[0].updateOptions(self);
     self.players[1].updateOptions(self);
     if (chooseLead) {

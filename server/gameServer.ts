@@ -680,14 +680,14 @@ export class GameServer extends Server<ClientMessage, ServerMessage> {
     };
 
     const fmt = formatInfo[format];
-    const [battle, turn0] = Battle.start(
-      GENERATIONS[fmt.generation]!,
-      player,
-      opponent,
-      fmt.chooseLead ?? false,
-      fmt.doubles ?? false,
-      fmt.mods,
-    );
+    const [battle, turn0] = Battle.start({
+      gen: GENERATIONS[fmt.generation]!,
+      player1: player,
+      player2: opponent,
+      doubles: fmt.doubles,
+      chooseLead: fmt.chooseLead,
+      mods: fmt.mods,
+    });
     const room = new Room(crypto.randomUUID(), battle, turn0, format, this);
     this.rooms.set(room.id, room);
 

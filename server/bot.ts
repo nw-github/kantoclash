@@ -3,7 +3,13 @@ import type {Choice, ClientMessage, JoinRoomResponse, ServerMessage} from "./gam
 import type {BattleEvent} from "~/game/events";
 import type {Options} from "~/game/battle";
 import {randoms} from "~/server/utils/formats";
-import {type ClientVolatiles, type FormatId, formatInfo, mergeVolatiles} from "~/utils/shared";
+import {
+  type ClientVolatiles,
+  type FormatId,
+  formatInfo,
+  getTargets,
+  mergeVolatiles,
+} from "~/utils/shared";
 import {Pokemon} from "~/game/pokemon";
 import {getEffectiveness, playerId, VF} from "~/game/utils";
 import random from "random";
@@ -369,7 +375,7 @@ export function createBotTeam(format: FormatId) {
   }
 }
 
-export function randomBot({team, options, players, me, opponent}: BotParams) {
+export function randomBot({team, options, players, me, opponent, gen}: BotParams) {
   const activePokemon = players.get(me).active.map(a => a?.indexInTeam);
   const validSwitches = team.filter((poke, i) => poke.hp !== 0 && !activePokemon.includes(i));
   const choices: Choice[] = [];
@@ -384,12 +390,12 @@ export function randomBot({team, options, players, me, opponent}: BotParams) {
     if (!validMoves.length || (opt.canSwitch && validSwitches.length && switchRandomly)) {
       choices.push({type: "switch", who, pokeIndex: team.indexOf(random.choice(validSwitches)!)});
     } else {
+      const move = random.choice(validMoves)!;
       choices.push({
         type: "move",
         who,
-        moveIndex: opt.moves.indexOf(random.choice(validMoves)!),
-        // TODO: target
-        target: `${opponent}:0`,
+        moveIndex: opt.moves.indexOf(move),
+        target: random.choice(getTargets(players, who, gen.moveList[move.move], me, opponent)),
       });
     }
   }

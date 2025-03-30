@@ -1,8 +1,9 @@
 import type {Status} from "~/game/pokemon";
 import type {Mods, VolatileStats} from "../game/battle";
 import type {Stages, Type, VF} from "../game/utils";
-import type {MoveId} from "~/game/moves";
+import {Range, type Move, type MoveId} from "~/game/moves";
 import type {Generation} from "~/game/gen1";
+import type {PlayerId, PokeId} from "~/game/events";
 
 export type ClientVolatiles = {
   stages: Partial<Record<Stages, number>>;
@@ -155,4 +156,61 @@ export const isValidSketchMove = (gen: Generation, id: string) => {
     return false;
   }
   return !gen.invalidSketchMoves.includes(id) && move.idx! <= gen.lastMoveIdx;
+};
+
+export const getTargets = (
+  players: Players,
+  userIndex: number,
+  move: Move,
+  myId: PlayerId,
+  opponent: PlayerId,
+) => {
+  type GetTarget = {allyOnly?: bool; oppOnly?: bool; adjacent?: bool; self?: boolean};
+
+  const getTarget = ({allyOnly, oppOnly, adjacent, self}: GetTarget) => {
+    const targets: PokeId[] = [];
+    const opp = players.get(opponent);
+    const me = players.get(myId);
+    if (adjacent) {
+      for (let i = userIndex - 1; i <= userIndex + 1; i++) {
+        if (!allyOnly && opp.active[i]) {
+          targets.push(`${opponent}:${i}`);
+        }
+        if (!oppOnly && me.active[i]) {
+          targets.push(`${myId}:${i}`);
+        }
+      }
+    } else {
+      targets.push(...me.active.filter(v => !!v).map((_, i) => `${myId}:${i}` as const));
+      targets.push(...opp.active.filter(v => !!v).map((_, i) => `${myId}:${i}` as const));
+    }
+
+    const idx = targets.indexOf(`${myId}:${userIndex}`);
+    if (!self && idx !== -1) {
+      targets.splice(idx, 1);
+    }
+    return targets;
+  };
+
+  // prettier-ignore
+  switch (move.range) {
+  case Range.Field:
+  case Range.Random:
+  case Range.Self:
+  case Range.AllAdjacent:
+  case Range.AllAdjacentFoe:
+  case Range.All:
+  case Range.AllAllies:
+    return [];
+  case Range.Adjacent:
+    return getTarget({ adjacent: true });
+  case Range.AdjacentFoe:
+    return getTarget({ oppOnly: true, adjacent: true });
+  case Range.AdjacentAlly:
+    return getTarget({ allyOnly: true, adjacent: true });
+  case Range.SelfOrAdjacentAlly:
+    return getTarget({ allyOnly: true, adjacent: true, self: true });
+  case Range.Any:
+    return getTarget({ });
+  }
 };

@@ -1,8 +1,8 @@
 <template>
-  <div class="w-full flex flex-col items-center">
+  <div class="all w-full flex flex-col items-center">
     <div
-      class="w-11/12 sm:w-3/4 flex flex-col gap-0.5 sm:gap-1 text-sm z-40"
-      :class="{invisible: !poke || poke.hidden}"
+      class="flex flex-col gap-0.5 sm:gap-1 text-sm z-40"
+      :class="[(!poke || poke.hidden) && 'invisible', !isSingles ? 'w-20 sm:w-32' : 'w-32 sm:w-36']"
     >
       <div class="flex justify-between flex-col sm:flex-row">
         <div class="font-bold flex items-center">
@@ -10,7 +10,9 @@
           <!-- @vue-expect-error -->
           <GenderIcon class="size-4" :gender="poke?.gender ?? gen1Gender[poke?.speciesId]" />
         </div>
-        <span class="text-[0.75rem] sm:text-sm">Lv. {{ poke?.level ?? 100 }}</span>
+        <span class="text-[0.75rem] sm:text-sm whitespace-nowrap">
+          Lv. {{ poke?.level ?? 100 }}
+        </span>
       </div>
       <div class="relative overflow-hidden rounded-md bg-[#333] flex">
         <div class="hp-fill absolute h-full rounded-md" />
@@ -69,47 +71,51 @@
     </div>
 
     <div ref="scope" class="flex flex-col items-center relative">
-      <div class="w-[128px] h-[117px] sm:w-[256px] sm:h-[234px] items-center justify-center flex">
+      <div class="items-center justify-center flex">
         <UPopover mode="hover" :popper="{placement: 'top'}">
           <div
             ref="sprite"
-            class="sprite relative z-20 flex justify-center"
+            class="sprite relative z-20 flex justify-center h-28 sm:h-56"
             :class="!poke && 'invisible'"
             :data-poke-id="pokeId"
           >
-            <Sprite
-              :species="poke?.transformed ?? poke?.speciesId"
-              :scale="lessThanSm ? 1 : 2"
-              :shiny="poke?.shiny"
-              :back
-            />
-
-            <img
-              v-if="poke && !poke.fainted && ((poke.v.flags ?? 0) & VF.cConfused) !== 0"
-              class="absolute size-10 sm:size-20 -top-3 sm:-top-6 z-30 dark:invisible"
-              src="/dizzy-light.gif"
-              alt="confused"
-            />
-
-            <img
-              v-if="poke && !poke.fainted && ((poke.v.flags ?? 0) & VF.cConfused) !== 0"
-              class="absolute size-10 sm:size-20 -top-3 sm:-top-6 z-30 invisible dark:visible"
-              src="/dizzy.gif"
-              alt="confused"
-            />
-
-            <AnimatePresence>
-              <motion.img
-                v-if="poke?.v.status === 'slp'"
-                class="absolute size-6 sm:size-10 -top-4 z-30 invert dark:invert-0 rotate-180 ml-20"
-                src="/zzz.gif"
-                alt="confused"
-                :initial="{opacity: 0}"
-                :transition="{duration: 0.2}"
-                :animate="{opacity: 1}"
-                :exit="{opacity: 0}"
+            <div
+              class="absolute w-[128px] h-[117px] sm:w-[256px] sm:h-[234px] flex justify-center items-center"
+            >
+              <Sprite
+                :species="poke?.transformed ?? poke?.speciesId"
+                :scale="lessThanSm ? 1 : 2"
+                :shiny="poke?.shiny"
+                :back
               />
-            </AnimatePresence>
+
+              <img
+                v-if="poke && !poke.fainted && ((poke.v.flags ?? 0) & VF.cConfused) !== 0"
+                class="absolute size-10 sm:size-20 -top-3 sm:-top-0 z-30 dark:invisible"
+                src="/dizzy-light.gif"
+                alt="confused"
+              />
+
+              <img
+                v-if="poke && !poke.fainted && ((poke.v.flags ?? 0) & VF.cConfused) !== 0"
+                class="absolute size-10 sm:size-20 -top-3 sm:-top-0 z-30 invisible dark:visible"
+                src="/dizzy.gif"
+                alt="confused"
+              />
+
+              <AnimatePresence>
+                <motion.img
+                  v-if="poke?.v.status === 'slp'"
+                  class="absolute size-6 sm:size-10 top-6 z-30 invert dark:invert-0 rotate-180 ml-24"
+                  src="/zzz.gif"
+                  alt="confused"
+                  :initial="{opacity: 0}"
+                  :transition="{duration: 0.2}"
+                  :animate="{opacity: 1}"
+                  :exit="{opacity: 0}"
+                />
+              </AnimatePresence>
+            </div>
           </div>
 
           <template v-if="poke && !poke.hidden" #panel>
@@ -169,7 +175,7 @@
 
       <div
         ref="ground"
-        class="ground absolute bottom-4 sm:bottom-8 bg-gray-200 dark:bg-gray-600 h-10 w-20 sm:h-16 sm:w-40 rounded-[100%] flex justify-center"
+        class="ground absolute bottom-4 sm:bottom-8 h-10 w-20 sm:h-16 sm:w-40 rounded-[100%] flex justify-center"
         :class="{back, front: !back}"
       >
         <div
@@ -181,7 +187,14 @@
           class="substitute absolute opacity-0 bottom-[50%] pointer-events-none"
           :class="!back && 'z-40'"
         >
-          <Sprite species="marowak" substitute :scale="lessThanSm ? 1 : 2" :back />
+          <NuxtImg
+            :srcset="
+              back
+                ? `/sprites/battle/back/substitute.gif ${lessThanSm ? 2 : 1}x`
+                : `/sprites/battle/substitute.gif ${lessThanSm ? 1 : 0.5}x`
+            "
+            alt="substitute"
+          />
         </div>
       </div>
 
@@ -221,6 +234,12 @@
     scale: 0.5;
   }
 }
+
+img {
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+}
 </style>
 
 <script setup lang="ts">
@@ -245,6 +264,7 @@ const {poke, back, gen, player, pokeId} = defineProps<{
   back?: boolean;
   gen: Generation;
   pokeId: PokeId;
+  isSingles: boolean;
 }>();
 const species = computed(() => poke && gen.speciesList[poke.transformed ?? poke.speciesId]);
 const minSpe = computed(
@@ -557,18 +577,19 @@ const animations = {
     ]);
   },
   retract(seq: AnimationSequence) {
-    const sprite = scope.value.querySelector(".sprite")!;
-    const sprRect = sprite.getBoundingClientRect();
-    const gRect = ground.value!.getBoundingClientRect();
-    const [_, sprY] = relativePos(sprRect, 0, gRect.top - rem(lessThanSm.value ? 1.2 : 2.8));
-
     pbRow.value = 10;
 
     seq.push([".pokeball", {x: 0, y: 0, opacity: 1}, {ease: steps(1, "start"), duration: 0}]);
     seq.push([
-      sprite,
-      {scale: 0.45, opacity: 0, y: sprY},
-      {duration: ms(550), at: "<", ease: easeOutQuart, opacity: {ease: easeInCubic}},
+      sprite.value!,
+      {scale: 0.45, opacity: 0, transformOrigin: ["bottom", "center"]},
+      {
+        duration: ms(550),
+        at: "<",
+        ease: easeOutQuart,
+        opacity: {ease: easeInCubic},
+        transformOrigin: {ease: steps(2, "start")},
+      },
     ]);
     seq.push(onComplete(() => (pbRow.value = 9)));
     seq.push([".pokeball", {opacity: 0}, {duration: ms(200), ease: "linear"}]);
@@ -609,11 +630,9 @@ const animations = {
     }
   },
   attack(seq: AnimationSequence, other: Element, cb?: () => void) {
-    const sprite = scope.value.querySelector(".sprite")!;
-
-    const [x, y] = arcTo(sprite, other);
+    const [x, y] = arcTo(sprite.value!, other);
     seq.push([
-      sprite,
+      sprite.value!,
       {x: [0, x], y: [0, ...y]},
       {
         x: {ease: "linear"},

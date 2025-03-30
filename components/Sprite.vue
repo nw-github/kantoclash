@@ -17,16 +17,15 @@ const props = defineProps<{
   species?: string;
   back?: boolean;
   scale?: number;
-  substitute?: boolean;
   shiny?: boolean;
 }>();
 const sprite = computed(() => {
-  const scale = 1 / (props.substitute && props.back ? (props.scale ?? 1) / 2 : props.scale ?? 1);
+  const scale = 1 / (props.scale ?? 1);
   if (!props.species || !(props.species in speciesList)) {
     return `/sprites/battle/unknown.png ${scale}x`;
   }
 
-  const id = props.substitute ? "substitute" : speciesList[props.species as SpeciesId].dexId;
+  const id = speciesList[props.species as SpeciesId].dexId;
   const shiny = props.shiny ? "shiny/" : "";
   if (!props.back) {
     return `/sprites/battle/${shiny}${id}.gif ${scale}x`;

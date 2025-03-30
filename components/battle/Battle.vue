@@ -1,8 +1,9 @@
 <template>
   <div
-    class="flex h-full flex-col sm:flex-row p-4 overflow-auto rounded-lg gap-4 dark:divide-gray-800 ring-1 ring-gray-200 dark:ring-gray-800 shadow"
+    class="flex h-full p-4 overflow-auto rounded-lg gap-4 dark:divide-gray-800 ring-1 ring-gray-200 dark:ring-gray-800 shadow"
   >
-    <div class="flex flex-col w-full items-center">
+    <div class="flex flex-col w-full items-center overflow-hidden">
+      <!-- Top Bar -->
       <div class="flex w-full relative justify-between items-start">
         <div class="flex gap-2 items-center">
           <div
@@ -21,31 +22,16 @@
         </div>
 
         <div v-if="opponent" class="absolute sm:static right-0 flex flex-col items-end gap-1">
-          <span class="text-xs pr-0.5 pb-1 sm:order-1 font-semibold">
+          <TeamDisplay :player="players.get(opponent)" />
+          <span class="text-xs pr-0.5 pb-1 font-semibold">
             {{ players.get(opponent).name }}
           </span>
-          <TeamDisplay :player="players.get(opponent)" class="flex-col sm:flex-row" />
         </div>
       </div>
 
-      <div class="flex">
-        <template v-for="(player, id) in players.items" :key="id">
-          <template v-if="!player.isSpectator">
-            <ActivePokemon
-              v-for="(active, i) in player.active"
-              :key="i"
-              :ref="(c) => activePokemon.push(c as any)"
-              :class="id === perspective ? 'pt-10 sm:pt-14 pb-2 sm:pb-0' : 'order-2'"
-              :poke="active"
-              :back="id === perspective"
-              :poke-id="`${id}:${i}`"
-              :player
-              :gen
-            />
-          </template>
-        </template>
-      </div>
+      <Field ref="field" :players :perspective :is-singles :gen />
 
+      <!-- Events -->
       <div class="relative w-full">
         <div class="absolute w-full flex flex-col bottom-1 gap-1 z-30">
           <AnimatePresence>
@@ -70,7 +56,7 @@
         >
           <TeamDisplay
             :player="players.get(perspective)"
-            class="self-end flex-col sm:flex-row p-2"
+            class="self-end p-2 invisible sm:visible"
           />
 
           <div class="flex flex-row">
@@ -109,18 +95,20 @@
 
       <UDivider class="pb-2" />
 
+      <!-- Selectors & Buttons -->
       <div class="w-full pb-2">
-        <OptionSelector
-          v-if="team && !playingEvents"
-          :team
-          :options="currOptions"
-          :players
-          :my-id
-          :gen
-          :opponent
-          @cancel="$emit('cancel')"
-          @choice="$emit('choice', $event)"
-        />
+        <div v-if="team && !playingEvents && isBattler && !isBattleOver">
+          <OptionSelector
+            :team
+            :options="currOptions"
+            :players
+            :my-id
+            :gen
+            :opponent
+            @cancel="$emit('cancel')"
+            @choice="$emit('choice', $event)"
+          />
+        </div>
         <div v-else class="flex flex-wrap gap-0.5">
           <template v-if="!isBattler || isBattleOver">
             <TooltipButton
@@ -219,7 +207,6 @@ import type {Pokemon} from "~/game/pokemon";
 import type {BattleEvent, PokeId} from "~/game/events";
 import type {SpeciesId} from "~/game/species";
 import type {BattleTimer, Choice, InfoRecord} from "~/server/gameServer";
-import type {ActivePokemon} from "#build/components";
 import criesSpritesheet from "~/public/effects/cries.json";
 import {GENERATIONS} from "~/game/gen";
 import {playerId, type Weather} from "~/game/utils";
@@ -234,7 +221,7 @@ const weatherData = {
   // material-symbols:weather-hail
 } satisfies Record<Weather, any>;
 
-const emit = defineEmits<{
+defineEmits<{
   (e: "chat", message: string): void;
   (e: "timer" | "cancel"): void;
   (e: "choice", choice: Choice): void;
@@ -264,7 +251,7 @@ const skipToEvent = ref(0);
 const updateMarker = ref(0);
 const currentTurnNo = ref(0);
 const weather = ref<Weather>();
-const activePokemon = ref<InstanceType<typeof ActivePokemon>[]>([]);
+const field = useTemplateRef("field");
 
 const nextEvent = ref(0);
 const playToIndex = ref(0);
@@ -275,6 +262,7 @@ const victor = ref<string>();
 const isBattleOver = computed(() => finished || !!victor.value);
 const isBattler = computed(() => players.get(myId.value) && !players.get(myId.value).isSpectator);
 const perspective = ref("");
+const isSingles = computed(() => players.get(perspective.value)?.active?.length === 1);
 
 watchImmediate([isBattler, () => players.items, myId], () => {
   perspective.value = isBattler.value
@@ -340,20 +328,20 @@ const runEvent = async (e: BattleEvent) => {
   };
 
   const playAnimation = async (id: PokeId, params: AnimationParams) => {
-    const component = activePokemon.value.find(a => a.getId() === id);
-    if (!component) {
-      console.log("wtf");
-      return;
-    }
-
     if (!isLive()) {
       params.cb?.();
       params.cb = undefined;
       if (params.anim !== "attack" && params.anim !== "spikes") {
-        component?.playAnimation(params)?.complete();
+        field.value?.playAnimation(id, params)?.complete();
       }
     } else {
-      const animation = component!.playAnimation(params);
+      const animation = field.value?.playAnimation(id, params);
+      if (!animation) {
+        params.cb?.();
+        console.log("wtf");
+        return;
+      }
+
       animations.push(animation);
       await animation;
       const idx = animations.indexOf(animation);
