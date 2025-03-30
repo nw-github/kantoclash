@@ -172,7 +172,7 @@ const internalMoveList = createMoveList({
         .map(([, move]) => move);
 
       // TODO: targeting
-      return battle.callUseMove(battle.rng.choice(moves)!, user, target);
+      return battle.useMove(battle.rng.choice(moves)!, user, target);
     },
   },
   mimic: {
@@ -2208,7 +2208,7 @@ const internalMoveList = createMoveList({
       // TODO: https://bulbapedia.bulbagarden.net/wiki/Sleep_Talk_(move)
       // If Sleep Talk calls Metronome or Mirror Move (which are selectable by Sleep Talk only in
       // this generation) and thus in turn calls a two-turn move, the move will fail.
-      return battle.callUseMove(battle.gen.moveList[m], user, target);
+      return battle.useMove(battle.gen.moveList[m], user, target);
     },
   },
   spikes: {

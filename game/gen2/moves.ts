@@ -23,54 +23,48 @@ Mimic
 // Does 10% chance mean 10.2 /* 26/256 */ like in gen 1?
 
 export const moveFunctionPatches: Partial<MoveFunctions> = {
-  recover: {
-    exec(battle, user) {
-      const diff = user.base.stats.hp - user.base.hp;
-      if (diff === 0) {
-        return battle.info(user, "fail_generic");
-      }
+  recover(battle, user) {
+    const diff = user.base.stats.hp - user.base.hp;
+    if (diff === 0) {
+      return battle.info(user, "fail_generic");
+    }
 
-      if (this.why === "rest") {
-        user.clearStatusAndRecalculate(battle);
-        user.base.status = "slp";
-        user.base.sleepTurns = 3;
-        user.v.counter = 0;
-        user.recover(diff, user, battle, this.why, true);
-      } else {
-        let amount = Math.floor(user.base.stats.hp / 2);
-        if (this.weather && !battle.weather) {
-          amount = Math.floor(user.base.stats.hp / 4);
-        } else if (this.weather && battle.weather?.kind !== "sun") {
-          amount = Math.floor(user.base.stats.hp / 8);
-        }
-        user.recover(amount, user, battle, this.why);
+    if (this.why === "rest") {
+      user.clearStatusAndRecalculate(battle);
+      user.base.status = "slp";
+      user.base.sleepTurns = 3;
+      user.v.counter = 0;
+      user.recover(diff, user, battle, this.why, true);
+    } else {
+      let amount = Math.floor(user.base.stats.hp / 2);
+      if (this.weather && !battle.weather) {
+        amount = Math.floor(user.base.stats.hp / 4);
+      } else if (this.weather && battle.weather?.kind !== "sun") {
+        amount = Math.floor(user.base.stats.hp / 8);
       }
-    },
+      user.recover(amount, user, battle, this.why);
+    }
   },
-  status: {
-    exec(battle, user, [target]) {
-      if (target.v.substitute) {
-        return battle.info(target, "fail_generic");
-      } else if (
-        (this.checkType && battle.getEffectiveness(this.type, target) === 0) ||
-        ((this.status === "psn" || this.status === "tox") &&
-          target.v.types.some(t => t === "poison" || t === "steel"))
-      ) {
-        return battle.info(target, "immune");
-      } else if (target.owner.screens.safeguard) {
-        return battle.info(target, "safeguard_protect");
-      } else if (!battle.checkAccuracy(this, user, target)) {
-        return;
-      }
+  status(battle, user, [target]) {
+    if (target.v.substitute) {
+      return battle.info(target, "fail_generic");
+    } else if (
+      (this.checkType && battle.getEffectiveness(this.type, target) === 0) ||
+      ((this.status === "psn" || this.status === "tox") &&
+        target.v.types.some(t => t === "poison" || t === "steel"))
+    ) {
+      return battle.info(target, "immune");
+    } else if (target.owner.screens.safeguard) {
+      return battle.info(target, "safeguard_protect");
+    } else if (!battle.checkAccuracy(this, user, target)) {
+      return;
+    }
 
-      if (!target.status(this.status, battle)) {
-        battle.info(target, "fail_generic");
-      }
-    },
+    if (!target.status(this.status, battle)) {
+      battle.info(target, "fail_generic");
+    }
   },
-  damage: {
-    exec: execDamagingMove,
-  },
+  damage: execDamagingMove,
 };
 
 export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {

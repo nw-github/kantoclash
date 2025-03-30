@@ -37,8 +37,6 @@ export interface BaseMove {
 
 export interface CustomMove extends BaseMove {
   readonly kind?: never;
-
-  use?(battle: Battle, user: ActivePokemon, targets: ActivePokemon[], moveIndex?: number): void;
   exec(battle: Battle, user: ActivePokemon, targets: ActivePokemon[], moveIndex?: number): void;
 }
 

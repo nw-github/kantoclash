@@ -2,49 +2,8 @@ import type {ActivePokemon, Battle} from "../battle";
 import {idiv, isSpecial, randChoiceWeighted, VF} from "../utils";
 import type {Random} from "random";
 import type {CalcDamageParams} from "../gen";
-import {Range, type DamagingMove} from "../moves";
+import type {DamagingMove} from "../moves";
 import type {Pokemon} from "../pokemon";
-
-export function use(
-  this: DamagingMove,
-  battle: Battle,
-  user: ActivePokemon,
-  targets: ActivePokemon[],
-  moveIndex?: number,
-) {
-  if (user.v.trapping && targets[0].v.trapped) {
-    const dead = targets[0].damage(battle.gen1LastDamage, user, battle, false, "trap").dead;
-    if (dead || --user.v.trapping.turns === 0) {
-      user.v.trapping = undefined;
-    }
-    return;
-  }
-
-  if (this.charge && user.v.charging?.move !== this) {
-    battle.event({type: "charge", src: user.id, move: battle.moveIdOf(this)!});
-    if (Array.isArray(this.charge)) {
-      user.modStages(this.charge, battle);
-    }
-
-    if (this.charge !== "sun" || battle.weather?.kind !== "sun") {
-      user.v.charging = {move: this, target: targets[0]};
-      user.v.invuln = this.charge === "invuln" || user.v.invuln;
-      return;
-    }
-  }
-
-  user.v.charging = undefined;
-  user.v.trapping = undefined;
-  if (this.charge === "invuln") {
-    user.v.invuln = false;
-  }
-
-  if (this.range === Range.Random) {
-    targets = [battle.rng.choice(battle.getTargets(user, {adjacent: true, oppOnly: true}))!];
-  }
-
-  return battle.defaultUseMove(this, user, targets, moveIndex);
-}
 
 export function exec(
   this: DamagingMove,

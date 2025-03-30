@@ -95,7 +95,7 @@ export class Player {
           targets.push(this.active[i + 1]);
         }
       }
-      return targets;
+      break;
     }
     case Range.All:
       targets.push(...battle.allActive);
@@ -421,27 +421,6 @@ export class Battle {
 
   // --
 
-  callUseMove(move: Move, user: ActivePokemon, targets: ActivePokemon[], moveIndex?: number) {
-    if (!move.kind && move.use) {
-      return move.use.call(move, this, user, targets, moveIndex);
-    } else {
-      const func = move.kind && (this as any).gen.moveFunctions[move.kind].use;
-      if (typeof func === "function") {
-        return func.call(move, this, user, targets, moveIndex);
-      }
-      return this.defaultUseMove(move, user, targets, moveIndex);
-    }
-  }
-
-  callExecMove(move: Move, user: ActivePokemon, targets: ActivePokemon[], moveIndex?: number) {
-    if (!move.kind) {
-      return move.exec.call(move, this, user, targets, moveIndex);
-    } else {
-      const func = (this as any).gen.moveFunctions[move.kind];
-      return func.exec.call(move, this, user, targets, moveIndex);
-    }
-  }
-
   getEffectiveness(atk: Type, target: ActivePokemon) {
     if (target.v.hasFlag(VF.foresight)) {
       // FIXME: this is lazy
@@ -547,7 +526,7 @@ export class Battle {
         continue;
       }
 
-      this.callUseMove(move, user, targets, indexInMoves);
+      this.useMove(move, user, targets, indexInMoves);
       if (this.turnType !== TurnType.Switch && this.turnType !== TurnType.Lead) {
         if (user.v.inBatonPass || this.checkFaint(user)) {
           return;
@@ -565,61 +544,101 @@ export class Battle {
     }
   }
 
-  defaultUseMove(move: Move, user: ActivePokemon, targets: ActivePokemon[], moveIndex?: number) {
-    const moveId = this.moveIdOf(move)!;
-    if (moveId === user.base.moves[user.v.disabled?.indexInMoves ?? -1]) {
-      this.event({move: moveId, type: "move", src: user.id, disabled: true});
+  useMove(move: Move, user: ActivePokemon, targets: ActivePokemon[], moveIndex?: number) {
+    if (move.kind === "damage") {
+      if (user.v.trapping && targets[0].v.trapped) {
+        const dead = targets[0].damage(this.gen1LastDamage, user, this, false, "trap").dead;
+        if (dead || --user.v.trapping.turns === 0) {
+          user.v.trapping = undefined;
+        }
+        return;
+      }
+
+      if (move.charge && user.v.charging?.move !== move) {
+        this.event({type: "charge", src: user.id, move: this.moveIdOf(move)!});
+        if (Array.isArray(move.charge)) {
+          user.modStages(move.charge, this);
+        }
+
+        if (move.charge !== "sun" || this.weather?.kind !== "sun") {
+          user.v.charging = {move: move, target: targets[0]};
+          user.v.invuln = move.charge === "invuln" || user.v.invuln;
+          return;
+        }
+      }
+
       user.v.charging = undefined;
-      return;
-    }
-
-    if (moveIndex !== undefined && !user.v.thrashing && !user.v.bide) {
-      user.base.pp[moveIndex]--;
-      if (user.base.pp[moveIndex] < 0) {
-        user.base.pp[moveIndex] = 63;
+      user.v.trapping = undefined;
+      if (move.charge === "invuln") {
+        user.v.invuln = false;
       }
 
-      if (user.v.lastMoveIndex !== moveIndex) {
-        user.v.rage = 1;
-        user.v.furyCutter = 0;
-      }
-
-      user.v.lastMoveIndex = moveIndex;
-    }
-
-    if (move.selfThaw && user.base.status === "frz") {
-      user.unstatus(this, "thaw");
-    }
-
-    if (!user.v.bide) {
-      this.event({
-        type: "move",
-        move: moveId,
-        src: user.id,
-        thrashing: user.v.thrashing && this.gen.id === 1 ? true : undefined,
-      });
-    }
-    user.v.lastMove = move;
-
-    if (move.sleepOnly && user.base.status !== "slp") {
-      this.info(user, "fail_generic");
-      return;
-    }
-
-    let removed = false;
-    for (let i = 0; i < targets.length; i++) {
-      if (targets[i].v.hasFlag(VF.protect) && this.affectedByProtect(move)) {
-        this.info(targets[i], "protect");
-        targets.splice(i--, 1);
-        removed = true;
+      if (move.range === Range.Random) {
+        targets = [this.rng.choice(this.getTargets(user, {adjacent: true, oppOnly: true}))!];
       }
     }
 
-    if (removed && !targets.length) {
-      return;
+    if (move.kind !== "switch") {
+      const moveId = this.moveIdOf(move)!;
+      if (moveId === user.base.moves[user.v.disabled?.indexInMoves ?? -1]) {
+        this.event({move: moveId, type: "move", src: user.id, disabled: true});
+        user.v.charging = undefined;
+        return;
+      }
+
+      if (moveIndex !== undefined && !user.v.thrashing && !user.v.bide) {
+        user.base.pp[moveIndex]--;
+        if (user.base.pp[moveIndex] < 0) {
+          user.base.pp[moveIndex] = 63;
+        }
+
+        if (user.v.lastMoveIndex !== moveIndex) {
+          user.v.rage = 1;
+          user.v.furyCutter = 0;
+        }
+
+        user.v.lastMoveIndex = moveIndex;
+      }
+
+      if (move.selfThaw && user.base.status === "frz") {
+        user.unstatus(this, "thaw");
+      }
+
+      if (!user.v.bide) {
+        this.event({
+          type: "move",
+          move: moveId,
+          src: user.id,
+          thrashing: user.v.thrashing && this.gen.id === 1 ? true : undefined,
+        });
+      }
+      user.v.lastMove = move;
+
+      if (move.sleepOnly && user.base.status !== "slp") {
+        this.info(user, "fail_generic");
+        return;
+      }
+
+      let removed = false;
+      for (let i = 0; i < targets.length; i++) {
+        if (targets[i].v.hasFlag(VF.protect) && this.affectedByProtect(move)) {
+          this.info(targets[i], "protect");
+          targets.splice(i--, 1);
+          removed = true;
+        }
+      }
+
+      if (removed && !targets.length) {
+        return;
+      }
     }
 
-    return this.callExecMove(move, user, targets, moveIndex);
+    if (!move.kind) {
+      return move.exec.call(move, this, user, targets, moveIndex);
+    } else {
+      const func = (this as any).gen.moveFunctions[move.kind];
+      return func.call(move, this, user, targets, moveIndex);
+    }
   }
 
   checkFaint(user: ActivePokemon, causedFaint = false) {
