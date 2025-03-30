@@ -2,7 +2,7 @@ import type {ActivePokemon, Battle} from "../battle";
 import {idiv, isSpecial, randChoiceWeighted, VF} from "../utils";
 import type {Random} from "random";
 import type {CalcDamageParams} from "../gen";
-import type {DamagingMove} from "../moves";
+import {Range, type DamagingMove} from "../moves";
 import type {Pokemon} from "../pokemon";
 
 export function use(
@@ -38,6 +38,11 @@ export function use(
   if (this.charge === "invuln") {
     user.v.invuln = false;
   }
+
+  if (this.range === Range.Random) {
+    targets = [battle.rng.choice(battle.getTargets(user, {adjacent: true, oppOnly: true}))!];
+  }
+
   return battle.defaultUseMove(this, user, targets, moveIndex);
 }
 
@@ -201,7 +206,7 @@ export function exec(
   if (dead && target.v.hasFlag(VF.destinyBond)) {
     user.damage(user.base.hp, target, battle, false, "destiny_bond", true);
     // user should die first
-    battle.checkFaint(target, [user]);
+    battle.checkFaint(target);
   }
 
   if (dead || brokeSub) {

@@ -34,22 +34,24 @@
       </div>
 
       <div class="grid gap-2 grid-cols-2 h-min">
-        <TargetButton
-          v-for="(poke, i) in players.get(opponent).active"
-          :key="i"
-          :poke="poke!"
-          :disabled="poke!.fainted || !currTargets.includes(`${opponent}:${i}`)"
-          :active="false"
-          @click="selectTarget(`${opponent}:${i}`)"
-        />
-        <TargetButton
-          v-for="(poke, i) in players.get(myId).active"
-          :key="i"
-          :poke="poke!"
-          :disabled="poke!.fainted || !currTargets.includes(`${myId}:${i}`)"
-          :active="true"
-          @click="selectTarget(`${myId}:${i}`)"
-        />
+        <template v-for="(poke, i) in players.get(opponent).active" :key="i">
+          <TargetButton
+            v-if="poke"
+            :poke
+            :disabled="poke.fainted || !currTargets.includes(`${opponent}:${i}`)"
+            :active="false"
+            @click="selectTarget(`${opponent}:${i}`)"
+          />
+        </template>
+        <template v-for="(poke, i) in players.get(myId).active" :key="i">
+          <TargetButton
+            v-if="poke"
+            :poke
+            :disabled="poke.fainted || !currTargets.includes(`${myId}:${i}`)"
+            :active="true"
+            @click="selectTarget(`${myId}:${i}`)"
+          />
+        </template>
       </div>
     </div>
     <div v-else-if="currOption" class="grid gap-2 sm:grid-cols-[1fr,1.5fr] h-min">
@@ -87,6 +89,7 @@ import type {Choice, MoveChoice} from "~/server/gameServer";
 import type {Generation} from "~/game/gen";
 import type {PokeId} from "~/game/events";
 import {playerId} from "~/game/utils";
+import {Range} from "~/game/moves";
 
 const emit = defineEmits<{(e: "choice", choice: Choice): void; (e: "cancel"): void}>();
 const {players, myId, options, team, opponent, gen} = defineProps<{
@@ -170,7 +173,15 @@ const choiceMessage = (i: number, choice: Choice, options: Options) => {
     const opt = options.moves[choice.moveIndex];
     const active = self.active[choice.who];
     const move = opt.move;
-    if (opt.targets.length && choice.target) {
+    const ranges = [
+      Range.Adjacent,
+      Range.Adjacent,
+      Range.AdjacentFoe,
+      Range.AdjacentAlly,
+      Range.SelfOrAdjacentAlly,
+      Range.Any,
+    ];
+    if (opt.targets.length && choice.target && ranges.includes(gen.moveList[move].range)) {
       const ally = playerId(choice.target) === myId ? " ally " : " ";
       return `${active!.name} will use ${gen.moveList[move].name} on${ally}${
         players.poke(choice.target)!.name

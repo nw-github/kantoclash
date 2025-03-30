@@ -191,7 +191,7 @@ export function exec(
   if (dead && target.v.hasFlag(VF.destinyBond)) {
     user.damage(user.base.hp, target, battle, false, "destiny_bond", true);
     // user should die first
-    battle.checkFaint(target, [user]);
+    battle.checkFaint(target);
   }
 
   if (this.flag === "recharge") {

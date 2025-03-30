@@ -7,7 +7,7 @@ import type {
   ChangedVolatiles,
   PokeId,
 } from "./events";
-import type {MoveId, Move, DamagingMove} from "./moves";
+import {type MoveId, type Move, type DamagingMove, Range} from "./moves";
 import type {Pokemon, Status} from "./pokemon";
 import {
   arraysEqual,
@@ -436,7 +436,7 @@ export class ActivePokemon {
         valid: battle.gen.isValidMove(battle, this, move, i),
         indexInMoves: i,
         display: true,
-        targets: battle.getValidTargets(battle.gen.moveList[move], this),
+        targets: getValidTargets(battle, battle.gen.moveList[move], this),
       } as MoveOption;
     });
 
@@ -452,7 +452,7 @@ export class ActivePokemon {
         move,
         valid: true,
         display: true,
-        targets: battle.getValidTargets(battle.gen.moveList[move], this),
+        targets: getValidTargets(battle, battle.gen.moveList[move], this),
       });
     }
 
@@ -623,3 +623,39 @@ class Volatiles {
     return flags;
   }
 }
+
+const getValidTargets = (battle: Battle, move: Move, user: ActivePokemon) => {
+  if (move === user.v.charging?.move) {
+    return [user.v.charging.target.id];
+  }
+
+  // prettier-ignore
+  let args: Parameters<typeof battle.getTargets>[1];
+  switch (move.range) {
+    case Range.Field:
+    case Range.AllAdjacent:
+    case Range.AllAdjacentFoe:
+    case Range.All:
+    case Range.AllAllies:
+      return [];
+    case Range.Self:
+    case Range.Random:
+      return [user.id];
+    case Range.Adjacent:
+      args = {adjacent: true};
+      break;
+    case Range.AdjacentFoe:
+      args = {oppOnly: true, adjacent: true};
+      break;
+    case Range.AdjacentAlly:
+      args = {allyOnly: true, adjacent: true};
+      break;
+    case Range.SelfOrAdjacentAlly:
+      args = {allyOnly: true, adjacent: true, self: true};
+      break;
+    case Range.Any:
+      args = {};
+      break;
+  }
+  return battle.getTargets(user, args).map(u => u.id);
+};

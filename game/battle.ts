@@ -56,7 +56,7 @@ export class Player {
     this.team = team.map(p => new Pokemon(gen, p));
     this.teamDesc = team;
     this.active = [new ActivePokemon(this.team[0], this, 0)];
-    if (doubles && this.team[1]) {
+    if (doubles && this.team.length > 1) {
       this.active.push(new ActivePokemon(this.team[1], this, 1));
     }
   }
@@ -199,6 +199,8 @@ type BattleParams = {
   mods?: Mods;
   seed?: string;
 };
+
+type GetTarget = {allyOnly?: bool; oppOnly?: bool; adjacent?: bool; self?: boolean};
 
 export class Battle {
   readonly players: [Player, Player];
@@ -392,60 +394,29 @@ export class Battle {
     return this.events.splice(0);
   }
 
-  getValidTargets(move: Move, user: ActivePokemon) {
-    type GetTarget = {allyOnly?: bool; oppOnly?: bool; adjacent?: bool; self?: boolean};
-
-    const getTargets = ({allyOnly, oppOnly, adjacent, self}: GetTarget) => {
-      const targets: PokeId[] = [];
-      const opp = this.opponentOf(user.owner);
-      const userIndex = user.owner.active.indexOf(user);
-      if (adjacent) {
-        for (let i = userIndex - 1; i <= userIndex + 1; i++) {
-          if (!allyOnly && opp.active[i] && !opp.active[i].v.fainted) {
-            targets.push(opp.active[i].id);
-          }
-          if (!oppOnly && user.owner.active[i] && !user.owner.active[i].v.fainted) {
-            targets.push(user.owner.active[i].id);
-          }
+  getTargets(user: ActivePokemon, {allyOnly, oppOnly, adjacent, self}: GetTarget) {
+    const targets: ActivePokemon[] = [];
+    const opp = this.opponentOf(user.owner);
+    const userIndex = user.owner.active.indexOf(user);
+    if (adjacent) {
+      for (let i = userIndex - 1; i <= userIndex + 1; i++) {
+        if (!allyOnly && opp.active[i] && !opp.active[i].v.fainted) {
+          targets.push(opp.active[i]);
         }
-      } else {
-        targets.push(...user.owner.active.filter(a => !a.v.fainted).map(a => a.id));
-        targets.push(...opp.active.filter(a => !a.v.fainted).map(a => a.id));
+        if (!oppOnly && user.owner.active[i] && !user.owner.active[i].v.fainted) {
+          targets.push(user.owner.active[i]);
+        }
       }
-
-      const idx = targets.indexOf(user.id);
-      if (!self && idx !== -1) {
-        targets.splice(idx, 1);
-      }
-      return targets;
-    };
-
-    if (move === user.v.charging?.move) {
-      return [user.v.charging.target.id];
+    } else {
+      targets.push(...user.owner.active.filter(a => !a.v.fainted));
+      targets.push(...opp.active.filter(a => !a.v.fainted));
     }
 
-    // prettier-ignore
-    switch (move.range) {
-    case Range.Field:
-    case Range.AllAdjacent:
-    case Range.AllAdjacentFoe:
-    case Range.All:
-    case Range.AllAllies:
-      return [];
-    case Range.Self:
-    case Range.Random:
-      return [user.id];
-    case Range.Adjacent:
-      return getTargets({ adjacent: true });
-    case Range.AdjacentFoe:
-      return getTargets({ oppOnly: true, adjacent: true });
-    case Range.AdjacentAlly:
-      return getTargets({ allyOnly: true, adjacent: true });
-    case Range.SelfOrAdjacentAlly:
-      return getTargets({ allyOnly: true, adjacent: true, self: true });
-    case Range.Any:
-      return getTargets({ });
+    const idx = targets.indexOf(user);
+    if (!self && idx !== -1) {
+      targets.splice(idx, 1);
     }
+    return targets;
   }
 
   // --
@@ -568,7 +539,7 @@ export class Battle {
 
       if (move.kind !== "switch" && !this.gen.beforeUseMove(this, move, user)) {
         this.handleResidualDamage(user);
-        if (this.checkFaint(user, targets)) {
+        if (this.checkFaint(user)) {
           return;
         }
 
@@ -578,12 +549,12 @@ export class Battle {
 
       this.callUseMove(move, user, targets, indexInMoves);
       if (this.turnType !== TurnType.Switch && this.turnType !== TurnType.Lead) {
-        if (user.v.inBatonPass || this.checkFaint(user, targets)) {
+        if (user.v.inBatonPass || this.checkFaint(user)) {
           return;
         }
 
         this.handleResidualDamage(user);
-        if (this.checkFaint(user, targets)) {
+        if (this.checkFaint(user)) {
           return;
         }
       }
@@ -651,28 +622,31 @@ export class Battle {
     return this.callExecMove(move, user, targets, moveIndex);
   }
 
-  checkFaint(user: ActivePokemon, targets: ActivePokemon[], causedFaint = false) {
+  checkFaint(user: ActivePokemon, causedFaint = false) {
+    const targets = this.opponentOf(user.owner).active;
     let fainted = false;
-    for (const target of targets) {
-      if (target.base.hp === 0 && !target.v.fainted) {
-        target.faint(this);
-        if (!this.victor && target.owner.areAllDead()) {
+    for (const poke of targets) {
+      if (poke.base.hp === 0 && !poke.v.fainted) {
+        poke.faint(this);
+        if (!this.victor && poke.owner.areAllDead()) {
           this.victor = user.owner;
         }
         fainted = true;
       }
     }
 
-    if (user.base.hp === 0 && !user.v.fainted) {
-      user.faint(this);
-      if (!this.victor && user.owner.areAllDead()) {
-        this.victor = this.opponentOf(user.owner);
+    for (const poke of user.owner.active) {
+      if (poke.base.hp === 0 && !poke.v.fainted) {
+        poke.faint(this);
+        if (!this.victor && poke.owner.areAllDead()) {
+          this.victor = this.opponentOf(poke.owner);
+        }
+        fainted = true;
       }
-      fainted = true;
     }
 
     if (!causedFaint) {
-      return user.base.hp === 0 || targets.some(t => t.base.hp === 0);
+      return user.owner.active.some(t => t.base.hp === 0) || targets.some(t => t.base.hp === 0);
     }
 
     return fainted;
@@ -734,16 +708,6 @@ export class Battle {
   }
 
   private handleBetweenTurns() {
-    const checkFaint = () => {
-      for (const poke of this.players[0].active) {
-        if (this.checkFaint(poke, this.players[1].active, true)) {
-          return true;
-        }
-      }
-
-      return false;
-    };
-
     for (const poke of this.allActive) {
       poke.v.hazed = false;
       poke.v.flinch = false;
@@ -780,7 +744,7 @@ export class Battle {
       }
 
       this.betweenTurns = BetweenTurns.FutureSight;
-      if (checkFaint()) {
+      if (this.checkFaint(this.players[0].active[0], true)) {
         return;
       }
     }
@@ -808,7 +772,7 @@ export class Battle {
         }
 
         this.betweenTurns = BetweenTurns.Weather;
-        if (checkFaint()) {
+        if (this.checkFaint(this.players[0].active[0], true)) {
           return;
         }
       }
@@ -838,7 +802,7 @@ export class Battle {
       }
 
       this.betweenTurns = BetweenTurns.PartialTrapping;
-      if (checkFaint()) {
+      if (this.checkFaint(this.players[0].active[0], true)) {
         return;
       }
     }
@@ -865,7 +829,7 @@ export class Battle {
       }
 
       this.betweenTurns = BetweenTurns.PerishSong;
-      if (checkFaint()) {
+      if (this.checkFaint(this.players[0].active[0], true)) {
         return;
       }
 
