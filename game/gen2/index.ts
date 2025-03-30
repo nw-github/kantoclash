@@ -226,7 +226,7 @@ const createGeneration = (): Generation => {
     },
     checkAccuracy(move, battle, user, target) {
       if (target.v.invuln) {
-        const charging = target.v.charging && battle.moveIdOf(target.v.charging);
+        const charging = target.v.charging && battle.moveIdOf(target.v.charging.move);
         if (!charging || !move.ignore || !move.ignore.includes(charging)) {
           battle.info(user, "miss");
           return false;

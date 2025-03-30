@@ -436,6 +436,7 @@ export class ActivePokemon {
         valid: battle.gen.isValidMove(battle, this, move, i),
         indexInMoves: i,
         display: true,
+        targets: battle.getValidTargets(battle.gen.moveList[move], this),
       } as MoveOption;
     });
 
@@ -445,17 +446,27 @@ export class ActivePokemon {
     } else if (moves.every(move => !move.valid)) {
       // Two-turn moves, thrashing moves, and recharging skip the normal move selection menu
       moves.forEach(move => (move.display = false));
+
+      const move = lockedIn ? battle.moveIdOf(lockedIn)! : "struggle";
       moves.push({
-        move: lockedIn ? battle.moveIdOf(lockedIn)! : "struggle",
+        move,
         valid: true,
         display: true,
+        targets: battle.getValidTargets(battle.gen.moveList[move], this),
       });
     }
 
     if (this.base.transformed) {
       const original = this.base.real;
       original.moves.forEach((move, i) => {
-        moves.push({move, pp: original.pp[i], valid: false, display: false, indexInMoves: i});
+        moves.push({
+          move,
+          pp: original.pp[i],
+          valid: false,
+          display: false,
+          indexInMoves: i,
+          targets: [],
+        });
       });
     }
 
@@ -504,7 +515,7 @@ export class ActivePokemon {
       status: base.status || null,
       stages: {...this.v.stages},
       stats: this.clientStats(battle),
-      charging: this.v.charging ? battle.moveIdOf(this.v.charging) : undefined,
+      charging: this.v.charging ? battle.moveIdOf(this.v.charging.move) : undefined,
       trapped: this.v.trapped ? battle.moveIdOf(this.v.trapped.move) : undefined,
       types: !arraysEqual(this.v.types, base.species.types) ? [...this.v.types] : undefined,
       flags: this.v.cflags,
@@ -542,7 +553,7 @@ class Volatiles {
   lastHitBy?: Move;
   lastMove?: Move;
   lastMoveIndex?: number;
-  charging?: Move;
+  charging?: {move: Move; target: ActivePokemon};
   recharge?: Move;
   thrashing?: {move: DamagingMove; turns: number; max: boolean; acc?: number};
   bide?: {move: Move; turns: number; dmg: number};
@@ -567,7 +578,7 @@ class Volatiles {
   lockedIn() {
     return (
       this.recharge ||
-      this.charging ||
+      this.charging?.move ||
       this.thrashing?.move ||
       this.bide?.move ||
       this.trapping?.move

@@ -8,12 +8,12 @@
     <div v-if="!options || !options.length" class="italic">Waiting for opponent...</div>
     <div v-else-if="choices.length" class="flex flex-col gap-1 pb-2">
       <div
-        v-for="([opts, choice, targets], i) in choices"
+        v-for="([opts, choice], i) in choices"
         :key="i"
         class="italic flex gap-1"
         :class="choices.length === options.length ? 'flex-col' : 'items-center'"
       >
-        <div class="italic">{{ choiceMessage(i, choice, opts, targets) }}...</div>
+        <div class="italic">{{ choiceMessage(i, choice, opts) }}...</div>
         <TooltipButton
           v-if="i === choices.length - 1"
           icon="material-symbols:cancel"
@@ -23,7 +23,7 @@
       </div>
     </div>
 
-    <div v-if="currTargets.length">
+    <div v-if="currTargets">
       <div class="flex gap-1 pb-2 items-center">
         <span>Target who?</span>
         <TooltipButton
@@ -98,11 +98,13 @@ const {players, myId, options, team, opponent, gen} = defineProps<{
   team: Pokemon[];
 }>();
 
-const choices = ref<[Options, Choice, PokeId[]][]>([]);
+const choices = ref<[Options, Choice][]>([]);
 const currOptionIdx = ref(0);
 const currOption = computed(() => options?.[currOptionIdx.value]);
 const currMoveChoice = ref<MoveChoice>();
-const currTargets = ref<PokeId[]>([]);
+const currTargets = computed(
+  () => currOption.value?.moves[currMoveChoice.value?.moveIndex ?? -1]?.targets,
+);
 
 watch(
   () => options,
@@ -110,16 +112,14 @@ watch(
     choices.value = [];
     currOptionIdx.value = 0;
     currMoveChoice.value = undefined;
-    currTargets.value = [];
   },
 );
 
 const makeChoice = (options: Options, choice: Choice) => {
-  choices.value.push([options, choice, currTargets.value]);
+  choices.value.push([options, choice]);
   currOptionIdx.value++;
   emit("choice", choice);
   currMoveChoice.value = undefined;
-  currTargets.value = [];
 };
 
 const selectTarget = (target: PokeId) => {
@@ -129,11 +129,10 @@ const selectTarget = (target: PokeId) => {
 
 const selectMove = (options: Options, index: number) => {
   const who = Number(options.id.split(":")[1]);
-  const targets = getTargets(players, who, gen.moveList[options.moves[index].move], myId, opponent);
+  const targets = options.moves[index].targets;
   const choice = {type: "move", who, moveIndex: index, target: targets[0]} as const;
   if (targets.length > 1) {
     currMoveChoice.value = choice;
-    currTargets.value = targets;
     return;
   }
 
@@ -142,7 +141,7 @@ const selectMove = (options: Options, index: number) => {
 
 const selectSwitch = (options: Options, index: number) => {
   const choice: Choice = {type: "switch", who: Number(options.id.split(":")[1]), pokeIndex: index};
-  choices.value.push([options, choice, []]);
+  choices.value.push([options, choice]);
   currOptionIdx.value++;
   emit("choice", choice);
 };
@@ -151,16 +150,14 @@ const cancelMove = () => {
   choices.value = [];
   currOptionIdx.value = 0;
   currMoveChoice.value = undefined;
-  currTargets.value = [];
   emit("cancel");
 };
 
 const cancelTarget = () => {
   currMoveChoice.value = undefined;
-  currTargets.value = [];
 };
 
-const choiceMessage = (i: number, choice: Choice, options: Options, ptargets: PokeId[]) => {
+const choiceMessage = (i: number, choice: Choice, options: Options) => {
   const self = players.get(myId);
   if (choice.type === "switch") {
     const active = self.active[choice.who];
@@ -170,9 +167,10 @@ const choiceMessage = (i: number, choice: Choice, options: Options, ptargets: Po
       return `${team![choice.pokeIndex].name} will be sent out ${i === 0 ? "first" : "second"}`;
     }
   } else if (choice.type === "move") {
+    const opt = options.moves[choice.moveIndex];
     const active = self.active[choice.who];
-    const move = options.moves[choice.moveIndex].move;
-    if (ptargets.length && choice.target) {
+    const move = opt.move;
+    if (opt.targets.length && choice.target) {
       const ally = playerId(choice.target) === myId ? " ally " : " ";
       return `${active!.name} will use ${gen.moveList[move].name} on${ally}${
         players.poke(choice.target)!.name

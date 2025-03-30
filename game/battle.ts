@@ -32,6 +32,7 @@ export type MoveOption = {
   display: boolean;
   pp?: number;
   indexInMoves?: number;
+  targets: PokeId[];
 };
 
 export type Options = NonNullable<ActivePokemon["options"]>;
@@ -55,7 +56,7 @@ export class Player {
     this.team = team.map(p => new Pokemon(gen, p));
     this.teamDesc = team;
     this.active = [new ActivePokemon(this.team[0], this, 0)];
-    if (doubles) {
+    if (doubles && this.team[1]) {
       this.active.push(new ActivePokemon(this.team[1], this, 1));
     }
   }
@@ -72,23 +73,51 @@ export class Player {
    * @returns Is this choice valid
    */
   chooseMove(who: number, battle: Battle, index: number, target?: PokeId) {
+    const user = this.active[who];
     const choice = this.active[who]?.options?.moves[index];
     if (!choice?.valid) {
       return false;
     }
 
     const move = battle.gen.moveList[choice.move];
-    const targets = battle.getTargets(move, this.active[who], target);
-    if (targets === false) {
-      return false;
+    const targets: ActivePokemon[] = [];
+    // prettier-ignore
+    switch (move.range) {
+    case Range.AllAdjacent:
+    case Range.AllAdjacentFoe: {
+      const opponent = battle.opponentOf(this);
+      const myIndex = this.active.indexOf(user);
+      for (let i = myIndex - 1; i <= myIndex + 1; i++) {
+        if (opponent.active[i]) {
+          targets.push(opponent.active[i]);
+        }
+        if (move.range === Range.AllAdjacent && i !== myIndex && this.active[i + 1]) {
+          targets.push(this.active[i + 1]);
+        }
+      }
+      return targets;
+    }
+    case Range.All:
+      targets.push(...battle.allActive);
+      break;
+    case Range.AllAllies:
+      targets.push(...this.active.filter(a => a !== user));
+      break;
+    case Range.Field:
+      break;
+    default: {
+      if ((choice.targets.length && !target) || !choice.targets.includes(target)) {
+        return false;
+      }
+
+      const [playerId, pokeIndex] = target.split(":");
+      const player = battle.players.find(pl => pl.id === playerId);
+
+      targets.push(player!.active[+pokeIndex]);
+    } break;
     }
 
-    this.active[who].choice = {
-      indexInMoves: choice.indexInMoves,
-      move,
-      user: this.active[who],
-      targets,
-    };
+    user.choice = {indexInMoves: choice.indexInMoves, move, user, targets};
     return true;
   }
 
@@ -363,85 +392,59 @@ export class Battle {
     return this.events.splice(0);
   }
 
-  getTargets(move: Move, user: ActivePokemon, target?: PokeId) {
+  getValidTargets(move: Move, user: ActivePokemon) {
     type GetTarget = {allyOnly?: bool; oppOnly?: bool; adjacent?: bool; self?: boolean};
 
-    const getTarget = ({allyOnly, oppOnly, adjacent, self}: GetTarget) => {
-      if (!target) {
-        return false;
-      }
-
-      const [playerId, pokeIndex] = target.split(":");
-      const player = this.players.find(pl => pl.id === playerId);
-      if (!player || (allyOnly && player !== user.owner) || (oppOnly && player === user.owner)) {
-        return false;
-      }
-
-      const poke = player.active[+pokeIndex];
-      if (!poke) {
-        return false;
-      }
-
+    const getTargets = ({allyOnly, oppOnly, adjacent, self}: GetTarget) => {
+      const targets: PokeId[] = [];
+      const opp = this.opponentOf(user.owner);
+      const userIndex = user.owner.active.indexOf(user);
       if (adjacent) {
-        const idx = poke.owner.active.indexOf(poke);
-        const self = user.owner.active.indexOf(user);
-        if (Math.abs(idx - self) > 1) {
-          return false;
+        for (let i = userIndex - 1; i <= userIndex + 1; i++) {
+          if (!allyOnly && opp.active[i] && !opp.active[i].v.fainted) {
+            targets.push(opp.active[i].id);
+          }
+          if (!oppOnly && user.owner.active[i] && !user.owner.active[i].v.fainted) {
+            targets.push(user.owner.active[i].id);
+          }
         }
+      } else {
+        targets.push(...user.owner.active.filter(a => !a.v.fainted).map(a => a.id));
+        targets.push(...opp.active.filter(a => !a.v.fainted).map(a => a.id));
       }
 
-      if (!self && poke === user) {
-        return false;
+      const idx = targets.indexOf(user.id);
+      if (!self && idx !== -1) {
+        targets.splice(idx, 1);
       }
-
-      return [poke];
+      return targets;
     };
+
+    if (move === user.v.charging?.move) {
+      return [user.v.charging.target.id];
+    }
 
     // prettier-ignore
     switch (move.range) {
     case Range.Field:
-    case Range.Random:
+    case Range.AllAdjacent:
+    case Range.AllAdjacentFoe:
+    case Range.All:
+    case Range.AllAllies:
       return [];
     case Range.Self:
-      return [user];
+    case Range.Random:
+      return [user.id];
     case Range.Adjacent:
-      return getTarget({ adjacent: true });
+      return getTargets({ adjacent: true });
     case Range.AdjacentFoe:
-      return getTarget({ oppOnly: true, adjacent: true });
+      return getTargets({ oppOnly: true, adjacent: true });
     case Range.AdjacentAlly:
-      return getTarget({ allyOnly: true, adjacent: true });
+      return getTargets({ allyOnly: true, adjacent: true });
     case Range.SelfOrAdjacentAlly:
-      return getTarget({ allyOnly: true, adjacent: true, self: true });
+      return getTargets({ allyOnly: true, adjacent: true, self: true });
     case Range.Any:
-      return getTarget({ });
-    case Range.AllAdjacent:
-    case Range.AllAdjacentFoe: {
-      const targets = [];
-      const opponent = this.opponentOf(user.owner);
-      const myIndex = user.owner.active.indexOf(user);
-      if (opponent.active[myIndex]) {
-        targets.push(opponent.active[myIndex]);
-      }
-      if (opponent.active[myIndex - 1]) {
-        targets.push(opponent.active[myIndex - 1]);
-      }
-      if (opponent.active[myIndex + 1]) {
-        targets.push(opponent.active[myIndex + 1]);
-      }
-      if (move.range === Range.AllAdjacent && user.owner.active[myIndex + 1]) {
-        targets.push(user.owner.active[myIndex + 1]);
-      }
-      if (move.range === Range.AllAdjacent && user.owner.active[myIndex - 1]) {
-        targets.push(user.owner.active[myIndex - 1]);
-      }
-      return targets;
-    }
-    case Range.All:
-      return [...this.allActive];
-    case Range.AllAllies:
-      return user.owner.active.filter(a => a !== user);
-    default:
-      return false;
+      return getTargets({ });
     }
   }
 
@@ -497,7 +500,7 @@ export class Battle {
 
       const moveId = this.moveIdOf(move);
       if (moveId === "earthquake" || moveId === "fissure" || moveId === "magnitude") {
-        if (target.v.charging && this.moveIdOf(target.v.charging) === "fly") {
+        if (target.v.charging && this.moveIdOf(target.v.charging.move) === "fly") {
           return false;
         }
       }
@@ -794,7 +797,7 @@ export class Battle {
 
         this.event({type: "weather", kind: "continue", weather: this.weather.kind});
         for (const active of this.allActive) {
-          if (active.v.charging === this.gen.moveList.dig || active.v.fainted) {
+          if (active.v.charging?.move === this.gen.moveList.dig || active.v.fainted) {
             continue;
           } else if (active.v.types.some(t => t === "steel" || t === "ground" || t === "rock")) {
             continue;

@@ -20,14 +20,14 @@ export function use(
     return;
   }
 
-  if (this.charge && user.v.charging !== this) {
+  if (this.charge && user.v.charging?.move !== this) {
     battle.event({type: "charge", src: user.id, move: battle.moveIdOf(this)!});
     if (Array.isArray(this.charge)) {
       user.modStages(this.charge, battle);
     }
 
     if (this.charge !== "sun" || battle.weather?.kind !== "sun") {
-      user.v.charging = this;
+      user.v.charging = {move: this, target: targets[0]};
       user.v.invuln = this.charge === "invuln" || user.v.invuln;
       return;
     }
@@ -345,7 +345,7 @@ export function getDamage(
 
     let doubleDmg = user.v.inPursuit;
     if (target.v.charging && self.ignore && self.punish) {
-      doubleDmg = doubleDmg || self.ignore.includes(battle.moveIdOf(target.v.charging));
+      doubleDmg = doubleDmg || self.ignore.includes(battle.moveIdOf(target.v.charging.move));
     }
     if (target.v.usedMinimize && self.flag === "minimize") {
       doubleDmg = true;
