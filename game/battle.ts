@@ -91,8 +91,8 @@ export class Player {
         if (opponent.active[i]) {
           targets.push(opponent.active[i]);
         }
-        if (move.range === Range.AllAdjacent && i !== myIndex && this.active[i + 1]) {
-          targets.push(this.active[i + 1]);
+        if (move.range === Range.AllAdjacent && i !== myIndex && this.active[i]) {
+          targets.push(this.active[i]);
         }
       }
       break;
@@ -324,6 +324,21 @@ export class Battle {
           return (b.move.priority ?? 0) - (a.move.priority ?? 0);
         }
 
+        if (a.move.kind === "switch" && this.gen.id < 3) {
+          // Randomize choices to avoid leaking speed. The player always sees their pokemon switch
+          // in first in a link battle on console.
+          return +this.rng.bool() || -1;
+        }
+
+        // First turn switch order is not affected by speed
+        if (this.turnType === TurnType.Lead) {
+          const foo = this.players.indexOf(b.user.owner) - this.players.indexOf(a.user.owner);
+          if (foo === 0) {
+            return b.user.owner.active.indexOf(b.user) - a.user.owner.active.indexOf(a.user);
+          }
+          return foo;
+        }
+
         const aSpe = this.gen.getStat(a.user, "spe");
         const bSpe = this.gen.getStat(b.user, "spe");
         if (aSpe === bSpe) {
@@ -360,13 +375,6 @@ export class Battle {
         user.v.inPursuit = true;
       }
     }
-
-    // TODO GEN3: ?
-    // if (choices.every(choice => choice.move.kind === "switch")) {
-    //   // Randomize choices to avoid leaking speed. The player always sees their pokemon switch in
-    //   // first in a link battle on console.
-    //   choices.sort(() => (this.rng.bool() ? -1 : 1));
-    // }
 
     this.turnOrder = choices;
     this.runTurn(choices);

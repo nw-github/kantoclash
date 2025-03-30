@@ -678,7 +678,7 @@ const internalMoveList = createMoveList({
     getDamage(_, user) {
       const dmg = user.v.bide?.dmg;
       user.v.bide = undefined;
-      return dmg ? dmg * 2 : false;
+      return (dmg ?? 0) * 2;
     },
   },
   bind: {
@@ -825,9 +825,9 @@ const internalMoveList = createMoveList({
 
       const mv = target.lastChosenMove;
       if (mv && ((mv.type !== "normal" && mv.type !== "fight") || !mv.power || mv === this)) {
-        return false;
+        return 0;
       } else if (target.choice?.move === this) {
-        return false;
+        return 0;
       }
       // Counter can crit, but it won't do any more damage
       return battle.gen1LastDamage * 2;
@@ -1016,6 +1016,7 @@ const internalMoveList = createMoveList({
     range: Range.Adjacent,
     acc: 30,
     power: 1,
+    getDamage: 65535,
     flag: "ohko",
   },
   flamethrower: {
@@ -1070,6 +1071,7 @@ const internalMoveList = createMoveList({
     range: Range.Adjacent,
     acc: 30,
     power: 1,
+    getDamage: 65535,
     flag: "ohko",
   },
   gust: {
@@ -1120,6 +1122,7 @@ const internalMoveList = createMoveList({
     range: Range.Adjacent,
     acc: 30,
     power: 1,
+    getDamage: 65535,
     flag: "ohko",
   },
   hydropump: {
@@ -1914,7 +1917,7 @@ const internalMoveList = createMoveList({
     type: "normal",
     range: Range.Self,
     exec(battle, user) {
-      const lastMove = user.v.lastHitBy;
+      const lastMove = user.v.lastHitBy?.move;
       if (!lastMove || lastMove.type === "???") {
         battle.info(user, "fail_generic");
         return;
@@ -2739,7 +2742,7 @@ const internalMoveList = createMoveList({
         !isSpecial(target.v.lastMove.type) ||
         target.v.lastMove === battle.gen.moveList.beatup
       ) {
-        return false;
+        return 0;
       }
       return user.v.retaliateDamage * 2;
     },

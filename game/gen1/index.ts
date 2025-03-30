@@ -384,8 +384,8 @@ const createGeneration = () => {
     getStat,
     validSpecies: (species: Species) => species.dexId <= 151,
     getMaxPP: (move: Move) => (move.pp === 1 ? 1 : Math.min(Math.floor((move.pp * 8) / 5), 61)),
-    getOHKODamage(user: ActivePokemon, target: ActivePokemon) {
-      return getStat(target, "spe") > getStat(user, "spe") ? false : 65535;
+    canOHKOHit(user: ActivePokemon, target: ActivePokemon) {
+      return getStat(target, "spe") <= getStat(user, "spe");
     },
   };
 };

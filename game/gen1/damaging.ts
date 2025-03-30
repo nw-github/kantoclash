@@ -53,7 +53,7 @@ export function exec(
   }
 
   // eslint-disable-next-line prefer-const
-  let {dmg, isCrit, eff, endured} = getDamage(this, battle, user, target);
+  let {dmg, isCrit, eff, endured} = getDamage(this, battle, user, target, {});
   if (dmg < 0) {
     if (target.base.hp === target.base.stats.hp) {
       return battle.info(target, "fail_present");
@@ -89,7 +89,7 @@ export function exec(
     return checkThrashing();
   }
 
-  target.v.lastHitBy = this;
+  target.v.lastHitBy = {move: this, user};
 
   checkThrashing();
   if (this.flag === "rage") {
@@ -232,67 +232,69 @@ export function exec(
   }
 }
 
+export function checkUsefulness(
+  self: DamagingMove,
+  battle: Battle,
+  user: ActivePokemon,
+  target: ActivePokemon,
+) {
+  let type = self.getType ? self.getType(user.base) : self.type;
+  let fail = false;
+  if (self.flag === "beatup") {
+    type = "???";
+  }
+
+  let eff = battle.getEffectiveness(type, target);
+  if (self.flag === "dream_eater" && target.base.status !== "slp") {
+    eff = 1;
+    fail = true;
+  } else if (self.flag === "ohko" && !battle.gen.canOHKOHit(user, target)) {
+    fail = true;
+  } else if (typeof self.getDamage === "number") {
+    if (battle.gen.id === 1) {
+      eff = 1;
+    }
+  } else if (self.getDamage) {
+    if (battle.gen.id === 1 && self.flag !== "ohko") {
+      eff = 1;
+    }
+
+    const result = self.getDamage(battle, user, target);
+    if (result === 0) {
+      fail = true;
+    }
+  }
+
+  return {type, eff, fail};
+}
+
+type DamageExtras = {
+  tripleKick?: number;
+  band?: bool;
+  beatUp?: Pokemon;
+  power?: number;
+};
+
 export function getDamage(
   self: DamagingMove,
   battle: Battle,
   user: ActivePokemon,
   target: ActivePokemon,
-  tripleKick = 1,
-  band = false,
-  beatUp?: Pokemon,
+  extras: DamageExtras,
 ) {
-  let type = self.getType ? self.getType(user.base) : self.type;
-  if (beatUp) {
-    type = "???";
-  }
-
-  let pow = self.getPower ? self.getPower(user.base) : self.power;
-  let eff = battle.getEffectiveness(type, target);
-  const realEff = eff;
+  const {type, eff, fail} = checkUsefulness(self, battle, user, target);
   let dmg = 0;
   let isCrit = battle.gen.rng.tryCrit(battle, user, self.flag === "high_crit");
-  let fail = false;
-  if (self.flag === "dream_eater" && target.base.status !== "slp") {
-    eff = 1;
+  if (self.getDamage) {
+    dmg =
+      typeof self.getDamage === "number" ? self.getDamage : self.getDamage(battle, user, target);
     isCrit = false;
-    fail = true;
-  } else if (typeof self.getDamage === "number") {
-    dmg = self.getDamage;
-    eff = 1;
-    isCrit = false;
-  } else if (self.getDamage || self.flag === "ohko") {
-    isCrit = false;
-    const result = self.getDamage
-      ? self.getDamage(battle, user, target)
-      : battle.gen.getOHKODamage(user, target);
-    if (typeof result === "number") {
-      dmg = result;
-      eff = 1;
-    } else {
-      if (self.flag !== "ohko") {
-        eff = 1;
-      }
-      fail = true;
-    }
   } else {
+    const pow = extras.power ?? (self.getPower ? self.getPower(user.base) : self.power);
     let rand: number | false | Random = battle.rng;
     if (self.flag === "flail") {
       isCrit = false;
       rand = false;
-    } else if (self.flag === "magnitude") {
-      const magnitude = battle.rng.int(4, 10);
-      pow = [10, 30, 50, 70, 90, 110, 150][magnitude - 4];
-      battle.event({type: "magnitude", magnitude});
-    } else if (self.flag === "present") {
-      const result = randChoiceWeighted(battle.rng, [40, 80, 120, -4], [40, 30, 10, 20]);
-      if (result < 0) {
-        return {dmg: -1, isCrit: false, eff: 1, endured: false, realEff: 1};
-      }
-      pow = result;
-    }
-
-    if (user.base.item && battle.gen.itemTypeBoost[user.base.item] === type) {
-      pow += idiv(pow, 10);
     }
 
     let weather: CalcDamageParams["weather"];
@@ -316,8 +318,8 @@ export function getDamage(
     }
 
     const explosion = self.flag === "explosion" ? 2 : 1;
-    const [atk, def] = beatUp
-      ? ([beatUp.stats.atk, target.base.stats.def] as const)
+    const [atk, def] = extras.beatUp
+      ? ([extras.beatUp.stats.atk, target.base.stats.def] as const)
       : battle.gen.getDamageVariables(isSpecial(type), user, target, isCrit);
     let moveMod = 1;
     if (self.flag === "rollout") {
@@ -330,7 +332,7 @@ export function getDamage(
     }
 
     dmg = battle.gen.calcDamage({
-      lvl: beatUp ? beatUp.level : user.base.level,
+      lvl: extras.beatUp ? extras.beatUp.level : user.base.level,
       pow,
       atk,
       def: Math.max(Math.floor(def / explosion), 1),
@@ -341,7 +343,8 @@ export function getDamage(
       weather,
       moveMod,
       doubleDmg,
-      tripleKick,
+      tripleKick: extras.tripleKick ?? 1,
+      itemBonus: user.base.item && battle.gen.itemTypeBoost[user.base.item] === type,
     });
 
     if (self.flag === "false_swipe" && dmg >= target.base.hp && !target.v.substitute) {
@@ -349,19 +352,16 @@ export function getDamage(
     }
   }
 
-  // TODO: What happens when a pokemon that is 0 HP as a result of the perish song+spikes bug uses
-  // endure?
   const deadly = dmg > 0 && dmg > target.base.hp;
   const endured = deadly && target.v.hasFlag(VF.endure);
-  band =
-    band ||
+  const band =
+    extras.band ||
     (deadly && !endured && target.base.item === "focusband" && battle.gen.rng.tryFocusBand(battle));
 
   if (endured || band) {
     dmg = Math.max(target.base.hp - 1, 0);
   }
-
-  return {dmg, isCrit, eff, endured, band, realEff, fail};
+  return {dmg, isCrit, eff, endured, band, fail};
 }
 
 function trapTarget(self: DamagingMove, rng: Random, user: ActivePokemon, target: ActivePokemon) {

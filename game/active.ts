@@ -550,7 +550,7 @@ class Volatiles {
   meanLook?: ActivePokemon;
   attract?: ActivePokemon;
   seededBy?: ActivePokemon;
-  lastHitBy?: Move;
+  lastHitBy?: {move: Move; user: ActivePokemon};
   lastMove?: Move;
   lastMoveIndex?: number;
   charging?: {move: Move; target: ActivePokemon};

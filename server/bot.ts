@@ -371,7 +371,6 @@ export function createBotTeam(format: FormatId) {
 
 export function randomBot({team, options, players, me}: BotParams) {
   const activePokemon = players.get(me).active.map(a => a?.indexInTeam);
-  const validSwitches = team.filter((poke, i) => poke.hp !== 0 && !activePokemon.includes(i));
   const choices: Choice[] = [];
   for (let who = 0; who < options.length; who++) {
     const opt = options[who];
@@ -379,10 +378,13 @@ export function randomBot({team, options, players, me}: BotParams) {
       continue;
     }
 
+    const validSwitches = team.filter((poke, i) => poke.hp !== 0 && !activePokemon.includes(i));
     const validMoves = opt.moves.filter(move => move.valid);
     const switchRandomly = random.int(0, 11) === 1;
     if (!validMoves.length || (opt.canSwitch && validSwitches.length && switchRandomly)) {
-      choices.push({type: "switch", who, pokeIndex: team.indexOf(random.choice(validSwitches)!)});
+      const pokeIndex = team.indexOf(random.choice(validSwitches)!);
+      choices.push({type: "switch", who, pokeIndex});
+      activePokemon.push(pokeIndex);
     } else {
       const move = random.choice(validMoves)!;
       choices.push({

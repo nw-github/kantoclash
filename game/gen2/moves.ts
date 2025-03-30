@@ -150,13 +150,11 @@ export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
     noMetronome: true,
     getDamage(battle, user, target) {
       if (
-        !user.v.retaliateDamage ||
         !target.v.lastMove ||
         (isSpecial(target.v.lastMove.type) && target.v.lastMove !== battle.gen.moveList.beatup)
       ) {
-        return false;
+        return 0;
       }
-
       return user.v.retaliateDamage * 2;
     },
   },

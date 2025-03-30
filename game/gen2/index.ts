@@ -276,7 +276,7 @@ const createGeneration = (): Generation => {
       user.damage(Math.floor(dmg / 8), user, battle, false, "crash", true);
     },
     validSpecies: species => species.dexId <= 251,
-    getOHKODamage: (user, target) => (target.base.level > user.base.level ? false : 65535),
+    canOHKOHit: (user, target) => target.base.level <= user.base.level,
     getStat(poke, stat, isCrit) {
       const def = stat === "def" || stat === "spd";
       const screen = def && !!poke.owner.screens[stat === "def" ? "reflect" : "light_screen"];
