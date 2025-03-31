@@ -9,28 +9,25 @@ export enum Range {
   Self,
   /** Targets a random opponent */
   Random,
-
   /** Targets any adjacent pokemon */
   Adjacent,
   /** Targets any adjacent excluding allies */
   AdjacentFoe,
-  /** Targets any adjacent pokemon, including allies (Earthquake) */
-  AllAdjacent,
-  /** Targets any adjacent pokemon, excluding allies (Rock Slide) */
-  AllAdjacentFoe,
-
   /** Targets one ally */
   AdjacentAlly,
   /** Targets self or one adjacent ally */
   SelfOrAdjacentAlly,
-  /** Targets all allies except the user */
-  AllAllies,
-
   /** Targets any pokemon except the user */
   Any,
+
   /** Targets all pokemon */
   All,
-
+  /** Targets all allies except the user */
+  AllAllies,
+  /** Targets any adjacent pokemon, including allies (Earthquake) */
+  AllAdjacent,
+  /** Targets any adjacent pokemon, excluding allies (Rock Slide) */
+  AllAdjacentFoe,
   /** User/Target field or Battle */
   Field,
 }
@@ -162,7 +159,7 @@ const internalMoveList = createMoveList({
     type: "normal",
     range: Range.Self,
     noEncore: true,
-    exec(battle, user, target): boolean {
+    exec(battle, user): boolean {
       battle.gen1LastDamage = 0;
       const moves = Object.entries(battle.gen.moveList)
         .filter(([, move]) => !move.noMetronome && move.idx! <= battle.gen.lastMoveIdx)
@@ -170,9 +167,7 @@ const internalMoveList = createMoveList({
           ([id]) => (battle.gen.id !== 2 && battle.gen.id !== 4) || !user.base.moves.includes(id),
         )
         .map(([, move]) => move);
-
-      // TODO: targeting
-      return battle.useMove(battle.rng.choice(moves)!, user, target);
+      return battle.callMove(battle.rng.choice(moves)!, user);
     },
   },
   mimic: {
@@ -209,15 +204,13 @@ const internalMoveList = createMoveList({
     noEncore: true,
     exec(battle, user) {
       battle.gen1LastDamage = 0;
-      battle.info(user, "fail_generic");
-      // TODO: targeting
-      return;
-      //       if (!target.v.lastMove || target.v.lastMove === this) {
-      //         battle.info(user, "fail_generic");
-      //         return false;
-      //       }
-      //
-      //       return battle.callUseMove(target.v.lastMove, user, target);
+      const lastHitBy = user.v.lastHitBy;
+      if (user.base.transformed && battle.gen.id === 2) {
+        return battle.info(user, "fail_generic");
+      } else if (!lastHitBy || lastHitBy.user.v.lastMove !== lastHitBy.move) {
+        return battle.info(user, "fail_generic");
+      }
+      return battle.callMove(lastHitBy.move, user);
     },
   },
   substitute: {
@@ -669,7 +662,6 @@ const internalMoveList = createMoveList({
     name: "Bide",
     pp: 10,
     type: "normal",
-    // TODO: targeting
     range: Range.Self,
     power: 1,
     noSleepTalk: true,
@@ -808,7 +800,6 @@ const internalMoveList = createMoveList({
     name: "Counter",
     pp: 20,
     type: "fight",
-    // TODO: targeting
     range: Range.Self,
     acc: 100,
     power: 1,
@@ -1940,7 +1931,6 @@ const internalMoveList = createMoveList({
     name: "Curse",
     pp: 10,
     type: "???",
-    // TODO: Adjacent if ghost type, self otherwise, target directly across if switch types mid-turn
     range: Range.Adjacent,
     exec(battle, user, [target]) {
       if (!user.v.types.includes("ghost")) {
@@ -1951,6 +1941,15 @@ const internalMoveList = createMoveList({
         // prettier-ignore
         user.modStages([["spe", -1], ["atk", +1], ["def", +1]], battle);
       } else {
+        // mid-turn type switch
+        if (target === user) {
+          target = battle.getTargets(user, Range.Adjacent, false)[0];
+          // shouldn't be possible in gen 3?
+          if (!target) {
+            return battle.info(user, "fail_notarget");
+          }
+        }
+
         if (!battle.checkAccuracy(this, user, target)) {
           return;
         } else if (target.v.substitute) {
@@ -2200,18 +2199,16 @@ const internalMoveList = createMoveList({
     sleepOnly: true,
     whileAsleep: true,
     noSleepTalk: true,
-    exec(battle, user, target) {
+    exec(battle, user) {
       const m = battle.rng.choice(user.base.moves.filter(m => !battle.gen.moveList[m].noSleepTalk));
       if (!m) {
         return battle.info(user, "fail_generic");
       }
 
-      // TODO: targeting
-
       // TODO: https://bulbapedia.bulbagarden.net/wiki/Sleep_Talk_(move)
       // If Sleep Talk calls Metronome or Mirror Move (which are selectable by Sleep Talk only in
       // this generation) and thus in turn calls a two-turn move, the move will fail.
-      return battle.useMove(battle.gen.moveList[m], user, target);
+      return battle.callMove(battle.gen.moveList[m], user);
     },
   },
   spikes: {
@@ -2729,7 +2726,6 @@ const internalMoveList = createMoveList({
     power: 0,
     pp: 20,
     type: "psychic",
-    // TODO: targeting
     range: Range.Self,
     acc: 100,
     priority: -1,

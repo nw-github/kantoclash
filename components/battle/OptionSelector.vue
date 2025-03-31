@@ -88,8 +88,7 @@ import type {Pokemon} from "~/game/pokemon";
 import type {Choice, MoveChoice} from "~/server/gameServer";
 import type {Generation} from "~/game/gen";
 import type {PokeId} from "~/game/events";
-import {playerId} from "~/game/utils";
-import {Range} from "~/game/moves";
+import {playerId, isSpreadMove} from "~/game/utils";
 
 const emit = defineEmits<{(e: "choice", choice: Choice): void; (e: "cancel"): void}>();
 const {players, myId, options, team, opponent, gen} = defineProps<{
@@ -173,15 +172,8 @@ const choiceMessage = (i: number, choice: Choice, options: Options) => {
     const opt = options.moves[choice.moveIndex];
     const active = self.active[choice.who];
     const move = opt.move;
-    const ranges = [
-      Range.Adjacent,
-      Range.Adjacent,
-      Range.AdjacentFoe,
-      Range.AdjacentAlly,
-      Range.SelfOrAdjacentAlly,
-      Range.Any,
-    ];
-    if (opt.targets.length && choice.target && ranges.includes(gen.moveList[move].range)) {
+
+    if (opt.targets.length && choice.target && !isSpreadMove(gen.moveList[move].range)) {
       const ally = playerId(choice.target) === myId ? " ally " : " ";
       return `${active!.name} will use ${gen.moveList[move].name} on${ally}${
         players.poke(choice.target)!.name

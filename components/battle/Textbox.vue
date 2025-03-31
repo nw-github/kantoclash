@@ -152,6 +152,7 @@
 <style>
 .events {
   .move,
+  .charge,
   .confused {
     padding-top: 0.5rem;
   }

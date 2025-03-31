@@ -16,6 +16,7 @@ import {
   idiv,
   screens,
   VF,
+  isSpreadMove,
   type Type,
   type Weather,
   type Screen,
@@ -84,24 +85,10 @@ export class Player {
     // prettier-ignore
     switch (move.range) {
     case Range.AllAdjacent:
-    case Range.AllAdjacentFoe: {
-      const opponent = battle.opponentOf(this);
-      const myIndex = this.active.indexOf(user);
-      for (let i = myIndex - 1; i <= myIndex + 1; i++) {
-        if (opponent.active[i]) {
-          targets.push(opponent.active[i]);
-        }
-        if (move.range === Range.AllAdjacent && i !== myIndex && this.active[i]) {
-          targets.push(this.active[i]);
-        }
-      }
-      break;
-    }
+    case Range.AllAdjacentFoe:
     case Range.All:
-      targets.push(...battle.allActive);
-      break;
     case Range.AllAllies:
-      targets.push(...this.active.filter(a => a !== user));
+      targets.push(...battle.getSpreadTargets(user, move.range));
       break;
     case Range.Field:
       break;
@@ -111,9 +98,7 @@ export class Player {
       }
 
       const [playerId, pokeIndex] = target.split(":");
-      const player = battle.players.find(pl => pl.id === playerId);
-
-      targets.push(player!.active[+pokeIndex]);
+      targets.push(battle.players.find(pl => pl.id === playerId)!.active[+pokeIndex]);
     } break;
     }
 
@@ -359,7 +344,11 @@ export class Battle {
       }
       user.movedThisTurn = false;
 
-      if (user.base.item === "quickclaw" && this.gen.rng.tryQuickClaw(this)) {
+      if (
+        move.kind !== "switch" &&
+        user.base.item === "quickclaw" &&
+        this.gen.rng.tryQuickClaw(this)
+      ) {
         // quick claw activates silently until gen iv
         console.log("proc quick claw: ", user.base.name);
         choices.splice(startBracket, 0, ...choices.splice(i, 1));
@@ -402,11 +391,48 @@ export class Battle {
     return this.events.splice(0);
   }
 
-  getTargets(user: ActivePokemon, {allyOnly, oppOnly, adjacent, self}: GetTarget) {
+  getTargets(user: ActivePokemon, params: GetTarget): ActivePokemon[];
+  getTargets(user: ActivePokemon, params: Range, spread: boolean): ActivePokemon[];
+  getTargets(user: ActivePokemon, params: GetTarget | Range, spread?: bool) {
     const targets: ActivePokemon[] = [];
+    if (typeof params === "number") {
+      // prettier-ignore
+      switch (params) {
+      case Range.Field:
+      case Range.AllAdjacent:
+      case Range.AllAdjacentFoe:
+      case Range.All:
+      case Range.AllAllies:
+        if (spread) {
+          return this.getSpreadTargets(user, params);
+        }
+        return [];
+      case Range.Self:
+      case Range.Random:
+        return [user];
+      case Range.Adjacent:
+        params = {adjacent: true};
+        break;
+      case Range.AdjacentFoe:
+        params = {oppOnly: true, adjacent: true};
+        break;
+      case Range.AdjacentAlly:
+        params = {allyOnly: true, adjacent: true};
+        break;
+      case Range.SelfOrAdjacentAlly:
+        params = {allyOnly: true, adjacent: true, self: true};
+        break;
+      case Range.Any:
+        params = {};
+        break;
+      }
+    }
+
+    const {allyOnly, oppOnly, adjacent, self} = params;
     const opp = this.opponentOf(user.owner);
     const userIndex = user.owner.active.indexOf(user);
     if (adjacent) {
+      // Priority: Trainer's left, Opposing trainer's left, Trainer's right, Opposing trainer's right
       for (let i = userIndex - 1; i <= userIndex + 1; i++) {
         if (!allyOnly && opp.active[i] && !opp.active[i].v.fainted) {
           targets.push(opp.active[i]);
@@ -425,6 +451,33 @@ export class Battle {
       targets.splice(idx, 1);
     }
     return targets;
+  }
+
+  getSpreadTargets(user: ActivePokemon, range: Range) {
+    // prettier-ignore
+    switch(range) {
+    case Range.AllAdjacent:
+    case Range.AllAdjacentFoe: {
+      const targets = [];
+      const opponent = this.opponentOf(user.owner);
+      const myIndex = user.owner.active.indexOf(user);
+      for (let i = myIndex - 1; i <= myIndex + 1; i++) {
+        if (opponent.active[i]) {
+          targets.push(opponent.active[i]);
+        }
+        if (range === Range.AllAdjacent && i !== myIndex && user.owner.active[i]) {
+          targets.push(user.owner.active[i]);
+        }
+      }
+      return targets;
+    }
+    case Range.All:
+      return [...this.allActive];
+    case Range.AllAllies:
+      return user.owner.active.filter(a => a !== user);
+    default:
+      return [];
+    }
   }
 
   // --
@@ -553,6 +606,18 @@ export class Battle {
   }
 
   useMove(move: Move, user: ActivePokemon, targets: ActivePokemon[], moveIndex?: number) {
+    targets = targets.filter(t => !t.v.fainted);
+    if (!targets.length) {
+      targets = this.getTargets(user, move.range, true);
+      if (!isSpreadMove(move.range)) {
+        targets = targets.slice(0, 1);
+      }
+
+      if (!targets.length) {
+        console.log(`No targets, skipping ${user.base.name}'s ${move.name}`);
+      }
+    }
+
     if (move.kind === "damage") {
       if (user.v.trapping && targets[0].v.trapped) {
         const dead = targets[0].damage(this.gen1LastDamage, user, this, false, "trap").dead;
@@ -647,6 +712,14 @@ export class Battle {
       const func = (this as any).gen.moveFunctions[move.kind];
       return func.call(move, this, user, targets, moveIndex);
     }
+  }
+
+  callMove(move: Move, user: ActivePokemon) {
+    let targets = this.getTargets(user, move.range, true);
+    if (!isSpreadMove(move.range)) {
+      targets = [this.rng.choice(targets)!];
+    }
+    return this.useMove(move, user, targets);
   }
 
   checkFaint(user: ActivePokemon, causedFaint = false) {

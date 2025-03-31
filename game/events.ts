@@ -156,6 +156,7 @@ export type FailReason =
   | "immune"
   | "miss"
   | "fail_generic"
+  | "fail_notarget"
   | "fail_sleep_clause"
   | "has_substitute"
   | "cant_substitute"

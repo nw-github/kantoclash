@@ -39,7 +39,6 @@ export function exec(
     targets = [user.v.lastHitBy.user];
   }
 
-  targets = targets.filter(t => !t.v.fainted);
   for (const target of targets) {
     tryDamage(this, battle, user, target, targets.length > 1 && this.range !== Range.AllAdjacent);
   }

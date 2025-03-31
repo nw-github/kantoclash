@@ -419,8 +419,13 @@ export class ActivePokemon {
   }
 
   getOptions(battle: Battle): Options | undefined {
-    if (battle.finished || (battle.allActive.some(p => p.v.fainted) && !this.v.fainted)) {
-      return;
+    if (battle.finished || battle.allActive.some(p => p.v.fainted)) {
+      const inactive = this.owner.team.filter(
+        t => t.hp !== 0 && !this.owner.active.some(a => a.base.real === t),
+      );
+      if (!this.v.fainted || !inactive.length) {
+        return;
+      }
     } else if (battle.turnType === TurnType.Lead) {
       return {canSwitch: true, moves: [], id: this.id};
     } else if (battle.turnType === TurnType.BatonPass) {
@@ -629,33 +634,9 @@ const getValidTargets = (battle: Battle, move: Move, user: ActivePokemon) => {
     return [user.v.charging.target.id];
   }
 
-  // prettier-ignore
-  let args: Parameters<typeof battle.getTargets>[1];
-  switch (move.range) {
-    case Range.Field:
-    case Range.AllAdjacent:
-    case Range.AllAdjacentFoe:
-    case Range.All:
-    case Range.AllAllies:
-      return [];
-    case Range.Self:
-    case Range.Random:
-      return [user.id];
-    case Range.Adjacent:
-      args = {adjacent: true};
-      break;
-    case Range.AdjacentFoe:
-      args = {oppOnly: true, adjacent: true};
-      break;
-    case Range.AdjacentAlly:
-      args = {allyOnly: true, adjacent: true};
-      break;
-    case Range.SelfOrAdjacentAlly:
-      args = {allyOnly: true, adjacent: true, self: true};
-      break;
-    case Range.Any:
-      args = {};
-      break;
+  let range = move.range;
+  if (move === battle.gen.moveList.curse && !user.v.types.includes("ghost")) {
+    range = Range.Self;
   }
-  return battle.getTargets(user, args).map(u => u.id);
+  return battle.getTargets(user, range, false).map(u => u.id);
 };
