@@ -3,7 +3,7 @@ import type {ActivePokemon} from "./battle";
 import type {TypeChart} from "./gen";
 import type {PlayerId, PokeId} from "./events";
 
-export type Weather = "rain" | "sun" | "sand";
+export type Weather = "rain" | "sun" | "sand" | "hail";
 
 export type Type =
   | "normal"
@@ -51,7 +51,7 @@ export enum VF {
   protect      = 0x0000_0040,
   endure       = 0x0000_0080,
   nightmare    = 0x0000_0100,
-  foresight    = 0x0000_0200,
+  identified   = 0x0000_0200,
   lockon       = 0x0000_0400,
 
 
@@ -90,7 +90,7 @@ export const scaleAccuracy255 = (acc: number, user: ActivePokemon, target: Activ
   // https://bulbapedia.bulbagarden.net/wiki/Accuracy#Generation_I_and_II
   let userStages = user.v.stages["acc"];
   let targetStages = target.v.stages["eva"];
-  if (userStages < targetStages && target.v.hasFlag(VF.foresight)) {
+  if (userStages < targetStages && target.v.hasFlag(VF.identified)) {
     userStages = 0;
     targetStages = 0;
   }

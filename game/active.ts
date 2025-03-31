@@ -7,7 +7,7 @@ import type {
   ChangedVolatiles,
   PokeId,
 } from "./events";
-import {type MoveId, type Move, type DamagingMove, Range} from "./moves";
+import {type MoveId, type Move, type DamagingMove, Range, type FutureSightMove} from "./moves";
 import type {Pokemon, Status} from "./pokemon";
 import {
   arraysEqual,
@@ -45,7 +45,7 @@ export class ActivePokemon {
   v: Volatiles;
   lastChosenMove?: Move;
   movedThisTurn = false;
-  futureSight?: {damage: number; turns: number};
+  futureSight?: {move: FutureSightMove; damage: number; turns: number};
   choice?: ChosenMove;
   options?: {switches: number[]; moves: MoveOption[]; id: PokeId};
   id: PokeId;
@@ -77,7 +77,7 @@ export class ActivePokemon {
       this.v.seededBy = old.seededBy;
 
       const passedFlags =
-        VF.lightScreen | VF.reflect | VF.mist | VF.focus | VF.curse | VF.foresight | VF.lockon;
+        VF.lightScreen | VF.reflect | VF.mist | VF.focus | VF.curse | VF.identified | VF.lockon;
       this.v.setFlag(old.cflags & passedFlags);
 
       // Is trapping passed? Encore? Nightmare?

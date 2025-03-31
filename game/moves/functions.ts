@@ -1,6 +1,6 @@
 import type {CustomMove, Move} from ".";
 import type {InfoReason} from "../events";
-import {VF} from "../utils";
+import {isSpecial, VF} from "../utils";
 import {exec as execDamagingMove} from "../gen1/damaging";
 
 type ExecMoveFn = CustomMove["exec"];
@@ -68,7 +68,7 @@ export const moveFunctions: MoveFunctions = {
         if (target.v.hasFlag(VF.mist)) {
           failed = false;
           return battle.info(target, "mist_protect");
-        } else if (target.v.substitute) {
+        } else if (target.v.substitute && !this.ignoreSub) {
           continue;
         }
 
@@ -96,7 +96,8 @@ export const moveFunctions: MoveFunctions = {
       return battle.info(target, "fail_generic");
     } else if (
       (this.type === "electric" && battle.getEffectiveness(this.type, target) === 0) ||
-      (this.type === "poison" && target.v.types.includes("poison"))
+      (this.type === "poison" && target.v.types.includes("poison")) ||
+      (this.type === "fire" && target.v.types.includes("fire"))
     ) {
       return battle.info(target, "immune");
     } else if (target.owner.screens.safeguard) {
@@ -181,6 +182,65 @@ export const moveFunctions: MoveFunctions = {
       src: user.id,
       target: target.id,
       volatiles: [target.setFlag(VF.lockon)],
+    });
+  },
+  healbell(battle, user) {
+    // TODO GEN3: dont send two unstatus events
+    for (const active of user.owner.active) {
+      active.unstatus(battle, "heal_bell");
+    }
+    const opp = battle.opponentOf(user.owner);
+    user.owner.team.forEach(poke => {
+      poke.status = undefined;
+      // TODO: soundproof
+      if (opp.sleepClausePoke === poke) {
+        opp.sleepClausePoke = undefined;
+      }
+    });
+  },
+  futuresight(battle, user, [target]) {
+    if (target.futureSight) {
+      return battle.info(user, "fail_generic");
+    }
+
+    const [atk, def] = battle.gen.getDamageVariables(isSpecial(this.type), user, target, false);
+    const dmg = battle.gen.calcDamage({
+      atk,
+      def,
+      pow: this.power,
+      lvl: user.base.level,
+      eff: 1,
+      isCrit: false,
+      isStab: false,
+      rand: battle.rng,
+    });
+    target.futureSight = {damage: dmg, turns: 3, move: this};
+    battle.info(user, this.msg);
+  },
+  swagger(battle, user, [target]) {
+    if (target.owner.screens.safeguard) {
+      target.modStages(this.stages, battle);
+      return battle.info(user, "safeguard_protect");
+    } else if (!battle.checkAccuracy(this, user, target)) {
+      return;
+    } else if (!target.modStages(this.stages, battle)) {
+      return battle.info(user, "fail_generic");
+    } else {
+      target.confuse(battle);
+    }
+  },
+  foresight(battle, user, [target]) {
+    if (user.v.hasFlag(VF.identified)) {
+      return battle.info(user, "fail_generic");
+    } else if (!battle.checkAccuracy(this, user, target)) {
+      return;
+    }
+
+    battle.event({
+      type: "foresight",
+      src: user.id,
+      target: target.id,
+      volatiles: [target.setFlag(VF.identified)],
     });
   },
 };

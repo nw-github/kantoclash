@@ -332,7 +332,7 @@ const badges: {flag: VF; props: InstanceType<typeof UBadge>["$props"]}[] = [
   {flag: VF.cMeanLook, props: {color: "red", icon: "tabler:prison", variant: "subtle"}},
   {flag: VF.cSeeded, props: {color: "lime", icon: "tabler:seedling-filled", variant: "subtle"}},
   {
-    flag: VF.foresight,
+    flag: VF.identified,
     props: {
       color: "violet",
       icon: "material-symbols:search-rounded",

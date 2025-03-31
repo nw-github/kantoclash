@@ -76,6 +76,7 @@ export type DamageReason =
   | "confusion"
   | "trap"
   | "sandstorm"
+  | "hail"
   | "belly_drum"
   | "set_curse"
   | "curse"
@@ -169,7 +170,7 @@ export type BugType = "bug_gen2_bellydrum" | "bug_gen2_spikes";
 
 type VFReason = Exclude<
   keyof typeof VF,
-  "cSubstitute" | "curse" | "none" | "cDisabled" | "foresight" | "lockon"
+  "cSubstitute" | "curse" | "none" | "cDisabled" | "identified" | "lockon"
 >;
 
 export type InfoReason =
@@ -202,6 +203,8 @@ export type InfoReason =
   | "perish_song"
   | "future_sight"
   | "future_sight_release"
+  | "doom_desire"
+  | "doom_desire_release"
   | "withdraw"
   | "fail_present"
   | "miss";

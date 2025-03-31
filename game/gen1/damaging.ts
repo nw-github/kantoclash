@@ -238,7 +238,7 @@ export function checkUsefulness(
   user: ActivePokemon,
   target: ActivePokemon,
 ) {
-  let type = self.getType ? self.getType(user.base) : self.type;
+  let type = self.getType ? self.getType(user.base, battle.weather?.kind) : self.type;
   let fail = false;
   if (self.flag === "beatup") {
     type = "???";

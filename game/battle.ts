@@ -470,7 +470,7 @@ export class Battle {
   // --
 
   getEffectiveness(atk: Type, target: ActivePokemon) {
-    if (target.v.hasFlag(VF.foresight)) {
+    if (target.v.hasFlag(VF.identified)) {
       // FIXME: this is lazy
       const chart = structuredClone(this.gen.typeChart);
       chart.normal.ghost = 1;
@@ -819,7 +819,7 @@ export class Battle {
       for (const poke of this.allActive) {
         if (poke.futureSight && --poke.futureSight.turns === 0) {
           if (!poke.v.fainted) {
-            this.info(poke, "future_sight_release");
+            this.info(poke, poke.futureSight.move.release);
             if (!this.checkAccuracy(this.gen.moveList.futuresight, poke, poke)) {
               // FIXME: this is lazy
               this.events.splice(-1, 1);

@@ -1,5 +1,5 @@
 import type {ActivePokemon, Battle} from "../battle";
-import type {FailReason, RecoveryReason} from "../events";
+import type {FailReason, InfoReason, RecoveryReason} from "../events";
 import type {Pokemon, Status} from "../pokemon";
 import type {Stages, Type, VF, Weather, Screen} from "../utils";
 import type {Range} from "./moveList";
@@ -33,6 +33,7 @@ export interface BaseMove {
   readonly whileAsleep?: boolean;
   readonly selfThaw?: boolean;
   readonly kingsRock?: boolean;
+  readonly sound?: boolean;
 }
 
 export interface CustomMove extends BaseMove {
@@ -48,7 +49,7 @@ export interface VolatileFlagMove extends BaseMove {
 
 export interface ConfuseMove extends BaseMove {
   readonly kind: "confuse";
-  readonly range: Range.Adjacent;
+  readonly range: Range.Adjacent | Range.AllAdjacent;
 }
 
 export interface RecoveryMove extends BaseMove {
@@ -61,6 +62,7 @@ export interface RecoveryMove extends BaseMove {
 export interface StageMove extends BaseMove {
   readonly kind: "stage";
   readonly stages: [Stages, number][];
+  readonly ignoreSub?: bool;
 }
 
 export interface StatusMove extends BaseMove {
@@ -111,6 +113,31 @@ export interface LockOnMove extends BaseMove {
   readonly range: Range.Adjacent;
 }
 
+export interface HealBellMove extends BaseMove {
+  readonly kind: "healbell";
+  readonly range: Range.AllAllies;
+}
+
+export interface FutureSightMove extends BaseMove {
+  readonly kind: "futuresight";
+  readonly range: Range.Adjacent;
+  readonly power: number;
+  readonly msg: InfoReason;
+  readonly release: InfoReason;
+}
+
+export interface SwaggerMove extends BaseMove {
+  readonly kind: "swagger";
+  readonly range: Range.Adjacent;
+  readonly stages: [Stages, number][];
+}
+
+export interface ForesightMove extends BaseMove {
+  readonly kind: "foresight";
+  readonly range: Range.Adjacent;
+  readonly protect: true;
+}
+
 export interface DamagingMove extends BaseMove {
   readonly kind: "damage";
   readonly power: number;
@@ -119,9 +146,10 @@ export interface DamagingMove extends BaseMove {
   /** Recoil: max(1 / recoil, 1) */
   readonly recoil?: number;
   readonly punish?: boolean;
+  readonly contact?: boolean;
   readonly charge?: boolean | "sun" | "invuln" | [Stages, number][];
   getPower?(user: Pokemon): number;
-  getType?(user: Pokemon): Type;
+  getType?(user: Pokemon, weather?: Weather): Type;
   /** If a number, the amount of damage the move should do. If a function, returns the amount of
    * damage done by the move, or 0 if the move failed.
    */
@@ -145,7 +173,11 @@ export type Move =
   | PhazingMove
   | ProtectMove
   | PreventEscapeMove
-  | LockOnMove;
+  | LockOnMove
+  | HealBellMove
+  | FutureSightMove
+  | SwaggerMove
+  | ForesightMove;
 
 type Effect = Status | [Stages, number][] | "confusion" | "flinch" | "thief" | "tri_attack";
 

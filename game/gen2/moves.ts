@@ -51,7 +51,8 @@ export const moveFunctionPatches: Partial<MoveFunctions> = {
     } else if (
       (this.checkType && battle.getEffectiveness(this.type, target) === 0) ||
       ((this.status === "psn" || this.status === "tox") &&
-        target.v.types.some(t => t === "poison" || t === "steel"))
+        target.v.types.some(t => t === "poison" || t === "steel")) ||
+      (this.status === "brn" && target.v.types.includes("fire"))
     ) {
       return battle.info(target, "immune");
     } else if (target.owner.screens.safeguard) {

@@ -110,6 +110,8 @@ export const infoMessage: Record<InfoReason, string> = {
   perish_song: "All affected pokemon will faint in three turns!",
   future_sight: "{} foresaw an attack!",
   future_sight_release: "{} took the Future Sight attack!",
+  doom_desire: "{} chose Doom Desire as its destiny!",
+  doom_desire_release: "{} took the Doom Desire attack!",
   withdraw: "({} is trying to switch out...)",
   fail_present: "{} couldn't receive the gift!",
   endure_band: "{} held on using its Focus Band!",
@@ -130,6 +132,11 @@ export const weatherMessage: Record<Weather, Record<WeatherEvent["kind"], string
     start: "A sandstorm brewed!",
     continue: "The sandstorm rages.",
     end: "The sandstorm subsided.",
+  },
+  hail: {
+    start: "It started to hail!",
+    continue: "Hail continues to fall.",
+    end: "The hail stopped.",
   },
 };
 
@@ -159,6 +166,7 @@ export const damageMessage: Partial<Record<DamageReason, string>> = {
   ohko: "It's a one-hit KO!",
   nightmare: "{} is locked in a Nightmare!",
   sandstorm: "{} is buffeted by the sandstorm!",
+  hail: "{} is buffeted by the hail!",
   seeded: "{}'s health was sapped by Leech Seed!",
   belly_drum: "{} cut its own HP and maximized its Attack!",
   set_curse: "{t} cut its own HP and laid a curse on {l}!",
@@ -172,6 +180,7 @@ export const trapStart: Partial<Record<MoveId, string>> = {
   bind: "{t} was squeezed by {s}!",
   clamp: "{t} was clamped by {s}!",
   firespin: "{t} was trapped in the vortex!",
+  sandtomb: "{t} was trapped by Sand Tomb!",
 };
 
 export const bugMessage: Record<BugType, string> = {
