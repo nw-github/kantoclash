@@ -102,28 +102,19 @@ export class Player {
     } break;
     }
 
-    user.choice = {indexInMoves: choice.indexInMoves, move, user, targets};
+    user.choice = {indexInMoves: choice.indexInMoves, move, user, targets, isReplacement: false};
     return true;
   }
 
-  chooseSwitch(who: number, battle: Battle, index: number) {
+  chooseSwitch(who: number, index: number) {
     const active = this.active[who];
-    if (!active?.options?.canSwitch) {
+    if (!active?.options?.switches.includes(index)) {
       return false;
     }
 
-    const base = this.team[index];
-    if (battle.turnType !== TurnType.Lead) {
-      const current = active.base;
-      if (!base || base === current || !base.hp || this.active.some(a => a.base.real === base)) {
-        return false;
-      }
-    }
-
+    const poke = this.team[index];
     if (
-      this.active.some(
-        a => a !== active && a.choice?.move?.kind === "switch" && a.choice.move.poke.real === base,
-      )
+      this.active.some(a => a.choice?.move?.kind === "switch" && a.choice.move.poke.real === poke)
     ) {
       return false;
     }
@@ -136,11 +127,12 @@ export class Player {
         range: Range.Self,
         pp: 0,
         priority: +7,
-        poke: base,
+        poke: poke,
         batonPass: this.active[who].v.inBatonPass,
       },
       user: this.active[who],
       targets: [],
+      isReplacement: active.v.fainted,
     };
     return true;
   }
@@ -229,8 +221,8 @@ export class Battle {
     }
 
     for (let i = 0; i < self.players[0].active.length; i++) {
-      self.players[0].chooseSwitch(i, self, i);
-      self.players[1].chooseSwitch(i, self, i);
+      self.players[0].chooseSwitch(i, i);
+      self.players[1].chooseSwitch(i, i);
     }
     return [self, self.nextTurn()!] as const;
   }
@@ -303,25 +295,22 @@ export class Battle {
     }
 
     const choices = this.allActive
-      .flatMap(({choice}) => (choice ? [choice] : []))
+      .map(p => p.choice)
+      .filter(choice => !!choice)
       .sort((a, b) => {
         if (b.move.priority !== a.move.priority) {
           return (b.move.priority ?? 0) - (a.move.priority ?? 0);
-        }
-
-        if (a.move.kind === "switch" && this.gen.id < 3) {
+        } else if (this.turnType === TurnType.Lead) {
+          // First turn switch order is not affected by speed
+          const foo = this.players.indexOf(b.user.owner) - this.players.indexOf(a.user.owner);
+          if (foo === 0) {
+            return a.user.owner.active.indexOf(a.user) - b.user.owner.active.indexOf(b.user);
+          }
+          return foo;
+        } else if (a.move.kind === "switch" && this.gen.id < 3) {
           // Randomize choices to avoid leaking speed. The player always sees their pokemon switch
           // in first in a link battle on console.
           return +this.rng.bool() || -1;
-        }
-
-        // First turn switch order is not affected by speed
-        if (this.turnType === TurnType.Lead) {
-          const foo = this.players.indexOf(b.user.owner) - this.players.indexOf(a.user.owner);
-          if (foo === 0) {
-            return b.user.owner.active.indexOf(b.user) - a.user.owner.active.indexOf(a.user);
-          }
-          return foo;
         }
 
         const aSpe = this.gen.getStat(a.user, "spe");
@@ -354,21 +343,25 @@ export class Battle {
         choices.splice(startBracket, 0, ...choices.splice(i, 1));
       }
 
-      if (move !== this.gen.moveList.pursuit || this.turnType === TurnType.BatonPass) {
-        continue;
-      }
-
-      if (target?.choice?.move?.kind === "switch" && target.owner !== user.owner) {
-        console.log(user.base.name + " is pursuing ", target.base.name);
-        choices.splice(choices.indexOf(target.choice), 0, ...choices.splice(i, 1));
-        user.v.inPursuit = true;
+      if (move === this.gen.moveList.pursuit) {
+        if (target?.choice?.move?.kind === "switch" && target.owner !== user.owner) {
+          console.log(user.base.name + " is pursuing ", target.base.name);
+          choices.splice(choices.indexOf(target.choice), 0, ...choices.splice(i, 1));
+          user.v.inPursuit = true;
+        }
       }
     }
 
-    this.turnOrder = choices;
-    this.runTurn(choices);
+    if (this.turnType === TurnType.Switch || this.turnType === TurnType.BatonPass) {
+      this.turnOrder.unshift(...choices);
+    } else {
+      this.turnOrder = choices;
+    }
+
+    this.runTurn(this.turnOrder);
 
     if (this.allActive.some(poke => poke.v.inBatonPass)) {
+      this.turnOrder = this.turnOrder.filter(c => !c.user.movedThisTurn && !c.user.v.fainted);
       this.turnType = TurnType.BatonPass;
     } else {
       if (this.victor) {
@@ -377,17 +370,19 @@ export class Battle {
         return this.draw("too_long");
       }
 
-      this.turnType = this.allActive.some(poke => poke.v.fainted)
-        ? TurnType.Switch
-        : TurnType.Normal;
+      if (this.allActive.some(p => p.v.fainted && p.canBeReplaced(this))) {
+        this.turnOrder = this.turnOrder.filter(c => !c.user.movedThisTurn && !c.user.v.fainted);
+        this.turnType = TurnType.Switch;
+      } else {
+        this.turnOrder = [];
+        this.turnType = TurnType.Normal;
+      }
     }
 
     for (const poke of this.allActive) {
-      if (this.turnType !== TurnType.BatonPass || poke.v.inBatonPass || poke.movedThisTurn) {
-        poke.choice = undefined;
-      }
       poke.updateOptions(this);
     }
+
     return this.events.splice(0);
   }
 
@@ -559,9 +554,15 @@ export class Battle {
   // --
 
   private runTurn(choices: ChosenMove[]) {
+    const shouldReturn = () => this.allActive.some(p => p.v.fainted && p.getOptions(this));
+
     // eslint-disable-next-line prefer-const
-    for (let {move, user, targets, indexInMoves} of choices) {
+    for (let {move, user, targets, indexInMoves, isReplacement} of choices) {
       user.movedThisTurn = true;
+      if (user.v.fainted && !isReplacement) {
+        continue;
+      }
+
       if (user.v.hasFlag(VF.destinyBond)) {
         this.event({type: "sv", volatiles: [user.clearFlag(VF.destinyBond)]});
       }
@@ -578,8 +579,7 @@ export class Battle {
       }
 
       if (move.kind !== "switch" && !this.gen.beforeUseMove(this, move, user)) {
-        this.handleResidualDamage(user);
-        if (this.checkFaint(user)) {
+        if (this.handleResidualDamage(user) && shouldReturn()) {
           return;
         }
 
@@ -588,13 +588,12 @@ export class Battle {
       }
 
       this.useMove(move, user, targets, indexInMoves);
-      if (this.turnType !== TurnType.Switch && this.turnType !== TurnType.Lead) {
-        if (user.v.inBatonPass || this.checkFaint(user)) {
+      if (!isReplacement) {
+        if (user.v.inBatonPass) {
           return;
-        }
-
-        this.handleResidualDamage(user);
-        if (this.checkFaint(user)) {
+        } else if (this.checkFaint(user) && shouldReturn()) {
+          return;
+        } else if (this.handleResidualDamage(user) && shouldReturn()) {
           return;
         }
       }
@@ -786,24 +785,24 @@ export class Battle {
     };
 
     if (poke.base.hp === 0) {
-      return;
+      return this.checkFaint(poke);
     } else if ((poke.base.status === "tox" || poke.base.status === "psn") && tickCounter("psn")) {
-      return;
+      return this.checkFaint(poke);
     } else if (poke.base.status === "brn" && tickCounter("brn")) {
-      return;
+      return this.checkFaint(poke);
     } else if (poke.v.seededBy && tickCounter("seeded")) {
-      return;
+      return this.checkFaint(poke);
     } else if (
       poke.v.hasFlag(VF.nightmare) &&
       poke.damage(Math.max(1, idiv(poke.base.stats.hp, 4)), poke, this, false, "nightmare", true)
         .dead
     ) {
-      return;
+      return this.checkFaint(poke);
     } else if (
       poke.v.hasFlag(VF.curse) &&
       poke.damage(Math.max(1, idiv(poke.base.stats.hp, 4)), poke, this, false, "curse", true).dead
     ) {
-      return;
+      return this.checkFaint(poke);
     }
   }
 
@@ -1036,7 +1035,7 @@ export class Battle {
         this.info(poke, "encore_end", [{id: poke.id, v: {flags: poke.v.cflags}}]);
       }
 
-      if (!poke.base.hp) {
+      if (!poke.base.hp && !poke.v.fainted) {
         this.event({type: "bug", bug: "bug_gen2_spikes"});
       }
     }

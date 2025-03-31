@@ -73,7 +73,7 @@
           v-for="(poke, i) in team"
           :key="i"
           :poke
-          :disabled="!currOption.canSwitch || !isValidSwitch(i, poke)"
+          :disabled="!isValidSwitch(currOption, i)"
           :active="players.get(myId).active.some(p => p?.indexInTeam === i)"
           @click="selectSwitch(currOption, i)"
         />
@@ -173,7 +173,7 @@ const choiceMessage = (i: number, choice: Choice, options: Options) => {
     const active = self.active[choice.who];
     const move = opt.move;
 
-    if (opt.targets.length && choice.target && !isSpreadMove(gen.moveList[move].range)) {
+    if (opt.targets.length > 1 && choice.target && !isSpreadMove(gen.moveList[move].range)) {
       const ally = playerId(choice.target) === myId ? " ally " : " ";
       return `${active!.name} will use ${gen.moveList[move].name} on${ally}${
         players.poke(choice.target)!.name
@@ -184,12 +184,10 @@ const choiceMessage = (i: number, choice: Choice, options: Options) => {
   }
 };
 
-const isValidSwitch = (i: number, poke: Pokemon) => {
-  if (players.get(myId).active.some(p => p?.indexInTeam === i)) {
-    return false;
-  } else if (choices.value.some(([, c]) => c.type === "switch" && c.pokeIndex === i)) {
-    return false;
-  }
-  return !!poke.hp;
+const isValidSwitch = (options: Options, i: number) => {
+  return (
+    options.switches.includes(i) &&
+    !choices.value.some(([, c]) => c.type === "switch" && c.pokeIndex === i)
+  );
 };
 </script>

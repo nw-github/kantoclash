@@ -369,29 +369,29 @@ export function createBotTeam(format: FormatId) {
   }
 }
 
-export function randomBot({team, options, players, me}: BotParams) {
-  const activePokemon = players.get(me).active.map(a => a?.indexInTeam);
+export function randomBot({options, me}: BotParams) {
+  const switchedTo: number[] = [];
   const choices: Choice[] = [];
-  for (let who = 0; who < options.length; who++) {
-    const opt = options[who];
-    if (!opt) {
-      continue;
-    }
-
-    const validSwitches = team.filter((poke, i) => poke.hp !== 0 && !activePokemon.includes(i));
+  for (const opt of options) {
+    const who = +opt.id.split(":")[1];
     const validMoves = opt.moves.filter(move => move.valid);
     const switchRandomly = random.int(0, 11) === 1;
-    if (!validMoves.length || (opt.canSwitch && validSwitches.length && switchRandomly)) {
-      const pokeIndex = team.indexOf(random.choice(validSwitches)!);
+    if (!validMoves.length || (opt.switches.length && switchRandomly)) {
+      const pokeIndex = random.choice(opt.switches.filter(i => !switchedTo.includes(i)))!;
       choices.push({type: "switch", who, pokeIndex});
-      activePokemon.push(pokeIndex);
+      switchedTo.push(pokeIndex);
     } else {
       const move = random.choice(validMoves)!;
+      let targets = move.targets.filter(t => playerId(t) !== me);
+      if (!targets.length) {
+        targets = move.targets;
+      }
+
       choices.push({
         type: "move",
         who,
         moveIndex: opt.moves.indexOf(move),
-        target: random.choice(move.targets),
+        target: random.choice(targets),
       });
     }
   }

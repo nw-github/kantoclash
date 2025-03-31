@@ -38,6 +38,7 @@ export type ChosenMove = {
   indexInMoves?: number;
   user: ActivePokemon;
   targets: ActivePokemon[];
+  isReplacement: boolean;
 };
 
 export class ActivePokemon {
@@ -46,7 +47,7 @@ export class ActivePokemon {
   movedThisTurn = false;
   futureSight?: {damage: number; turns: number};
   choice?: ChosenMove;
-  options?: {canSwitch: boolean; moves: MoveOption[]; id: PokeId};
+  options?: {switches: number[]; moves: MoveOption[]; id: PokeId};
   id: PokeId;
 
   constructor(public base: Pokemon, public readonly owner: Player, idx: number) {
@@ -418,18 +419,38 @@ export class ActivePokemon {
     }
   }
 
-  getOptions(battle: Battle): Options | undefined {
-    if (battle.finished || battle.allActive.some(p => p.v.fainted)) {
-      const inactive = this.owner.team.filter(
-        t => t.hp !== 0 && !this.owner.active.some(a => a.base.real === t),
-      );
-      if (!this.v.fainted || !inactive.length) {
-        return;
+  getSwitches(battle: Battle) {
+    const switches: number[] = [];
+    for (let i = 0; i < this.owner.team.length; i++) {
+      const poke = this.owner.team[i];
+      if (
+        poke.hp !== 0 &&
+        (battle.turn === TurnType.Lead || !this.owner.active.some(a => a.base.real === poke))
+      ) {
+        switches.push(i);
       }
+    }
+    return switches;
+  }
+
+  canBeReplaced(switches: number[] | Battle) {
+    const myPos = this.owner.active.filter(a => a.v.fainted).indexOf(this);
+    return myPos < (Array.isArray(switches) ? switches : this.getSwitches(switches)).length;
+  }
+
+  getOptions(battle: Battle): Options | undefined {
+    const switches = this.getSwitches(battle);
+    if (this.v.fainted && !this.canBeReplaced(switches)) {
+      return;
+    } else if (
+      !this.v.fainted &&
+      battle.allActive.some(p => p.v.fainted && p.canBeReplaced(battle))
+    ) {
+      return;
     } else if (battle.turnType === TurnType.Lead) {
-      return {canSwitch: true, moves: [], id: this.id};
+      return {switches, moves: [], id: this.id};
     } else if (battle.turnType === TurnType.BatonPass) {
-      return this.v.inBatonPass ? {canSwitch: true, moves: [], id: this.id} : undefined;
+      return this.v.inBatonPass ? {switches, moves: [], id: this.id} : undefined;
     }
 
     // send all moves so PP can be updated
@@ -478,13 +499,14 @@ export class ActivePokemon {
     const moveLocked = !!(this.v.bide || this.v.trapping);
     const cantEscape = !!this.v.meanLook || (battle.gen.id >= 2 && !!this.v.trapped);
     return {
-      canSwitch: ((!lockedIn || moveLocked) && !cantEscape) || this.v.fainted,
+      switches: ((!lockedIn || moveLocked) && !cantEscape) || this.v.fainted ? switches : [],
       moves,
       id: this.id,
     };
   }
 
   updateOptions(battle: Battle) {
+    this.choice = undefined;
     this.options = this.getOptions(battle);
   }
 
