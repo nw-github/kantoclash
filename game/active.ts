@@ -112,14 +112,19 @@ export class ActivePokemon {
       ],
     });
 
-    if (opp.v.trapped && opp.v.trapped.user === this && !opp.v.fainted) {
+    if (
+      opp.v.trapped &&
+      opp.v.trapped.turns !== -1 &&
+      opp.v.trapped.user === this &&
+      !opp.v.fainted
+    ) {
       battle.event({
         type: "trap",
         src: opp.owner.id,
         target: opp.owner.id,
         kind: "end",
         move: battle.moveIdOf(opp.v.trapped.move)!,
-        volatiles: [{id, v: {trapped: null}}],
+        volatiles: [{id: opp.owner.id, v: {trapped: null}}],
       });
       opp.v.trapped = undefined;
     }
