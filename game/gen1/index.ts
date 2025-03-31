@@ -2,8 +2,17 @@ import type {Random} from "random";
 import type {ActivePokemon, Battle} from "../battle";
 import {moveFunctions, moveList, type Move, type MoveId} from "../moves";
 import {speciesList, type Species} from "../species";
-import {floatTo255, idiv, scaleAccuracy255, VF, type StatStages, type Type} from "../utils";
+import {
+  floatTo255,
+  idiv,
+  scaleAccuracy255,
+  VF,
+  type Stats,
+  type StatStages,
+  type Type,
+} from "../utils";
 import type {ItemId} from "../item";
+import type {Gender, Nature} from "../pokemon";
 
 export type TypeChart = Record<Type, Partial<Record<Type, number>>>;
 
@@ -336,11 +345,41 @@ const getStat = (poke: ActivePokemon, stat: StatStages, isCrit?: boolean, def?: 
   return value;
 };
 
+const calcStat = (
+  stat: keyof Stats,
+  bases: Stats,
+  level: number,
+  dvs?: Partial<Stats>,
+  statexp?: Partial<Stats>,
+  _nature?: Nature,
+) => {
+  const base = bases[stat];
+  // Gen 2 uses the Spc IV/EVs for SpA and SpD
+  stat = stat === "spd" ? "spa" : stat;
+
+  let dv = dvs?.[stat] ?? 15;
+  if (stat === "hp") {
+    dv = getHpIv(dvs);
+  }
+  const s = Math.min(Math.ceil(Math.sqrt(statexp?.[stat] ?? 65535)), 255);
+  return Math.floor((((base + dv) * 2 + s / 4) * level) / 100) + (stat === "hp" ? level + 10 : 5);
+};
+
+const getHpIv = (dvs?: Partial<Stats>) => {
+  return (
+    (((dvs?.atk ?? 15) & 1) << 3) |
+    (((dvs?.def ?? 15) & 1) << 2) |
+    (((dvs?.spa ?? 15) & 1) << 1) |
+    ((dvs?.spe ?? 15) & 1)
+  );
+};
+
 const createGeneration = () => {
   return {
     id: 1,
     maxIv: 15,
     maxEv: 65535,
+    maxTotalEv: 65535 * 6,
     speciesList,
     moveList,
     typeChart,
@@ -387,6 +426,10 @@ const createGeneration = () => {
     canOHKOHit(user: ActivePokemon, target: ActivePokemon) {
       return getStat(target, "spe") <= getStat(user, "spe");
     },
+    calcStat,
+    getHpIv,
+    getGender: (_desired: Gender, _species: Species, _atk: number): Gender => undefined,
+    getShiny: (_desired: boolean | undefined, _dvs: Partial<Stats>) => false,
   };
 };
 

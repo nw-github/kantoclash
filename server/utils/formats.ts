@@ -1,11 +1,11 @@
-import type {ValidatedPokemonDesc} from "~/game/pokemon";
+import {Nature, type ValidatedPokemonDesc} from "~/game/pokemon";
 import {moveList, type MoveId, type Move} from "~/game/moves";
 import {speciesList, type Species, type SpeciesId} from "~/game/species";
 import {statKeys, type Stats} from "~/game/utils";
 import random from "random";
 import {z} from "zod";
 import {isValidSketchMove, type FormatId} from "~/utils/shared";
-import {type Generation, GENERATION1} from "~/game/gen";
+import {type Generation, GENERATION1, GENERATION3} from "~/game/gen";
 import {GENERATION2} from "~/game/gen2";
 import {statusBerry, type ItemId} from "~/game/item";
 import {itemDesc} from "~/utils";
@@ -155,13 +155,21 @@ const createValidator = (gen: Generation) => {
         .nonempty("Must have at least one move")
         .refine(arr => new Set(arr).size === arr.length, "Duplicate moves are not allowed"),
       ivs: z.record(z.enum(statKeys), z.number().min(0).max(gen.maxIv)).optional(),
-      evs: z.record(z.enum(statKeys), z.number().min(0).max(gen.maxEv)).optional(),
+      evs: z
+        .record(z.enum(statKeys), z.number().min(0).max(gen.maxEv))
+        .optional()
+        .refine(
+          evs => Object.values(evs ?? {}).reduce((acc, v) => acc + v, 0) <= gen.maxTotalEv,
+          `Over max ev limit of ${gen.maxTotalEv}`,
+        ),
       friendship: z.number().min(0).max(255).optional(),
       item: z
         .string()
         .refine(i => i in gen.items, "Item does not exist")
         .optional()
         .refine(i => gen.id !== 1 || !i, "Cannot have item in Gen 1"),
+      gender: z.enum(["male", "female"]).optional(),
+      nature: z.nativeEnum(Nature).optional(),
     })
     .superRefine((desc, ctx) => {
       const learnset = gen.speciesList[desc.species as SpeciesId]?.moves;
@@ -187,6 +195,7 @@ const createValidator = (gen: Generation) => {
 
 const VALIDATOR_GEN1 = createValidator(GENERATION1);
 const VALIDATOR_GEN2 = createValidator(GENERATION2);
+const VALIDATOR_GEN3 = createValidator(GENERATION3);
 
 const validateTeam = (
   validator: typeof VALIDATOR_GEN1,
@@ -214,9 +223,9 @@ const validateTeam = (
 
 export const formatDescs: Record<FormatId, FormatFunctions> = {
   g3_randoms_doubles: {
-    generate: () => randoms(GENERATION2, (s, id) => !s.evolvesTo && id !== "mewtwo"),
+    generate: () => randoms(GENERATION3, s => !s.evolvesTo),
   },
-  g3_doubles: {validate: team => validateTeam(VALIDATOR_GEN2, team)},
+  g3_doubles: {validate: team => validateTeam(VALIDATOR_GEN3, team)},
   g2_standard: {validate: team => validateTeam(VALIDATOR_GEN2, team)},
   g2_randoms: {
     generate: () => randoms(GENERATION2, (s, id) => !s.evolvesTo && id !== "mewtwo"),

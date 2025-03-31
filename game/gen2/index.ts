@@ -64,7 +64,7 @@ const calcDamage = ({
   return idiv(dmg * r, 255) * double;
 };
 
-const merge = createDefu((obj, key, value) => {
+export const merge = createDefu((obj, key, value) => {
   if (Array.isArray(obj[key])) {
     obj[key] = value;
     return true;
@@ -165,7 +165,7 @@ const beforeUseMove = (battle: Battle, move: Move, user: ActivePokemon) => {
   return true;
 };
 
-type GenPatches = {
+export type GenPatches = {
   [P in keyof Generation]: Generation[P] extends object
     ? Generation[P] extends (...params: any[]) => any
       ? Generation[P]
@@ -312,6 +312,21 @@ const createGeneration = (): Generation => {
       // cause it to wrap around if the base stat is >= 512
       value %= 1024;
       return value;
+    },
+    getGender(_desired, species, atk) {
+      if (species.genderRatio) {
+        return atk < 15 - Math.floor(species.genderRatio * 15) ? "female" : "male";
+      } else if (species.genderRatio === 0) {
+        return "female";
+      }
+    },
+    getShiny(_desired, dvs) {
+      return (
+        dvs.def === 10 &&
+        dvs.spe === 10 &&
+        dvs.spa === 10 &&
+        [2, 3, 6, 7, 10, 11, 14, 15].includes(dvs.atk)
+      );
     },
   };
 

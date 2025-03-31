@@ -1,5 +1,5 @@
 import type {Generation} from "./gen";
-import type {Species, SpeciesId} from "./species";
+import type {SpeciesId} from "./species";
 import type {MoveId} from "./moves";
 import type {StageStats, Stats} from "./utils";
 import type {ItemId} from "./item";
@@ -20,9 +20,73 @@ export type PokemonDesc<
   moves: Move[];
   friendship?: number;
   item?: Item;
+  shiny?: bool;
+  gender?: Gender;
+  nature?: Nature;
 };
 
 export type ValidatedPokemonDesc = PokemonDesc<SpeciesId, MoveId, ItemId>;
+
+export enum Nature {
+  hardy,
+  lonely,
+  brave,
+  adamant,
+  naughty,
+  bold,
+  docile,
+  relaxed,
+  impish,
+  lax,
+  timid,
+  hasty,
+  serious,
+  jolly,
+  naive,
+  modest,
+  mild,
+  quiet,
+  bashful,
+  rash,
+  calm,
+  gentle,
+  sassy,
+  careful,
+  quirky,
+}
+
+export const natureTable: Record<Nature, Partial<Record<keyof StageStats, number>>> = {
+  [Nature.lonely]: {atk: 1.1, def: 0.9},
+  [Nature.brave]: {atk: 1.1, spe: 0.9},
+  [Nature.adamant]: {atk: 1.1, spa: 0.9},
+  [Nature.naughty]: {atk: 1.1, spd: 0.9},
+
+  [Nature.bold]: {def: 1.1, atk: 0.9},
+  [Nature.relaxed]: {def: 1.1, spe: 0.9},
+  [Nature.impish]: {def: 1.1, spa: 0.9},
+  [Nature.lax]: {def: 1.1, spd: 0.9},
+
+  [Nature.modest]: {spa: 1.1, atk: 0.9},
+  [Nature.mild]: {spa: 1.1, def: 0.9},
+  [Nature.quiet]: {spa: 1.1, spd: 0.9},
+  [Nature.rash]: {spa: 1.1, spe: 0.9},
+
+  [Nature.calm]: {spd: 1.1, atk: 0.9},
+  [Nature.gentle]: {spd: 1.1, def: 0.9},
+  [Nature.sassy]: {spd: 1.1, spa: 0.9},
+  [Nature.careful]: {spd: 1.1, spe: 0.9},
+
+  [Nature.timid]: {spe: 1.1, atk: 0.9},
+  [Nature.hasty]: {spe: 1.1, def: 0.9},
+  [Nature.jolly]: {spe: 1.1, spa: 0.9},
+  [Nature.naive]: {spe: 1.1, spd: 0.9},
+
+  [Nature.hardy]: {},
+  [Nature.docile]: {},
+  [Nature.serious]: {},
+  [Nature.bashful]: {},
+  [Nature.quirky]: {},
+};
 
 export class Pokemon {
   readonly stats: Stats;
@@ -36,19 +100,33 @@ export class Pokemon {
   status?: Status;
   sleepTurns: number = 0;
   friendship: number;
-  dvs: Stats;
+  ivs: Stats;
+  shiny: boolean;
+  gender?: Gender;
 
   constructor(
     readonly gen: Generation,
-    {species, ivs, evs, level, moves, name, friendship, item}: ValidatedPokemonDesc,
+    {
+      species,
+      ivs,
+      evs,
+      level,
+      moves,
+      name,
+      friendship,
+      item,
+      shiny,
+      gender,
+      nature,
+    }: ValidatedPokemonDesc,
   ) {
-    this.dvs = {
-      hp: getHpDv(ivs),
-      atk: ivs?.atk ?? 15,
-      def: ivs?.def ?? 15,
-      spa: ivs?.spa ?? 15,
-      spd: ivs?.spd ?? 15,
-      spe: ivs?.spe ?? 15,
+    this.ivs = {
+      hp: gen.getHpIv(ivs),
+      atk: ivs?.atk ?? gen.maxIv,
+      def: ivs?.def ?? gen.maxIv,
+      spa: ivs?.spa ?? gen.maxIv,
+      spd: ivs?.spd ?? gen.maxIv,
+      spe: ivs?.spe ?? gen.maxIv,
     };
     this.speciesId = species;
     this.name = name || this.species.name;
@@ -58,34 +136,22 @@ export class Pokemon {
     this.item = item;
     // https://bulbapedia.bulbagarden.net/wiki/Individual_values#Usage
     this.stats = {
-      hp: calcStat("hp", this.species.stats, this.level, this.dvs, evs),
-      atk: calcStat("atk", this.species.stats, this.level, this.dvs, evs),
-      def: calcStat("def", this.species.stats, this.level, this.dvs, evs),
-      spa: calcStat("spa", this.species.stats, this.level, this.dvs, evs),
-      spd: calcStat("spd", this.species.stats, this.level, this.dvs, evs),
-      spe: calcStat("spe", this.species.stats, this.level, this.dvs, evs),
+      hp: gen.calcStat("hp", this.species.stats, this.level, this.ivs, evs, nature),
+      atk: gen.calcStat("atk", this.species.stats, this.level, this.ivs, evs, nature),
+      def: gen.calcStat("def", this.species.stats, this.level, this.ivs, evs, nature),
+      spa: gen.calcStat("spa", this.species.stats, this.level, this.ivs, evs, nature),
+      spd: gen.calcStat("spd", this.species.stats, this.level, this.ivs, evs, nature),
+      spe: gen.calcStat("spe", this.species.stats, this.level, this.ivs, evs, nature),
     };
     this.hp = this.stats.hp;
     this.friendship = friendship ?? 255;
+    this.shiny = gen.getShiny(shiny ?? false, this.ivs);
+    this.gender = gen.getGender(gender, this.species, this.ivs.atk);
 
     // const c2 = (iv?: number) => ((iv ?? 15) >> 1) & 0b11;
     // const unownLetter = idiv(
     //   gen1StatKeys.filter(v => v !== "hp").reduce((acc, v) => acc + c2(dvs[v]), 0), 10,
     // );
-  }
-
-  get shiny() {
-    if (this.gen.id === 1) {
-      return undefined;
-    }
-    return getShiny(this.dvs);
-  }
-
-  get gender() {
-    if (this.gen.id === 1) {
-      return undefined;
-    }
-    return getGender(this.species, this.dvs.atk);
   }
 
   get species() {
@@ -127,49 +193,4 @@ export const transform = (user: Pokemon, transformed: Pokemon) => {
       return true;
     },
   });
-};
-
-export const calcStat = (
-  stat: keyof Stats,
-  bases: Stats,
-  level: number,
-  dvs?: Partial<Stats>,
-  statexp?: Partial<Stats>,
-) => {
-  const base = bases[stat];
-  // Gen 2 uses the Spc IV/EVs for SpA and SpD
-  stat = stat === "spd" ? "spa" : stat;
-
-  let dv = dvs?.[stat] ?? 15;
-  if (stat === "hp") {
-    dv = getHpDv(dvs);
-  }
-  const s = Math.min(Math.ceil(Math.sqrt(statexp?.[stat] ?? 65535)), 255);
-  return Math.floor((((base + dv) * 2 + s / 4) * level) / 100) + (stat === "hp" ? level + 10 : 5);
-};
-
-export const getHpDv = (dvs?: Partial<StageStats>) => {
-  return (
-    (((dvs?.atk ?? 15) & 1) << 3) |
-    (((dvs?.def ?? 15) & 1) << 2) |
-    (((dvs?.spa ?? 15) & 1) << 1) |
-    ((dvs?.spe ?? 15) & 1)
-  );
-};
-
-export const getGender = (species: Species, atk: number) => {
-  if (species.genderRatio) {
-    return atk < 15 - Math.floor(species.genderRatio * 15) ? "female" : "male";
-  } else if (species.genderRatio === 0) {
-    return "female";
-  }
-};
-
-export const getShiny = (dvs: Partial<Stats>) => {
-  return (
-    dvs.def === 10 &&
-    dvs.spe === 10 &&
-    dvs.spa === 10 &&
-    [2, 3, 6, 7, 10, 11, 14, 15].includes(dvs.atk)
-  );
 };

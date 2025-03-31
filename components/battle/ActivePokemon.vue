@@ -199,12 +199,6 @@
       </div>
 
       <img
-        v-if="player?.spikes"
-        class="absolute size-4 sm:size-7 bottom-10 sm:bottom-14 opacity-80 pointer-events-none"
-        src="/caltrop.svg"
-      />
-
-      <img
         v-for="i in 3"
         :key="i"
         class="caltrop absolute bottom-4 sm:bottom-8 size-4 sm:size-7 opacity-0 pointer-events-none"
@@ -244,7 +238,6 @@ img {
 
 <script setup lang="ts">
 import {stageMultipliers, VF, hpPercentExact, type Screen} from "~/game/utils";
-import {calcStat} from "~/game/pokemon";
 import {breakpointsTailwind} from "@vueuse/core";
 import type {Generation} from "~/game/gen";
 import {UPopover, type UBadge} from "#components";
@@ -257,6 +250,7 @@ import {
   type SequenceTime,
 } from "motion-v";
 import type {PokeId} from "~/game/events";
+import {Nature} from "~/game/pokemon";
 
 const {poke, back, gen, player, pokeId} = defineProps<{
   player?: ClientPlayer;
@@ -268,11 +262,19 @@ const {poke, back, gen, player, pokeId} = defineProps<{
 }>();
 const species = computed(() => poke && gen.speciesList[poke.transformed ?? poke.speciesId]);
 const minSpe = computed(
-  () => poke && calcStat("spe", species.value!.stats, poke.level, {spe: 0}, {spe: 0}),
+  () => poke && gen.calcStat("spe", species.value!.stats, poke.level, {spe: 0}, {spe: 0}),
 );
 const maxSpe = computed(
   () =>
-    poke && calcStat("spe", species.value!.stats, poke.level, {spe: gen.maxIv}, {spe: gen.maxEv}),
+    poke &&
+    gen.calcStat(
+      "spe",
+      species.value!.stats,
+      poke.level,
+      {spe: gen.maxIv},
+      {spe: gen.maxEv},
+      Nature.timid,
+    ),
 );
 const hp = computed(() => poke?.hpPercent ?? 0);
 const statShortName = computed(() => ({...getStatKeys(gen), spd: "SpD", acc: "Acc", eva: "Eva"}));

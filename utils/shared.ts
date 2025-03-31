@@ -49,7 +49,7 @@ export const formatInfo: Record<FormatId, FormatInfo> = {
     icon: "mdi:dice-3-outline",
     desc: "A random double battle.",
     mods: {sleepClause: true, endlessBattle: true},
-    generation: 2,
+    generation: 3,
     doubles: true,
   },
   g3_doubles: {
@@ -59,7 +59,7 @@ export const formatInfo: Record<FormatId, FormatInfo> = {
     needsTeam: true,
     chooseLead: true,
     mods: {sleepClause: true, endlessBattle: true},
-    generation: 2,
+    generation: 3,
     doubles: true,
   },
   g2_standard: {

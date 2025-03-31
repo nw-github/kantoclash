@@ -140,28 +140,42 @@
             <div class="flex flex-col relative grow">
               <div
                 v-if="gen.id > 1 && gen.speciesList[selectedPoke.data.species as SpeciesId]"
-                class="absolute p-2 flex flex-col gap-1"
+                class="absolute p-2 flex flex-col gap-1 z-10"
               >
-                <GenderIcon
-                  class="size-6"
-                  :gender="getGender(
-                    gen.speciesList[selectedPoke.data.species as SpeciesId],
-                    ivToDv(selectedPoke.data.ivs.atk),
-                  )"
-                />
+                <div>
+                  <TooltipButton
+                    text="Gender"
+                    variant="ghost"
+                    color="gray"
+                    :icon="currentGender.icon"
+                    :ui="{icon: {base: currentGender.clazz}}"
+                    @click="
+                      selectedPoke.data.gender =
+                        selectedPoke.data.gender === 'male' ? 'female' : 'male'
+                    "
+                  />
+                </div>
 
-                <UIcon
-                  v-if="getShiny(ivsToDvs(selectedPoke.data))"
-                  name="tabler:sparkles"
-                  class="size-6"
-                />
+                <div>
+                  <TooltipButton
+                    text="Shiny"
+                    :icon="
+                      gen.getShiny(selectedPoke.data.shiny, ivsToDvs(selectedPoke.data))
+                        ? 'ion:sparkles'
+                        : 'ion:sparkles-outline'
+                    "
+                    variant="ghost"
+                    color="gray"
+                    @click="selectedPoke.data.shiny = !selectedPoke.data.shiny"
+                  />
+                </div>
               </div>
 
               <PokemonSelector
                 v-model="selectedPoke.data.species"
                 :team
                 :gen
-                :shiny="getShiny(ivsToDvs(selectedPoke.data))"
+                :shiny="gen.getShiny(selectedPoke.data.shiny, ivsToDvs(selectedPoke.data))"
               />
               <InputWithMax
                 v-model.trim="selectedPoke.data.name"
@@ -169,6 +183,7 @@
                 :placeholder="selectedPoke.species?.name ?? 'No Name'"
               />
               <ItemSelector v-if="gen.id >= 2" v-model="selectedPoke.data.item" class="pt-1" :gen />
+              <USelectMenu v-if="gen.id >= 3" class="pt-1" placeholder="No Ability" />
             </div>
             <div class="flex flex-col justify-between gap-1">
               <div v-if="gen.id > 1" class="flex justify-between items-center">
@@ -191,6 +206,30 @@
                   :max="100"
                 />
               </div>
+              <div v-if="gen.id >= 3" class="flex justify-between items-center">
+                <span class="text-sm">Nature</span>
+                <USelectMenu
+                  v-model="selectedPoke.data.nature"
+                  class="w-28"
+                  :options="natures"
+                  searchable
+                  placeholder="Hardy"
+                  option-attribute="name"
+                  value-attribute="value"
+                  :search-attributes="['name', 'plus', 'minus']"
+                >
+                  <template #option="{option}">
+                    <div class="text-sm">
+                      <span>{{ option.name }}</span>
+                      <div v-if="option.plus" class="text-xs">
+                        <span class="text-lime-500">{{ option.plus }}</span
+                        >,
+                        <span class="text-red-500">{{ option.minus }}</span>
+                      </div>
+                    </div>
+                  </template>
+                </USelectMenu>
+              </div>
               <MoveSelector
                 v-for="(_, i) in 4"
                 :key="i"
@@ -205,37 +244,42 @@
             <template v-for="(name, stat) in statKeys" :key="stat">
               <span class="px-1.5">{{ name }}</span>
               <URange
-                v-model="selectedPoke.evProxy[stat === 'spd' ? 'spa' : stat]"
+                v-model="selectedPoke.evProxy[stat]"
                 :min="0"
                 :max="255"
+                :step="gen.id <= 2 ? 1 : 4"
                 color="green"
-                :disabled="stat === 'spd'"
+                :disabled="gen.id <= 2 && stat === 'spd'"
               />
               <span class="text-center px-1.5 min-w-8 text-xs">
-                {{ selectedPoke.evProxy[stat === "spd" ? "spa" : stat] }}
+                {{ selectedPoke.evProxy[stat] }}
               </span>
               <NumericInput
-                v-if="stat === 'hp'"
+                v-model="selectedPoke.ivProxy[stat]"
                 class="w-10"
-                disabled
-                :placeholder="String(dvToIv(getHpDv(ivsToDvs(selectedPoke.data))))"
-              />
-              <NumericInput
-                v-else
-                v-model="selectedPoke.data.ivs[stat === 'spd' ? 'spa' : stat]"
-                class="w-10"
+                :disabled="gen.id <= 2 && (stat === 'hp' || stat === 'spd')"
                 placeholder="31"
-                :min="0"
-                :max="31"
-                :disabled="stat === 'spd'"
               />
 
               <template v-if="selectedPoke.species">
                 <span
                   v-if="selectedPoke.data.species"
-                  class="text-center px-1.5 min-w-10 text-gray-500"
+                  class="relative text-center px-1.5 min-w-10 text-gray-500"
                 >
                   {{ calcPokeStat(stat, selectedPoke.data) }}
+
+                  <span
+                    v-if="(natureTable as any)[selectedPoke.data.nature!]?.[stat] > 1"
+                    class="absolute text-lime-500 -top-1.5 -right-1 font-bold"
+                  >
+                    +
+                  </span>
+                  <span
+                    v-if="(natureTable as any)[selectedPoke.data.nature!]?.[stat] < 1"
+                    class="absolute text-red-500 -top-1.5 -right-0.5 font-bold"
+                  >
+                    -
+                  </span>
                 </span>
                 <span
                   class="text-center px-1.5 min-w-8 text-xs"
@@ -257,6 +301,7 @@
           class="grow"
           :ui="{base: 'h-full min-h-[23.5rem]', rounded: 'rounded-lg'}"
           autofocus
+          spellcheck="false"
           @change="team.pokemon[selectedPokeIdx] = parsePokemon(currentPokeText.trim())"
         >
           <TooltipButton
@@ -296,10 +341,10 @@
 </template>
 
 <script setup lang="ts">
-import {calcStat, getGender, getHpDv, getShiny} from "~/game/pokemon";
 import type {Species, SpeciesId} from "~/game/species";
 import type {Stats} from "~/game/utils";
 import {GENERATIONS} from "~/game/gen";
+import {Nature, natureTable} from "~/game/pokemon";
 
 defineEmits<{(e: "delete" | "close"): void}>();
 
@@ -321,9 +366,48 @@ const selectedPoke = computed(() => ({
   evProxy: reactive(
     new Proxy(team.pokemon[selectedPokeIdx.value].evs, {
       get(target, prop) {
-        return target[prop as keyof Stats] ?? 255;
+        if (gen.value.id <= 2) {
+          if (prop === "spd") {
+            prop = "spa";
+          }
+          return target[prop as keyof Stats] ?? 255;
+        } else {
+          return target[prop as keyof Stats] ?? 0;
+        }
       },
       set(target, prop, val) {
+        if (gen.value.id <= 2 && prop === "spd") {
+          prop = "spa";
+        }
+
+        const prev = getTotalEvs(target);
+        target[prop as keyof Stats] = val;
+        const curr = getTotalEvs(target);
+
+        if (gen.value.id >= 3 && curr > gen.value.maxTotalEv && curr - prev > 0) {
+          target[prop as keyof Stats] = val - (curr - prev);
+        }
+
+        return true;
+      },
+    }),
+  ),
+  ivProxy: reactive(
+    new Proxy(team.pokemon[selectedPokeIdx.value].ivs, {
+      get(target, prop) {
+        if (gen.value.id <= 2) {
+          if (prop === "hp") {
+            return dvToIv(gen.value.getHpIv(ivsToDvs(selectedPoke.value.data)));
+          } else if (prop === "spd") {
+            prop = "spa";
+          }
+        }
+        return target[prop as keyof Stats] ?? 31;
+      },
+      set(target, prop, val) {
+        if (gen.value.id <= 2 && prop === "spd") {
+          prop = "spa";
+        }
         target[prop as keyof Stats] = val;
         return true;
       },
@@ -332,10 +416,40 @@ const selectedPoke = computed(() => ({
 }));
 const selectedTab = ref(0);
 const teamPokepaste = ref(false);
+const currentGender = computed(() => {
+  const gender = gen.value.getGender(
+    selectedPoke.value.data.gender,
+    gen.value.speciesList[selectedPoke.value.data.species as SpeciesId],
+    ivToDv(selectedPoke.value.data.ivs.atk),
+  );
+
+  if (gender === "male") {
+    return {gender, icon: "material-symbols:male", clazz: "text-sky-400"};
+  } else if (gender === "female") {
+    return {gender, icon: "material-symbols:female", clazz: "text-pink-400"};
+  }
+  return {gender, icon: "material-symbols:question-mark", clazz: ""};
+});
+const natures = Object.values(Nature)
+  .filter(t => typeof t === "number")
+  .map(k => ({
+    value: k,
+    name: toTitleCase(Nature[k]),
+    plus: Object.keys(natureTable[k]).map(k => `+${statKeys.value[k as keyof Stats]!}`)[0],
+    minus: Object.keys(natureTable[k]).map(k => `-${statKeys.value[k as keyof Stats]!}`)[1],
+  }));
+
+const getTotalEvs = (stats: Partial<Stats>) => {
+  let v = 0;
+  for (const stat in statKeys.value) {
+    v += stats[stat as keyof Stats] ?? 0;
+  }
+  return v;
+};
 
 watch([selectedPokeIdx, selectedTab], ([_, tab]) => {
   if (tab === 1) {
-    currentPokeText.value = descToString(team.pokemon[selectedPokeIdx.value]);
+    currentPokeText.value = descToString(team.format, team.pokemon[selectedPokeIdx.value]);
   }
 });
 
@@ -365,13 +479,24 @@ const ivsToDvs = (poke: TeamPokemonDesc) => {
 };
 
 const calcPokeStat = (stat: keyof Stats, poke: TeamPokemonDesc) => {
-  return calcStat(
-    stat,
-    gen.value.speciesList[poke.species as SpeciesId].stats,
-    poke.level ?? 100,
-    ivsToDvs(poke),
-    {[stat]: evToStatexp(poke.evs[stat])},
-  );
+  if (gen.value.id <= 2) {
+    return gen.value.calcStat(
+      stat,
+      gen.value.speciesList[poke.species as SpeciesId].stats,
+      poke.level ?? 100,
+      ivsToDvs(poke),
+      {[stat]: evToStatexp(poke.evs[stat])},
+    );
+  } else {
+    return gen.value.calcStat(
+      stat,
+      gen.value.speciesList[poke.species as SpeciesId].stats,
+      poke.level ?? 100,
+      poke.ivs,
+      poke.evs,
+      poke.nature,
+    );
+  }
 };
 
 const deletePokemon = (i: number) => {

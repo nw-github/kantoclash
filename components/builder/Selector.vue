@@ -6,7 +6,7 @@
       <motion.ul
         v-if="open"
         ref="container"
-        class="absolute z-30 max-h-60 p-0.5 focus:outline-none overflow-y-auto scroll-py-1 ring-1 ring-gray-200 dark:ring-gray-700 rounded-md shadow-lg bg-white dark:bg-gray-800"
+        class="absolute z-30 max-h-60 p-0.5 focus:outline-none overflow-y-auto overflow-x-hidden scroll-py-1 ring-1 ring-gray-200 dark:ring-gray-700 rounded-md shadow-lg bg-white dark:bg-gray-800"
         :class="base"
         :initial="{opacity: 0}"
         :transition="{duration: 0.1, ease: 'easeOut'}"

@@ -152,8 +152,8 @@
     <template v-else>{{ pn(e.src) }} was cured of its {{ statusNameTable[e.status] }}!</template>
   </div>
   <div v-else-if="e.type === 'spikes'">
-    <template v-if="e.spin">Rapid Spin blew away the Spikes around {{ tn(e.setOn, false) }}'s feet!</template>
-    <template v-else>Spikes were scattered all around the feet of {{ tn(e.setOn, false) }}!</template>
+    <template v-if="e.spin">Rapid Spin blew away the Spikes around {{ tn(e.player, false) }}'s feet!</template>
+    <template v-else>Spikes were scattered all around the feet of {{ tn(e.player, false) }}!</template>
   </div>
   <div v-else>Unknown event: <code>{{ e }}</code></div>
 </template>

@@ -24,6 +24,12 @@
           class="absolute bottom-4 sm:bottom-8 bg-gray-200 dark:bg-gray-600 w-[110%] h-10 sm:h-16 rounded-[100%] flex justify-center"
           :class="isSingles && 'w-full'"
         />
+
+        <img
+          v-if="player?.spikes"
+          class="absolute size-4 sm:size-7 bottom-10 sm:bottom-14 opacity-80 pointer-events-none"
+          src="/caltrop.svg"
+        />
       </div>
     </div>
   </div>

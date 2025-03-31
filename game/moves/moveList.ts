@@ -2648,9 +2648,9 @@ const internalMoveList = createMoveList({
         "fight", "flying", "poison", "ground", "rock", "bug", "ghost", "steel", "fire", "water",
         "grass", "electric", "psychic", "ice", "dragon", "dark",
       ];
-      return hpTypes[(((user.dvs.atk ?? 15) & 0b11) << 2) | ((user.dvs.def ?? 15) & 0b11)];
+      return hpTypes[(((user.ivs.atk ?? 15) & 0b11) << 2) | ((user.ivs.def ?? 15) & 0b11)];
     },
-    getPower({dvs}) {
+    getPower({ivs: dvs}) {
       const msb = (dv?: number) => +(((dv ?? 15) & (1 << 3)) !== 0);
 
       const x = msb(dvs.spa) | (msb(dvs.spe) << 1) | (msb(dvs.def) << 2) | (msb(dvs.atk) << 3);
