@@ -123,7 +123,12 @@ export class ActivePokemon {
     });
 
     for (const opp of oppActive) {
-      if (opp.v.trapped && opp.v.trapped.user === this && !opp.v.fainted) {
+      if (
+        opp.v.trapped &&
+        opp.v.trapped.turns !== -1 &&
+        opp.v.trapped.user === this &&
+        !opp.v.fainted
+      ) {
         battle.event({
           type: "trap",
           src: opp.id,
