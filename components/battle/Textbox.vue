@@ -160,6 +160,7 @@
   .move + .move,
   .move:first-child,
   .confused:first-child,
+  .charge:first-child,
   .confused + .move {
     padding-top: 0;
   }

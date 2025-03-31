@@ -8,7 +8,7 @@ import type {
   ChangedVolatiles,
   PokeId,
 } from "./events";
-import {type MoveId, type Move, Range} from "./moves";
+import {type MoveId, type Move, Range, isSpreadMove} from "./moves";
 import {Pokemon, type ValidatedPokemonDesc} from "./pokemon";
 import {
   getEffectiveness,
@@ -16,7 +16,6 @@ import {
   idiv,
   screens,
   VF,
-  isSpreadMove,
   type Type,
   type Weather,
   type Screen,
@@ -247,6 +246,10 @@ export class Battle {
 
   info(src: ActivePokemon, why: InfoReason, volatiles?: ChangedVolatiles) {
     return this.event({type: "info", src: src.id, why, volatiles});
+  }
+
+  miss(user: ActivePokemon, target: ActivePokemon) {
+    this.event({type: "miss", src: user.id, target: target.id});
   }
 
   opponentOf(player: Player): Player {

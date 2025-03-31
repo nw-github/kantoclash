@@ -34,7 +34,11 @@ export function exec(
     if (!user.v.lastHitBy) {
       user.v.rollout = 0;
       user.v.furyCutter = 0;
-      return battle.info(user, "miss");
+      if (battle.gen.id <= 2) {
+        return battle.info(user, "miss");
+      } else {
+        return battle.info(user, "fail_generic");
+      }
     }
     targets = [user.v.lastHitBy.user];
   }
@@ -66,7 +70,7 @@ const tryDamage = (
   if (self.flag === "drain" && target.v.substitute) {
     user.v.rollout = 0;
     user.v.furyCutter = 0;
-    return battle.info(user, "miss");
+    return battle.miss(user, target);
   }
 
   const protect = target.v.hasFlag(VF.protect);
@@ -81,7 +85,7 @@ const tryDamage = (
   } else if (fail) {
     user.v.rollout = 0;
     user.v.furyCutter = 0;
-    battle.info(user, "miss");
+    battle.miss(user, target);
     return checkThrashing();
   } else if (protect || !battle.checkAccuracy(self, user, target)) {
     user.v.rollout = 0;

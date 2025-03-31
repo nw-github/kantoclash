@@ -2,7 +2,7 @@
   <div
     class="flex h-full p-4 overflow-auto rounded-lg gap-4 dark:divide-gray-800 ring-1 ring-gray-200 dark:ring-gray-800 shadow"
   >
-    <div class="flex flex-col w-full items-center overflow-hidden">
+    <div class="flex flex-col w-full items-center overflow-auto">
       <!-- Top Bar -->
       <div class="flex w-full relative justify-between items-start">
         <div class="flex gap-2 items-center">
@@ -29,7 +29,7 @@
         </div>
       </div>
 
-      <Field ref="field" :players :perspective :is-singles :gen />
+      <Field ref="field" class="overflow-hidden" :players :perspective :is-singles :gen />
 
       <!-- Events -->
       <div class="relative w-full">
@@ -78,7 +78,12 @@
               />
             </UTooltip>
 
-            <UTooltip text="Open Chat" :popper="{placement: 'top'}" class="min-[900px]:hidden px-2">
+            <UTooltip
+              v-if="textBoxHidden"
+              text="Open Chat"
+              :popper="{placement: 'top'}"
+              class="px-2"
+            >
               <UChip :show="unseenChats !== 0" :text="unseenChats" size="xl" inset>
                 <UButton
                   ref="menuButton"
@@ -170,7 +175,7 @@
       </div>
     </div>
 
-    <div class="hidden min-[900px]:block h-full w-full">
+    <div v-if="!textBoxHidden" class="h-full w-full">
       <Textbox
         :players
         :chats
@@ -263,6 +268,9 @@ const isBattleOver = computed(() => finished || !!victor.value);
 const isBattler = computed(() => players.get(myId.value) && !players.get(myId.value).isSpectator);
 const perspective = ref("");
 const isSingles = computed(() => players.get(perspective.value)?.active?.length === 1);
+
+const mediaQuery = computed(() => (isSingles.value ? "(max-width: 900px)" : "(max-width: 1100px)"));
+const textBoxHidden = useMediaQuery(mediaQuery);
 
 watchImmediate([isBattler, () => players.items, myId], () => {
   perspective.value = isBattler.value
@@ -473,14 +481,16 @@ const runEvent = async (e: BattleEvent) => {
       return;
     } else if (e.type === "info") {
       if (e.why === "faint") {
-        playCry(players.poke(e.src)!.speciesId, true);
+        const poke = players.poke(e.src)!;
+        playCry(poke.speciesId, true);
         pushEvent(e);
         await playAnimation(e.src, {anim: "faint"});
         if (isLive()) {
           await delay(400);
         }
 
-        players.poke(e.src)!.fainted = true;
+        poke.fainted = true;
+        poke.hidden = true;
         players.byPokeId(e.src).nFainted++;
         return;
       } else if (e.why === "heal_bell") {

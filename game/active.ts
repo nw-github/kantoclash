@@ -652,6 +652,7 @@ class Volatiles {
 }
 
 const getValidTargets = (battle: Battle, move: Move, user: ActivePokemon) => {
+  // TODO: retarget if dead && hyper beam
   if (move === user.v.charging?.move) {
     return [user.v.charging.target.id];
   }

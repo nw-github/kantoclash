@@ -10,7 +10,14 @@
     <template v-else>{{ players.byPokeId(e.src).name }} sent in <b>{{ e.name }}</b>!</template>
   </div>
   <div v-else-if="e.type === 'damage'">
-    <p v-if="e.why === 'attacked' && e.isCrit">A critical hit!</p>
+    <p v-if="e.why === 'attacked' && e.isCrit">
+      <template v-if="players.byPokeId(e.target).active.length > 1">
+        A critical hit on {{ pn(e.target, false) }}!
+      </template>
+      <template v-else>
+        A critical hit!
+      </template>
+    </p>
     <p v-else-if="e.why === 'trap_eot'">
       {{ pn(e.src) }} is hurt by {{ (gen.moveList as any)[e.move!].name }}!
     </p>
@@ -24,7 +31,7 @@
     </p>
 
     <p v-if="e.why === 'attacked' && e.hitCount === undefined && (e.eff ?? 1) !== 1" class="italic">
-      {{ eff(e.eff) }}
+      {{ eff(e.target, e.eff) }}
     </p>
 
     <p v-if="e.why !== 'explosion'" class="text-xs sm:text-[0.8rem] text-[var(--stat-down)]">
@@ -35,7 +42,7 @@
     </p>
 
     <template v-if="e.hitCount">
-      <p v-if="(e.eff ?? 1) !== 1" class="italic">{{ eff(e.eff) }}</p>
+      <p v-if="(e.eff ?? 1) !== 1" class="italic">{{ eff(e.target, e.eff) }}</p>
       <p>Hit {{ e.hitCount }} time(s)!</p>
     </template>
   </div>
@@ -67,7 +74,7 @@
   </div>
   <div v-else-if="e.type === 'hit_sub'">
     <p v-if="e.confusion">It hurt itself in its confusion!</p>
-    <p v-if="(e.eff ?? 1) !== 1" class="italic">{{ eff(e.eff) }}</p>
+    <p v-if="(e.eff ?? 1) !== 1" class="italic">{{ eff(e.target, e.eff) }}</p>
     <p>{{ pn(e.target) }}'s substitute took the hit!</p>
   </div>
   <div v-else-if="e.type === 'sub_break'">{{ pn(e.target) }}'s substitute broke!</div>
@@ -83,6 +90,10 @@
     <p v-if="e.why === 'fail_sleep_clause'">
       (Sleep Clause Mod: Only one Pokémon may be put to sleep at a time)
     </p>
+  </div>
+  <div v-else-if="e.type === 'miss'">
+    <template v-if="players.byPokeId(e.target).active.length > 1">It missed {{ pn(e.target, false) }}!</template>
+    <template v-else>{{ pn(e.src) }} missed!</template>
   </div>
   <div v-else-if="e.type === 'transform'">{{ pn(e.src) }} transformed into {{ pn(e.target, false) }}!</div>
   <div v-else-if="e.type === 'disable'">{{ pn(e.src) }}'s {{ gen.moveList[e.move].name }} was disabled!</div>
@@ -191,7 +202,17 @@ const tn = (id: PokeId | PlayerId, title = true) => {
   }
 };
 
-const eff = (v?: number) => `It's ${(v ?? 1) > 1 ? "super effective!" : "not very effective..."}`;
+const eff = (id: PokeId, v?: number) => {
+  if (players.byPokeId(id).active.length > 1) {
+    return `It's ${(v ?? 1) > 1 ? "super effective!" : "not very effective..."}`;
+  } else {
+    return `It's ${
+      (v ?? 1) > 1
+        ? `super effective on ${pn(id, false)}!`
+        : `not very effective on ${pn(id, false)}...`
+    }`;
+  }
+};
 
 const percent = (e: UIDamageEvent | UIRecoverEvent) => {
   let pv = Math.abs(e.hpPercentBefore - e.hpPercentAfter);

@@ -95,7 +95,7 @@ const checkAccuracy = (move: Move, battle: Battle, user: ActivePokemon, target: 
   }
 
   if (target.v.invuln || !battle.rand255(chance)) {
-    battle.info(user, "miss");
+    battle.miss(user, target);
     return false;
   }
   return true;

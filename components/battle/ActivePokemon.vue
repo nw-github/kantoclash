@@ -80,7 +80,7 @@
             :data-poke-id="pokeId"
           >
             <div
-              class="absolute w-[128px] h-[117px] sm:w-[256px] sm:h-[234px] flex justify-center items-center"
+              class="absolute w-[128px] h-[117px] sm:w-[256px] sm:h-[234px] flex justify-center items-center select-none"
             >
               <Sprite
                 :species="poke?.transformed ?? poke?.speciesId"
@@ -158,7 +158,7 @@
           </template>
         </UPopover>
 
-        <AnimatePresence>
+        <AnimatePresence v-if="poke && !poke.hidden">
           <motion.div
             v-for="({name: key, clazz}, i) in screens"
             :key

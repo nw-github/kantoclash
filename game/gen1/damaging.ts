@@ -71,7 +71,7 @@ export function exec(
           trapTarget(this, battle.rng, user, target);
         }
       } else {
-        battle.info(user, "miss");
+        battle.miss(user, target);
       }
 
       if (this.flag === "crash" && eff === 0) {

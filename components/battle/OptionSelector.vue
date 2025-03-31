@@ -33,7 +33,7 @@
         />
       </div>
 
-      <div class="grid gap-2 grid-cols-2 h-min">
+      <div class="grid gap-2 grid-cols-2 h-min sm:w-1/2">
         <template v-for="(poke, i) in players.get(opponent).active" :key="i">
           <TargetButton
             v-if="poke"
@@ -88,7 +88,8 @@ import type {Pokemon} from "~/game/pokemon";
 import type {Choice, MoveChoice} from "~/server/gameServer";
 import type {Generation} from "~/game/gen";
 import type {PokeId} from "~/game/events";
-import {playerId, isSpreadMove} from "~/game/utils";
+import {playerId} from "~/game/utils";
+import {isSpreadMove} from "~/game/moves";
 
 const emit = defineEmits<{(e: "choice", choice: Choice): void; (e: "cancel"): void}>();
 const {players, myId, options, team, opponent, gen} = defineProps<{

@@ -154,7 +154,6 @@ type StagesEvent = {type: "stages"; src: PokeId; stat: Stages; count: number};
 
 export type FailReason =
   | "immune"
-  | "miss"
   | "fail_generic"
   | "fail_notarget"
   | "fail_sleep_clause"
@@ -204,14 +203,15 @@ export type InfoReason =
   | "future_sight"
   | "future_sight_release"
   | "withdraw"
-  | "fail_present";
+  | "fail_present"
+  | "miss";
 
 type InfoEvent = {type: "info"; src: PokeId; why: InfoReason};
 
 type BugEvent = {type: "bug"; bug: BugType};
 
 type SrcTargetEvent = {
-  type: "transform" | "in_love" | "psych_up" | "foresight" | "lock_on";
+  type: "transform" | "in_love" | "psych_up" | "foresight" | "lock_on" | "miss";
   src: PokeId;
   target: PokeId;
 };

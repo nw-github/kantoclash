@@ -228,7 +228,7 @@ const createGeneration = (): Generation => {
       if (target.v.invuln) {
         const charging = target.v.charging && battle.moveIdOf(target.v.charging.move);
         if (charging && (!move.ignore || !move.ignore.includes(charging))) {
-          battle.info(user, "miss");
+          battle.miss(user, target);
           return false;
         }
       }
@@ -251,7 +251,7 @@ const createGeneration = (): Generation => {
 
       // console.log(`[${user.base.name}] ${move.name} (Acc ${acc}/255)`);
       if (!battle.rand255Good(acc)) {
-        battle.info(user, "miss");
+        battle.miss(user, target);
         return false;
       }
       return true;

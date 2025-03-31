@@ -2,7 +2,6 @@ import type {Random} from "random";
 import type {ActivePokemon} from "./battle";
 import type {TypeChart} from "./gen";
 import type {PlayerId, PokeId} from "./events";
-import {Range} from "./moves";
 
 export type Weather = "rain" | "sun" | "sand";
 
@@ -148,8 +147,6 @@ export const stageMultipliers: Record<number, number> = {
   5: 350,
   6: 400,
 };
-
-export const isSpreadMove = (range: Range) => range >= Range.All;
 
 export const arraysEqual = <T>(a: readonly T[], b: readonly T[]) => {
   return a.length === b.length && a.every((item, i) => b[i] === item);

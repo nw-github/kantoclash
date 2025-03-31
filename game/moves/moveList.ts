@@ -32,6 +32,8 @@ export enum Range {
   Field,
 }
 
+export const isSpreadMove = (range: Range) => range >= Range.All;
+
 export const createMoveList = <T extends Record<string, Move>>(list: T) => {
   let id = 0;
   for (const k in list) {
