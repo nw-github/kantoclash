@@ -62,7 +62,9 @@ const info = computed(() => {
     pow = move.value.getPower(poke);
   }
   if (move.value.kind === "damage" && poke && move.value.getType) {
-    type = move.value.getType(poke);
+    if (option.move !== "hiddenpower" || !poke.transformed) {
+      type = move.value.getType(poke);
+    }
   }
   if (pow && pow !== 1 && poke?.item && gen.itemTypeBoost[poke.item] === type) {
     pow += Math.floor(pow / 10);

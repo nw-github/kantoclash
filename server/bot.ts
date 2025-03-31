@@ -375,7 +375,7 @@ export function randomBot({options, me}: BotParams) {
   for (const opt of options) {
     const who = +opt.id.split(":")[1];
     const validMoves = opt.moves.filter(move => move.valid);
-    const switchRandomly = random.int(0, 11) === 1;
+    const switchRandomly = random.int(0, 11 * options.length) === 1;
     if (!validMoves.length || (opt.switches.length && switchRandomly)) {
       const pokeIndex = random.choice(opt.switches.filter(i => !switchedTo.includes(i)))!;
       choices.push({type: "switch", who, pokeIndex});

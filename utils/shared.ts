@@ -48,7 +48,6 @@ export const formatInfo: Record<FormatId, FormatInfo> = {
     name: "[ADV] Random Doubles",
     icon: "mdi:dice-3-outline",
     desc: "A random double battle.",
-    chooseLead: true,
     mods: {sleepClause: true, endlessBattle: true},
     generation: 2,
     doubles: true,

@@ -158,7 +158,7 @@
           </template>
         </UPopover>
 
-        <AnimatePresence v-if="poke && !poke.hidden">
+        <AnimatePresence>
           <motion.div
             v-for="({name: key, clazz}, i) in screens"
             :key

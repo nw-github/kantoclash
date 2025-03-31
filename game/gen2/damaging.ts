@@ -87,14 +87,14 @@ const tryDamage = (
     user.v.furyCutter = 0;
     battle.miss(user, target);
     return checkThrashing();
-  } else if (protect || !battle.checkAccuracy(self, user, target)) {
+  } else if (protect) {
     user.v.rollout = 0;
     user.v.furyCutter = 0;
-    if (protect) {
-      battle.info(target, "protect");
-      return checkThrashing();
-    }
-
+    battle.info(target, "protect");
+    return checkThrashing();
+  } else if (!battle.checkAccuracy(self, user, target)) {
+    user.v.rollout = 0;
+    user.v.furyCutter = 0;
     if (self.flag === "crash") {
       const {dmg} = getDamage(self, battle, user, target, {});
       battle.gen.handleCrashDamage(battle, user, target, dmg);

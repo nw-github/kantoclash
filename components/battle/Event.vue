@@ -204,13 +204,13 @@ const tn = (id: PokeId | PlayerId, title = true) => {
 
 const eff = (id: PokeId, v?: number) => {
   if (players.byPokeId(id).active.length > 1) {
-    return `It's ${(v ?? 1) > 1 ? "super effective!" : "not very effective..."}`;
-  } else {
     return `It's ${
       (v ?? 1) > 1
         ? `super effective on ${pn(id, false)}!`
         : `not very effective on ${pn(id, false)}...`
     }`;
+  } else {
+    return `It's ${(v ?? 1) > 1 ? "super effective!" : "not very effective..."}`;
   }
 };
 

@@ -37,8 +37,8 @@ export type ChosenMove = {
   move: Move;
   indexInMoves?: number;
   user: ActivePokemon;
-  targets: ActivePokemon[];
-  isReplacement: boolean;
+  target?: ActivePokemon;
+  isReplacement: bool;
 };
 
 export class ActivePokemon {
@@ -425,7 +425,7 @@ export class ActivePokemon {
       const poke = this.owner.team[i];
       if (
         poke.hp !== 0 &&
-        (battle.turn === TurnType.Lead || !this.owner.active.some(a => a.base.real === poke))
+        (battle.turnType === TurnType.Lead || !this.owner.active.some(a => a.base.real === poke))
       ) {
         switches.push(i);
       }

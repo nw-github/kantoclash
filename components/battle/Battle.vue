@@ -1,8 +1,8 @@
 <template>
   <div
-    class="flex h-full p-4 overflow-auto rounded-lg gap-4 dark:divide-gray-800 ring-1 ring-gray-200 dark:ring-gray-800 shadow"
+    class="flex h-full p-4 rounded-lg gap-4 dark:divide-gray-800 ring-1 ring-gray-200 dark:ring-gray-800 shadow"
   >
-    <div class="flex flex-col w-full items-center overflow-auto">
+    <div class="flex flex-col w-full items-center overflow-x-hidden overflow-y-auto">
       <!-- Top Bar -->
       <div class="flex w-full relative justify-between items-start">
         <div class="flex gap-2 items-center">
@@ -29,7 +29,7 @@
         </div>
       </div>
 
-      <Field ref="field" class="overflow-hidden" :players :perspective :is-singles :gen />
+      <Field ref="field" :players :perspective :is-singles :gen />
 
       <!-- Events -->
       <div class="relative w-full">
@@ -175,7 +175,7 @@
       </div>
     </div>
 
-    <div v-if="!textBoxHidden" class="h-full w-full">
+    <div v-if="!textBoxHidden" class="h-full" :class="isSingles ? 'w-full' : 'w-3/5'">
       <Textbox
         :players
         :chats
