@@ -116,10 +116,10 @@ const createGeneration = (): Generation => {
     getGender: (desired, species) => {
       // prettier-ignore
       switch (species.genderRatio) {
-      case undefined: return;
+      case undefined: return "none";
       case 100: return "male";
       case 0: return "female";
-      default: return desired ?? (Math.random() * 100 < species.genderRatio ? "male" : "female");
+      default: return desired;
       }
     },
   };

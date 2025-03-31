@@ -5,7 +5,7 @@ import type {StageStats, Stats} from "./utils";
 import type {ItemId} from "./item";
 
 export type Status = "psn" | "par" | "slp" | "frz" | "tox" | "brn";
-export type Gender = "male" | "female" | undefined;
+export type Gender = "male" | "female" | "none";
 
 export type PokemonDesc<
   Species extends string = string,
@@ -102,7 +102,7 @@ export class Pokemon {
   friendship: number;
   ivs: Stats;
   shiny: boolean;
-  gender?: Gender;
+  gender: Gender;
 
   constructor(
     readonly gen: Generation,
@@ -134,7 +134,6 @@ export class Pokemon {
     this.pp = moves.map(move => gen.getMaxPP(gen.moveList[move]));
     this.level = level ?? 100;
     this.item = item;
-    // https://bulbapedia.bulbagarden.net/wiki/Individual_values#Usage
     this.stats = {
       hp: gen.calcStat("hp", this.species.stats, this.level, this.ivs, evs, nature),
       atk: gen.calcStat("atk", this.species.stats, this.level, this.ivs, evs, nature),
@@ -146,7 +145,9 @@ export class Pokemon {
     this.hp = this.stats.hp;
     this.friendship = friendship ?? 255;
     this.shiny = gen.getShiny(shiny ?? false, this.ivs);
-    this.gender = gen.getGender(gender, this.species, this.ivs.atk);
+    this.gender =
+      gen.getGender(gender, this.species, this.ivs.atk) ??
+      (Math.random() * 100 < this.species.genderRatio! ? "male" : "female");
 
     // const c2 = (iv?: number) => ((iv ?? 15) >> 1) & 0b11;
     // const unownLetter = idiv(

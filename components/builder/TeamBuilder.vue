@@ -140,19 +140,22 @@
             <div class="flex flex-col relative grow">
               <div
                 v-if="gen.id > 1 && gen.speciesList[selectedPoke.data.species as SpeciesId]"
-                class="absolute p-2 flex flex-col gap-1 z-10"
+                class="absolute p-1 flex flex-col gap-1 z-10"
               >
-                <div>
+                <div class="relative">
                   <TooltipButton
                     text="Gender"
                     variant="ghost"
                     color="gray"
-                    :icon="currentGender.icon"
-                    :ui="{icon: {base: currentGender.clazz}}"
-                    @click="
-                      selectedPoke.data.gender =
-                        selectedPoke.data.gender === 'male' ? 'female' : 'male'
-                    "
+                    :icon="currGender.icon"
+                    :ui="{icon: {base: currGender.clazz}}"
+                    :disabled="currGender.forced"
+                    @click="toggleGender"
+                  />
+
+                  <UIcon
+                    v-if="currGender.random"
+                    name="mdi:dice-3-outline absolute -bottom-1 -right-1 size-4"
                   />
                 </div>
 
@@ -166,6 +169,7 @@
                     "
                     variant="ghost"
                     color="gray"
+                    :disabled="gen.id <= 2"
                     @click="selectedPoke.data.shiny = !selectedPoke.data.shiny"
                   />
                 </div>
@@ -416,20 +420,38 @@ const selectedPoke = computed(() => ({
 }));
 const selectedTab = ref(0);
 const teamPokepaste = ref(false);
-const currentGender = computed(() => {
-  const gender = gen.value.getGender(
-    selectedPoke.value.data.gender,
+const currGender = computed(() => {
+  let gender = gen.value.getGender(
+    undefined,
     gen.value.speciesList[selectedPoke.value.data.species as SpeciesId],
     ivToDv(selectedPoke.value.data.ivs.atk),
   );
+  const forced = gender !== undefined;
+  if (!forced) {
+    gender = selectedPoke.value.data.gender;
+  }
 
   if (gender === "male") {
-    return {gender, icon: "material-symbols:male", clazz: "text-sky-400"};
+    return {gender, icon: "material-symbols:male", clazz: "text-sky-400", forced};
   } else if (gender === "female") {
-    return {gender, icon: "material-symbols:female", clazz: "text-pink-400"};
+    return {gender, icon: "material-symbols:female", clazz: "text-pink-400", forced};
+  } else if (gender === "none") {
+    return {gender, icon: "material-symbols:question-mark", clazz: "", forced};
+  } else {
+    return {gender, icon: "material-symbols:male", clazz: "text-sky-400", random: true};
   }
-  return {gender, icon: "material-symbols:question-mark", clazz: ""};
 });
+
+const toggleGender = () => {
+  if (selectedPoke.value.data.gender === "male") {
+    selectedPoke.value.data.gender = "female";
+  } else if (selectedPoke.value.data.gender === "female") {
+    selectedPoke.value.data.gender = undefined;
+  } else {
+    selectedPoke.value.data.gender = "male";
+  }
+};
+
 const natures = Object.values(Nature)
   .filter(t => typeof t === "number")
   .map(k => ({

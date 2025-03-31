@@ -428,7 +428,11 @@ const createGeneration = () => {
     },
     calcStat,
     getHpIv,
-    getGender: (_desired: Gender, _species: Species, _atk: number): Gender => undefined,
+    getGender: (
+      _desired: Gender | undefined,
+      _species: Species,
+      _atk: number,
+    ): Gender | undefined => "none",
     getShiny: (_desired: boolean | undefined, _dvs: Partial<Stats>) => false,
   };
 };

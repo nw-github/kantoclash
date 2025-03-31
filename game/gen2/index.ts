@@ -318,6 +318,8 @@ const createGeneration = (): Generation => {
         return atk < 15 - Math.floor(species.genderRatio * 15) ? "female" : "male";
       } else if (species.genderRatio === 0) {
         return "female";
+      } else {
+        return "none";
       }
     },
     getShiny(_desired, dvs) {

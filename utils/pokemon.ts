@@ -33,7 +33,7 @@ export const descToString = (format: FormatId, poke: PokemonDesc) => {
 
   const item = poke.item ? ` @ ${poke.item}` : "";
   const g = species && gen.id >= 3 && gen.getGender(poke.gender, species, poke.ivs?.atk ?? 15);
-  const gender = g ? ` (${g[0].toUpperCase()})` : "";
+  const gender = g && g !== "none" ? ` (${g[0].toUpperCase()})` : "";
 
   let result = "";
   if (poke.name !== species?.name && poke.name) {

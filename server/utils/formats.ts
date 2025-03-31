@@ -170,6 +170,7 @@ const createValidator = (gen: Generation) => {
         .refine(i => gen.id !== 1 || !i, "Cannot have item in Gen 1"),
       gender: z.enum(["male", "female"]).optional(),
       nature: z.nativeEnum(Nature).optional(),
+      shiny: z.boolean().optional(),
     })
     .superRefine((desc, ctx) => {
       const learnset = gen.speciesList[desc.species as SpeciesId]?.moves;
