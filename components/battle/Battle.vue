@@ -469,7 +469,12 @@ const runEvent = async (e: BattleEvent) => {
         });
       } else {
         update();
-        if (e.why === "confusion" || e.why === "sandstorm" || e.why === "future_sight") {
+        if (
+          e.why === "confusion" ||
+          e.why === "sand" ||
+          e.why === "hail" ||
+          e.why === "future_sight"
+        ) {
           await Promise.allSettled([playDmg(e.eff ?? 1), playAnimation(e.src, {anim: "hurt"})]);
         }
       }

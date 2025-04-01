@@ -13,13 +13,13 @@ bide duration is two turns, now locked in
 kings rock affects trapping move
 
 adjacent moves currently retarget to hit allies
+  - will also prefer ally instead of right diagonal opponent
 
 rollout targeting?
 
 trapping moves are broken again
 
-Sandstorm, hail, don't damage during the semi-invulnerable turn of dive
-
+endure breaks randomly
 
 */
 

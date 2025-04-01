@@ -75,7 +75,7 @@ export type DamageReason =
   | "brn"
   | "confusion"
   | "trap"
-  | "sandstorm"
+  | "sand"
   | "hail"
   | "belly_drum"
   | "set_curse"

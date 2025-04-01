@@ -166,7 +166,7 @@ export const damageMessage: Partial<Record<DamageReason, string>> = {
   trap: "{}'s attack continues!",
   ohko: "It's a one-hit KO!",
   nightmare: "{} is locked in a Nightmare!",
-  sandstorm: "{} is buffeted by the sandstorm!",
+  sand: "{} is buffeted by the sandstorm!",
   hail: "{} is buffeted by the hail!",
   seeded: "{}'s health was sapped by Leech Seed!",
   belly_drum: "{} cut its own HP and maximized its Attack!",

@@ -266,7 +266,7 @@ const deleteTeam = (team: Team) => {
 };
 
 const newTeam = (format: FormatId = "g1_standard") => {
-  myTeams.value.unshift({name: "New Team", format, pokemon: [parsePokemon("")]});
+  myTeams.value.unshift({name: "New Team", format, pokemon: [parsePokemon(format, "")]});
   editingTeam.value = myTeams.value[0];
 };
 

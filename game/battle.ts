@@ -845,20 +845,32 @@ export class Battle {
           this.event({type: "weather", kind: "end", weather: this.weather.kind});
           delete this.weather;
           break weather;
-        } else if (this.weather.kind !== "sand") {
-          break weather;
         }
 
         this.event({type: "weather", kind: "continue", weather: this.weather.kind});
+        if (this.weather.kind !== "sand" && this.weather.kind !== "hail") {
+          break weather;
+        }
+
         for (const active of this.allActive) {
-          if (active.v.charging?.move === this.gen.moveList.dig || active.v.fainted) {
+          if (
+            active.v.charging?.move === this.gen.moveList.dig ||
+            active.v.charging?.move === this.gen.moveList.dive ||
+            active.v.fainted
+          ) {
             continue;
-          } else if (active.v.types.some(t => t === "steel" || t === "ground" || t === "rock")) {
+          } else if (
+            this.weather.kind === "sand" &&
+            active.v.types.some(t => t === "steel" || t === "ground" || t === "rock")
+          ) {
+            continue;
+          } else if (this.weather.kind === "hail" && active.v.types.includes("ice")) {
             continue;
           }
 
-          const dmg = Math.max(idiv(active.base.stats.hp, 8), 1);
-          active.damage(dmg, active, this, false, "sandstorm", true);
+          const d = this.gen.id <= 2 ? 8 : 16;
+          const dmg = Math.max(idiv(active.base.stats.hp, d), 1);
+          active.damage(dmg, active, this, false, this.weather.kind, true);
         }
 
         this.betweenTurns = BetweenTurns.Weather;

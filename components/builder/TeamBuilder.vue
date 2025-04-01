@@ -222,6 +222,7 @@
                   option-attribute="name"
                   value-attribute="value"
                   :search-attributes="['name', 'plus', 'minus']"
+                  clear-search-on-close
                 >
                   <template #option="{option}">
                     <div class="text-sm">

@@ -119,7 +119,7 @@ const flagDesc: Record<NonNullable<DamagingMove["flag"]>, string> = {
     "continue to use Rage until it faints or the battle ends. Every time it is hit by a move " +
     "or targeted by Disable, Explosion, or Self-Destruct, its attack will increase by one " +
     "stage. ",
-  ohko: "Deals 65535 damage to the target. Fails on faster opponents. ",
+  ohko: "Fails on faster opponents. ",
   trap: "Deals damage and prevents the target from moving for 2-5 turns. ",
   flail: "Higher power the lower the user's HP is. ",
   magnitude: "Power is determined randomly. ",
