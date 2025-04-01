@@ -251,11 +251,11 @@ export function checkUsefulness(
   } else if (self.flag === "ohko" && !battle.gen.canOHKOHit(user, target)) {
     fail = true;
   } else if (typeof self.getDamage === "number") {
-    if (battle.gen.id === 1) {
+    if (battle.gen.id === 1 || eff !== 0) {
       eff = 1;
     }
   } else if (self.getDamage) {
-    if (battle.gen.id === 1 && self.flag !== "ohko") {
+    if ((battle.gen.id === 1 && self.flag !== "ohko") || eff !== 0) {
       eff = 1;
     }
 

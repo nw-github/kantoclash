@@ -1873,7 +1873,7 @@ const internalMoveList = createMoveList({
     type: "normal",
     range: Range.Self,
     exec(battle, user) {
-      if (user.owner.team.every(p => p === user.base.real || p.hp === 0)) {
+      if (user.owner.team.every(p => !p.hp || user.owner.active.some(a => a.base === p))) {
         return battle.info(user, "fail_generic");
       }
 
