@@ -1,16 +1,17 @@
 import type {Generation} from "./gen";
-import type {SpeciesId} from "./species";
+import type {AbilityId, SpeciesId} from "./species";
 import type {MoveId} from "./moves";
 import type {StageStats, Stats} from "./utils";
 import type {ItemId} from "./item";
 
 export type Status = "psn" | "par" | "slp" | "frz" | "tox" | "brn";
-export type Gender = "male" | "female" | "none";
+export type Gender = "M" | "F" | "N";
 
 export type PokemonDesc<
   Species extends string = string,
   Move extends string = string,
   Item extends string = string,
+  Ability extends string = string,
 > = {
   evs?: Partial<Stats>;
   ivs?: Partial<Stats>;
@@ -23,9 +24,10 @@ export type PokemonDesc<
   shiny?: bool;
   gender?: Gender;
   nature?: Nature;
+  ability?: Ability;
 };
 
-export type ValidatedPokemonDesc = PokemonDesc<SpeciesId, MoveId, ItemId>;
+export type ValidatedPokemonDesc = PokemonDesc<SpeciesId, MoveId, ItemId, AbilityId>;
 
 export enum Nature {
   hardy,
@@ -147,7 +149,7 @@ export class Pokemon {
     this.shiny = gen.getShiny(shiny ?? false, this.ivs);
     this.gender =
       gen.getGender(gender, this.species, this.ivs.atk) ??
-      (Math.random() * 100 < this.species.genderRatio! ? "male" : "female");
+      (Math.random() * 100 < this.species.genderRatio! ? "M" : "F");
 
     // const c2 = (iv?: number) => ((iv ?? 15) >> 1) & 0b11;
     // const unownLetter = idiv(

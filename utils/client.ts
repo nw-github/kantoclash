@@ -60,8 +60,8 @@ export class Players {
 }
 
 export const gen1Gender: Partial<Record<SpeciesId, Gender>> = {
-  nidoranf: "female",
-  nidoranm: "male",
+  nidoranf: "F",
+  nidoranm: "M",
 };
 
 export const getCategory = (move: Move, type?: Type) => {

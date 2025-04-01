@@ -156,7 +156,13 @@ const createValidator = (gen: Generation) => {
         .refine(text => !profanityMatcher.hasMatch(text), "Name must not contain obscenities")
         .optional(),
       level: z.number().min(1).max(100).optional(),
-      species: z.string().refine(s => s in gen.speciesList, "Species is invalid"),
+      species: z
+        .string()
+        .refine(s => s in gen.speciesList, "Species is invalid")
+        .refine(
+          s => gen.validSpecies(gen.speciesList[s as SpeciesId]),
+          "Species does not exist in this generation",
+        ),
       moves: z
         .string()
         .refine(m => m in gen.moveList, "Move does not exist")
@@ -177,7 +183,7 @@ const createValidator = (gen: Generation) => {
         .refine(i => i in gen.items, "Item does not exist")
         .optional()
         .refine(i => gen.id !== 1 || !i, "Cannot have item in Gen 1"),
-      gender: z.enum(["male", "female"]).optional(),
+      gender: z.enum(["M", "F", "N"]).optional(),
       nature: z.nativeEnum(Nature).optional(),
       shiny: z.boolean().optional(),
     })

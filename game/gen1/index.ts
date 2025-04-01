@@ -432,7 +432,7 @@ const createGeneration = () => {
       _desired: Gender | undefined,
       _species: Species,
       _atk: number,
-    ): Gender | undefined => "none",
+    ): Gender | undefined => "N",
     getShiny: (_desired: boolean | undefined, _dvs: Partial<Stats>) => false,
   };
 };

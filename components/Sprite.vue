@@ -25,7 +25,8 @@ const sprite = computed(() => {
     return `/sprites/battle/unknown.png ${scale}x`;
   }
 
-  const id = speciesList[props.species as SpeciesId].dexId;
+  const species = speciesList[props.species as SpeciesId];
+  const id = species.sprite ?? species.dexId;
   const shiny = props.shiny ? "shiny/" : "";
   if (!props.back) {
     return `/sprites/battle/${shiny}${id}.gif ${scale}x`;

@@ -12,6 +12,7 @@
       v-model="query"
       placeholder="Add move..."
       :color="isIllegal(normalizeName(query)) || hasConflict() ? 'red' : undefined"
+      :trailing-icon="trailing ? undefined : 'heroicons:chevron-down-20-solid'"
       @focus="open = true"
       @update:model-value="open = true"
       @keydown.tab="open = false"

@@ -188,7 +188,13 @@
                 :placeholder="selectedPoke.species?.name ?? 'No Name'"
               />
               <ItemSelector v-if="gen.id >= 2" v-model="selectedPoke.data.item" class="pt-1" :gen />
-              <USelectMenu v-if="gen.id >= 3" class="pt-1" placeholder="No Ability" />
+              <AbilitySelector
+                v-if="gen.id >= 3"
+                v-model="selectedPoke.data.ability"
+                :poke="selectedPoke.data"
+                :gen
+                class="pt-1"
+              />
             </div>
             <div class="flex flex-col justify-between gap-1">
               <div v-if="gen.id > 1" class="flex justify-between items-center">
@@ -275,13 +281,13 @@
                   {{ calcPokeStat(stat, selectedPoke.data) }}
 
                   <span
-                    v-if="(natureTable as any)[selectedPoke.data.nature!]?.[stat] > 1"
+                    v-if="gen.id >= 3 && (natureTable as any)[selectedPoke.data.nature!]?.[stat] > 1"
                     class="absolute text-lime-500 -top-1.5 -right-1 font-bold"
                   >
                     +
                   </span>
                   <span
-                    v-if="(natureTable as any)[selectedPoke.data.nature!]?.[stat] < 1"
+                    v-if="gen.id >= 3 && (natureTable as any)[selectedPoke.data.nature!]?.[stat] < 1"
                     class="absolute text-red-500 -top-1.5 -right-0.5 font-bold"
                   >
                     -
@@ -308,19 +314,28 @@
           :ui="{base: 'h-full min-h-[23.5rem]', rounded: 'rounded-lg'}"
           autofocus
           spellcheck="false"
-          @change="
-            team.pokemon[selectedPokeIdx] = parsePokemon(team.format, currentPokeText.trim())
-          "
         >
-          <TooltipButton
-            text="Copy"
-            :popper="{placement: 'bottom-end', offsetDistance: 40}"
-            class="absolute top-2 right-2"
-            icon="material-symbols:content-copy-outline"
-            variant="ghost"
-            color="gray"
-            @click="copyTextArea(currentPokeText)"
-          />
+          <div class="absolute top-2 right-2">
+            <TooltipButton
+              text="Save"
+              :popper="{placement: 'bottom-end', offsetDistance: 40}"
+              icon="material-symbols:save-outline"
+              variant="ghost"
+              color="gray"
+              @click="
+                (team.pokemon[selectedPokeIdx] = parsePokemon(team.format, currentPokeText.trim())),
+                  (selectedTab = 0)
+              "
+            />
+            <TooltipButton
+              text="Copy"
+              :popper="{placement: 'bottom-end', offsetDistance: 40}"
+              icon="material-symbols:content-copy-outline"
+              variant="ghost"
+              color="gray"
+              @click="copyTextArea(currentPokeText)"
+            />
+          </div>
         </UTextarea>
       </div>
     </div>
@@ -334,15 +349,24 @@
         autofocus
         @change="teamTextChange"
       >
-        <TooltipButton
-          text="Copy"
-          :popper="{placement: 'bottom-end', offsetDistance: 40}"
-          class="absolute top-1 right-2"
-          icon="material-symbols:content-copy-outline"
-          variant="ghost"
-          color="gray"
-          @click="copyTextArea(teamText)"
-        />
+        <div class="absolute top-1 right-4">
+          <TooltipButton
+            text="Save"
+            :popper="{placement: 'bottom-end', offsetDistance: 40}"
+            icon="material-symbols:save-outline"
+            variant="ghost"
+            color="gray"
+            @click="teamTextChange(), (teamPokepaste = false)"
+          />
+          <TooltipButton
+            text="Copy"
+            :popper="{placement: 'bottom-end', offsetDistance: 40}"
+            icon="material-symbols:content-copy-outline"
+            variant="ghost"
+            color="gray"
+            @click="copyTextArea(teamText)"
+          />
+        </div>
       </UTextarea>
     </div>
   </UCard>
@@ -435,11 +459,11 @@ const currGender = computed(() => {
     gender = selectedPoke.value.data.gender;
   }
 
-  if (gender === "male") {
+  if (gender === "M") {
     return {gender, icon: "material-symbols:male", clazz: "text-sky-400", forced};
-  } else if (gender === "female") {
+  } else if (gender === "F") {
     return {gender, icon: "material-symbols:female", clazz: "text-pink-400", forced};
-  } else if (gender === "none") {
+  } else if (gender === "N") {
     return {gender, icon: "material-symbols:question-mark", clazz: "", forced};
   } else {
     return {gender, icon: "material-symbols:male", clazz: "text-sky-400", random: true};
@@ -447,12 +471,12 @@ const currGender = computed(() => {
 });
 
 const toggleGender = () => {
-  if (selectedPoke.value.data.gender === "male") {
-    selectedPoke.value.data.gender = "female";
-  } else if (selectedPoke.value.data.gender === "female") {
+  if (selectedPoke.value.data.gender === "M") {
+    selectedPoke.value.data.gender = "F";
+  } else if (selectedPoke.value.data.gender === "F") {
     selectedPoke.value.data.gender = undefined;
   } else {
-    selectedPoke.value.data.gender = "male";
+    selectedPoke.value.data.gender = "M";
   }
 };
 
@@ -475,13 +499,13 @@ const getTotalEvs = (stats: Partial<Stats>) => {
 
 watch([selectedPokeIdx, selectedTab], ([_, tab]) => {
   if (tab === 1) {
-    currentPokeText.value = descToString(team.format, team.pokemon[selectedPokeIdx.value]);
+    currentPokeText.value = descToString(team.format, team.pokemon[selectedPokeIdx.value]).trim();
   }
 });
 
 watch(teamPokepaste, v => {
   if (v) {
-    teamText.value = teamToString(team);
+    teamText.value = teamToString(team).trim();
   }
 });
 
