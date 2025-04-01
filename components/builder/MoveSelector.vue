@@ -41,7 +41,7 @@
         </div>
         <div class="flex flex-col w-8">
           <span class="text-[0.6rem] text-center text-gray-400">Acc</span>
-          <span class="text-sm text-center">{{ move.acc ?? "--" }}</span>
+          <span class="text-sm text-center">{{ move.acc || "--" }}</span>
         </div>
         <div class="flex flex-col w-8">
           <span class="text-[0.6rem] text-center text-gray-400">PP</span>

@@ -6,7 +6,8 @@ import {moveFunctionPatches, movePatches} from "./moves";
 import __speciesPatches from "./species.json";
 import type {ActivePokemon, Battle} from "../battle";
 import type {Move} from "../moves";
-import {items} from "../item";
+import items from "./items.json";
+import {applyItemStatBoost} from "../pokemon";
 
 const speciesPatches = __speciesPatches as Partial<Record<SpeciesId, Partial<Species>>>;
 
@@ -288,25 +289,11 @@ const createGeneration = (): Generation => {
         value *= 2;
       }
 
-      if (
-        poke.base.item === "metalpowder" &&
-        def &&
-        (poke.base.speciesId === "ditto" || poke.base.real.speciesId === "ditto")
-      ) {
-        value *= 2;
-      } else if (
-        poke.base.item === "lightball" &&
-        stat === "spa" &&
-        poke.base.real.speciesId === "pikachu"
-      ) {
-        value *= 2;
-      } else if (
-        poke.base.item === "thickclub" &&
-        stat === "atk" &&
-        poke.base.real.speciesId === "marowak"
-      ) {
-        value *= 2;
+      if (poke.base.item === "machobrace" && stat === "spe") {
+        value = Math.floor(value / 2);
       }
+
+      value = applyItemStatBoost(poke.base, stat, value);
 
       // Screens & the species boosting moves all fail to cap the stat at 999, meaning they will
       // cause it to wrap around if the base stat is >= 512

@@ -1,8 +1,8 @@
-import {moveList, type MoveId, type Move} from "~/game/moves";
+import type {MoveId, Move, DamagingMove} from "~/game/moves";
 import {abilityList, type Species, type SpeciesId} from "~/game/species";
 import {HP_TYPES, statKeys, type Stats, type Type} from "~/game/utils";
 import {battleFormats, formatInfo, type FormatId} from "./shared";
-import {Nature, type PokemonDesc} from "~/game/pokemon";
+import {Nature, Pokemon, type PokemonDesc} from "~/game/pokemon";
 import {GENERATIONS, type Generation} from "~/game/gen";
 
 type WithRequired<T, K extends keyof T> = T & {[P in K]-?: T[P]};
@@ -68,8 +68,13 @@ export const descToString = (format: FormatId, poke: PokemonDesc) => {
 
   for (const move of poke.moves) {
     const id = normalizeName(move);
-    if ((moveList as Record<string, Move>)[id]) {
-      result += ` - ${moveList[id as MoveId].name}\n`;
+    if (id === "hiddenpower") {
+      const type = (gen.moveList.hiddenpower as DamagingMove).getType!(
+        new Pokemon(gen, {species: "abra", ivs: poke.ivs ?? {}, moves: []}),
+      );
+      result += ` - Hidden Power [${toTitleCase(type)}]\n`;
+    } else if ((gen.moveList as Record<string, Move>)[id]) {
+      result += ` - ${gen.moveList[id as MoveId].name}\n`;
     } else if (move.trim()) {
       result += ` - ${move}\n`;
     }
@@ -172,6 +177,7 @@ export const parsePokemon = (format: FormatId, src: string): TeamPokemonDesc => 
 
   desc.species = normalizeName(desc.species);
 
+  let gotIvs = false;
   for (const line of lines.slice(1)) {
     if ((match = line.match(levelRegex))) {
       desc.level = +match[1];
@@ -182,7 +188,9 @@ export const parsePokemon = (format: FormatId, src: string): TeamPokemonDesc => 
       const ivs = getHpIvs(match[1]);
       if (ivs) {
         desc.moves[desc.moves.length - 1] = "Hidden Power";
-        desc.ivs = ivs;
+        if (!gotIvs) {
+          desc.ivs = ivs;
+        }
       }
     } else if ((match = line.match(natureRegex))) {
       desc.nature = Nature[match[1].toLowerCase() as any] as unknown as Nature | undefined;
@@ -192,6 +200,9 @@ export const parsePokemon = (format: FormatId, src: string): TeamPokemonDesc => 
       desc.ability = match[1].trim();
     } else if ((match = line.match(evsRegex)) || (match = line.match(ivsRegex))) {
       const isEvs = match[0].toLowerCase().startsWith("evs");
+      if (!isEvs) {
+        gotIvs = true;
+      }
       for (const [, v, s] of match[0].matchAll(statRegex)) {
         const value = +v;
         const stat = s.toLowerCase();

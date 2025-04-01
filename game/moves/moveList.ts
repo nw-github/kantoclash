@@ -3691,7 +3691,7 @@ const internalMoveList = createMoveList({
     pp: 20,
     type: "ghost",
     range: Range.Adjacent,
-    power: 50,
+    power: 60,
     kingsRock: true,
     contact: true,
   },

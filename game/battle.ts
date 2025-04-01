@@ -21,7 +21,7 @@ import {
   type Screen,
 } from "./utils";
 import type {Generation} from "./gen";
-import {healBerry, statusBerry} from "./item";
+import {healBerry, ppBerry, statusBerry} from "./item";
 import {ActivePokemon, type ChosenMove, type VolatileStats} from "./active";
 
 export {ActivePokemon, type VolatileStats};
@@ -948,10 +948,11 @@ export class Battle {
 
       if (poke.base.item === "leftovers") {
         poke.recover(Math.max(1, idiv(poke.base.stats.hp, 16)), poke, this, "leftovers");
-      } else if (poke.base.item === "mysteryberry") {
+      } else if (ppBerry[poke.base.item!]) {
         const slot = poke.base.pp.findIndex(pp => pp === 0);
         if (slot !== -1) {
-          poke.base.pp[slot] = 5;
+          const move = this.gen.moveList[poke.base.moves[slot]];
+          poke.base.pp[slot] = Math.min(ppBerry[poke.base.item!]!, this.gen.getMaxPP(move));
           this.event({type: "item", src: poke.id, item: "mysteryberry"});
           this.event({type: "pp", src: poke.id, move: poke.base.moves[slot]});
           poke.base.item = undefined;
@@ -1004,9 +1005,10 @@ export class Battle {
         continue;
       }
 
-      if (statusBerry[poke.base.item!] && statusBerry[poke.base.item!] === poke.base.status) {
+      const status = poke.base.status === "tox" ? "psn" : poke.base.status;
+      if (statusBerry[poke.base.item!] && statusBerry[poke.base.item!] === status) {
         cureStatus(poke);
-      } else if (poke.base.item === "miracleberry") {
+      } else if (statusBerry[poke.base.item!] === "any") {
         if (poke.base.status) {
           cureStatus(poke);
         }
@@ -1017,7 +1019,7 @@ export class Battle {
           }
           cureConfuse(poke);
         }
-      } else if (poke.base.item === "bitterberry" && poke.v.confusion) {
+      } else if (statusBerry[poke.base.item!] === "confuse" && poke.v.confusion) {
         this.event({type: "item", src: poke.id, item: poke.base.item!});
         cureConfuse(poke);
       } else if (healBerry[poke.base.item!] && poke.base.hp < idiv(poke.base.stats.hp, 2)) {

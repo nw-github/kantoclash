@@ -66,7 +66,7 @@ const info = computed(() => {
       type = move.value.getType(poke);
     }
   }
-  if (pow && pow !== 1 && poke?.item && gen.itemTypeBoost[poke.item] === type) {
+  if (pow && pow !== 1 && poke?.item && gen.itemTypeBoost[poke.item]?.type === type) {
     pow += Math.floor(pow / 10);
   }
 

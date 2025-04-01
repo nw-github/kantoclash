@@ -21,8 +21,8 @@
     <template #item="{item: [id, item]}">
       <div class="flex gap-1 items-center pr-5">
         <ItemSprite :item="id" />
-        <span class="text-xs text-nowrap" :class="[!(id in itemDesc) && 'text-red-500']">
-          {{ item }}
+        <span class="text-xs text-nowrap" :class="[isIllegal(id) && 'text-red-500']">
+          {{ item.name }}
         </span>
       </div>
 
@@ -38,22 +38,23 @@
 </template>
 
 <script setup lang="ts">
-import type {Generation} from "~/game/gen1";
-import type {ItemId} from "~/game/item";
+import type {Generation} from "~/game/gen";
+import {itemList, type ItemData, type ItemId} from "~/game/item";
 
 const query = defineModel<string>({default: ""});
 const {gen} = defineProps<{gen: Generation}>();
 
 const open = ref(false);
-const items = computed(() => Object.entries(gen.items) as [ItemId, string][]);
+const items = computed(() => Object.entries(itemList) as [ItemId, ItemData][]);
 
-const filter = (items: [ItemId, string][], query: string) => {
+const filter = (items: [ItemId, ItemData][], query: string) => {
   const q = normalizeName(query);
   const all = items.filter(
-    ([id, name]) => id.includes(q) || name.includes(q) || itemDesc[id]?.toLowerCase()?.includes(q),
+    ([id, data]) =>
+      id.includes(q) || data.name.includes(q) || itemDesc[id]?.toLowerCase()?.includes(q),
   );
 
-  const subset = all.filter(([id, _]) => id in itemDesc);
+  const subset = all.filter(([id, _]) => id in itemDesc && id in gen.items);
   if (subset.length) {
     return subset;
   }
@@ -61,7 +62,7 @@ const filter = (items: [ItemId, string][], query: string) => {
   return all;
 };
 
-const onChoose = ([_, item]: [string, string]) => (query.value = item);
+const onChoose = ([_, item]: [ItemId, ItemData]) => (query.value = item.name);
 
 const isIllegal = (id: string) => id && !(normalizeName(id) in gen.items);
 </script>

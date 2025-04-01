@@ -136,12 +136,12 @@
   </div>
   <div v-else-if="e.type === 'beatup'">{{ e.name }}'s attack!</div>
   <div v-else-if="e.type === 'item'" class="move">
-    <p v-if="e.item.includes('berry')" class="muted">({{ pn(e.src) }} ate its {{ itemList[e.item] }}!)</p>
-    <p v-else-if="e.item === 'berserkgene'" class="muted">{{ pn(e.src) }} used its {{ itemList[e.item] }}!</p>
+    <p v-if="e.item.includes('berry')" class="muted">({{ pn(e.src) }} ate its {{ itemList[e.item].name }}!)</p>
+    <p v-else-if="e.item === 'berserkgene'" class="muted">{{ pn(e.src) }} used its {{ itemList[e.item].name }}!</p>
     <p v-else class="muted">Unknown event: <code>{{ e }}</code></p>
   </div>
   <div v-else-if="e.type === 'pp'">{{ pn(e.src) }}'s <b>{{ gen.moveList[e.move].name }}</b> was restored!</div>
-  <div v-else-if="e.type === 'thief'">{{ pn(e.src) }} stole {{ pn(e.target, false) }}'s {{ itemList[e.item] }}!</div>
+  <div v-else-if="e.type === 'thief'">{{ pn(e.src) }} stole {{ pn(e.target, false) }}'s {{ itemList[e.item].name }}!</div>
   <div v-else-if="e.type === 'forfeit'">
     <template v-if="e.timer">{{ players.get(e.user).name }} ran out of time.</template>
     <template v-else><b>{{ players.get(e.user).name }}</b> forfeit the match.</template>
@@ -175,7 +175,7 @@ import {hpPercentExact, playerId} from "~/game/utils";
 import type {Generation} from "~/game/gen";
 import {damageMessage} from "~/utils/uievent";
 // Use itemList since gen.items doesn't include every item.
-import {items as itemList} from "~/game/item";
+import {itemList} from "~/game/item";
 import type {PlayerId, PokeId} from "~/game/events";
 
 const {perspective, players, myId, e} = defineProps<{

@@ -134,7 +134,7 @@
 
                   <template v-if="poke?.base && poke.transformed && poke?.base.item">
                     <ItemSprite :item="poke?.base.item" />
-                    <span class="text-xs">{{ poke?.base.gen.items[poke?.base.item] }}</span>
+                    <span class="text-xs">{{ poke?.base.gen.items[poke?.base.item].name }}</span>
                   </template>
                 </div>
                 <div class="flex gap-1">

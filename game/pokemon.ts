@@ -1,7 +1,7 @@
 import type {Generation} from "./gen";
 import type {AbilityId, SpeciesId} from "./species";
 import type {MoveId} from "./moves";
-import type {StageStats, Stats} from "./utils";
+import type {StageStats, Stats, StatStages} from "./utils";
 import type {ItemId} from "./item";
 
 export type Status = "psn" | "par" | "slp" | "frz" | "tox" | "brn";
@@ -196,4 +196,20 @@ export const transform = (user: Pokemon, transformed: Pokemon) => {
       return true;
     },
   });
+};
+
+export const applyItemStatBoost = (poke: Pokemon, stat: StatStages, value: number) => {
+  const boostItem = poke.gen.statBoostItem[poke.item!]?.[poke.real.speciesId];
+  if (boostItem && boostItem.stats.includes(stat) && (boostItem.transformed || !poke.transformed)) {
+    value *= 2;
+  }
+
+  if (poke.transformed && poke.real.speciesId !== poke.speciesId) {
+    const boostItem = poke.gen.statBoostItem[poke.item!]?.[poke.speciesId];
+    if (boostItem && boostItem.stats.includes(stat) && boostItem.transformed) {
+      value *= 2;
+    }
+  }
+
+  return value;
 };

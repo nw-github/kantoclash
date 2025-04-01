@@ -38,5 +38,8 @@ const itemMapping: Partial<Record<ItemId, string>> = {
   mysteryberry: "leppaberry",
   berserkgene: "",
   goldberry: "sitrusberry",
+  xdefend: "xdefense",
+  parlyzheal: "paralyzeheal",
+  xspecial: "xspatk",
 };
 </script>

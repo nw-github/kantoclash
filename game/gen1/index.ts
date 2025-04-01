@@ -1,7 +1,7 @@
 import type {Random} from "random";
 import type {ActivePokemon, Battle} from "../battle";
 import {moveFunctions, moveList, type Move, type MoveId} from "../moves";
-import {speciesList, type Species} from "../species";
+import {speciesList, type Species, type SpeciesId} from "../species";
 import {
   floatTo255,
   idiv,
@@ -11,7 +11,7 @@ import {
   type StatStages,
   type Type,
 } from "../utils";
-import type {ItemId} from "../item";
+import type {ItemData, ItemId} from "../item";
 import type {Gender, Nature} from "../pokemon";
 
 export type TypeChart = Record<Type, Partial<Record<Type, number>>>;
@@ -69,26 +69,45 @@ const typeChart: TypeChart = {
   "???": {},
 };
 
-const itemTypeBoost: Partial<Record<ItemId, Type>> = {
-  softsand: "ground",
-  hardstone: "rock",
-  metalcoat: "steel",
-  pinkbow: "normal",
-  blackbelt: "fight",
-  sharpbeak: "flying",
-  poisonbarb: "poison",
-  silverpowder: "bug",
-  spelltag: "ghost",
-  polkadotbow: "normal",
-  charcoal: "fire",
-  mysticwater: "water",
-  miracleseed: "grass",
-  magnet: "electric",
-  twistedspoon: "psychic",
-  nevermeltice: "ice",
-  dragonscale: "dragon",
-  // dragonfang: "dragon"
-  blackglasses: "dark",
+const itemTypeBoost: Partial<Record<ItemId, {type: Type; percent: number} | null>> = {
+  softsand: {type: "ground", percent: 10},
+  hardstone: {type: "rock", percent: 10},
+  metalcoat: {type: "steel", percent: 10},
+  pinkbow: {type: "normal", percent: 10},
+  blackbelt: {type: "fight", percent: 10},
+  sharpbeak: {type: "flying", percent: 10},
+  poisonbarb: {type: "poison", percent: 10},
+  silverpowder: {type: "bug", percent: 10},
+  spelltag: {type: "ghost", percent: 10},
+  polkadotbow: {type: "normal", percent: 10},
+  charcoal: {type: "fire", percent: 10},
+  mysticwater: {type: "water", percent: 10},
+  miracleseed: {type: "grass", percent: 10},
+  magnet: {type: "electric", percent: 10},
+  twistedspoon: {type: "psychic", percent: 10},
+  nevermeltice: {type: "ice", percent: 10},
+  dragonscale: {type: "dragon", percent: 10},
+  dragonfang: null,
+  blackglasses: {type: "dark", percent: 10},
+  silkscarf: {type: "normal", percent: 10},
+  seaincense: {type: "water", percent: 5},
+};
+
+type PRecord<K extends string | number | symbol, V> = Partial<Record<K, V>>;
+
+const statBoostItem: PRecord<
+  ItemId,
+  PRecord<SpeciesId, {stats: StatStages[]; transformed: bool}>
+> = {
+  metalpowder: {ditto: {stats: ["def", "spd"], transformed: true}},
+  lightball: {pikachu: {stats: ["spa"], transformed: false}},
+  thickclub: {marowak: {stats: ["atk"], transformed: false}},
+  souldew: {
+    latias: {stats: ["spa", "spd"], transformed: false},
+    latios: {stats: ["spa", "spd"], transformed: false},
+  },
+  deepseatooth: {clamperl: {stats: ["spa"], transformed: false}},
+  deepseascale: {clamperl: {stats: ["spd"], transformed: false}},
 };
 
 const checkAccuracy = (move: Move, battle: Battle, user: ActivePokemon, target: ActivePokemon) => {
@@ -383,9 +402,10 @@ const createGeneration = () => {
     speciesList,
     moveList,
     typeChart,
-    items: {} as Record<ItemId, string>,
+    items: {} as Record<ItemId, ItemData>,
     moveFunctions,
     itemTypeBoost,
+    statBoostItem,
     lastMoveIdx: moveList.whirlwind.idx!,
     invalidSketchMoves: [
       "transform",

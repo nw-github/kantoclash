@@ -1,12 +1,11 @@
 import type {Generation, GENERATION1} from "../gen1";
 import {GENERATION2, merge, type GenPatches} from "../gen2";
-import {Nature, natureTable} from "../pokemon";
+import {applyItemStatBoost, Nature, natureTable} from "../pokemon";
 import type {Species, SpeciesId} from "../species";
 import {idiv, VF} from "../utils";
 import {moveFunctionPatches, movePatches} from "./moves";
-import __speciesPatches from "./species.json";
-
-const speciesPatches = __speciesPatches as Partial<Record<SpeciesId, Partial<Species>>>;
+import speciesPatches from "./species.json";
+import items from "./items.json";
 
 const critStages: Record<number, number> = {
   [0]: 1 / 16,
@@ -19,13 +18,20 @@ const critStages: Record<number, number> = {
 const createGeneration = (): Generation => {
   const patches: Partial<GenPatches> = {
     id: 3,
-    speciesList: speciesPatches as typeof GENERATION1.speciesList,
+    speciesList: speciesPatches as Partial<
+      Record<SpeciesId, Partial<Species>>
+    > as typeof GENERATION1.speciesList,
     moveList: movePatches as typeof GENERATION1.moveList,
     // lastMoveIdx: GENERATION1.moveList.zapcannon.idx!,
     moveFunctions: moveFunctionPatches as typeof GENERATION1.moveFunctions,
     maxIv: 31,
     maxEv: 255,
     maxTotalEv: 510,
+    itemTypeBoost: {
+      dragonscale: null,
+      dragonfang: {type: "dragon", percent: 10},
+    },
+    statBoostItem: {metalpowder: {ditto: {stats: ["def", "spd"], transformed: false}}},
     rng: {
       tryCrit(battle, user, hc) {
         let stages = hc ? 2 : 0;
@@ -74,26 +80,11 @@ const createGeneration = (): Generation => {
         }
       }
 
-      if (
-        poke.base.item === "metalpowder" &&
-        def &&
-        (poke.base.speciesId === "ditto" || poke.base.real.speciesId === "ditto")
-      ) {
-        value *= 2;
-      } else if (
-        poke.base.item === "lightball" &&
-        stat === "spa" &&
-        poke.base.real.speciesId === "pikachu"
-      ) {
-        value *= 2;
-      } else if (
-        poke.base.item === "thickclub" &&
-        stat === "atk" &&
-        poke.base.real.speciesId === "marowak"
-      ) {
-        value *= 2;
+      if (poke.base.item === "machobrace" && stat === "spe") {
+        value = Math.floor(value / 2);
       }
 
+      value = applyItemStatBoost(poke.base, stat, value);
       return value;
     },
     getHpIv: ivs => ivs?.hp ?? 31,
@@ -125,7 +116,9 @@ const createGeneration = (): Generation => {
     getMaxPP: move => (move.pp === 1 ? 1 : Math.floor((move.pp * 8) / 5)),
   };
 
-  return merge(patches as any, GENERATION2);
+  const r = merge(patches as any, GENERATION2);
+  r.items = items;
+  return r;
 };
 
 export const GENERATION3 = createGeneration();

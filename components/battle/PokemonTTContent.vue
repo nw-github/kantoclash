@@ -7,7 +7,7 @@
 
         <template v-if="poke.item">
           <ItemSprite :item="poke.item" />
-          <span class="text-xs">{{ poke.gen.items[poke.item] }}</span>
+          <span class="text-xs">{{ itemList[poke.item].name }}</span>
         </template>
       </div>
 
@@ -56,6 +56,7 @@ import type {Pokemon} from "~/game/pokemon";
 import {hpPercentExact, type StatStages} from "~/game/utils";
 import "assets/colors.css";
 import {getTypeAndPower} from "~/utils/client";
+import {itemList} from "~/game/item";
 
 const {active, poke} = defineProps<{active?: ClientActivePokemon; poke: Pokemon}>();
 const statKeys = computed(() => getStatKeys(poke.gen));

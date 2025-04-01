@@ -81,8 +81,8 @@ export const getTypeAndPower = (gen: Generation, move: Move, poke: Pokemon) => {
   if (move.kind === "damage" && poke && move.getType) {
     type = move.getType(poke);
   }
-  if (pow && pow !== 1 && poke?.item && gen.itemTypeBoost[poke.item] === type) {
-    pow += Math.floor(pow / 10);
+  if (pow && pow !== 1 && poke?.item && gen.itemTypeBoost[poke.item]?.type === type) {
+    pow += Math.floor(pow / gen.itemTypeBoost[poke.item]!.percent);
   }
 
   return [type, pow] as const;
