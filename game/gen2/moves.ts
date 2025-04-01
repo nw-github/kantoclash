@@ -1,6 +1,5 @@
 import {Range, type Move, type MoveFunctions, type MoveId} from "../moves";
 import {isSpecial, stageKeys} from "../utils";
-import {exec as execDamagingMove} from "./damaging";
 
 /*
 https://bulbapedia.bulbagarden.net/wiki/Dig_(move)
@@ -65,7 +64,6 @@ export const moveFunctionPatches: Partial<MoveFunctions> = {
       battle.info(target, "fail_generic");
     }
   },
-  damage: execDamagingMove,
 };
 
 export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {

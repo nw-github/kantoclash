@@ -2,10 +2,11 @@ import type {Generation, GENERATION1} from "../gen1";
 import {GENERATION2, merge, type GenPatches} from "../gen2";
 import {applyItemStatBoost, Nature, natureTable} from "../pokemon";
 import type {Species, SpeciesId} from "../species";
-import {idiv, VF} from "../utils";
+import {clamp, idiv, VF} from "../utils";
 import {moveFunctionPatches, movePatches} from "./moves";
 import speciesPatches from "./species.json";
 import items from "./items.json";
+import {reduceAccItem} from "../item";
 
 const critStages: Record<number, number> = {
   [0]: 1 / 16,
@@ -13,6 +14,22 @@ const critStages: Record<number, number> = {
   [2]: 1 / 4,
   [3]: 1 / 3,
   [4]: 1 / 2,
+};
+
+const stageMultipliers: Record<number, number> = {
+  [-6]: 2 / 8,
+  [-5]: 2 / 7,
+  [-4]: 2 / 6,
+  [-3]: 2 / 5,
+  [-2]: 2 / 4,
+  [-1]: 2 / 3,
+  0: 2 / 2,
+  1: 3 / 2,
+  2: 4 / 2,
+  3: 5 / 2,
+  4: 6 / 2,
+  5: 7 / 2,
+  6: 8 / 2,
 };
 
 const createGeneration = (): Generation => {
@@ -32,6 +49,7 @@ const createGeneration = (): Generation => {
       dragonfang: {type: "dragon", percent: 10},
     },
     statBoostItem: {metalpowder: {ditto: {stats: ["def", "spd"], transformed: false}}},
+    stageMultipliers,
     rng: {
       tryCrit(battle, user, hc) {
         let stages = hc ? 2 : 0;
@@ -114,6 +132,46 @@ const createGeneration = (): Generation => {
       }
     },
     getMaxPP: move => (move.pp === 1 ? 1 : Math.floor((move.pp * 8) / 5)),
+    checkAccuracy(move, battle, user, target) {
+      if (target.v.invuln) {
+        const charging = target.v.charging && battle.moveIdOf(target.v.charging.move);
+        if (charging && (!move.ignore || !move.ignore.includes(charging))) {
+          battle.miss(user, target);
+          return false;
+        }
+      }
+
+      if (!move.acc || (move.rainAcc && battle.weather?.kind === "rain")) {
+        return true;
+      }
+
+      if (move.kind === "damage" && move.flag === "ohko") {
+        // Starting from Gen 3, OHKO moves are no longer affected by accuracy/evasion stats
+        if (!battle.rand100(user.base.level - target.base.level + 30)) {
+          battle.miss(user, target);
+          return false;
+        }
+      }
+
+      let chance = move.acc;
+      if (move.rainAcc && battle.weather?.kind === "sun") {
+        chance = 50;
+      }
+
+      let acc = Math.floor(
+        chance * this.accStageMultipliers![clamp(user.v.stages.acc - target.v.stages.eva, -6, 6)]!,
+      );
+      if (reduceAccItem[target.base.item!]) {
+        acc -= acc * (reduceAccItem[target.base.item!]! / 100);
+      }
+
+      // console.log(`[${user.base.name}] ${move.name} (Acc ${acc}/255)`);
+      if (!battle.rand100(acc)) {
+        battle.miss(user, target);
+        return false;
+      }
+      return true;
+    },
   };
 
   const r = merge(patches as any, GENERATION2);

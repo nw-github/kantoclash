@@ -1,16 +1,9 @@
 import type {Random} from "random";
+import {tryDamage} from "./damaging";
 import type {ActivePokemon, Battle} from "../battle";
-import {moveFunctions, moveList, type Move, type MoveId} from "../moves";
+import {accumulateBide, moveFunctions, moveList, type Move, type MoveId} from "../moves";
 import {speciesList, type Species, type SpeciesId} from "../species";
-import {
-  floatTo255,
-  idiv,
-  scaleAccuracy255,
-  VF,
-  type Stats,
-  type StatStages,
-  type Type,
-} from "../utils";
+import {clamp, floatTo255, idiv, VF, type Stats, type StatStages, type Type} from "../utils";
 import type {ItemData, ItemId} from "../item";
 import type {Gender, Nature} from "../pokemon";
 
@@ -93,6 +86,22 @@ const itemTypeBoost: Partial<Record<ItemId, {type: Type; percent: number} | null
   seaincense: {type: "water", percent: 5},
 };
 
+const stageMultipliers: Record<number, number> = {
+  [-6]: 25 / 100,
+  [-5]: 28 / 100,
+  [-4]: 33 / 100,
+  [-3]: 40 / 100,
+  [-2]: 50 / 100,
+  [-1]: 66 / 100,
+  0: 100 / 100,
+  1: 150 / 100,
+  2: 200 / 100,
+  3: 250 / 100,
+  4: 300 / 100,
+  5: 350 / 100,
+  6: 400 / 100,
+};
+
 type PRecord<K extends string | number | symbol, V> = Partial<Record<K, V>>;
 
 const statBoostItem: PRecord<
@@ -108,6 +117,20 @@ const statBoostItem: PRecord<
   },
   deepseatooth: {clamperl: {stats: ["spa"], transformed: false}},
   deepseascale: {clamperl: {stats: ["spd"], transformed: false}},
+};
+
+export const scaleAccuracy255 = (acc: number, user: ActivePokemon, target: ActivePokemon) => {
+  // https://bulbapedia.bulbagarden.net/wiki/Accuracy#Generation_I_and_II
+  let userStages = user.v.stages["acc"];
+  let targetStages = target.v.stages["eva"];
+  if (userStages < targetStages && target.v.hasFlag(VF.identified)) {
+    userStages = 0;
+    targetStages = 0;
+  }
+
+  const m = user.base.gen.accStageMultipliers;
+  acc *= m[userStages] * m[-targetStages];
+  return clamp(Math.floor(acc), 1, 255);
 };
 
 const checkAccuracy = (move: Move, battle: Battle, user: ActivePokemon, target: ActivePokemon) => {
@@ -416,6 +439,8 @@ const createGeneration = () => {
       "explosion",
       "selfdestruct",
     ] as MoveId[],
+    stageMultipliers,
+    accStageMultipliers: stageMultipliers,
     // Gen 1 bug, if you have exactly 25% hp you can create a substitute and instantly die
     canSubstitute: (user: ActivePokemon, hp: number) => hp <= user.base.hp,
     beforeUseMove,
@@ -454,6 +479,8 @@ const createGeneration = () => {
       _atk: number,
     ): Gender | undefined => "N",
     getShiny: (_desired: boolean | undefined, _dvs: Partial<Stats>) => false,
+    accumulateBide,
+    tryDamage,
   };
 };
 

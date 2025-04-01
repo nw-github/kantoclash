@@ -2,53 +2,7 @@ import type {ActivePokemon, Battle} from "../battle";
 import {checkUsefulness, getDamage, multiHitCount, Range, type DamagingMove} from "../moves";
 import {idiv, randChoiceWeighted, VF} from "../utils";
 
-export function exec(
-  this: DamagingMove,
-  battle: Battle,
-  user: ActivePokemon,
-  targets: ActivePokemon[],
-) {
-  if (this.flag === "multi_turn" && !user.v.thrashing) {
-    user.v.thrashing = {move: this, turns: battle.rng.int(2, 3), max: false};
-    user.v.thrashing.max = user.v.thrashing.turns == 3;
-  } else if (this.flag === "rollout" && !user.v.thrashing) {
-    user.v.thrashing = {move: this, turns: 5, max: false};
-    user.v.rollout = 0;
-  } else if (this.flag === "fury_cutter") {
-    user.v.furyCutter++;
-  } else if (this.flag === "bide") {
-    if (!user.v.bide) {
-      user.v.bide = {move: this, turns: battle.rng.int(2, 3) + 1, dmg: 0};
-      return;
-    }
-
-    user.v.bide.dmg += user.v.retaliateDamage;
-    if (--user.v.bide.turns !== 0) {
-      return battle.info(user, "bide_store");
-    }
-
-    battle.info(user, "bide");
-  }
-
-  if (this.range === Range.Self) {
-    if (!user.v.lastHitBy) {
-      user.v.rollout = 0;
-      user.v.furyCutter = 0;
-      if (battle.gen.id <= 2) {
-        return battle.info(user, "miss");
-      } else {
-        return battle.info(user, "fail_generic");
-      }
-    }
-    targets = [user.v.lastHitBy.user];
-  }
-
-  for (const target of targets) {
-    tryDamage(this, battle, user, target, targets.length > 1 && this.range !== Range.AllAdjacent);
-  }
-}
-
-const tryDamage = (
+export const tryDamage = (
   self: DamagingMove,
   battle: Battle,
   user: ActivePokemon,
@@ -65,6 +19,10 @@ const tryDamage = (
       user.v.thrashing = undefined;
     }
   };
+
+  if (self.range === Range.AllAdjacent) {
+    spread = false;
+  }
 
   const {eff, fail} = checkUsefulness(self, battle, user, target);
   if (self.flag === "drain" && target.v.substitute) {
@@ -238,6 +196,8 @@ const tryDamage = (
     user.v.recharge = self;
   }
 
+  // BUG GEN2:
+  // https://pret.github.io/pokecrystal/bugs_and_glitches.html#moves-that-do-damage-and-increase-your-stats-do-not-increase-stats-after-a-ko
   if (dead) {
     return;
   }
@@ -292,9 +252,7 @@ const tryDamage = (
         target.confuse(battle);
       }
     } else if (Array.isArray(effect)) {
-      // BUG GEN2:
-      // https://pret.github.io/pokecrystal/bugs_and_glitches.html#moves-that-do-damage-and-increase-your-stats-do-not-increase-stats-after-a-ko
-      if ((!effectSelf && target.v.hasFlag(VF.mist)) || (effectSelf && dead)) {
+      if (!effectSelf && target.v.hasFlag(VF.mist)) {
         return;
       }
 

@@ -1,13 +1,14 @@
 import {createDefu} from "defu";
-import {GENERATION1, type CalcDamageParams, type Generation} from "../gen1";
+import {GENERATION1, scaleAccuracy255, type CalcDamageParams, type Generation} from "../gen1";
 import type {Species, SpeciesId} from "../species";
-import {floatTo255, scaleAccuracy255, idiv, imul, VF} from "../utils";
+import {floatTo255, idiv, imul, VF} from "../utils";
 import {moveFunctionPatches, movePatches} from "./moves";
 import __speciesPatches from "./species.json";
 import type {ActivePokemon, Battle} from "../battle";
 import type {Move} from "../moves";
 import items from "./items.json";
 import {applyItemStatBoost} from "../pokemon";
+import {tryDamage} from "./damaging";
 
 const speciesPatches = __speciesPatches as Partial<Record<SpeciesId, Partial<Species>>>;
 
@@ -24,6 +25,22 @@ const critStages: Record<number, number> = {
   [2]: 1 / 4,
   [3]: 85 / 256,
   [4]: 1 / 2,
+};
+
+const accStageMultipliers: Record<number, number> = {
+  [-6]: 33 / 100,
+  [-5]: 36 / 100,
+  [-4]: 43 / 100,
+  [-3]: 50 / 100,
+  [-2]: 60 / 100,
+  [-1]: 75 / 100,
+  0: 100 / 100,
+  1: 133 / 100,
+  2: 266 / 100,
+  3: 200 / 100,
+  4: 233 / 100,
+  5: 266 / 100,
+  6: 300 / 100,
 };
 
 const calcDamage = ({
@@ -183,6 +200,7 @@ const createGeneration = (): Generation => {
     lastMoveIdx: GENERATION1.moveList.zapcannon.idx!,
     moveFunctions: moveFunctionPatches as typeof GENERATION1.moveFunctions,
     items,
+    accStageMultipliers,
     rng: {
       tryCrit(battle, user, hc) {
         let stages = hc ? 2 : 0;
@@ -317,6 +335,11 @@ const createGeneration = (): Generation => {
         [2, 3, 6, 7, 10, 11, 14, 15].includes(dvs.atk)
       );
     },
+    accumulateBide(_battle, user, bide) {
+      // FIXME: this is wrong since retaliateDamage is reset at the end of the turn
+      bide.dmg += user.v.retaliateDamage;
+    },
+    tryDamage,
   };
 
   return merge(patches as any, GENERATION1);

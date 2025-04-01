@@ -63,7 +63,14 @@
 
           <template v-for="(val, stage) in poke.v.stages">
             <UBadge v-if="val" :key="stage" :color="val > 0 ? 'lime' : 'red'">
-              {{ roundTo(stageMultipliers[val] / 100, 2) }}x {{ statShortName[stage] }}
+              {{
+                roundTo(
+                  stage === "acc" || stage === "eva"
+                    ? gen.accStageMultipliers[val]
+                    : gen.stageMultipliers[val],
+                  2,
+                )
+              }}x {{ statShortName[stage] }}
             </UBadge>
           </template>
         </div>
@@ -237,7 +244,7 @@ img {
 </style>
 
 <script setup lang="ts">
-import {stageMultipliers, VF, hpPercentExact, type Screen} from "~/game/utils";
+import {VF, hpPercentExact, type Screen} from "~/game/utils";
 import {breakpointsTailwind} from "@vueuse/core";
 import type {Generation} from "~/game/gen";
 import {UPopover, type UBadge} from "#components";

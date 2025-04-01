@@ -1,7 +1,6 @@
-import type {CustomMove, Move} from ".";
+import {Range, type CustomMove, type Move} from ".";
 import type {InfoReason} from "../events";
 import {isSpecial, VF} from "../utils";
-import {exec as execDamagingMove} from "../gen1/damaging";
 
 type ExecMoveFn = CustomMove["exec"];
 
@@ -38,7 +37,6 @@ export const moveFunctions: MoveFunctions = {
       battle.info(target, "fail_generic");
     }
   },
-  damage: execDamagingMove,
   recover(battle, user) {
     const diff = user.base.stats.hp - user.base.hp;
     if (diff === 0 || diff % 255 === 0) {
@@ -115,6 +113,46 @@ export const moveFunctions: MoveFunctions = {
   },
   switch(battle, user) {
     user.switchTo(this.poke, battle, this.batonPass ? "baton_pass" : undefined);
+  },
+  damage(battle, user, targets) {
+    if (this.flag === "multi_turn" && !user.v.thrashing) {
+      user.v.thrashing = {move: this, turns: battle.rng.int(2, 3), max: false};
+      user.v.thrashing.max = user.v.thrashing.turns == 3;
+    } else if (this.flag === "rollout" && !user.v.thrashing) {
+      user.v.thrashing = {move: this, turns: 5, max: false};
+      user.v.rollout = 0;
+    } else if (this.flag === "fury_cutter") {
+      user.v.furyCutter++;
+    } else if (this.flag === "bide") {
+      if (!user.v.bide) {
+        user.v.bide = {move: this, turns: battle.rng.int(2, 3) + 1, dmg: 0};
+        return;
+      }
+
+      battle.gen.accumulateBide(battle, user, user.v.bide);
+      if (--user.v.bide.turns !== 0) {
+        return battle.info(user, "bide_store");
+      }
+
+      battle.info(user, "bide");
+    }
+
+    if (this.range === Range.Self) {
+      if (!user.v.lastHitBy) {
+        user.v.rollout = 0;
+        user.v.furyCutter = 0;
+        if (battle.gen.id <= 2) {
+          return battle.info(user, "miss");
+        } else {
+          return battle.info(user, "fail_generic");
+        }
+      }
+      targets = [user.v.lastHitBy.user];
+    }
+
+    for (const target of targets) {
+      battle.gen.tryDamage(this, battle, user, target, targets.length > 1);
+    }
   },
   fail(battle, user) {
     battle.info(user, this.why);

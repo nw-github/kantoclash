@@ -5,44 +5,34 @@ import type {CalcDamageParams} from "../gen";
 import type {DamagingMove} from "../moves";
 import type {Pokemon} from "../pokemon";
 
-export function exec(
-  this: DamagingMove,
+export function accumulateBide(
+  battle: Battle,
+  _user: ActivePokemon,
+  bide: Required<ActivePokemon["v"]>["bide"],
+) {
+  bide.dmg += battle.gen1LastDamage;
+  bide.dmg &= 0xffff;
+}
+
+export function tryDamage(
+  self: DamagingMove,
   battle: Battle,
   user: ActivePokemon,
-  [target]: ActivePokemon[],
+  target: ActivePokemon,
+  _spread: bool,
 ) {
   const checkThrashing = () => {
     if (user.v.thrashing && user.v.thrashing.turns !== -1 && --user.v.thrashing.turns === 0) {
       user.v.rollout = 0;
       user.v.furyCutter = 0;
-      if (!user.owner.screens.safeguard && this.flag !== "rollout") {
+      if (!user.owner.screens.safeguard && self.flag !== "rollout") {
         user.confuse(battle, user.v.thrashing.max ? "cConfusedFatigueMax" : "cConfusedFatigue");
       }
       user.v.thrashing = undefined;
     }
   };
 
-  if (this.flag === "multi_turn" && !user.v.thrashing) {
-    user.v.thrashing = {move: this, turns: battle.rng.int(2, 3), max: false};
-    user.v.thrashing.max = user.v.thrashing.turns == 3;
-  } else if (this.flag === "bide") {
-    if (!user.v.bide) {
-      user.v.bide = {move: this, turns: battle.rng.int(2, 3) + 1, dmg: 0};
-      return;
-    }
-
-    user.v.bide.dmg += battle.gen1LastDamage;
-    user.v.bide.dmg &= 0xffff;
-    if (--user.v.bide.turns !== 0) {
-      // silent on cart
-      battle.info(user, "bide_store");
-      return;
-    }
-
-    battle.info(user, "bide");
-  }
-
-  if (this.flag === "trap") {
+  if (self.flag === "trap") {
     target.v.recharge = undefined;
   }
 
@@ -53,7 +43,7 @@ export function exec(
   }
 
   // eslint-disable-next-line prefer-const
-  let {dmg, isCrit, eff, endured} = getDamage(this, battle, user, target, {});
+  let {dmg, isCrit, eff, endured} = getDamage(self, battle, user, target, {});
   if (dmg < 0) {
     if (target.base.hp === target.base.stats.hp) {
       return battle.info(target, "fail_present");
@@ -62,26 +52,26 @@ export function exec(
     return target.recover(Math.max(idiv(target.base.stats.hp, 4), 1), user, battle, "present");
   }
 
-  if (dmg === 0 || !battle.checkAccuracy(this, user, target)) {
+  if (dmg === 0 || !battle.checkAccuracy(self, user, target)) {
     battle.gen1LastDamage = 0;
     if (dmg === 0) {
       if (eff === 0) {
         battle.info(target, "immune");
-        if (this.flag === "trap") {
-          trapTarget(this, battle.rng, user, target);
+        if (self.flag === "trap") {
+          trapTarget(self, battle.rng, user, target);
         }
       } else {
         battle.miss(user, target);
       }
 
-      if (this.flag === "crash" && eff === 0) {
+      if (self.flag === "crash" && eff === 0) {
         return checkThrashing();
       }
     }
 
-    if (this.flag === "crash") {
+    if (self.flag === "crash") {
       battle.gen.handleCrashDamage(battle, user, target, dmg);
-    } else if (this.flag === "explosion") {
+    } else if (self.flag === "explosion") {
       // according to showdown, explosion also boosts rage even on miss/failure
       target.handleRage(battle);
       user.damage(user.base.hp, user, battle, false, "explosion", true);
@@ -89,11 +79,11 @@ export function exec(
     return checkThrashing();
   }
 
-  target.v.lastHitBy = {move: this, user};
+  target.v.lastHitBy = {move: self, user};
 
   checkThrashing();
-  if (this.flag === "rage") {
-    user.v.thrashing = {move: this, max: false, turns: -1};
+  if (self.flag === "rage") {
+    user.v.thrashing = {move: self, max: false, turns: -1};
   }
 
   const hadSub = target.v.substitute !== 0;
@@ -103,20 +93,20 @@ export function exec(
     user,
     battle,
     isCrit,
-    this.flag === "ohko" ? "ohko" : "attacked",
+    self.flag === "ohko" ? "ohko" : "attacked",
     false,
     eff,
   );
 
-  if (this.flag === "multi" || this.flag === "double") {
+  if (self.flag === "multi" || self.flag === "double") {
     event.hitCount = 1;
   }
 
   if (!brokeSub) {
-    if (this.recoil) {
+    if (self.recoil) {
       dead =
         user.damage(
-          Math.max(Math.floor(dealt / this.recoil), 1),
+          Math.max(Math.floor(dealt / self.recoil), 1),
           user,
           battle,
           false,
@@ -125,16 +115,16 @@ export function exec(
         ).dead || dead;
     }
 
-    if (this.flag === "drain" || this.flag === "dream_eater") {
+    if (self.flag === "drain" || self.flag === "dream_eater") {
       // https://www.smogon.com/forums/threads/past-gens-research-thread.3506992/#post-5878612
       //  - DRAIN HP SIDE EFFECT
       const dmg = Math.max(Math.floor(dealt / 2), 1);
       battle.gen1LastDamage = dmg;
       user.recover(dmg, target, battle, "drain");
-    } else if (this.flag === "explosion") {
+    } else if (self.flag === "explosion") {
       dead = user.damage(user.base.hp, user, battle, false, "explosion", true).dead || dead;
-    } else if (this.flag === "double" || this.flag === "multi") {
-      const count = this.flag === "double" ? 2 : multiHitCount(battle.rng);
+    } else if (self.flag === "double" || self.flag === "multi") {
+      const count = self.flag === "double" ? 2 : multiHitCount(battle.rng);
       for (let hits = 1; !dead && !brokeSub && !endured && hits < count; hits++) {
         if (dmg > 0 && dmg > target.base.hp && target.v.hasFlag(VF.endure)) {
           dmg = Math.max(target.base.hp - 1, 0);
@@ -153,7 +143,7 @@ export function exec(
         ));
         event.hitCount = hits + 1;
       }
-    } else if (this.flag === "payday") {
+    } else if (self.flag === "payday") {
       battle.info(user, "payday");
     }
   }
@@ -172,15 +162,15 @@ export function exec(
     return;
   }
 
-  if (this.flag === "recharge") {
-    user.v.recharge = this;
-  } else if (this.flag === "trap") {
-    trapTarget(this, battle.rng, user, target);
+  if (self.flag === "recharge") {
+    user.v.recharge = self;
+  } else if (self.flag === "trap") {
+    trapTarget(self, battle.rng, user, target);
   }
 
-  if (this.effect) {
+  if (self.effect) {
     // eslint-disable-next-line prefer-const
-    let [chance, effect, effectSelf] = this.effect;
+    let [chance, effect, effectSelf] = self.effect;
     if (effect === "tri_attack") {
       effect = battle.rng.choice(["brn", "par", "frz"] as const)!;
     }
@@ -222,7 +212,7 @@ export function exec(
       if (
         target.owner.screens.safeguard ||
         target.base.status ||
-        target.v.types.includes(this.type)
+        target.v.types.includes(self.type)
       ) {
         return;
       }
@@ -344,7 +334,7 @@ export function getDamage(
       moveMod,
       doubleDmg,
       tripleKick: extras.tripleKick ?? 1,
-      itemBonus: user.base.item && battle.gen.itemTypeBoost[user.base.item] === type,
+      itemBonus: user.base.item && battle.gen.itemTypeBoost[user.base.item]?.type === type,
     });
 
     if (self.flag === "false_swipe" && dmg >= target.base.hp && !target.v.substitute) {

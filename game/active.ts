@@ -13,7 +13,6 @@ import {
   arraysEqual,
   clamp,
   hpPercent,
-  stageMultipliers,
   stageStatKeys,
   VF,
   type Stages,
@@ -405,7 +404,7 @@ export class ActivePokemon {
 
   recalculateStat(battle: Battle, stat: StatStages, negative: boolean, status?: boolean) {
     this.v.stats[stat] = Math.floor(
-      (this.base.stats[stat] * stageMultipliers[this.v.stages[stat]]) / 100,
+      this.base.stats[stat] * battle.gen.stageMultipliers[this.v.stages[stat]],
     );
 
     if (status ?? battle.gen.id !== 1) {

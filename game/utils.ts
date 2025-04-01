@@ -92,19 +92,6 @@ export const hpPercent = (current: number, max: number) => {
   return percent;
 };
 
-export const scaleAccuracy255 = (acc: number, user: ActivePokemon, target: ActivePokemon) => {
-  // https://bulbapedia.bulbagarden.net/wiki/Accuracy#Generation_I_and_II
-  let userStages = user.v.stages["acc"];
-  let targetStages = target.v.stages["eva"];
-  if (userStages < targetStages && target.v.hasFlag(VF.identified)) {
-    userStages = 0;
-    targetStages = 0;
-  }
-
-  acc *= (stageMultipliers[userStages] / 100) * (stageMultipliers[-targetStages] / 100);
-  return clamp(Math.floor(acc), 1, 255);
-};
-
 export const getEffectiveness = (typeChart: TypeChart, atk: Type, def: readonly Type[]) => {
   return def.reduce((eff, def) => eff * (typeChart[atk][def] ?? 1), 1);
 };
@@ -137,22 +124,6 @@ export const isSpecial = (atk: Type) => {
 export const idiv = (a: number, b: number) => Math.floor(a / b);
 
 export const imul = (a: number, b: number) => Math.floor(a * b);
-
-export const stageMultipliers: Record<number, number> = {
-  [-6]: 25,
-  [-5]: 28,
-  [-4]: 33,
-  [-3]: 40,
-  [-2]: 50,
-  [-1]: 66,
-  0: 100,
-  1: 150,
-  2: 200,
-  3: 250,
-  4: 300,
-  5: 350,
-  6: 400,
-};
 
 export const arraysEqual = <T>(a: readonly T[], b: readonly T[]) => {
   return a.length === b.length && a.every((item, i) => b[i] === item);
