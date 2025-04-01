@@ -192,7 +192,7 @@
 
         <div
           class="substitute absolute opacity-0 bottom-[50%] pointer-events-none"
-          :class="!back && 'z-40'"
+          :class="back ? 'z-10' : 'z-40'"
         >
           <NuxtImg
             :srcset="

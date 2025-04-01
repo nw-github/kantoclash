@@ -20,6 +20,7 @@ import {
   type Type,
 } from "./utils";
 import {TurnType, type Battle, type MoveOption, type Options, type Player} from "./battle";
+import type {AbilityId} from "./species";
 
 export type DamageParams = {
   dmg: number;
@@ -551,6 +552,7 @@ export class ActivePokemon {
       types: !arraysEqual(this.v.types, base.species.types) ? [...this.v.types] : undefined,
       flags: this.v.cflags,
       perishCount: this.v.perishCount,
+      ability: this.v.ability,
     };
   }
 }
@@ -578,6 +580,7 @@ class Volatiles {
   rage = 1;
   furyCutter = 0;
   retaliateDamage = 0;
+  ability?: AbilityId;
   meanLook?: ActivePokemon;
   attract?: ActivePokemon;
   seededBy?: ActivePokemon;
@@ -604,6 +607,7 @@ class Volatiles {
       spd: base.stats.spd,
       spe: base.stats.spe,
     };
+    this.ability = base.ability;
   }
 
   lockedIn() {

@@ -12,6 +12,10 @@
       </div>
 
       <div class="flex gap-1 items-center">
+        <span v-if="active?.v.ability ?? poke.ability" class="text-xs">
+          {{ abilityList[(active?.v.ability ?? poke.ability)!].name }}
+        </span>
+
         <TypeBadge v-for="type in poke.species.types" :key="type" :type image />
       </div>
     </div>
@@ -57,6 +61,7 @@ import {hpPercentExact, type StatStages} from "~/game/utils";
 import "assets/colors.css";
 import {getTypeAndPower} from "~/utils/client";
 import {itemList} from "~/game/item";
+import {abilityList} from "~/game/species";
 
 const {active, poke} = defineProps<{active?: ClientActivePokemon; poke: Pokemon}>();
 const statKeys = computed(() => getStatKeys(poke.gen));

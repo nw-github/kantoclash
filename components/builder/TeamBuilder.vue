@@ -347,7 +347,6 @@
         placeholder="Paste your team here..."
         variant="none"
         autofocus
-        @change="teamTextChange"
       >
         <div class="absolute top-1 right-4">
           <TooltipButton

@@ -105,6 +105,7 @@ export class Pokemon {
   ivs: Stats;
   shiny: boolean;
   gender: Gender;
+  ability?: AbilityId;
 
   constructor(
     readonly gen: Generation,
@@ -120,6 +121,7 @@ export class Pokemon {
       shiny,
       gender,
       nature,
+      ability,
     }: ValidatedPokemonDesc,
   ) {
     this.ivs = {
@@ -136,6 +138,7 @@ export class Pokemon {
     this.pp = moves.map(move => gen.getMaxPP(gen.moveList[move]));
     this.level = level ?? 100;
     this.item = item;
+    this.ability = ability;
     this.stats = {
       hp: gen.calcStat("hp", this.species.stats, this.level, this.ivs, evs, nature),
       atk: gen.calcStat("atk", this.species.stats, this.level, this.ivs, evs, nature),
@@ -150,7 +153,6 @@ export class Pokemon {
     this.gender =
       gen.getGender(gender, this.species, this.ivs.atk) ??
       (Math.random() * 100 < this.species.genderRatio! ? "M" : "F");
-
     // const c2 = (iv?: number) => ((iv ?? 15) >> 1) & 0b11;
     // const unownLetter = idiv(
     //   gen1StatKeys.filter(v => v !== "hp").reduce((acc, v) => acc + c2(dvs[v]), 0), 10,

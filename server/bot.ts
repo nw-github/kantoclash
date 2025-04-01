@@ -356,10 +356,13 @@ export function createBotTeam(format: FormatId) {
   if (!teams.length) {
     teams.push(...parseTeams(gen1ou));
     teams.push(...parseTeams(gen2ou));
+    teams.push(...parseTeams(gen3ou));
   }
 
   if (formatInfo[format].needsTeam) {
-    const team = random.choice(teams.filter(team => team.format === format));
+    const team = random.choice(
+      teams.filter(team => formatInfo[team.format].generation === formatInfo[format].generation),
+    );
     if (team) {
       return convertTeam(team);
     } else {
@@ -1940,4 +1943,177 @@ Ursaring @ Leftovers
  - Return
  - Earthquake
  - Roar
+`;
+
+const gen3ou = `
+=== [g3_doubles] New Team ===
+
+Metagross @ Choice Band
+Ability: Clear Body
+EVs: 128 hp / 252 atk / 128 spe
+Adamant Nature
+ - Meteor Mash
+ - Explosion
+ - Earthquake
+ - Rock Slide
+
+Houndoom @ Leftovers
+Ability: Early Bird
+EVs: 56 hp / 252 spa / 12 spd / 188 spe
+Timid Nature
+ - Pursuit
+ - Fire Blast
+ - Crunch
+ - Will-O-Wisp
+
+Regice @ Leftovers
+Ability: Clear Body
+EVs: 252 hp / 104 atk / 152 spa
+Quiet Nature
+ - Ice Beam
+ - Thunderbolt
+ - Explosion
+ - Thunder Wave
+
+Exeggutor @ Leftovers
+Ability: Chlorophyll
+EVs: 96 hp / 252 spa / 96 spd / 60 spe
+Modest Nature
+ - Psychic
+ - Sleep Powder
+ - Leech Seed
+ - Explosion
+
+Weezing @ Leftovers
+Ability: Levitate
+EVs: 252 hp / 252 def / 4 spe
+Impish Nature
+ - Sludge Bomb
+ - Haze
+ - Will-O-Wisp
+ - Pain Split
+
+Espeon @ Leftovers
+Ability: Synchronize
+EVs: 200 hp / 236 spd / 72 spe
+Timid Nature
+ - Psychic
+ - Calm Mind
+ - Substitute
+ - Baton Pass
+
+=== [g3_doubles] New Team ===
+
+Gengar @ Leftovers
+Ability: Levitate
+EVs: 4 hp / 252 spa / 252 spe
+Timid Nature
+ - Thunderbolt
+ - Ice Punch
+ - Giga Drain
+ - Fire Punch
+
+Smeargle @ Salac Berry
+Ability: Own Tempo
+EVs: 96 hp / 120 def / 40 spd / 252 spe
+Jolly Nature
+ - Spore
+ - Belly Drum
+ - Substitute
+ - Baton Pass
+
+Hariyama @ Leftovers
+Ability: Guts
+EVs: 96 atk / 192 def / 192 spd / 28 spe
+IVs: 30 def / 30 spd
+Adamant Nature
+ - Focus Punch
+ - Counter
+ - Rock Slide
+ - Hidden Power [Ghost]
+
+Medicham @ Leftovers
+Ability: Pure Power
+EVs: 4 hp / 252 atk / 252 spe
+Jolly Nature
+ - Brick Break
+ - Focus Punch
+ - Substitute
+ - Shadow Ball
+
+Slaking @ Choice Band
+Ability: Truant
+EVs: 4 hp / 252 atk / 252 spe
+Adamant Nature
+ - Return
+ - Earthquake
+ - Shadow Ball
+ - Focus Punch
+
+Celebi @ Leftovers
+Ability: Natural Cure
+EVs: 252 hp / 220 def / 36 spe
+Bold Nature
+ - Psychic
+ - Leech Seed
+ - Heal Bell
+ - Recover
+
+=== [g3_doubles] New Team ===
+
+Celebi @ Leftovers
+Ability: Natural Cure
+EVs: 252 hp / 80 def / 176 spe
+Timid Nature
+ - Calm Mind
+ - Baton Pass
+ - Psychic
+ - Recover
+
+Dodrio @ Choice Band
+Ability: Early Bird
+EVs: 4 hp / 252 atk / 252 spe
+IVs: 30 spa / 30 spd
+Adamant Nature
+ - Drill Peck
+ - Return
+ - Quick Attack
+ - Hidden Power [Ground]
+
+Crobat @ Leftovers
+Ability: Inner Focus
+EVs: 252 hp / 4 def / 252 spe
+Jolly Nature
+ - Sleep Talk
+ - Whirlwind
+
+Aerodactyl @ Choice Band
+Ability: Rock Head
+EVs: 4 hp / 252 atk / 252 spe
+IVs: 30 hp / 30 atk / 30 def / 30 spa / 30 spd
+Jolly Nature
+ - Rock Slide
+ - Double Edge
+ - Earthquake
+ - Hidden Power [Flying]
+
+Tyranitar @ Leftovers
+Ability: Sand Stream
+EVs: 252 hp / 240 atk / 16 spe
+IVs: 30 atk / 30 def / 30 spd
+Adamant Nature
+ - Substitute
+ - Focus Punch
+ - Rock Slide
+ - Hidden Power [Bug]
+
+Scizor @ Leftovers
+Ability: Swarm
+EVs: 108 hp / 252 atk / 148 spe
+IVs: 30 def / 30 spd / 30 spe
+Adamant Nature
+ - Swords Dance
+ - Silver Wind
+ - Hidden Power [Rock]
+ - Agility
 `;

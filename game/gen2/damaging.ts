@@ -32,23 +32,25 @@ export const tryDamage = (
   }
 
   const protect = target.v.hasFlag(VF.protect);
-  if (eff === 0) {
+  if (self.flag === "explosion") {
+    // Explosion into destiny bond, who dies first?
+    user.damage(user.base.hp, user, battle, false, "explosion", true);
+  }
+
+  if (eff === 0 || fail || protect) {
     user.v.rollout = 0;
     user.v.furyCutter = 0;
-    battle.info(target, "immune");
-    if (self.flag === "explosion") {
-      user.damage(user.base.hp, user, battle, false, "explosion", true);
+    if (eff === 0) {
+      battle.info(target, "immune");
+    } else if (fail) {
+      battle.miss(user, target);
+    } else if (protect) {
+      battle.info(target, "protect");
+      if (self.flag === "crash") {
+        const {dmg} = getDamage(self, battle, user, target, {});
+        battle.gen.handleCrashDamage(battle, user, target, dmg);
+      }
     }
-    return checkThrashing();
-  } else if (fail) {
-    user.v.rollout = 0;
-    user.v.furyCutter = 0;
-    battle.miss(user, target);
-    return checkThrashing();
-  } else if (protect) {
-    user.v.rollout = 0;
-    user.v.furyCutter = 0;
-    battle.info(target, "protect");
     return checkThrashing();
   } else if (!battle.checkAccuracy(self, user, target)) {
     user.v.rollout = 0;
@@ -56,8 +58,6 @@ export const tryDamage = (
     if (self.flag === "crash") {
       const {dmg} = getDamage(self, battle, user, target, {});
       battle.gen.handleCrashDamage(battle, user, target, dmg);
-    } else if (self.flag === "explosion") {
-      user.damage(user.base.hp, user, battle, false, "explosion", true);
     } else if (self.flag === "ohko" && self !== battle.gen.moveList.guillotine) {
       // In Gen 2, Horn Drill and Fissure can be countered for max damage on miss
       target.v.retaliateDamage = 65535;
@@ -151,9 +151,6 @@ export const tryDamage = (
 
   if (self.flag === "drain" || self.flag === "dream_eater") {
     user.recover(Math.max(Math.floor(dealt / 2), 1), target, battle, "drain");
-  } else if (self.flag === "explosion") {
-    // Explosion into destiny bond, who dies first?
-    dead = user.damage(user.base.hp, user, battle, false, "explosion", true).dead || dead;
   } else if (self.flag === "payday") {
     battle.info(user, "payday");
   } else if (self.flag === "rapid_spin" && user.base.hp) {

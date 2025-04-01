@@ -172,7 +172,9 @@ export const parsePokemon = (format: FormatId, src: string): TeamPokemonDesc => 
       desc.species = nameOrSpecies;
     }
 
-    desc.item = item;
+    if (item && normalizeName(item) !== "noitem") {
+      desc.item = item;
+    }
   }
 
   desc.species = normalizeName(desc.species);

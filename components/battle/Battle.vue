@@ -625,10 +625,8 @@ const skipToTurn = (turn: number) => {
   animations.length = 0;
 };
 
-watchImmediate([isMounted, paused, () => events.length], ([mounted, paused, nEvents]) => {
-  if (!mounted) {
-    playToIndex.value = -1;
-  } else if (!paused) {
+watchImmediate([paused, () => events.length], ([paused, nEvents]) => {
+  if (!paused) {
     playToIndex.value = nEvents;
   } else {
     playToIndex.value = nextEvent.value;
@@ -653,6 +651,10 @@ onMounted(async () => {
     }
 
     while (nextEvent.value < playToIndex.value && nextEvent.value < events.length) {
+      if (!isMounted.value) {
+        return;
+      }
+
       playingEvents.value = true;
       const event = events[nextEvent.value];
       const idx = ++nextEvent.value;
@@ -671,7 +673,7 @@ onMounted(async () => {
     }
     playingEvents.value = false;
 
-    await until([playToIndex, nextEvent]).changed();
+    await until([playToIndex, nextEvent, isMounted]).changed();
   }
 });
 

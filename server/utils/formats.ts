@@ -1,6 +1,6 @@
 import {Nature, type ValidatedPokemonDesc} from "~/game/pokemon";
 import {moveList, type MoveId, type Move} from "~/game/moves";
-import {speciesList, type Species, type SpeciesId} from "~/game/species";
+import {type AbilityId, speciesList, type Species, type SpeciesId} from "~/game/species";
 import {HP_TYPES, statKeys, type Stats} from "~/game/utils";
 import random from "random";
 import {z} from "zod";
@@ -142,7 +142,8 @@ export const randoms = (
         ivs = {...HP_IVS[random.choice(HP_TYPES)!]!};
       }
     }
-    return {species: id, level, moves, ivs};
+
+    return {species: id, level, moves, ivs, ability: random.choice(s.abilities as AbilityId[])};
   });
 };
 
@@ -186,17 +187,34 @@ const createValidator = (gen: Generation) => {
       gender: z.enum(["M", "F", "N"]).optional(),
       nature: z.nativeEnum(Nature).optional(),
       shiny: z.boolean().optional(),
+      ability: z
+        .string()
+        .optional()
+        .refine(s => gen.id >= 3 || !s, "Cannot have ability before Gen 3")
+        .refine(s => gen.id <= 2 || s, "Must choose an ability"),
     })
     .superRefine((desc, ctx) => {
-      const learnset = gen.speciesList[desc.species as SpeciesId]?.moves;
-      if (!learnset) {
+      const species = gen.speciesList[desc.species as SpeciesId];
+      if (!species) {
         return;
       }
+      if (desc.ability && !species.abilities.includes(desc.ability)) {
+        ctx.addIssue({
+          path: ["ability"],
+          message: `Does not have ability '${desc.ability}'`,
+          code: "custom",
+        });
+      }
 
+      const learnset = species.moves;
       const sk = learnset.includes("sketch");
       for (let i = 0; i < desc.moves.length; i++) {
         if (!learnset.includes(desc.moves[i]) && (!sk || !isValidSketchMove(gen, desc.moves[i]))) {
-          ctx.addIssue({path: ["moves", i], message: "Does not learn this move", code: "custom"});
+          ctx.addIssue({
+            path: ["moves", i],
+            message: `Does not learn move '${desc.moves[i]}'`,
+            code: "custom",
+          });
         }
       }
     })

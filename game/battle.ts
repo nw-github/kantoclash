@@ -553,6 +553,8 @@ export class Battle {
       user.movedThisTurn = true;
       if (user.v.fainted && !isReplacement) {
         continue;
+      } else if (this.finished) {
+        break;
       }
 
       if (user.v.hasFlag(VF.destinyBond)) {

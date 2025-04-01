@@ -3,6 +3,7 @@ import type {Mods, VolatileStats} from "~/game/battle";
 import type {Stages, Type, VF} from "~/game/utils";
 import type {MoveId} from "~/game/moves";
 import type {Generation} from "~/game/gen";
+import type {AbilityId} from "~/game/species";
 
 export type ClientVolatiles = {
   stages: Partial<Record<Stages, number>>;
@@ -14,6 +15,7 @@ export type ClientVolatiles = {
   types?: Type[];
   flags?: VF;
   perishCount?: number;
+  ability?: AbilityId;
 };
 
 type FormatInfo = {

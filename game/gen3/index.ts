@@ -101,6 +101,12 @@ const createGeneration = (): Generation => {
       if (poke.base.item === "machobrace" && stat === "spe") {
         value = Math.floor(value / 2);
       }
+      if (
+        (poke.base.ability === "hugepower" || poke.base.ability === "purepower") &&
+        stat === "atk"
+      ) {
+        value *= 2;
+      }
 
       value = applyItemStatBoost(poke.base, stat, value);
       return value;
@@ -162,7 +168,7 @@ const createGeneration = (): Generation => {
         chance * this.accStageMultipliers![clamp(user.v.stages.acc - target.v.stages.eva, -6, 6)]!,
       );
       if (reduceAccItem[target.base.item!]) {
-        acc -= acc * (reduceAccItem[target.base.item!]! / 100);
+        acc -= Math.floor(acc * (reduceAccItem[target.base.item!]! / 100));
       }
 
       // console.log(`[${user.base.name}] ${move.name} (Acc ${acc}/255)`);
