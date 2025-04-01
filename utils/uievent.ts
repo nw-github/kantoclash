@@ -56,6 +56,7 @@ export const chargeMessage: Partial<Record<MoveId, string>> = {
   solarbeam: "{} took in sunlight!",
   dig: "{} dug a hole!",
   fly: "{} flew up high!",
+  dive: "{} hid underwater!",
 };
 
 export const infoMessage: Record<InfoReason, string> = {

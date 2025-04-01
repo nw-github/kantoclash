@@ -223,7 +223,7 @@ const weatherData = {
   rain: {icon: "material-symbols:rainy", tooltip: "Raining", class: "text-sky-400"},
   sun: {icon: "material-symbols:clear-day-rounded", tooltip: "Harsh Sun", class: "text-orange-500"},
   sand: {icon: "mingcute:sandstorm-fill", tooltip: "Sandstorm", class: "text-amber-700"},
-  // material-symbols:weather-hail
+  hail: {icon: "material-symbols:weather-hail", tooltip: "Hail", class: ""},
 } satisfies Record<Weather, any>;
 
 defineEmits<{

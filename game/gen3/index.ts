@@ -122,6 +122,7 @@ const createGeneration = (): Generation => {
       default: return desired;
       }
     },
+    getMaxPP: move => (move.pp === 1 ? 1 : Math.floor((move.pp * 8) / 5)),
   };
 
   return merge(patches as any, GENERATION2);

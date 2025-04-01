@@ -75,7 +75,7 @@ const trailing = computed(() => {
   const base = new Pokemon(gen, {
     species: "abra",
     moves: [],
-    ivs: ivsToDvs(gen, poke.ivs ?? {}),
+    ivs: gen.id <= 2 ? ivsToDvs(gen, poke.ivs ?? {}) : poke.ivs,
     friendship: poke.friendship,
   });
   const type = move.getType ? move.getType(base) : move.type;

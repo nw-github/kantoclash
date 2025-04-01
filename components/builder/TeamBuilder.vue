@@ -155,7 +155,8 @@
 
                   <UIcon
                     v-if="currGender.random"
-                    name="mdi:dice-3-outline absolute -bottom-1 -right-1 size-4"
+                    name="mdi:dice-3-outline"
+                    class="absolute -bottom-1 -right-1 size-4"
                   />
                 </div>
 
@@ -306,7 +307,9 @@
           :ui="{base: 'h-full min-h-[23.5rem]', rounded: 'rounded-lg'}"
           autofocus
           spellcheck="false"
-          @change="team.pokemon[selectedPokeIdx] = parsePokemon(currentPokeText.trim())"
+          @change="
+            team.pokemon[selectedPokeIdx] = parsePokemon(team.format, currentPokeText.trim())
+          "
         >
           <TooltipButton
             text="Copy"
@@ -406,7 +409,7 @@ const selectedPoke = computed(() => ({
             prop = "spa";
           }
         }
-        return target[prop as keyof Stats] ?? 31;
+        return target[prop as keyof Stats];
       },
       set(target, prop, val) {
         if (gen.value.id <= 2 && prop === "spd") {
@@ -544,7 +547,7 @@ const addPokemon = async () => {
     return;
   }
 
-  const length = team.pokemon.push(parsePokemon(""));
+  const length = team.pokemon.push(parsePokemon(team.format, ""));
   await nextTick();
   selectedPokeIdx.value = length - 1;
 };
@@ -556,7 +559,7 @@ const teamTextChange = () => {
   }
 
   if (parsed.pokemon.length === 0) {
-    parsed.pokemon.push(parsePokemon(""));
+    parsed.pokemon.push(parsePokemon(parsed.format, ""));
   }
 
   team.format = parsed.format;

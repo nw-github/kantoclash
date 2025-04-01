@@ -1,7 +1,8 @@
 <template>
   <div>
     <div v-if="players.get(myId).active.every(a => !a)" class="pb-2">Choose your lead</div>
-    <div v-else-if="currOption" class="pb-2">
+    <div v-else-if="currOption" class="pb-2 flex gap-1 items-center">
+      <BoxSprite :species="players.poke(currOption.id)!.speciesId" />
       What will {{ players.poke(currOption.id)!.name }} do?
     </div>
 

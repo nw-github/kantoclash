@@ -1,6 +1,15 @@
 import type {DamagingMove, Move} from "./index";
 import {type Pokemon, transform} from "../pokemon";
-import {hpPercentExact, idiv, isSpecial, stageKeys, stageStatKeys, VF, type Type} from "../utils";
+import {
+  HP_TYPES,
+  hpPercentExact,
+  idiv,
+  isSpecial,
+  stageKeys,
+  stageStatKeys,
+  VF,
+  type Type,
+} from "../utils";
 
 export type MoveId = keyof typeof internalMoveList;
 
@@ -1915,6 +1924,7 @@ const internalMoveList = createMoveList({
     pp: 30,
     type: "normal",
     range: Range.Self,
+    protect: true,
     exec(battle, user) {
       const lastMove = user.v.lastHitBy?.move;
       if (!lastMove || lastMove.type === "???") {
@@ -2437,6 +2447,7 @@ const internalMoveList = createMoveList({
     acc: 100,
     // prettier-ignore
     effect: [10, [["atk", +1], ["def", +1], ["spa", +1], ["spd", +1], ["spe", +1]], true],
+    contact: true,
   },
   beatup: {
     kind: "damage",
@@ -2598,12 +2609,7 @@ const internalMoveList = createMoveList({
     acc: 100,
     kingsRock: true,
     getType(user) {
-      // prettier-ignore
-      const hpTypes: Type[] = [
-        "fight", "flying", "poison", "ground", "rock", "bug", "ghost", "steel", "fire", "water",
-        "grass", "electric", "psychic", "ice", "dragon", "dark",
-      ];
-      return hpTypes[(((user.ivs.atk ?? 15) & 0b11) << 2) | ((user.ivs.def ?? 15) & 0b11)];
+      return HP_TYPES[(((user.ivs.atk ?? 15) & 0b11) << 2) | ((user.ivs.def ?? 15) & 0b11)];
     },
     getPower({ivs: dvs}) {
       const msb = (dv?: number) => +(((dv ?? 15) & (1 << 3)) !== 0);
@@ -3040,6 +3046,7 @@ const internalMoveList = createMoveList({
     pp: 5,
     type: "normal",
     range: Range.Adjacent,
+    protect: true,
   },
   bounce: {
     kind: "damage",
@@ -3678,11 +3685,21 @@ const internalMoveList = createMoveList({
     range: Range.Self,
     why: "fail_generic",
   },
+  shadowpunch: {
+    kind: "damage",
+    name: "Shadow Punch",
+    pp: 20,
+    type: "ghost",
+    range: Range.Adjacent,
+    power: 50,
+    kingsRock: true,
+    contact: true,
+  },
   sheercold: {
     kind: "damage",
     name: "Sheer Cold",
     pp: 5,
-    type: "normal",
+    type: "ice",
     range: Range.Adjacent,
     power: 0,
     acc: 30,
@@ -3694,7 +3711,7 @@ const internalMoveList = createMoveList({
     kind: "damage",
     name: "Shock Wave",
     pp: 20,
-    type: "grass",
+    type: "electric",
     range: Range.Adjacent,
     power: 60,
     kingsRock: true,
@@ -3923,7 +3940,7 @@ const internalMoveList = createMoveList({
     kind: "status",
     name: "Will-O-Wisp",
     pp: 15,
-    type: "normal",
+    type: "fire",
     range: Range.Adjacent,
     acc: 75,
     status: "brn",

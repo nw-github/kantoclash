@@ -1,7 +1,7 @@
 import {Nature, type ValidatedPokemonDesc} from "~/game/pokemon";
 import {moveList, type MoveId, type Move} from "~/game/moves";
 import {speciesList, type Species, type SpeciesId} from "~/game/species";
-import {statKeys, type Stats} from "~/game/utils";
+import {HP_TYPES, statKeys, type Stats} from "~/game/utils";
 import random from "random";
 import {z} from "zod";
 import {isValidSketchMove, type FormatId} from "~/utils/shared";
@@ -10,6 +10,7 @@ import {GENERATION2} from "~/game/gen2";
 import {statusBerry, type ItemId} from "~/game/item";
 import {itemDesc} from "~/utils";
 import {profanityMatcher} from "~/utils/schema";
+import {HP_IVS} from "~/utils/pokemon";
 
 export type TeamProblems = {path: (string | number)[]; message: string}[];
 
@@ -94,6 +95,10 @@ const isBadMove = (s: Species, move: Move, id: MoveId) => {
   const eva = ([stat, c]: [string, number]) =>
     (stat === "acc" && c < 0) || (stat === "eva" && c > 0);
 
+  if (!move) {
+    console.log("bad move: ", id);
+  }
+
   if (move.kind === "stage" && move.stages.some(eva)) {
     return true;
   }
@@ -128,10 +133,14 @@ export const randoms = (
     if (stab.length) {
       moves[0] = random.choice(stab)!;
     }
-    const ivs: Partial<Stats> = {};
+    let ivs: Partial<Stats> = {};
     if (moves.includes("hiddenpower")) {
-      ivs.atk = 0b1100 | Math.floor(Math.random() * 4);
-      ivs.def = 0b1100 | Math.floor(Math.random() * 4);
+      if (gen.id <= 2) {
+        ivs.atk = 0b1100 | Math.floor(Math.random() * 4);
+        ivs.def = 0b1100 | Math.floor(Math.random() * 4);
+      } else {
+        ivs = {...HP_IVS[random.choice(HP_TYPES)!]!};
+      }
     }
     return {species: id, level, moves, ivs};
   });

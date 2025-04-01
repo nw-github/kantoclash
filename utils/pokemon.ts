@@ -1,6 +1,6 @@
 import {moveList, type MoveId, type Move} from "~/game/moves";
 import type {SpeciesId} from "~/game/species";
-import {statKeys, type Stats} from "~/game/utils";
+import {HP_TYPES, statKeys, type Stats, type Type} from "~/game/utils";
 import {battleFormats, formatInfo, type FormatId} from "./shared";
 import {Nature, type PokemonDesc} from "~/game/pokemon";
 import {GENERATIONS, type Generation} from "~/game/gen";
@@ -86,25 +86,45 @@ const statRegex = /\s*(\d+)\s+(\w+)\s*/g;
 const ignoreChars = /[\s-.'`]+/g;
 const teamRegex = /^===\s*(?:\[(.+)\])?\s*(.+?)\s*===$/;
 
-export const parsePokemon = (src: string): TeamPokemonDesc => {
-  const getHpDvs = (name: string) => {
-    name = normalizeName(name);
+export const HP_IVS: Partial<Record<Type, Partial<Stats>>> = {
+  bug: {atk: 30, def: 30, spd: 30},
+  dark: {},
+  dragon: {atk: 30},
+  electric: {spa: 30},
+  fight: {def: 30, spa: 30, spd: 30, spe: 30},
+  fire: {atk: 30, spa: 30, spe: 30},
+  flying: {hp: 30, atk: 30, def: 30, spa: 30, spd: 30},
+  ghost: {def: 30, spd: 30},
+  grass: {atk: 30, spa: 30},
+  ground: {spa: 30, spd: 30},
+  ice: {atk: 30, def: 30},
+  poison: {def: 30, spa: 30, spd: 30},
+  psychic: {atk: 30, spe: 30},
+  rock: {def: 30, spd: 30, spe: 30},
+  steel: {spd: 30},
+  water: {atk: 30, def: 30, spa: 30},
+};
+
+export const parsePokemon = (format: FormatId, src: string): TeamPokemonDesc => {
+  const getHpIvs = (name: string) => {
+    // eslint-disable-next-line no-useless-escape
+    name = normalizeName(name).replaceAll(/[\[\(\)\]]/g, "");
     if (!name.startsWith("hiddenpower")) {
       return;
     }
-    const type = name.slice(11).replace("fighting", "fight");
-    // prettier-ignore
-    const hpTypes = [
-      "fight", "flying", "poison", "ground", "rock", "bug", "ghost", "steel", "fire", "water",
-      "grass", "electric", "psychic", "ice", "dragon", "dark",
-    ];
 
-    const pos = hpTypes.indexOf(type);
+    const gen = GENERATIONS[formatInfo[format].generation]!;
+    const type = name.slice(11).replace("fighting", "fight");
+    const pos = HP_TYPES.indexOf(type as Type);
     if (pos === -1) {
       return;
     }
 
-    return [0b1100 | (pos >> 2), 0b1100 | (pos & 3)];
+    if (gen.id <= 2) {
+      return {atk: dvToIv(0b1100 | (pos >> 2)), def: dvToIv(0b1100 | (pos & 3))};
+    } else {
+      return HP_IVS[type as Type];
+    }
   };
 
   const desc: TeamPokemonDesc = {species: "", evs: {}, ivs: {}, moves: [], name: ""};
@@ -152,11 +172,10 @@ export const parsePokemon = (src: string): TeamPokemonDesc => {
       desc.friendship = +match[1];
     } else if ((match = line.match(moveRegex))) {
       desc.moves.push(match[1]);
-      const dvs = getHpDvs(match[1]);
-      if (dvs) {
+      const ivs = getHpIvs(match[1]);
+      if (ivs) {
         desc.moves[desc.moves.length - 1] = "Hidden Power";
-        desc.ivs.atk = dvToIv(dvs[0]);
-        desc.ivs.def = dvToIv(dvs[1]);
+        desc.ivs = ivs;
       }
     } else if ((match = line.match(natureRegex))) {
       desc.nature = Nature[match[1].toLowerCase() as any] as unknown as Nature | undefined;
@@ -212,7 +231,7 @@ export const parseTeams = (src: string) => {
         break;
       }
 
-      pokemon.push(parsePokemon(res[i]));
+      pokemon.push(parsePokemon(format, res[i]));
     }
     teams.push({name, pokemon, format});
   }
