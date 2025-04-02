@@ -391,6 +391,12 @@ export class ActivePokemon {
     }
   }
 
+  handleShellBell(battle: Battle, dmg: number) {
+    if (dmg !== 0 && !this.v.fainted && this.base.item === "shellbell") {
+      this.recover(Math.max(1, Math.floor(dmg / 8)), this, battle, "shellbell", false);
+    }
+  }
+
   applyStatusDebuff() {
     if (this.base.status === "brn") {
       this.v.stats.atk = Math.max(Math.floor(this.v.stats.atk / 2), 1);

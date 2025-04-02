@@ -182,9 +182,9 @@
         :victor
         :perspective
         :format
+        :smooth-scroll
         :turns="htmlTurns"
-        :smooth-scroll="smoothScroll"
-        @chat="message => $emit('chat', message)"
+        @chat="$emit('chat', $event)"
         @forfeit="$emit('choice', {type: 'forfeit'})"
       />
     </div>
@@ -196,10 +196,10 @@
         :victor
         :perspective
         :format
+        :smooth-scroll
         :turns="htmlTurns"
-        :smooth-scroll="smoothScroll"
         closable
-        @chat="message => $emit('chat', message)"
+        @chat="$emit('chat', $event)"
         @forfeit="$emit('choice', {type: 'forfeit'})"
         @close="slideoverOpen = false"
       />

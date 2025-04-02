@@ -141,18 +141,17 @@ export const moveFunctions: MoveFunctions = {
       if (!user.v.lastHitBy) {
         user.v.rollout = 0;
         user.v.furyCutter = 0;
-        if (battle.gen.id <= 2) {
-          return battle.info(user, "miss");
-        } else {
-          return battle.info(user, "fail_generic");
-        }
+        return battle.info(user, battle.gen.id <= 2 ? "miss" : "fail_generic");
       }
       targets = [user.v.lastHitBy.user];
     }
 
+    let dealt = 0;
     for (const target of targets) {
-      battle.gen.tryDamage(this, battle, user, target, targets.length > 1);
+      dealt += battle.gen.tryDamage(this, battle, user, target, targets.length > 1);
     }
+
+    user.handleShellBell(battle, dealt);
   },
   fail(battle, user) {
     battle.info(user, this.why);

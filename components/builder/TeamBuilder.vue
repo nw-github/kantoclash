@@ -479,14 +479,16 @@ const toggleGender = () => {
   }
 };
 
-const natures = Object.values(Nature)
-  .filter(t => typeof t === "number")
-  .map(k => ({
-    value: k,
-    name: toTitleCase(Nature[k]),
-    plus: Object.keys(natureTable[k]).map(k => `+${statKeys.value[k as keyof Stats]!}`)[0],
-    minus: Object.keys(natureTable[k]).map(k => `-${statKeys.value[k as keyof Stats]!}`)[1],
-  }));
+const natures = computed(() => {
+  return Object.values(Nature)
+    .filter(t => typeof t === "number")
+    .map(k => ({
+      value: k,
+      name: toTitleCase(Nature[k]),
+      plus: Object.keys(natureTable[k]).map(k => `+${statKeys.value[k as keyof Stats]!}`)[0],
+      minus: Object.keys(natureTable[k]).map(k => `-${statKeys.value[k as keyof Stats]!}`)[1],
+    }));
+});
 
 const getTotalEvs = (stats: Partial<Stats>) => {
   let v = 0;

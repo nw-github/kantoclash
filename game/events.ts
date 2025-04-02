@@ -96,6 +96,7 @@ export type RecoveryReason =
   | "pain_split"
   | "present"
   | "leftovers"
+  | "shellbell"
   | "item";
 
 export type DamageEvent = {

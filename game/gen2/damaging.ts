@@ -8,7 +8,7 @@ export const tryDamage = (
   user: ActivePokemon,
   target: ActivePokemon,
   spread: bool,
-) => {
+): number => {
   const checkThrashing = () => {
     if (user.v.thrashing && --user.v.thrashing.turns === 0) {
       user.v.rollout = 0;
@@ -28,7 +28,8 @@ export const tryDamage = (
   if (self.flag === "drain" && target.v.substitute) {
     user.v.rollout = 0;
     user.v.furyCutter = 0;
-    return battle.miss(user, target);
+    battle.miss(user, target);
+    return 0;
   }
 
   const protect = target.v.hasFlag(VF.protect);
@@ -51,7 +52,8 @@ export const tryDamage = (
         battle.gen.handleCrashDamage(battle, user, target, dmg);
       }
     }
-    return checkThrashing();
+    checkThrashing();
+    return 0;
   } else if (!battle.checkAccuracy(self, user, target)) {
     user.v.rollout = 0;
     user.v.furyCutter = 0;
@@ -62,7 +64,8 @@ export const tryDamage = (
       // In Gen 2, Horn Drill and Fissure can be countered for max damage on miss
       target.v.retaliateDamage = 65535;
     }
-    return checkThrashing();
+    checkThrashing();
+    return 0;
   }
 
   let power: number | undefined;
@@ -74,10 +77,12 @@ export const tryDamage = (
     const result = randChoiceWeighted(battle.rng, [40, 80, 120, -4], [40, 30, 10, 20]);
     if (result < 0) {
       if (target.base.hp === target.base.stats.hp) {
-        return battle.info(target, "fail_present");
+        battle.info(target, "fail_present");
+        return 0;
       }
 
-      return target.recover(Math.max(idiv(target.base.stats.hp, 4), 1), user, battle, "present");
+      target.recover(Math.max(idiv(target.base.stats.hp, 4), 1), user, battle, "present");
+      return 0;
     }
     power = result;
   }
@@ -102,10 +107,13 @@ export const tryDamage = (
       hadSub = target.v.substitute !== 0;
       ({dmg, isCrit, endured, band} = getDamage(self, battle, user, target, {band, beatUp: poke}));
       ({dead, event, dealt} = target.damage2(battle, {dmg, src: user, why: "attacked", isCrit}));
+      user.handleShellBell(battle, dealt);
+
       if (dead) {
         break;
       }
     }
+    dealt = 0;
   } else if (self.flag === "double" || self.flag === "triple" || self.flag === "multi") {
     const counts = {
       double: 2,
@@ -114,7 +122,6 @@ export const tryDamage = (
     };
 
     const count = counts[self.flag];
-    let event;
     for (let hits = 0; !dead && !endured && hits < count; hits++) {
       hadSub = target.v.substitute !== 0;
       ({dmg, isCrit, endured, band} = getDamage(self, battle, user, target, {
@@ -126,9 +133,11 @@ export const tryDamage = (
       if (event) {
         event.hitCount = 0;
       }
-      ({dead, event} = target.damage(dmg, user, battle, isCrit, "attacked", false, eff));
+      ({dead, event, dealt} = target.damage(dmg, user, battle, isCrit, "attacked", false, eff));
       event.hitCount = hits + 1;
+      user.handleShellBell(battle, dealt);
     }
+    dealt = 0;
   } else {
     ({dmg, isCrit, endured, band} = getDamage(self, battle, user, target, {power}));
     ({dealt, dead, event} = target.damage(
@@ -196,7 +205,7 @@ export const tryDamage = (
   // BUG GEN2:
   // https://pret.github.io/pokecrystal/bugs_and_glitches.html#moves-that-do-damage-and-increase-your-stats-do-not-increase-stats-after-a-ko
   if (dead) {
-    return;
+    return dealt;
   }
 
   // BUG GEN2:
@@ -239,9 +248,9 @@ export const tryDamage = (
     if (effect === "brn" && target.base.status === "frz") {
       target.unstatus(battle, "thaw");
       // TODO: can you thaw and then burn?
-      return;
+      return dealt;
     } else if (!battle.rand100(chance) || hadSub) {
-      return;
+      return dealt;
     }
 
     if (effect === "confusion") {
@@ -250,19 +259,19 @@ export const tryDamage = (
       }
     } else if (Array.isArray(effect)) {
       if (!effectSelf && target.v.hasFlag(VF.mist)) {
-        return;
+        return dealt;
       }
 
       (effectSelf ? user : target).modStages(effect, battle);
     } else if (effect === "flinch") {
       if (target.base.status === "frz" || target.base.status === "slp") {
-        return;
+        return dealt;
       }
 
       target.v.flinch = true;
     } else if (effect === "thief") {
       if (user.base.item || !target.base.item || target.base.item.includes("mail")) {
-        return;
+        return dealt;
       }
 
       battle.event({
@@ -275,22 +284,23 @@ export const tryDamage = (
       target.base.item = undefined;
     } else {
       if (target.owner.screens.safeguard || target.base.status) {
-        return;
+        return dealt;
       } else if (!wasTriAttack && effect === "brn" && target.v.types.includes("fire")) {
-        return;
+        return dealt;
       } else if (!wasTriAttack && effect === "frz" && target.v.types.includes("ice")) {
-        return;
+        return dealt;
       } else if ((effect === "psn" || effect === "tox") && target.v.types.includes("poison")) {
-        return;
+        return dealt;
       } else if (
         (effect === "psn" || effect === "tox") &&
         target.v.types.includes("steel") &&
         battle.moveIdOf(self) !== "twineedle"
       ) {
-        return;
+        return dealt;
       } else {
         target.status(effect, battle);
       }
     }
   }
+  return dealt;
 };

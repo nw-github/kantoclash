@@ -1,12 +1,11 @@
-import {Nature, type ValidatedPokemonDesc} from "~/game/pokemon";
+import {Nature, natureTable, type ValidatedPokemonDesc} from "~/game/pokemon";
 import {moveList, type MoveId, type Move} from "~/game/moves";
 import {type AbilityId, speciesList, type Species, type SpeciesId} from "~/game/species";
 import {HP_TYPES, statKeys, type Stats} from "~/game/utils";
 import random from "random";
 import {z} from "zod";
 import {isValidSketchMove, type FormatId} from "~/utils/shared";
-import {type Generation, GENERATION1, GENERATION3} from "~/game/gen";
-import {GENERATION2} from "~/game/gen2";
+import {type Generation, GENERATION1, GENERATION2, GENERATION3} from "~/game/gen";
 import {statusBerry, type ItemId} from "~/game/item";
 import {itemDesc} from "~/utils";
 import {profanityMatcher} from "~/utils/schema";
@@ -143,7 +142,39 @@ export const randoms = (
       }
     }
 
-    return {species: id, level, moves, ivs, ability: random.choice(s.abilities as AbilityId[])};
+    let nature: Nature | undefined;
+    const evs: Partial<Stats> = {};
+    if (gen.id >= 3) {
+      const otherStats = statKeys.filter(k => k !== "hp" && k !== "spe");
+
+      const best = otherStats.reduce((prev, c) => (s.stats[c] > s.stats[prev] ? c : prev), "atk");
+      evs.hp = 4;
+      evs.spe = 252;
+      evs[best] = 252;
+
+      for (const k of Object.values(Nature)) {
+        if (typeof k === "number") {
+          const [plus, minus] = Object.keys(natureTable[k]);
+          if (plus === "spe" && otherStats.includes(minus)) {
+            nature = k;
+            break;
+          }
+        }
+      }
+
+      // nature = random.choice(Object.values(Nature).filter(v => typeof v === "number"));
+      // const plusStat = Object.keys(natureTable)[0];
+      // evs[plusStat as keyof Stats] = 252;
+    }
+    return {
+      species: id,
+      level,
+      moves,
+      ivs,
+      evs,
+      nature,
+      ability: random.choice(s.abilities as AbilityId[]),
+    };
   });
 };
 

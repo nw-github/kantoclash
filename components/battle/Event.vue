@@ -52,6 +52,7 @@
     <p v-else-if="e.why === 'recover'">{{ pn(e.src) }} regained health!</p>
     <p v-else-if="e.why === 'rest'">{{ pn(e.src) }} started sleeping!</p>
     <p v-else-if="e.why === 'leftovers'">{{ pn(e.src) }} restored a little HP using its Leftovers!</p>
+    <p v-else-if="e.why === 'shellbell'">{{ pn(e.src) }} restored a little HP using its Shell Bell!</p>
 
     <p class="text-xs sm:text-[0.8rem] text-[var(--stat-up)]">
       {{ pn(e.target) }} gained

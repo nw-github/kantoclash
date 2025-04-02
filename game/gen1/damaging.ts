@@ -20,7 +20,7 @@ export function tryDamage(
   user: ActivePokemon,
   target: ActivePokemon,
   _spread: bool,
-) {
+): number {
   const checkThrashing = () => {
     if (user.v.thrashing && user.v.thrashing.turns !== -1 && --user.v.thrashing.turns === 0) {
       user.v.rollout = 0;
@@ -39,17 +39,19 @@ export function tryDamage(
   if (target.v.hasFlag(VF.protect)) {
     battle.info(target, "protect");
     checkThrashing();
-    return false;
+    return 0;
   }
 
   // eslint-disable-next-line prefer-const
   let {dmg, isCrit, eff, endured} = getDamage(self, battle, user, target, {});
   if (dmg < 0) {
     if (target.base.hp === target.base.stats.hp) {
-      return battle.info(target, "fail_present");
+      battle.info(target, "fail_present");
+      return 0;
     }
 
-    return target.recover(Math.max(idiv(target.base.stats.hp, 4), 1), user, battle, "present");
+    target.recover(Math.max(idiv(target.base.stats.hp, 4), 1), user, battle, "present");
+    return 0;
   }
 
   if (dmg === 0 || !battle.checkAccuracy(self, user, target)) {
@@ -65,7 +67,8 @@ export function tryDamage(
       }
 
       if (self.flag === "crash" && eff === 0) {
-        return checkThrashing();
+        checkThrashing();
+        return 0;
       }
     }
 
@@ -76,7 +79,8 @@ export function tryDamage(
       target.handleRage(battle);
       user.damage(user.base.hp, user, battle, false, "explosion", true);
     }
-    return checkThrashing();
+    checkThrashing();
+    return 0;
   }
 
   target.v.lastHitBy = {move: self, user};
@@ -159,7 +163,7 @@ export function tryDamage(
   }
 
   if (dead || brokeSub) {
-    return;
+    return dealt;
   }
 
   if (self.flag === "recharge") {
@@ -178,20 +182,20 @@ export function tryDamage(
     if (effect === "brn" && target.base.status === "frz") {
       target.unstatus(battle, "thaw");
       // TODO: can you thaw and then burn?
-      return;
+      return dealt;
     }
 
     if (!battle.rand100(chance)) {
-      return;
+      return dealt;
     }
 
     if (effect === "confusion") {
       if (target.v.confusion === 0 && !user.owner.screens.safeguard) {
         target.confuse(battle);
       }
-      return;
+      return dealt;
     } else if (hadSub) {
-      return;
+      return dealt;
     } else if (Array.isArray(effect)) {
       // BUG GEN2:
       // https://pret.github.io/pokecrystal/bugs_and_glitches.html#moves-that-do-damage-and-increase-your-stats-do-not-increase-stats-after-a-ko
@@ -202,7 +206,7 @@ export function tryDamage(
       target.v.flinch = true;
     } else if (effect === "thief") {
       if (user.base.item || !target.base.item || target.base.item.includes("mail")) {
-        return;
+        return dealt;
       }
 
       battle.event({type: "thief", src: user.id, target: target.id, item: target.base.item});
@@ -214,12 +218,13 @@ export function tryDamage(
         target.base.status ||
         target.v.types.includes(self.type)
       ) {
-        return;
+        return dealt;
       }
 
       target.status(effect, battle);
     }
   }
+  return dealt;
 }
 
 export function checkUsefulness(
