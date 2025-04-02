@@ -2040,7 +2040,8 @@ const internalMoveList = createMoveList({
     name: "Heal Bell",
     pp: 5,
     type: "normal",
-    range: Range.AllAllies,
+    // user and all allies
+    range: Range.Self,
   },
   nightmare: {
     name: "Nightmare",
@@ -2995,7 +2996,7 @@ const internalMoveList = createMoveList({
     name: "Aromatherapy",
     pp: 5,
     type: "grass",
-    range: Range.AllAllies,
+    range: Range.Self,
     why: "fail_generic",
   },
   assist: {

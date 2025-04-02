@@ -115,7 +115,8 @@ export interface LockOnMove extends BaseMove {
 
 export interface HealBellMove extends BaseMove {
   readonly kind: "healbell";
-  readonly range: Range.AllAllies;
+  // user and all allies
+  readonly range: Range.Self;
 }
 
 export interface FutureSightMove extends BaseMove {
