@@ -1,5 +1,5 @@
 <template>
-  <div class="flex w-full px-4 justify-around">
+  <div class="flex w-full px-4 justify-center sm:justify-around">
     <div
       v-for="(player, id) in players.items"
       :key="id"
@@ -21,7 +21,7 @@
       </div>
       <div class="relative flex justify-center w-full">
         <div
-          class="absolute bottom-4 sm:bottom-8 bg-gray-200 dark:bg-gray-600 w-[110%] h-10 sm:h-16 rounded-[100%] flex justify-center"
+          class="absolute bottom-4 sm:bottom-8 bg-gray-200 dark:bg-gray-600 w-[115%] h-10 sm:h-16 rounded-[100%] flex justify-center"
           :class="isSingles && 'w-full'"
         />
 

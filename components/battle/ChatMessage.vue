@@ -1,6 +1,9 @@
 <template>
   <p :key="JSON.stringify(chat)">
-    <span v-if="chat.type === 'chat' && !mutedPlayers.includes(chat.id)">
+    <span
+      v-if="chat.type === 'chat' && !mutedPlayers.includes(chat.id)"
+      class="text-wrap break-words"
+    >
       <b>{{ players.get(chat.id)?.name ?? "???" }}</b
       >:
       {{

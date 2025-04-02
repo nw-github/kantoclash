@@ -2,21 +2,23 @@
   <div class="all w-full flex flex-col items-center">
     <div
       class="flex flex-col gap-0.5 sm:gap-1 text-sm z-40"
-      :class="[(!poke || poke.hidden) && 'invisible', !isSingles ? 'w-20 sm:w-32' : 'w-32 sm:w-36']"
+      :class="[(!poke || poke.hidden) && 'invisible', !isSingles ? 'w-20 sm:w-32' : 'w-28 sm:w-40']"
     >
       <div class="flex justify-between flex-col sm:flex-row">
         <div class="font-bold flex items-center">
-          <span class="truncate max-w-24">{{ poke?.name ?? "--" }}</span>
+          <span class="truncate text-xs max-w-24">{{ poke?.name || "--" }}</span>
           <!-- @vue-expect-error -->
           <GenderIcon class="size-4" :gender="poke?.gender ?? gen1Gender[poke?.speciesId]" />
         </div>
-        <span class="text-[0.75rem] sm:text-sm whitespace-nowrap">
+        <span class="text-[0.65rem] sm:text-xs whitespace-nowrap">
           Lv. {{ poke?.level ?? 100 }}
         </span>
       </div>
       <div class="relative overflow-hidden rounded-md bg-[#333] flex">
         <div class="hp-fill absolute h-full rounded-md" />
-        <div class="w-full text-center text-gray-100 text-xs sm:text-sm z-30">{{ hp }}%</div>
+        <div class="w-full text-center text-gray-100 text-xs sm:text-sm font-medium z-30">
+          {{ hp }}%
+        </div>
       </div>
       <div class="relative">
         <div

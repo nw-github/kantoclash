@@ -175,7 +175,7 @@
       </div>
     </div>
 
-    <div v-if="!textBoxHidden" class="h-full" :class="isSingles ? 'w-full' : 'w-3/5'">
+    <div v-if="!textBoxHidden" class="h-full w-3/5">
       <Textbox
         :players
         :chats
