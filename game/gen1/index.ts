@@ -3,9 +3,19 @@ import {tryDamage} from "./damaging";
 import type {ActivePokemon, Battle} from "../battle";
 import {accumulateBide, moveFunctions, moveList, type Move, type MoveId} from "../moves";
 import {speciesList, type Species, type SpeciesId} from "../species";
-import {clamp, floatTo255, idiv, VF, type Stats, type StatStages, type Type} from "../utils";
+import {
+  clamp,
+  floatTo255,
+  idiv,
+  VF,
+  screens,
+  type Stats,
+  type StatStages,
+  type Type,
+} from "../utils";
 import type {ItemData, ItemId} from "../item";
 import type {Gender, Nature} from "../pokemon";
+import type {DamageReason} from "../events";
 
 export type TypeChart = Record<Type, Partial<Record<Type, number>>>;
 
@@ -118,6 +128,14 @@ const statBoostItem: PRecord<
   deepseatooth: {clamperl: {stats: ["spa"], transformed: false}},
   deepseascale: {clamperl: {stats: ["spd"], transformed: false}},
 };
+
+enum BetweenTurns {
+  Begin,
+  FutureSight,
+  Weather,
+  PartialTrapping,
+  PerishSong,
+}
 
 export const scaleAccuracy255 = (acc: number, user: ActivePokemon, target: ActivePokemon) => {
   // https://bulbapedia.bulbagarden.net/wiki/Accuracy#Generation_I_and_II
@@ -276,10 +294,6 @@ const beforeUseMove = (battle: Battle, move: Move, user: ActivePokemon) => {
   } else if (user.base.status === "slp") {
     const done = --user.base.sleepTurns === 0;
     if (done) {
-      const opp = battle.opponentOf(user.owner);
-      if (opp.sleepClausePoke === user.base) {
-        opp.sleepClausePoke = undefined;
-      }
       user.unstatus(battle, "wake");
     } else {
       battle.info(user, "sleep");
@@ -318,8 +332,8 @@ const beforeUseMove = (battle: Battle, move: Move, user: ActivePokemon) => {
   }
 
   const confuse = user.v.confusion && battle.rng.bool();
-  const fullPara = user.base.status === "par" && battle.rand255(floatTo255(25));
-  const attract = user.v.attract && battle.rand255(floatTo255(50));
+  const fullPara = user.base.status === "par" && battle.gen.rng.tryFullPara(battle);
+  const attract = user.v.attract && battle.gen.rng.tryAttract(battle);
   if (confuse || attract || fullPara) {
     // Gen 1 bug: remove charging w/o removing user.v.invuln
     user.v.charging = undefined;
@@ -446,10 +460,13 @@ const createGeneration = () => {
     beforeUseMove,
     isValidMove,
     rng: {
+      tryDefrost: (_: Battle) => false,
       tryQuickClaw: (battle: Battle) => battle.rand255Good(60),
       tryKingsRock: (battle: Battle) => battle.rand255Good(30),
       tryFocusBand: (battle: Battle) => battle.rand255Good(30),
       tryCrit,
+      tryFullPara: (battle: Battle) => battle.rand100(25),
+      tryAttract: (battle: Battle) => battle.rand100(50),
       sleepTurns(battle: Battle) {
         // https://www.smogon.com/forums/threads/outdated-new-rby-sleep-mechanics-discovery.3745689/
         let rng = battle.rng.int(0, 255);
@@ -481,8 +498,212 @@ const createGeneration = () => {
     getShiny: (_desired: boolean | undefined, _dvs: Partial<Stats>) => false,
     accumulateBide,
     tryDamage,
+    afterBeforeUseMove(battle: Battle, user: ActivePokemon): boolean {
+      this.handleResidualDamage(battle, user);
+      return battle.checkFaint(user) && shouldReturn(battle);
+    },
+    afterAttack(battle: Battle, user: ActivePokemon, isReplacement: bool): boolean {
+      if (isReplacement) {
+        return false;
+      }
+
+      if (user.v.inBatonPass) {
+        return true;
+      } else if (battle.checkFaint(user) && shouldReturn(battle)) {
+        return true;
+      }
+
+      this.handleResidualDamage(battle, user);
+      return battle.checkFaint(user) && shouldReturn(battle);
+    },
+    handleResidualDamage(battle: Battle, poke: ActivePokemon) {
+      const tickCounter = (why: DamageReason) => {
+        // BUG GEN1: Toxic, Leech Seed, and brn/psn share the same routine. If a Pokemon rests, its
+        // toxic counter will not be reset and brn, poison, and leech seed will use and update it.
+
+        // BUG GEN2: Same as above, but Leech Seed is fixed and Rest resets the counter. Heal Bell
+        // and Baton Pass don't though, so the same bug can happen.
+        let m = poke.v.counter || 1;
+        let d = 16;
+        if (battle.gen.id >= 2) {
+          m =
+            why !== "seeded" && (battle.gen.id === 2 || poke.base.status === "tox")
+              ? poke.v.counter || 1
+              : 1;
+          d = why === "seeded" ? 8 : 16;
+        }
+
+        const dmg = Math.max(Math.floor((m * poke.base.stats.hp) / d), 1);
+        const {dead} = poke.damage(dmg, poke, battle, false, why, true);
+        if (
+          why === "seeded" &&
+          poke.v.seededBy &&
+          poke.v.seededBy.base.hp < poke.v.seededBy.base.stats.hp
+        ) {
+          poke.v.seededBy.recover(dmg, poke, battle, "seeder");
+        }
+
+        if (poke.v.counter) {
+          poke.v.counter++;
+        }
+        return dead;
+      };
+
+      if (poke.base.hp === 0) {
+        return;
+      } else if ((poke.base.status === "tox" || poke.base.status === "psn") && tickCounter("psn")) {
+        return;
+      } else if (poke.base.status === "brn" && tickCounter("brn")) {
+        return;
+      } else if (poke.v.seededBy && tickCounter("seeded")) {
+        return;
+      } else if (
+        poke.v.hasFlag(VF.nightmare) &&
+        poke.damage(
+          Math.max(1, idiv(poke.base.stats.hp, 4)),
+          poke,
+          battle,
+          false,
+          "nightmare",
+          true,
+        ).dead
+      ) {
+        return;
+      } else if (
+        poke.v.hasFlag(VF.curse) &&
+        poke.damage(Math.max(1, idiv(poke.base.stats.hp, 4)), poke, battle, false, "curse", true)
+          .dead
+      ) {
+        return;
+      }
+      return;
+    },
+    betweenTurns(battle: Battle) {
+      for (const poke of battle.allActive) {
+        poke.v.hazed = false;
+        poke.v.flinch = false;
+        poke.v.inPursuit = false;
+        poke.v.retaliateDamage = 0;
+        if (poke.v.trapped && !poke.v.trapped.user.v.trapping) {
+          poke.v.trapped = undefined;
+        }
+        if (poke.v.hasFlag(VF.protect | VF.endure)) {
+          battle.event({
+            type: "sv",
+            volatiles: [poke.clearFlag(VF.protect | VF.endure)],
+          });
+        }
+      }
+
+      if (battle.betweenTurns < BetweenTurns.FutureSight) {
+        for (const poke of battle.allActive) {
+          poke.handleFutureSight(battle);
+        }
+
+        battle.betweenTurns = BetweenTurns.FutureSight;
+        if (battle.checkFaint(battle.players[0].active[0], true)) {
+          return;
+        }
+      }
+
+      if (battle.betweenTurns < BetweenTurns.Weather) {
+        weather: if (battle.weather) {
+          if (--battle.weather.turns === 0) {
+            battle.event({type: "weather", kind: "end", weather: battle.weather.kind});
+            delete battle.weather;
+            break weather;
+          }
+
+          battle.event({type: "weather", kind: "continue", weather: battle.weather.kind});
+          if (!battle.hasWeather("sand") || !battle.hasWeather("hail")) {
+            break weather;
+          }
+
+          for (const poke of battle.allActive) {
+            poke.handleWeather(battle, battle.weather!.kind);
+          }
+
+          battle.betweenTurns = BetweenTurns.Weather;
+          if (battle.checkFaint(battle.players[0].active[0], true)) {
+            return;
+          }
+        }
+      }
+
+      if (battle.betweenTurns < BetweenTurns.PartialTrapping) {
+        for (const poke of battle.allActive) {
+          poke.handlePartialTrapping(battle);
+        }
+
+        battle.betweenTurns = BetweenTurns.PartialTrapping;
+        if (battle.checkFaint(battle.players[0].active[0], true)) {
+          return;
+        }
+      }
+
+      if (battle.betweenTurns < BetweenTurns.PerishSong) {
+        for (const poke of battle.allActive) {
+          poke.handlePerishSong(battle);
+        }
+
+        battle.betweenTurns = BetweenTurns.PerishSong;
+        if (battle.checkFaint(battle.players[0].active[0], true)) {
+          return;
+        }
+
+        // BUG GEN2: https://www.youtube.com/watch?v=1IiPWw5fMf8&t=85s
+        // battle is the last faint check performed between turns. The pokemon that switches in here
+        // can take spikes damage and end up on 0 HP without fainting.
+      }
+
+      battle.betweenTurns = BetweenTurns.Begin;
+      for (const poke of battle.allActive) {
+        if (poke.v.fainted) {
+          continue;
+        }
+
+        if (poke.base.item === "leftovers") {
+          poke.recover(Math.max(1, idiv(poke.base.stats.hp, 16)), poke, battle, "leftovers");
+        }
+        poke.handlePPBerry(battle);
+      }
+
+      // Defrost
+      for (const poke of battle.allActive) {
+        if (!poke.v.fainted && poke.base.status === "frz" && this.rng.tryDefrost(battle)) {
+          poke.unstatus(battle, "thaw");
+        }
+      }
+
+      // Screens
+      for (const player of battle.players) {
+        // technically should be safeguard, then light screen and reflect but who cares
+        for (const screen of screens) {
+          if (player.screens[screen] && --player.screens[screen] === 0) {
+            battle.event({type: "screen", user: player.id, screen, kind: "end"});
+          }
+        }
+      }
+
+      // Berries
+      for (const poke of battle.allActive) {
+        poke.handleBerry(battle, false);
+      }
+
+      // Encore
+      for (const poke of battle.allActive) {
+        poke.handleEncore(battle);
+
+        if (!poke.base.hp && !poke.v.fainted) {
+          battle.event({type: "bug", bug: "bug_gen2_spikes"});
+        }
+      }
+    },
   };
 };
+
+export const shouldReturn = (battle: Battle) =>
+  battle.allActive.some(p => p.v.fainted && p.getOptions(battle));
 
 export const GENERATION1 = createGeneration();
 

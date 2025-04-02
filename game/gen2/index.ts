@@ -109,10 +109,6 @@ const beforeUseMove = (battle: Battle, move: Move, user: ActivePokemon) => {
     return false;
   } else if (user.base.status === "slp") {
     if (--user.base.sleepTurns === 0) {
-      const opp = battle.opponentOf(user.owner);
-      if (opp.sleepClausePoke === user.base) {
-        opp.sleepClausePoke = undefined;
-      }
       user.unstatus(battle, "wake");
       resetVolatiles();
     } else {
@@ -139,42 +135,22 @@ const beforeUseMove = (battle: Battle, move: Move, user: ActivePokemon) => {
     battle.info(user, "disable_end", [{id: user.id, v: {flags: user.v.cflags}}]);
   }
 
-  if (user.v.confusion) {
-    const done = --user.v.confusion === 0;
-    const v = [{id: user.id, v: {flags: user.v.cflags}}];
-    battle.info(user, done ? "confused_end" : "confused", v);
-    if (!done && battle.rng.bool()) {
-      const move = user.choice?.move;
-      const explosion = move?.kind === "damage" && move.flag === "explosion" ? 2 : 1;
-      const [atk, def] = battle.gen.getDamageVariables(false, user, user, false);
-      const dmg = battle.gen.calcDamage({
-        lvl: user.base.level,
-        pow: 40,
-        def: Math.max(Math.floor(def / explosion), 1),
-        atk,
-        eff: 1,
-        rand: false,
-        isCrit: false,
-        isStab: false,
-      });
-
-      user.damage(dmg, user, battle, false, "confusion");
-      resetVolatiles();
-      return false;
-    }
+  if (user.handleConfusion(battle)) {
+    resetVolatiles();
+    return false;
   }
 
   if (user.v.attract) {
     battle.event({type: "in_love", src: user.id, target: user.v.attract.id});
 
-    if (battle.rand100(50)) {
+    if (battle.gen.rng.tryAttract(battle)) {
       battle.info(user, "immobilized");
       resetVolatiles();
       return false;
     }
   }
 
-  if (user.base.status === "par" && battle.rand100(25)) {
+  if (user.base.status === "par" && battle.gen.rng.tryFullPara(battle)) {
     battle.info(user, "paralyze");
     resetVolatiles();
     return false;
@@ -202,6 +178,7 @@ const createGeneration = (): Generation => {
     items,
     accStageMultipliers,
     rng: {
+      tryDefrost: battle => battle.rand255(25),
       tryCrit(battle, user, hc) {
         let stages = hc ? 2 : 0;
         if (user.v.hasFlag(VF.focus)) {
@@ -302,7 +279,17 @@ const createGeneration = (): Generation => {
       const def = stat === "def" || stat === "spd";
       const screen = def && !!poke.owner.screens[stat === "def" ? "reflect" : "light_screen"];
 
-      let value = poke.v.stats[stat];
+      let value = Math.floor(
+        poke.base.stats[stat] * poke.base.gen.stageMultipliers[poke.v.stages[stat]],
+      );
+
+      if (poke.base.status === "brn" && stat === "atk") {
+        value = Math.max(Math.floor(value / 2), 1);
+      } else if (poke.base.status === "par" && stat === "spe") {
+        value = Math.max(Math.floor(value / 4), 1);
+      }
+
+      // crit ignores brn in gen 2
       if (isCrit) {
         value = poke.base.stats[stat];
       } else if (screen) {

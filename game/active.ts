@@ -13,14 +13,17 @@ import {
   arraysEqual,
   clamp,
   hpPercent,
+  idiv,
   stageStatKeys,
   VF,
   type Stages,
   type StatStages,
   type Type,
+  type Weather,
 } from "./utils";
 import {TurnType, type Battle, type MoveOption, type Options, type Player} from "./battle";
 import type {AbilityId} from "./species";
+import {healBerry, ppBerry, statusBerry} from "./item";
 
 export type DamageParams = {
   dmg: number;
@@ -83,7 +86,7 @@ export class ActivePokemon {
       // Is trapping passed? Encore? Nightmare?
 
       for (const stat of stageStatKeys) {
-        this.recalculateStat(battle, stat, false, false);
+        this.recalculateStat(battle, stat, false);
       }
     }
 
@@ -268,14 +271,6 @@ export class ActivePokemon {
     });
   }
 
-  clearStatusAndRecalculate(battle: Battle) {
-    this.base.status = undefined;
-
-    for (const key of stageStatKeys) {
-      this.recalculateStat(battle, key, false, true);
-    }
-  }
-
   status(status: Status, battle: Battle, override = false) {
     if (!override && this.base.status) {
       return false;
@@ -316,6 +311,11 @@ export class ActivePokemon {
   }
 
   unstatus(battle: Battle, why: InfoReason) {
+    const opp = battle.opponentOf(this.owner);
+    if (opp.sleepClausePoke === this.base) {
+      opp.sleepClausePoke = undefined;
+    }
+
     this.base.status = undefined;
     this.v.hazed = this.v.hazed || why === "thaw";
     this.v.clearFlag(VF.nightmare);
@@ -373,6 +373,36 @@ export class ActivePokemon {
     return true;
   }
 
+  handleConfusion(battle: Battle) {
+    if (!this.v.confusion) {
+      return false;
+    }
+
+    const done = --this.v.confusion === 0;
+    const v = [{id: this.id, v: {flags: this.v.cflags}}];
+    battle.info(this, done ? "confused_end" : "confused", v);
+    if (!done && battle.rng.bool()) {
+      const move = this.choice?.move;
+      const explosion = move?.kind === "damage" && move.flag === "explosion" ? 2 : 1;
+      const [atk, def] = battle.gen.getDamageVariables(false, this, this, false);
+      const dmg = battle.gen.calcDamage({
+        lvl: this.base.level,
+        pow: 40,
+        def: Math.max(Math.floor(def / explosion), 1),
+        atk,
+        eff: 1,
+        rand: false,
+        isCrit: false,
+        isStab: false,
+      });
+
+      this.damage(dmg, this, battle, false, "confusion");
+      return true;
+    }
+
+    return false;
+  }
+
   handleRage(battle: Battle) {
     if (
       !this.v.fainted &&
@@ -398,6 +428,173 @@ export class ActivePokemon {
     }
   }
 
+  handlePPBerry(battle: Battle) {
+    if (this.v.fainted) {
+      return;
+    }
+
+    if (ppBerry[this.base.item!]) {
+      const slot = this.base.pp.findIndex(pp => pp === 0);
+      if (slot !== -1) {
+        const move = battle.gen.moveList[this.base.moves[slot]];
+        this.base.pp[slot] = Math.min(ppBerry[this.base.item!]!, battle.gen.getMaxPP(move));
+        battle.event({type: "item", src: this.id, item: "mysteryberry"});
+        battle.event({type: "pp", src: this.id, move: this.base.moves[slot]});
+        this.base.item = undefined;
+      }
+    }
+  }
+
+  handleLeftovers(battle: Battle) {
+    if (!this.v.fainted && this.base.item === "leftovers") {
+      this.recover(Math.max(1, idiv(this.base.stats.hp, 16)), this, battle, "leftovers");
+    }
+  }
+
+  handleBerry(battle: Battle, ppBerry: bool) {
+    const cureStatus = (poke: ActivePokemon) => {
+      const status = poke.base.status!;
+      poke.base.status = undefined;
+      battle.event({type: "item", src: poke.id, item: poke.base.item!});
+      battle.event({
+        type: "cure",
+        src: poke.id,
+        status,
+        volatiles: [{id: poke.id, v: {status: null, stats: poke.clientStats(battle)}}],
+      });
+      poke.base.item = undefined;
+    };
+
+    const cureConfuse = (poke: ActivePokemon) => {
+      poke.v.confusion = 0;
+      const v = [{id: poke.id, v: {flags: poke.v.cflags}}];
+      battle.info(poke, "confused_end", v);
+      poke.base.item = undefined;
+    };
+
+    if (this.v.fainted) {
+      return;
+    }
+
+    const status = this.base.status === "tox" ? "psn" : this.base.status;
+    if (ppBerry) {
+      this.handlePPBerry(battle);
+    }
+
+    if (statusBerry[this.base.item!] && statusBerry[this.base.item!] === status) {
+      cureStatus(this);
+    } else if (statusBerry[this.base.item!] === "any") {
+      if (this.base.status) {
+        cureStatus(this);
+      }
+
+      if (this.v.confusion) {
+        if (this.base.item) {
+          battle.event({type: "item", src: this.id, item: this.base.item!});
+        }
+        cureConfuse(this);
+      }
+    } else if (statusBerry[this.base.item!] === "confuse" && this.v.confusion) {
+      battle.event({type: "item", src: this.id, item: this.base.item!});
+      cureConfuse(this);
+    } else if (healBerry[this.base.item!] && this.base.hp < idiv(this.base.stats.hp, 2)) {
+      battle.event({type: "item", src: this.id, item: this.base.item!});
+      this.recover(healBerry[this.base.item!]!, this, battle, "item");
+      this.base.item = undefined;
+    }
+  }
+
+  handleWeather(battle: Battle, weather: Weather) {
+    if (
+      this.v.charging?.move === battle.gen.moveList.dig ||
+      this.v.charging?.move === battle.gen.moveList.dive ||
+      this.v.fainted
+    ) {
+      return;
+    } else if (
+      weather === "sand" &&
+      this.v.types.some(t => t === "steel" || t === "ground" || t === "rock")
+    ) {
+      return;
+    } else if (weather === "hail" && this.v.types.includes("ice")) {
+      return;
+    }
+
+    const d = battle.gen.id <= 2 ? 8 : 16;
+    const dmg = Math.max(idiv(this.base.stats.hp, d), 1);
+    this.damage(dmg, this, battle, false, weather as "hail" | "sand", true);
+  }
+
+  handlePartialTrapping(battle: Battle) {
+    if (!this.v.trapped || this.v.trapped.turns === -1 || this.v.fainted) {
+      return;
+    }
+
+    const move = battle.moveIdOf(this.v.trapped.move)!;
+    if (--this.v.trapped.turns === 0) {
+      battle.event({
+        type: "trap",
+        src: this.id,
+        target: this.id,
+        kind: "end",
+        move,
+        volatiles: [{id: this.id, v: {trapped: null}}],
+      });
+      this.v.trapped = undefined;
+    } else {
+      const dmg = Math.max(idiv(this.base.stats.hp, 16), 1);
+      this.damage2(battle, {dmg, src: this, why: "trap_eot", move, direct: true});
+    }
+  }
+
+  handleEncore(battle: Battle) {
+    if (
+      !this.v.fainted &&
+      this.v.encore &&
+      (--this.v.encore.turns === 0 || !this.base.pp[this.v.encore.indexInMoves])
+    ) {
+      this.v.encore = undefined;
+      battle.info(this, "encore_end", [{id: this.id, v: {flags: this.v.cflags}}]);
+    }
+  }
+
+  handleFutureSight(battle: Battle) {
+    if (this.futureSight && --this.futureSight.turns === 0) {
+      if (!this.v.fainted) {
+        battle.info(this, this.futureSight.move.release);
+        if (!battle.checkAccuracy(battle.gen.moveList.futuresight, this, this)) {
+          // FIXME: this is lazy
+          battle.events.splice(-1, 1);
+          battle.info(this, "fail_generic");
+        } else {
+          this.damage(this.futureSight.damage, this, battle, false, "future_sight");
+        }
+      }
+
+      this.futureSight = undefined;
+    }
+  }
+
+  handlePerishSong(battle: Battle) {
+    if (this.v.fainted) {
+      return;
+    }
+
+    if (this.v.perishCount) {
+      --this.v.perishCount;
+
+      const volatiles = [{id: this.id, v: {perishCount: this.v.perishCount}}];
+      if (this.v.perishCount !== 3) {
+        battle.event({type: "perish", src: this.id, turns: this.v.perishCount, volatiles});
+      } else {
+        battle.event({type: "sv", volatiles});
+      }
+      if (!this.v.perishCount) {
+        this.damage(this.base.hp, this, battle, false, "perish_song", true);
+      }
+    }
+  }
+
   applyStatusDebuff() {
     if (this.base.status === "brn") {
       this.v.stats.atk = Math.max(Math.floor(this.v.stats.atk / 2), 1);
@@ -406,18 +603,10 @@ export class ActivePokemon {
     }
   }
 
-  recalculateStat(battle: Battle, stat: StatStages, negative: boolean, status?: boolean) {
+  recalculateStat(battle: Battle, stat: StatStages, negative: boolean) {
     this.v.stats[stat] = Math.floor(
       this.base.stats[stat] * battle.gen.stageMultipliers[this.v.stages[stat]],
     );
-
-    if (status ?? battle.gen.id !== 1) {
-      if (this.base.status === "brn" && stat === "atk") {
-        this.v.stats.atk = Math.max(Math.floor(this.v.stats.atk / 2), 1);
-      } else if (this.base.status === "par" && stat === "spe") {
-        this.v.stats.spe = Math.max(Math.floor(this.v.stats.spe / 4), 1);
-      }
-    }
 
     // https://www.smogon.com/rb/articles/rby_mechanics_guide#stat-mechanics
     if (negative && battle.gen.id === 1) {
@@ -564,6 +753,7 @@ export type VolatileStats = Volatiles["stats"];
 
 class Volatiles {
   stages = {atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0};
+  /** Gen 1 only */
   stats: Record<StatStages, number>;
   types: Type[];
   substitute = 0;

@@ -29,7 +29,6 @@ export const moveFunctionPatches: Partial<MoveFunctions> = {
     }
 
     if (this.why === "rest") {
-      user.clearStatusAndRecalculate(battle);
       user.base.status = "slp";
       user.base.sleepTurns = 3;
       user.v.counter = 0;
