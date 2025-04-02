@@ -665,7 +665,7 @@ const createGeneration = () => {
         if (poke.base.item === "leftovers") {
           poke.recover(Math.max(1, idiv(poke.base.stats.hp, 16)), poke, battle, "leftovers");
         }
-        poke.handlePPBerry(battle);
+        poke.handleBerry(battle, {pp: true});
       }
 
       // Defrost
@@ -687,7 +687,7 @@ const createGeneration = () => {
 
       // Berries
       for (const poke of battle.allActive) {
-        poke.handleBerry(battle, false);
+        poke.handleBerry(battle, {pinch: true, status: true, heal: true});
       }
 
       // Encore

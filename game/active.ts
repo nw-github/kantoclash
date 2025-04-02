@@ -8,7 +8,7 @@ import type {
   PokeId,
 } from "./events";
 import {type MoveId, type Move, type DamagingMove, Range, type FutureSightMove} from "./moves";
-import type {Pokemon, Status} from "./pokemon";
+import {natureTable, type Pokemon, type Status} from "./pokemon";
 import {
   arraysEqual,
   clamp,
@@ -23,7 +23,7 @@ import {
 } from "./utils";
 import {TurnType, type Battle, type MoveOption, type Options, type Player} from "./battle";
 import type {AbilityId} from "./species";
-import {healBerry, ppBerry, statusBerry} from "./item";
+import {healBerry, healPinchBerry, ppBerry, statPinchBerry, statusBerry} from "./item";
 
 export type DamageParams = {
   dmg: number;
@@ -428,30 +428,16 @@ export class ActivePokemon {
     }
   }
 
-  handlePPBerry(battle: Battle) {
-    if (this.v.fainted) {
-      return;
-    }
-
-    if (ppBerry[this.base.item!]) {
-      const slot = this.base.pp.findIndex(pp => pp === 0);
-      if (slot !== -1) {
-        const move = battle.gen.moveList[this.base.moves[slot]];
-        this.base.pp[slot] = Math.min(ppBerry[this.base.item!]!, battle.gen.getMaxPP(move));
-        battle.event({type: "item", src: this.id, item: "mysteryberry"});
-        battle.event({type: "pp", src: this.id, move: this.base.moves[slot]});
-        this.base.item = undefined;
-      }
-    }
-  }
-
   handleLeftovers(battle: Battle) {
     if (!this.v.fainted && this.base.item === "leftovers") {
       this.recover(Math.max(1, idiv(this.base.stats.hp, 16)), this, battle, "leftovers");
     }
   }
 
-  handleBerry(battle: Battle, ppBerry: bool) {
+  handleBerry(
+    battle: Battle,
+    {pp, pinch, status, heal}: {pp?: bool; pinch?: bool; status?: bool; heal?: bool},
+  ) {
     const cureStatus = (poke: ActivePokemon) => {
       const status = poke.base.status!;
       poke.base.status = undefined;
@@ -476,31 +462,101 @@ export class ActivePokemon {
       return;
     }
 
-    const status = this.base.status === "tox" ? "psn" : this.base.status;
-    if (ppBerry) {
-      this.handlePPBerry(battle);
+    if (pp) {
+      if (ppBerry[this.base.item!]) {
+        const slot = this.base.pp.findIndex(pp => pp === 0);
+        if (slot !== -1) {
+          const move = battle.gen.moveList[this.base.moves[slot]];
+          this.base.pp[slot] = Math.min(ppBerry[this.base.item!]!, battle.gen.getMaxPP(move));
+          battle.event({type: "item", src: this.id, item: "mysteryberry"});
+          battle.event({type: "pp", src: this.id, move: this.base.moves[slot]});
+          this.base.item = undefined;
+        }
+      }
     }
 
-    if (statusBerry[this.base.item!] && statusBerry[this.base.item!] === status) {
-      cureStatus(this);
-    } else if (statusBerry[this.base.item!] === "any") {
-      if (this.base.status) {
+    if (status) {
+      const status = this.base.status === "tox" ? "psn" : this.base.status;
+      if (statusBerry[this.base.item!] && statusBerry[this.base.item!] === status) {
         cureStatus(this);
-      }
-
-      if (this.v.confusion) {
-        if (this.base.item) {
-          battle.event({type: "item", src: this.id, item: this.base.item!});
+      } else if (statusBerry[this.base.item!] === "any") {
+        if (this.base.status) {
+          cureStatus(this);
         }
+
+        if (this.v.confusion) {
+          if (this.base.item) {
+            battle.event({type: "item", src: this.id, item: this.base.item!});
+          }
+          cureConfuse(this);
+        }
+      } else if (statusBerry[this.base.item!] === "confuse" && this.v.confusion) {
+        battle.event({type: "item", src: this.id, item: this.base.item!});
         cureConfuse(this);
+      } else if (this.v.attract && this.base.item === "mentalherb") {
+        this.v.attract = undefined;
+        battle.event({
+          type: "item",
+          src: this.id,
+          item: this.base.item,
+          volatiles: [{id: this.id, v: {flags: this.v.cflags}}],
+        });
+        this.base.item = undefined;
+      } else if (Object.values(this.v.stages).some(v => v < 0) && this.base.item === "whiteherb") {
+        for (const stage in this.v.stages) {
+          if (this.v.stages[stage as Stages] < 0) {
+            this.setStage(stage as Stages, 0, battle, false);
+          }
+        }
+
+        battle.event({
+          type: "item",
+          src: this.id,
+          item: this.base.item,
+          volatiles: [
+            {id: this.id, v: {stages: {...this.v.stages}, stats: this.clientStats(battle)}},
+          ],
+        });
+        this.base.item = undefined;
       }
-    } else if (statusBerry[this.base.item!] === "confuse" && this.v.confusion) {
-      battle.event({type: "item", src: this.id, item: this.base.item!});
-      cureConfuse(this);
-    } else if (healBerry[this.base.item!] && this.base.hp < idiv(this.base.stats.hp, 2)) {
-      battle.event({type: "item", src: this.id, item: this.base.item!});
-      this.recover(healBerry[this.base.item!]!, this, battle, "item");
-      this.base.item = undefined;
+    }
+
+    if (heal) {
+      if (healBerry[this.base.item!] && this.base.hp < idiv(this.base.stats.hp, 2)) {
+        battle.event({type: "item", src: this.id, item: this.base.item!});
+        this.recover(healBerry[this.base.item!]!, this, battle, "item");
+        this.base.item = undefined;
+      }
+    }
+
+    if (pinch) {
+      if (healPinchBerry[this.base.item!] && this.base.hp <= Math.floor(this.base.stats.hp / 2)) {
+        battle.event({type: "item", src: this.id, item: this.base.item!});
+        this.recover(Math.max(1, Math.floor(this.base.stats.hp / 8)), this, battle, "item");
+        if (this.base.nature !== undefined) {
+          const [, minus] = Object.keys(natureTable[this.base.nature]);
+          if (minus === healPinchBerry[this.base.item!]) {
+            this.confuse(battle, "cConfused");
+          }
+        }
+        this.base.item = undefined;
+      } else if (
+        statPinchBerry[this.base.item!] &&
+        this.base.hp <= Math.floor(this.base.stats.hp / 4)
+      ) {
+        battle.event({type: "item", src: this.id, item: this.base.item!});
+        const stage = statPinchBerry[this.base.item!]!;
+        if (stage === "crit") {
+          battle.info(this, "focus", [this.setFlag(VF.focus)]);
+        } else {
+          if (stage === "random") {
+            this.modStages([[battle.rng.choice([...stageStatKeys])!, +2]], battle);
+          } else {
+            this.modStages([[stage, +1]], battle);
+          }
+        }
+        this.base.item = undefined;
+      }
     }
   }
 

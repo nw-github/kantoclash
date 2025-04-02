@@ -106,6 +106,7 @@ export class Pokemon {
   shiny: boolean;
   gender: Gender;
   ability?: AbilityId;
+  nature?: Nature;
 
   constructor(
     readonly gen: Generation,
@@ -150,6 +151,7 @@ export class Pokemon {
     this.hp = this.stats.hp;
     this.friendship = friendship ?? 255;
     this.shiny = gen.getShiny(shiny ?? false, this.ivs);
+    this.nature = nature;
     this.gender =
       gen.getGender(gender, this.species, this.ivs.atk) ??
       (Math.random() * 100 < this.species.genderRatio! ? "M" : "F");

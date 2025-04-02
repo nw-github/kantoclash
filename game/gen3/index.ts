@@ -55,7 +55,7 @@ const createGeneration = (): Generation => {
       tryCrit(battle, user, hc) {
         let stages = hc ? 2 : 0;
         if (user.v.hasFlag(VF.focus)) {
-          stages++;
+          stages += 2;
         }
         if (user.base.item === "scopelens") {
           stages++;
@@ -265,10 +265,14 @@ const createGeneration = (): Generation => {
           user.faint(battle);
           return true;
         }
+        user.handleBerry(battle, {status: true});
+        return false;
       }
 
       for (const poke of battle.allActive) {
-        poke.handleBerry(battle, true);
+        if (poke.base.hp !== 0) {
+          poke.handleBerry(battle, {status: true});
+        }
       }
 
       if (user.v.inBatonPass) {
@@ -342,13 +346,17 @@ const createGeneration = (): Generation => {
         for (const poke of turnOrder) {
           // TODO: ingrain, rain dish, truant, shed skin
           poke.handleLeftovers(battle);
-          poke.handleBerry(battle, true);
+          poke.handleBerry(battle, {pinch: true, status: true, heal: true, pp: true});
           battle.gen.handleResidualDamage(battle, poke);
-          poke.handlePartialTrapping(battle);
+          if (poke.base.hp !== 0) {
+            poke.handlePartialTrapping(battle);
+          }
 
           // TODO: uproar & petal dance?
 
-          poke.handleEncore(battle);
+          if (poke.base.hp !== 0) {
+            poke.handleEncore(battle);
+          }
 
           // TODO: taunt, lockon/mind reader?, yawn
 
