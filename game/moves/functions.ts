@@ -1,5 +1,6 @@
 import {Range, type CustomMove, type Move} from ".";
 import type {InfoReason} from "../events";
+import {abilityList} from "../species";
 import {isSpecial, VF} from "../utils";
 
 type ExecMoveFn = CustomMove["exec"];
@@ -44,6 +45,10 @@ export const moveFunctions: MoveFunctions = {
     }
 
     if (this.why === "rest") {
+      if (abilityList[user.v.ability!]?.preventsStatus === "slp") {
+        return battle.info(user, "fail_generic");
+      }
+
       user.base.status = "slp";
       user.base.sleepTurns = 2;
       if (user.v.ability === "earlybird") {
@@ -105,14 +110,12 @@ export const moveFunctions: MoveFunctions = {
       return battle.info(target, "safeguard_protect");
     } else if (this.status === "slp" && target.v.recharge) {
       // https://www.youtube.com/watch?v=x2AgAdQwyGI
-      return target.status(this.status, battle, true);
+      return target.status(this.status, battle, user, true);
     } else if (!battle.checkAccuracy(this, user, target)) {
       return;
     }
 
-    if (!target.status(this.status, battle)) {
-      battle.info(target, "fail_generic");
-    }
+    target.status(this.status, battle, user, false, true);
   },
   switch(battle, user) {
     user.switchTo(this.poke, battle, this.batonPass ? "baton_pass" : undefined);
@@ -160,8 +163,7 @@ export const moveFunctions: MoveFunctions = {
     battle.info(user, this.why);
   },
   weather(battle) {
-    battle.event({type: "weather", kind: "start", weather: this.weather});
-    battle.weather = {turns: 5, kind: this.weather};
+    battle.setWeather(this.weather, 5);
   },
   screen(battle, user) {
     if (user.owner.screens[this.screen]) {
@@ -175,6 +177,10 @@ export const moveFunctions: MoveFunctions = {
     const next = battle.rng.choice(target.owner.team.filter(p => p.hp && p != target.base.real));
     if (!next || !target.movedThisTurn) {
       return battle.info(user, "fail_generic");
+    } else if (target.v.ability === "suctioncups") {
+      battle.ability(target);
+      return battle.info(target, "immune");
+      // TODO: ingrain
     } else if (!battle.checkAccuracy(this, user, target)) {
       return;
     }

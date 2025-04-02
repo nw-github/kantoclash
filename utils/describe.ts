@@ -86,6 +86,9 @@ const descriptions: Partial<Record<MoveId, string>> = {
     "The target loses 1/4 its max HP at the end of every turn while asleep. Fails if the " +
     "target is not asleep. ",
   mirrorcoat: "Deals 2x the last move's damage if it was special. Never counters Hidden Power. ",
+  painsplit: "Adds the user and targets's HP, then shares the total equally. ",
+  flail: "Higher power the lower the user's HP is. ",
+  reversal: "Higher power the lower the user's HP is. ",
 };
 
 const gen2Descriptions: Partial<Record<MoveId, string>> = {
@@ -112,6 +115,7 @@ const flagDesc: Record<NonNullable<DamagingMove["flag"]>, string> = {
   recharge: "After using this move, the user must spend one turn to recharge. ",
   double: "Hits twice. ",
   dream_eater: "The user recovers 1/2 the damage dealt. Only works on sleeping targets. ",
+  none: "",
   payday: "",
   multi_turn: "Locks the user in for 3-4 turns. Afterwards, the user becomes confused.",
   rage:
@@ -121,7 +125,7 @@ const flagDesc: Record<NonNullable<DamagingMove["flag"]>, string> = {
     "stage. ",
   ohko: "Fails on faster opponents. ",
   trap: "Deals damage and prevents the target from moving for 2-5 turns. ",
-  flail: "Higher power the lower the user's HP is. ",
+  norand: "",
   magnitude: "Power is determined randomly. ",
   false_swipe: "Always leaves the target with at least 1 HP. ",
   rapid_spin: "Removes the entry hazards and the effects of trapping moves and Leech Seed. ",

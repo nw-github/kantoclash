@@ -48,7 +48,7 @@ const createGeneration = (): Generation => {
       dragonscale: null,
       dragonfang: {type: "dragon", percent: 10},
     },
-    statBoostItem: {metalpowder: {ditto: {stats: ["def", "spd"], transformed: false}}},
+    statBoostItem: {metalpowder: {ditto: {stats: ["def", "spd"], transformed: false, amount: 0.5}}},
     stageMultipliers,
     rng: {
       tryDefrost: battle => battle.rand100(20),
@@ -92,7 +92,7 @@ const createGeneration = (): Generation => {
         poke.base.stats[stat] * poke.base.gen.stageMultipliers[poke.v.stages[stat]],
       );
 
-      if (poke.base.status === "brn" && stat === "atk") {
+      if (poke.base.status === "brn" && stat === "atk" && poke.v.ability !== "guts") {
         value = Math.max(Math.floor(value / 2), 1);
       } else if (poke.base.status === "par" && stat === "spe") {
         value = Math.max(Math.floor(value / 4), 1);
@@ -152,6 +152,12 @@ const createGeneration = (): Generation => {
       }
 
       if (move.kind === "damage" && move.flag === "ohko") {
+        if (target.v.ability === "sturdy") {
+          battle.ability(target);
+          battle.info(target, "immune");
+          return false;
+        }
+
         // Starting from Gen 3, OHKO moves are no longer affected by accuracy/evasion stats
         if (!battle.rand100(user.base.level - target.base.level + 30)) {
           battle.miss(user, target);
@@ -268,7 +274,7 @@ const createGeneration = (): Generation => {
 
       return true;
     },
-    afterBeforeUseMove: () => false,
+    afterBeforeUseMove: (battle, user) => battle.checkFaint(user) && shouldReturn(battle),
     afterAttack(battle, user, isReplacement) {
       if (isReplacement) {
         if (user.base.hp === 0 && !user.v.fainted) {
@@ -296,22 +302,6 @@ const createGeneration = (): Generation => {
       // FIXME: actually use turn order
       const turnOrder = battle.allActive;
 
-      for (const poke of turnOrder) {
-        // TODO: hyper beam?
-        poke.v.flinch = false;
-        poke.v.inPursuit = false;
-        poke.v.retaliateDamage = 0;
-        if (poke.v.trapped && !poke.v.trapped.user.v.trapping) {
-          poke.v.trapped = undefined;
-        }
-        if (poke.v.hasFlag(VF.protect | VF.endure)) {
-          battle.event({
-            type: "sv",
-            volatiles: [poke.clearFlag(VF.protect | VF.endure)],
-          });
-        }
-      }
-
       // Screens
       for (const player of battle.players) {
         for (const screen of screens) {
@@ -334,7 +324,7 @@ const createGeneration = (): Generation => {
           }
 
           battle.event({type: "weather", kind: "continue", weather: battle.weather.kind});
-          if (!battle.hasWeather("sand") || !battle.hasWeather("hail")) {
+          if (!battle.hasWeather("sand") && !battle.hasWeather("hail")) {
             break weather;
           }
 
@@ -354,12 +344,19 @@ const createGeneration = (): Generation => {
       if (battle.betweenTurns < BetweenTurns.PartialTrapping) {
         let someoneFainted = false;
         for (const poke of turnOrder) {
-          // TODO: ingrain, truant
           if (!poke.v.fainted) {
+            // TODO: ingrain
             if (battle.hasWeather("rain") && poke.v.ability === "raindish") {
               battle.ability(poke);
               poke.recover(Math.max(1, idiv(poke.base.stats.hp, 16)), poke, battle, "raindish");
             }
+
+            if (poke.v.ability === "speedboost" && !poke.v.firstTurn) {
+              battle.ability(poke);
+              poke.modStages([["spe", +1]], battle);
+            }
+
+            // TODO: truant
 
             if (
               poke.base.status &&
@@ -424,6 +421,23 @@ const createGeneration = (): Generation => {
         battle.betweenTurns = BetweenTurns.PerishSong;
         if (someoneDied) {
           return;
+        }
+      }
+
+      for (const poke of turnOrder) {
+        // TODO: hyper beam?
+        poke.v.flinch = false;
+        poke.v.inPursuit = false;
+        poke.v.retaliateDamage = 0;
+        poke.v.firstTurn = false;
+        if (poke.v.trapped && !poke.v.trapped.user.v.trapping) {
+          poke.v.trapped = undefined;
+        }
+        if (poke.v.hasFlag(VF.protect | VF.endure)) {
+          battle.event({
+            type: "sv",
+            volatiles: [poke.clearFlag(VF.protect | VF.endure)],
+          });
         }
       }
 

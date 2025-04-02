@@ -26,7 +26,7 @@
           Power
         </li>
         <li>
-          <h4 class="inline-block w-8 text-center">{{ move.acc ?? "--" }}</h4>
+          <h4 class="inline-block w-8 text-center">{{ move.acc || "--" }}</h4>
           Accuracy
         </li>
         <li v-if="move.priority">

@@ -116,17 +116,17 @@ type PRecord<K extends string | number | symbol, V> = Partial<Record<K, V>>;
 
 const statBoostItem: PRecord<
   ItemId,
-  PRecord<SpeciesId, {stats: StatStages[]; transformed: bool}>
+  PRecord<SpeciesId, {stats: StatStages[]; transformed: bool; amount: number}>
 > = {
-  metalpowder: {ditto: {stats: ["def", "spd"], transformed: true}},
-  lightball: {pikachu: {stats: ["spa"], transformed: false}},
-  thickclub: {marowak: {stats: ["atk"], transformed: false}},
+  metalpowder: {ditto: {stats: ["def", "spd"], transformed: true, amount: 0.5}},
+  lightball: {pikachu: {stats: ["spa"], transformed: false, amount: 1}},
+  thickclub: {marowak: {stats: ["atk"], transformed: false, amount: 1}},
   souldew: {
-    latias: {stats: ["spa", "spd"], transformed: false},
-    latios: {stats: ["spa", "spd"], transformed: false},
+    latias: {stats: ["spa", "spd"], transformed: false, amount: 0.5},
+    latios: {stats: ["spa", "spd"], transformed: false, amount: 0.5},
   },
-  deepseatooth: {clamperl: {stats: ["spa"], transformed: false}},
-  deepseascale: {clamperl: {stats: ["spd"], transformed: false}},
+  deepseatooth: {clamperl: {stats: ["spa"], transformed: false, amount: 1}},
+  deepseascale: {clamperl: {stats: ["spd"], transformed: false, amount: 1}},
 };
 
 enum BetweenTurns {
@@ -629,7 +629,7 @@ const createGeneration = () => {
           }
 
           battle.event({type: "weather", kind: "continue", weather: battle.weather.kind});
-          if (!battle.hasWeather("sand") || !battle.hasWeather("hail")) {
+          if (!battle.hasWeather("sand") && !battle.hasWeather("hail")) {
             break weather;
           }
 

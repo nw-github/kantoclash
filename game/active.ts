@@ -8,7 +8,7 @@ import type {
   PokeId,
 } from "./events";
 import {type MoveId, type Move, type DamagingMove, Range, type FutureSightMove} from "./moves";
-import {natureTable, type Pokemon, type Status} from "./pokemon";
+import {Nature, natureTable, type Pokemon, type Status} from "./pokemon";
 import {
   arraysEqual,
   clamp,
@@ -66,7 +66,7 @@ export class ActivePokemon {
       battle.event({type: "sv", volatiles: [{id: this.id, v: {status: "psn"}}]});
     }
 
-    if (this.v.ability === "naturalcure") {
+    if (this.base.status && this.v.ability === "naturalcure" && !this.v.fainted) {
       battle.ability(this);
       this.unstatus(battle, "ability_heal");
     }
@@ -276,16 +276,34 @@ export class ActivePokemon {
     });
   }
 
-  status(status: Status, battle: Battle, override = false) {
+  status(status: Status, battle: Battle, src: ActivePokemon, override = false, loud = false) {
     if (!override && this.base.status) {
-      return false;
+      if (loud) {
+        battle.info(this, "fail_generic");
+      }
+      return;
+    }
+
+    if (this.owner.screens.safeguard) {
+      if (loud) {
+        battle.info(this, "safeguard_protect");
+      }
+      return;
+    }
+
+    const statusNoTox = status === "tox" ? "psn" : status;
+    if (abilityList[this.v.ability!]?.preventsStatus === statusNoTox) {
+      if (loud) {
+        battle.ability(this);
+        battle.info(this, "immune");
+      }
+      return;
     }
 
     if (status === "slp") {
       const opp = battle.opponentOf(this.owner);
       if (opp.sleepClausePoke?.hp && battle.mods.sleepClause) {
-        battle.info(this, "fail_sleep_clause");
-        return true;
+        return battle.info(this, "fail_sleep_clause");
       }
 
       if (battle.gen.id === 1) {
@@ -301,9 +319,12 @@ export class ActivePokemon {
       this.v.counter = 1;
     } else if (status === "frz") {
       if (battle.hasWeather("sun")) {
-        return false;
+        if (loud) {
+          battle.info(this, "fail_generic");
+        }
+        return;
       } else if (battle.mods.freezeClause && this.owner.team.some(poke => poke.status === "frz")) {
-        return true;
+        return;
       }
     }
 
@@ -316,7 +337,23 @@ export class ActivePokemon {
       volatiles: [{id: this.id, v: {stats: this.clientStats(battle), status}}],
     });
 
-    return true;
+    if (
+      this.v.ability === "synchronize" &&
+      src !== this &&
+      (statusNoTox === "psn" || statusNoTox === "par" || statusNoTox === "brn")
+    ) {
+      // Bad poison causes synchronize of regular poison
+      battle.ability(this);
+
+      if (
+        (status === "brn" && src.v.types.includes("fire")) ||
+        ((status === "psn" || status === "tox") && src.v.hasAnyType("poison", "steel"))
+      ) {
+        battle.info(src, "immune");
+      } else {
+        src.status(statusNoTox, battle, this, false, true);
+      }
+    }
   }
 
   unstatus(battle: Battle, why: InfoReason) {
@@ -387,7 +424,11 @@ export class ActivePokemon {
       value *= 2;
     }
 
-    if (abilityList[this.v.ability!]?.weatherSpeedBoost === battle.getWeather()) {
+    if (
+      battle.getWeather() &&
+      abilityList[this.v.ability!]?.weatherSpeedBoost === battle.getWeather() &&
+      stat === "spe"
+    ) {
       value *= 2;
     }
 
@@ -512,6 +553,11 @@ export class ActivePokemon {
 
     if (status) {
       const status = this.base.status === "tox" ? "psn" : this.base.status;
+      if (status && abilityList[this.v.ability!]?.preventsStatus === status) {
+        battle.ability(this);
+        this.unstatus(battle, "ability_heal");
+      }
+
       if (statusBerry[this.base.item!] && statusBerry[this.base.item!] === status) {
         cureStatus(this);
       } else if (statusBerry[this.base.item!] === "any") {
@@ -874,6 +920,7 @@ class Volatiles {
   inBatonPass = false;
   usedDefenseCurl = false;
   usedMinimize = false;
+  firstTurn = true;
   protectCount = 0;
   perishCount = 0;
   rollout = 0;
@@ -909,6 +956,10 @@ class Volatiles {
       spe: base.stats.spe,
     };
     this.ability = base.ability;
+  }
+
+  hasAnyType(...types: Type[]) {
+    return this.types.some(t => types.includes(t));
   }
 
   lockedIn() {

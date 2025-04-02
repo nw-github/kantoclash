@@ -215,13 +215,13 @@ export const applyItemStatBoost = (poke: Pokemon, stat: StatStages, value: numbe
 
   const boostItem = poke.gen.statBoostItem[poke.item!]?.[poke.real.speciesId];
   if (boostItem && boostItem.stats.includes(stat) && (boostItem.transformed || !poke.transformed)) {
-    value *= 2;
+    value += Math.floor(value * boostItem.amount);
   }
 
   if (poke.transformed && poke.real.speciesId !== poke.speciesId) {
     const boostItem = poke.gen.statBoostItem[poke.item!]?.[poke.speciesId];
     if (boostItem && boostItem.stats.includes(stat) && boostItem.transformed) {
-      value *= 2;
+      value += Math.floor(value * boostItem.amount);
     }
   }
 

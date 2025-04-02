@@ -152,15 +152,17 @@ export const randoms = (
       evs.spe = 252;
       evs[best] = 252;
 
+      const natures: Nature[] = [];
       for (const k of Object.values(Nature)) {
         if (typeof k === "number") {
           const [plus, minus] = Object.keys(natureTable[k]);
-          if (plus === "spe" && otherStats.includes(minus)) {
-            nature = k;
-            break;
+          if (plus === "spe" && minus !== best && otherStats.includes(minus)) {
+            natures.push(k);
           }
         }
       }
+
+      nature = random.choice(natures);
 
       // nature = random.choice(Object.values(Nature).filter(v => typeof v === "number"));
       // const plusStat = Object.keys(natureTable)[0];

@@ -185,6 +185,7 @@ export type Move =
 type Effect = Status | [Stages, number][] | "confusion" | "flinch" | "thief" | "tri_attack";
 
 type Flag =
+  | "none"
   | "high_crit"
   | "drain"
   | "explosion"
@@ -200,7 +201,7 @@ type Flag =
   | "rage"
   | "trap"
   | "ohko"
-  | "flail"
+  | "norand"
   | "magnitude"
   | "false_swipe"
   | "rapid_spin"

@@ -162,6 +162,15 @@
                   <StatusOrFaint :poke="poke?.base" :faint="!poke || poke.fainted" />
                 </div>
               </div>
+              <div class="pt-1.5">
+                <span v-if="gen.id >= 3">
+                  {{
+                    gen.speciesList[poke.speciesId].abilities
+                      .map(a => abilityList[a].name)
+                      .join(", ")
+                  }}
+                </span>
+              </div>
               <span class="pt-5 italic text-center">{{ minSpe }} to {{ maxSpe }} Spe</span>
             </div>
           </template>
@@ -260,6 +269,7 @@ import {
 } from "motion-v";
 import type {PokeId} from "~/game/events";
 import {Nature} from "~/game/pokemon";
+import {abilityList} from "~/game/species";
 
 const {poke, back, gen, player, pokeId} = defineProps<{
   player?: ClientPlayer;

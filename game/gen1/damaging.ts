@@ -222,7 +222,7 @@ export function tryDamage(
         return dealt;
       }
 
-      target.status(effect, battle);
+      target.status(effect, battle, user);
     }
   }
   return dealt;
@@ -303,7 +303,7 @@ export function getDamage(
   } else {
     let pow = extras.power ?? (self.getPower ? self.getPower(user.base) : self.power);
     let rand: number | false | Random = battle.rng;
-    if (self.flag === "flail") {
+    if (self.flag === "norand") {
       isCrit = false;
       rand = false;
     }
@@ -337,9 +337,14 @@ export function getDamage(
     }
 
     const explosion = self.flag === "explosion" ? 2 : 1;
-    const [atk, def] = extras.beatUp
+    // eslint-disable-next-line prefer-const
+    let [atk, def] = extras.beatUp
       ? ([extras.beatUp.stats.atk, target.base.stats.def] as const)
       : battle.gen.getDamageVariables(isSpecial(type), battle, user, target, isCrit);
+    if ((type === "ice" || type === "fire") && target.v.ability === "thickfat") {
+      def -= Math.floor(def / 2);
+    }
+
     let moveMod = 1;
     if (self.flag === "rollout") {
       moveMod = 2 ** (user.v.rollout + +user.v.usedDefenseCurl);

@@ -2,6 +2,7 @@ import type {MoveId} from "./moves";
 import type {Stats, Type, Weather} from "./utils";
 import __speciesList from "./species.json";
 import __abilityList from "./ability.json";
+import type {Status} from "./pokemon";
 
 export type Species = {
   readonly dexId: number;
@@ -15,6 +16,8 @@ export type Species = {
   /** Male part of Ratio | Ex: 87.5 means 87.5% male, 12.5% female. Undefined for Gender Unknown */
   readonly genderRatio?: number;
   readonly sprite?: string;
+  /** Weight in kilograms */
+  readonly weight: number;
 };
 
 export type SpeciesId = keyof typeof __speciesList;
@@ -25,6 +28,7 @@ export type Ability = {
   desc: string;
   negatesWeather?: bool;
   preventsCrit?: bool;
+  preventsStatus?: Status;
   pinchBoostType?: Type;
   weatherSpeedBoost?: Weather;
   weatherEva?: Weather;

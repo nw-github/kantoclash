@@ -541,6 +541,16 @@ export class Battle {
     return this.weather?.kind;
   }
 
+  setWeather(weather: Weather, turns: number) {
+    this.weather = {turns, kind: weather};
+    this.event({
+      type: "weather",
+      kind: "start",
+      weather,
+      volatiles: this.allActive.map(a => ({id: a.id, v: {stats: a.clientStats(this)}})),
+    });
+  }
+
   // --
 
   private runTurn(choices: ChosenMove[]) {

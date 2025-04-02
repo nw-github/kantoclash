@@ -1,4 +1,5 @@
 import {Range, type Move, type MoveFunctions, type MoveId} from "../moves";
+import {abilityList} from "../species";
 import {isSpecial, stageKeys} from "../utils";
 
 /*
@@ -29,6 +30,10 @@ export const moveFunctionPatches: Partial<MoveFunctions> = {
     }
 
     if (this.why === "rest") {
+      if (abilityList[user.v.ability!]?.preventsStatus === "slp") {
+        return battle.info(user, "fail_generic");
+      }
+
       user.base.status = "slp";
       user.base.sleepTurns = 3;
       if (user.v.ability === "earlybird") {
@@ -62,9 +67,7 @@ export const moveFunctionPatches: Partial<MoveFunctions> = {
       return;
     }
 
-    if (!target.status(this.status, battle)) {
-      battle.info(target, "fail_generic");
-    }
+    target.status(this.status, battle, user, false, true);
   },
 };
 

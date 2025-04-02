@@ -1,4 +1,4 @@
-import {Range, type Move, type MoveFunctions, type MoveId} from "../moves";
+import type {Move, MoveFunctions, MoveId} from "../moves";
 import {HP_TYPES} from "../utils";
 
 /*
@@ -23,7 +23,14 @@ endure breaks randomly
 
 */
 
-export const moveFunctionPatches: Partial<MoveFunctions> = {};
+export const moveFunctionPatches: Partial<MoveFunctions> = {
+  weather(battle, user) {
+    if (battle.weather?.kind === this.weather) {
+      return battle.info(user, "fail_generic");
+    }
+    battle.setWeather(this.weather, 5);
+  },
+};
 
 export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
   conversion2: {protect: false},

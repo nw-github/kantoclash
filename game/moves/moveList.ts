@@ -2558,7 +2558,7 @@ const internalMoveList = createMoveList({
     power: 0,
     acc: 100,
     getPower: getFlailPower,
-    flag: "flail",
+    flag: "norand",
     kingsRock: true,
   },
   flamewheel: {
@@ -2804,7 +2804,7 @@ const internalMoveList = createMoveList({
     range: Range.Adjacent,
     power: 0,
     acc: 100,
-    flag: "flail",
+    flag: "norand",
     kingsRock: true,
     getPower: getFlailPower,
   },

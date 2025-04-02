@@ -287,7 +287,12 @@ export const tryDamage = (
         battle.info(target, "wont_flinch");
       }
     } else if (effect === "thief") {
-      if (user.base.item || !target.base.item || target.base.item.includes("mail")) {
+      if (
+        user.base.item ||
+        !target.base.item ||
+        target.base.item.includes("mail") ||
+        target.v.ability === "stickyhold"
+      ) {
         return dealt;
       }
 
@@ -315,7 +320,7 @@ export const tryDamage = (
       ) {
         return dealt;
       } else {
-        target.status(effect, battle);
+        target.status(effect, battle, user);
       }
     }
   }
