@@ -89,24 +89,6 @@ export class ActivePokemon {
 
     this.applyStatusDebuff();
 
-    const v: ChangedVolatiles = [];
-
-    const {active: oppActive} = battle.opponentOf(this.owner);
-    for (const opp of oppActive) {
-      let changed = false;
-      if (opp.v.attract === this) {
-        opp.v.attract = undefined;
-        changed = true;
-      }
-      if (opp.v.meanLook === this) {
-        opp.v.meanLook = undefined;
-        changed = true;
-      }
-      if (changed) {
-        v.push({id: opp.id, v: {flags: opp.v.cflags}});
-      }
-    }
-
     battle.event({
       type: "switch",
       speciesId: next.speciesId,
@@ -119,27 +101,7 @@ export class ActivePokemon {
       shiny: next.shiny || undefined,
       indexInTeam: this.owner.team.indexOf(next),
       why,
-      volatiles: [{id: this.id, v: this.getClientVolatiles(next, battle)}, ...v],
     });
-
-    for (const opp of oppActive) {
-      if (
-        opp.v.trapped &&
-        opp.v.trapped.turns !== -1 &&
-        opp.v.trapped.user === this &&
-        !opp.v.fainted
-      ) {
-        battle.event({
-          type: "trap",
-          src: opp.id,
-          target: opp.id,
-          kind: "end",
-          move: battle.moveIdOf(opp.v.trapped.move)!,
-          volatiles: [{id: opp.id, v: {trapped: null}}],
-        });
-        opp.v.trapped = undefined;
-      }
-    }
 
     if (this.base.item === "berserkgene") {
       battle.event({type: "item", item: "berserkgene", src: this.id});
@@ -159,6 +121,40 @@ export class ActivePokemon {
     battle.info(this, "faint", [
       this.clearFlag(VF.protect | VF.mist | VF.lightScreen | VF.reflect),
     ]);
+
+    const {active: oppActive} = battle.opponentOf(this.owner);
+    for (const opp of oppActive) {
+      let changed = false;
+      if (opp.v.attract === this) {
+        opp.v.attract = undefined;
+        changed = true;
+      }
+      if (opp.v.meanLook === this) {
+        opp.v.meanLook = undefined;
+        changed = true;
+      }
+      if (changed) {
+        battle.event({type: "sv", volatiles: [{id: opp.id, v: {flags: opp.v.cflags}}]});
+      }
+
+      if (
+        opp.v.trapped &&
+        opp.v.trapped.turns !== -1 &&
+        opp.v.trapped.user === this &&
+        !opp.v.fainted
+      ) {
+        battle.event({
+          type: "trap",
+          src: opp.id,
+          target: opp.id,
+          kind: "end",
+          move: battle.moveIdOf(opp.v.trapped.move)!,
+          volatiles: [{id: opp.id, v: {trapped: null}}],
+        });
+        opp.v.trapped = undefined;
+      }
+    }
+
     this.v.fainted = true;
   }
 

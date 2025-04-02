@@ -403,12 +403,13 @@ export class Battle {
         }
 
         const targets = [];
-        const myIndex = user.owner.active.indexOf(user);
-        for (let i = myIndex - 1; i <= myIndex + 1; i++) {
+        const me = user.owner.active.indexOf(user);
+        const p0 = this.players.indexOf(user.owner) === 0;
+        for (let i = p0 ? me - 1 : me + 1; p0 ? (i <= me + 1) : (i >= me - 1); p0 ? i++ : i--) {
           if (opp.active[i] && !opp.active[i].v.fainted) {
             targets.push(opp.active[i]);
           }
-          if (params === Range.AllAdjacent && i !== myIndex && pl.active[i] && !pl.active[i].v.fainted) {
+          if (params === Range.AllAdjacent && i !== me && pl.active[i] && !pl.active[i].v.fainted) {
             targets.push(pl.active[i]);
           }
         }
@@ -444,25 +445,25 @@ export class Battle {
     }
 
     const {allyOnly, oppOnly, adjacent, self} = params;
-    const userIndex = pl.active.indexOf(user);
     if (adjacent) {
+      const me = pl.active.indexOf(user);
       // Priority: Trainer's left, Opposing trainer's left, Trainer's right, Opposing trainer's right
-      for (let i = userIndex - 1; i <= userIndex + 1; i++) {
+      const p0 = this.players.indexOf(user.owner) === 0;
+      for (let i = p0 ? me - 1 : me + 1; p0 ? i <= me + 1 : i >= me - 1; p0 ? i++ : i--) {
         if (!allyOnly && opp.active[i] && !opp.active[i].v.fainted) {
           targets.push(opp.active[i]);
         }
-        if (!oppOnly && pl.active[i] && !pl.active[i].v.fainted) {
+        if (!oppOnly && (self || i !== me) && pl.active[i] && !pl.active[i].v.fainted) {
           targets.push(pl.active[i]);
         }
       }
     } else {
       targets.push(...pl.active.filter(a => !a.v.fainted));
       targets.push(...opp.active.filter(a => !a.v.fainted));
-    }
-
-    const idx = targets.indexOf(user);
-    if (!self && idx !== -1) {
-      targets.splice(idx, 1);
+      const idx = targets.indexOf(user);
+      if (!self && idx !== -1) {
+        targets.splice(idx, 1);
+      }
     }
     return targets;
   }
@@ -630,7 +631,7 @@ export class Battle {
           user.modStages(move.charge, this);
         }
 
-        if (move.charge !== "sun" || this.hasWeather("sun")) {
+        if (move.charge !== "sun" || !this.hasWeather("sun")) {
           user.v.charging = {move: move, target: targets[0]};
           user.v.invuln = move.charge === "invuln" || user.v.invuln;
           return;

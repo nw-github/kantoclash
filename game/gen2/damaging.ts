@@ -215,7 +215,7 @@ export const tryDamage = (
     battle.info(user, "fail_generic");
   }
 
-  if (self.flag === "trap") {
+  if (self.flag === "trap" && !hadSub) {
     target.v.trapped = {user, move: self, turns: multiHitCount(battle.rng) + 1};
     const move = battle.moveIdOf(self)!;
     battle.event({
