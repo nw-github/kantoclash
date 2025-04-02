@@ -433,14 +433,21 @@ export class Battle {
     const {allyOnly, oppOnly, adjacent, self} = params;
     if (adjacent) {
       const me = pl.active.indexOf(user);
-      // Priority: Trainer's left, Opposing trainer's left, Trainer's right, Opposing trainer's right
       const p0 = this.players.indexOf(user.owner) === 0;
-      for (let i = p0 ? me - 1 : me + 1; p0 ? i <= me + 1 : i >= me - 1; p0 ? i++ : i--) {
-        if (!allyOnly && opp.active[i] && !opp.active[i].v.fainted) {
-          targets.push(opp.active[i]);
+      if (!allyOnly) {
+        for (let i = p0 ? me - 1 : me + 1; p0 ? i <= me + 1 : i >= me - 1; p0 ? i++ : i--) {
+          if (opp.active[i] && !opp.active[i].v.fainted) {
+            targets.push(opp.active[i]);
+          }
         }
-        if (!oppOnly && (self || i !== me) && pl.active[i] && !pl.active[i].v.fainted) {
-          targets.push(pl.active[i]);
+      }
+
+      // don't pick teammate for metronome/sleep talk target
+      if (!oppOnly && (!spread || allyOnly)) {
+        for (let i = p0 ? me - 1 : me + 1; p0 ? i <= me + 1 : i >= me - 1; p0 ? i++ : i--) {
+          if ((self || i !== me) && pl.active[i] && !pl.active[i].v.fainted) {
+            targets.push(pl.active[i]);
+          }
         }
       }
     } else {

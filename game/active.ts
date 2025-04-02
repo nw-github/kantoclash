@@ -8,7 +8,7 @@ import type {
   PokeId,
 } from "./events";
 import {type MoveId, type Move, type DamagingMove, Range, type FutureSightMove} from "./moves";
-import {Nature, natureTable, type Pokemon, type Status} from "./pokemon";
+import {natureTable, type Pokemon, type Status} from "./pokemon";
 import {
   arraysEqual,
   clamp,
@@ -123,6 +123,15 @@ export class ActivePokemon {
 
     if (this.owner.spikes && !this.v.types.includes("flying")) {
       this.damage(Math.floor(this.base.stats.hp / 8), this, battle, false, "spikes", true);
+      if (this.base.hp === 0) {
+        return;
+      }
+    }
+
+    const weather = abilityList[this.base.ability!]?.startsWeather;
+    if (weather) {
+      battle.ability(this);
+      battle.setWeather(weather, -1);
     }
   }
 

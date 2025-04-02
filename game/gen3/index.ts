@@ -315,9 +315,9 @@ const createGeneration = (): Generation => {
       if (battle.betweenTurns < BetweenTurns.Weather) {
         // TODO: wish
 
-        let someoneFainted = false;
+        let someoneDied = false;
         weather: if (battle.weather) {
-          if (--battle.weather.turns === 0) {
+          if (battle.weather.turns !== -1 && --battle.weather.turns === 0) {
             battle.event({type: "weather", kind: "end", weather: battle.weather.kind});
             delete battle.weather;
             break weather;
@@ -330,19 +330,19 @@ const createGeneration = (): Generation => {
 
           for (const poke of turnOrder) {
             poke.handleWeather(battle, battle.weather!.kind);
-            someoneFainted = battle.checkFaint(poke, true);
+            someoneDied = battle.checkFaint(poke, true) || someoneDied;
           }
         }
 
         battle.betweenTurns = BetweenTurns.Weather;
-        if (someoneFainted) {
+        if (someoneDied) {
           return;
         }
       }
 
       // A bunch of stuff
       if (battle.betweenTurns < BetweenTurns.PartialTrapping) {
-        let someoneFainted = false;
+        let someoneDied = false;
         for (const poke of turnOrder) {
           if (!poke.v.fainted) {
             // TODO: ingrain
@@ -383,11 +383,11 @@ const createGeneration = (): Generation => {
 
           // TODO: taunt, lockon/mind reader?, yawn
 
-          someoneFainted = battle.checkFaint(poke, true);
+          someoneDied = battle.checkFaint(poke, true) || someoneDied;
         }
 
         battle.betweenTurns = BetweenTurns.PartialTrapping;
-        if (someoneFainted) {
+        if (someoneDied) {
           return;
         }
       }
@@ -399,7 +399,7 @@ const createGeneration = (): Generation => {
           poke.handleFutureSight(battle);
           // FIXME: after future sight, the affected pokemon should die and be forced to switch
           // immediately, even before other future sights go off
-          someoneDied = battle.checkFaint(poke, true);
+          someoneDied = battle.checkFaint(poke, true) || someoneDied;
         }
 
         battle.betweenTurns = BetweenTurns.FutureSight;
@@ -412,7 +412,7 @@ const createGeneration = (): Generation => {
         let someoneDied = false;
         for (const poke of turnOrder) {
           poke.handlePerishSong(battle);
-          someoneDied = battle.checkFaint(poke, true);
+          someoneDied = battle.checkFaint(poke, true) || someoneDied;
         }
 
         // FIXME: after perish song the affected pokemon should die and be forced to switch

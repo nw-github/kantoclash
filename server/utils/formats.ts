@@ -20,7 +20,7 @@ interface FormatFunctions {
 
 const speciesIds = Object.keys(speciesList) as SpeciesId[];
 
-const badMoves = new Set<MoveId>(["struggle", "focusenergy", "payday", "absorb"]);
+const badMoves = new Set<MoveId>(["struggle", "focusenergy", "payday", "absorb", "dreameater"]);
 
 const uselessNfe = new Set<SpeciesId>(["weedle", "metapod", "kakuna", "magikarp", "caterpie"]);
 
@@ -45,6 +45,9 @@ const getRandomPokemon = (
           (item === "lightball" && id !== "pikachu") ||
           (item === "thickclub" && id !== "marowak") ||
           (item === "luckypunch" && id !== "chansey") ||
+          (item === "deepseascale" && id !== "clamperl") ||
+          (item === "deepseatooth" && id !== "clamperl") ||
+          (item === "souldew" && id !== "latios" && id !== "latias") ||
           (item === "stick" && id !== "farfetchd")
         ) {
           return false;
@@ -143,6 +146,7 @@ export const randoms = (
     }
 
     let nature: Nature | undefined;
+    let shiny = false;
     const evs: Partial<Stats> = {};
     if (gen.id >= 3) {
       const otherStats = statKeys.filter(k => k !== "hp" && k !== "spe");
@@ -163,6 +167,7 @@ export const randoms = (
       }
 
       nature = random.choice(natures);
+      shiny = random.int(0, 1024) === 0;
 
       // nature = random.choice(Object.values(Nature).filter(v => typeof v === "number"));
       // const plusStat = Object.keys(natureTable)[0];
@@ -175,6 +180,7 @@ export const randoms = (
       ivs,
       evs,
       nature,
+      shiny,
       ability: random.choice(s.abilities as AbilityId[]),
     };
   });

@@ -214,14 +214,14 @@
             alt="substitute"
           />
         </div>
-      </div>
 
-      <img
-        v-for="i in 3"
-        :key="i"
-        class="caltrop absolute bottom-4 sm:bottom-8 size-4 sm:size-7 opacity-0 z-30 pointer-events-none"
-        src="/caltrop.svg"
-      />
+        <img
+          v-for="i in 3"
+          :key="i"
+          class="caltrop absolute size-4 sm:size-7 opacity-0 z-30 pointer-events-none"
+          src="/caltrop.svg"
+        />
+      </div>
     </div>
   </div>
 </template>

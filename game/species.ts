@@ -32,6 +32,7 @@ export type Ability = {
   pinchBoostType?: Type;
   weatherSpeedBoost?: Weather;
   weatherEva?: Weather;
+  startsWeather?: Weather;
 };
 
 export const speciesList = __speciesList as Record<SpeciesId, Species>;

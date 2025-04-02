@@ -75,8 +75,8 @@
   "chlorophyll": {"name": "Chlorophyll", "desc": "Doubles Spe in sun.", "weatherSpeedBoost": "sun"},
   "clearbody": {"name": "Clear Body", "desc": "Prevents stat drops."},
   "damp": {"name": "Damp", "desc": "Prevents explosion moves."},
-  "drizzle": {"name": "Drizzle", "desc": "Starts rain on entry."},
-  "drought": {"name": "Drought", "desc": "Starts sun on entry."},
+  "drizzle": {"name": "Drizzle", "desc": "Starts rain on entry.", "startsWeather": "rain"},
+  "drought": {"name": "Drought", "desc": "Starts sun on entry.", "startsWeather": "sun"},
   "earlybird": {"name": "Early Bird", "desc": "Decreased sleep duration."},
   "guts": {"name": "Guts", "desc": "Atk boosted when statused."},
   "hugepower": {"name": "Huge Power", "desc": "Doubles Atk."},
@@ -91,7 +91,11 @@
   "purepower": {"name": "Pure Power", "desc": "Doubles Atk."},
   "rockhead": {"name": "Rock Head", "desc": "Prevents recoil damage."},
   "runaway": {"name": "Run Away", "desc": ""},
-  "sandstream": {"name": "Sand Stream", "desc": "Starts sandstorm on entry."},
+  "sandstream": {
+    "name": "Sand Stream",
+    "desc": "Starts sandstorm on entry.",
+    "startsWeather": "sand"
+  },
   "shellarmor": {"name": "Shell Armor", "desc": "Prevents critical hits.", "preventsCrit": true},
   "shielddust": {"name": "Shield Dust", "desc": "Prevents damaging move secondary effects."},
   "suctioncups": {"name": "Suction Cups", "desc": "Prevents forced switching."},
