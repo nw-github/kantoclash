@@ -650,6 +650,11 @@ export class Battle {
     }
 
     if (move.kind !== "switch") {
+      // TODO: does choice band lock you in if your move was disabled?
+      if (moveIndex !== undefined && user.base.item === "choiceband") {
+        user.v.choiceLock = moveIndex;
+      }
+
       const moveId = this.moveIdOf(move)!;
       if (moveId === user.base.moves[user.v.disabled?.indexInMoves ?? -1]) {
         this.event({move: moveId, type: "move", src: user.id, disabled: true});

@@ -101,6 +101,7 @@ export class ActivePokemon {
       shiny: next.shiny || undefined,
       indexInTeam: this.owner.team.indexOf(next),
       why,
+      volatiles: [{id: this.id, v: this.getClientVolatiles(next, battle)}],
     });
 
     if (this.base.item === "berserkgene") {
@@ -586,6 +587,7 @@ class Volatiles {
   meanLook?: ActivePokemon;
   attract?: ActivePokemon;
   seededBy?: ActivePokemon;
+  choiceLock?: number;
   lastHitBy?: {move: Move; user: ActivePokemon};
   lastMove?: Move;
   lastMoveIndex?: number;

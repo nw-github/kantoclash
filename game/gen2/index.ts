@@ -239,6 +239,8 @@ const createGeneration = (): Generation => {
         return false;
       } else if (user.v.encore && i !== user.v.encore.indexInMoves) {
         return false;
+      } else if (user.v.choiceLock !== undefined && i !== user.v.choiceLock) {
+        return false;
       }
 
       return true;
@@ -305,10 +307,6 @@ const createGeneration = (): Generation => {
         value = poke.base.stats[stat];
       } else if (screen) {
         value *= 2;
-      }
-
-      if (poke.base.item === "machobrace" && stat === "spe") {
-        value = Math.floor(value / 2);
       }
 
       value = applyItemStatBoost(poke.base, stat, value);

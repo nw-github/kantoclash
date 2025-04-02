@@ -254,6 +254,9 @@ const internalMoveList = createMoveList({
     exec(battle, user, [target]) {
       battle.gen1LastDamage = 0;
       user.base = transform(user.base.real, target.base);
+      // TODO: is this right? or should you continue to be locked into the move if the transform
+      // moveset has it?
+      user.v.choiceLock = undefined;
 
       for (const k of stageKeys) {
         user.v.stages[k] = target.v.stages[k];

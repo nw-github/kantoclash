@@ -201,6 +201,12 @@ export const transform = (user: Pokemon, transformed: Pokemon) => {
 };
 
 export const applyItemStatBoost = (poke: Pokemon, stat: StatStages, value: number) => {
+  if (poke.item === "machobrace" && stat === "spe") {
+    return Math.floor(value / 2);
+  } else if (poke.item === "choiceband" && stat === "atk") {
+    return value + Math.floor(value / 2);
+  }
+
   const boostItem = poke.gen.statBoostItem[poke.item!]?.[poke.real.speciesId];
   if (boostItem && boostItem.stats.includes(stat) && (boostItem.transformed || !poke.transformed)) {
     value *= 2;

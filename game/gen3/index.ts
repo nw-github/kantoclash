@@ -98,9 +98,6 @@ const createGeneration = (): Generation => {
         }
       }
 
-      if (poke.base.item === "machobrace" && stat === "spe") {
-        value = Math.floor(value / 2);
-      }
       if (
         (poke.base.ability === "hugepower" || poke.base.ability === "purepower") &&
         stat === "atk"
@@ -108,8 +105,7 @@ const createGeneration = (): Generation => {
         value *= 2;
       }
 
-      value = applyItemStatBoost(poke.base, stat, value);
-      return value;
+      return applyItemStatBoost(poke.base, stat, value);
     },
     getHpIv: ivs => ivs?.hp ?? 31,
     calcStat(stat, bases, level, ivs, evs, nature) {
