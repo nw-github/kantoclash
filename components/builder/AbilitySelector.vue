@@ -3,7 +3,7 @@
     ref="selector"
     v-model:open="open"
     v-model:query="query"
-    base="left-0 mt-1.5 w-full"
+    base="left-0 mt-1.5 min-w-full"
     :items
     :filter
     @chose="onChoose"
@@ -26,7 +26,7 @@
       </div>
 
       <div class="text-[0.6rem] text-gray-600 dark:text-gray-400 text-nowrap">
-        {{ ability.desc || "No description." }}
+        {{ ability.desc || "No competitive use." }}
       </div>
     </template>
 

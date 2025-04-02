@@ -37,7 +37,8 @@
       "skullbash"
     ],
     "evolvesTo": "ivysaur",
-    "abilities": []
+    "abilities": [],
+    "weight": 6.9
   },
   "ivysaur": {
     "dexId": 2,
@@ -78,7 +79,8 @@
     ],
     "evolvesFrom": "bulbasaur",
     "evolvesTo": "venusaur",
-    "abilities": []
+    "abilities": [],
+    "weight": 13
   },
   "venusaur": {
     "dexId": 3,
@@ -120,7 +122,8 @@
       "skullbash"
     ],
     "evolvesFrom": "ivysaur",
-    "abilities": []
+    "abilities": [],
+    "weight": 100
   },
   "charmander": {
     "dexId": 4,
@@ -167,7 +170,8 @@
       "smokescreen"
     ],
     "evolvesTo": "charmeleon",
-    "abilities": []
+    "abilities": [],
+    "weight": 8.5
   },
   "charmeleon": {
     "dexId": 5,
@@ -215,7 +219,8 @@
     ],
     "evolvesFrom": "charmander",
     "evolvesTo": "charizard",
-    "abilities": []
+    "abilities": [],
+    "weight": 19
   },
   "charizard": {
     "dexId": 6,
@@ -268,7 +273,8 @@
       "rockslide"
     ],
     "evolvesFrom": "charmeleon",
-    "abilities": []
+    "abilities": [],
+    "weight": 90.5
   },
   "squirtle": {
     "dexId": 7,
@@ -315,7 +321,8 @@
       "waterfall"
     ],
     "evolvesTo": "wartortle",
-    "abilities": []
+    "abilities": [],
+    "weight": 9
   },
   "wartortle": {
     "dexId": 8,
@@ -363,7 +370,8 @@
     ],
     "evolvesFrom": "squirtle",
     "evolvesTo": "blastoise",
-    "abilities": []
+    "abilities": [],
+    "weight": 22.5
   },
   "blastoise": {
     "dexId": 9,
@@ -414,7 +422,8 @@
       "mist"
     ],
     "evolvesFrom": "wartortle",
-    "abilities": []
+    "abilities": [],
+    "weight": 85.5
   },
   "caterpie": {
     "dexId": 10,
@@ -423,7 +432,8 @@
     "stats": {"hp": 45, "atk": 30, "def": 35, "spa": 20, "spd": 0, "spe": 45},
     "moves": ["stringshot", "tackle"],
     "evolvesTo": "metapod",
-    "abilities": []
+    "abilities": [],
+    "weight": 2.9
   },
   "metapod": {
     "dexId": 11,
@@ -433,7 +443,8 @@
     "moves": ["harden", "stringshot", "tackle"],
     "evolvesFrom": "caterpie",
     "evolvesTo": "butterfree",
-    "abilities": []
+    "abilities": [],
+    "weight": 9.9
   },
   "butterfree": {
     "dexId": 12,
@@ -473,7 +484,8 @@
       "substitute"
     ],
     "evolvesFrom": "metapod",
-    "abilities": []
+    "abilities": [],
+    "weight": 32
   },
   "weedle": {
     "dexId": 13,
@@ -482,7 +494,8 @@
     "stats": {"hp": 40, "atk": 35, "def": 30, "spa": 20, "spd": 0, "spe": 50},
     "moves": ["poisonsting", "stringshot"],
     "evolvesTo": "kakuna",
-    "abilities": []
+    "abilities": [],
+    "weight": 3.2
   },
   "kakuna": {
     "dexId": 14,
@@ -492,7 +505,8 @@
     "moves": ["harden", "poisonsting", "stringshot"],
     "evolvesFrom": "weedle",
     "evolvesTo": "beedrill",
-    "abilities": []
+    "abilities": [],
+    "weight": 10
   },
   "beedrill": {
     "dexId": 15,
@@ -526,7 +540,8 @@
       "substitute"
     ],
     "evolvesFrom": "kakuna",
-    "abilities": []
+    "abilities": [],
+    "weight": 29.5
   },
   "pidgey": {
     "dexId": 16,
@@ -558,7 +573,8 @@
       "tackle"
     ],
     "evolvesTo": "pidgeotto",
-    "abilities": []
+    "abilities": [],
+    "weight": 1.8
   },
   "pidgeotto": {
     "dexId": 17,
@@ -591,7 +607,8 @@
     ],
     "evolvesFrom": "pidgey",
     "evolvesTo": "pidgeot",
-    "abilities": []
+    "abilities": [],
+    "weight": 30
   },
   "pidgeot": {
     "dexId": 18,
@@ -624,7 +641,8 @@
       "tackle"
     ],
     "evolvesFrom": "pidgeotto",
-    "abilities": []
+    "abilities": [],
+    "weight": 39.5
   },
   "rattata": {
     "dexId": 19,
@@ -664,7 +682,8 @@
       "screech"
     ],
     "evolvesTo": "raticate",
-    "abilities": []
+    "abilities": [],
+    "weight": 3.5
   },
   "raticate": {
     "dexId": 20,
@@ -709,7 +728,8 @@
       "screech"
     ],
     "evolvesFrom": "rattata",
-    "abilities": []
+    "abilities": [],
+    "weight": 18.5
   },
   "spearow": {
     "dexId": 21,
@@ -743,7 +763,8 @@
       "triattack"
     ],
     "evolvesTo": "fearow",
-    "abilities": []
+    "abilities": [],
+    "weight": 2
   },
   "fearow": {
     "dexId": 22,
@@ -779,7 +800,8 @@
       "triattack"
     ],
     "evolvesFrom": "spearow",
-    "abilities": []
+    "abilities": [],
+    "weight": 38
   },
   "ekans": {
     "dexId": 23,
@@ -816,7 +838,8 @@
       "slam"
     ],
     "evolvesTo": "arbok",
-    "abilities": []
+    "abilities": [],
+    "weight": 6.9
   },
   "arbok": {
     "dexId": 24,
@@ -854,7 +877,8 @@
       "slam"
     ],
     "evolvesFrom": "ekans",
-    "abilities": []
+    "abilities": [],
+    "weight": 65
   },
   "pikachu": {
     "dexId": 25,
@@ -900,7 +924,8 @@
       "thunderpunch"
     ],
     "evolvesTo": "raichu",
-    "abilities": []
+    "abilities": [],
+    "weight": 6
   },
   "raichu": {
     "dexId": 26,
@@ -947,7 +972,8 @@
       "fly"
     ],
     "evolvesFrom": "pikachu",
-    "abilities": []
+    "abilities": [],
+    "weight": 30
   },
   "sandshrew": {
     "dexId": 27,
@@ -986,7 +1012,8 @@
       "headbutt"
     ],
     "evolvesTo": "sandslash",
-    "abilities": []
+    "abilities": [],
+    "weight": 12
   },
   "sandslash": {
     "dexId": 28,
@@ -1026,7 +1053,8 @@
       "counter"
     ],
     "evolvesFrom": "sandshrew",
-    "abilities": []
+    "abilities": [],
+    "weight": 29.5
   },
   "nidoranf": {
     "dexId": 29,
@@ -1066,7 +1094,8 @@
       "supersonic"
     ],
     "evolvesTo": "nidorina",
-    "abilities": []
+    "abilities": [],
+    "weight": 7
   },
   "nidorina": {
     "dexId": 30,
@@ -1112,7 +1141,8 @@
     ],
     "evolvesFrom": "nidoranf",
     "evolvesTo": "nidoqueen",
-    "abilities": []
+    "abilities": [],
+    "weight": 20
   },
   "nidoqueen": {
     "dexId": 31,
@@ -1173,7 +1203,8 @@
       "supersonic"
     ],
     "evolvesFrom": "nidorina",
-    "abilities": []
+    "abilities": [],
+    "weight": 60
   },
   "nidoranm": {
     "dexId": 32,
@@ -1214,7 +1245,8 @@
       "supersonic"
     ],
     "evolvesTo": "nidorino",
-    "abilities": []
+    "abilities": [],
+    "weight": 9
   },
   "nidorino": {
     "dexId": 33,
@@ -1260,7 +1292,8 @@
     ],
     "evolvesFrom": "nidoranm",
     "evolvesTo": "nidoking",
-    "abilities": []
+    "abilities": [],
+    "weight": 19.5
   },
   "nidoking": {
     "dexId": 34,
@@ -1322,7 +1355,8 @@
       "supersonic"
     ],
     "evolvesFrom": "nidorino",
-    "abilities": []
+    "abilities": [],
+    "weight": 62
   },
   "clefairy": {
     "dexId": 35,
@@ -1380,7 +1414,8 @@
       "thunderpunch"
     ],
     "evolvesTo": "clefable",
-    "abilities": []
+    "abilities": [],
+    "weight": 7.5
   },
   "clefable": {
     "dexId": 36,
@@ -1439,7 +1474,8 @@
       "thunderpunch"
     ],
     "evolvesFrom": "clefairy",
-    "abilities": []
+    "abilities": [],
+    "weight": 40
   },
   "vulpix": {
     "dexId": 37,
@@ -1474,7 +1510,8 @@
       "hypnosis"
     ],
     "evolvesTo": "ninetales",
-    "abilities": []
+    "abilities": [],
+    "weight": 9.9
   },
   "ninetales": {
     "dexId": 38,
@@ -1510,7 +1547,8 @@
       "hypnosis"
     ],
     "evolvesFrom": "vulpix",
-    "abilities": []
+    "abilities": [],
+    "weight": 19.9
   },
   "jigglypuff": {
     "dexId": 39,
@@ -1563,7 +1601,8 @@
       "thunderpunch"
     ],
     "evolvesTo": "wigglytuff",
-    "abilities": []
+    "abilities": [],
+    "weight": 5.5
   },
   "wigglytuff": {
     "dexId": 40,
@@ -1617,7 +1656,8 @@
       "thunderpunch"
     ],
     "evolvesFrom": "jigglypuff",
-    "abilities": []
+    "abilities": [],
+    "weight": 12
   },
   "zubat": {
     "dexId": 41,
@@ -1648,7 +1688,8 @@
       "quickattack"
     ],
     "evolvesTo": "golbat",
-    "abilities": []
+    "abilities": [],
+    "weight": 7.5
   },
   "golbat": {
     "dexId": 42,
@@ -1681,7 +1722,8 @@
       "quickattack"
     ],
     "evolvesFrom": "zubat",
-    "abilities": []
+    "abilities": [],
+    "weight": 55
   },
   "oddish": {
     "dexId": 43,
@@ -1714,7 +1756,8 @@
       "razorleaf"
     ],
     "evolvesTo": "gloom",
-    "abilities": []
+    "abilities": [],
+    "weight": 5.4
   },
   "gloom": {
     "dexId": 44,
@@ -1748,7 +1791,8 @@
     ],
     "evolvesFrom": "oddish",
     "evolvesTo": "vileplume",
-    "abilities": []
+    "abilities": [],
+    "weight": 8.6
   },
   "vileplume": {
     "dexId": 45,
@@ -1783,7 +1827,8 @@
       "razorleaf"
     ],
     "evolvesFrom": "gloom",
-    "abilities": []
+    "abilities": [],
+    "weight": 18.6
   },
   "paras": {
     "dexId": 46,
@@ -1822,7 +1867,8 @@
       "screech"
     ],
     "evolvesTo": "parasect",
-    "abilities": []
+    "abilities": [],
+    "weight": 5.4
   },
   "parasect": {
     "dexId": 47,
@@ -1862,7 +1908,8 @@
       "screech"
     ],
     "evolvesFrom": "paras",
-    "abilities": []
+    "abilities": [],
+    "weight": 29.5
   },
   "venonat": {
     "dexId": 48,
@@ -1898,7 +1945,8 @@
       "swift"
     ],
     "evolvesTo": "venomoth",
-    "abilities": []
+    "abilities": [],
+    "weight": 30
   },
   "venomoth": {
     "dexId": 49,
@@ -1939,7 +1987,8 @@
       "screech"
     ],
     "evolvesFrom": "venonat",
-    "abilities": []
+    "abilities": [],
+    "weight": 12.5
   },
   "diglett": {
     "dexId": 50,
@@ -1969,7 +2018,8 @@
       "screech"
     ],
     "evolvesTo": "dugtrio",
-    "abilities": []
+    "abilities": [],
+    "weight": 0.8
   },
   "dugtrio": {
     "dexId": 51,
@@ -2001,7 +2051,8 @@
       "screech"
     ],
     "evolvesFrom": "diglett",
-    "abilities": []
+    "abilities": [],
+    "weight": 33.3
   },
   "meowth": {
     "dexId": 52,
@@ -2039,7 +2090,8 @@
       "hypnosis"
     ],
     "evolvesTo": "persian",
-    "abilities": []
+    "abilities": [],
+    "weight": 4.2
   },
   "persian": {
     "dexId": 53,
@@ -2079,7 +2131,8 @@
       "hypnosis"
     ],
     "evolvesFrom": "meowth",
-    "abilities": []
+    "abilities": [],
+    "weight": 32
   },
   "psyduck": {
     "dexId": 54,
@@ -2132,7 +2185,8 @@
       "waterfall"
     ],
     "evolvesTo": "golduck",
-    "abilities": []
+    "abilities": [],
+    "weight": 19.6
   },
   "golduck": {
     "dexId": 55,
@@ -2186,7 +2240,8 @@
       "triattack"
     ],
     "evolvesFrom": "psyduck",
-    "abilities": []
+    "abilities": [],
+    "weight": 76.6
   },
   "mankey": {
     "dexId": 56,
@@ -2234,7 +2289,8 @@
       "thunderpunch"
     ],
     "evolvesTo": "primeape",
-    "abilities": []
+    "abilities": [],
+    "weight": 28
   },
   "primeape": {
     "dexId": 57,
@@ -2283,7 +2339,8 @@
       "meditate"
     ],
     "evolvesFrom": "mankey",
-    "abilities": []
+    "abilities": [],
+    "weight": 32
   },
   "growlithe": {
     "dexId": 58,
@@ -2318,7 +2375,8 @@
       "thrash"
     ],
     "evolvesTo": "arcanine",
-    "abilities": []
+    "abilities": [],
+    "weight": 19
   },
   "arcanine": {
     "dexId": 59,
@@ -2355,7 +2413,8 @@
       "thrash"
     ],
     "evolvesFrom": "growlithe",
-    "abilities": []
+    "abilities": [],
+    "weight": 155
   },
   "poliwag": {
     "dexId": 60,
@@ -2396,7 +2455,8 @@
       "waterfall"
     ],
     "evolvesTo": "poliwhirl",
-    "abilities": []
+    "abilities": [],
+    "weight": 12.4
   },
   "poliwhirl": {
     "dexId": 61,
@@ -2448,7 +2508,8 @@
     ],
     "evolvesFrom": "poliwag",
     "evolvesTo": "poliwrath",
-    "abilities": []
+    "abilities": [],
+    "weight": 20
   },
   "poliwrath": {
     "dexId": 62,
@@ -2500,7 +2561,8 @@
       "splash"
     ],
     "evolvesFrom": "poliwhirl",
-    "abilities": []
+    "abilities": [],
+    "weight": 54
   },
   "abra": {
     "dexId": 63,
@@ -2541,7 +2603,8 @@
       "thunderpunch"
     ],
     "evolvesTo": "kadabra",
-    "abilities": []
+    "abilities": [],
+    "weight": 19.5
   },
   "kadabra": {
     "dexId": 64,
@@ -2589,7 +2652,8 @@
     ],
     "evolvesFrom": "abra",
     "evolvesTo": "alakazam",
-    "abilities": []
+    "abilities": [],
+    "weight": 56.5
   },
   "alakazam": {
     "dexId": 65,
@@ -2637,7 +2701,8 @@
       "lightscreen"
     ],
     "evolvesFrom": "kadabra",
-    "abilities": []
+    "abilities": [],
+    "weight": 48
   },
   "machop": {
     "dexId": 66,
@@ -2683,7 +2748,8 @@
       "thunderpunch"
     ],
     "evolvesTo": "machoke",
-    "abilities": []
+    "abilities": [],
+    "weight": 19.5
   },
   "machoke": {
     "dexId": 67,
@@ -2730,7 +2796,8 @@
     ],
     "evolvesFrom": "machop",
     "evolvesTo": "machamp",
-    "abilities": []
+    "abilities": [],
+    "weight": 70.5
   },
   "machamp": {
     "dexId": 68,
@@ -2777,7 +2844,8 @@
       "thrash"
     ],
     "evolvesFrom": "machoke",
-    "abilities": []
+    "abilities": [],
+    "weight": 130
   },
   "bellsprout": {
     "dexId": 69,
@@ -2813,7 +2881,8 @@
       "lovelykiss"
     ],
     "evolvesTo": "weepinbell",
-    "abilities": []
+    "abilities": [],
+    "weight": 4
   },
   "weepinbell": {
     "dexId": 70,
@@ -2850,7 +2919,8 @@
     ],
     "evolvesFrom": "bellsprout",
     "evolvesTo": "victreebel",
-    "abilities": []
+    "abilities": [],
+    "weight": 6.4
   },
   "victreebel": {
     "dexId": 71,
@@ -2888,7 +2958,8 @@
       "lovelykiss"
     ],
     "evolvesFrom": "weepinbell",
-    "abilities": []
+    "abilities": [],
+    "weight": 15.5
   },
   "tentacool": {
     "dexId": 72,
@@ -2928,7 +2999,8 @@
       "haze"
     ],
     "evolvesTo": "tentacruel",
-    "abilities": []
+    "abilities": [],
+    "weight": 45.5
   },
   "tentacruel": {
     "dexId": 73,
@@ -2969,7 +3041,8 @@
       "haze"
     ],
     "evolvesFrom": "tentacool",
-    "abilities": []
+    "abilities": [],
+    "weight": 55
   },
   "geodude": {
     "dexId": 74,
@@ -3009,7 +3082,8 @@
       "headbutt"
     ],
     "evolvesTo": "graveler",
-    "abilities": []
+    "abilities": [],
+    "weight": 20
   },
   "graveler": {
     "dexId": 75,
@@ -3050,7 +3124,8 @@
     ],
     "evolvesFrom": "geodude",
     "evolvesTo": "golem",
-    "abilities": []
+    "abilities": [],
+    "weight": 105
   },
   "golem": {
     "dexId": 76,
@@ -3093,7 +3168,8 @@
       "roar"
     ],
     "evolvesFrom": "graveler",
-    "abilities": []
+    "abilities": [],
+    "weight": 300
   },
   "ponyta": {
     "dexId": 77,
@@ -3132,7 +3208,8 @@
       "thrash"
     ],
     "evolvesTo": "rapidash",
-    "abilities": []
+    "abilities": [],
+    "weight": 30
   },
   "rapidash": {
     "dexId": 78,
@@ -3174,7 +3251,8 @@
       "thrash"
     ],
     "evolvesFrom": "ponyta",
-    "abilities": []
+    "abilities": [],
+    "weight": 95
   },
   "slowpoke": {
     "dexId": 79,
@@ -3223,7 +3301,8 @@
       "tackle"
     ],
     "evolvesTo": "slowbro",
-    "abilities": []
+    "abilities": [],
+    "weight": 36
   },
   "slowbro": {
     "dexId": 80,
@@ -3280,7 +3359,8 @@
       "stomp"
     ],
     "evolvesFrom": "slowpoke",
-    "abilities": []
+    "abilities": [],
+    "weight": 78.5
   },
   "magnemite": {
     "dexId": 81,
@@ -3312,7 +3392,8 @@
       "agility"
     ],
     "evolvesTo": "magneton",
-    "abilities": []
+    "abilities": [],
+    "weight": 6
   },
   "magneton": {
     "dexId": 82,
@@ -3346,7 +3427,8 @@
       "agility"
     ],
     "evolvesFrom": "magnemite",
-    "abilities": []
+    "abilities": [],
+    "weight": 60
   },
   "farfetchd": {
     "dexId": 83,
@@ -3383,7 +3465,8 @@
       "mirrormove",
       "quickattack"
     ],
-    "abilities": []
+    "abilities": [],
+    "weight": 15
   },
   "doduo": {
     "dexId": 84,
@@ -3419,7 +3502,8 @@
       "swift"
     ],
     "evolvesTo": "dodrio",
-    "abilities": []
+    "abilities": [],
+    "weight": 39.2
   },
   "dodrio": {
     "dexId": 85,
@@ -3456,7 +3540,8 @@
       "supersonic"
     ],
     "evolvesFrom": "doduo",
-    "abilities": []
+    "abilities": [],
+    "weight": 85.2
   },
   "seel": {
     "dexId": 86,
@@ -3493,7 +3578,8 @@
       "waterfall"
     ],
     "evolvesTo": "dewgong",
-    "abilities": []
+    "abilities": [],
+    "weight": 90
   },
   "dewgong": {
     "dexId": 87,
@@ -3531,7 +3617,8 @@
       "slam"
     ],
     "evolvesFrom": "seel",
-    "abilities": []
+    "abilities": [],
+    "weight": 120
   },
   "grimer": {
     "dexId": 88,
@@ -3569,7 +3656,8 @@
       "thunderpunch"
     ],
     "evolvesTo": "muk",
-    "abilities": []
+    "abilities": [],
+    "weight": 30
   },
   "muk": {
     "dexId": 89,
@@ -3608,7 +3696,8 @@
       "lick"
     ],
     "evolvesFrom": "grimer",
-    "abilities": []
+    "abilities": [],
+    "weight": 30
   },
   "shellder": {
     "dexId": 90,
@@ -3646,7 +3735,8 @@
       "screech"
     ],
     "evolvesTo": "cloyster",
-    "abilities": []
+    "abilities": [],
+    "weight": 4
   },
   "cloyster": {
     "dexId": 91,
@@ -3686,7 +3776,8 @@
       "screech"
     ],
     "evolvesFrom": "shellder",
-    "abilities": []
+    "abilities": [],
+    "weight": 132.5
   },
   "gastly": {
     "dexId": 92,
@@ -3716,7 +3807,8 @@
       "haze"
     ],
     "evolvesTo": "haunter",
-    "abilities": []
+    "abilities": [],
+    "weight": 0.1
   },
   "haunter": {
     "dexId": 93,
@@ -3747,7 +3839,8 @@
     ],
     "evolvesFrom": "gastly",
     "evolvesTo": "gengar",
-    "abilities": []
+    "abilities": [],
+    "weight": 0.1
   },
   "gengar": {
     "dexId": 94,
@@ -3793,7 +3886,8 @@
       "haze"
     ],
     "evolvesFrom": "haunter",
-    "abilities": []
+    "abilities": [],
+    "weight": 40.5
   },
   "onix": {
     "dexId": 95,
@@ -3829,7 +3923,8 @@
       "roar",
       "sharpen"
     ],
-    "abilities": []
+    "abilities": [],
+    "weight": 210
   },
   "drowzee": {
     "dexId": 96,
@@ -3877,7 +3972,8 @@
       "thunderpunch"
     ],
     "evolvesTo": "hypno",
-    "abilities": []
+    "abilities": [],
+    "weight": 32.4
   },
   "hypno": {
     "dexId": 97,
@@ -3926,7 +4022,8 @@
       "lightscreen"
     ],
     "evolvesFrom": "drowzee",
-    "abilities": []
+    "abilities": [],
+    "weight": 75.6
   },
   "krabby": {
     "dexId": 98,
@@ -3966,7 +4063,8 @@
       "vicegrip"
     ],
     "evolvesTo": "kingler",
-    "abilities": []
+    "abilities": [],
+    "weight": 6.5
   },
   "kingler": {
     "dexId": 99,
@@ -4007,7 +4105,8 @@
       "slam"
     ],
     "evolvesFrom": "krabby",
-    "abilities": []
+    "abilities": [],
+    "weight": 60
   },
   "voltorb": {
     "dexId": 100,
@@ -4040,7 +4139,8 @@
       "headbutt"
     ],
     "evolvesTo": "electrode",
-    "abilities": []
+    "abilities": [],
+    "weight": 10.4
   },
   "electrode": {
     "dexId": 101,
@@ -4075,7 +4175,8 @@
       "agility"
     ],
     "evolvesFrom": "voltorb",
-    "abilities": []
+    "abilities": [],
+    "weight": 66.6
   },
   "exeggcute": {
     "dexId": 102,
@@ -4113,7 +4214,8 @@
       "strength"
     ],
     "evolvesTo": "exeggutor",
-    "abilities": []
+    "abilities": [],
+    "weight": 2.5
   },
   "exeggutor": {
     "dexId": 103,
@@ -4154,7 +4256,8 @@
       "headbutt"
     ],
     "evolvesFrom": "exeggcute",
-    "abilities": []
+    "abilities": [],
+    "weight": 120
   },
   "cubone": {
     "dexId": 104,
@@ -4204,7 +4307,8 @@
       "thunderpunch"
     ],
     "evolvesTo": "marowak",
-    "abilities": []
+    "abilities": [],
+    "weight": 6.5
   },
   "marowak": {
     "dexId": 105,
@@ -4255,7 +4359,8 @@
       "swordsdance"
     ],
     "evolvesFrom": "cubone",
-    "abilities": []
+    "abilities": [],
+    "weight": 45
   },
   "hitmonlee": {
     "dexId": 106,
@@ -4291,7 +4396,8 @@
       "headbutt",
       "hijumpkick"
     ],
-    "abilities": []
+    "abilities": [],
+    "weight": 49.8
   },
   "hitmonchan": {
     "dexId": 107,
@@ -4325,7 +4431,8 @@
       "substitute"
     ],
     "evolvesFrom": "tyrogue",
-    "abilities": []
+    "abilities": [],
+    "weight": 50.2
   },
   "lickitung": {
     "dexId": 108,
@@ -4379,7 +4486,8 @@
       "lick",
       "thunderpunch"
     ],
-    "abilities": []
+    "abilities": [],
+    "weight": 65.5
   },
   "koffing": {
     "dexId": 109,
@@ -4411,7 +4519,8 @@
       "screech"
     ],
     "evolvesTo": "weezing",
-    "abilities": []
+    "abilities": [],
+    "weight": 1
   },
   "weezing": {
     "dexId": 110,
@@ -4444,7 +4553,8 @@
       "screech"
     ],
     "evolvesFrom": "koffing",
-    "abilities": []
+    "abilities": [],
+    "weight": 9.5
   },
   "rhyhorn": {
     "dexId": 111,
@@ -4486,7 +4596,8 @@
       "thrash"
     ],
     "evolvesTo": "rhydon",
-    "abilities": []
+    "abilities": [],
+    "weight": 115
   },
   "rhydon": {
     "dexId": 112,
@@ -4539,7 +4650,8 @@
       "thrash"
     ],
     "evolvesFrom": "rhyhorn",
-    "abilities": []
+    "abilities": [],
+    "weight": 120
   },
   "chansey": {
     "dexId": 113,
@@ -4595,7 +4707,8 @@
       "flamethrower",
       "headbutt"
     ],
-    "abilities": []
+    "abilities": [],
+    "weight": 34.6
   },
   "tangela": {
     "dexId": 114,
@@ -4634,7 +4747,8 @@
       "headbutt",
       "reflect"
     ],
-    "abilities": []
+    "abilities": [],
+    "weight": 35
   },
   "kangaskhan": {
     "dexId": 115,
@@ -4686,7 +4800,8 @@
       "stomp",
       "thunderpunch"
     ],
-    "abilities": []
+    "abilities": [],
+    "weight": 80
   },
   "horsea": {
     "dexId": 116,
@@ -4724,7 +4839,8 @@
       "waterfall"
     ],
     "evolvesTo": "seadra",
-    "abilities": []
+    "abilities": [],
+    "weight": 8
   },
   "seadra": {
     "dexId": 117,
@@ -4763,7 +4879,8 @@
       "splash"
     ],
     "evolvesFrom": "horsea",
-    "abilities": []
+    "abilities": [],
+    "weight": 25
   },
   "goldeen": {
     "dexId": 118,
@@ -4801,7 +4918,8 @@
       "swordsdance"
     ],
     "evolvesTo": "seaking",
-    "abilities": []
+    "abilities": [],
+    "weight": 15
   },
   "seaking": {
     "dexId": 119,
@@ -4840,7 +4958,8 @@
       "swordsdance"
     ],
     "evolvesFrom": "goldeen",
-    "abilities": []
+    "abilities": [],
+    "weight": 39
   },
   "staryu": {
     "dexId": 120,
@@ -4882,7 +5001,8 @@
       "waterfall"
     ],
     "evolvesTo": "starmie",
-    "abilities": []
+    "abilities": [],
+    "weight": 34.5
   },
   "starmie": {
     "dexId": 121,
@@ -4927,7 +5047,8 @@
       "waterfall"
     ],
     "evolvesFrom": "staryu",
-    "abilities": []
+    "abilities": [],
+    "weight": 80
   },
   "mrmime": {
     "dexId": 122,
@@ -4975,7 +5096,8 @@
       "psybeam",
       "thunderpunch"
     ],
-    "abilities": []
+    "abilities": [],
+    "weight": 54.5
   },
   "scyther": {
     "dexId": 123,
@@ -5009,7 +5131,8 @@
       "razorwind",
       "sonicboom"
     ],
-    "abilities": []
+    "abilities": [],
+    "weight": 56
   },
   "jynx": {
     "dexId": 124,
@@ -5055,7 +5178,8 @@
       "substitute",
       "headbutt"
     ],
-    "abilities": []
+    "abilities": [],
+    "weight": 40.6
   },
   "electabuzz": {
     "dexId": 125,
@@ -5105,7 +5229,8 @@
       "psywave",
       "substitute"
     ],
-    "abilities": []
+    "abilities": [],
+    "weight": 30
   },
   "magmar": {
     "dexId": 126,
@@ -5149,7 +5274,8 @@
       "psywave",
       "substitute"
     ],
-    "abilities": []
+    "abilities": [],
+    "weight": 44.5
   },
   "pinsir": {
     "dexId": 127,
@@ -5184,7 +5310,8 @@
       "rockthrow",
       "vicegrip"
     ],
-    "abilities": []
+    "abilities": [],
+    "weight": 55
   },
   "tauros": {
     "dexId": 128,
@@ -5224,7 +5351,8 @@
       "surf",
       "thrash"
     ],
-    "abilities": []
+    "abilities": [],
+    "weight": 88.4
   },
   "magikarp": {
     "dexId": 129,
@@ -5233,7 +5361,8 @@
     "stats": {"hp": 20, "atk": 10, "def": 55, "spa": 20, "spd": 0, "spe": 80},
     "moves": ["tackle", "splash", "bubble", "dragonrage"],
     "evolvesTo": "gyarados",
-    "abilities": []
+    "abilities": [],
+    "weight": 10
   },
   "gyarados": {
     "dexId": 130,
@@ -5277,7 +5406,8 @@
       "bubble"
     ],
     "evolvesFrom": "magikarp",
-    "abilities": []
+    "abilities": [],
+    "weight": 235
   },
   "lapras": {
     "dexId": 131,
@@ -5321,7 +5451,8 @@
       "dreameater",
       "headbutt"
     ],
-    "abilities": []
+    "abilities": [],
+    "weight": 220
   },
   "ditto": {
     "dexId": 132,
@@ -5329,7 +5460,8 @@
     "types": ["normal"],
     "stats": {"hp": 48, "atk": 48, "def": 48, "spa": 48, "spd": 0, "spe": 48},
     "moves": ["transform"],
-    "abilities": []
+    "abilities": [],
+    "weight": 4
   },
   "eevee": {
     "dexId": 133,
@@ -5361,7 +5493,8 @@
       "headbutt"
     ],
     "evolvesTo": "flareon",
-    "abilities": []
+    "abilities": [],
+    "weight": 6.5
   },
   "vaporeon": {
     "dexId": 134,
@@ -5406,7 +5539,8 @@
       "growth"
     ],
     "evolvesFrom": "eevee",
-    "abilities": []
+    "abilities": [],
+    "weight": 29
   },
   "jolteon": {
     "dexId": 135,
@@ -5448,7 +5582,8 @@
       "growth"
     ],
     "evolvesFrom": "eevee",
-    "abilities": []
+    "abilities": [],
+    "weight": 24.5
   },
   "flareon": {
     "dexId": 136,
@@ -5488,7 +5623,8 @@
       "growth"
     ],
     "evolvesFrom": "eevee",
-    "abilities": []
+    "abilities": [],
+    "weight": 25
   },
   "porygon": {
     "dexId": 137,
@@ -5528,7 +5664,8 @@
       "barrier",
       "dreameater"
     ],
-    "abilities": []
+    "abilities": [],
+    "weight": 36.5
   },
   "omanyte": {
     "dexId": 138,
@@ -5567,7 +5704,8 @@
       "supersonic"
     ],
     "evolvesTo": "omastar",
-    "abilities": []
+    "abilities": [],
+    "weight": 7.5
   },
   "omastar": {
     "dexId": 139,
@@ -5611,7 +5749,8 @@
       "supersonic"
     ],
     "evolvesFrom": "omanyte",
-    "abilities": []
+    "abilities": [],
+    "weight": 35
   },
   "kabuto": {
     "dexId": 140,
@@ -5648,7 +5787,8 @@
       "sandattack"
     ],
     "evolvesTo": "kabutops",
-    "abilities": []
+    "abilities": [],
+    "weight": 11.5
   },
   "kabutops": {
     "dexId": 141,
@@ -5694,7 +5834,8 @@
       "rockthrow"
     ],
     "evolvesFrom": "kabuto",
-    "abilities": []
+    "abilities": [],
+    "weight": 40.5
   },
   "aerodactyl": {
     "dexId": 142,
@@ -5730,7 +5871,8 @@
       "roar",
       "rockthrow"
     ],
-    "abilities": []
+    "abilities": [],
+    "weight": 59
   },
   "snorlax": {
     "dexId": 143,
@@ -5787,7 +5929,8 @@
       "tackle",
       "thunderpunch"
     ],
-    "abilities": []
+    "abilities": [],
+    "weight": 460
   },
   "articuno": {
     "dexId": 144,
@@ -5821,7 +5964,8 @@
       "gust",
       "roar"
     ],
-    "abilities": []
+    "abilities": [],
+    "weight": 55.4
   },
   "zapdos": {
     "dexId": 145,
@@ -5856,7 +6000,8 @@
       "peck",
       "roar"
     ],
-    "abilities": []
+    "abilities": [],
+    "weight": 52.6
   },
   "moltres": {
     "dexId": 146,
@@ -5890,7 +6035,8 @@
       "roar",
       "wingattack"
     ],
-    "abilities": []
+    "abilities": [],
+    "weight": 60
   },
   "dratini": {
     "dexId": 147,
@@ -5936,7 +6082,8 @@
       "waterfall"
     ],
     "evolvesTo": "dragonair",
-    "abilities": []
+    "abilities": [],
+    "weight": 3.3
   },
   "dragonair": {
     "dexId": 148,
@@ -5984,7 +6131,8 @@
     ],
     "evolvesFrom": "dratini",
     "evolvesTo": "dragonite",
-    "abilities": []
+    "abilities": [],
+    "weight": 16.5
   },
   "dragonite": {
     "dexId": 149,
@@ -6038,7 +6186,8 @@
       "supersonic"
     ],
     "evolvesFrom": "dragonair",
-    "abilities": []
+    "abilities": [],
+    "weight": 210
   },
   "mewtwo": {
     "dexId": 150,
@@ -6096,7 +6245,8 @@
       "icepunch",
       "thunderpunch"
     ],
-    "abilities": []
+    "abilities": [],
+    "weight": 122
   },
   "mew": {
     "dexId": 151,
@@ -6170,7 +6320,8 @@
       "thunderpunch",
       "waterfall"
     ],
-    "abilities": []
+    "abilities": [],
+    "weight": 4
   },
   "chikorita": {
     "dexId": 152,
@@ -6220,7 +6371,8 @@
     ],
     "genderRatio": 87.5,
     "evolvesTo": "bayleef",
-    "abilities": []
+    "abilities": [],
+    "weight": 6.4
   },
   "bayleef": {
     "dexId": 153,
@@ -6274,7 +6426,8 @@
     "genderRatio": 87.5,
     "evolvesFrom": "chikorita",
     "evolvesTo": "meganium",
-    "abilities": []
+    "abilities": [],
+    "weight": 15.8
   },
   "meganium": {
     "dexId": 154,
@@ -6329,7 +6482,8 @@
     ],
     "genderRatio": 87.5,
     "evolvesFrom": "bayleef",
-    "abilities": []
+    "abilities": [],
+    "weight": 100.5
   },
   "cyndaquil": {
     "dexId": 155,
@@ -6377,7 +6531,8 @@
     ],
     "genderRatio": 87.5,
     "evolvesTo": "quilava",
-    "abilities": []
+    "abilities": [],
+    "weight": 7.9
   },
   "quilava": {
     "dexId": 156,
@@ -6430,7 +6585,8 @@
     "genderRatio": 87.5,
     "evolvesFrom": "cyndaquil",
     "evolvesTo": "typhlosion",
-    "abilities": []
+    "abilities": [],
+    "weight": 19
   },
   "typhlosion": {
     "dexId": 157,
@@ -6487,7 +6643,8 @@
     ],
     "genderRatio": 87.5,
     "evolvesFrom": "quilava",
-    "abilities": []
+    "abilities": [],
+    "weight": 79.5
   },
   "totodile": {
     "dexId": 158,
@@ -6540,7 +6697,8 @@
     ],
     "genderRatio": 87.5,
     "evolvesTo": "croconaw",
-    "abilities": []
+    "abilities": [],
+    "weight": 9.5
   },
   "croconaw": {
     "dexId": 159,
@@ -6598,7 +6756,8 @@
     "genderRatio": 87.5,
     "evolvesFrom": "totodile",
     "evolvesTo": "feraligatr",
-    "abilities": []
+    "abilities": [],
+    "weight": 25
   },
   "feraligatr": {
     "dexId": 160,
@@ -6657,7 +6816,8 @@
     ],
     "genderRatio": 87.5,
     "evolvesFrom": "croconaw",
-    "abilities": []
+    "abilities": [],
+    "weight": 88.8
   },
   "sentret": {
     "dexId": 161,
@@ -6710,7 +6870,8 @@
     ],
     "genderRatio": 50,
     "evolvesTo": "furret",
-    "abilities": []
+    "abilities": [],
+    "weight": 6
   },
   "furret": {
     "dexId": 162,
@@ -6766,7 +6927,8 @@
     ],
     "genderRatio": 50,
     "evolvesFrom": "sentret",
-    "abilities": []
+    "abilities": [],
+    "weight": 32.5
   },
   "hoothoot": {
     "dexId": 163,
@@ -6815,7 +6977,8 @@
     ],
     "genderRatio": 50,
     "evolvesTo": "noctowl",
-    "abilities": []
+    "abilities": [],
+    "weight": 21.2
   },
   "noctowl": {
     "dexId": 164,
@@ -6865,7 +7028,8 @@
     ],
     "genderRatio": 50,
     "evolvesFrom": "hoothoot",
-    "abilities": []
+    "abilities": [],
+    "weight": 40.8
   },
   "ledyba": {
     "dexId": 165,
@@ -6914,7 +7078,8 @@
     ],
     "genderRatio": 50,
     "evolvesTo": "ledian",
-    "abilities": []
+    "abilities": [],
+    "weight": 10.8
   },
   "ledian": {
     "dexId": 166,
@@ -6964,7 +7129,8 @@
     ],
     "genderRatio": 50,
     "evolvesFrom": "ledyba",
-    "abilities": []
+    "abilities": [],
+    "weight": 35.6
   },
   "spinarak": {
     "dexId": 167,
@@ -7012,7 +7178,8 @@
     ],
     "genderRatio": 50,
     "evolvesTo": "ariados",
-    "abilities": []
+    "abilities": [],
+    "weight": 8.5
   },
   "ariados": {
     "dexId": 168,
@@ -7061,7 +7228,8 @@
     ],
     "genderRatio": 50,
     "evolvesFrom": "spinarak",
-    "abilities": []
+    "abilities": [],
+    "weight": 33.5
   },
   "crobat": {
     "dexId": 169,
@@ -7115,7 +7283,8 @@
     ],
     "genderRatio": 50,
     "evolvesFrom": "golbat",
-    "abilities": []
+    "abilities": [],
+    "weight": 75
   },
   "chinchou": {
     "dexId": 170,
@@ -7159,7 +7328,8 @@
     ],
     "genderRatio": 50,
     "evolvesTo": "lanturn",
-    "abilities": []
+    "abilities": [],
+    "weight": 12
   },
   "lanturn": {
     "dexId": 171,
@@ -7204,7 +7374,8 @@
     ],
     "genderRatio": 50,
     "evolvesFrom": "chinchou",
-    "abilities": []
+    "abilities": [],
+    "weight": 22.5
   },
   "pichu": {
     "evolvesTo": "pikachu",
@@ -7254,7 +7425,8 @@
       "sing"
     ],
     "genderRatio": 50,
-    "abilities": []
+    "abilities": [],
+    "weight": 2
   },
   "cleffa": {
     "evolvesTo": "clefairy",
@@ -7312,7 +7484,8 @@
       "swift"
     ],
     "genderRatio": 25,
-    "abilities": []
+    "abilities": [],
+    "weight": 3
   },
   "igglybuff": {
     "evolvesTo": "jigglypuff",
@@ -7365,7 +7538,8 @@
       "scaryface"
     ],
     "genderRatio": 25,
-    "abilities": []
+    "abilities": [],
+    "weight": 1
   },
   "togepi": {
     "dexId": 175,
@@ -7419,7 +7593,8 @@
     ],
     "genderRatio": 87.5,
     "evolvesTo": "togetic",
-    "abilities": []
+    "abilities": [],
+    "weight": 1.5
   },
   "togetic": {
     "dexId": 176,
@@ -7476,7 +7651,8 @@
     ],
     "genderRatio": 87.5,
     "evolvesFrom": "togepi",
-    "abilities": []
+    "abilities": [],
+    "weight": 3.2
   },
   "natu": {
     "dexId": 177,
@@ -7523,7 +7699,8 @@
     ],
     "genderRatio": 50,
     "evolvesTo": "xatu",
-    "abilities": []
+    "abilities": [],
+    "weight": 2
   },
   "xatu": {
     "dexId": 178,
@@ -7572,7 +7749,8 @@
     ],
     "genderRatio": 50,
     "evolvesFrom": "natu",
-    "abilities": []
+    "abilities": [],
+    "weight": 15
   },
   "mareep": {
     "dexId": 179,
@@ -7616,7 +7794,8 @@
     ],
     "genderRatio": 50,
     "evolvesTo": "flaaffy",
-    "abilities": []
+    "abilities": [],
+    "weight": 7.8
   },
   "flaaffy": {
     "dexId": 180,
@@ -7666,7 +7845,8 @@
     "genderRatio": 50,
     "evolvesFrom": "mareep",
     "evolvesTo": "ampharos",
-    "abilities": []
+    "abilities": [],
+    "weight": 13.3
   },
   "ampharos": {
     "dexId": 181,
@@ -7716,7 +7896,8 @@
     ],
     "genderRatio": 50,
     "evolvesFrom": "flaaffy",
-    "abilities": []
+    "abilities": [],
+    "weight": 61.5
   },
   "bellossom": {
     "dexId": 182,
@@ -7768,7 +7949,8 @@
     ],
     "genderRatio": 50,
     "evolvesFrom": "gloom",
-    "abilities": []
+    "abilities": [],
+    "weight": 5.8
   },
   "marill": {
     "dexId": 183,
@@ -7823,7 +8005,8 @@
     ],
     "genderRatio": 50,
     "evolvesTo": "azumarill",
-    "abilities": []
+    "abilities": [],
+    "weight": 8.5
   },
   "azumarill": {
     "dexId": 184,
@@ -7881,7 +8064,8 @@
     ],
     "genderRatio": 50,
     "evolvesFrom": "marill",
-    "abilities": []
+    "abilities": [],
+    "weight": 28.5
   },
   "sudowoodo": {
     "dexId": 185,
@@ -7929,7 +8113,8 @@
       "substitute"
     ],
     "genderRatio": 50,
-    "abilities": []
+    "abilities": [],
+    "weight": 38
   },
   "politoed": {
     "dexId": 186,
@@ -8004,7 +8189,8 @@
     ],
     "genderRatio": 50,
     "evolvesFrom": "poliwhirl",
-    "abilities": []
+    "abilities": [],
+    "weight": 33.9
   },
   "hoppip": {
     "dexId": 187,
@@ -8053,7 +8239,8 @@
     ],
     "genderRatio": 50,
     "evolvesTo": "skiploom",
-    "abilities": []
+    "abilities": [],
+    "weight": 0.5
   },
   "skiploom": {
     "dexId": 188,
@@ -8103,7 +8290,8 @@
     "genderRatio": 50,
     "evolvesFrom": "hoppip",
     "evolvesTo": "jumpluff",
-    "abilities": []
+    "abilities": [],
+    "weight": 1
   },
   "jumpluff": {
     "dexId": 189,
@@ -8153,7 +8341,8 @@
     ],
     "genderRatio": 50,
     "evolvesFrom": "skiploom",
-    "abilities": []
+    "abilities": [],
+    "weight": 3
   },
   "aipom": {
     "dexId": 190,
@@ -8212,7 +8401,8 @@
       "mimic"
     ],
     "genderRatio": 50,
-    "abilities": []
+    "abilities": [],
+    "weight": 11.5
   },
   "sunkern": {
     "dexId": 191,
@@ -8248,7 +8438,8 @@
     ],
     "genderRatio": 50,
     "evolvesTo": "sunflora",
-    "abilities": []
+    "abilities": [],
+    "weight": 1.8
   },
   "sunflora": {
     "dexId": 192,
@@ -8288,7 +8479,8 @@
     ],
     "genderRatio": 50,
     "evolvesFrom": "sunkern",
-    "abilities": []
+    "abilities": [],
+    "weight": 8.5
   },
   "yanma": {
     "dexId": 193,
@@ -8331,7 +8523,8 @@
       "sweetkiss"
     ],
     "genderRatio": 50,
-    "abilities": []
+    "abilities": [],
+    "weight": 38
   },
   "wooper": {
     "dexId": 194,
@@ -8383,7 +8576,8 @@
     ],
     "genderRatio": 50,
     "evolvesTo": "quagsire",
-    "abilities": []
+    "abilities": [],
+    "weight": 8.5
   },
   "quagsire": {
     "dexId": 195,
@@ -8437,7 +8631,8 @@
     ],
     "genderRatio": 50,
     "evolvesFrom": "wooper",
-    "abilities": []
+    "abilities": [],
+    "weight": 75
   },
   "espeon": {
     "dexId": 196,
@@ -8500,7 +8695,8 @@
     ],
     "genderRatio": 87.5,
     "evolvesFrom": "eevee",
-    "abilities": []
+    "abilities": [],
+    "weight": 26.5
   },
   "umbreon": {
     "dexId": 197,
@@ -8566,7 +8762,8 @@
     ],
     "genderRatio": 87.5,
     "evolvesFrom": "eevee",
-    "abilities": []
+    "abilities": [],
+    "weight": 27
   },
   "murkrow": {
     "dexId": 198,
@@ -8614,7 +8811,8 @@
       "beatup"
     ],
     "genderRatio": 50,
-    "abilities": []
+    "abilities": [],
+    "weight": 2.1
   },
   "slowking": {
     "dexId": 199,
@@ -8692,7 +8890,8 @@
     ],
     "genderRatio": 50,
     "evolvesFrom": "slowpoke",
-    "abilities": []
+    "abilities": [],
+    "weight": 79.5
   },
   "misdreavus": {
     "dexId": 200,
@@ -8741,7 +8940,8 @@
       "hypnosis"
     ],
     "genderRatio": 50,
-    "abilities": []
+    "abilities": [],
+    "weight": 1
   },
   "unown": {
     "dexId": 201,
@@ -8749,7 +8949,8 @@
     "types": ["psychic"],
     "stats": {"hp": 48, "atk": 72, "def": 48, "spa": 72, "spd": 48, "spe": 48},
     "moves": ["hiddenpower"],
-    "abilities": []
+    "abilities": [],
+    "weight": 5
   },
   "wobbuffet": {
     "dexId": 202,
@@ -8758,7 +8959,8 @@
     "stats": {"hp": 190, "atk": 33, "def": 58, "spa": 33, "spd": 58, "spe": 33},
     "moves": ["counter", "destinybond", "safeguard", "mirrorcoat", "mimic"],
     "genderRatio": 50,
-    "abilities": []
+    "abilities": [],
+    "weight": 28.5
   },
   "girafarig": {
     "dexId": 203,
@@ -8811,7 +9013,8 @@
       "beatup"
     ],
     "genderRatio": 50,
-    "abilities": []
+    "abilities": [],
+    "weight": 41.5
   },
   "pineco": {
     "dexId": 204,
@@ -8857,7 +9060,8 @@
     ],
     "genderRatio": 50,
     "evolvesTo": "forretress",
-    "abilities": []
+    "abilities": [],
+    "weight": 7.2
   },
   "forretress": {
     "dexId": 205,
@@ -8905,7 +9109,8 @@
     ],
     "genderRatio": 50,
     "evolvesFrom": "pineco",
-    "abilities": []
+    "abilities": [],
+    "weight": 125.8
   },
   "dunsparce": {
     "dexId": 206,
@@ -8959,7 +9164,8 @@
       "horndrill"
     ],
     "genderRatio": 50,
-    "abilities": []
+    "abilities": [],
+    "weight": 14
   },
   "gligar": {
     "dexId": 207,
@@ -9007,7 +9213,8 @@
       "earthquake"
     ],
     "genderRatio": 50,
-    "abilities": []
+    "abilities": [],
+    "weight": 64.8
   },
   "steelix": {
     "dexId": 208,
@@ -9067,7 +9274,8 @@
     ],
     "genderRatio": 50,
     "evolvesFrom": "onix",
-    "abilities": []
+    "abilities": [],
+    "weight": 400
   },
   "snubbull": {
     "dexId": 209,
@@ -9126,7 +9334,8 @@
     ],
     "genderRatio": 25,
     "evolvesTo": "granbull",
-    "abilities": []
+    "abilities": [],
+    "weight": 7.8
   },
   "granbull": {
     "dexId": 210,
@@ -9186,7 +9395,8 @@
     ],
     "genderRatio": 25,
     "evolvesFrom": "snubbull",
-    "abilities": []
+    "abilities": [],
+    "weight": 48.7
   },
   "qwilfish": {
     "dexId": 211,
@@ -9235,7 +9445,8 @@
       "doubleedge"
     ],
     "genderRatio": 50,
-    "abilities": []
+    "abilities": [],
+    "weight": 3.9
   },
   "scizor": {
     "dexId": 212,
@@ -9295,7 +9506,8 @@
     ],
     "genderRatio": 50,
     "evolvesFrom": "scyther",
-    "abilities": []
+    "abilities": [],
+    "weight": 118
   },
   "shuckle": {
     "dexId": 213,
@@ -9337,7 +9549,8 @@
       "rocksmash"
     ],
     "genderRatio": 50,
-    "abilities": []
+    "abilities": [],
+    "weight": 20.5
   },
   "heracross": {
     "dexId": 214,
@@ -9381,7 +9594,8 @@
       "seismictoss"
     ],
     "genderRatio": 50,
-    "abilities": []
+    "abilities": [],
+    "weight": 54
   },
   "sneasel": {
     "dexId": 215,
@@ -9443,7 +9657,8 @@
       "moonlight"
     ],
     "genderRatio": 50,
-    "abilities": []
+    "abilities": [],
+    "weight": 28
   },
   "teddiursa": {
     "dexId": 216,
@@ -9500,7 +9715,8 @@
     ],
     "genderRatio": 50,
     "evolvesTo": "ursaring",
-    "abilities": []
+    "abilities": [],
+    "weight": 8.8
   },
   "ursaring": {
     "dexId": 217,
@@ -9558,7 +9774,8 @@
     ],
     "genderRatio": 50,
     "evolvesFrom": "teddiursa",
-    "abilities": []
+    "abilities": [],
+    "weight": 125.8
   },
   "slugma": {
     "dexId": 218,
@@ -9597,7 +9814,8 @@
     ],
     "genderRatio": 50,
     "evolvesTo": "magcargo",
-    "abilities": []
+    "abilities": [],
+    "weight": 35
   },
   "magcargo": {
     "dexId": 219,
@@ -9639,7 +9857,8 @@
     ],
     "genderRatio": 50,
     "evolvesFrom": "slugma",
-    "abilities": []
+    "abilities": [],
+    "weight": 55
   },
   "swinub": {
     "dexId": 220,
@@ -9685,7 +9904,8 @@
     ],
     "genderRatio": 50,
     "evolvesTo": "piloswine",
-    "abilities": []
+    "abilities": [],
+    "weight": 6.5
   },
   "piloswine": {
     "dexId": 221,
@@ -9734,7 +9954,8 @@
     ],
     "genderRatio": 50,
     "evolvesFrom": "swinub",
-    "abilities": []
+    "abilities": [],
+    "weight": 55.8
   },
   "corsola": {
     "dexId": 222,
@@ -9784,7 +10005,8 @@
       "whirlpool"
     ],
     "genderRatio": 25,
-    "abilities": []
+    "abilities": [],
+    "weight": 5
   },
   "remoraid": {
     "dexId": 223,
@@ -9830,7 +10052,8 @@
     ],
     "genderRatio": 50,
     "evolvesTo": "octillery",
-    "abilities": []
+    "abilities": [],
+    "weight": 12
   },
   "octillery": {
     "dexId": 224,
@@ -9877,7 +10100,8 @@
     ],
     "genderRatio": 50,
     "evolvesFrom": "remoraid",
-    "abilities": []
+    "abilities": [],
+    "weight": 28.5
   },
   "delibird": {
     "dexId": 225,
@@ -9918,7 +10142,8 @@
       "spikes"
     ],
     "genderRatio": 50,
-    "abilities": []
+    "abilities": [],
+    "weight": 16
   },
   "mantine": {
     "dexId": 226,
@@ -9964,7 +10189,8 @@
       "gust"
     ],
     "genderRatio": 50,
-    "abilities": []
+    "abilities": [],
+    "weight": 220
   },
   "skarmory": {
     "dexId": 227,
@@ -10006,7 +10232,8 @@
       "furycutter"
     ],
     "genderRatio": 50,
-    "abilities": []
+    "abilities": [],
+    "weight": 50.5
   },
   "houndour": {
     "dexId": 228,
@@ -10059,7 +10286,8 @@
     ],
     "genderRatio": 50,
     "evolvesTo": "houndoom",
-    "abilities": []
+    "abilities": [],
+    "weight": 10.8
   },
   "houndoom": {
     "dexId": 229,
@@ -10114,7 +10342,8 @@
     ],
     "genderRatio": 50,
     "evolvesFrom": "houndour",
-    "abilities": []
+    "abilities": [],
+    "weight": 35
   },
   "kingdra": {
     "dexId": 230,
@@ -10171,7 +10400,8 @@
     ],
     "genderRatio": 50,
     "evolvesFrom": "seadra",
-    "abilities": []
+    "abilities": [],
+    "weight": 152
   },
   "phanpy": {
     "dexId": 231,
@@ -10216,7 +10446,8 @@
     ],
     "genderRatio": 50,
     "evolvesTo": "donphan",
-    "abilities": []
+    "abilities": [],
+    "weight": 33.5
   },
   "donphan": {
     "dexId": 232,
@@ -10265,7 +10496,8 @@
     ],
     "genderRatio": 50,
     "evolvesFrom": "phanpy",
-    "abilities": []
+    "abilities": [],
+    "weight": 120
   },
   "porygon2": {
     "dexId": 233,
@@ -10326,7 +10558,8 @@
       "barrier"
     ],
     "evolvesFrom": "porygon",
-    "abilities": []
+    "abilities": [],
+    "weight": 32.5
   },
   "stantler": {
     "dexId": 234,
@@ -10376,7 +10609,8 @@
       "safeguard"
     ],
     "genderRatio": 50,
-    "abilities": []
+    "abilities": [],
+    "weight": 71.2
   },
   "smeargle": {
     "dexId": 235,
@@ -10385,7 +10619,8 @@
     "stats": {"hp": 55, "atk": 20, "def": 35, "spa": 20, "spd": 45, "spe": 75},
     "moves": ["sketch"],
     "genderRatio": 50,
-    "abilities": []
+    "abilities": [],
+    "weight": 58
   },
   "tyrogue": {
     "evolvesTo": "hitmontop",
@@ -10425,7 +10660,8 @@
       "rage"
     ],
     "genderRatio": 100,
-    "abilities": []
+    "abilities": [],
+    "weight": 21
   },
   "hitmontop": {
     "dexId": 237,
@@ -10473,7 +10709,8 @@
     ],
     "genderRatio": 100,
     "evolvesFrom": "tyrogue",
-    "abilities": []
+    "abilities": [],
+    "weight": 48
   },
   "smoochum": {
     "evolvesTo": "jynx",
@@ -10524,7 +10761,8 @@
       "petaldance"
     ],
     "genderRatio": 0,
-    "abilities": []
+    "abilities": [],
+    "weight": 6
   },
   "elekid": {
     "evolvesTo": "electabuzz",
@@ -10574,7 +10812,8 @@
       "pursuit"
     ],
     "genderRatio": 75,
-    "abilities": []
+    "abilities": [],
+    "weight": 23.5
   },
   "magby": {
     "evolvesTo": "magmar",
@@ -10622,7 +10861,8 @@
       "feintattack"
     ],
     "genderRatio": 75,
-    "abilities": []
+    "abilities": [],
+    "weight": 21.4
   },
   "miltank": {
     "dexId": 241,
@@ -10682,7 +10922,8 @@
       "megakick"
     ],
     "genderRatio": 0,
-    "abilities": []
+    "abilities": [],
+    "weight": 75.5
   },
   "blissey": {
     "dexId": 242,
@@ -10765,7 +11006,8 @@
     ],
     "genderRatio": 0,
     "evolvesFrom": "chansey",
-    "abilities": []
+    "abilities": [],
+    "weight": 46.8
   },
   "raikou": {
     "dexId": 243,
@@ -10812,7 +11054,8 @@
       "psychup",
       "rocksmash"
     ],
-    "abilities": []
+    "abilities": [],
+    "weight": 178
   },
   "entei": {
     "dexId": 244,
@@ -10857,7 +11100,8 @@
       "psychup",
       "rocksmash"
     ],
-    "abilities": []
+    "abilities": [],
+    "weight": 198
   },
   "suicune": {
     "dexId": 245,
@@ -10907,7 +11151,8 @@
       "rocksmash",
       "whirlpool"
     ],
-    "abilities": []
+    "abilities": [],
+    "weight": 187
   },
   "larvitar": {
     "dexId": 246,
@@ -10953,7 +11198,8 @@
     ],
     "genderRatio": 50,
     "evolvesTo": "pupitar",
-    "abilities": []
+    "abilities": [],
+    "weight": 72
   },
   "pupitar": {
     "dexId": 247,
@@ -11000,7 +11246,8 @@
     "genderRatio": 50,
     "evolvesFrom": "larvitar",
     "evolvesTo": "tyranitar",
-    "abilities": []
+    "abilities": [],
+    "weight": 152
   },
   "tyranitar": {
     "dexId": 248,
@@ -11061,7 +11308,8 @@
     ],
     "genderRatio": 50,
     "evolvesFrom": "pupitar",
-    "abilities": []
+    "abilities": [],
+    "weight": 202
   },
   "lugia": {
     "dexId": 249,
@@ -11121,7 +11369,8 @@
       "rocksmash",
       "whirlpool"
     ],
-    "abilities": []
+    "abilities": [],
+    "weight": 216
   },
   "hooh": {
     "dexId": 250,
@@ -11176,7 +11425,8 @@
       "futuresight",
       "rocksmash"
     ],
-    "abilities": []
+    "abilities": [],
+    "weight": 199
   },
   "celebi": {
     "dexId": 251,
@@ -11223,7 +11473,8 @@
       "shadowball",
       "futuresight"
     ],
-    "abilities": []
+    "abilities": [],
+    "weight": 5
   },
   "treecko": {
     "dexId": 252,
@@ -11293,7 +11544,8 @@
       "toxic"
     ],
     "genderRatio": 87.5,
-    "evolvesTo": "grovyle"
+    "evolvesTo": "grovyle",
+    "weight": 5
   },
   "grovyle": {
     "dexId": 253,
@@ -11366,7 +11618,8 @@
     ],
     "genderRatio": 87.5,
     "evolvesFrom": "treecko",
-    "evolvesTo": "sceptile"
+    "evolvesTo": "sceptile",
+    "weight": 21.6
   },
   "sceptile": {
     "dexId": 254,
@@ -11442,7 +11695,8 @@
       "roar"
     ],
     "genderRatio": 87.5,
-    "evolvesFrom": "grovyle"
+    "evolvesFrom": "grovyle",
+    "weight": 52.2
   },
   "torchic": {
     "dexId": 255,
@@ -11501,7 +11755,8 @@
       "toxic"
     ],
     "genderRatio": 87.5,
-    "evolvesTo": "combusken"
+    "evolvesTo": "combusken",
+    "weight": 2.5
   },
   "combusken": {
     "dexId": 256,
@@ -11570,7 +11825,8 @@
     ],
     "genderRatio": 87.5,
     "evolvesFrom": "torchic",
-    "evolvesTo": "blaziken"
+    "evolvesTo": "blaziken",
+    "weight": 19.5
   },
   "blaziken": {
     "dexId": 257,
@@ -11642,7 +11898,8 @@
       "roar"
     ],
     "genderRatio": 87.5,
-    "evolvesFrom": "combusken"
+    "evolvesFrom": "combusken",
+    "weight": 52
   },
   "mudkip": {
     "dexId": 258,
@@ -11704,7 +11961,8 @@
       "whirlpool"
     ],
     "genderRatio": 87.5,
-    "evolvesTo": "marshtomp"
+    "evolvesTo": "marshtomp",
+    "weight": 7.6
   },
   "marshtomp": {
     "dexId": 259,
@@ -11777,7 +12035,8 @@
     ],
     "genderRatio": 87.5,
     "evolvesFrom": "mudkip",
-    "evolvesTo": "swampert"
+    "evolvesTo": "swampert",
+    "weight": 28
   },
   "swampert": {
     "dexId": 260,
@@ -11853,7 +12112,8 @@
       "roar"
     ],
     "genderRatio": 87.5,
-    "evolvesFrom": "marshtomp"
+    "evolvesFrom": "marshtomp",
+    "weight": 81.9
   },
   "poochyena": {
     "dexId": 261,
@@ -11875,6 +12135,7 @@
       "endure",
       "facade",
       "frustration",
+      "healbell",
       "hiddenpower",
       "howl",
       "irontail",
@@ -11909,7 +12170,8 @@
       "yawn"
     ],
     "genderRatio": 50,
-    "evolvesTo": "mightyena"
+    "evolvesTo": "mightyena",
+    "weight": 13.6
   },
   "mightyena": {
     "dexId": 262,
@@ -11931,6 +12193,7 @@
       "endure",
       "facade",
       "frustration",
+      "healbell",
       "hiddenpower",
       "howl",
       "irontail",
@@ -11967,7 +12230,8 @@
       "strength"
     ],
     "genderRatio": 50,
-    "evolvesFrom": "poochyena"
+    "evolvesFrom": "poochyena",
+    "weight": 37
   },
   "zigzagoon": {
     "dexId": 263,
@@ -11988,6 +12252,7 @@
       "doubleedge",
       "doubleteam",
       "endure",
+      "extremespeed",
       "facade",
       "flail",
       "frustration",
@@ -12033,7 +12298,8 @@
       "waterpulse"
     ],
     "genderRatio": 50,
-    "evolvesTo": "linoone"
+    "evolvesTo": "linoone",
+    "weight": 17.5
   },
   "linoone": {
     "dexId": 264,
@@ -12054,6 +12320,7 @@
       "doubleedge",
       "doubleteam",
       "endure",
+      "extremespeed",
       "facade",
       "flail",
       "frustration",
@@ -12104,7 +12371,8 @@
       "strength"
     ],
     "genderRatio": 50,
-    "evolvesFrom": "zigzagoon"
+    "evolvesFrom": "zigzagoon",
+    "weight": 32.5
   },
   "wurmple": {
     "dexId": 265,
@@ -12114,7 +12382,8 @@
     "stats": {"hp": 45, "atk": 45, "def": 35, "spa": 20, "spd": 30, "spe": 20},
     "moves": ["poisonsting", "stringshot", "tackle"],
     "genderRatio": 50,
-    "evolvesTo": ["silcoon", "cascoon"]
+    "evolvesTo": ["silcoon", "cascoon"],
+    "weight": 3.6
   },
   "silcoon": {
     "dexId": 266,
@@ -12125,7 +12394,8 @@
     "moves": ["poisonsting", "stringshot", "tackle", "harden"],
     "genderRatio": 50,
     "evolvesFrom": "wurmple",
-    "evolvesTo": "beautifly"
+    "evolvesTo": "beautifly",
+    "weight": 10
   },
   "beautifly": {
     "dexId": 267,
@@ -12175,7 +12445,8 @@
       "whirlwind"
     ],
     "genderRatio": 50,
-    "evolvesFrom": "silcoon"
+    "evolvesFrom": "silcoon",
+    "weight": 28.4
   },
   "cascoon": {
     "dexId": 268,
@@ -12186,7 +12457,8 @@
     "moves": ["poisonsting", "stringshot", "tackle", "harden"],
     "genderRatio": 50,
     "evolvesFrom": "wurmple",
-    "evolvesTo": "dustox"
+    "evolvesTo": "dustox",
+    "weight": 11.5
   },
   "dustox": {
     "dexId": 269,
@@ -12236,7 +12508,8 @@
       "whirlwind"
     ],
     "genderRatio": 50,
-    "evolvesFrom": "cascoon"
+    "evolvesFrom": "cascoon",
+    "weight": 31.6
   },
   "lotad": {
     "dexId": 270,
@@ -12291,7 +12564,8 @@
       "waterpulse"
     ],
     "genderRatio": 50,
-    "evolvesTo": "lombre"
+    "evolvesTo": "lombre",
+    "weight": 2.6
   },
   "lombre": {
     "dexId": 271,
@@ -12362,7 +12636,8 @@
     ],
     "genderRatio": 50,
     "evolvesFrom": "lotad",
-    "evolvesTo": "ludicolo"
+    "evolvesTo": "ludicolo",
+    "weight": 32.5
   },
   "ludicolo": {
     "dexId": 272,
@@ -12439,7 +12714,8 @@
       "seismictoss"
     ],
     "genderRatio": 50,
-    "evolvesFrom": "lombre"
+    "evolvesFrom": "lombre",
+    "weight": 55
   },
   "seedot": {
     "dexId": 273,
@@ -12473,6 +12749,7 @@
       "protect",
       "quickattack",
       "razorwind",
+      "refresh",
       "rest",
       "return",
       "rocksmash",
@@ -12492,7 +12769,8 @@
       "toxic"
     ],
     "genderRatio": 50,
-    "evolvesTo": "nuzleaf"
+    "evolvesTo": "nuzleaf",
+    "weight": 4
   },
   "nuzleaf": {
     "dexId": 274,
@@ -12526,6 +12804,7 @@
       "protect",
       "quickattack",
       "razorwind",
+      "refresh",
       "rest",
       "return",
       "rocksmash",
@@ -12562,7 +12841,8 @@
     ],
     "genderRatio": 50,
     "evolvesFrom": "seedot",
-    "evolvesTo": "shiftry"
+    "evolvesTo": "shiftry",
+    "weight": 28
   },
   "shiftry": {
     "dexId": 275,
@@ -12596,6 +12876,7 @@
       "protect",
       "quickattack",
       "razorwind",
+      "refresh",
       "rest",
       "return",
       "rocksmash",
@@ -12632,7 +12913,8 @@
       "aerialace"
     ],
     "genderRatio": 50,
-    "evolvesFrom": "nuzleaf"
+    "evolvesFrom": "nuzleaf",
+    "weight": 59.6
   },
   "taillow": {
     "dexId": 276,
@@ -12650,6 +12932,7 @@
       "endeavor",
       "endure",
       "facade",
+      "featherdance",
       "fly",
       "focusenergy",
       "frustration",
@@ -12682,7 +12965,8 @@
       "wingattack"
     ],
     "genderRatio": 50,
-    "evolvesTo": "swellow"
+    "evolvesTo": "swellow",
+    "weight": 2.3
   },
   "swellow": {
     "dexId": 277,
@@ -12700,6 +12984,7 @@
       "endeavor",
       "endure",
       "facade",
+      "featherdance",
       "fly",
       "focusenergy",
       "frustration",
@@ -12730,10 +13015,12 @@
       "thief",
       "toxic",
       "wingattack",
+      "batonpass",
       "hyperbeam"
     ],
     "genderRatio": 50,
-    "evolvesFrom": "taillow"
+    "evolvesFrom": "taillow",
+    "weight": 19.8
   },
   "wingull": {
     "dexId": 278,
@@ -12786,7 +13073,8 @@
       "wingattack"
     ],
     "genderRatio": 50,
-    "evolvesTo": "pelipper"
+    "evolvesTo": "pelipper",
+    "weight": 9.5
   },
   "pelipper": {
     "dexId": 279,
@@ -12845,7 +13133,8 @@
       "swallow"
     ],
     "genderRatio": 50,
-    "evolvesFrom": "wingull"
+    "evolvesFrom": "wingull",
+    "weight": 28
   },
   "ralts": {
     "dexId": 280,
@@ -12857,6 +13146,7 @@
       "attract",
       "bodyslam",
       "calmmind",
+      "charm",
       "confusion",
       "defensecurl",
       "destinybond",
@@ -12893,6 +13183,7 @@
       "secretpower",
       "shadowball",
       "shockwave",
+      "sing",
       "skillswap",
       "sleeptalk",
       "snatch",
@@ -12908,10 +13199,12 @@
       "thunderwave",
       "torment",
       "toxic",
-      "willowisp"
+      "willowisp",
+      "wish"
     ],
     "genderRatio": 50,
-    "evolvesTo": "kirlia"
+    "evolvesTo": "kirlia",
+    "weight": 6.6
   },
   "kirlia": {
     "dexId": 281,
@@ -12923,6 +13216,7 @@
       "attract",
       "bodyslam",
       "calmmind",
+      "charm",
       "confusion",
       "defensecurl",
       "destinybond",
@@ -12959,6 +13253,7 @@
       "secretpower",
       "shadowball",
       "shockwave",
+      "sing",
       "skillswap",
       "sleeptalk",
       "snatch",
@@ -12975,11 +13270,13 @@
       "torment",
       "toxic",
       "willowisp",
+      "wish",
       "magicalleaf"
     ],
     "genderRatio": 50,
     "evolvesFrom": "ralts",
-    "evolvesTo": "gardevoir"
+    "evolvesTo": "gardevoir",
+    "weight": 20.2
   },
   "gardevoir": {
     "dexId": 282,
@@ -12991,6 +13288,7 @@
       "attract",
       "bodyslam",
       "calmmind",
+      "charm",
       "confusion",
       "defensecurl",
       "destinybond",
@@ -13027,6 +13325,7 @@
       "secretpower",
       "shadowball",
       "shockwave",
+      "sing",
       "skillswap",
       "sleeptalk",
       "snatch",
@@ -13043,11 +13342,13 @@
       "torment",
       "toxic",
       "willowisp",
+      "wish",
       "magicalleaf",
       "hyperbeam"
     ],
     "genderRatio": 50,
-    "evolvesFrom": "kirlia"
+    "evolvesFrom": "kirlia",
+    "weight": 48.4
   },
   "surskit": {
     "dexId": 283,
@@ -13078,6 +13379,7 @@
       "mindreader",
       "mist",
       "mudshot",
+      "mudsport",
       "protect",
       "psybeam",
       "psychup",
@@ -13101,7 +13403,8 @@
       "watersport"
     ],
     "genderRatio": 50,
-    "evolvesTo": "masquerain"
+    "evolvesTo": "masquerain",
+    "weight": 1.7
   },
   "masquerain": {
     "dexId": 284,
@@ -13132,6 +13435,7 @@
       "mindreader",
       "mist",
       "mudshot",
+      "mudsport",
       "protect",
       "psybeam",
       "psychup",
@@ -13163,7 +13467,8 @@
       "whirlwind"
     ],
     "genderRatio": 50,
-    "evolvesFrom": "surskit"
+    "evolvesFrom": "surskit",
+    "weight": 3.6
   },
   "shroomish": {
     "dexId": 285,
@@ -13195,6 +13500,7 @@
       "mimic",
       "poisonpowder",
       "protect",
+      "refresh",
       "rest",
       "return",
       "safeguard",
@@ -13214,7 +13520,8 @@
       "toxic"
     ],
     "genderRatio": 50,
-    "evolvesTo": "breloom"
+    "evolvesTo": "breloom",
+    "weight": 4.5
   },
   "breloom": {
     "dexId": 286,
@@ -13246,6 +13553,7 @@
       "mimic",
       "poisonpowder",
       "protect",
+      "refresh",
       "rest",
       "return",
       "safeguard",
@@ -13284,7 +13592,8 @@
       "thunderpunch"
     ],
     "genderRatio": 50,
-    "evolvesFrom": "shroomish"
+    "evolvesFrom": "shroomish",
+    "weight": 39.2
   },
   "slakoth": {
     "dexId": 287,
@@ -13356,7 +13665,8 @@
       "yawn"
     ],
     "genderRatio": 50,
-    "evolvesTo": "vigoroth"
+    "evolvesTo": "vigoroth",
+    "weight": 24
   },
   "vigoroth": {
     "dexId": 288,
@@ -13436,7 +13746,8 @@
     ],
     "genderRatio": 50,
     "evolvesFrom": "slakoth",
-    "evolvesTo": "slaking"
+    "evolvesTo": "slaking",
+    "weight": 46.5
   },
   "slaking": {
     "dexId": 289,
@@ -13516,7 +13827,8 @@
       "hyperbeam"
     ],
     "genderRatio": 50,
-    "evolvesFrom": "vigoroth"
+    "evolvesFrom": "vigoroth",
+    "weight": 130.5
   },
   "nincada": {
     "dexId": 290,
@@ -13565,7 +13877,8 @@
       "toxic"
     ],
     "genderRatio": 50,
-    "evolvesTo": ["ninjask", "shedinja"]
+    "evolvesTo": ["ninjask", "shedinja"],
+    "weight": 5.5
   },
   "ninjask": {
     "dexId": 291,
@@ -13623,7 +13936,8 @@
       "thief"
     ],
     "genderRatio": 50,
-    "evolvesFrom": "nincada"
+    "evolvesFrom": "nincada",
+    "weight": 12
   },
   "shedinja": {
     "dexId": 292,
@@ -13683,7 +13997,8 @@
       "swordsdance",
       "thief"
     ],
-    "evolvesFrom": "nincada"
+    "evolvesFrom": "nincada",
+    "weight": 1.2
   },
   "whismur": {
     "dexId": 293,
@@ -13741,13 +14056,15 @@
       "supersonic",
       "swagger",
       "takedown",
+      "teeterdance",
       "thunderpunch",
       "toxic",
       "uproar",
       "waterpulse"
     ],
     "genderRatio": 50,
-    "evolvesTo": "loudred"
+    "evolvesTo": "loudred",
+    "weight": 16.3
   },
   "loudred": {
     "dexId": 294,
@@ -13805,6 +14122,7 @@
       "supersonic",
       "swagger",
       "takedown",
+      "teeterdance",
       "thunderpunch",
       "toxic",
       "uproar",
@@ -13820,7 +14138,8 @@
     ],
     "genderRatio": 50,
     "evolvesFrom": "whismur",
-    "evolvesTo": "exploud"
+    "evolvesTo": "exploud",
+    "weight": 40.5
   },
   "exploud": {
     "dexId": 295,
@@ -13878,6 +14197,7 @@
       "supersonic",
       "swagger",
       "takedown",
+      "teeterdance",
       "thunderpunch",
       "toxic",
       "uproar",
@@ -13893,7 +14213,8 @@
       "hyperbeam"
     ],
     "genderRatio": 50,
-    "evolvesFrom": "loudred"
+    "evolvesFrom": "loudred",
+    "weight": 84
   },
   "makuhita": {
     "dexId": 296,
@@ -13936,6 +14257,7 @@
       "mudslap",
       "protect",
       "raindance",
+      "refresh",
       "rest",
       "return",
       "revenge",
@@ -13961,7 +14283,8 @@
       "whirlwind"
     ],
     "genderRatio": 75,
-    "evolvesTo": "hariyama"
+    "evolvesTo": "hariyama",
+    "weight": 86.4
   },
   "hariyama": {
     "dexId": 297,
@@ -14004,6 +14327,7 @@
       "mudslap",
       "protect",
       "raindance",
+      "refresh",
       "rest",
       "return",
       "revenge",
@@ -14030,7 +14354,8 @@
       "hyperbeam"
     ],
     "genderRatio": 75,
-    "evolvesFrom": "makuhita"
+    "evolvesFrom": "makuhita",
+    "weight": 253.8
   },
   "azurill": {
     "dexId": 298,
@@ -14082,7 +14407,8 @@
       "waterpulse"
     ],
     "genderRatio": 25,
-    "evolvesTo": "marill"
+    "evolvesTo": "marill",
+    "weight": 2
   },
   "nosepass": {
     "dexId": 299,
@@ -14105,6 +14431,7 @@
       "firepunch",
       "frustration",
       "harden",
+      "helpinghand",
       "hiddenpower",
       "icepunch",
       "lockon",
@@ -14139,7 +14466,8 @@
       "toxic",
       "zapcannon"
     ],
-    "genderRatio": 50
+    "genderRatio": 50,
+    "weight": 97
   },
   "skitty": {
     "dexId": 300,
@@ -14177,6 +14505,7 @@
       "irontail",
       "mimic",
       "mudslap",
+      "payday",
       "protect",
       "psychup",
       "raindance",
@@ -14207,7 +14536,8 @@
       "wish"
     ],
     "genderRatio": 25,
-    "evolvesTo": "delcatty"
+    "evolvesTo": "delcatty",
+    "weight": 11
   },
   "delcatty": {
     "dexId": 301,
@@ -14245,6 +14575,7 @@
       "irontail",
       "mimic",
       "mudslap",
+      "payday",
       "protect",
       "psychup",
       "raindance",
@@ -14275,10 +14606,12 @@
       "wish",
       "hyperbeam",
       "rocksmash",
-      "strength"
+      "strength",
+      "sweetkiss"
     ],
     "genderRatio": 25,
-    "evolvesFrom": "skitty"
+    "evolvesFrom": "skitty",
+    "weight": 32.6
   },
   "sableye": {
     "dexId": 302,
@@ -14313,6 +14646,7 @@
       "frustration",
       "furycutter",
       "furyswipes",
+      "helpinghand",
       "hiddenpower",
       "icepunch",
       "knockoff",
@@ -14353,7 +14687,8 @@
       "toxic",
       "waterpulse"
     ],
-    "genderRatio": 50
+    "genderRatio": 50,
+    "weight": 11
   },
   "mawile": {
     "dexId": 303,
@@ -14405,6 +14740,7 @@
       "sandstorm",
       "secretpower",
       "seismictoss",
+      "sing",
       "sleeptalk",
       "sludgebomb",
       "snore",
@@ -14425,7 +14761,8 @@
       "toxic",
       "vicegrip"
     ],
-    "genderRatio": 50
+    "genderRatio": 50,
+    "weight": 11.5
   },
   "aron": {
     "dexId": 304,
@@ -14483,7 +14820,8 @@
       "waterpulse"
     ],
     "genderRatio": 50,
-    "evolvesTo": "lairon"
+    "evolvesTo": "lairon",
+    "weight": 60
   },
   "lairon": {
     "dexId": 305,
@@ -14542,7 +14880,8 @@
     ],
     "genderRatio": 50,
     "evolvesFrom": "aron",
-    "evolvesTo": "aggron"
+    "evolvesTo": "aggron",
+    "weight": 120
   },
   "aggron": {
     "dexId": 306,
@@ -14623,7 +14962,8 @@
       "thunderwave"
     ],
     "genderRatio": 50,
-    "evolvesFrom": "lairon"
+    "evolvesFrom": "lairon",
+    "weight": 360
   },
   "meditite": {
     "dexId": 307,
@@ -14690,7 +15030,8 @@
       "toxic"
     ],
     "genderRatio": 50,
-    "evolvesTo": "medicham"
+    "evolvesTo": "medicham",
+    "weight": 11.2
   },
   "medicham": {
     "dexId": 308,
@@ -14759,7 +15100,8 @@
       "rockslide"
     ],
     "genderRatio": 50,
-    "evolvesFrom": "meditite"
+    "evolvesFrom": "meditite",
+    "weight": 31.5
   },
   "electrike": {
     "dexId": 309,
@@ -14812,7 +15154,8 @@
       "uproar"
     ],
     "genderRatio": 50,
-    "evolvesTo": "manectric"
+    "evolvesTo": "manectric",
+    "weight": 15.2
   },
   "manectric": {
     "dexId": 310,
@@ -14863,10 +15206,12 @@
       "thunderwave",
       "toxic",
       "uproar",
-      "hyperbeam"
+      "hyperbeam",
+      "refresh"
     ],
     "genderRatio": 50,
-    "evolvesFrom": "electrike"
+    "evolvesFrom": "electrike",
+    "weight": 40.2
   },
   "plusle": {
     "dexId": 311,
@@ -14921,9 +15266,11 @@
       "thunderpunch",
       "thunderwave",
       "toxic",
+      "watersport",
       "wish"
     ],
-    "genderRatio": 50
+    "genderRatio": 50,
+    "weight": 4.2
   },
   "minun": {
     "dexId": 312,
@@ -14958,6 +15305,7 @@
       "metronome",
       "mimic",
       "mudslap",
+      "mudsport",
       "protect",
       "quickattack",
       "raindance",
@@ -14980,7 +15328,8 @@
       "toxic",
       "wish"
     ],
-    "genderRatio": 50
+    "genderRatio": 50,
+    "weight": 4.2
   },
   "volbeat": {
     "dexId": 313,
@@ -15045,7 +15394,8 @@
       "trick",
       "waterpulse"
     ],
-    "genderRatio": 100
+    "genderRatio": 100,
+    "weight": 17.7
   },
   "illumise": {
     "dexId": 314,
@@ -15113,7 +15463,8 @@
       "waterpulse",
       "wish"
     ],
-    "genderRatio": 0
+    "genderRatio": 0,
+    "weight": 17.7
   },
   "roselia": {
     "dexId": 315,
@@ -15165,13 +15516,15 @@
       "substitute",
       "sunnyday",
       "swagger",
+      "sweetkiss",
       "sweetscent",
       "swift",
       "swordsdance",
       "synthesis",
       "toxic"
     ],
-    "genderRatio": 50
+    "genderRatio": 50,
+    "weight": 2
   },
   "gulpin": {
     "dexId": 316,
@@ -15217,6 +15570,7 @@
       "selfdestruct",
       "shadowball",
       "shockwave",
+      "sing",
       "sleeptalk",
       "sludge",
       "sludgebomb",
@@ -15237,7 +15591,8 @@
       "yawn"
     ],
     "genderRatio": 50,
-    "evolvesTo": "swalot"
+    "evolvesTo": "swalot",
+    "weight": 10.3
   },
   "swalot": {
     "dexId": 317,
@@ -15283,6 +15638,7 @@
       "selfdestruct",
       "shadowball",
       "shockwave",
+      "sing",
       "sleeptalk",
       "sludge",
       "sludgebomb",
@@ -15304,7 +15660,8 @@
       "hyperbeam"
     ],
     "genderRatio": 50,
-    "evolvesFrom": "gulpin"
+    "evolvesFrom": "gulpin",
+    "weight": 80
   },
   "carvanha": {
     "dexId": 318,
@@ -15337,6 +15694,7 @@
       "protect",
       "rage",
       "raindance",
+      "refresh",
       "rest",
       "return",
       "scaryface",
@@ -15358,7 +15716,8 @@
       "waterpulse"
     ],
     "genderRatio": 50,
-    "evolvesTo": "sharpedo"
+    "evolvesTo": "sharpedo",
+    "weight": 20.8
   },
   "sharpedo": {
     "dexId": 319,
@@ -15391,6 +15750,7 @@
       "protect",
       "rage",
       "raindance",
+      "refresh",
       "rest",
       "return",
       "scaryface",
@@ -15420,7 +15780,8 @@
       "strength"
     ],
     "genderRatio": 50,
-    "evolvesFrom": "carvanha"
+    "evolvesFrom": "carvanha",
+    "weight": 88.8
   },
   "wailmer": {
     "dexId": 320,
@@ -15479,7 +15840,8 @@
       "whirlpool"
     ],
     "genderRatio": 50,
-    "evolvesTo": "wailord"
+    "evolvesTo": "wailord",
+    "weight": 130
   },
   "wailord": {
     "dexId": 321,
@@ -15539,7 +15901,8 @@
       "hyperbeam"
     ],
     "genderRatio": 50,
-    "evolvesFrom": "wailmer"
+    "evolvesFrom": "wailmer",
+    "weight": 398
   },
   "numel": {
     "dexId": 322,
@@ -15551,6 +15914,7 @@
       "amnesia",
       "attract",
       "bodyslam",
+      "charm",
       "defensecurl",
       "dig",
       "doubleedge",
@@ -15592,7 +15956,8 @@
       "toxic"
     ],
     "genderRatio": 50,
-    "evolvesTo": "camerupt"
+    "evolvesTo": "camerupt",
+    "weight": 24
   },
   "camerupt": {
     "dexId": 323,
@@ -15604,6 +15969,7 @@
       "amnesia",
       "attract",
       "bodyslam",
+      "charm",
       "defensecurl",
       "dig",
       "doubleedge",
@@ -15651,7 +16017,8 @@
       "selfdestruct"
     ],
     "genderRatio": 50,
-    "evolvesFrom": "numel"
+    "evolvesFrom": "numel",
+    "weight": 220
   },
   "torkoal": {
     "dexId": 324,
@@ -15702,7 +16069,8 @@
       "toxic",
       "yawn"
     ],
-    "genderRatio": 50
+    "genderRatio": 50,
+    "weight": 80.4
   },
   "spoink": {
     "dexId": 325,
@@ -15757,10 +16125,12 @@
       "thief",
       "torment",
       "toxic",
-      "trick"
+      "trick",
+      "uproar"
     ],
     "genderRatio": 50,
-    "evolvesTo": "grumpig"
+    "evolvesTo": "grumpig",
+    "weight": 30.6
   },
   "grumpig": {
     "dexId": 326,
@@ -15816,6 +16186,7 @@
       "torment",
       "toxic",
       "trick",
+      "uproar",
       "counter",
       "dynamicpunch",
       "firepunch",
@@ -15829,7 +16200,8 @@
       "thunderpunch"
     ],
     "genderRatio": 50,
-    "evolvesFrom": "spoink"
+    "evolvesFrom": "spoink",
+    "weight": 71.5
   },
   "spinda": {
     "dexId": 327,
@@ -15888,6 +16260,7 @@
       "seismictoss",
       "shadowball",
       "shockwave",
+      "sing",
       "skillswap",
       "sleeptalk",
       "smellingsalt",
@@ -15909,7 +16282,8 @@
       "waterpulse",
       "wish"
     ],
-    "genderRatio": 50
+    "genderRatio": 50,
+    "weight": 5
   },
   "trapinch": {
     "dexId": 328,
@@ -15958,7 +16332,8 @@
       "toxic"
     ],
     "genderRatio": 50,
-    "evolvesTo": "vibrava"
+    "evolvesTo": "vibrava",
+    "weight": 15
   },
   "vibrava": {
     "dexId": 329,
@@ -16013,7 +16388,8 @@
     ],
     "genderRatio": 50,
     "evolvesFrom": "trapinch",
-    "evolvesTo": "flygon"
+    "evolvesTo": "flygon",
+    "weight": 15.3
   },
   "flygon": {
     "dexId": 330,
@@ -16073,7 +16449,8 @@
       "irontail"
     ],
     "genderRatio": 50,
-    "evolvesFrom": "vibrava"
+    "evolvesFrom": "vibrava",
+    "weight": 82
   },
   "cacnea": {
     "dexId": 331,
@@ -16094,6 +16471,7 @@
       "doubleedge",
       "doubleteam",
       "dynamicpunch",
+      "encore",
       "endure",
       "facade",
       "feintattack",
@@ -16134,7 +16512,8 @@
       "toxic"
     ],
     "genderRatio": 50,
-    "evolvesTo": "cacturne"
+    "evolvesTo": "cacturne",
+    "weight": 51.3
   },
   "cacturne": {
     "dexId": 332,
@@ -16155,6 +16534,7 @@
       "doubleedge",
       "doubleteam",
       "dynamicpunch",
+      "encore",
       "endure",
       "facade",
       "feintattack",
@@ -16199,7 +16579,8 @@
       "strength"
     ],
     "genderRatio": 50,
-    "evolvesFrom": "cacnea"
+    "evolvesFrom": "cacnea",
+    "weight": 77.4
   },
   "swablu": {
     "dexId": 333,
@@ -16218,6 +16599,7 @@
       "dreameater",
       "endure",
       "facade",
+      "falseswipe",
       "fly",
       "frustration",
       "furyattack",
@@ -16256,7 +16638,8 @@
       "toxic"
     ],
     "genderRatio": 50,
-    "evolvesTo": "altaria"
+    "evolvesTo": "altaria",
+    "weight": 1.2
   },
   "altaria": {
     "dexId": 334,
@@ -16275,6 +16658,7 @@
       "dreameater",
       "endure",
       "facade",
+      "falseswipe",
       "fly",
       "frustration",
       "furyattack",
@@ -16317,13 +16701,15 @@
       "earthquake",
       "fireblast",
       "flamethrower",
+      "healbell",
       "hyperbeam",
       "irontail",
       "roar",
       "rocksmash"
     ],
     "genderRatio": 50,
-    "evolvesFrom": "swablu"
+    "evolvesFrom": "swablu",
+    "weight": 20.6
   },
   "zangoose": {
     "dexId": 335,
@@ -16373,6 +16759,7 @@
       "quickattack",
       "raindance",
       "razorwind",
+      "refresh",
       "rest",
       "return",
       "roar",
@@ -16403,7 +16790,8 @@
       "toxic",
       "waterpulse"
     ],
-    "genderRatio": 50
+    "genderRatio": 50,
+    "weight": 40.3
   },
   "seviper": {
     "dexId": 336,
@@ -16459,7 +16847,8 @@
       "toxic",
       "wrap"
     ],
-    "genderRatio": 50
+    "genderRatio": 50,
+    "weight": 52.5
   },
   "lunatone": {
     "dexId": 337,
@@ -16468,6 +16857,7 @@
     "abilities": ["levitate"],
     "stats": {"hp": 70, "atk": 55, "def": 65, "spa": 95, "spd": 85, "spe": 70},
     "moves": [
+      "batonpass",
       "bodyslam",
       "calmmind",
       "confusion",
@@ -16515,7 +16905,8 @@
       "swift",
       "tackle",
       "toxic"
-    ]
+    ],
+    "weight": 168
   },
   "solrock": {
     "dexId": 338,
@@ -16524,6 +16915,7 @@
     "abilities": ["levitate"],
     "stats": {"hp": 70, "atk": 95, "def": 85, "spa": 55, "spd": 65, "spe": 70},
     "moves": [
+      "batonpass",
       "bodyslam",
       "calmmind",
       "confusion",
@@ -16573,7 +16965,8 @@
       "swift",
       "tackle",
       "toxic"
-    ]
+    ],
+    "weight": 154
   },
   "barboach": {
     "dexId": 339,
@@ -16624,7 +17017,8 @@
       "whirlpool"
     ],
     "genderRatio": 50,
-    "evolvesTo": "whiscash"
+    "evolvesTo": "whiscash",
+    "weight": 1.9
   },
   "whiscash": {
     "dexId": 340,
@@ -16680,7 +17074,8 @@
       "tickle"
     ],
     "genderRatio": 50,
-    "evolvesFrom": "barboach"
+    "evolvesFrom": "barboach",
+    "weight": 23.6
   },
   "corphish": {
     "dexId": 341,
@@ -16739,10 +17134,12 @@
       "toxic",
       "vicegrip",
       "waterfall",
-      "waterpulse"
+      "waterpulse",
+      "watersport"
     ],
     "genderRatio": 50,
-    "evolvesTo": "crawdaunt"
+    "evolvesTo": "crawdaunt",
+    "weight": 11.5
   },
   "crawdaunt": {
     "dexId": 342,
@@ -16802,12 +17199,14 @@
       "vicegrip",
       "waterfall",
       "waterpulse",
+      "watersport",
       "dive",
       "hyperbeam",
       "swift"
     ],
     "genderRatio": 50,
-    "evolvesFrom": "corphish"
+    "evolvesFrom": "corphish",
+    "weight": 32.8
   },
   "baltoy": {
     "dexId": 343,
@@ -16842,6 +17241,7 @@
       "raindance",
       "rapidspin",
       "reflect",
+      "refresh",
       "rest",
       "return",
       "rockslide",
@@ -16859,7 +17259,8 @@
       "swagger",
       "toxic"
     ],
-    "evolvesTo": "claydol"
+    "evolvesTo": "claydol",
+    "weight": 21.5
   },
   "claydol": {
     "dexId": 344,
@@ -16894,6 +17295,7 @@
       "raindance",
       "rapidspin",
       "reflect",
+      "refresh",
       "rest",
       "return",
       "rockslide",
@@ -16915,7 +17317,8 @@
       "strength",
       "teleport"
     ],
-    "evolvesFrom": "baltoy"
+    "evolvesFrom": "baltoy",
+    "weight": 108
   },
   "lileep": {
     "dexId": 345,
@@ -16966,7 +17369,8 @@
       "toxic"
     ],
     "genderRatio": 87.5,
-    "evolvesTo": "cradily"
+    "evolvesTo": "cradily",
+    "weight": 23.8
   },
   "cradily": {
     "dexId": 346,
@@ -17022,7 +17426,8 @@
       "strength"
     ],
     "genderRatio": 87.5,
-    "evolvesFrom": "lileep"
+    "evolvesFrom": "lileep",
+    "weight": 60.4
   },
   "anorith": {
     "dexId": 347,
@@ -17074,7 +17479,8 @@
       "waterpulse"
     ],
     "genderRatio": 87.5,
-    "evolvesTo": "armaldo"
+    "evolvesTo": "armaldo",
+    "weight": 12.5
   },
   "armaldo": {
     "dexId": 348,
@@ -17131,7 +17537,8 @@
       "strength"
     ],
     "genderRatio": 87.5,
-    "evolvesFrom": "anorith"
+    "evolvesFrom": "anorith",
+    "weight": 68.2
   },
   "feebas": {
     "dexId": 349,
@@ -17178,7 +17585,8 @@
       "waterpulse"
     ],
     "genderRatio": 50,
-    "evolvesTo": "milotic"
+    "evolvesTo": "milotic",
+    "weight": 7.4
   },
   "milotic": {
     "dexId": 350,
@@ -17238,7 +17646,8 @@
       "wrap"
     ],
     "genderRatio": 50,
-    "evolvesFrom": "feebas"
+    "evolvesFrom": "feebas",
+    "weight": 162
   },
   "castform": {
     "dexId": 351,
@@ -17293,7 +17702,8 @@
       "waterpulse",
       "weatherball"
     ],
-    "genderRatio": 50
+    "genderRatio": 50,
+    "weight": 0.8
   },
   "kecleon": {
     "dexId": 352,
@@ -17378,7 +17788,8 @@
       "trick",
       "waterpulse"
     ],
-    "genderRatio": 50
+    "genderRatio": 50,
+    "weight": 22
   },
   "shuppet": {
     "dexId": 353,
@@ -17439,7 +17850,8 @@
       "willowisp"
     ],
     "genderRatio": 50,
-    "evolvesTo": "banette"
+    "evolvesTo": "banette",
+    "weight": 2.3
   },
   "banette": {
     "dexId": 354,
@@ -17498,12 +17910,14 @@
       "torment",
       "toxic",
       "willowisp",
+      "helpinghand",
       "hyperbeam",
       "metronome",
       "mudslap"
     ],
     "genderRatio": 50,
-    "evolvesFrom": "shuppet"
+    "evolvesFrom": "shuppet",
+    "weight": 12.5
   },
   "duskull": {
     "dexId": 355,
@@ -17532,6 +17946,7 @@
       "frustration",
       "futuresight",
       "grudge",
+      "helpinghand",
       "hiddenpower",
       "icebeam",
       "icywind",
@@ -17566,7 +17981,8 @@
       "willowisp"
     ],
     "genderRatio": 50,
-    "evolvesTo": "dusclops"
+    "evolvesTo": "dusclops",
+    "weight": 15
   },
   "dusclops": {
     "dexId": 356,
@@ -17595,6 +18011,7 @@
       "frustration",
       "futuresight",
       "grudge",
+      "helpinghand",
       "hiddenpower",
       "icebeam",
       "icywind",
@@ -17648,7 +18065,8 @@
       "thunderpunch"
     ],
     "genderRatio": 50,
-    "evolvesFrom": "duskull"
+    "evolvesFrom": "duskull",
+    "weight": 30.6
   },
   "tropius": {
     "dexId": 357,
@@ -17708,7 +18126,8 @@
       "toxic",
       "whirlwind"
     ],
-    "genderRatio": 50
+    "genderRatio": 50,
+    "weight": 100
   },
   "chimecho": {
     "dexId": 358,
@@ -17767,7 +18186,8 @@
       "wrap",
       "yawn"
     ],
-    "genderRatio": 50
+    "genderRatio": 50,
+    "weight": 1
   },
   "absol": {
     "dexId": 359,
@@ -17828,6 +18248,7 @@
       "sleeptalk",
       "snatch",
       "snore",
+      "spite",
       "strength",
       "substitute",
       "sunnyday",
@@ -17841,9 +18262,11 @@
       "thunderwave",
       "torment",
       "toxic",
-      "waterpulse"
+      "waterpulse",
+      "wish"
     ],
-    "genderRatio": 50
+    "genderRatio": 50,
+    "weight": 47
   },
   "wynaut": {
     "dexId": 360,
@@ -17851,9 +18274,19 @@
     "types": ["psychic"],
     "abilities": ["shadowtag"],
     "stats": {"hp": 95, "atk": 23, "def": 48, "spa": 23, "spd": 48, "spe": 23},
-    "moves": ["charm", "counter", "destinybond", "encore", "mirrorcoat", "safeguard", "splash"],
+    "moves": [
+      "charm",
+      "counter",
+      "destinybond",
+      "encore",
+      "mirrorcoat",
+      "safeguard",
+      "splash",
+      "tickle"
+    ],
     "genderRatio": 50,
-    "evolvesTo": "wobbuffet"
+    "evolvesTo": "wobbuffet",
+    "weight": 14
   },
   "snorunt": {
     "dexId": 361,
@@ -17890,6 +18323,7 @@
       "safeguard",
       "secretpower",
       "shadowball",
+      "sing",
       "sleeptalk",
       "snore",
       "spikes",
@@ -17899,7 +18333,8 @@
       "waterpulse"
     ],
     "genderRatio": 50,
-    "evolvesTo": "glalie"
+    "evolvesTo": "glalie",
+    "weight": 16.8
   },
   "glalie": {
     "dexId": 362,
@@ -17936,6 +18371,7 @@
       "safeguard",
       "secretpower",
       "shadowball",
+      "sing",
       "sleeptalk",
       "snore",
       "spikes",
@@ -17954,7 +18390,8 @@
       "torment"
     ],
     "genderRatio": 50,
-    "evolvesFrom": "snorunt"
+    "evolvesFrom": "snorunt",
+    "weight": 256.5
   },
   "spheal": {
     "dexId": 363,
@@ -17967,6 +18404,7 @@
       "aurorabeam",
       "blizzard",
       "bodyslam",
+      "charm",
       "curse",
       "defensecurl",
       "dive",
@@ -18015,7 +18453,8 @@
       "yawn"
     ],
     "genderRatio": 50,
-    "evolvesTo": "sealeo"
+    "evolvesTo": "sealeo",
+    "weight": 39.5
   },
   "sealeo": {
     "dexId": 364,
@@ -18028,6 +18467,7 @@
       "aurorabeam",
       "blizzard",
       "bodyslam",
+      "charm",
       "curse",
       "defensecurl",
       "dive",
@@ -18078,7 +18518,8 @@
     ],
     "genderRatio": 50,
     "evolvesFrom": "spheal",
-    "evolvesTo": "walrein"
+    "evolvesTo": "walrein",
+    "weight": 87.6
   },
   "walrein": {
     "dexId": 365,
@@ -18091,6 +18532,7 @@
       "aurorabeam",
       "blizzard",
       "bodyslam",
+      "charm",
       "curse",
       "defensecurl",
       "dive",
@@ -18141,7 +18583,8 @@
       "hyperbeam"
     ],
     "genderRatio": 50,
-    "evolvesFrom": "sealeo"
+    "evolvesFrom": "sealeo",
+    "weight": 150.6
   },
   "clamperl": {
     "dexId": 366,
@@ -18188,7 +18631,8 @@
       "whirlpool"
     ],
     "genderRatio": 50,
-    "evolvesTo": ["huntail", "gorebyss"]
+    "evolvesTo": ["huntail", "gorebyss"],
+    "weight": 52.5
   },
   "huntail": {
     "dexId": 367,
@@ -18246,7 +18690,8 @@
       "swift"
     ],
     "genderRatio": 50,
-    "evolvesFrom": "clamperl"
+    "evolvesFrom": "clamperl",
+    "weight": 27
   },
   "gorebyss": {
     "dexId": 368,
@@ -18304,7 +18749,8 @@
       "swift"
     ],
     "genderRatio": 50,
-    "evolvesFrom": "clamperl"
+    "evolvesFrom": "clamperl",
+    "weight": 22.6
   },
   "relicanth": {
     "dexId": 369,
@@ -18363,7 +18809,8 @@
       "watersport",
       "yawn"
     ],
-    "genderRatio": 87.5
+    "genderRatio": 87.5,
+    "weight": 23.4
   },
   "luvdisc": {
     "dexId": 370,
@@ -18413,7 +18860,8 @@
       "waterpulse",
       "watersport"
     ],
-    "genderRatio": 25
+    "genderRatio": 25,
+    "weight": 8.7
   },
   "bagon": {
     "dexId": 371,
@@ -18446,6 +18894,7 @@
       "headbutt",
       "hiddenpower",
       "hydropump",
+      "irondefense",
       "leer",
       "mimic",
       "mudslap",
@@ -18468,10 +18917,12 @@
       "swagger",
       "thrash",
       "toxic",
-      "twister"
+      "twister",
+      "wish"
     ],
     "genderRatio": 50,
-    "evolvesTo": "shelgon"
+    "evolvesTo": "shelgon",
+    "weight": 42.1
   },
   "shelgon": {
     "dexId": 372,
@@ -18504,6 +18955,7 @@
       "headbutt",
       "hiddenpower",
       "hydropump",
+      "irondefense",
       "leer",
       "mimic",
       "mudslap",
@@ -18527,12 +18979,14 @@
       "thrash",
       "toxic",
       "twister",
+      "wish",
       "defensecurl",
       "rollout"
     ],
     "genderRatio": 50,
     "evolvesFrom": "bagon",
-    "evolvesTo": "salamence"
+    "evolvesTo": "salamence",
+    "weight": 110.5
   },
   "salamence": {
     "dexId": 373,
@@ -18565,6 +19019,7 @@
       "headbutt",
       "hiddenpower",
       "hydropump",
+      "irondefense",
       "leer",
       "mimic",
       "mudslap",
@@ -18588,17 +19043,20 @@
       "thrash",
       "toxic",
       "twister",
+      "wish",
       "defensecurl",
       "rollout",
       "earthquake",
       "fly",
       "hyperbeam",
       "irontail",
+      "refresh",
       "steelwing",
       "swift"
     ],
     "genderRatio": 50,
-    "evolvesFrom": "shelgon"
+    "evolvesFrom": "shelgon",
+    "weight": 102.6
   },
   "beldum": {
     "dexId": 374,
@@ -18607,7 +19065,8 @@
     "abilities": ["clearbody"],
     "stats": {"hp": 40, "atk": 55, "def": 80, "spa": 35, "spd": 60, "spe": 30},
     "moves": ["takedown"],
-    "evolvesTo": "metang"
+    "evolvesTo": "metang",
+    "weight": 95.2
   },
   "metang": {
     "dexId": 375,
@@ -18650,6 +19109,7 @@
       "pursuit",
       "raindance",
       "reflect",
+      "refresh",
       "rest",
       "return",
       "rockslide",
@@ -18673,7 +19133,8 @@
       "toxic"
     ],
     "evolvesFrom": "beldum",
-    "evolvesTo": "metagross"
+    "evolvesTo": "metagross",
+    "weight": 202.5
   },
   "metagross": {
     "dexId": 376,
@@ -18716,6 +19177,7 @@
       "pursuit",
       "raindance",
       "reflect",
+      "refresh",
       "rest",
       "return",
       "rockslide",
@@ -18738,7 +19200,8 @@
       "thunderpunch",
       "toxic"
     ],
-    "evolvesFrom": "metang"
+    "evolvesFrom": "metang",
+    "weight": 550
   },
   "regirock": {
     "dexId": 377,
@@ -18801,7 +19264,8 @@
       "thunderwave",
       "toxic",
       "zapcannon"
-    ]
+    ],
+    "weight": 230
   },
   "regice": {
     "dexId": 378,
@@ -18863,7 +19327,8 @@
       "thunderwave",
       "toxic",
       "zapcannon"
-    ]
+    ],
+    "weight": 175
   },
   "registeel": {
     "dexId": 379,
@@ -18927,7 +19392,8 @@
       "thunderwave",
       "toxic",
       "zapcannon"
-    ]
+    ],
+    "weight": 205
   },
   "latias": {
     "dexId": 380,
@@ -18998,7 +19464,8 @@
       "watersport",
       "wish"
     ],
-    "genderRatio": 0
+    "genderRatio": 0,
+    "weight": 40
   },
   "latios": {
     "dexId": 381,
@@ -19068,7 +19535,8 @@
       "waterfall",
       "waterpulse"
     ],
-    "genderRatio": 100
+    "genderRatio": 100,
+    "weight": 60
   },
   "kyogre": {
     "dexId": 382,
@@ -19126,7 +19594,8 @@
       "waterfall",
       "waterpulse",
       "waterspout"
-    ]
+    ],
+    "weight": 352
   },
   "groudon": {
     "dexId": 383,
@@ -19197,7 +19666,8 @@
       "thunderpunch",
       "thunderwave",
       "toxic"
-    ]
+    ],
+    "weight": 950
   },
   "rayquaza": {
     "dexId": 384,
@@ -19264,7 +19734,8 @@
       "twister",
       "waterfall",
       "waterpulse"
-    ]
+    ],
+    "weight": 206.5
   },
   "jirachi": {
     "dexId": 385,
@@ -19327,7 +19798,8 @@
       "toxic",
       "waterpulse",
       "wish"
-    ]
+    ],
+    "weight": 1.1
   },
   "deoxys": {
     "dexId": 386,
@@ -19399,6 +19871,7 @@
       "strength",
       "substitute",
       "sunnyday",
+      "superpower",
       "swagger",
       "swift",
       "taunt",
@@ -19412,7 +19885,8 @@
       "waterpulse",
       "wrap",
       "zapcannon"
-    ]
+    ],
+    "weight": 60.8
   },
   "deoxysattack": {
     "name": "Deoxys-Attack",
@@ -19421,6 +19895,7 @@
     "types": ["psychic"],
     "abilities": ["pressure"],
     "stats": {"hp": 50, "atk": 180, "def": 20, "spa": 180, "spd": 20, "spe": 150},
+    "weight": 60.8,
     "moves": [
       "aerialace",
       "agility",
@@ -19485,6 +19960,7 @@
       "strength",
       "substitute",
       "sunnyday",
+      "superpower",
       "swagger",
       "swift",
       "taunt",
@@ -19507,6 +19983,7 @@
     "types": ["psychic"],
     "abilities": ["pressure"],
     "stats": {"hp": 50, "atk": 70, "def": 160, "spa": 70, "spd": 160, "spe": 90},
+    "weight": 60.8,
     "moves": [
       "aerialace",
       "agility",
@@ -19571,6 +20048,7 @@
       "strength",
       "substitute",
       "sunnyday",
+      "superpower",
       "swagger",
       "swift",
       "taunt",
@@ -19593,6 +20071,7 @@
     "types": ["psychic"],
     "abilities": ["pressure"],
     "stats": {"hp": 50, "atk": 95, "def": 90, "spa": 95, "spd": 90, "spe": 180},
+    "weight": 60.8,
     "moves": [
       "aerialace",
       "agility",
@@ -19657,6 +20136,7 @@
       "strength",
       "substitute",
       "sunnyday",
+      "superpower",
       "swagger",
       "swift",
       "taunt",
