@@ -299,7 +299,7 @@ export class ActivePokemon {
     } else if (status === "tox") {
       this.v.counter = 1;
     } else if (status === "frz") {
-      if (battle.weather?.kind === "sun") {
+      if (battle.hasWeather("sun")) {
         return false;
       } else if (battle.mods.freezeClause && this.owner.team.some(poke => poke.status === "frz")) {
         return true;

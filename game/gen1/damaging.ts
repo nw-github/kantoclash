@@ -228,7 +228,7 @@ export function checkUsefulness(
   user: ActivePokemon,
   target: ActivePokemon,
 ) {
-  let type = self.getType ? self.getType(user.base, battle.weather?.kind) : self.type;
+  let type = self.getType ? self.getType(user.base, battle.getWeather()) : self.type;
   let fail = false;
   if (self.flag === "beatup") {
     type = "???";
@@ -288,14 +288,14 @@ export function getDamage(
     }
 
     let weather: CalcDamageParams["weather"];
-    if (battle.weather?.kind === "rain") {
+    if (battle.hasWeather("rain")) {
       weather =
         type === "fire" || self.charge === "sun"
           ? "penalty"
           : type === "water"
           ? "bonus"
           : undefined;
-    } else if (battle.weather?.kind === "sun") {
+    } else if (battle.hasWeather("sun")) {
       weather = type === "fire" ? "bonus" : type === "water" ? "penalty" : undefined;
     }
 

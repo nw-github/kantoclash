@@ -36,9 +36,9 @@ export const moveFunctionPatches: Partial<MoveFunctions> = {
       user.recover(diff, user, battle, this.why, true);
     } else {
       let amount = Math.floor(user.base.stats.hp / 2);
-      if (this.weather && !battle.weather) {
+      if (this.weather && !battle.getWeather()) {
         amount = Math.floor(user.base.stats.hp / 4);
-      } else if (this.weather && battle.weather?.kind !== "sun") {
+      } else if (this.weather && battle.hasWeather("sun")) {
         amount = Math.floor(user.base.stats.hp / 8);
       }
       user.recover(amount, user, battle, this.why);

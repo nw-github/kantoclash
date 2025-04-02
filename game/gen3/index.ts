@@ -147,7 +147,7 @@ const createGeneration = (): Generation => {
         }
       }
 
-      if (!move.acc || (move.rainAcc && battle.weather?.kind === "rain")) {
+      if (!move.acc || (move.rainAcc && battle.hasWeather("rain"))) {
         return true;
       }
 
@@ -160,7 +160,7 @@ const createGeneration = (): Generation => {
       }
 
       let chance = move.acc;
-      if (move.rainAcc && battle.weather?.kind === "sun") {
+      if (move.rainAcc && battle.hasWeather("sun")) {
         chance = 50;
       }
 

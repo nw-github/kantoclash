@@ -252,14 +252,14 @@ const createGeneration = (): Generation => {
         }
       }
 
-      if (!move.acc || (move.rainAcc && battle.weather?.kind === "rain")) {
+      if (!move.acc || (move.rainAcc && battle.hasWeather("rain"))) {
         return true;
       }
 
       let chance = floatTo255(move.acc);
       if (move.kind === "damage" && move.flag === "ohko") {
         chance = (user.base.level - target.base.level) * 2 + 76;
-      } else if (move.rainAcc && battle.weather?.kind === "sun") {
+      } else if (move.rainAcc && battle.hasWeather("sun")) {
         chance = 127;
       }
 

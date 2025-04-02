@@ -543,6 +543,14 @@ export class Battle {
     return result;
   }
 
+  hasWeather(weather: Weather) {
+    return this.weather?.kind === weather;
+  }
+
+  getWeather() {
+    return this.weather?.kind;
+  }
+
   // --
 
   private runTurn(choices: ChosenMove[]) {
@@ -622,7 +630,7 @@ export class Battle {
           user.modStages(move.charge, this);
         }
 
-        if (move.charge !== "sun" || this.weather?.kind !== "sun") {
+        if (move.charge !== "sun" || this.hasWeather("sun")) {
           user.v.charging = {move: move, target: targets[0]};
           user.v.invuln = move.charge === "invuln" || user.v.invuln;
           return;
@@ -850,7 +858,7 @@ export class Battle {
         }
 
         this.event({type: "weather", kind: "continue", weather: this.weather.kind});
-        if (this.weather.kind !== "sand" && this.weather.kind !== "hail") {
+        if (!this.hasWeather("sand") || !this.hasWeather("hail")) {
           break weather;
         }
 
@@ -872,7 +880,7 @@ export class Battle {
 
           const d = this.gen.id <= 2 ? 8 : 16;
           const dmg = Math.max(idiv(active.base.stats.hp, d), 1);
-          active.damage(dmg, active, this, false, this.weather.kind, true);
+          active.damage(dmg, active, this, false, this.weather.kind as "hail" | "sand", true);
         }
 
         this.betweenTurns = BetweenTurns.Weather;
