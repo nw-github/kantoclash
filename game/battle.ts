@@ -224,6 +224,10 @@ export class Battle {
     return this.event({type: "info", src: src.id, why, volatiles});
   }
 
+  ability(src: ActivePokemon, volatiles?: ChangedVolatiles) {
+    return this.event({type: "proc_ability", src: src.id, ability: src.v.ability!, volatiles});
+  }
+
   miss(user: ActivePokemon, target: ActivePokemon) {
     this.event({type: "miss", src: user.id, target: target.id});
   }
@@ -597,7 +601,7 @@ export class Battle {
       const damp = this.allActive.find(p => p.v.ability === "damp");
       const moveId = this.moveIdOf(move)!;
       if (damp && move.damp) {
-        this.event({type: "proc_ability", src: damp.id, ability: damp.v.ability!});
+        this.ability(damp);
         this.event({type: "cantuse", src: damp.id, move: moveId});
       }
 
@@ -650,6 +654,13 @@ export class Battle {
         user.base.pp[moveIndex]--;
         if (user.base.pp[moveIndex] < 0) {
           user.base.pp[moveIndex] = 63;
+        }
+
+        const tr = move.range === Range.Field ? this.allActive : targets;
+        for (const poke of tr) {
+          if (poke.v.ability === "pressure" && poke !== user) {
+            user.base.pp[moveIndex] = Math.max(0, user.base.pp[moveIndex] - 1);
+          }
         }
 
         if (user.v.lastMoveIndex !== moveIndex) {

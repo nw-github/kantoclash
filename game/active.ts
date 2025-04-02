@@ -66,6 +66,11 @@ export class ActivePokemon {
       battle.event({type: "sv", volatiles: [{id: this.id, v: {status: "psn"}}]});
     }
 
+    if (this.v.ability === "naturalcure") {
+      battle.ability(this);
+      this.unstatus(battle, "ability_heal");
+    }
+
     const old = this.v;
     this.v = new Volatiles(next);
     this.base = next;
@@ -392,7 +397,11 @@ export class ActivePokemon {
       value += Math.floor(value / 2);
     }
 
-    if (this.v.ability === "hustle") {
+    if (this.v.ability === "hustle" && stat === "atk") {
+      value += Math.floor(value / 2);
+    }
+
+    if (this.v.ability === "marvelscale" && stat === "def" && this.base.status) {
       value += Math.floor(value / 2);
     }
 
@@ -592,7 +601,8 @@ export class ActivePokemon {
       return;
     } else if (
       weather === "sand" &&
-      this.v.types.some(t => t === "steel" || t === "ground" || t === "rock")
+      (this.v.types.some(t => t === "steel" || t === "ground" || t === "rock") ||
+        this.v.ability === "sandveil")
     ) {
       return;
     } else if (weather === "hail" && this.v.types.includes("ice")) {

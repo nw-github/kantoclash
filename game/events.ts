@@ -99,7 +99,8 @@ export type RecoveryReason =
   | "present"
   | "leftovers"
   | "shellbell"
-  | "item";
+  | "item"
+  | "raindish";
 
 export type DamageEvent = {
   type: "damage";
@@ -161,6 +162,7 @@ export type FailReason =
   | "fail_generic"
   | "fail_notarget"
   | "fail_sleep_clause"
+  | "fail_present"
   | "has_substitute"
   | "cant_substitute"
   | "flinch"
@@ -209,7 +211,8 @@ export type InfoReason =
   | "doom_desire"
   | "doom_desire_release"
   | "withdraw"
-  | "fail_present"
+  | "wont_flinch"
+  | "ability_heal"
   | "miss";
 
 type InfoEvent = {type: "info"; src: PokeId; why: InfoReason};

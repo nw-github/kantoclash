@@ -24,7 +24,7 @@ export const tryDamage = (
     spread = false;
   }
 
-  const {eff, fail, type} = checkUsefulness(self, battle, user, target);
+  const {eff, fail, type, abilityImmunity} = checkUsefulness(self, battle, user, target);
   if (self.flag === "drain" && target.v.substitute) {
     user.v.rollout = 0;
     user.v.furyCutter = 0;
@@ -42,6 +42,10 @@ export const tryDamage = (
     user.v.rollout = 0;
     user.v.furyCutter = 0;
     if (eff === 0) {
+      if (abilityImmunity) {
+        battle.ability(target);
+      }
+
       battle.info(target, "immune");
     } else if (fail) {
       battle.miss(user, target);
@@ -154,7 +158,7 @@ export const tryDamage = (
   target.v.lastHitBy = {move: self, user};
 
   checkThrashing();
-  if (self.recoil) {
+  if (self.recoil && (self === battle.gen.moveList.struggle || user.v.ability !== "rockhead")) {
     user.damage(Math.max(Math.floor(dealt / self.recoil), 1), user, battle, false, "recoil", true);
   }
 
@@ -212,6 +216,7 @@ export const tryDamage = (
   // https://pret.github.io/pokecrystal/bugs_and_glitches.html#beat-up-may-trigger-kings-rock-even-if-it-failed
   if (
     user.base.item === "kingsrock" &&
+    target.v.ability !== "innerfocus" &&
     self.kingsRock &&
     !hadSub &&
     battle.gen.rng.tryKingsRock(battle)
@@ -240,6 +245,13 @@ export const tryDamage = (
   if (self.effect) {
     // eslint-disable-next-line prefer-const
     let [chance, effect, effectSelf] = self.effect;
+    if (user.v.ability === "serenegrace") {
+      chance *= 2;
+    }
+    if (target.v.ability === "shielddust" && !effectSelf && effect !== "thief") {
+      return dealt;
+    }
+
     const wasTriAttack = effect === "tri_attack";
     if (effect === "tri_attack") {
       effect = battle.rng.choice(["brn", "par", "frz"] as const)!;
@@ -268,7 +280,12 @@ export const tryDamage = (
         return dealt;
       }
 
-      target.v.flinch = true;
+      if (target.v.ability !== "innerfocus") {
+        target.v.flinch = true;
+      } else if (chance === 100) {
+        battle.ability(target);
+        battle.info(target, "wont_flinch");
+      }
     } else if (effect === "thief") {
       if (user.base.item || !target.base.item || target.base.item.includes("mail")) {
         return dealt;

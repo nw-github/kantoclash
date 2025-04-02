@@ -27,6 +27,7 @@ export type Ability = {
   preventsCrit?: bool;
   pinchBoostType?: Type;
   weatherSpeedBoost?: Weather;
+  weatherEva?: Weather;
 };
 
 export const speciesList = __speciesList as Record<SpeciesId, Species>;

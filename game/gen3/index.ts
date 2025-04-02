@@ -1,7 +1,7 @@
 import {shouldReturn, type Generation, type GENERATION1} from "../gen1";
 import {GENERATION2, merge, type GenPatches} from "../gen2";
 import {applyItemStatBoost, Nature, natureTable} from "../pokemon";
-import type {Species, SpeciesId} from "../species";
+import {abilityList, type Species, type SpeciesId} from "../species";
 import {clamp, idiv, isSpecial, screens, VF} from "../utils";
 import {moveFunctionPatches, movePatches} from "./moves";
 import speciesPatches from "./species.json";
@@ -177,7 +177,14 @@ const createGeneration = (): Generation => {
 
       phys ??= !isSpecial(move.type);
       if (user.v.ability === "hustle" && phys) {
-        acc += Math.floor(acc * 0.2);
+        acc -= Math.floor(acc * 0.2);
+      }
+
+      if (
+        abilityList[target.v.ability!]?.weatherEva &&
+        battle.getWeather() === abilityList[target.v.ability!]?.weatherEva
+      ) {
+        acc = Math.floor((acc * 4) / 5);
       }
 
       // console.log(`[${user.base.name}] ${move.name} (Acc ${acc}/255)`);
@@ -347,7 +354,23 @@ const createGeneration = (): Generation => {
       if (battle.betweenTurns < BetweenTurns.PartialTrapping) {
         let someoneFainted = false;
         for (const poke of turnOrder) {
-          // TODO: ingrain, rain dish, truant, shed skin
+          // TODO: ingrain, truant
+          if (!poke.v.fainted) {
+            if (battle.hasWeather("rain") && poke.v.ability === "raindish") {
+              battle.ability(poke);
+              poke.recover(Math.max(1, idiv(poke.base.stats.hp, 16)), poke, battle, "raindish");
+            }
+
+            if (
+              poke.base.status &&
+              poke.v.ability === "shedskin" &&
+              battle.gen.rng.tryShedSkin(battle)
+            ) {
+              battle.ability(poke);
+              poke.unstatus(battle, "ability_heal");
+            }
+          }
+
           poke.handleLeftovers(battle);
           poke.handleBerry(battle, {pinch: true, status: true, heal: true, pp: true});
           battle.gen.handleResidualDamage(battle, poke);

@@ -241,6 +241,17 @@ export function checkUsefulness(
   }
 
   let eff = battle.getEffectiveness(type, target);
+  let abilityImmunity = false;
+  if (type === "ground" && eff !== 0 && target.v.ability === "levitate") {
+    eff = 0;
+    abilityImmunity = true;
+  }
+
+  if (eff <= 1 && type !== "???" && target.v.ability === "wonderguard") {
+    eff = 0;
+    abilityImmunity = true;
+  }
+
   if (self.flag === "dream_eater" && target.base.status !== "slp") {
     eff = 1;
     fail = true;
@@ -261,7 +272,7 @@ export function checkUsefulness(
     }
   }
 
-  return {type, eff, fail};
+  return {type, eff, fail, abilityImmunity};
 }
 
 type DamageExtras = {

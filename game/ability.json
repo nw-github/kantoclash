@@ -28,7 +28,7 @@
   "naturalcure": {"name": "Natural Cure", "desc": ""},
   "overgrow": {"name": "Overgrow", "desc": "", "pinchBoostType": "grass"},
   "pickup": {"name": "Pickup", "desc": ""},
-  "sandveil": {"name": "Sand Veil", "desc": ""},
+  "sandveil": {"name": "Sand Veil", "desc": "", "weatherEva": "sand"},
   "serenegrace": {"name": "Serene Grace", "desc": ""},
   "shedskin": {"name": "Shed Skin", "desc": ""},
   "speedboost": {"name": "Speed Boost", "desc": ""},

@@ -480,6 +480,7 @@ const createGeneration = () => {
       tryCrit,
       tryFullPara: (battle: Battle) => battle.rand100(25),
       tryAttract: (battle: Battle) => battle.rand100(50),
+      tryShedSkin: (battle: Battle) => battle.rand100((1 / 3) * 100),
       sleepTurns(battle: Battle) {
         // https://www.smogon.com/forums/threads/outdated-new-rby-sleep-mechanics-discovery.3745689/
         let rng = battle.rng.int(0, 255);

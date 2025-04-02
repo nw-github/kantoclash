@@ -1,5 +1,5 @@
 <template>
-  <div class="flex w-full px-4 justify-center sm:justify-around">
+  <div class="flex w-full px-4 justify-center sm:justify-around relative">
     <div
       v-for="(player, id) in players.items"
       :key="id"

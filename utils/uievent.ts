@@ -116,6 +116,8 @@ export const infoMessage: Record<InfoReason, string> = {
   withdraw: "({} is trying to switch out...)",
   fail_present: "{} couldn't receive the gift!",
   endure_band: "{} held on using its Focus Band!",
+  wont_flinch: "{} wont flinch!",
+  ability_heal: "{} was healed!",
 };
 
 export const weatherMessage: Record<Weather, Record<WeatherEvent["kind"], string>> = {
