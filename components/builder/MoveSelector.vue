@@ -113,7 +113,7 @@ const hasConflict = () => {
   if (!q) {
     return false;
   }
-  return poke.moves.findIndex((m, i) => normalizeName(m) === q && i !== idx) !== -1;
+  return poke.moves.findIndex((m, i) => m && normalizeName(m) === q && i !== idx) !== -1;
 };
 
 const isIllegal = (id: string) => {

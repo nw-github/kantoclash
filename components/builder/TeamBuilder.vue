@@ -372,7 +372,7 @@
 </template>
 
 <script setup lang="ts">
-import type {Species, SpeciesId} from "~/game/species";
+import {abilityList, type Species, type SpeciesId} from "~/game/species";
 import type {Stats} from "~/game/utils";
 import {GENERATIONS} from "~/game/gen";
 import {Nature, natureTable} from "~/game/pokemon";
@@ -509,6 +509,15 @@ watch(teamPokepaste, v => {
     teamText.value = teamToString(team).trim();
   }
 });
+
+watch(
+  () => selectedPoke.value.species,
+  (curr, old) => {
+    if (curr && old?.dexId !== curr?.dexId) {
+      selectedPoke.value.data.ability = abilityList[curr.abilities[0]].name;
+    }
+  },
+);
 
 for (const poke of team.pokemon) {
   for (let i = poke.moves.length; i < 4; i++) {

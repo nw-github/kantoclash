@@ -54,14 +54,14 @@ export const formatInfo: Record<FormatId, FormatInfo> = {
     desc: "A standard battle allowing all RSE and FRLG Pokémon.",
     needsTeam: true,
     chooseLead: true,
-    mods: {sleepClause: true, freezeClause: true, endlessBattle: true},
+    mods: {sleepClause: true, endlessBattle: true},
     generation: 3,
   },
   g3_randoms: {
     name: "[ADV] Random Battle",
     icon: "mdi:dice-3-outline",
     desc: "A standard Pokémon battle, but your team and sets are randomly generated.",
-    mods: {sleepClause: true, freezeClause: true, endlessBattle: true},
+    mods: {sleepClause: true, endlessBattle: true},
     generation: 3,
   },
   g3_randoms_doubles: {
