@@ -1,6 +1,6 @@
 import type {ActivePokemon, Battle} from "../battle";
 import {checkUsefulness, getDamage, multiHitCount, Range, type DamagingMove} from "../moves";
-import {idiv, randChoiceWeighted, VF} from "../utils";
+import {idiv, isSpecial, randChoiceWeighted, VF} from "../utils";
 
 export const tryDamage = (
   self: DamagingMove,
@@ -24,7 +24,7 @@ export const tryDamage = (
     spread = false;
   }
 
-  const {eff, fail} = checkUsefulness(self, battle, user, target);
+  const {eff, fail, type} = checkUsefulness(self, battle, user, target);
   if (self.flag === "drain" && target.v.substitute) {
     user.v.rollout = 0;
     user.v.furyCutter = 0;
@@ -54,7 +54,7 @@ export const tryDamage = (
     }
     checkThrashing();
     return 0;
-  } else if (!battle.checkAccuracy(self, user, target)) {
+  } else if (!battle.checkAccuracy(self, user, target, !isSpecial(type))) {
     user.v.rollout = 0;
     user.v.furyCutter = 0;
     if (self.flag === "crash") {

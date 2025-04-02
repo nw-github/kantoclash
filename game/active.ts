@@ -22,7 +22,7 @@ import {
   type Weather,
 } from "./utils";
 import {TurnType, type Battle, type MoveOption, type Options, type Player} from "./battle";
-import type {AbilityId} from "./species";
+import {abilityList, type AbilityId} from "./species";
 import {healBerry, healPinchBerry, ppBerry, statPinchBerry, statusBerry} from "./item";
 
 export type DamageParams = {
@@ -287,6 +287,10 @@ export class ActivePokemon {
         this.v.recharge = undefined;
       }
       this.base.sleepTurns = battle.gen.rng.sleepTurns(battle);
+      if (this.v.ability === "earlybird") {
+        this.base.sleepTurns = Math.floor(this.base.sleepTurns / 2);
+      }
+
       opp.sleepClausePoke = this.base;
     } else if (status === "tox") {
       this.v.counter = 1;
@@ -373,6 +377,28 @@ export class ActivePokemon {
     return true;
   }
 
+  applyAbilityStatBoost(battle: Battle, stat: StatStages, value: number) {
+    if ((this.v.ability === "hugepower" || this.v.ability === "purepower") && stat === "atk") {
+      value *= 2;
+    }
+
+    if (abilityList[this.v.ability!]?.weatherSpeedBoost === battle.getWeather()) {
+      value *= 2;
+    }
+
+    // TODO: the attack boost from guts should activate if the pokemon uses a move that thaws it
+    // out
+    if (this.v.ability === "guts" && stat === "atk" && this.base.status) {
+      value += Math.floor(value / 2);
+    }
+
+    if (this.v.ability === "hustle") {
+      value += Math.floor(value / 2);
+    }
+
+    return value;
+  }
+
   handleConfusion(battle: Battle) {
     if (!this.v.confusion) {
       return false;
@@ -384,7 +410,7 @@ export class ActivePokemon {
     if (!done && battle.rng.bool()) {
       const move = this.choice?.move;
       const explosion = move?.kind === "damage" && move.flag === "explosion" ? 2 : 1;
-      const [atk, def] = battle.gen.getDamageVariables(false, this, this, false);
+      const [atk, def] = battle.gen.getDamageVariables(false, battle, this, this, false);
       const dmg = battle.gen.calcDamage({
         lvl: this.base.level,
         pow: 40,
@@ -522,7 +548,7 @@ export class ActivePokemon {
     }
 
     if (heal) {
-      if (healBerry[this.base.item!] && this.base.hp < idiv(this.base.stats.hp, 2)) {
+      if (healBerry[this.base.item!] && this.base.belowHp(2)) {
         battle.event({type: "item", src: this.id, item: this.base.item!});
         this.recover(healBerry[this.base.item!]!, this, battle, "item");
         this.base.item = undefined;
@@ -530,7 +556,7 @@ export class ActivePokemon {
     }
 
     if (pinch) {
-      if (healPinchBerry[this.base.item!] && this.base.hp <= Math.floor(this.base.stats.hp / 2)) {
+      if (healPinchBerry[this.base.item!] && this.base.belowHp(2)) {
         battle.event({type: "item", src: this.id, item: this.base.item!});
         this.recover(Math.max(1, Math.floor(this.base.stats.hp / 8)), this, battle, "item");
         if (this.base.nature !== undefined) {
@@ -540,10 +566,7 @@ export class ActivePokemon {
           }
         }
         this.base.item = undefined;
-      } else if (
-        statPinchBerry[this.base.item!] &&
-        this.base.hp <= Math.floor(this.base.stats.hp / 4)
-      ) {
+      } else if (statPinchBerry[this.base.item!] && this.base.belowHp(4)) {
         battle.event({type: "item", src: this.id, item: this.base.item!});
         const stage = statPinchBerry[this.base.item!]!;
         if (stage === "crit") {
@@ -750,12 +773,30 @@ export class ActivePokemon {
     }
 
     const moveLocked = !!(this.v.bide || this.v.trapping);
-    const cantEscape = !!this.v.meanLook || (battle.gen.id >= 2 && !!this.v.trapped);
+    const cantEscape = this.cantEscape(battle);
     return {
       switches: ((!lockedIn || moveLocked) && !cantEscape) || this.v.fainted ? switches : [],
       moves,
       id: this.id,
     };
+  }
+
+  isGrounded() {
+    return !this.v.types.includes("flying") && this.v.ability !== "levitate";
+  }
+
+  cantEscape(battle: Battle) {
+    // FIXME: sending this to the client leaks the pokemon's ability
+    for (const poke of battle.allActive) {
+      if (poke.v.ability === "magnetpull" && this.v.types.includes("steel")) {
+        return true;
+      } else if (poke.v.ability === "arenatrap" && this.isGrounded()) {
+        return true;
+      } else if (poke.v.ability === "shadowtag") {
+        return true;
+      }
+    }
+    return !!this.v.meanLook || (battle.gen.id >= 2 && !!this.v.trapped);
   }
 
   updateOptions(battle: Battle) {
@@ -785,7 +826,7 @@ export class ActivePokemon {
   clientStats(battle: Battle) {
     if (!this.base.transformed) {
       return Object.fromEntries(
-        stageStatKeys.map(key => [key, battle.gen.getStat(this, key)]),
+        stageStatKeys.map(key => [key, battle.gen.getStat(battle, this, key)]),
       ) as VolatileStats;
     }
   }

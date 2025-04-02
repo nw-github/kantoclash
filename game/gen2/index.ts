@@ -255,14 +255,14 @@ const createGeneration = (): Generation => {
       return true;
     },
     calcDamage,
-    getDamageVariables(special, user, target, isCrit) {
+    getDamageVariables(special, battle, user, target, isCrit) {
       const [atks, defs] = special ? (["spa", "spd"] as const) : (["atk", "def"] as const);
       if (isCrit && target.v.stages[defs] < user.v.stages[atks]) {
         isCrit = false;
       }
 
-      let atk = this.getStat!(user, atks, isCrit);
-      let def = this.getStat!(target, defs, isCrit, true);
+      let atk = user.base.gen.getStat(battle, user, atks, isCrit);
+      let def = user.base.gen.getStat(battle, target, defs, isCrit, true);
       if (atk >= 256 || def >= 256) {
         atk = Math.max(Math.floor(atk / 4) % 256, 1);
         def = Math.max(Math.floor(def / 4) % 256, 1);
@@ -274,8 +274,8 @@ const createGeneration = (): Generation => {
       user.damage(Math.floor(dmg / 8), user, battle, false, "crash", true);
     },
     validSpecies: species => species.dexId <= 251,
-    canOHKOHit: (user, target) => target.base.level <= user.base.level,
-    getStat(poke, stat, isCrit) {
+    canOHKOHit: (_, user, target) => target.base.level <= user.base.level,
+    getStat(battle, poke, stat, isCrit) {
       const def = stat === "def" || stat === "spd";
       const screen = def && !!poke.owner.screens[stat === "def" ? "reflect" : "light_screen"];
 
@@ -296,6 +296,7 @@ const createGeneration = (): Generation => {
         value *= 2;
       }
 
+      value = poke.applyAbilityStatBoost(battle, stat, value);
       value = applyItemStatBoost(poke.base, stat, value);
 
       // Screens & the species boosting moves all fail to cap the stat at 999, meaning they will

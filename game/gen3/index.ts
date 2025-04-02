@@ -2,7 +2,7 @@ import {shouldReturn, type Generation, type GENERATION1} from "../gen1";
 import {GENERATION2, merge, type GenPatches} from "../gen2";
 import {applyItemStatBoost, Nature, natureTable} from "../pokemon";
 import type {Species, SpeciesId} from "../species";
-import {clamp, idiv, screens, VF} from "../utils";
+import {clamp, idiv, isSpecial, screens, VF} from "../utils";
 import {moveFunctionPatches, movePatches} from "./moves";
 import speciesPatches from "./species.json";
 import items from "./items.json";
@@ -70,14 +70,14 @@ const createGeneration = (): Generation => {
       },
       sleepTurns: battle => battle.rng.int(1, 4),
     },
-    getDamageVariables(special, user, target, isCrit) {
+    getDamageVariables(special, battle, user, target, isCrit) {
       const [atks, defs] = special ? (["spa", "spd"] as const) : (["atk", "def"] as const);
       if (isCrit && target.v.stages[defs] < user.v.stages[atks]) {
         isCrit = false;
       }
 
-      const atk = user.base.gen.getStat(user, atks, isCrit);
-      const def = user.base.gen.getStat(target, defs, isCrit, true);
+      const atk = user.base.gen.getStat(battle, user, atks, isCrit);
+      const def = user.base.gen.getStat(battle, target, defs, isCrit, true);
       return [atk, def] as const;
     },
     handleCrashDamage(battle, user, target, dmg) {
@@ -86,7 +86,7 @@ const createGeneration = (): Generation => {
     },
     validSpecies: species => species.dexId <= 386,
     canOHKOHit: () => true,
-    getStat(poke, stat, isCrit) {
+    getStat(battle, poke, stat, isCrit) {
       const def = stat === "def" || stat === "spd";
       let value = Math.floor(
         poke.base.stats[stat] * poke.base.gen.stageMultipliers[poke.v.stages[stat]],
@@ -108,13 +108,7 @@ const createGeneration = (): Generation => {
         }
       }
 
-      if (
-        (poke.base.ability === "hugepower" || poke.base.ability === "purepower") &&
-        stat === "atk"
-      ) {
-        value *= 2;
-      }
-
+      value = poke.applyAbilityStatBoost(battle, stat, value);
       return applyItemStatBoost(poke.base, stat, value);
     },
     getHpIv: ivs => ivs?.hp ?? 31,
@@ -144,7 +138,7 @@ const createGeneration = (): Generation => {
       }
     },
     getMaxPP: move => (move.pp === 1 ? 1 : Math.floor((move.pp * 8) / 5)),
-    checkAccuracy(move, battle, user, target) {
+    checkAccuracy(move, battle, user, target, phys) {
       if (target.v.invuln) {
         const charging = target.v.charging && battle.moveIdOf(target.v.charging.move);
         if (charging && (!move.ignore || !move.ignore.includes(charging))) {
@@ -175,6 +169,15 @@ const createGeneration = (): Generation => {
       );
       if (reduceAccItem[target.base.item!]) {
         acc -= Math.floor(acc * (reduceAccItem[target.base.item!]! / 100));
+      }
+
+      if (user.v.ability === "compoundeyes") {
+        acc += Math.floor(acc * 0.3);
+      }
+
+      phys ??= !isSpecial(move.type);
+      if (user.v.ability === "hustle" && phys) {
+        acc += Math.floor(acc * 0.2);
       }
 
       // console.log(`[${user.base.name}] ${move.name} (Acc ${acc}/255)`);

@@ -4,6 +4,7 @@ import type {Random} from "random";
 import type {CalcDamageParams} from "../gen";
 import type {DamagingMove} from "../moves";
 import type {Pokemon} from "../pokemon";
+import {abilityList} from "../species";
 
 export function accumulateBide(
   battle: Battle,
@@ -43,7 +44,7 @@ export function tryDamage(
   }
 
   // eslint-disable-next-line prefer-const
-  let {dmg, isCrit, eff, endured} = getDamage(self, battle, user, target, {});
+  let {dmg, isCrit, eff, endured, type} = getDamage(self, battle, user, target, {});
   if (dmg < 0) {
     if (target.base.hp === target.base.stats.hp) {
       battle.info(target, "fail_present");
@@ -54,7 +55,7 @@ export function tryDamage(
     return 0;
   }
 
-  if (dmg === 0 || !battle.checkAccuracy(self, user, target)) {
+  if (dmg === 0 || !battle.checkAccuracy(self, user, target, !isSpecial(type))) {
     battle.gen1LastDamage = 0;
     if (dmg === 0) {
       if (eff === 0) {
@@ -243,7 +244,7 @@ export function checkUsefulness(
   if (self.flag === "dream_eater" && target.base.status !== "slp") {
     eff = 1;
     fail = true;
-  } else if (self.flag === "ohko" && !battle.gen.canOHKOHit(user, target)) {
+  } else if (self.flag === "ohko" && !battle.gen.canOHKOHit(battle, user, target)) {
     fail = true;
   } else if (typeof self.getDamage === "number") {
     if (battle.gen.id === 1 || eff !== 0) {
@@ -280,16 +281,28 @@ export function getDamage(
   const {type, eff, fail} = checkUsefulness(self, battle, user, target);
   let dmg = 0;
   let isCrit = battle.gen.rng.tryCrit(battle, user, self.flag === "high_crit");
+  if (target.v.ability && abilityList[target.v.ability].preventsCrit) {
+    isCrit = false;
+  }
+
   if (self.getDamage) {
     dmg =
       typeof self.getDamage === "number" ? self.getDamage : self.getDamage(battle, user, target);
     isCrit = false;
   } else {
-    const pow = extras.power ?? (self.getPower ? self.getPower(user.base) : self.power);
+    let pow = extras.power ?? (self.getPower ? self.getPower(user.base) : self.power);
     let rand: number | false | Random = battle.rng;
     if (self.flag === "flail") {
       isCrit = false;
       rand = false;
+    }
+
+    if (
+      user.base.belowHp(3) &&
+      user.v.ability &&
+      abilityList[user.v.ability].pinchBoostType === type
+    ) {
+      pow += Math.floor(pow / 2);
     }
 
     let weather: CalcDamageParams["weather"];
@@ -315,7 +328,7 @@ export function getDamage(
     const explosion = self.flag === "explosion" ? 2 : 1;
     const [atk, def] = extras.beatUp
       ? ([extras.beatUp.stats.atk, target.base.stats.def] as const)
-      : battle.gen.getDamageVariables(isSpecial(type), user, target, isCrit);
+      : battle.gen.getDamageVariables(isSpecial(type), battle, user, target, isCrit);
     let moveMod = 1;
     if (self.flag === "rollout") {
       moveMod = 2 ** (user.v.rollout + +user.v.usedDefenseCurl);
@@ -356,7 +369,7 @@ export function getDamage(
   if (endured || band) {
     dmg = Math.max(target.base.hp - 1, 0);
   }
-  return {dmg, isCrit, eff, endured, band, fail};
+  return {dmg, isCrit, eff, endured, band, fail, type};
 }
 
 function trapTarget(self: DamagingMove, rng: Random, user: ActivePokemon, target: ActivePokemon) {

@@ -31,6 +31,9 @@ export const moveFunctionPatches: Partial<MoveFunctions> = {
     if (this.why === "rest") {
       user.base.status = "slp";
       user.base.sleepTurns = 3;
+      if (user.v.ability === "earlybird") {
+        user.base.sleepTurns--;
+      }
       user.v.counter = 0;
       user.recover(diff, user, battle, this.why, true);
     } else {

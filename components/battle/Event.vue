@@ -121,6 +121,7 @@
     It reduced the PP of {{ pn(e.src, false) }}'s {{ gen.moveList[e.move].name }} by {{ e.amount }}!
   </div>
   <div v-else-if="e.type === 'sketch'">{{ pn(e.src) }} sketched {{ gen.moveList[e.move].name }}!</div>
+  <div v-else-if="e.type === 'cantuse'">{{ pn(e.src) }} can't use {{ gen.moveList[e.move].name }}!</div>
   <div v-else-if="e.type === 'perish'">{{ pn(e.src) }}'s perish count fell to {{ e.turns }}!</div>
   <div v-else-if="e.type === 'psych_up'">
     {{ pn(e.src) }} copied {{ pn(e.target, false) }}'s stat changes!
@@ -157,6 +158,7 @@
     <template v-if="e.spin">Rapid Spin blew away the Spikes around {{ tn(e.player, false) }}'s feet!</template>
     <template v-else>Spikes were scattered all around the feet of {{ tn(e.player, false) }}!</template>
   </div>
+  <div v-else-if="e.type === 'proc_ability'">[{{ pn(e.src) }}'s {{ abilityList[e.ability].name }}]</div>
   <div v-else>Unknown event: <code>{{ e }}</code></div>
 </template>
 
@@ -179,6 +181,7 @@ import {damageMessage} from "~/utils/uievent";
 // Use itemList since gen.items doesn't include every item.
 import {itemList} from "~/game/item";
 import type {PlayerId, PokeId} from "~/game/events";
+import {abilityList} from "~/game/species";
 
 const {perspective, players, myId, e} = defineProps<{
   e: UIBattleEvent;

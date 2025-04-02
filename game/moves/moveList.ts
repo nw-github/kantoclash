@@ -985,6 +985,7 @@ const internalMoveList = createMoveList({
     acc: 100,
     flag: "explosion",
     kingsRock: true,
+    damp: true,
   },
   fireblast: {
     kind: "damage",
@@ -1459,6 +1460,7 @@ const internalMoveList = createMoveList({
     acc: 100,
     flag: "explosion",
     kingsRock: true,
+    damp: true,
   },
   scratch: {
     kind: "damage",

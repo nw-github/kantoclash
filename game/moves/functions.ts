@@ -46,6 +46,9 @@ export const moveFunctions: MoveFunctions = {
     if (this.why === "rest") {
       user.base.status = "slp";
       user.base.sleepTurns = 2;
+      if (user.v.ability === "earlybird") {
+        user.base.sleepTurns--;
+      }
       user.recover(diff, user, battle, this.why, true);
       // In gen 1, Rest doesn't reset the toxic counter or par/brn stat drops
     } else {
@@ -240,7 +243,8 @@ export const moveFunctions: MoveFunctions = {
       return battle.info(user, "fail_generic");
     }
 
-    const [atk, def] = battle.gen.getDamageVariables(isSpecial(this.type), user, target, false);
+    const spc = isSpecial(this.type);
+    const [atk, def] = battle.gen.getDamageVariables(spc, battle, user, target, false);
     const dmg = battle.gen.calcDamage({
       atk,
       def,

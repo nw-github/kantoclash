@@ -161,6 +161,10 @@ export class Pokemon {
     // );
   }
 
+  belowHp(amt: number) {
+    return this.hp <= Math.floor(this.stats.hp / amt);
+  }
+
   get species() {
     return this.gen.speciesList[this.speciesId];
   }

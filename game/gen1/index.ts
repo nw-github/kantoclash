@@ -151,7 +151,13 @@ export const scaleAccuracy255 = (acc: number, user: ActivePokemon, target: Activ
   return clamp(Math.floor(acc), 1, 255);
 };
 
-const checkAccuracy = (move: Move, battle: Battle, user: ActivePokemon, target: ActivePokemon) => {
+const checkAccuracy = (
+  move: Move,
+  battle: Battle,
+  user: ActivePokemon,
+  target: ActivePokemon,
+  _phys?: bool,
+) => {
   if (!move.acc) {
     return true;
   }
@@ -234,13 +240,14 @@ const calcDamage = ({lvl, pow, atk, def, eff, isCrit, isStab, rand}: CalcDamageP
 
 const getDamageVariables = (
   special: boolean,
+  battle: Battle,
   user: ActivePokemon,
   target: ActivePokemon,
   isCrit: boolean,
 ) => {
   const [atks, defs] = special ? (["spa", "spa"] as const) : (["atk", "def"] as const);
-  let atk = getStat(user, atks, isCrit);
-  let def = getStat(target, defs, isCrit, true);
+  let atk = getStat(battle, user, atks, isCrit);
+  let def = getStat(battle, target, defs, isCrit, true);
   if (atk >= 256 || def >= 256) {
     atk = Math.max(Math.floor(atk / 4) % 256, 1);
     // defense doesn't get capped here on cart, potentially causing divide by 0
@@ -350,7 +357,7 @@ const beforeUseMove = (battle: Battle, move: Move, user: ActivePokemon) => {
 
   if (confuse) {
     // TODO: use target reflect
-    const [atk, def] = battle.gen.getDamageVariables(false, user, user, false);
+    const [atk, def] = battle.gen.getDamageVariables(false, battle, user, user, false);
     const dmg = battle.gen.calcDamage({
       lvl: user.base.level,
       pow: 40,
@@ -385,7 +392,13 @@ const beforeUseMove = (battle: Battle, move: Move, user: ActivePokemon) => {
   return true;
 };
 
-const getStat = (poke: ActivePokemon, stat: StatStages, isCrit?: boolean, def?: boolean) => {
+const getStat = (
+  _: Battle,
+  poke: ActivePokemon,
+  stat: StatStages,
+  isCrit?: boolean,
+  def?: boolean,
+) => {
   // In gen 1, a crit against a transformed pokemon will use its untransformed stats
   let value = poke.v.stats[stat];
   if (def && isCrit && poke.base.transformed) {
@@ -485,8 +498,8 @@ const createGeneration = () => {
     getStat,
     validSpecies: (species: Species) => species.dexId <= 151,
     getMaxPP: (move: Move) => (move.pp === 1 ? 1 : Math.min(Math.floor((move.pp * 8) / 5), 61)),
-    canOHKOHit(user: ActivePokemon, target: ActivePokemon) {
-      return getStat(target, "spe") <= getStat(user, "spe");
+    canOHKOHit(battle: Battle, user: ActivePokemon, target: ActivePokemon) {
+      return getStat(battle, target, "spe") <= getStat(battle, user, "spe");
     },
     calcStat,
     getHpIv,

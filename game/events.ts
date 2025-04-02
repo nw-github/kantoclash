@@ -1,7 +1,7 @@
 import type {ClientVolatiles} from "~/utils/shared";
 import type {MoveId} from "./moves";
 import type {Gender, Status} from "./pokemon";
-import type {SpeciesId} from "./species";
+import type {AbilityId, SpeciesId} from "./species";
 import type {Stages, Type, VF, Weather, Screen} from "./utils";
 import type {ItemId} from "./item";
 
@@ -22,6 +22,7 @@ type AnyEvent =
   | DisableEvent
   | ChargeEvent
   | MimicEvent
+  | CantUseEvent
   | ConversionEvent
   | MagnitudeEvent
   | WeatherEvent
@@ -38,7 +39,8 @@ type AnyEvent =
   | ThiefEvent
   | ForfeitEvent
   | BatonPass
-  | SpikesEvent;
+  | SpikesEvent
+  | ProcAbilityEvent;
 
 export type ChangedVolatiles = {id: PokeId; v: NullOrOptional<ClientVolatiles>}[];
 
@@ -238,6 +240,7 @@ type DisableEvent = {type: "disable"; src: PokeId; move: MoveId};
 type ChargeEvent = {type: "charge"; src: PokeId; move: MoveId};
 type SketchEvent = {type: "sketch"; src: PokeId; move: MoveId};
 type MimicEvent = {type: "mimic"; src: PokeId; move: MoveId};
+type CantUseEvent = {type: "cantuse"; src: PokeId; move: MoveId};
 
 type TrapEvent = {
   type: "trap";
@@ -289,3 +292,9 @@ type ForfeitEvent = {
 };
 
 type BatonPass = {type: "baton_pass"; src: PokeId};
+
+type ProcAbilityEvent = {
+  type: "proc_ability";
+  src: PokeId;
+  ability: AbilityId;
+};

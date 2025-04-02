@@ -12,6 +12,7 @@ import {Pokemon, type ValidatedPokemonDesc} from "./pokemon";
 import {getEffectiveness, playerId, VF, type Type, type Weather, type Screen} from "./utils";
 import type {Generation} from "./gen";
 import {ActivePokemon, type ChosenMove, type VolatileStats} from "./active";
+import {abilityList} from "./species";
 
 export {ActivePokemon, type VolatileStats};
 
@@ -291,8 +292,8 @@ export class Battle {
           return +this.rng.bool() || -1;
         }
 
-        const aSpe = this.gen.getStat(a.user, "spe");
-        const bSpe = this.gen.getStat(b.user, "spe");
+        const aSpe = this.gen.getStat(this, a.user, "spe");
+        const bSpe = this.gen.getStat(this, b.user, "spe");
         if (aSpe === bSpe) {
           return +this.rng.bool() || -1;
         }
@@ -474,7 +475,7 @@ export class Battle {
     return this.rng.int(1, 256) <= Math.floor((num / 100) * 256);
   }
 
-  checkAccuracy(move: Move, user: ActivePokemon, target: ActivePokemon) {
+  checkAccuracy(move: Move, user: ActivePokemon, target: ActivePokemon, physical?: bool) {
     if (target.v.hasFlag(VF.lockon)) {
       this.event({type: "sv", volatiles: [target.clearFlag(VF.lockon)]});
 
@@ -488,7 +489,7 @@ export class Battle {
       return true;
     }
 
-    return this.gen.checkAccuracy(move, this, user, target);
+    return this.gen.checkAccuracy(move, this, user, target, physical);
   }
 
   static censorEvents(events: BattleEvent[], player?: Player) {
@@ -526,10 +527,13 @@ export class Battle {
   }
 
   hasWeather(weather: Weather) {
-    return this.weather?.kind === weather;
+    return this.getWeather() === weather;
   }
 
   getWeather() {
+    if (this.allActive.some(p => p.v.ability && abilityList[p.v.ability].negatesWeather)) {
+      return;
+    }
     return this.weather?.kind;
   }
 
@@ -590,6 +594,13 @@ export class Battle {
     }
 
     if (move.kind === "damage") {
+      const damp = this.allActive.find(p => p.v.ability === "damp");
+      const moveId = this.moveIdOf(move)!;
+      if (damp && move.damp) {
+        this.event({type: "proc_ability", src: damp.id, ability: damp.v.ability!});
+        this.event({type: "cantuse", src: damp.id, move: moveId});
+      }
+
       if (user.v.trapping && targets[0].v.trapped) {
         const dead = targets[0].damage(this.gen1LastDamage, user, this, false, "trap").dead;
         if (dead || --user.v.trapping.turns === 0) {
@@ -599,7 +610,7 @@ export class Battle {
       }
 
       if (move.charge && user.v.charging?.move !== move) {
-        this.event({type: "charge", src: user.id, move: this.moveIdOf(move)!});
+        this.event({type: "charge", src: user.id, move: moveId});
         if (Array.isArray(move.charge)) {
           user.modStages(move.charge, this);
         }

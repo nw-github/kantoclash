@@ -1,7 +1,7 @@
 import type {MoveId} from "./moves";
-import type {Stats, Type} from "./utils";
+import type {Stats, Type, Weather} from "./utils";
 import __speciesList from "./species.json";
-import abilityList from "./ability.json";
+import __abilityList from "./ability.json";
 
 export type Species = {
   readonly dexId: number;
@@ -18,7 +18,16 @@ export type Species = {
 };
 
 export type SpeciesId = keyof typeof __speciesList;
-export type AbilityId = keyof typeof abilityList;
+export type AbilityId = keyof typeof __abilityList;
+
+export type Ability = {
+  name: string;
+  desc: string;
+  negatesWeather?: bool;
+  preventsCrit?: bool;
+  pinchBoostType?: Type;
+  weatherSpeedBoost?: Weather;
+};
 
 export const speciesList = __speciesList as Record<SpeciesId, Species>;
-export {abilityList};
+export const abilityList = __abilityList as Record<AbilityId, Ability>;
