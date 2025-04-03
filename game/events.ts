@@ -39,6 +39,7 @@ type AnyEvent =
   | UseItemEvent
   | RestorePPEvent
   | ThiefEvent
+  | TrickEvent
   | ForfeitEvent
   | BatonPass
   | SpikesEvent
@@ -300,6 +301,14 @@ type ThiefEvent = {
   src: PokeId;
   target: PokeId;
   item: ItemId;
+};
+
+type TrickEvent = {
+  type: "trick";
+  src: PokeId;
+  target: PokeId;
+  srcItem?: ItemId;
+  targetItem?: ItemId;
 };
 
 type ForfeitEvent = {

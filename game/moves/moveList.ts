@@ -3251,7 +3251,10 @@ const internalMoveList = createMoveList({
     type: "normal",
     range: Range.Adjacent,
     power: 70,
+    acc: 100,
     flag: "facade",
+    kingsRock: true,
+    contact: true,
   },
   fakeout: {
     kind: "fail",
@@ -3948,12 +3951,37 @@ const internalMoveList = createMoveList({
     why: "fail_generic",
   },
   trick: {
-    kind: "fail",
     name: "Trick",
-    pp: 1,
-    type: "normal",
-    range: Range.Self,
-    why: "fail_generic",
+    pp: 10,
+    type: "psychic",
+    range: Range.Adjacent,
+    exec(battle, user, [target]) {
+      if (target.v.substitute) {
+        return battle.info(user, "fail_generic");
+      } else if (target.v.ability === "stickyhold") {
+        battle.ability(target);
+        return battle.info(target, "immune");
+      } else if (
+        (!target.base.item && !user.base.item) ||
+        target.base.itemUnusable ||
+        user.base.itemUnusable ||
+        target.base.item === "enigmaberry" ||
+        target.base.item?.includes("mail")
+      ) {
+        return battle.info(user, "fail_generic");
+      }
+
+      const userItem = user.base.item;
+      user.base.item = target.base.item;
+      target.base.item = userItem;
+      battle.event({
+        type: "trick",
+        src: user.id,
+        target: target.id,
+        srcItem: user.base.item,
+        targetItem: target.base.item,
+      });
+    },
   },
   uproar: {
     kind: "fail",

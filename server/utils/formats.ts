@@ -7,9 +7,9 @@ import {z} from "zod";
 import {isValidSketchMove, type FormatId} from "~/utils/shared";
 import {type Generation, GENERATION1, GENERATION2, GENERATION3} from "~/game/gen";
 import {statusBerry, type ItemId} from "~/game/item";
-import {itemDesc} from "~/utils";
 import {profanityMatcher} from "~/utils/schema";
 import {HP_IVS} from "~/utils/pokemon";
+import {itemDesc} from "~/utils/describe";
 
 export type TeamProblems = {path: (string | number)[]; message: string}[];
 

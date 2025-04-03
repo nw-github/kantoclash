@@ -546,6 +546,15 @@ const runEvent = async (e: BattleEvent) => {
       if (target) {
         target.item = undefined;
       }
+    } else if (e.type === "trick") {
+      const src = players.poke(e.src)?.base;
+      const target = players.poke(e.target)?.base;
+      if (src) {
+        src.item = e.srcItem;
+      }
+      if (target) {
+        target.item = e.targetItem;
+      }
     } else if (e.type === "knockoff") {
       const target = players.poke(e.target)?.base;
       if (target) {
