@@ -182,7 +182,14 @@ export type Move =
   | SwaggerMove
   | ForesightMove;
 
-type Effect = Status | [Stages, number][] | "confusion" | "flinch" | "thief" | "tri_attack";
+type Effect =
+  | Status
+  | [Stages, number][]
+  | "confusion"
+  | "flinch"
+  | "thief"
+  | "tri_attack"
+  | "knockoff";
 
 type Flag =
   | "none"

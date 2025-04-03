@@ -546,6 +546,11 @@ const runEvent = async (e: BattleEvent) => {
       if (target) {
         target.item = undefined;
       }
+    } else if (e.type === "knockoff") {
+      const target = players.poke(e.target)?.base;
+      if (target) {
+        target.itemUnusable = true;
+      }
     } else if (e.type === "baton_pass") {
       handleVolatiles(e);
       await playAnimation(e.src, {

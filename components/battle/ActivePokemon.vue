@@ -141,9 +141,14 @@
                     (Was: {{ gen.speciesList[poke.speciesId].name }})
                   </span>
 
-                  <template v-if="poke?.base && poke.transformed && poke?.base.item">
-                    <ItemSprite :item="poke?.base.item" />
-                    <span class="text-xs">{{ poke?.base.gen.items[poke?.base.item].name }}</span>
+                  <template v-if="poke?.base && poke.transformed && poke?.base._item">
+                    <ItemSprite :item="poke.base._item" />
+                    <span
+                      class="text-xs"
+                      :class="poke.base.itemUnusable && 'line-through italic text-primary'"
+                    >
+                      {{ poke?.base.gen.items[poke.base._item].name }}
+                    </span>
                   </template>
                 </div>
                 <div class="flex gap-1">

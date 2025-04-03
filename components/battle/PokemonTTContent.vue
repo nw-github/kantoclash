@@ -5,9 +5,11 @@
         <span>{{ poke.species.name }}</span>
         <GenderIcon class="size-4" :gender="poke.gender ?? gen1Gender[poke.speciesId]" />
 
-        <template v-if="poke.item">
-          <ItemSprite :item="poke.item" />
-          <span class="text-xs">{{ itemList[poke.item].name }}</span>
+        <template v-if="poke._item">
+          <ItemSprite :item="poke._item" />
+          <span class="text-xs" :class="poke.itemUnusable && 'line-through italic text-primary'">
+            {{ itemList[poke._item].name }}
+          </span>
         </template>
       </div>
 

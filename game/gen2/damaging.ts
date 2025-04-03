@@ -254,86 +254,98 @@ export const tryDamage = (
     });
   }
 
-  if (self.effect) {
-    // eslint-disable-next-line prefer-const
-    let [chance, effect, effectSelf] = self.effect;
-    if (user.v.ability === "serenegrace") {
-      chance *= 2;
+  if (!self.effect) {
+    return dealt;
+  }
+
+  // eslint-disable-next-line prefer-const
+  let [chance, effect, effectSelf] = self.effect;
+  if (user.v.ability === "serenegrace") {
+    chance *= 2;
+  }
+  if (target.v.ability === "shielddust" && !effectSelf && effect !== "thief") {
+    return dealt;
+  }
+
+  const wasTriAttack = effect === "tri_attack";
+  if (effect === "tri_attack") {
+    effect = battle.rng.choice(["brn", "par", "frz"] as const)!;
+  }
+
+  if (effect === "brn" && target.base.status === "frz") {
+    target.unstatus(battle, "thaw");
+    // TODO: can you thaw and then burn?
+    return dealt;
+  } else if (!battle.rand100(chance) || hadSub) {
+    return dealt;
+  }
+
+  if (effect === "confusion") {
+    if (!target.v.confusion && !user.owner.screens.safeguard) {
+      target.confuse(battle);
     }
-    if (target.v.ability === "shielddust" && !effectSelf && effect !== "thief") {
+  } else if (Array.isArray(effect)) {
+    if (!effectSelf && target.v.hasFlag(VF.mist)) {
       return dealt;
     }
 
-    const wasTriAttack = effect === "tri_attack";
-    if (effect === "tri_attack") {
-      effect = battle.rng.choice(["brn", "par", "frz"] as const)!;
-    }
-
-    if (effect === "brn" && target.base.status === "frz") {
-      target.unstatus(battle, "thaw");
-      // TODO: can you thaw and then burn?
-      return dealt;
-    } else if (!battle.rand100(chance) || hadSub) {
+    (effectSelf ? user : target).modStages(effect, battle);
+  } else if (effect === "flinch") {
+    if (target.base.status === "frz" || target.base.status === "slp") {
       return dealt;
     }
 
-    if (effect === "confusion") {
-      if (!target.v.confusion && !user.owner.screens.safeguard) {
-        target.confuse(battle);
-      }
-    } else if (Array.isArray(effect)) {
-      if (!effectSelf && target.v.hasFlag(VF.mist)) {
-        return dealt;
-      }
+    if (target.v.ability !== "innerfocus") {
+      target.v.flinch = true;
+    } else if (chance === 100) {
+      battle.ability(target);
+      battle.info(target, "wont_flinch");
+    }
+  } else if (effect === "thief") {
+    if (
+      user.base.item ||
+      !target.base.item ||
+      target.base.item.includes("mail") ||
+      target.v.ability === "stickyhold"
+    ) {
+      return dealt;
+    }
 
-      (effectSelf ? user : target).modStages(effect, battle);
-    } else if (effect === "flinch") {
-      if (target.base.status === "frz" || target.base.status === "slp") {
-        return dealt;
-      }
-
-      if (target.v.ability !== "innerfocus") {
-        target.v.flinch = true;
-      } else if (chance === 100) {
-        battle.ability(target);
-        battle.info(target, "wont_flinch");
-      }
-    } else if (effect === "thief") {
-      if (
-        user.base.item ||
-        !target.base.item ||
-        target.base.item.includes("mail") ||
-        target.v.ability === "stickyhold"
-      ) {
-        return dealt;
-      }
-
+    battle.event({
+      type: "thief",
+      src: user.id,
+      target: target.id,
+      item: target.base.item,
+    });
+    user.base.item = target.base.item;
+    target.base.item = undefined;
+  } else if (effect === "knockoff") {
+    if (target.base.item && target.v.ability !== "stickyhold") {
       battle.event({
-        type: "thief",
+        type: "knockoff",
         src: user.id,
         target: target.id,
         item: target.base.item,
       });
-      user.base.item = target.base.item;
-      target.base.item = undefined;
+      target.base.itemUnusable = true;
+    }
+  } else {
+    if (target.owner.screens.safeguard || target.base.status) {
+      return dealt;
+    } else if (!wasTriAttack && effect === "brn" && target.v.types.includes("fire")) {
+      return dealt;
+    } else if (!wasTriAttack && effect === "frz" && target.v.types.includes("ice")) {
+      return dealt;
+    } else if ((effect === "psn" || effect === "tox") && target.v.types.includes("poison")) {
+      return dealt;
+    } else if (
+      (effect === "psn" || effect === "tox") &&
+      target.v.types.includes("steel") &&
+      battle.moveIdOf(self) !== "twineedle"
+    ) {
+      return dealt;
     } else {
-      if (target.owner.screens.safeguard || target.base.status) {
-        return dealt;
-      } else if (!wasTriAttack && effect === "brn" && target.v.types.includes("fire")) {
-        return dealt;
-      } else if (!wasTriAttack && effect === "frz" && target.v.types.includes("ice")) {
-        return dealt;
-      } else if ((effect === "psn" || effect === "tox") && target.v.types.includes("poison")) {
-        return dealt;
-      } else if (
-        (effect === "psn" || effect === "tox") &&
-        target.v.types.includes("steel") &&
-        battle.moveIdOf(self) !== "twineedle"
-      ) {
-        return dealt;
-      } else {
-        target.status(effect, battle, user);
-      }
+      target.status(effect, battle, user);
     }
   }
   return dealt;

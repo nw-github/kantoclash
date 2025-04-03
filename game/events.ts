@@ -285,7 +285,7 @@ type RestorePPEvent = {
 };
 
 type ThiefEvent = {
-  type: "thief";
+  type: "thief" | "knockoff";
   src: PokeId;
   target: PokeId;
   item: ItemId;

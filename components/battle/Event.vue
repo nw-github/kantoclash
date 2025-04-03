@@ -148,6 +148,7 @@
   </div>
   <div v-else-if="e.type === 'pp'">{{ pn(e.src) }}'s <b>{{ gen.moveList[e.move].name }}</b> was restored!</div>
   <div v-else-if="e.type === 'thief'">{{ pn(e.src) }} stole {{ pn(e.target, false) }}'s {{ itemList[e.item].name }}!</div>
+  <div v-else-if="e.type === 'knockoff'">{{ pn(e.src) }} knocked off {{ pn(e.target, false) }}'s {{ itemList[e.item].name }}!</div>
   <div v-else-if="e.type === 'forfeit'">
     <template v-if="e.timer">{{ players.get(e.user).name }} ran out of time.</template>
     <template v-else><b>{{ players.get(e.user).name }}</b> forfeit the match.</template>

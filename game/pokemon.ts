@@ -96,7 +96,8 @@ export class Pokemon {
   readonly level: number;
   readonly name: string;
   readonly moves: MoveId[];
-  item?: ItemId;
+  _item?: ItemId;
+  itemUnusable = false;
   pp: number[];
   hp: number;
   status?: Status;
@@ -163,6 +164,14 @@ export class Pokemon {
 
   belowHp(amt: number) {
     return this.hp <= Math.floor(this.stats.hp / amt);
+  }
+
+  get item() {
+    return this.itemUnusable ? undefined : this._item;
+  }
+
+  set item(value) {
+    this._item = value;
   }
 
   get species() {
