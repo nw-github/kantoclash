@@ -3908,12 +3908,19 @@ const internalMoveList = createMoveList({
     stages: [["spa", +2]],
   },
   taunt: {
-    kind: "fail",
     name: "Taunt",
-    pp: 1,
-    type: "normal",
-    range: Range.Self,
-    why: "fail_generic",
+    pp: 20,
+    type: "dark",
+    range: Range.Adjacent,
+    acc: 100,
+    exec(battle, user, [target]) {
+      if (!battle.checkAccuracy(this, user, target)) {
+        return;
+      }
+
+      target.v.tauntTurns = 2 + 1;
+      battle.info(target, "cTaunt", [{id: target.id, v: {flags: target.v.cflags}}]);
+    },
   },
   teeterdance: {
     kind: "confuse",

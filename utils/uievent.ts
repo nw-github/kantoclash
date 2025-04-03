@@ -119,6 +119,8 @@ export const infoMessage: Record<InfoReason, string> = {
   endure_band: "{} held on using its Focus Band!",
   wont_flinch: "{} wont flinch!",
   ingrain: "{} planted its roots!",
+  cTaunt: "{} fell for the taunt!",
+  taunt_end: "{}'s taunt wore off...",
 };
 
 export const weatherMessage: Record<Weather, Record<WeatherEvent["kind"], string>> = {

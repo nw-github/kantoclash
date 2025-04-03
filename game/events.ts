@@ -23,6 +23,7 @@ type AnyEvent =
   | ChargeEvent
   | MimicEvent
   | CantUseEvent
+  | TauntEvent
   | GrudgeEvent
   | ConversionEvent
   | MagnitudeEvent
@@ -198,6 +199,7 @@ export type InfoReason =
   | "paralyze"
   | "rage"
   | "disable_end"
+  | "taunt_end"
   | "bide"
   | "bide_store"
   | "trapped"
@@ -254,6 +256,7 @@ type ChargeEvent = {type: "charge"; src: PokeId; move: MoveId};
 type SketchEvent = {type: "sketch"; src: PokeId; move: MoveId};
 type MimicEvent = {type: "mimic"; src: PokeId; move: MoveId};
 type CantUseEvent = {type: "cantuse"; src: PokeId; move: MoveId};
+type TauntEvent = {type: "cantusetaunt"; src: PokeId; move: MoveId};
 type GrudgeEvent = {type: "grudge"; src: PokeId; move: MoveId};
 
 type TrapEvent = {

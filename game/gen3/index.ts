@@ -254,9 +254,12 @@ const createGeneration = (): Generation => {
         battle.info(user, "disable_end", [{id: user.id, v: {flags: user.v.cflags}}]);
       }
 
-      // TODO: taunt, imprison
-
-      if (user.handleConfusion(battle)) {
+      if (move.kind !== "damage" && user.v.tauntTurns) {
+        battle.event({move: battle.moveIdOf(move)!, type: "cantusetaunt", src: user.id});
+        resetVolatiles();
+        return false;
+        // TODO: imprison
+      } else if (user.handleConfusion(battle)) {
         resetVolatiles();
         return false;
       } else if (user.base.status === "par" && battle.gen.rng.tryFullPara(battle)) {
@@ -384,7 +387,13 @@ const createGeneration = (): Generation => {
             poke.handleEncore(battle);
           }
 
-          // TODO: taunt, lockon/mind reader?, yawn
+          // TODO: disable?
+
+          if (poke.base.hp && poke.v.tauntTurns && --poke.v.tauntTurns === 0) {
+            battle.info(poke, "taunt_end", [{id: poke.id, v: {flags: poke.v.cflags}}]);
+          }
+
+          // TODO: lockon/mind reader?, yawn
 
           someoneDied = battle.checkFaint(poke, true) || someoneDied;
         }

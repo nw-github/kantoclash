@@ -70,6 +70,8 @@ export enum VF {
   cMeanLook    = 0x0400_0000,
   /** Client only */
   cSeeded      = 0x0200_0000,
+  /** Client only */
+  cTaunt       = 0x0100_0000,
 }
 
 // prettier-ignore

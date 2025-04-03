@@ -218,6 +218,8 @@ const createGeneration = (): Generation => {
         return false;
       } else if (user.v.choiceLock !== undefined && i !== user.v.choiceLock) {
         return false;
+      } else if (user.v.tauntTurns && battle.gen.moveList[move].kind !== "damage") {
+        return false;
       }
 
       return true;

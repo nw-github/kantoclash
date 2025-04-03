@@ -274,6 +274,8 @@ const isValidMove = (battle: Battle, user: ActivePokemon, move: MoveId, i: numbe
     return false;
   } else if (user.v.encore && i !== user.v.encore.indexInMoves) {
     return false;
+  } else if (user.v.tauntTurns && battle.gen.moveList[move].kind !== "damage") {
+    return false;
   }
 
   return true;

@@ -1017,6 +1017,7 @@ class Volatiles {
   firstTurn = true;
   protectCount = 0;
   perishCount = 0;
+  tauntTurns = 0;
   rollout = 0;
   rage = 1;
   furyCutter = 0;
@@ -1100,6 +1101,9 @@ class Volatiles {
     }
     if (this.seededBy) {
       flags |= VF.cSeeded;
+    }
+    if (this.tauntTurns) {
+      flags |= VF.cTaunt;
     }
     return flags;
   }
