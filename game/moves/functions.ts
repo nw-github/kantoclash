@@ -25,17 +25,26 @@ export const moveFunctions: MoveFunctions = {
     }
     return battle.info(user, key as InfoReason, [user.setFlag(this.flag)]);
   },
-  confuse(battle, user, [target]) {
-    if (target.v.substitute) {
-      return battle.info(target, "fail_generic");
-    } else if (target.owner.screens.safeguard) {
-      return battle.info(target, "safeguard_protect");
-    } else if (!battle.checkAccuracy(this, user, target)) {
-      return;
+  confuse(battle, user, targets) {
+    let failed = true;
+    for (const target of targets) {
+      if (target.v.substitute) {
+        continue;
+      } else if (target.owner.screens.safeguard) {
+        battle.info(target, "safeguard_protect");
+        failed = false;
+      } else if (!battle.checkAccuracy(this, user, target)) {
+        failed = false;
+        continue;
+      }
+
+      if (target.confuse(battle)) {
+        failed = false;
+      }
     }
 
-    if (!target.confuse(battle)) {
-      battle.info(target, "fail_generic");
+    if (failed) {
+      battle.info(user, "fail_generic");
     }
   },
   recover(battle, user) {

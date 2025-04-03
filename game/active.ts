@@ -479,7 +479,40 @@ export class ActivePokemon {
       }
     }
 
-    // TODO: trace, forecast
+    if (this.base.ability === "trace" && !this.v.usedTrace) {
+      const target = battle.rng.choice(battle.getTargets(this, {adjacent: true, oppOnly: true}));
+      if (target) {
+        battle.ability(this);
+        this.v.ability = target.v.ability;
+        battle.ability(this, [{id: this.id, v: {ability: this.v.ability}}]);
+      }
+    }
+
+    this.handleForecast(battle);
+  }
+
+  handleForecast(battle: Battle) {
+    if (this.base.ability !== "forecast" || this.base.speciesId !== "castform") {
+      return;
+    }
+
+    const types: Record<Weather, Type> = {
+      sand: "normal",
+      hail: "ice",
+      sun: "fire",
+      rain: "water",
+    };
+    const type = types[battle.getWeather() ?? "sand"];
+    if (!arraysEqual([type], this.v.types)) {
+      battle.ability(this);
+      battle.event({
+        type: "conversion",
+        src: this.id,
+        types: [type],
+        volatiles: [this.setVolatile("types", [type])],
+      });
+      // TODO: change castform visual form
+    }
   }
 
   handleConfusion(battle: Battle) {
@@ -954,6 +987,7 @@ class Volatiles {
   usedDefenseCurl = false;
   usedMinimize = false;
   usedIntimidate = false;
+  usedTrace = false;
   firstTurn = true;
   protectCount = 0;
   perishCount = 0;

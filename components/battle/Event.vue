@@ -93,7 +93,7 @@
     </p>
   </div>
   <div v-else-if="e.type === 'miss'">
-    <template v-if="players.byPokeId(e.target).active.length > 1">It missed {{ pn(e.target, false) }}!</template>
+    <template v-if="players.byPokeId(e.target).active.length > 1">{{ pn(e.target) }} avoided the attack!</template>
     <template v-else>{{ pn(e.src) }} missed!</template>
   </div>
   <div v-else-if="e.type === 'transform'">{{ pn(e.src) }} transformed into {{ pn(e.target, false) }}!</div>
@@ -158,7 +158,7 @@
     <template v-if="e.spin">Rapid Spin blew away the Spikes around {{ tn(e.player, false) }}'s feet!</template>
     <template v-else>Spikes were scattered all around the feet of {{ tn(e.player, false) }}!</template>
   </div>
-  <div v-else-if="e.type === 'proc_ability'" class="move muted">[{{ pn(e.src) }}'s {{ abilityList[e.ability].name }}]</div>
+  <div v-else-if="e.type === 'proc_ability'" class="move ability">[{{ pn(e.src) }}'s {{ abilityList[e.ability].name }}]</div>
   <div v-else>Unknown event: <code>{{ e }}</code></div>
 </template>
 

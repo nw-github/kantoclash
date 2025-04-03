@@ -149,12 +149,16 @@
   </UModal>
 </template>
 
-<style>
+<style scoped>
 .events {
   .move,
   .charge,
   .confused {
     padding-top: 0.5rem;
+  }
+
+  .ability {
+    @apply text-lg font-medium;
   }
 
   .move + .move,

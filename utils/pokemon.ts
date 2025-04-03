@@ -228,6 +228,7 @@ export const parsePokemon = (format: FormatId, src: string): TeamPokemonDesc => 
     }
   }
 
+  desc.moves = desc.moves.slice(0, 4);
   return desc;
 };
 
@@ -270,7 +271,10 @@ export const parseTeams = (src: string) => {
 
 export const convertDesc = (gen: Generation, desc: PokemonDesc): PokemonDesc => {
   const species = normalizeName(desc.species);
-  const moves = desc.moves.map(move => normalizeName(move)).filter(m => !!m);
+  const moves = desc.moves
+    .map(move => normalizeName(move))
+    .filter(m => !!m)
+    .slice(0, 4);
 
   let item = desc.item && normalizeName(desc.item);
   if (!item || gen.id === 1) {
