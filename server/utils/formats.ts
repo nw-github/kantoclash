@@ -130,7 +130,12 @@ export const randoms = (
     const moves = getRandomMoves(4, valid, (move, id) => !isBadMove(s, move, id));
     const stab = s.moves.filter(m => {
       const move = moveList[m];
-      return (move.power ?? 0) > 40 && s.types.includes(move.type) && !moves.includes(m);
+      return (
+        (move.power ?? 0) > 40 &&
+        s.types.includes(move.type) &&
+        !moves.includes(m) &&
+        !isBadMove(s, move, m)
+      );
     });
     if (stab.length) {
       moves[0] = random.choice(stab)!;

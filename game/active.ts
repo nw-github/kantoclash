@@ -42,6 +42,7 @@ export type ChosenMove = {
   user: ActivePokemon;
   target?: ActivePokemon;
   isReplacement: bool;
+  spe: number;
 };
 
 export class ActivePokemon {
@@ -128,10 +129,9 @@ export class ActivePokemon {
       }
     }
 
-    const weather = abilityList[this.base.ability!]?.startsWeather;
-    if (weather) {
-      battle.ability(this);
-      battle.setWeather(weather, -1);
+    if (battle.turnType !== TurnType.Lead) {
+      this.handleWeatherAbility(battle);
+      this.handleSwitchInAbility(battle);
     }
   }
 
@@ -456,6 +456,30 @@ export class ActivePokemon {
     }
 
     return value;
+  }
+
+  handleWeatherAbility(battle: Battle) {
+    const weather = abilityList[this.base.ability!]?.startsWeather;
+    if (weather) {
+      battle.ability(this);
+      battle.setWeather(weather, -1);
+    }
+  }
+
+  handleSwitchInAbility(battle: Battle) {
+    if (this.base.ability === "intimidate" && !this.v.usedIntimidate) {
+      this.v.usedIntimidate = true;
+      battle.ability(this);
+
+      // TODO: after gen 3 it will be possible for this array to be empty
+      for (const poke of battle.getTargets(this, {adjacent: true, oppOnly: true})) {
+        if (!poke.v.fainted && !poke.v.substitute) {
+          poke.modStages([["atk", -1]], battle);
+        }
+      }
+    }
+
+    // TODO: trace, forecast
   }
 
   handleConfusion(battle: Battle) {
@@ -929,6 +953,7 @@ class Volatiles {
   inBatonPass = false;
   usedDefenseCurl = false;
   usedMinimize = false;
+  usedIntimidate = false;
   firstTurn = true;
   protectCount = 0;
   perishCount = 0;

@@ -371,13 +371,13 @@ const createGeneration = (): Generation => {
           poke.handleLeftovers(battle);
           poke.handleBerry(battle, {pinch: true, status: true, heal: true, pp: true});
           battle.gen.handleResidualDamage(battle, poke);
-          if (poke.base.hp !== 0) {
+          if (poke.base.hp) {
             poke.handlePartialTrapping(battle);
           }
 
           // TODO: uproar & petal dance?
 
-          if (poke.base.hp !== 0) {
+          if (poke.base.hp) {
             poke.handleEncore(battle);
           }
 
@@ -394,8 +394,7 @@ const createGeneration = (): Generation => {
 
       if (battle.betweenTurns < BetweenTurns.FutureSight) {
         let someoneDied = false;
-        // FIXME: order should be, Host first, Guest first, Host second, Guest second
-        for (const poke of turnOrder) {
+        for (const poke of battle.switchOrder()) {
           poke.handleFutureSight(battle);
           // FIXME: after future sight, the affected pokemon should die and be forced to switch
           // immediately, even before other future sights go off

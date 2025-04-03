@@ -462,7 +462,7 @@ export class GameServer extends Server<ClientMessage, ServerMessage> {
           return ack("invalid_choice");
         }
       } else if (choice.type === "switch") {
-        if (!player.chooseSwitch(choice.who, choice.pokeIndex)) {
+        if (!player.chooseSwitch(choice.who, room.battle, choice.pokeIndex)) {
           return ack("invalid_choice");
         }
       } else if (choice.type !== "forfeit") {

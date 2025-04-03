@@ -85,11 +85,12 @@ export class Player {
       user,
       target: singleTarget,
       isReplacement: false,
+      spe: battle.getSpe(user),
     };
     return true;
   }
 
-  chooseSwitch(who: number, index: number) {
+  chooseSwitch(who: number, battle: Battle, index: number) {
     const active = this.active[who];
     if (!active?.options?.switches.includes(index)) {
       return false;
@@ -102,6 +103,7 @@ export class Player {
       return false;
     }
 
+    const user = this.active[who];
     active.choice = {
       move: {
         kind: "switch",
@@ -110,11 +112,14 @@ export class Player {
         range: Range.Self,
         pp: 0,
         priority: +7,
-        poke: poke,
-        batonPass: this.active[who].v.inBatonPass,
+        poke,
+        batonPass: user.v.inBatonPass,
       },
-      user: this.active[who],
+      user,
       isReplacement: active.v.fainted,
+      // This is only relevant for the order of weather abilities on the first turn, which are
+      // called in turn order and affected by quick claw in Gen 3
+      spe: battle.getSpe(user) === 65535 ? 65535 : poke.stats.spe,
     };
     return true;
   }
@@ -195,8 +200,8 @@ export class Battle {
     }
 
     for (let i = 0; i < self.players[0].active.length; i++) {
-      self.players[0].chooseSwitch(i, i);
-      self.players[1].chooseSwitch(i, i);
+      self.players[0].chooseSwitch(i, self, i);
+      self.players[1].chooseSwitch(i, self, i);
     }
 
     return [self, self.nextTurn()!] as const;
@@ -213,6 +218,14 @@ export class Battle {
   private set victor(value: Player) {
     this._victor = value;
     this.finished = true;
+  }
+
+  getSpe(poke: ActivePokemon) {
+    if (poke.base.item === "quickclaw" && this.gen.rng.tryQuickClaw(this)) {
+      console.log("proc quick claw: ", poke.base.name);
+      return 65535;
+    }
+    return this.gen.getStat(this, poke, "spe");
   }
 
   event<T extends BattleEvent = BattleEvent>(event: BattleEvent) {
@@ -267,6 +280,32 @@ export class Battle {
     return this.events.splice(0);
   }
 
+  switchOrder() {
+    // Gen 3 switch order is Host first, Guest first, Host second, Guest second
+    const result = [
+      this.players[0].active[0],
+      this.players[1].active[0],
+      this.players[0].active[1],
+      this.players[1].active[1],
+    ];
+
+    return result.filter(p => !!p);
+  }
+
+  inTurnOrder(pokes: ActivePokemon[]) {
+    return pokes
+      .map(p => p.choice)
+      .filter(c => !!c)
+      .sort((a, b) => {
+        if (b.move.priority !== a.move.priority) {
+          return (b.move.priority ?? 0) - (a.move.priority ?? 0);
+        } else if (a.spe !== b.spe) {
+          return b.spe - a.spe;
+        }
+        return this.rng.bool() ? 1 : -1;
+      });
+  }
+
   nextTurn() {
     if (!this.allActive.every(poke => !poke.options || poke.choice)) {
       return;
@@ -277,54 +316,18 @@ export class Battle {
       this.event({type: "next_turn", turn: this._turn});
     }
 
-    const choices = this.allActive
+    const choices = this.switchOrder()
       .map(p => p.choice)
-      .filter(choice => !!choice)
-      .sort((a, b) => {
-        if (b.move.priority !== a.move.priority) {
-          return (b.move.priority ?? 0) - (a.move.priority ?? 0);
-        } else if (this.turnType === TurnType.Lead) {
-          // First turn switch order is not affected by speed
-          const foo = this.players.indexOf(b.user.owner) - this.players.indexOf(a.user.owner);
-          if (foo === 0) {
-            return a.user.owner.active.indexOf(a.user) - b.user.owner.active.indexOf(b.user);
-          }
-          return foo;
-        } else if (a.move.kind === "switch" && this.gen.id < 3) {
-          // Randomize choices to avoid leaking speed. The player always sees their pokemon switch
-          // in first in a link battle on console.
-          return +this.rng.bool() || -1;
-        }
+      // @ts-expect-error idk shut up
+      .filter<ChosenMove>(c => c?.move.kind === "switch");
+    choices.push(...this.inTurnOrder(this.allActive.filter(a => a.choice?.move.kind !== "switch")));
 
-        const aSpe = this.gen.getStat(this, a.user, "spe");
-        const bSpe = this.gen.getStat(this, b.user, "spe");
-        if (aSpe === bSpe) {
-          return +this.rng.bool() || -1;
-        }
-        return bSpe - aSpe;
-      });
-    let startBracket = 0;
     for (let i = 0; i < choices.length; i++) {
-      // prettier-ignore
       const {move, user, target} = choices[i];
-      if ((move.priority ?? 0) !== (choices[startBracket].move.priority ?? 0)) {
-        startBracket = i;
-      }
-
       if (move.kind !== "protect") {
         user.v.protectCount = 0;
       }
       user.movedThisTurn = false;
-
-      if (
-        move.kind !== "switch" &&
-        user.base.item === "quickclaw" &&
-        this.gen.rng.tryQuickClaw(this)
-      ) {
-        // quick claw activates silently until gen iv
-        console.log("proc quick claw: ", user.base.name);
-        choices.splice(startBracket, 0, ...choices.splice(i, 1));
-      }
 
       if (move === this.gen.moveList.pursuit) {
         if (target?.choice?.move?.kind === "switch" && target.owner !== user.owner) {
@@ -579,10 +582,8 @@ export class Battle {
         move = this.gen.moveList[user.base.moves[user.v.encore.indexInMoves]];
       }
 
-      if (user.v.inPursuit) {
-        // This isnt present in the original games, but showdown has it and it's cool without giving
-        // any advantage
-        this.info(target!, "withdraw");
+      if (user.v.inPursuit && target && !target.v.fainted) {
+        this.info(target, "withdraw");
       }
 
       if (move.kind !== "switch" && !this.gen.beforeUseMove(this, move, user)) {
@@ -602,6 +603,14 @@ export class Battle {
 
     if (this.turnType !== TurnType.Lead) {
       this.gen.betweenTurns(this);
+    } else {
+      for (const poke of this.inTurnOrder(this.allActive)) {
+        poke.user.handleWeatherAbility(this);
+      }
+
+      for (const {user} of choices) {
+        user.handleSwitchInAbility(this);
+      }
     }
   }
 
