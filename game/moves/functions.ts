@@ -79,10 +79,11 @@ export const moveFunctions: MoveFunctions = {
     battle.gen1LastDamage = 0;
     let failed = true;
     for (const target of targets) {
-      if (this.acc) {
+      if (this.range !== Range.Self) {
         if (target.v.hasFlag(VF.mist)) {
           failed = false;
-          return battle.info(target, "mist_protect");
+          battle.info(target, "mist_protect");
+          continue;
         } else if (target.v.substitute && !this.ignoreSub) {
           continue;
         }
@@ -241,9 +242,9 @@ export const moveFunctions: MoveFunctions = {
     });
   },
   healbell(battle, user) {
-    // TODO GEN3: dont send two unstatus events
+    battle.info(user, "heal_bell");
     for (const active of user.owner.active) {
-      active.unstatus(battle, "heal_bell");
+      active.unstatus(battle);
     }
     const opp = battle.opponentOf(user.owner);
     user.owner.team.forEach(poke => {

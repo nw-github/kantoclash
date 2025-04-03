@@ -118,7 +118,6 @@ export const infoMessage: Record<InfoReason, string> = {
   fail_present: "{} couldn't receive the gift!",
   endure_band: "{} held on using its Focus Band!",
   wont_flinch: "{} wont flinch!",
-  ability_heal: "{} was healed!",
   ingrain: "{} planted its roots!",
 };
 

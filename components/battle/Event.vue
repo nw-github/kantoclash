@@ -163,6 +163,9 @@
     <template v-else>Spikes were scattered all around the feet of {{ tn(e.player, false) }}!</template>
   </div>
   <div v-else-if="e.type === 'proc_ability'" class="move ability">[{{ pn(e.src) }}'s {{ abilityList[e.ability].name }}]</div>
+  <div v-else-if="e.type === 'copy_ability'">[{{ pn(e.src) }} copied {{ pn(e.target, false) }}'s {{ abilityList[e.ability].name }}!</div>
+  <div v-else-if="e.type === 'trace'">[{{ pn(e.src) }} traced {{ pn(e.target, false) }}'s {{ abilityList[e.ability].name }}!</div>
+  <div v-else-if="e.type === 'skill_swap'">[{{ pn(e.src) }} swapped abilities with {{ pn(e.target, false) }}!</div>
   <div v-else>Unknown event: <code>{{ e }}</code></div>
 </template>
 

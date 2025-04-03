@@ -41,7 +41,8 @@ type AnyEvent =
   | ForfeitEvent
   | BatonPass
   | SpikesEvent
-  | ProcAbilityEvent;
+  | ProcAbilityEvent
+  | AbilityEvent;
 
 export type ChangedVolatiles = {id: PokeId; v: NullOrOptional<ClientVolatiles>}[];
 
@@ -214,7 +215,6 @@ export type InfoReason =
   | "doom_desire_release"
   | "withdraw"
   | "wont_flinch"
-  | "ability_heal"
   | "miss";
 
 type InfoEvent = {type: "info"; src: PokeId; why: InfoReason};
@@ -222,7 +222,15 @@ type InfoEvent = {type: "info"; src: PokeId; why: InfoReason};
 type BugEvent = {type: "bug"; bug: BugType};
 
 type SrcTargetEvent = {
-  type: "transform" | "in_love" | "psych_up" | "foresight" | "lock_on" | "miss" | "helping_hand";
+  type:
+    | "transform"
+    | "in_love"
+    | "psych_up"
+    | "foresight"
+    | "lock_on"
+    | "miss"
+    | "helping_hand"
+    | "skill_swap";
   src: PokeId;
   target: PokeId;
 };
@@ -302,5 +310,12 @@ type BatonPass = {type: "baton_pass"; src: PokeId};
 type ProcAbilityEvent = {
   type: "proc_ability";
   src: PokeId;
+  ability: AbilityId;
+};
+
+type AbilityEvent = {
+  type: "trace" | "copy_ability";
+  src: PokeId;
+  target: PokeId;
   ability: AbilityId;
 };

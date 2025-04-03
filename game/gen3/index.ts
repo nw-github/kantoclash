@@ -367,7 +367,7 @@ const createGeneration = (): Generation => {
               battle.gen.rng.tryShedSkin(battle)
             ) {
               battle.ability(poke);
-              poke.unstatus(battle, "ability_heal");
+              poke.unstatus(battle);
             }
           }
 

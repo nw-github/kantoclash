@@ -69,7 +69,7 @@ export class ActivePokemon {
 
     if (this.base.status && this.v.ability === "naturalcure" && !this.v.fainted) {
       battle.ability(this);
-      this.unstatus(battle, "ability_heal");
+      this.unstatus(battle);
     }
 
     const old = this.v;
@@ -365,16 +365,27 @@ export class ActivePokemon {
     }
   }
 
-  unstatus(battle: Battle, why: InfoReason) {
+  unstatus(battle: Battle, why?: InfoReason) {
+    if (!this.base.status) {
+      return;
+    }
+
     const opp = battle.opponentOf(this.owner);
     if (opp.sleepClausePoke === this.base) {
       opp.sleepClausePoke = undefined;
     }
 
+    const status = this.base.status;
     this.base.status = undefined;
     this.v.hazed = this.v.hazed || why === "thaw";
     this.v.clearFlag(VF.nightmare);
-    return battle.info(this, why, [{id: this.id, v: {status: null, flags: this.v.cflags}}]);
+
+    const v = [{id: this.id, v: {status: null, flags: this.v.cflags}}];
+    if (why) {
+      return battle.info(this, why, v);
+    } else {
+      return battle.event({type: "cure", src: this.id, status, volatiles: v});
+    }
   }
 
   setStage(stat: Stages, value: number, battle: Battle, negative: boolean) {
@@ -484,7 +495,14 @@ export class ActivePokemon {
       if (target) {
         battle.ability(this);
         this.v.ability = target.v.ability;
-        battle.ability(this, [{id: this.id, v: {ability: this.v.ability}}]);
+        battle.ability(this);
+        battle.event({
+          type: "trace",
+          src: this.id,
+          target: target.id,
+          ability: this.v.ability!,
+          volatiles: [{id: this.id, v: {ability: this.v.ability}}],
+        });
       }
     }
 
@@ -621,7 +639,7 @@ export class ActivePokemon {
       const status = this.base.status === "tox" ? "psn" : this.base.status;
       if (status && abilityList[this.v.ability!]?.preventsStatus === status) {
         battle.ability(this);
-        this.unstatus(battle, "ability_heal");
+        this.unstatus(battle);
       }
 
       if (statusBerry[this.base.item!] && statusBerry[this.base.item!] === status) {

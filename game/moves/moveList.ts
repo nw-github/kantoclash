@@ -3503,12 +3503,31 @@ const internalMoveList = createMoveList({
     kingsRock: true,
   },
   memento: {
-    kind: "fail",
     name: "Memento",
-    pp: 1,
-    type: "normal",
-    range: Range.Self,
-    why: "fail_generic",
+    pp: 10,
+    type: "dark",
+    range: Range.Adjacent,
+    protect: false,
+    exec(battle, user, [target]) {
+      let faint = true;
+      // prettier-ignore
+      if (target.v.hasFlag(VF.mist)) {
+        battle.info(target, "mist_protect");
+      } else if (target.v.hasFlag(VF.protect)) {
+        battle.info(target, "protect");
+      } else if (target.v.substitute) {
+        battle.info(target, "fail_generic");
+      } else if (!target.modStages([["atk", -2], ["spa", -2]], battle)) {
+        battle.info(target, "fail_generic");
+        faint = false;
+      }
+
+      if (faint) {
+        user.damage(user.base.hp, user, battle, false, "explosion");
+      }
+    },
+    // prettier-ignore
+    stages: [["atk", -2], ["spa", -1]],
   },
   metalsound: {
     kind: "stage",
@@ -3655,12 +3674,16 @@ const internalMoveList = createMoveList({
     why: "fail_generic",
   },
   refresh: {
-    kind: "fail",
     name: "Refresh",
-    pp: 1,
+    pp: 20,
     type: "normal",
     range: Range.Self,
-    why: "fail_generic",
+    exec(battle, user) {
+      if (!["brn", "psn", "par", "tox"].includes(user.status)) {
+        return battle.info(user, "fail_generic");
+      }
+      user.unstatus(battle);
+    },
   },
   revenge: {
     kind: "fail",
@@ -3693,12 +3716,24 @@ const internalMoveList = createMoveList({
     effect: [100, [["spe", -1]]],
   },
   roleplay: {
-    kind: "fail",
     name: "Role Play",
-    pp: 1,
-    type: "normal",
-    range: Range.Self,
-    why: "fail_generic",
+    pp: 10,
+    type: "psychic",
+    range: Range.Adjacent,
+    exec(battle, user, [target]) {
+      if (!battle.checkAccuracy(this, user, target)) {
+        return;
+      }
+
+      const v = user.setVolatile("ability", target.v.ability);
+      battle.event({
+        type: "copy_ability",
+        src: user.id,
+        target: target.id,
+        ability: user.v.ability!,
+        volatiles: [v],
+      });
+    },
   },
   sandtomb: {
     kind: "damage",
@@ -3774,12 +3809,22 @@ const internalMoveList = createMoveList({
     effect: [10, [["atk", +1], ["def", +1], ["spa", +1], ["spd", +1], ["spe", +1]], true],
   },
   skillswap: {
-    kind: "fail",
     name: "Skill Swap",
-    pp: 1,
-    type: "normal",
-    range: Range.Self,
-    why: "fail_generic",
+    pp: 10,
+    type: "psychic",
+    range: Range.Adjacent,
+    exec(battle, user, [target]) {
+      if (!battle.checkAccuracy(this, user, target)) {
+        return;
+      }
+
+      const mine = user.v.ability;
+      const his = target.v.ability;
+
+      const a = user.setVolatile("ability", his);
+      const b = target.setVolatile("ability", mine);
+      battle.event({type: "skill_swap", src: user.id, target: target.id, volatiles: [a, b]});
+    },
   },
   skyuppercut: {
     kind: "damage",

@@ -224,6 +224,16 @@ export function tryDamage(
       battle.event({type: "thief", src: user.id, target: target.id, item: target.base.item});
       user.base.item = target.base.item;
       target.base.item = undefined;
+    } else if (effect === "knockoff") {
+      if (target.base.item && target.v.ability !== "stickyhold") {
+        battle.event({
+          type: "knockoff",
+          src: user.id,
+          target: target.id,
+          item: target.base.item,
+        });
+        target.base.itemUnusable = true;
+      }
     } else {
       if (
         target.owner.screens.safeguard ||
