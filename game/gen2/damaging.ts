@@ -96,11 +96,10 @@ export const tryDamage = (
     dead = false,
     event,
     endured = false,
-    band = false,
-    isCrit = false,
-    dmg = 0;
+    band = false;
 
   if (self.flag === "beatup") {
+    let dmg, isCrit;
     for (const poke of user.owner.team) {
       if (poke.status || !poke.hp) {
         continue;
@@ -126,6 +125,7 @@ export const tryDamage = (
     };
 
     const count = counts[self.flag];
+    let dmg, isCrit;
     for (let hits = 0; !dead && !endured && hits < count; hits++) {
       hadSub = target.v.substitute !== 0;
       ({dmg, isCrit, endured, band} = getDamage(self, battle, user, target, {
@@ -143,6 +143,7 @@ export const tryDamage = (
     }
     dealt = 0;
   } else {
+    let dmg, isCrit;
     ({dmg, isCrit, endured, band} = getDamage(self, battle, user, target, {power}));
     ({dealt, dead, event} = target.damage(
       dmg,
@@ -196,10 +197,21 @@ export const tryDamage = (
     battle.info(target, "endure_band");
   }
 
-  if (dead && target.v.hasFlag(VF.destinyBond)) {
-    user.damage(user.base.hp, target, battle, false, "destiny_bond", true);
-    // user should die first
-    battle.checkFaint(target);
+  if (dead) {
+    if (target.v.hasFlag(VF.destinyBond)) {
+      user.damage(user.base.hp, target, battle, false, "destiny_bond", true);
+      // user should die first
+      battle.checkFaint(target);
+    }
+
+    if (target.v.hasFlag(VF.grudge)) {
+      if (user.v.lastMoveIndex === undefined) {
+        console.error("Grudge with no lastMoveIndex: ", user);
+      } else {
+        user.base.pp[user.v.lastMoveIndex] = 0;
+        battle.event({type: "grudge", src: user.id, move: user.base.moves[user.v.lastMoveIndex]});
+      }
+    }
   }
 
   if (self.flag === "recharge") {

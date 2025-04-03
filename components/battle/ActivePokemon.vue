@@ -350,6 +350,9 @@ const badges: {flag: VF; props: InstanceType<typeof UBadge>["$props"]}[] = [
   {flag: VF.lockon, props: {color: "red", icon: "ri:crosshair-2-line", variant: "subtle"}},
   {flag: VF.cMeanLook, props: {color: "red", icon: "tabler:prison", variant: "subtle"}},
   {flag: VF.cSeeded, props: {color: "lime", icon: "tabler:seedling-filled", variant: "subtle"}},
+  {flag: VF.helpingHand, props: {color: "lime", icon: "mdi:hand-clap", variant: "subtle"}},
+  {flag: VF.cEncore, props: {color: "sky", icon: "material-symbols:celebration"}},
+  {flag: VF.cDisabled, props: {color: "red", icon: "fe:disabled"}},
   {
     flag: VF.identified,
     props: {
@@ -359,14 +362,12 @@ const badges: {flag: VF; props: InstanceType<typeof UBadge>["$props"]}[] = [
       class: "ring-violet-500 dark:ring-violet-400",
     },
   },
-  {flag: VF.curse, props: {color: "red", label: "Curse"}},
-  {flag: VF.cDisabled, props: {color: "red", label: "Disable"}},
+  {flag: VF.curse, props: {color: "red", icon: "mdi:nail", label: "Curse"}},
   {flag: VF.focus, props: {color: "emerald", label: "Focus Energy"}},
   {flag: VF.mist, props: {color: "teal", label: "Mist"}},
   {flag: VF.destinyBond, props: {color: "gray", label: "Destiny Bond"}},
   {flag: VF.protect, props: {color: "black", label: "Protect"}},
   {flag: VF.endure, props: {color: "black", label: "Endure"}},
-  {flag: VF.cEncore, props: {color: "sky", label: "Encore"}},
   {flag: VF.nightmare, props: {color: "black", label: "Nightmare"}},
 ];
 

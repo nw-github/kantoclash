@@ -99,6 +99,7 @@ export const infoMessage: Record<InfoReason, string> = {
   cAttract: "{} fell in love!",
   immobilized: "{} is immobilized by love!",
   destinyBond: "{} is trying to take its foe with it!",
+  grudge: "{} wants the opponent to bear a grudge!",
   protect: "{} protected itself!",
   endure: "{} braced itself!",
   endure_hit: "{} endured the hit!",
@@ -118,6 +119,7 @@ export const infoMessage: Record<InfoReason, string> = {
   endure_band: "{} held on using its Focus Band!",
   wont_flinch: "{} wont flinch!",
   ability_heal: "{} was healed!",
+  ingrain: "{} planted its roots!",
 };
 
 export const weatherMessage: Record<Weather, Record<WeatherEvent["kind"], string>> = {

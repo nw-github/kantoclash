@@ -189,7 +189,8 @@ export const moveFunctions: MoveFunctions = {
     } else if (target.v.ability === "suctioncups") {
       battle.ability(target);
       return battle.info(target, "immune");
-      // TODO: ingrain
+    } else if (target.v.hasFlag(VF.ingrain)) {
+      return battle.info(user, "fail_generic");
     } else if (!battle.checkAccuracy(this, user, target)) {
       return;
     }

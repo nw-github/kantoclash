@@ -1,5 +1,4 @@
 import type {Random} from "random";
-import type {ActivePokemon} from "./battle";
 import type {TypeChart} from "./gen";
 import type {PlayerId, PokeId} from "./events";
 
@@ -53,22 +52,24 @@ export enum VF {
   nightmare    = 0x0000_0100,
   identified   = 0x0000_0200,
   lockon       = 0x0000_0400,
+  grudge       = 0x0000_0800,
+  helpingHand  = 0x0000_1000,
+  ingrain      = 0x0000_2000,
 
-
   /** Client only */
-  cConfused     = 0x8000_0000,
+  cConfused    = 0x8000_0000,
   /** Client only */
-  cDisabled     = 0x4000_0000,
+  cDisabled    = 0x4000_0000,
   /** Client only */
-  cAttract      = 0x2000_0000,
+  cAttract     = 0x2000_0000,
   /** Client only */
-  cSubstitute   = 0x1000_0000,
+  cSubstitute  = 0x1000_0000,
   /** Client only */
-  cEncore       = 0x0800_0000,
+  cEncore      = 0x0800_0000,
   /** Client only */
-  cMeanLook     = 0x0400_0000,
+  cMeanLook    = 0x0400_0000,
   /** Client only */
-  cSeeded       = 0x0200_0000,
+  cSeeded      = 0x0200_0000,
 }
 
 // prettier-ignore

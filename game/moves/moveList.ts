@@ -3205,12 +3205,23 @@ const internalMoveList = createMoveList({
     ],
   },
   endeavor: {
-    kind: "fail",
+    kind: "damage",
     name: "Endeavor",
-    pp: 1,
+    pp: 5,
     type: "normal",
-    range: Range.Self,
-    why: "fail_generic",
+    range: Range.Adjacent,
+    power: 0,
+    acc: 100,
+    kingsRock: true,
+    contact: true,
+    getDamage(_, user, target) {
+      const diff = target.base.hp - user.base.hp;
+      if (diff <= 0) {
+        return 0;
+      }
+
+      return diff;
+    },
   },
   eruption: {
     kind: "damage",
@@ -3234,12 +3245,13 @@ const internalMoveList = createMoveList({
     effect: [10, "flinch"],
   },
   facade: {
-    kind: "fail",
+    kind: "damage",
     name: "Facade",
-    pp: 1,
+    pp: 20,
     type: "normal",
-    range: Range.Self,
-    why: "fail_generic",
+    range: Range.Adjacent,
+    power: 70,
+    flag: "facade",
   },
   fakeout: {
     kind: "fail",
@@ -3315,12 +3327,12 @@ const internalMoveList = createMoveList({
     sound: true,
   },
   grudge: {
-    kind: "fail",
+    kind: "volatile",
     name: "Grudge",
-    pp: 1,
-    type: "normal",
+    pp: 5,
+    type: "ghost",
     range: Range.Self,
-    why: "fail_generic",
+    flag: VF.grudge,
   },
   hail: {
     kind: "weather",
@@ -3342,12 +3354,24 @@ const internalMoveList = createMoveList({
     effect: [10, "brn"],
   },
   helpinghand: {
-    kind: "fail",
     name: "Helping Hand",
-    pp: 1,
+    pp: 20,
     type: "normal",
-    range: Range.Self,
-    why: "fail_generic",
+    // Technically should target the user in Gen 3
+    range: Range.AdjacentAlly,
+    priority: +5,
+    exec(battle, user, [target]) {
+      if (target.movedThisTurn) {
+        return battle.info(user, "fail_generic");
+      }
+
+      battle.event({
+        type: "helping_hand",
+        src: user.id,
+        target: target.id,
+        volatiles: [target.setFlag(VF.helpingHand)],
+      });
+    },
   },
   howl: {
     kind: "stage",
@@ -3411,12 +3435,12 @@ const internalMoveList = createMoveList({
     why: "fail_generic",
   },
   ingrain: {
-    kind: "fail",
+    kind: "volatile",
     name: "Ingrain",
-    pp: 1,
-    type: "normal",
+    pp: 20,
+    type: "grass",
     range: Range.Self,
-    why: "fail_generic",
+    flag: VF.ingrain,
   },
   irondefense: {
     kind: "stage",

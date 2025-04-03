@@ -345,7 +345,10 @@ const createGeneration = (): Generation => {
         let someoneDied = false;
         for (const poke of turnOrder) {
           if (!poke.v.fainted) {
-            // TODO: ingrain
+            if (poke.v.hasFlag(VF.ingrain)) {
+              poke.recover(Math.max(1, idiv(poke.base.stats.hp, 16)), poke, battle, "ingrain");
+            }
+
             if (battle.hasWeather("rain") && poke.v.ability === "raindish") {
               battle.ability(poke);
               poke.recover(Math.max(1, idiv(poke.base.stats.hp, 16)), poke, battle, "raindish");
@@ -432,10 +435,10 @@ const createGeneration = (): Generation => {
         if (poke.v.trapped && !poke.v.trapped.user.v.trapping) {
           poke.v.trapped = undefined;
         }
-        if (poke.v.hasFlag(VF.protect | VF.endure)) {
+        if (poke.v.hasFlag(VF.protect | VF.endure | VF.helpingHand)) {
           battle.event({
             type: "sv",
-            volatiles: [poke.clearFlag(VF.protect | VF.endure)],
+            volatiles: [poke.clearFlag(VF.protect | VF.endure | VF.helpingHand)],
           });
         }
       }

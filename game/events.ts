@@ -23,6 +23,7 @@ type AnyEvent =
   | ChargeEvent
   | MimicEvent
   | CantUseEvent
+  | GrudgeEvent
   | ConversionEvent
   | MagnitudeEvent
   | WeatherEvent
@@ -100,7 +101,8 @@ export type RecoveryReason =
   | "leftovers"
   | "shellbell"
   | "item"
-  | "raindish";
+  | "raindish"
+  | "ingrain";
 
 export type DamageEvent = {
   type: "damage";
@@ -175,7 +177,7 @@ export type BugType = "bug_gen2_bellydrum" | "bug_gen2_spikes";
 
 type VFReason = Exclude<
   keyof typeof VF,
-  "cSubstitute" | "curse" | "none" | "cDisabled" | "identified" | "lockon"
+  "cSubstitute" | "curse" | "none" | "cDisabled" | "identified" | "lockon" | "helpingHand"
 >;
 
 export type InfoReason =
@@ -220,7 +222,7 @@ type InfoEvent = {type: "info"; src: PokeId; why: InfoReason};
 type BugEvent = {type: "bug"; bug: BugType};
 
 type SrcTargetEvent = {
-  type: "transform" | "in_love" | "psych_up" | "foresight" | "lock_on" | "miss";
+  type: "transform" | "in_love" | "psych_up" | "foresight" | "lock_on" | "miss" | "helping_hand";
   src: PokeId;
   target: PokeId;
 };
@@ -244,6 +246,7 @@ type ChargeEvent = {type: "charge"; src: PokeId; move: MoveId};
 type SketchEvent = {type: "sketch"; src: PokeId; move: MoveId};
 type MimicEvent = {type: "mimic"; src: PokeId; move: MoveId};
 type CantUseEvent = {type: "cantuse"; src: PokeId; move: MoveId};
+type GrudgeEvent = {type: "grudge"; src: PokeId; move: MoveId};
 
 type TrapEvent = {
   type: "trap";

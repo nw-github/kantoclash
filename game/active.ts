@@ -908,6 +908,14 @@ export class ActivePokemon {
   }
 
   cantEscape(battle: Battle) {
+    if (
+      !!this.v.meanLook ||
+      (battle.gen.id >= 2 && !!this.v.trapped) ||
+      this.v.hasFlag(VF.ingrain)
+    ) {
+      return true;
+    }
+
     // FIXME: sending this to the client leaks the pokemon's ability
     for (const poke of battle.allActive) {
       if (poke.v.ability === "magnetpull" && this.v.types.includes("steel")) {
@@ -918,7 +926,7 @@ export class ActivePokemon {
         return true;
       }
     }
-    return !!this.v.meanLook || (battle.gen.id >= 2 && !!this.v.trapped);
+    return false;
   }
 
   updateOptions(battle: Battle) {

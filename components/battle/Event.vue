@@ -52,6 +52,7 @@
     <p v-else-if="e.why === 'recover'">{{ pn(e.src) }} regained health!</p>
     <p v-else-if="e.why === 'rest'">{{ pn(e.src) }} started sleeping!</p>
     <p v-else-if="e.why === 'leftovers'">{{ pn(e.src) }} restored a little HP using its Leftovers!</p>
+    <p v-else-if="e.why === 'ingrain'">{{ pn(e.src) }} absorbed nutrients with its roots!</p>
     <p v-else-if="e.why === 'shellbell'">{{ pn(e.src) }} restored a little HP using its Shell Bell!</p>
 
     <p class="text-xs sm:text-[0.8rem] text-[var(--stat-up)]">
@@ -122,12 +123,14 @@
   </div>
   <div v-else-if="e.type === 'sketch'">{{ pn(e.src) }} sketched {{ gen.moveList[e.move].name }}!</div>
   <div v-else-if="e.type === 'cantuse'">{{ pn(e.src) }} can't use {{ gen.moveList[e.move].name }}!</div>
+  <div v-else-if="e.type === 'grudge'">{{ pn(e.src) }}'s {{ gen.moveList[e.move].name }} lost all its PP due to the grudge!</div>
   <div v-else-if="e.type === 'perish'">{{ pn(e.src) }}'s perish count fell to {{ e.turns }}!</div>
   <div v-else-if="e.type === 'psych_up'">
     {{ pn(e.src) }} copied {{ pn(e.target, false) }}'s stat changes!
   </div>
   <div v-else-if="e.type === 'foresight'">{{ pn(e.src) }} identified {{ pn(e.target, false) }}!</div>
   <div v-else-if="e.type === 'lock_on'">{{ pn(e.src) }} took aim at {{ pn(e.target, false) }}!</div>
+  <div v-else-if="e.type === 'helping_hand'">{{ pn(e.src) }} is ready to help {{ pn(e.target, false) }}!</div>
   <div v-else-if="e.type === 'trap'">
     <template v-if="e.kind === 'start'">
       {{ trapStart[e.move]!.replace("{s}", pn(e.src, false)).replace("{t}", pn(e.target)) }}

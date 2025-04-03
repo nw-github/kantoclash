@@ -601,10 +601,10 @@ const createGeneration = () => {
         if (poke.v.trapped && !poke.v.trapped.user.v.trapping) {
           poke.v.trapped = undefined;
         }
-        if (poke.v.hasFlag(VF.protect | VF.endure)) {
+        if (poke.v.hasFlag(VF.protect | VF.endure | VF.helpingHand)) {
           battle.event({
             type: "sv",
-            volatiles: [poke.clearFlag(VF.protect | VF.endure)],
+            volatiles: [poke.clearFlag(VF.protect | VF.endure | VF.helpingHand)],
           });
         }
       }

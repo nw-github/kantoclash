@@ -157,10 +157,21 @@ export function tryDamage(
     battle.info(target, "endure_hit");
   }
 
-  if (dead && target.v.hasFlag(VF.destinyBond)) {
-    user.damage(user.base.hp, target, battle, false, "destiny_bond", true);
-    // user should die first
-    battle.checkFaint(target);
+  if (dead) {
+    if (target.v.hasFlag(VF.destinyBond)) {
+      user.damage(user.base.hp, target, battle, false, "destiny_bond", true);
+      // user should die first
+      battle.checkFaint(target);
+    }
+
+    if (target.v.hasFlag(VF.grudge)) {
+      if (user.v.lastMoveIndex === undefined) {
+        console.error("Grudge with no lastMoveIndex: ", user);
+      } else {
+        user.base.pp[user.v.lastMoveIndex] = 0;
+        battle.event({type: "grudge", src: user.id, move: user.base.moves[user.v.lastMoveIndex]});
+      }
+    }
   }
 
   if (dead || brokeSub) {
@@ -333,6 +344,9 @@ export function getDamage(
       doubleDmg = doubleDmg || self.ignore.includes(battle.moveIdOf(target.v.charging.move));
     }
     if (target.v.usedMinimize && self.flag === "minimize") {
+      doubleDmg = true;
+    }
+    if (["brn", "par", "psn", "tox"].includes(user.base.status) && self.flag === "facade") {
       doubleDmg = true;
     }
 

@@ -209,4 +209,5 @@ type Flag =
   | "rollout"
   | "minimize"
   | "present"
-  | "beatup";
+  | "beatup"
+  | "facade";

@@ -578,8 +578,8 @@ export class Battle {
         break;
       }
 
-      if (user.v.hasFlag(VF.destinyBond)) {
-        this.event({type: "sv", volatiles: [user.clearFlag(VF.destinyBond)]});
+      if (user.v.hasFlag(VF.destinyBond | VF.grudge)) {
+        this.event({type: "sv", volatiles: [user.clearFlag(VF.destinyBond | VF.grudge)]});
       }
 
       if (move.kind !== "switch" && user.v.encore) {
