@@ -104,6 +104,7 @@ const descriptions: Partial<Record<MoveId, string>> = {
   focuspunch:
     "Only works if the user was not hit with a damaging attack before the move executes. Being " +
     "hit while behind a substitute does not disrupt this move. ",
+  naturepower: "Always calls Swift. ",
 };
 
 const gen2Descriptions: Partial<Record<MoveId, string>> = {

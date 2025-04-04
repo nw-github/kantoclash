@@ -3708,12 +3708,14 @@ const internalMoveList = createMoveList({
     kingsRock: true,
   },
   naturepower: {
-    kind: "fail",
     name: "Nature Power",
-    pp: 1,
+    pp: 20,
     type: "normal",
     range: Range.Self,
-    why: "fail_generic",
+    exec(battle, user) {
+      // TODO: should target the opponent across from the user
+      battle.callMove(battle.gen.moveList.swift, user);
+    },
   },
   needlearm: {
     kind: "damage",
@@ -3862,12 +3864,15 @@ const internalMoveList = createMoveList({
     kingsRock: true,
   },
   secretpower: {
-    kind: "fail",
+    kind: "damage",
     name: "Secret Power",
-    pp: 1,
+    pp: 20,
     type: "normal",
-    range: Range.Self,
-    why: "fail_generic",
+    range: Range.Adjacent,
+    power: 70,
+    acc: 100,
+    kingsRock: true,
+    effect: [30, "par"],
   },
   shadowpunch: {
     kind: "damage",
