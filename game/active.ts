@@ -1037,7 +1037,9 @@ class Volatiles {
   usedMinimize = false;
   usedIntimidate = false;
   usedTrace = false;
-  firstTurn = true;
+  canSpeedBoost = false;
+  canFakeOut = true;
+  justSwitched = true;
   protectCount = 0;
   perishCount = 0;
   tauntTurns = 0;

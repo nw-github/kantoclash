@@ -606,9 +606,8 @@ export class Battle {
       }
     }
 
-    if (this.turnType !== TurnType.Lead) {
-      this.gen.betweenTurns(this);
-    } else {
+    this.gen.betweenTurns(this);
+    if (this.turnType === TurnType.Lead) {
       for (const poke of this.inTurnOrder(this.allActive)) {
         poke.user.handleWeatherAbility(this);
       }
@@ -718,32 +717,32 @@ export class Battle {
 
       if (move.sleepOnly && user.base.status !== "slp") {
         return this.info(user, "fail_generic");
-      }
-
-      if (!targets.length) {
-        // Not sure if this is right in gen3, but this should only happen on the last turn if both
-        // opponents faint to a
+      } else if (moveId === "fakeout" && !user.v.canFakeOut) {
+        return this.info(user, "fail_generic");
+      } else if (!targets.length) {
         return this.info(user, "fail_notarget");
       }
 
-      for (let i = 0; i < targets.length; i++) {
-        if (targets[i].v.hasFlag(VF.protect) && this.affectedByProtect(move)) {
-          this.info(targets[i], "protect");
-          targets.splice(i--, 1);
+      if (this.affectedByProtect(move)) {
+        for (let i = 0; i < targets.length; i++) {
+          if (targets[i].v.hasFlag(VF.protect)) {
+            this.info(targets[i], "protect");
+            targets.splice(i--, 1);
+          }
         }
-      }
 
-      if (!targets.length) {
-        return;
+        if (!targets.length) {
+          return;
+        }
       }
     }
 
     if (!move.kind) {
       return move.exec(this, user, targets, moveIndex);
-    } else {
-      const func = (this as any).gen.moveFunctions[move.kind];
-      return func.call(move, this, user, targets, moveIndex);
     }
+
+    const func = (this as any).gen.moveFunctions[move.kind];
+    return func.call(move, this, user, targets, moveIndex);
   }
 
   callMove(move: Move, user: ActivePokemon) {

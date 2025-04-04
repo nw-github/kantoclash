@@ -358,7 +358,7 @@ const createGeneration = (): Generation => {
               poke.recover(Math.max(1, idiv(poke.base.stats.hp, 16)), poke, battle, "raindish");
             }
 
-            if (poke.v.ability === "speedboost" && !poke.v.firstTurn) {
+            if (poke.v.ability === "speedboost" && poke.v.canSpeedBoost) {
               battle.ability(poke);
               poke.modStages([["spe", +1]], battle);
             }
@@ -444,7 +444,12 @@ const createGeneration = (): Generation => {
         poke.v.flinch = false;
         poke.v.inPursuit = false;
         poke.v.retaliateDamage = 0;
-        poke.v.firstTurn = false;
+        if (poke.v.justSwitched) {
+          poke.v.canSpeedBoost = true;
+          poke.v.justSwitched = false;
+        } else {
+          poke.v.canFakeOut = false;
+        }
         if (poke.v.trapped && !poke.v.trapped.user.v.trapping) {
           poke.v.trapped = undefined;
         }
