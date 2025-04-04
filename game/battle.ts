@@ -569,6 +569,14 @@ export class Battle {
   // --
 
   private runTurn(choices: ChosenMove[]) {
+    if (this.turnType === TurnType.Normal) {
+      for (const poke of this.switchOrder()) {
+        if (poke.choice?.move === this.gen.moveList.focuspunch) {
+          this.info(poke, "begin_focuspunch");
+        }
+      }
+    }
+
     // eslint-disable-next-line prefer-const
     for (let {move, user, target, indexInMoves, isReplacement} of choices) {
       user.movedThisTurn = true;
@@ -717,10 +725,14 @@ export class Battle {
 
       if (move.sleepOnly && user.base.status !== "slp") {
         return this.info(user, "fail_generic");
-      } else if (moveId === "fakeout" && !user.v.canFakeOut) {
-        return this.info(user, "fail_generic");
       } else if (!targets.length) {
         return this.info(user, "fail_notarget");
+      } else if (
+        move.kind === "damage" &&
+        move.checkSuccess &&
+        !move.checkSuccess(this, user, targets)
+      ) {
+        return this.info(user, "fail_generic");
       }
 
       if (this.affectedByProtect(move)) {

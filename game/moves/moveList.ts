@@ -3272,6 +3272,13 @@ const internalMoveList = createMoveList({
     priority: +1,
     contact: true,
     effect: [100, "flinch"],
+    checkSuccess(battle, user) {
+      if (!user.v.canFakeOut) {
+        battle.info(user, "fail_generic");
+        return false;
+      }
+      return true;
+    },
   },
   faketears: {
     kind: "stage",
@@ -3302,12 +3309,23 @@ const internalMoveList = createMoveList({
     stages: [["spa", +2]],
   },
   focuspunch: {
-    kind: "fail",
+    kind: "damage",
     name: "Focus Punch",
-    pp: 1,
-    type: "normal",
-    range: Range.Self,
-    why: "fail_generic",
+    pp: 20,
+    type: "fight",
+    range: Range.Adjacent,
+    power: 150,
+    acc: 100,
+    priority: -3,
+    contact: true,
+    kingsRock: true,
+    checkSuccess(battle, user) {
+      if (!user.v.hasFocus) {
+        battle.info(user, "fail_focus");
+        return false;
+      }
+      return true;
+    },
   },
   followme: {
     kind: "fail",

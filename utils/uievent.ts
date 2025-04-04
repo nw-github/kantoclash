@@ -68,6 +68,7 @@ export const infoMessage: Record<InfoReason, string> = {
   fail_notarget: "But there was no target...",
   fail_sleep_clause: "But it failed!",
   whirlwind: "But it failed!",
+  fail_focus: "{} lost its focus and couldn't move!",
   flinch: "{} flinched!",
   splash: "No effect!",
   cSeeded: "{} was seeded!",
@@ -121,6 +122,7 @@ export const infoMessage: Record<InfoReason, string> = {
   ingrain: "{} planted its roots!",
   cTaunt: "{} fell for the taunt!",
   taunt_end: "{}'s taunt wore off...",
+  begin_focuspunch: "{} is tightening its focus!",
 };
 
 export const weatherMessage: Record<Weather, Record<WeatherEvent["kind"], string>> = {

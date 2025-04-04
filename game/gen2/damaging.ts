@@ -239,6 +239,8 @@ export const tryDamage = (
   if (!event) {
     // beat up failure
     battle.info(user, "fail_generic");
+  } else if (!hadSub) {
+    target.v.hasFocus = false;
   }
 
   if (self.flag === "trap" && !hadSub) {

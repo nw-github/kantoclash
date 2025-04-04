@@ -168,6 +168,7 @@ export type FailReason =
   | "fail_notarget"
   | "fail_sleep_clause"
   | "fail_present"
+  | "fail_focus"
   | "has_substitute"
   | "cant_substitute"
   | "flinch"
@@ -218,7 +219,8 @@ export type InfoReason =
   | "doom_desire_release"
   | "withdraw"
   | "wont_flinch"
-  | "miss";
+  | "miss"
+  | "begin_focuspunch";
 
 type InfoEvent = {type: "info"; src: PokeId; why: InfoReason};
 

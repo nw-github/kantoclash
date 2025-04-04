@@ -306,17 +306,16 @@ const createGeneration = (): Generation => {
       // FIXME: actually use turn order
       const turnOrder = battle.allActive;
 
-      // Screens
-      for (const player of battle.players) {
-        for (const screen of screens) {
-          if (player.screens[screen] && --player.screens[screen] === 0) {
-            battle.event({type: "screen", user: player.id, screen, kind: "end"});
+      // Screens Wish & Weather
+      if (battle.betweenTurns < BetweenTurns.Weather) {
+        for (const player of battle.players) {
+          for (const screen of screens) {
+            if (player.screens[screen] && --player.screens[screen] === 0) {
+              battle.event({type: "screen", user: player.id, screen, kind: "end"});
+            }
           }
         }
-      }
 
-      // Wish & Weather
-      if (battle.betweenTurns < BetweenTurns.Weather) {
         // TODO: wish
 
         let someoneDied = false;
@@ -444,6 +443,7 @@ const createGeneration = (): Generation => {
         poke.v.flinch = false;
         poke.v.inPursuit = false;
         poke.v.retaliateDamage = 0;
+        poke.v.hasFocus = true;
         if (poke.v.justSwitched) {
           poke.v.canSpeedBoost = true;
           poke.v.justSwitched = false;

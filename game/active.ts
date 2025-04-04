@@ -1040,6 +1040,7 @@ class Volatiles {
   canSpeedBoost = false;
   canFakeOut = true;
   justSwitched = true;
+  hasFocus = true;
   protectCount = 0;
   perishCount = 0;
   tauntTurns = 0;
