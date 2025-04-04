@@ -58,7 +58,24 @@ export const tryDamage = (
     }
     checkThrashing();
     return 0;
-  } else if (!battle.checkAccuracy(self, user, target, !isSpecial(type))) {
+  }
+
+  if (
+    (type === "electric" && target.v.ability === "voltabsorb") ||
+    (type === "water" && target.v.ability === "waterabsorb")
+  ) {
+    battle.ability(target);
+    target.recover(Math.max(1, Math.floor(target.base.hp / 4)), user, battle, "ability");
+    return 0;
+  }
+
+  if (type === "fire" && target.v.ability === "flashfire" && target.base.status !== "frz") {
+    battle.ability(target, [target.setFlag(VF.flashFire)]);
+    battle.info(target, "immune");
+    return 0;
+  }
+
+  if (!battle.checkAccuracy(self, user, target, !isSpecial(type))) {
     user.v.rollout = 0;
     user.v.furyCutter = 0;
     if (self.flag === "crash") {

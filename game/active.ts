@@ -1077,6 +1077,7 @@ class Volatiles {
       spe: base.stats.spe,
     };
     this.ability = base.ability;
+    this.counter = base.status === "tox" ? 1 : 0;
   }
 
   hasAnyType(...types: Type[]) {

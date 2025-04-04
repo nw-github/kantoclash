@@ -355,6 +355,7 @@ const badges: {flag: VF; props: InstanceType<typeof UBadge>["$props"]}[] = [
   {flag: VF.lockon, props: {color: "red", icon: "ri:crosshair-2-line", variant: "subtle"}},
   {flag: VF.cMeanLook, props: {color: "red", icon: "tabler:prison", variant: "subtle"}},
   {flag: VF.cSeeded, props: {color: "lime", icon: "tabler:seedling-filled", variant: "subtle"}},
+  {flag: VF.flashFire, props: {color: "red", icon: "mdi:fire", variant: "subtle"}},
   {flag: VF.helpingHand, props: {color: "lime", icon: "mdi:hand-clap", variant: "subtle"}},
   {
     flag: VF.cEncore,

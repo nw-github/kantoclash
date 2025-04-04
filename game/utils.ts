@@ -55,6 +55,7 @@ export enum VF {
   grudge       = 0x0000_0800,
   helpingHand  = 0x0000_1000,
   ingrain      = 0x0000_2000,
+  flashFire    = 0x0000_4000,
 
   /** Client only */
   cConfused    = 0x8000_0000,

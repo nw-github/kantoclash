@@ -366,7 +366,7 @@ export function getDamage(
       ? ([extras.beatUp.stats.atk, target.base.stats.def] as const)
       : battle.gen.getDamageVariables(isSpecial(type), battle, user, target, isCrit);
     if ((type === "ice" || type === "fire") && target.v.ability === "thickfat") {
-      def -= Math.floor(def / 2);
+      atk -= Math.floor(atk / 2);
     }
 
     let moveMod = 1;

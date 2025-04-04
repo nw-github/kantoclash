@@ -1,6 +1,12 @@
 import {Nature, natureTable, type ValidatedPokemonDesc} from "~/game/pokemon";
 import {moveList, type MoveId, type Move} from "~/game/moves";
-import {type AbilityId, speciesList, type Species, type SpeciesId} from "~/game/species";
+import {
+  type AbilityId,
+  speciesList,
+  type Species,
+  type SpeciesId,
+  abilityList,
+} from "~/game/species";
 import {HP_TYPES, statKeys, type Stats} from "~/game/utils";
 import random from "random";
 import {z} from "zod";
@@ -151,6 +157,7 @@ export const randoms = (
     }
 
     let nature: Nature | undefined;
+    let ability: AbilityId | undefined;
     let shiny = false;
     const evs: Partial<Stats> = {};
     if (gen.id >= 3) {
@@ -174,20 +181,16 @@ export const randoms = (
       nature = random.choice(natures);
       shiny = random.int(0, 1024) === 0;
 
+      ability = random.choice((s.abilities as AbilityId[]).filter(a => abilityList[a].desc));
+      if (!ability) {
+        ability = random.choice(s.abilities as AbilityId[]);
+      }
+
       // nature = random.choice(Object.values(Nature).filter(v => typeof v === "number"));
       // const plusStat = Object.keys(natureTable)[0];
       // evs[plusStat as keyof Stats] = 252;
     }
-    return {
-      species: id,
-      level,
-      moves,
-      ivs,
-      evs,
-      nature,
-      shiny,
-      ability: random.choice(s.abilities as AbilityId[]),
-    };
+    return {species: id, level, moves, ivs, evs, nature, shiny, ability};
   });
 };
 

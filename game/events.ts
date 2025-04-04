@@ -105,7 +105,8 @@ export type RecoveryReason =
   | "shellbell"
   | "item"
   | "raindish"
-  | "ingrain";
+  | "ingrain"
+  | "ability";
 
 export type DamageEvent = {
   type: "damage";
