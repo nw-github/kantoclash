@@ -278,7 +278,7 @@ export const moveFunctions: MoveFunctions = {
   swagger(battle, user, [target]) {
     if (target.owner.screens.safeguard) {
       target.modStages(this.stages, battle);
-      return battle.info(user, "safeguard_protect");
+      return battle.info(target, "safeguard_protect");
     } else if (!battle.checkAccuracy(this, user, target)) {
       return;
     } else if (!target.modStages(this.stages, battle)) {

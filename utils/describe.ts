@@ -70,6 +70,7 @@ const descriptions: Partial<Record<MoveId, string>> = {
     "target will also faint. ",
   encore: "Forces the target to use its last selected move for the next 2-6 turns. ",
   swagger: "Raises the target's Attack by 2 stages and confuses it. ",
+  flatter: "Raises the target's Special Attack by 2 stages and confuses it. ",
   spite: "Lowers the PP of the target's last used move by 2-5 PP. ",
   sketch: "Permanently replaces this move with the last move used by the target. ",
   perishsong:

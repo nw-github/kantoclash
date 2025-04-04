@@ -935,7 +935,7 @@ export class ActivePokemon {
     }
 
     // FIXME: sending this to the client leaks the pokemon's ability
-    for (const poke of battle.allActive) {
+    for (const poke of battle.getTargets(this, {adjacent: true, oppOnly: true})) {
       if (poke.v.ability === "magnetpull" && this.v.types.includes("steel")) {
         return true;
       } else if (poke.v.ability === "arenatrap" && this.isGrounded()) {
