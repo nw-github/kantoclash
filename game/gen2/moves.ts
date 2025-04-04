@@ -105,7 +105,7 @@ export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
 
       const indexInMoves = target.v.lastMoveIndex!;
 
-      target.v.disabled = {indexInMoves, turns: battle.rng.int(2, 8) + 1};
+      target.v.disabled = {indexInMoves, turns: battle.gen.rng.disableTurns(battle)};
       battle.event({
         type: "disable",
         src: target.id,
@@ -131,10 +131,10 @@ export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
     },
   },
   transform: {
-    exec(battle, user, [target]) {
+    exec(this: Move, battle, user, [target]) {
       if (target.base.transformed) {
         return battle.info(user, "fail_generic");
-      } else if (!battle.checkAccuracy(this as Move, user, target)) {
+      } else if (!battle.checkAccuracy(this, user, target)) {
         return;
       }
       user.transform(battle, target);

@@ -497,7 +497,7 @@ const onComplete = (cb: () => void): Segment => {
   };
   // XXX: For some reason motion decides to run animations with 0 duration at the start of the
   // sequence
-  return [obj, {value: 5}, {duration: 0.02}];
+  return [obj, {value: 5}, {duration: 0.01}];
 };
 
 const animations = {

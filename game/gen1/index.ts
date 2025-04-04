@@ -493,6 +493,7 @@ const createGeneration = () => {
         }
         return sleepTurns;
       },
+      disableTurns: (battle: Battle) => battle.rng.int(1, 8),
     },
     checkAccuracy,
     calcDamage,

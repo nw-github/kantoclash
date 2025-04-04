@@ -91,7 +91,7 @@ const internalMoveList = createMoveList({
       }
 
       const indexInMoves = battle.rng.choice(options)!;
-      target.v.disabled = {indexInMoves, turns: battle.rng.int(1, 8)};
+      target.v.disabled = {indexInMoves, turns: battle.gen.rng.disableTurns(battle)};
       battle.event({
         type: "disable",
         src: target.id,

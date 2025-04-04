@@ -149,7 +149,7 @@
   </UModal>
 </template>
 
-<style scoped>
+<style>
 .events {
   .move,
   .charge,
@@ -161,11 +161,11 @@
     @apply text-lg font-medium;
   }
 
-  .move + .move,
-  .move:first-child,
-  .confused:first-child,
-  .charge:first-child,
-  .confused + .move {
+  div.move + div.move,
+  div.move:first-child,
+  div.confused:first-child,
+  div.charge:first-child,
+  div.confused + div.move {
     padding-top: 0;
   }
 

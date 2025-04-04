@@ -107,7 +107,7 @@ const gen2Descriptions: Partial<Record<MoveId, string>> = {
   conversion:
     "Randomly changes the user's type to the type of one of its moves. Cannot change type to one " +
     "that matches any of the user's current types.",
-  disable: "Disables a move from the target's move set at random.",
+  disable: "Disables the target's last used move.",
   haze: "Removes the all stat stages for both the user and the target. ",
   substitute:
     "The user sacrifices 1/4 its HP to create a substitute with 1/4 its HP + 1. The " +
@@ -176,7 +176,7 @@ const formatStages = (gen: Generation, stages: [Stages, number][]) => {
 export const describeMove = (gen: Generation, id: MoveId) => {
   const move = gen.moveList[id];
   // FIXME: more generic solution
-  if (id in gen2Descriptions && gen.id === 2) {
+  if (id in gen2Descriptions && gen.id >= 2) {
     return gen2Descriptions[id];
   } else if (id in descriptions) {
     return descriptions[id];

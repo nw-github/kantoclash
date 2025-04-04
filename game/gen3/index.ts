@@ -69,6 +69,7 @@ const createGeneration = (): Generation => {
         return battle.rand100(critStages[Math.min(stages, 4)] * 100);
       },
       sleepTurns: battle => battle.rng.int(1, 4),
+      disableTurns: battle => battle.rng.int(2, 5) + 1,
     },
     getDamageVariables(special, battle, user, target, isCrit) {
       const [atks, defs] = special ? (["spa", "spd"] as const) : (["atk", "def"] as const);
@@ -249,12 +250,12 @@ const createGeneration = (): Generation => {
         return false;
       }
 
-      if (user.v.disabled && --user.v.disabled.turns === 0) {
-        user.v.disabled = undefined;
-        battle.info(user, "disable_end", [{id: user.id, v: {flags: user.v.cflags}}]);
-      }
-
-      if (move.kind !== "damage" && user.v.tauntTurns) {
+      const moveId = battle.moveIdOf(move)!;
+      if (moveId === user.base.moves[user.v.disabled?.indexInMoves ?? -1]) {
+        battle.event({move: moveId, type: "move", src: user.id, disabled: true});
+        resetVolatiles();
+        return false;
+      } else if (move.kind !== "damage" && user.v.tauntTurns) {
         battle.event({move: battle.moveIdOf(move)!, type: "cantusetaunt", src: user.id});
         resetVolatiles();
         return false;
@@ -387,7 +388,10 @@ const createGeneration = (): Generation => {
             poke.handleEncore(battle);
           }
 
-          // TODO: disable?
+          if (poke.base.hp && poke.v.disabled && --poke.v.disabled.turns === 0) {
+            poke.v.disabled = undefined;
+            battle.info(poke, "disable_end", [{id: poke.id, v: {flags: poke.v.cflags}}]);
+          }
 
           if (poke.base.hp && poke.v.tauntTurns && --poke.v.tauntTurns === 0) {
             battle.info(poke, "taunt_end", [{id: poke.id, v: {flags: poke.v.cflags}}]);
