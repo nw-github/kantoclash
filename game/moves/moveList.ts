@@ -170,6 +170,7 @@ const internalMoveList = createMoveList({
     type: "normal",
     range: Range.Self,
     noEncore: true,
+    noAssist: true,
     exec(battle, user): boolean {
       battle.gen1LastDamage = 0;
       const moves = Object.entries(battle.gen.moveList)
@@ -189,6 +190,7 @@ const internalMoveList = createMoveList({
     acc: 100,
     noEncore: true,
     noSleepTalk: true,
+    noAssist: true,
     exec(battle, user, [target], indexInMoves) {
       if (!battle.checkAccuracy(this, user, target)) {
         return false;
@@ -213,6 +215,7 @@ const internalMoveList = createMoveList({
     type: "flying",
     range: Range.Self,
     noEncore: true,
+    noAssist: true,
     exec(battle, user) {
       battle.gen1LastDamage = 0;
       const lastHitBy = user.v.lastHitBy;
@@ -264,6 +267,7 @@ const internalMoveList = createMoveList({
     type: "normal",
     range: Range.Self,
     flag: VF.focus,
+    noAssist: true,
   },
   lightscreen: {
     kind: "volatile",
@@ -800,6 +804,7 @@ const internalMoveList = createMoveList({
     power: 1,
     priority: -1,
     kingsRock: true,
+    noAssist: true,
     getDamage(battle, _, target) {
       // https://www.youtube.com/watch?v=ftTalHMjPRY
       //  On cartrige, the move counter uses is updated whenever a player hovers over a move (even
@@ -1595,6 +1600,7 @@ const internalMoveList = createMoveList({
     recoil: 2,
     noMetronome: true,
     noEncore: true,
+    noAssist: true,
     kingsRock: true,
   },
   submission: {
@@ -2117,6 +2123,7 @@ const internalMoveList = createMoveList({
     range: Range.Adjacent,
     noMetronome: true,
     noEncore: true,
+    noAssist: true,
     exec(battle, user, [target], moveIndex) {
       if (!battle.checkAccuracy(this, user, target)) {
         return;
@@ -2163,6 +2170,7 @@ const internalMoveList = createMoveList({
     sleepOnly: true,
     whileAsleep: true,
     noSleepTalk: true,
+    noAssist: true,
     exec(battle, user) {
       const m = battle.rng.choice(user.base.moves.filter(m => !battle.gen.moveList[m].noSleepTalk));
       if (!m) {
@@ -2267,6 +2275,7 @@ const internalMoveList = createMoveList({
     type: "fight",
     range: Range.Self,
     noMetronome: true,
+    noAssist: true,
   },
   endure: {
     kind: "protect",
@@ -2277,6 +2286,7 @@ const internalMoveList = createMoveList({
     range: Range.Self,
     noMetronome: true,
     endure: true,
+    noAssist: true,
   },
   protect: {
     kind: "protect",
@@ -2286,6 +2296,7 @@ const internalMoveList = createMoveList({
     type: "normal",
     range: Range.Self,
     noMetronome: true,
+    noAssist: true,
   },
   // --
   milkdrink: {
@@ -2332,6 +2343,7 @@ const internalMoveList = createMoveList({
     range: Range.Self,
     noMetronome: true,
     flag: VF.destinyBond,
+    noAssist: true,
   },
   safeguard: {
     kind: "screen",
@@ -2681,6 +2693,7 @@ const internalMoveList = createMoveList({
     priority: -1,
     noMetronome: true,
     kingsRock: true,
+    noAssist: true,
     getDamage(battle, user, target) {
       if (
         !user.v.retaliateDamage ||
@@ -2885,6 +2898,7 @@ const internalMoveList = createMoveList({
     noMetronome: true,
     effect: [99.6, "thief"],
     kingsRock: true,
+    noAssist: true,
   },
   triplekick: {
     kind: "damage",
@@ -2980,15 +2994,24 @@ const internalMoveList = createMoveList({
     pp: 5,
     type: "grass",
     range: Range.Self,
-    why: "fail_generic",
   },
   assist: {
-    kind: "fail",
     name: "Assist",
-    pp: 1,
+    pp: 20,
     type: "normal",
     range: Range.Self,
-    why: "fail_generic",
+    noAssist: true,
+    exec(battle, user) {
+      const moves = user.owner.team
+        .flatMap(p => (p !== user.base.real ? p.moves : []))
+        .map(move => battle.gen.moveList[move])
+        .filter(move => !move.noAssist);
+      const move = battle.rng.choice(moves);
+      if (!move) {
+        return battle.info(user, "fail_generic");
+      }
+      return battle.callMove(move, user);
+    },
   },
   astonish: {
     kind: "damage",
@@ -3127,6 +3150,7 @@ const internalMoveList = createMoveList({
     effect: [100, "thief"],
     kingsRock: true,
     contact: true,
+    noAssist: true,
   },
   crushclaw: {
     kind: "damage",
@@ -3288,6 +3312,7 @@ const internalMoveList = createMoveList({
     type: "normal",
     range: Range.Self,
     why: "fail_generic",
+    noAssist: true,
   },
   frenzyplant: {
     kind: "damage",
@@ -3344,6 +3369,7 @@ const internalMoveList = createMoveList({
     // Technically should target the user in Gen 3
     range: Range.AdjacentAlly,
     priority: +5,
+    noAssist: true,
     exec(battle, user, [target]) {
       if (target.movedThisTurn) {
         return battle.info(user, "fail_generic");
@@ -3845,6 +3871,7 @@ const internalMoveList = createMoveList({
     type: "normal",
     range: Range.Self,
     why: "fail_generic",
+    noAssist: true,
   },
   spitup: {
     kind: "fail",
@@ -3936,6 +3963,7 @@ const internalMoveList = createMoveList({
     pp: 10,
     type: "psychic",
     range: Range.Adjacent,
+    noAssist: true,
     exec(battle, user, [target]) {
       if (target.v.substitute) {
         return battle.info(user, "fail_generic");

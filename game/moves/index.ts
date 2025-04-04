@@ -22,11 +22,13 @@ export interface BaseMove {
   readonly rainAcc?: boolean;
   /** Hits users in the semi-invuln state of these moves */
   readonly ignore?: string[] /* MoveId[] */;
-  /** Not callable by metronome */
-  readonly noMetronome?: boolean;
   /** Not encoreable */
   readonly noEncore?: boolean;
-  /** Unselectable for sleep talk */
+  /** Not callable by metronome */
+  readonly noMetronome?: boolean;
+  /** Not callable by assist */
+  readonly noAssist?: boolean;
+  /** Not callable by sleep talk */
   readonly noSleepTalk?: boolean;
   /** Undefined: Inherit from kind, true: affected, false: unaffected */
   readonly protect?: boolean;
