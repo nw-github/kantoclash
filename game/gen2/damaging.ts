@@ -1,6 +1,7 @@
 import type {ActivePokemon, Battle} from "../battle";
 import {checkUsefulness, getDamage, multiHitCount, Range, type DamagingMove} from "../moves";
-import {idiv, isSpecial, randChoiceWeighted, VF} from "../utils";
+import {abilityList} from "../species";
+import {idiv, isSpecial, randChoiceWeighted, VF, type Type} from "../utils";
 
 export const tryDamage = (
   self: DamagingMove,
@@ -17,6 +18,58 @@ export const tryDamage = (
         user.confuse(battle, user.v.thrashing.max ? "cConfusedFatigueMax" : "cConfusedFatigue");
       }
       user.v.thrashing = undefined;
+    }
+  };
+
+  const tryOnHitAbility = (type: Type, hadSub: bool) => {
+    // TODO: test if color change activates before move secondary effect
+    if (
+      !hadSub &&
+      target.base.hp &&
+      target.v.ability === "colorchange" &&
+      !target.v.types.includes(type)
+    ) {
+      battle.ability(target);
+      battle.event({
+        type: "conversion",
+        src: target.id,
+        types: [type],
+        volatiles: [target.setVolatile("types", [type])],
+      });
+      return;
+    }
+
+    if (!self.contact) {
+      return;
+    }
+
+    const status = abilityList[target.v.ability!]?.contactStatus;
+    if (status && battle.gen.rng.tryContactStatus(battle)) {
+      if (status === "attract") {
+        if (
+          target.v.attract ||
+          !target.base.gender ||
+          !user.base.gender ||
+          target.base.gender === user.base.gender
+        ) {
+          return;
+        }
+
+        battle.ability(target);
+        user.v.attract = target;
+        battle.info(user, "cAttract", [{id: user.id, v: {flags: user.v.cflags}}]);
+      } else {
+        battle.ability(target);
+        user.status(Array.isArray(status) ? battle.rng.choice(status)! : status, battle, target);
+      }
+    } else if (target.v.ability === "roughskin") {
+      battle.ability(target);
+      user.damage2(battle, {
+        dmg: Math.max(1, Math.floor(user.base.stats.hp / 16)),
+        src: target,
+        why: "roughskin",
+        eff: 1,
+      });
     }
   };
 
@@ -65,7 +118,8 @@ export const tryDamage = (
     (type === "water" && target.v.ability === "waterabsorb")
   ) {
     battle.ability(target);
-    target.recover(Math.max(1, Math.floor(target.base.hp / 4)), user, battle, "ability");
+    battle.info(target, "immune");
+    target.recover(Math.max(1, Math.floor(target.base.stats.hp / 4)), user, battle, "ability");
     return 0;
   }
 
@@ -129,7 +183,8 @@ export const tryDamage = (
       ({dead, event, dealt} = target.damage2(battle, {dmg, src: user, why: "attacked", isCrit}));
       user.handleShellBell(battle, dealt);
 
-      if (dead) {
+      tryOnHitAbility(type, hadSub);
+      if (dead || user.base.hp === 0) {
         break;
       }
     }
@@ -143,7 +198,7 @@ export const tryDamage = (
 
     const count = counts[self.flag];
     let dmg, isCrit;
-    for (let hits = 0; !dead && !endured && hits < count; hits++) {
+    for (let hits = 0; !dead && user.base.hp && !endured && hits < count; hits++) {
       hadSub = target.v.substitute !== 0;
       ({dmg, isCrit, endured, band} = getDamage(self, battle, user, target, {
         tripleKick: self.flag === "triple" ? hits + 1 : 1,
@@ -157,6 +212,8 @@ export const tryDamage = (
       ({dead, event, dealt} = target.damage(dmg, user, battle, isCrit, "attacked", false, eff));
       event.hitCount = hits + 1;
       user.handleShellBell(battle, dealt);
+
+      tryOnHitAbility(type, hadSub);
     }
     dealt = 0;
   } else {
@@ -171,16 +228,22 @@ export const tryDamage = (
       false,
       eff,
     ));
+
+    tryOnHitAbility(type, hadSub);
   }
 
   target.v.lastHitBy = {move: self, user};
 
   checkThrashing();
-  if (self.recoil && (self === battle.gen.moveList.struggle || user.v.ability !== "rockhead")) {
+  if (
+    user.base.hp &&
+    self.recoil &&
+    (self === battle.gen.moveList.struggle || user.v.ability !== "rockhead")
+  ) {
     user.damage(Math.max(Math.floor(dealt / self.recoil), 1), user, battle, false, "recoil", true);
   }
 
-  if (self.flag === "drain" || self.flag === "dream_eater") {
+  if ((user.base.hp && self.flag === "drain") || self.flag === "dream_eater") {
     user.recover(Math.max(Math.floor(dealt / 2), 1), target, battle, "drain");
   } else if (self.flag === "payday") {
     battle.info(user, "payday");
@@ -367,5 +430,6 @@ export const tryDamage = (
       target.status(effect, battle, user);
     }
   }
+
   return dealt;
 };

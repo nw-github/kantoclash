@@ -101,6 +101,9 @@ const descriptions: Partial<Record<MoveId, string>> = {
   ingrain:
     "Prevents switching out and moves that force the target to switch, and heals the user " +
     "for 1/16 its max HP at the end of every turn. ",
+  focuspunch:
+    "Only works if the user was not hit with a damaging attack before the move executes. Being " +
+    "hit while behind a substitute does not disrupt this move. ",
 };
 
 const gen2Descriptions: Partial<Record<MoveId, string>> = {

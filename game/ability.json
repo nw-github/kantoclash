@@ -1,7 +1,15 @@
 {
-  "cutecharm": {"name": "Cute Charm", "desc": "May infatuate opposite gender on contact."},
-  "effectspore": {"name": "Effect Spore", "desc": "May PSN/PAR/SLP on contact."},
-  "flamebody": {"name": "Flame Body", "desc": "May BRN on contact."},
+  "cutecharm": {
+    "name": "Cute Charm",
+    "desc": "May infatuate opposite gender on contact.",
+    "contactStatus": "attract"
+  },
+  "effectspore": {
+    "name": "Effect Spore",
+    "desc": "May PSN/PAR/SLP on contact.",
+    "contactStatus": ["psn", "par", "slp"]
+  },
+  "flamebody": {"name": "Flame Body", "desc": "May BRN on contact.", "contactStatus": "brn"},
   "flashfire": {"name": "Flash Fire", "desc": "Immune to and boosted by Fire-type attacks."},
   "forecast": {"name": "Forecast", "desc": "Type switches with weather."},
   "hustle": {"name": "Hustle", "desc": "Lowers Acc for physical moves, raises Atk."},
@@ -9,12 +17,12 @@
   "lightningrod": {"name": "Lightning Rod", "desc": "Redirects Electric-type moves to the user."},
   "minus": {"name": "Minus", "desc": "+50% SpA with Plus."},
   "plus": {"name": "Plus", "desc": "+50% SpA with Minus."},
-  "poisonpoint": {"name": "Poison Point", "desc": "May poison on contact."},
+  "poisonpoint": {"name": "Poison Point", "desc": "May poison on contact.", "contactStatus": "psn"},
   "pressure": {"name": "Pressure", "desc": "Extra PP reduction when targeted."},
   "raindish": {"name": "Rain Dish", "desc": "Recover 1/16 HP every turn in rain."},
   "roughskin": {"name": "Rough Skin", "desc": "Damages 1/16 HP on contact."},
   "shadowtag": {"name": "Shadow Tag", "desc": "Traps all other Pokémon."},
-  "static": {"name": "Static", "desc": "May paralyze on contact."},
+  "static": {"name": "Static", "desc": "May paralyze on contact.", "contactStatus": "par"},
   "trace": {"name": "Trace", "desc": "Copies an adjacent Pokémon's ablity."},
   "truant": {"name": "Truant", "desc": "Can only move every other turn."},
   "voltabsorb": {"name": "Volt Absorb", "desc": "Heals from damaging Electric type moves."},

@@ -39,6 +39,7 @@
         <li class="pt-3 space-x-1 flex">
           <TypeBadge :type="info[0]" />
           <MoveCategory :category="getCategory(move, info[0])" />
+          <UBadge v-if="move.kind === 'damage' && move.contact" label="Contact" />
         </li>
       </ul>
     </template>

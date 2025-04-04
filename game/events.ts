@@ -92,7 +92,8 @@ export type DamageReason =
   | "perish_song"
   | "future_sight"
   | "spikes"
-  | "trap_eot";
+  | "trap_eot"
+  | "roughskin";
 
 export type RecoveryReason =
   | "drain"
@@ -182,7 +183,14 @@ export type BugType = "bug_gen2_bellydrum" | "bug_gen2_spikes";
 
 type VFReason = Exclude<
   keyof typeof VF,
-  "cSubstitute" | "curse" | "none" | "cDisabled" | "identified" | "lockon" | "helpingHand"
+  | "cSubstitute"
+  | "curse"
+  | "none"
+  | "cDisabled"
+  | "identified"
+  | "lockon"
+  | "helpingHand"
+  | "flashFire"
 >;
 
 export type InfoReason =

@@ -2025,7 +2025,7 @@
     "dexId": 51,
     "name": "Dugtrio",
     "types": ["ground"],
-    "stats": {"hp": 35, "atk": 100, "def": 50, "spa": 70, "spd": 0, "spe": 120},
+    "stats": {"hp": 35, "atk": 80, "def": 50, "spa": 70, "spd": 0, "spe": 120},
     "moves": [
       "scratch",
       "cut",

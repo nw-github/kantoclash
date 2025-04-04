@@ -666,6 +666,7 @@ const internalMoveList = createMoveList({
     noSleepTalk: true,
     kingsRock: true,
     flag: "bide",
+    contact: true,
     getDamage(_, user) {
       const dmg = user.v.bide?.dmg;
       user.v.bide = undefined;
@@ -681,6 +682,7 @@ const internalMoveList = createMoveList({
     acc: 75,
     power: 15,
     flag: "trap",
+    contact: true,
   },
   bodyslam: {
     kind: "damage",
@@ -691,6 +693,7 @@ const internalMoveList = createMoveList({
     power: 85,
     acc: 100,
     effect: [30.1 /* 77/256 */, "par"],
+    contact: true,
   },
   bonemerang: {
     kind: "damage",
@@ -732,6 +735,7 @@ const internalMoveList = createMoveList({
     power: 60,
     acc: 100,
     effect: [10.2 /* 26/256 */, "flinch"],
+    contact: true,
   },
   blizzard: {
     kind: "damage",
@@ -762,6 +766,7 @@ const internalMoveList = createMoveList({
     acc: 75,
     power: 35,
     flag: "trap",
+    contact: true,
   },
   cometpunch: {
     kind: "damage",
@@ -773,6 +778,7 @@ const internalMoveList = createMoveList({
     acc: 85,
     flag: "multi",
     kingsRock: true,
+    contact: true,
   },
   confusion: {
     kind: "damage",
@@ -793,6 +799,7 @@ const internalMoveList = createMoveList({
     power: 10,
     acc: 100,
     effect: [33.21 /* 85/256 */, [["spe", -1]]],
+    contact: true,
   },
   counter: {
     kind: "damage",
@@ -805,6 +812,7 @@ const internalMoveList = createMoveList({
     priority: -1,
     kingsRock: true,
     noAssist: true,
+    contact: true,
     getDamage(battle, _, target) {
       // https://www.youtube.com/watch?v=ftTalHMjPRY
       //  On cartrige, the move counter uses is updated whenever a player hovers over a move (even
@@ -837,6 +845,7 @@ const internalMoveList = createMoveList({
     acc: 85,
     flag: "high_crit",
     kingsRock: true,
+    contact: true,
   },
   cut: {
     kind: "damage",
@@ -847,6 +856,7 @@ const internalMoveList = createMoveList({
     power: 50,
     acc: 95,
     kingsRock: true,
+    contact: true,
   },
   dig: {
     kind: "damage",
@@ -859,6 +869,7 @@ const internalMoveList = createMoveList({
     charge: "invuln",
     noSleepTalk: true,
     kingsRock: true,
+    contact: true,
   },
   dizzypunch: {
     kind: "damage",
@@ -868,6 +879,7 @@ const internalMoveList = createMoveList({
     range: Range.Adjacent,
     power: 70,
     acc: 100,
+    contact: true,
   },
   doubleedge: {
     kind: "damage",
@@ -879,6 +891,7 @@ const internalMoveList = createMoveList({
     acc: 100,
     recoil: 4, // 1 / 4
     kingsRock: true,
+    contact: true,
   },
   doublekick: {
     kind: "damage",
@@ -890,6 +903,7 @@ const internalMoveList = createMoveList({
     acc: 100,
     flag: "double",
     kingsRock: true,
+    contact: true,
   },
   doubleslap: {
     kind: "damage",
@@ -901,6 +915,7 @@ const internalMoveList = createMoveList({
     acc: 85,
     flag: "multi",
     kingsRock: true,
+    contact: true,
   },
   dragonrage: {
     kind: "damage",
@@ -931,6 +946,7 @@ const internalMoveList = createMoveList({
     power: 80,
     acc: 100,
     kingsRock: true,
+    contact: true,
   },
   eggbomb: {
     kind: "damage",
@@ -992,6 +1008,7 @@ const internalMoveList = createMoveList({
     power: 75,
     acc: 100,
     effect: [10.2 /* 26/256 */, "brn"],
+    contact: true,
   },
   firespin: {
     kind: "damage",
@@ -1035,6 +1052,7 @@ const internalMoveList = createMoveList({
     charge: "invuln",
     noSleepTalk: true,
     kingsRock: true,
+    contact: true,
   },
   furyattack: {
     kind: "damage",
@@ -1046,6 +1064,7 @@ const internalMoveList = createMoveList({
     acc: 85,
     flag: "multi",
     kingsRock: true,
+    contact: true,
   },
   furyswipes: {
     kind: "damage",
@@ -1057,6 +1076,7 @@ const internalMoveList = createMoveList({
     acc: 80,
     flag: "multi",
     kingsRock: true,
+    contact: true,
   },
   guillotine: {
     kind: "damage",
@@ -1068,6 +1088,7 @@ const internalMoveList = createMoveList({
     power: 1,
     getDamage: 65535,
     flag: "ohko",
+    contact: true,
   },
   gust: {
     kind: "damage",
@@ -1087,6 +1108,7 @@ const internalMoveList = createMoveList({
     power: 70,
     acc: 100,
     effect: [30.1 /* 77/256 */, "flinch"],
+    contact: true,
   },
   hijumpkick: {
     kind: "damage",
@@ -1098,6 +1120,7 @@ const internalMoveList = createMoveList({
     acc: 90,
     flag: "crash",
     kingsRock: true,
+    contact: true,
   },
   hornattack: {
     kind: "damage",
@@ -1108,6 +1131,7 @@ const internalMoveList = createMoveList({
     power: 65,
     acc: 100,
     kingsRock: true,
+    contact: true,
   },
   horndrill: {
     kind: "damage",
@@ -1119,6 +1143,7 @@ const internalMoveList = createMoveList({
     power: 1,
     getDamage: 65535,
     flag: "ohko",
+    contact: true,
   },
   hydropump: {
     kind: "damage",
@@ -1149,6 +1174,7 @@ const internalMoveList = createMoveList({
     power: 80,
     acc: 90,
     effect: [10.2 /* 26/256 */, "flinch"],
+    contact: true,
   },
   icebeam: {
     kind: "damage",
@@ -1169,6 +1195,7 @@ const internalMoveList = createMoveList({
     power: 75,
     acc: 100,
     effect: [10.2 /* 26/256 */, "frz"],
+    contact: true,
   },
   jumpkick: {
     kind: "damage",
@@ -1180,6 +1207,7 @@ const internalMoveList = createMoveList({
     acc: 95,
     flag: "crash",
     kingsRock: true,
+    contact: true,
   },
   karatechop: {
     kind: "damage",
@@ -1191,6 +1219,7 @@ const internalMoveList = createMoveList({
     acc: 100,
     flag: "high_crit",
     kingsRock: true,
+    contact: true,
   },
   leechlife: {
     kind: "damage",
@@ -1202,6 +1231,7 @@ const internalMoveList = createMoveList({
     acc: 100,
     flag: "drain",
     kingsRock: true,
+    contact: true,
   },
   lick: {
     kind: "damage",
@@ -1212,6 +1242,7 @@ const internalMoveList = createMoveList({
     power: 20,
     acc: 100,
     effect: [30.1 /* 77/256 */, "par"],
+    contact: true,
   },
   lowkick: {
     kind: "damage",
@@ -1222,6 +1253,7 @@ const internalMoveList = createMoveList({
     power: 50,
     acc: 90,
     effect: [30.1 /* 77/256 */, "flinch"],
+    contact: true,
   },
   megadrain: {
     kind: "damage",
@@ -1243,6 +1275,7 @@ const internalMoveList = createMoveList({
     power: 120,
     acc: 75,
     kingsRock: true,
+    contact: true,
   },
   megapunch: {
     kind: "damage",
@@ -1253,6 +1286,7 @@ const internalMoveList = createMoveList({
     power: 80,
     acc: 85,
     kingsRock: true,
+    contact: true,
   },
   nightshade: {
     kind: "damage",
@@ -1285,6 +1319,7 @@ const internalMoveList = createMoveList({
     power: 35,
     acc: 100,
     kingsRock: true,
+    contact: true,
   },
   petaldance: {
     kind: "damage",
@@ -1296,6 +1331,7 @@ const internalMoveList = createMoveList({
     acc: 100,
     flag: "multi_turn",
     kingsRock: true,
+    contact: true,
   },
   pinmissile: {
     kind: "damage",
@@ -1327,6 +1363,7 @@ const internalMoveList = createMoveList({
     power: 40,
     acc: 100,
     kingsRock: true,
+    contact: true,
   },
   psybeam: {
     kind: "damage",
@@ -1372,6 +1409,7 @@ const internalMoveList = createMoveList({
     acc: 100,
     priority: +1,
     kingsRock: true,
+    contact: true,
   },
   rage: {
     kind: "damage",
@@ -1383,6 +1421,7 @@ const internalMoveList = createMoveList({
     power: 20,
     flag: "rage",
     kingsRock: true,
+    contact: true,
   },
   razorleaf: {
     kind: "damage",
@@ -1435,6 +1474,7 @@ const internalMoveList = createMoveList({
     power: 60,
     acc: 85,
     effect: [30.1 /* 77/256 */, "flinch"],
+    contact: true,
   },
   selfdestruct: {
     kind: "damage",
@@ -1457,6 +1497,7 @@ const internalMoveList = createMoveList({
     power: 40,
     acc: 100,
     kingsRock: true,
+    contact: true,
   },
   seismictoss: {
     kind: "damage",
@@ -1467,6 +1508,7 @@ const internalMoveList = createMoveList({
     acc: 100,
     power: 1,
     kingsRock: true,
+    contact: true,
     getDamage: (_, user) => user.base.level,
   },
   skullbash: {
@@ -1480,6 +1522,7 @@ const internalMoveList = createMoveList({
     charge: true,
     noSleepTalk: true,
     kingsRock: true,
+    contact: true,
   },
   skyattack: {
     kind: "damage",
@@ -1502,6 +1545,7 @@ const internalMoveList = createMoveList({
     power: 80,
     acc: 75,
     kingsRock: true,
+    contact: true,
   },
   slash: {
     kind: "damage",
@@ -1513,6 +1557,7 @@ const internalMoveList = createMoveList({
     acc: 100,
     flag: "high_crit",
     kingsRock: true,
+    contact: true,
   },
   sludge: {
     kind: "damage",
@@ -1578,6 +1623,7 @@ const internalMoveList = createMoveList({
     acc: 100,
     effect: [30.1 /* 77/256 */, "flinch"],
     flag: "minimize",
+    contact: true,
   },
   strength: {
     kind: "damage",
@@ -1588,6 +1634,7 @@ const internalMoveList = createMoveList({
     power: 80,
     acc: 100,
     kingsRock: true,
+    contact: true,
   },
   struggle: {
     kind: "damage",
@@ -1602,6 +1649,7 @@ const internalMoveList = createMoveList({
     noEncore: true,
     noAssist: true,
     kingsRock: true,
+    contact: true,
   },
   submission: {
     kind: "damage",
@@ -1613,6 +1661,7 @@ const internalMoveList = createMoveList({
     acc: 80,
     recoil: 4,
     kingsRock: true,
+    contact: true,
   },
   superfang: {
     kind: "damage",
@@ -1623,6 +1672,7 @@ const internalMoveList = createMoveList({
     acc: 90,
     power: 1,
     kingsRock: true,
+    contact: true,
     getDamage: (_battle, _, target) => Math.max(Math.floor(target.base.hp / 2), 1),
   },
   surf: {
@@ -1655,6 +1705,7 @@ const internalMoveList = createMoveList({
     power: 35,
     acc: 95,
     kingsRock: true,
+    contact: true,
   },
   takedown: {
     kind: "damage",
@@ -1666,6 +1717,7 @@ const internalMoveList = createMoveList({
     acc: 85,
     recoil: 4,
     kingsRock: true,
+    contact: true,
   },
   thrash: {
     kind: "damage",
@@ -1677,6 +1729,7 @@ const internalMoveList = createMoveList({
     acc: 100,
     flag: "multi_turn",
     kingsRock: true,
+    contact: true,
   },
   thunder: {
     kind: "damage",
@@ -1697,6 +1750,7 @@ const internalMoveList = createMoveList({
     power: 75,
     acc: 100,
     effect: [10.2 /* 26/256 */, "par"],
+    contact: true,
   },
   thundershock: {
     kind: "damage",
@@ -1748,6 +1802,7 @@ const internalMoveList = createMoveList({
     power: 35,
     acc: 100,
     kingsRock: true,
+    contact: true,
   },
   vicegrip: {
     kind: "damage",
@@ -1758,6 +1813,7 @@ const internalMoveList = createMoveList({
     power: 55,
     acc: 100,
     kingsRock: true,
+    contact: true,
   },
   watergun: {
     kind: "damage",
@@ -1778,6 +1834,7 @@ const internalMoveList = createMoveList({
     power: 80,
     acc: 100,
     kingsRock: true,
+    contact: true,
   },
   wingattack: {
     kind: "damage",
@@ -1788,6 +1845,7 @@ const internalMoveList = createMoveList({
     power: 35,
     acc: 100,
     kingsRock: true,
+    contact: true,
   },
   wrap: {
     kind: "damage",
@@ -1798,6 +1856,7 @@ const internalMoveList = createMoveList({
     acc: 85,
     power: 15,
     flag: "trap",
+    contact: true,
   },
   // --
   roar: {
@@ -2480,6 +2539,7 @@ const internalMoveList = createMoveList({
     acc: 80,
     flag: "high_crit",
     kingsRock: true,
+    contact: true,
   },
   crunch: {
     kind: "damage",
@@ -2490,6 +2550,7 @@ const internalMoveList = createMoveList({
     power: 80,
     acc: 100,
     effect: [20, [["spd", -1]]],
+    contact: true,
   },
   dragonbreath: {
     kind: "damage",
@@ -2510,6 +2571,7 @@ const internalMoveList = createMoveList({
     power: 100,
     acc: 50,
     effect: [99.6 /* 255/256 */, "confusion"],
+    contact: true,
   },
   extremespeed: {
     kind: "damage",
@@ -2521,6 +2583,7 @@ const internalMoveList = createMoveList({
     acc: 100,
     priority: +1,
     kingsRock: true,
+    contact: true,
   },
   falseswipe: {
     kind: "damage",
@@ -2532,6 +2595,7 @@ const internalMoveList = createMoveList({
     acc: 100,
     flag: "false_swipe",
     kingsRock: true,
+    contact: true,
   },
   feintattack: {
     kind: "damage",
@@ -2541,6 +2605,7 @@ const internalMoveList = createMoveList({
     range: Range.Adjacent,
     power: 60,
     kingsRock: true,
+    contact: true,
   },
   flail: {
     kind: "damage",
@@ -2553,6 +2618,7 @@ const internalMoveList = createMoveList({
     getPower: getFlailPower,
     flag: "norand",
     kingsRock: true,
+    contact: true,
   },
   flamewheel: {
     kind: "damage",
@@ -2564,6 +2630,7 @@ const internalMoveList = createMoveList({
     acc: 100,
     effect: [10, "brn"],
     selfThaw: true,
+    contact: true,
   },
   frustration: {
     kind: "damage",
@@ -2575,6 +2642,7 @@ const internalMoveList = createMoveList({
     acc: 100,
     getPower: user => idiv(255 - user.friendship, 2.5),
     kingsRock: true,
+    contact: true,
   },
   furycutter: {
     kind: "damage",
@@ -2586,6 +2654,7 @@ const internalMoveList = createMoveList({
     acc: 95,
     flag: "fury_cutter",
     kingsRock: true,
+    contact: true,
   },
   gigadrain: {
     kind: "damage",
@@ -2637,6 +2706,7 @@ const internalMoveList = createMoveList({
     power: 100,
     acc: 75,
     effect: [30, [["def", -1]]],
+    contact: true,
   },
   machpunch: {
     kind: "damage",
@@ -2648,6 +2718,7 @@ const internalMoveList = createMoveList({
     acc: 100,
     priority: +1,
     kingsRock: true,
+    contact: true,
   },
   magnitude: {
     kind: "damage",
@@ -2671,6 +2742,7 @@ const internalMoveList = createMoveList({
     power: 120,
     acc: 85,
     kingsRock: true,
+    contact: true,
   },
   metalclaw: {
     kind: "damage",
@@ -2681,6 +2753,7 @@ const internalMoveList = createMoveList({
     power: 50,
     acc: 95,
     effect: [10, [["atk", +1]], true],
+    contact: true,
   },
   mirrorcoat: {
     kind: "damage",
@@ -2736,6 +2809,7 @@ const internalMoveList = createMoveList({
     acc: 100,
     flag: "multi_turn",
     kingsRock: true,
+    contact: true,
   },
   powdersnow: {
     kind: "damage",
@@ -2767,6 +2841,7 @@ const internalMoveList = createMoveList({
     power: 40,
     acc: 100,
     kingsRock: true,
+    contact: true,
   },
   rapidspin: {
     kind: "damage",
@@ -2778,6 +2853,7 @@ const internalMoveList = createMoveList({
     acc: 100,
     flag: "rapid_spin",
     kingsRock: true,
+    contact: true,
   },
   return: {
     kind: "damage",
@@ -2788,6 +2864,7 @@ const internalMoveList = createMoveList({
     power: 0,
     acc: 100,
     kingsRock: true,
+    contact: true,
     getPower: user => idiv(user.friendship, 2.5),
   },
   reversal: {
@@ -2800,6 +2877,7 @@ const internalMoveList = createMoveList({
     acc: 100,
     flag: "norand",
     kingsRock: true,
+    contact: true,
     getPower: getFlailPower,
   },
   rocksmash: {
@@ -2811,6 +2889,7 @@ const internalMoveList = createMoveList({
     power: 20,
     acc: 100,
     effect: [50, [["def", -1]]],
+    contact: true,
   },
   rollout: {
     kind: "damage",
@@ -2822,6 +2901,7 @@ const internalMoveList = createMoveList({
     acc: 90,
     flag: "rollout",
     kingsRock: true,
+    contact: true,
   },
   sacredfire: {
     kind: "damage",
@@ -2876,6 +2956,7 @@ const internalMoveList = createMoveList({
     power: 65,
     acc: 100,
     effect: [30, "par"],
+    contact: true,
   },
   steelwing: {
     kind: "damage",
@@ -2886,6 +2967,7 @@ const internalMoveList = createMoveList({
     power: 70,
     acc: 90,
     effect: [10, [["def", +1]], true],
+    contact: true,
   },
   thief: {
     kind: "damage",
@@ -2899,6 +2981,7 @@ const internalMoveList = createMoveList({
     effect: [99.6, "thief"],
     kingsRock: true,
     noAssist: true,
+    contact: true,
   },
   triplekick: {
     kind: "damage",
@@ -2910,6 +2993,7 @@ const internalMoveList = createMoveList({
     acc: 90,
     flag: "triple",
     kingsRock: true,
+    contact: true,
   },
   twister: {
     kind: "damage",
@@ -2932,6 +3016,7 @@ const internalMoveList = createMoveList({
     power: 70,
     priority: -1,
     kingsRock: true,
+    contact: true,
   },
   whirlpool: {
     kind: "damage",
@@ -3149,7 +3234,6 @@ const internalMoveList = createMoveList({
     acc: 100,
     effect: [100, "thief"],
     kingsRock: true,
-    contact: true,
     noAssist: true,
   },
   crushclaw: {
@@ -3270,7 +3354,6 @@ const internalMoveList = createMoveList({
     power: 40,
     acc: 100,
     priority: +1,
-    contact: true,
     effect: [100, "flinch"],
     checkSuccess(battle, user) {
       if (!user.v.canFakeOut) {
