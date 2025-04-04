@@ -176,11 +176,12 @@
                 </div>
               </div>
 
-              <PokemonSelector
+              <SpeciesSelector
                 v-model="selectedPoke.data.species"
                 :team
                 :gen
                 :shiny="gen.getShiny(selectedPoke.data.shiny, ivsToDvs(selectedPoke.data))"
+                @chose="onSpeciesChange"
               />
               <InputWithMax
                 v-model.trim="selectedPoke.data.name"
@@ -252,7 +253,7 @@
               />
             </div>
           </div>
-          <div class="grid items-center grid-cols-[auto,1fr,auto,auto,auto,auto] gap-1 grow">
+          <div class="grid items-center grid-cols-[auto,1fr,auto,auto,auto,auto] gap-0.5 grow">
             <template v-for="(name, stat) in statKeys" :key="stat">
               <span class="px-1.5">{{ name }}</span>
               <URange
@@ -274,35 +275,47 @@
               />
 
               <template v-if="selectedPoke.species">
-                <span
-                  v-if="selectedPoke.data.species"
-                  class="relative text-center px-1.5 min-w-10 text-gray-500"
+                <div
+                  class="relative group flex justify-center items-center px-1.5 min-w-10 text-gray-500"
                 >
-                  {{ calcPokeStat(stat, selectedPoke.data) }}
+                  <UButton
+                    variant="link"
+                    color="white"
+                    :padded="false"
+                    :label="`${calcPokeStat(stat, selectedPoke.data)}`"
+                    :disabled="stat === 'hp' || gen.id <= 2"
+                    @click="trySetNature(stat)"
+                  />
 
                   <span
-                    v-if="gen.id >= 3 && (natureTable as any)[selectedPoke.data.nature!]?.[stat] > 1"
-                    class="absolute text-lime-500 -top-1.5 -right-1 font-bold"
+                    v-if="gen.id >= 3 && (prevStat ? prevStat === stat : ((natureTable as any)[selectedPoke.data.nature!]?.[stat] > 1))"
+                    class="absolute text-lime-500 -top-2 -right-1 font-bold"
                   >
                     +
                   </span>
+
                   <span
-                    v-if="gen.id >= 3 && (natureTable as any)[selectedPoke.data.nature!]?.[stat] < 1"
-                    class="absolute text-red-500 -top-1.5 -right-0.5 font-bold"
+                    class="absolute text-red-500 -top-2 right-0 font-bold"
+                    :class="[
+                      prevStat && stat !== prevStat && stat !== 'hp' && 'group-hover:visible',
+                      !prevStat && gen.id >= 3 && (natureTable as any)[selectedPoke.data.nature!]?.[stat] < 1 ? 'visible' : 'invisible'
+                    ]"
                   >
                     -
                   </span>
-                </span>
+                </div>
                 <span
-                  class="text-center px-1.5 min-w-8 text-xs"
-                  :style="{color: baseStatColor(selectedPoke.species.stats[stat] ?? 0)}"
+                  class="text-center px-1.5 min-w-9 text-xs"
+                  :style="{color: baseStatColor(selectedPoke.species.stats[stat])}"
                 >
-                  {{ selectedPoke.species.stats[stat] ?? 0 }}
+                  {{ selectedPoke.species.stats[stat] }}
                 </span>
               </template>
               <template v-else>
-                <span class="text-center px-1.5 min-w-10 text-gray-500">--</span>
-                <span class="text-center px-1.5 min-w-8 text-gray-500 text-xs">--</span>
+                <div class="flex justify-center items-center px-1.5 min-w-10">
+                  <UButton variant="link" color="white" :padded="false" label="--" disabled />
+                </div>
+                <span class="text-center px-1.5 min-w-9 text-gray-500 text-xs">--</span>
               </template>
             </template>
           </div>
@@ -510,14 +523,11 @@ watch(teamPokepaste, v => {
   }
 });
 
-watch(
-  () => selectedPoke.value.species,
-  (curr, old) => {
-    if (curr && old?.dexId !== curr?.dexId) {
-      selectedPoke.value.data.ability = abilityList[curr.abilities[0]].name;
-    }
-  },
-);
+const onSpeciesChange = (s: Species) => {
+  if (s.abilities.length) {
+    selectedPoke.value.data.ability = abilityList[s.abilities[0]].name;
+  }
+};
 
 for (const poke of team.pokemon) {
   for (let i = poke.moves.length; i < 4; i++) {
@@ -600,5 +610,37 @@ const teamTextChange = () => {
   team.format = parsed.format;
   team.name = parsed.name;
   team.pokemon = parsed.pokemon;
+};
+
+const prevStat = ref<keyof Stats>();
+
+watch([selectedPoke, gen], () => {
+  prevStat.value = undefined;
+});
+
+const trySetNature = (stat: keyof Stats) => {
+  if (stat === "hp") {
+    return;
+  } else if (!prevStat.value) {
+    prevStat.value = stat;
+    return;
+  } else if (stat === prevStat.value) {
+    prevStat.value = undefined;
+    selectedPoke.value.data.nature = undefined;
+    return;
+  }
+
+  for (const nature of Object.values(Nature)) {
+    if (typeof nature !== "number") {
+      continue;
+    }
+
+    const [plus, minus] = Object.keys(natureTable[nature]);
+    if (plus === prevStat.value && minus === stat) {
+      selectedPoke.value.data.nature = nature;
+      prevStat.value = undefined;
+      return;
+    }
+  }
 };
 </script>

@@ -53,6 +53,8 @@
 import type {Species, SpeciesId} from "@/game/species";
 import type {Generation} from "~/game/gen1";
 
+const emit = defineEmits<{(e: "chose", species: Species): void}>();
+
 const model = defineModel<string>();
 const {team, gen} = defineProps<{team: Team; gen: Generation; shiny: boolean}>();
 const open = ref(false);
@@ -72,7 +74,7 @@ const filter = (species: [SpeciesId, Species][], query: string) => {
   return subset.length ? subset : all;
 };
 
-const onChoose = ([id, _]: [SpeciesId, Species]) => (model.value = id);
+const onChoose = ([id, s]: [SpeciesId, Species]) => ((model.value = id), emit("chose", s));
 
 const isIllegal = (species: Species) => {
   if (!gen.validSpecies(species)) {
