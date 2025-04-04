@@ -1,5 +1,5 @@
 import type {DamagingMove, Move} from "./index";
-import {type Pokemon, transform} from "../pokemon";
+import type {Pokemon} from "../pokemon";
 import {
   HP_TYPES,
   hpPercentExact,
@@ -253,26 +253,7 @@ const internalMoveList = createMoveList({
     noEncore: true,
     exec(battle, user, [target]) {
       battle.gen1LastDamage = 0;
-      user.base = transform(user.base.real, target.base);
-      // TODO: is this right? or should you continue to be locked into the move if the transform
-      // moveset has it?
-      user.v.choiceLock = undefined;
-
-      for (const k of stageKeys) {
-        user.v.stages[k] = target.v.stages[k];
-        if (stageStatKeys.includes(k)) {
-          user.recalculateStat(battle, k, false);
-        }
-      }
-
-      user.v.types = [...target.v.types];
-      battle.event({
-        type: "transform",
-        src: user.id,
-        target: target.id,
-        volatiles: [{id: user.id, v: user.getClientVolatiles(user.base, battle)}],
-      });
-      return false;
+      user.transform(battle, target);
     },
   },
   // --

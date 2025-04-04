@@ -130,6 +130,16 @@ export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
       );
     },
   },
+  transform: {
+    exec(battle, user, [target]) {
+      if (target.base.transformed) {
+        return battle.info(user, "fail_generic");
+      } else if (!battle.checkAccuracy(this as Move, user, target)) {
+        return;
+      }
+      user.transform(battle, target);
+    },
+  },
   mimic: {noMetronome: true},
   // --
   roar: {kind: "phaze", acc: 100, priority: -1},

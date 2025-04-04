@@ -739,7 +739,7 @@ export class Battle {
     }
 
     if (!move.kind) {
-      return move.exec.call(move, this, user, targets, moveIndex);
+      return move.exec(this, user, targets, moveIndex);
     } else {
       const func = (this as any).gen.moveFunctions[move.kind];
       return func.call(move, this, user, targets, moveIndex);

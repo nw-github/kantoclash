@@ -8,12 +8,13 @@ import type {
   PokeId,
 } from "./events";
 import {type MoveId, type Move, type DamagingMove, Range, type FutureSightMove} from "./moves";
-import {natureTable, type Pokemon, type Status} from "./pokemon";
+import {natureTable, transform, type Pokemon, type Status} from "./pokemon";
 import {
   arraysEqual,
   clamp,
   hpPercent,
   idiv,
+  stageKeys,
   stageStatKeys,
   VF,
   type Stages,
@@ -174,6 +175,28 @@ export class ActivePokemon {
     }
 
     this.v.fainted = true;
+  }
+
+  transform(battle: Battle, target: ActivePokemon) {
+    this.base = transform(this.base.real, target.base);
+    // TODO: is this right? or should you continue to be locked into the move if the transform
+    // moveset has it?
+    this.v.choiceLock = undefined;
+
+    for (const k of stageKeys) {
+      this.v.stages[k] = target.v.stages[k];
+      if (stageStatKeys.includes(k)) {
+        this.recalculateStat(battle, k, false);
+      }
+    }
+
+    this.v.types = [...target.v.types];
+    battle.event({
+      type: "transform",
+      src: this.id,
+      target: target.id,
+      volatiles: [{id: this.id, v: this.getClientVolatiles(this.base, battle)}],
+    });
   }
 
   damage(
