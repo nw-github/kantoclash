@@ -261,7 +261,7 @@ export const tryDamage = (
     battle.info(user, "payday");
   } else if (self.flag === "rapid_spin" && user.base.hp) {
     if (user.owner.spikes) {
-      user.owner.spikes = false;
+      user.owner.spikes = 0;
       battle.event({type: "spikes", src: user.id, player: user.owner.id, spin: true});
     }
 

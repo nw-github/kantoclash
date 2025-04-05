@@ -123,8 +123,9 @@ export class ActivePokemon {
       this.base.item = undefined;
     }
 
-    if (this.owner.spikes && !this.v.types.includes("flying")) {
-      this.damage(Math.floor(this.base.stats.hp / 8), this, battle, false, "spikes", true);
+    if (this.owner.spikes && this.isGrounded()) {
+      const mod = 8 - (this.owner.spikes - 1) * 2;
+      this.damage(Math.floor(this.base.stats.hp / mod), this, battle, false, "spikes", true);
       if (this.base.hp === 0) {
         return;
       }

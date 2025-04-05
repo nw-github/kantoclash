@@ -226,7 +226,11 @@ export async function startBot(format?: FormatId, botFunction: BotFunction = ran
         }
       } else if (e.type === "spikes") {
         const player = players.get(e.player);
-        player.spikes = !e.spin;
+        if (e.spin) {
+          player.spikes = 0;
+        } else {
+          player.spikes = (player.spikes || 0) + 1;
+        }
       }
 
       handleVolatiles(e);

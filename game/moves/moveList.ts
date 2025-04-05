@@ -2257,7 +2257,7 @@ const internalMoveList = createMoveList({
       }
 
       battle.event({type: "spikes", src: user.id, player: target.id, spin: false});
-      target.spikes = true;
+      target.spikes++;
     },
   },
   spite: {

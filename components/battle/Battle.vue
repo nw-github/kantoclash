@@ -576,9 +576,14 @@ const runEvent = async (e: BattleEvent) => {
     } else if (e.type === "spikes") {
       const player = players.get(e.player);
       if (e.spin) {
-        player.spikes = false;
+        player.spikes = 0;
       } else {
-        await playAnimation(e.src, {anim: "spikes", cb: () => (player.spikes = true)});
+        await playAnimation(e.src, {
+          anim: "spikes",
+          cb() {
+            player.spikes = (player.spikes || 0) + 1;
+          },
+        });
       }
     }
 

@@ -39,7 +39,7 @@ export class Player {
   readonly screens: Partial<Record<Screen, number>> = {};
 
   sleepClausePoke?: Pokemon;
-  spikes = false;
+  spikes = 0;
 
   constructor(gen: Generation, {id, team}: PlayerParams, doubles: bool) {
     this.id = id;

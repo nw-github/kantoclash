@@ -28,7 +28,7 @@ export type ClientPlayer = {
   active: (ClientActivePokemon | undefined)[];
   nPokemon: number;
   nFainted: number;
-  spikes?: boolean;
+  spikes?: number;
   screens?: Partial<Record<Screen, boolean>>;
 };
 

@@ -80,11 +80,15 @@ export const moveFunctionPatches: Partial<MoveFunctions> = {
 };
 
 export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
+  absorb: {kingsRock: false},
+  bind: {kingsRock: true},
+  clamp: {kingsRock: true},
   conversion2: {protect: false},
-  counter: {priority: -5},
+  counter: {priority: -5, kingsRock: false},
   detect: {priority: +3},
   doubleedge: {recoil: 3},
   dragonbreath: {kingsRock: true},
+  dragonrage: {kingsRock: true},
   dynamicpunch: {effect: [100, "confusion"]},
   earthquake: {kingsRock: true},
   endure: {priority: +3},
@@ -140,6 +144,7 @@ export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
     },
   },
   meanlook: {protect: true},
+  megadrain: {kingsRock: false},
   mimic: {acc: 0},
   mirrorcoat: {priority: -5},
   mist: {kind: "screen", screen: "mist", range: Range.Field},
@@ -172,7 +177,9 @@ export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
       return Math.max(1, Math.floor((user.base.level * (10 * battle.rng.int(0, 10) + 50)) / 100));
     },
   },
+  present: {kingsRock: false},
   protect: {priority: +3},
+  pursuit: {kingsRock: false},
   return: {getPower: user => Math.max(1, idiv(user.friendship, 2.5))},
   razorwind: {acc: 100},
   reversal: {flag: "none"},
@@ -180,7 +187,24 @@ export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
   rollingkick: {kingsRock: true},
   skyattack: {flag: "high_crit", effect: [30, "flinch"]},
   spiderweb: {protect: true},
+  spikes: {
+    exec(battle, user) {
+      const target = battle.opponentOf(user.owner);
+      if (target.spikes === 3) {
+        return battle.info(user, "fail_generic");
+      }
+
+      battle.event({type: "spikes", src: user.id, player: target.id, spin: false});
+      target.spikes++;
+    },
+  },
+  steelwing: {kingsRock: true},
   superfang: {kingsRock: false},
+  thief: {effect: [100, "thief"], kingsRock: false},
   twineedle: {kingsRock: false},
+  twister: {kingsRock: true},
+  whirlpool: {kingsRock: true},
   whirlwind: {priority: -6},
+  wrap: {kingsRock: true},
+  zapcannon: {effect: [100, "par"]},
 };
