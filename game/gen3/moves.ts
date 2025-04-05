@@ -1,14 +1,8 @@
 import {Range, type Move, type MoveFunctions, type MoveId} from "../moves";
 import {abilityList} from "../species";
-import {HP_TYPES, idiv, stageStatKeys, VF} from "../utils";
+import {HP_TYPES, idiv, VF} from "../utils";
 
 /*
-TODO: low kick weight
-
-draining moves are fixed against substitutes
-
-kings rock can activate for every strike of a multi hit move
-
 bide duration is two turns, now locked in
 
 kings rock affects trapping move

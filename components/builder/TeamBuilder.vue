@@ -328,7 +328,7 @@
           autofocus
           spellcheck="false"
         >
-          <div class="absolute top-2 right-2">
+          <div class="absolute top-2 right-2 flex flex-col-reverse">
             <TooltipButton
               text="Save"
               :popper="{placement: 'bottom-end', offsetDistance: 40}"
@@ -361,7 +361,7 @@
         variant="none"
         autofocus
       >
-        <div class="absolute top-1 right-4">
+        <div class="absolute top-1 right-4 flex flex-col-reverse">
           <TooltipButton
             text="Save"
             :popper="{placement: 'bottom-end', offsetDistance: 40}"

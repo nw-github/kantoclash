@@ -357,9 +357,6 @@ export class ActivePokemon {
       this.v.counter = 1;
     } else if (status === "frz") {
       if (battle.hasWeather("sun")) {
-        if (loud) {
-          battle.info(this, "fail_generic");
-        }
         return;
       } else if (battle.mods.freezeClause && this.owner.team.some(poke => poke.status === "frz")) {
         return;

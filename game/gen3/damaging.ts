@@ -48,7 +48,7 @@ export const tryDamage = (
     if (status && battle.gen.rng.tryContactStatus(battle)) {
       if (status === "attract") {
         if (
-          target.v.attract ||
+          user.v.attract ||
           target.base.gender === "N" ||
           user.base.gender === "N" ||
           target.base.gender === user.base.gender
@@ -59,7 +59,7 @@ export const tryDamage = (
         battle.ability(target);
         user.v.attract = target;
         battle.info(user, "cAttract", [{id: user.id, v: {flags: user.v.cflags}}]);
-      } else {
+      } else if (!user.base.status) {
         battle.ability(target);
         user.status(Array.isArray(status) ? battle.rng.choice(status)! : status, battle, target, {
           ignoreSafeguard: true,

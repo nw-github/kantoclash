@@ -195,7 +195,7 @@ export const moveFunctions: MoveFunctions = {
   },
   protect(battle, user) {
     const sub = battle.gen.id <= 2 && user.v.substitute;
-    if (sub || (battle.turnOrder.at(-1)?.user === user && !this.endure)) {
+    if (sub || (battle.turnOrder.at(-1)?.user === user && (!this.endure || battle.gen.id >= 3))) {
       user.v.protectCount = 0;
       return battle.info(user, "fail_generic");
     }

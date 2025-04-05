@@ -5,10 +5,10 @@
       :class="[(!poke || poke.hidden) && 'invisible', !isSingles ? 'w-20 sm:w-32' : 'w-28 sm:w-40']"
     >
       <div class="flex justify-between flex-col sm:flex-row">
-        <div class="font-bold flex items-center">
-          <span class="truncate text-xs max-w-24">{{ poke?.name || "--" }}</span>
+        <div class="font-bold flex items-center grow overflow-hidden">
+          <span class="truncate text-xs">{{ poke?.name || "--" }}</span>
           <!-- @vue-expect-error -->
-          <GenderIcon class="size-4" :gender="poke?.gender ?? gen1Gender[poke?.speciesId]" />
+          <GenderIcon class="size-4" :gender="gen1Gender[poke?.speciesId] ?? poke?.gender" />
         </div>
         <span class="text-[0.65rem] sm:text-xs whitespace-nowrap">
           Lv. {{ poke?.level ?? 100 }}
@@ -16,9 +16,7 @@
       </div>
       <div class="relative overflow-hidden rounded-md bg-[#333] flex">
         <div class="hp-fill absolute h-full rounded-md" />
-        <div class="w-full text-center text-gray-100 text-xs sm:text-sm font-medium z-30">
-          {{ hp }}%
-        </div>
+        <div class="w-full text-center text-gray-100 text-xs font-medium z-30">{{ hp }}%</div>
       </div>
       <div class="relative">
         <div
@@ -76,7 +74,11 @@
             </UBadge>
           </template>
 
-          <!-- <UBadge variant="subtle" color="pink" label="Test" /> -->
+          <!-- <UBadge variant="subtle" color="lime" />
+          <UBadge variant="subtle" color="pink" />
+          <UBadge variant="subtle" color="violet" />
+          <UBadge variant="subtle" color="red" />
+          <UBadge variant="subtle" color="sky" /> -->
         </div>
       </div>
     </div>
@@ -373,7 +375,7 @@ const badges: {flag: VF; props: InstanceType<typeof UBadge>["$props"]}[] = [
     flag: VF.identified,
     props: {color: "violet", icon: "material-symbols:search-rounded", variant: "subtle"},
   },
-  {flag: VF.curse, props: {color: "red", icon: "mdi:nail", label: "Curse"}},
+  {flag: VF.curse, props: {color: "red", icon: "mdi:nail", label: "Cursed", variant: "subtle"}},
   {flag: VF.focus, props: {color: "emerald", label: "Focus Energy"}},
   {flag: VF.mist, props: {color: "teal", label: "Mist"}},
   {flag: VF.destinyBond, props: {color: "gray", label: "Destiny Bond"}},
