@@ -179,8 +179,8 @@ export const moveFunctions: MoveFunctions = {
     battle.event({type: "screen", screen: this.screen, kind: "start", user: user.owner.id});
   },
   phaze(battle, user, [target]) {
-    const next = battle.rng.choice(target.owner.team.filter(p => p.hp && p != target.base.real));
-    if (!next || !target.movedThisTurn) {
+    const next = battle.rng.choice(target.owner.team.filter(p => p.hp && p !== target.base.real));
+    if (!next || !target.choice?.executed) {
       return battle.info(user, "fail_generic");
     } else if (target.v.ability === "suctioncups") {
       battle.ability(target);
@@ -192,10 +192,13 @@ export const moveFunctions: MoveFunctions = {
     }
 
     target.switchTo(next, battle, "phaze");
+    if (target.choice) {
+      target.choice.executed = true;
+    }
   },
   protect(battle, user) {
     const sub = battle.gen.id <= 2 && user.v.substitute;
-    if (sub || (battle.turnOrder.at(-1)?.user === user && (!this.endure || battle.gen.id >= 3))) {
+    if (sub || (battle.turnOrder.at(-1) === user && (!this.endure || battle.gen.id >= 3))) {
       user.v.protectCount = 0;
       return battle.info(user, "fail_generic");
     }

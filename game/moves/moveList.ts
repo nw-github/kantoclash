@@ -3481,7 +3481,7 @@ const internalMoveList = createMoveList({
     priority: +5,
     noAssist: true,
     exec(battle, user, [target]) {
-      if (target.movedThisTurn) {
+      if (target.choice?.executed) {
         return battle.info(user, "fail_generic");
       }
 

@@ -40,16 +40,15 @@ export type DamageParams = {
 export type ChosenMove = {
   move: Move;
   indexInMoves?: number;
-  user: ActivePokemon;
   target?: ActivePokemon;
   isReplacement: bool;
   spe: number;
+  executed: bool;
 };
 
 export class ActivePokemon {
   v: Volatiles;
   lastChosenMove?: Move;
-  movedThisTurn = false;
   futureSight?: {move: FutureSightMove; damage: number; turns: number};
   choice?: ChosenMove;
   options?: {switches: number[]; moves: MoveOption[]; id: PokeId};

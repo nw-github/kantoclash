@@ -11,7 +11,7 @@ import {type MoveId, type Move, Range, isSpreadMove} from "./moves";
 import {Pokemon, type ValidatedPokemonDesc} from "./pokemon";
 import {getEffectiveness, playerId, VF, type Type, type Weather, type Screen} from "./utils";
 import type {Generation} from "./gen";
-import {ActivePokemon, type ChosenMove, type VolatileStats} from "./active";
+import {ActivePokemon, type VolatileStats} from "./active";
 import {abilityList} from "./species";
 
 export {ActivePokemon, type VolatileStats};
@@ -82,10 +82,10 @@ export class Player {
     user.choice = {
       indexInMoves: choice.indexInMoves,
       move,
-      user,
       target: singleTarget,
       isReplacement: false,
       spe: battle.getSpe(user),
+      executed: false,
     };
     return true;
   }
@@ -115,11 +115,11 @@ export class Player {
         poke,
         batonPass: user.v.inBatonPass,
       },
-      user,
       isReplacement: active.v.fainted,
       // This is only relevant for the order of weather abilities on the first turn, which are
       // called in turn order and affected by quick claw in Gen 3
       spe: battle.getSpe(user) === 65535 ? 65535 : poke.stats.spe,
+      executed: false,
     };
     return true;
   }
@@ -171,7 +171,7 @@ export class Battle {
   gen1LastDamage = 0;
   betweenTurns = 0;
   allActive: ActivePokemon[];
-  turnOrder: ChosenMove[] = [];
+  turnOrder: ActivePokemon[] = [];
 
   private constructor(
     readonly gen: Generation,
@@ -292,18 +292,22 @@ export class Battle {
     return result.filter(p => !!p);
   }
 
-  inTurnOrder(pokes: ActivePokemon[]) {
-    return pokes
-      .map(p => p.choice)
-      .filter(c => !!c)
+  inTurnOrder() {
+    return this.allActive
+      .filter(p => p.choice)
       .sort((a, b) => {
-        if (b.move.priority !== a.move.priority) {
-          return (b.move.priority ?? 0) - (a.move.priority ?? 0);
-        } else if (a.spe !== b.spe) {
-          return b.spe - a.spe;
+        if (b.choice!.move.priority !== a.choice!.move.priority) {
+          return (b.choice!.move.priority ?? 0) - (a.choice!.move.priority ?? 0);
+        } else if (a.choice!.spe !== b.choice!.spe) {
+          return b.choice!.spe - a.choice!.spe;
         }
         return this.rng.bool() ? 1 : -1;
       });
+  }
+
+  calcTurnOrder() {
+    const switches = this.switchOrder().filter(p => p.choice?.move?.kind === "switch");
+    return switches.concat(this.inTurnOrder().filter(p => p.choice?.move?.kind !== "switch"));
   }
 
   nextTurn() {
@@ -316,42 +320,40 @@ export class Battle {
       this.event({type: "next_turn", turn: this._turn});
     }
 
-    const choices = this.switchOrder()
-      .map(p => p.choice)
-      // @ts-expect-error idk shut up
-      .filter<ChosenMove>(c => c?.move.kind === "switch");
-    choices.push(...this.inTurnOrder(this.allActive.filter(a => a.choice?.move.kind !== "switch")));
+    // TODO: don't recalculate speed ties?
+    this.turnOrder = this.calcTurnOrder();
+    for (let i = 0; i < this.turnOrder.length; i++) {
+      const user = this.turnOrder[i];
+      const {move, target, executed} = user.choice!;
+      if (executed) {
+        continue;
+      }
 
-    for (let i = 0; i < choices.length; i++) {
-      const {move, user, target} = choices[i];
       if (move.kind !== "protect") {
         user.v.protectCount = 0;
       }
-      user.movedThisTurn = false;
 
       if (move === this.gen.moveList.pursuit) {
         if (target?.choice?.move?.kind === "switch" && target.owner !== user.owner) {
           console.log(user.base.name + " is pursuing ", target.base.name);
-          choices.splice(choices.indexOf(target.choice), 0, ...choices.splice(i, 1));
+          this.turnOrder.splice(this.turnOrder.indexOf(target), 0, ...this.turnOrder.splice(i, 1));
           user.v.inPursuit = true;
         }
       }
     }
 
-    if (
-      (this.turnType === TurnType.Switch && this.doubles) ||
-      this.turnType === TurnType.BatonPass
-    ) {
-      this.turnOrder.unshift(...choices);
-    } else {
-      this.turnOrder = choices;
-    }
-
-    this.runTurn(this.turnOrder);
+    this.runTurn();
 
     if (this.allActive.some(poke => poke.v.inBatonPass)) {
-      this.turnOrder = this.turnOrder.filter(c => !c.user.movedThisTurn && !c.user.v.fainted);
       this.turnType = TurnType.BatonPass;
+
+      for (const poke of this.allActive) {
+        if (poke.v.inBatonPass) {
+          poke.updateOptions(this);
+        } else {
+          poke.options = undefined;
+        }
+      }
     } else {
       if (this.victor) {
         this.event({type: "end", victor: this.victor.id});
@@ -360,23 +362,29 @@ export class Battle {
       }
 
       if (this.allActive.some(p => p.v.fainted && p.canBeReplaced(this))) {
-        this.turnOrder = this.turnOrder.filter(c => !c.user.movedThisTurn && !c.user.v.fainted);
         this.turnType = TurnType.Switch;
-      } else {
-        this.turnOrder = [];
-        this.turnType = TurnType.Normal;
-      }
-    }
 
-    for (const poke of this.allActive) {
-      poke.updateOptions(this);
+        for (const poke of this.allActive) {
+          if (poke.v.fainted && poke.canBeReplaced(this)) {
+            poke.updateOptions(this);
+          } else {
+            poke.options = undefined;
+          }
+        }
+      } else {
+        this.turnType = TurnType.Normal;
+
+        for (const poke of this.allActive) {
+          poke.updateOptions(this);
+        }
+      }
     }
 
     return this.events.splice(0);
   }
 
   getTargets(user: ActivePokemon, params: GetTarget): ActivePokemon[];
-  getTargets(user: ActivePokemon, params: Range, spread: boolean): ActivePokemon[];
+  getTargets(user: ActivePokemon, params: Range, spread: bool): ActivePokemon[];
   getTargets(user: ActivePokemon, params: GetTarget | Range, spread?: bool) {
     const pl = user.owner;
     const opp = this.opponentOf(pl);
@@ -568,7 +576,7 @@ export class Battle {
 
   // --
 
-  private runTurn(choices: ChosenMove[]) {
+  private runTurn() {
     if (this.turnType === TurnType.Normal) {
       for (const poke of this.switchOrder()) {
         if (poke.choice?.move === this.gen.moveList.focuspunch) {
@@ -577,9 +585,15 @@ export class Battle {
       }
     }
 
-    // eslint-disable-next-line prefer-const
-    for (let {move, user, target, indexInMoves, isReplacement} of choices) {
-      user.movedThisTurn = true;
+    for (const user of this.turnOrder) {
+      if (!user.choice || user.choice.executed) {
+        continue;
+      }
+
+      // eslint-disable-next-line prefer-const
+      let {move, target, indexInMoves, isReplacement} = user.choice;
+
+      user.choice.executed = true;
       if (user.v.fainted && !isReplacement) {
         continue;
       } else if (this.finished) {
@@ -609,18 +623,18 @@ export class Battle {
       }
 
       this.useMove(move, user, target ? [target] : [], indexInMoves);
-      if (this.gen.afterAttack(this, user, isReplacement)) {
+      if (this.gen.afterUseMove(this, user, isReplacement)) {
         return;
       }
     }
 
     this.gen.betweenTurns(this);
     if (this.turnType === TurnType.Lead) {
-      for (const poke of this.inTurnOrder(this.allActive)) {
-        poke.user.handleWeatherAbility(this);
+      for (const poke of this.inTurnOrder()) {
+        poke.handleWeatherAbility(this);
       }
 
-      for (const {user} of choices) {
+      for (const user of this.turnOrder) {
         user.handleSwitchInAbility(this);
       }
     }

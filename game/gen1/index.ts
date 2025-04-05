@@ -524,7 +524,7 @@ const createGeneration = () => {
       this.handleResidualDamage(battle, user);
       return battle.checkFaint(user) && shouldReturn(battle);
     },
-    afterAttack(battle: Battle, user: ActivePokemon, isReplacement: bool): boolean {
+    afterUseMove(battle: Battle, user: ActivePokemon, isReplacement: bool): boolean {
       if (isReplacement) {
         return false;
       }
@@ -577,28 +577,29 @@ const createGeneration = () => {
         return;
       } else if (poke.base.status === "brn" && tickCounter("brn")) {
         return;
-      } else if (poke.v.seededBy && tickCounter("seeded")) {
+      } else if (poke.v.seededBy && !poke.v.seededBy.v.fainted && tickCounter("seeded")) {
         return;
       } else if (
         poke.v.hasFlag(VF.nightmare) &&
-        poke.damage(
-          Math.max(1, idiv(poke.base.stats.hp, 4)),
-          poke,
-          battle,
-          false,
-          "nightmare",
-          true,
-        ).dead
+        poke.damage2(battle, {
+          dmg: Math.max(1, idiv(poke.base.stats.hp, 4)),
+          src: poke,
+          why: "nightmare",
+          direct: true,
+        }).dead
       ) {
         return;
       } else if (
         poke.v.hasFlag(VF.curse) &&
-        poke.damage(Math.max(1, idiv(poke.base.stats.hp, 4)), poke, battle, false, "curse", true)
-          .dead
+        poke.damage2(battle, {
+          dmg: Math.max(1, idiv(poke.base.stats.hp, 4)),
+          src: poke,
+          why: "curse",
+          direct: true,
+        }).dead
       ) {
         return;
       }
-      return;
     },
     betweenTurns(battle: Battle) {
       for (const poke of battle.allActive) {

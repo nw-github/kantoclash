@@ -285,7 +285,7 @@ const createGeneration = (): Generation => {
       return true;
     },
     afterBeforeUseMove: (battle, user) => battle.checkFaint(user) && shouldReturn(battle),
-    afterAttack(battle, user, isReplacement) {
+    afterUseMove(battle, user, isReplacement) {
       if (isReplacement) {
         if (user.base.hp === 0 && !user.v.fainted) {
           user.faint(battle);
@@ -310,7 +310,7 @@ const createGeneration = (): Generation => {
     },
     betweenTurns(battle) {
       // FIXME: actually use turn order
-      const turnOrder = battle.allActive;
+      const turnOrder = battle.turnOrder;
 
       // Screens Wish & Weather
       if (battle.betweenTurns < BetweenTurns.Weather) {
