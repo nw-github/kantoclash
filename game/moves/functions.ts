@@ -33,6 +33,7 @@ export const moveFunctions: MoveFunctions = {
       } else if (target.owner.screens.safeguard) {
         battle.info(target, "safeguard_protect");
         failed = false;
+        continue;
       } else if (!battle.checkAccuracy(this, user, target)) {
         failed = false;
         continue;

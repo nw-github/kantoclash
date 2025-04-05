@@ -105,6 +105,7 @@ const descriptions: Partial<Record<MoveId, string>> = {
     "Only works if the user was not hit with a damaging attack before the move executes. Being " +
     "hit while behind a substitute does not disrupt this move. ",
   naturepower: "Always calls Swift. ",
+  refresh: "Cures the user of poison, paralysis, or burn. ",
 };
 
 const gen2Descriptions: Partial<Record<MoveId, string>> = {
@@ -161,6 +162,7 @@ const flagDesc: Record<NonNullable<DamagingMove["flag"]>, string> = {
   beatup:
     "Hits with a typeless 10 power attack for each Pokémon in the user's party without a non-volatile status condition. ",
   facade: "Doubles damage when poisoned, paralyzed or burned.",
+  remove_screens: "Removes the effects of Light Screen and Reflect. ",
 };
 
 const formatStages = (gen: Generation, stages: [Stages, number][]) => {
@@ -174,7 +176,7 @@ const formatStages = (gen: Generation, stages: [Stages, number][]) => {
   }
 
   const [, count] = stages[0];
-  return `${stats} by ${Math.abs(count)} stage${count > 1 ? "s" : ""}`;
+  return `${stats} by ${Math.abs(count)} stage${Math.abs(count) > 1 ? "s" : ""}`;
 };
 
 export const describeMove = (gen: Generation, id: MoveId) => {

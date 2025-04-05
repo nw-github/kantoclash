@@ -48,8 +48,8 @@ export const tryDamage = (
       if (status === "attract") {
         if (
           target.v.attract ||
-          !target.base.gender ||
-          !user.base.gender ||
+          target.base.gender === "N" ||
+          user.base.gender === "N" ||
           target.base.gender === user.base.gender
         ) {
           return;
@@ -68,7 +68,6 @@ export const tryDamage = (
         dmg: Math.max(1, Math.floor(user.base.stats.hp / 16)),
         src: target,
         why: "roughskin",
-        eff: 1,
       });
     }
   };
@@ -85,12 +84,22 @@ export const tryDamage = (
     return 0;
   }
 
-  const protect = target.v.hasFlag(VF.protect);
   if (self.flag === "explosion") {
     // Explosion into destiny bond, who dies first?
     user.damage(user.base.hp, user, battle, false, "explosion", true);
+  } else if (self.flag === "remove_screens") {
+    // In Gen 3, light screen removes from the opponent even if you target an ally, or the target is
+    // immune
+    const opp = battle.opponentOf(user.owner);
+    for (const screen of ["light_screen", "reflect"] as const) {
+      if (opp.screens[screen]) {
+        opp.screens[screen] = 0;
+        battle.event({type: "screen", user: opp.id, screen, kind: "end"});
+      }
+    }
   }
 
+  const protect = target.v.hasFlag(VF.protect);
   if (eff === 0 || fail || protect) {
     user.v.rollout = 0;
     user.v.furyCutter = 0;
@@ -120,12 +129,14 @@ export const tryDamage = (
     battle.ability(target);
     battle.info(target, "immune");
     target.recover(Math.max(1, Math.floor(target.base.stats.hp / 4)), user, battle, "ability");
+    checkThrashing();
     return 0;
   }
 
   if (type === "fire" && target.v.ability === "flashfire" && target.base.status !== "frz") {
     battle.ability(target, [target.setFlag(VF.flashFire)]);
     battle.info(target, "immune");
+    checkThrashing();
     return 0;
   }
 

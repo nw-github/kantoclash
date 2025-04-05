@@ -3163,6 +3163,7 @@ const internalMoveList = createMoveList({
     power: 75,
     acc: 100,
     kingsRock: true,
+    flag: "remove_screens",
   },
   bulkup: {
     kind: "stage",
@@ -4035,7 +4036,9 @@ const internalMoveList = createMoveList({
     range: Range.Adjacent,
     acc: 100,
     exec(battle, user, [target]) {
-      if (!battle.checkAccuracy(this, user, target)) {
+      if (target.v.tauntTurns) {
+        return battle.info(user, "fail_generic");
+      } else if (!battle.checkAccuracy(this, user, target)) {
         return;
       }
 

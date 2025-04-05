@@ -732,7 +732,7 @@ export class Battle {
         move.checkSuccess &&
         !move.checkSuccess(this, user, targets)
       ) {
-        return this.info(user, "fail_generic");
+        return;
       }
 
       if (this.affectedByProtect(move)) {

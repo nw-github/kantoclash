@@ -357,7 +357,7 @@ const createGeneration = (): Generation => {
               poke.recover(Math.max(1, idiv(poke.base.stats.hp, 16)), poke, battle, "raindish");
             }
 
-            if (poke.v.ability === "speedboost" && poke.v.canSpeedBoost) {
+            if (poke.v.ability === "speedboost" && poke.v.canSpeedBoost && poke.v.stages.spe < 6) {
               battle.ability(poke);
               poke.modStages([["spe", +1]], battle);
             }

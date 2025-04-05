@@ -220,4 +220,5 @@ type Flag =
   | "minimize"
   | "present"
   | "beatup"
-  | "facade";
+  | "facade"
+  | "remove_screens";
