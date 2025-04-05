@@ -235,14 +235,12 @@ const internalMoveList = createMoveList({
     exec(battle, user) {
       const hp = Math.floor(user.base.stats.hp / 4);
       if (user.v.substitute) {
-        battle.info(user, "has_substitute");
-        return;
+        return battle.info(user, "has_substitute");
       } else if (!battle.gen.canSubstitute(user, hp)) {
-        battle.info(user, "cant_substitute");
-        return;
+        return battle.info(user, "cant_substitute");
       }
 
-      user.v.substitute = hp + 1;
+      user.v.substitute = battle.gen.id === 1 ? hp + 1 : hp;
       user.damage(hp, user, battle, false, "substitute", true, undefined, [
         {id: user.id, v: {flags: user.v.cflags}},
       ]);
@@ -585,7 +583,7 @@ const internalMoveList = createMoveList({
     name: "String Shot",
     pp: 40,
     type: "bug",
-    range: Range.Adjacent,
+    range: Range.AllAdjacentFoe,
     acc: 95,
     stages: [["spe", -1]],
   },
@@ -1680,7 +1678,7 @@ const internalMoveList = createMoveList({
     name: "Surf",
     pp: 15,
     type: "water",
-    range: Range.AllAdjacent,
+    range: Range.AllAdjacentFoe,
     power: 95,
     acc: 100,
     kingsRock: true,
@@ -1692,7 +1690,7 @@ const internalMoveList = createMoveList({
     name: "Swift",
     pp: 20,
     type: "normal",
-    range: Range.Adjacent,
+    range: Range.AllAdjacentFoe,
     power: 60,
     kingsRock: true,
   },
@@ -1977,14 +1975,18 @@ const internalMoveList = createMoveList({
     range: Range.Self,
     protect: true,
     exec(battle, user) {
-      const lastMove = user.v.lastHitBy?.move;
-      if (!lastMove || lastMove.type === "???") {
+      let lastType = user.v.lastHitBy?.move?.type;
+      if (!lastType) {
         battle.info(user, "fail_generic");
         return;
       }
 
+      if (lastType === "???") {
+        lastType = "normal";
+      }
+
       const types = (Object.keys(battle.gen.typeChart) as Type[]).filter(type => {
-        return (battle.gen.typeChart[lastMove.type][type] ?? 1) < 1;
+        return (battle.gen.typeChart[lastType][type] ?? 1) < 1;
       });
 
       const v = user.setVolatile("types", [battle.rng.choice(types)!]);
@@ -2003,12 +2005,13 @@ const internalMoveList = createMoveList({
     range: Range.Adjacent,
     exec(battle, user, [target]) {
       if (!user.v.types.includes("ghost")) {
-        if (user.v.stages.atk >= 6 && user.v.stages.def >= 6) {
-          battle.info(user, "fail_generic");
-          return;
+        if (battle.gen.id <= 2 && user.v.stages.atk >= 6 && user.v.stages.def >= 6) {
+          return battle.info(user, "fail_generic");
         }
         // prettier-ignore
-        user.modStages([["spe", -1], ["atk", +1], ["def", +1]], battle);
+        if (!user.modStages([["spe", -1], ["atk", +1], ["def", +1]], battle)) {
+          return battle.info(user, "fail_generic");
+        }
       } else {
         // mid-turn type switch
         if (target === user) {
@@ -2461,7 +2464,8 @@ const internalMoveList = createMoveList({
     name: "Cotton Spore",
     pp: 40,
     type: "grass",
-    range: Range.AllAdjacentFoe,
+    // TODO: check if Any or Adjacent in Gen V
+    range: Range.Any,
     acc: 100,
     stages: [["spe", -2]],
   },
@@ -4169,8 +4173,6 @@ const internalMoveList = createMoveList({
         "normal"
       );
     },
-    // TODO: doubleDmg if weather is not clear
-    // Should activate mirror coat if special
   },
   willowisp: {
     kind: "status",

@@ -67,13 +67,7 @@ export const moveFunctions: MoveFunctions = {
       user.recover(diff, user, battle, this.why, true);
       // In gen 1, Rest doesn't reset the toxic counter or par/brn stat drops
     } else {
-      let amount = Math.floor(user.base.stats.hp / 2);
-      if (this.weather && !battle.getWeather()) {
-        amount = Math.floor(user.base.stats.hp / 4);
-      } else if (this.weather && battle.hasWeather("sun")) {
-        amount = Math.floor(user.base.stats.hp / 8);
-      }
-      user.recover(amount, user, battle, this.why);
+      user.recover(Math.floor(user.base.stats.hp / 2), user, battle, this.why);
     }
   },
   stage(battle, user, targets) {
@@ -121,12 +115,12 @@ export const moveFunctions: MoveFunctions = {
       return battle.info(target, "safeguard_protect");
     } else if (this.status === "slp" && target.v.recharge) {
       // https://www.youtube.com/watch?v=x2AgAdQwyGI
-      return target.status(this.status, battle, user, true);
+      return target.status(this.status, battle, user, {override: true});
     } else if (!battle.checkAccuracy(this, user, target)) {
       return;
     }
 
-    target.status(this.status, battle, user, false, true);
+    target.status(this.status, battle, user, {override: false, loud: true});
   },
   switch(battle, user) {
     user.switchTo(this.poke, battle, this.batonPass ? "baton_pass" : undefined);
@@ -200,7 +194,8 @@ export const moveFunctions: MoveFunctions = {
     target.switchTo(next, battle, "phaze");
   },
   protect(battle, user) {
-    if (user.v.substitute || (battle.turnOrder.at(-1)?.user === user && !this.endure)) {
+    const sub = battle.gen.id <= 2 && user.v.substitute;
+    if (sub || (battle.turnOrder.at(-1)?.user === user && !this.endure)) {
       user.v.protectCount = 0;
       return battle.info(user, "fail_generic");
     }

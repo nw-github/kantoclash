@@ -150,7 +150,11 @@ const createGeneration = (): Generation => {
         }
       }
 
-      if (!move.acc || (move.rainAcc && battle.hasWeather("rain"))) {
+      // TODO: does pursuit skip the invuln check? Could matter if:
+      // Player 1: Pokémon A is flying, Pokémon B is switching out
+      // Player 2: Pokémon C & D pursuit into B, C kills it, D retargets to A
+      // This situation can't happen in Gen 3 though since B would be replaced before D moves
+      if (!move.acc || user.v.inPursuit || (move.rainAcc && battle.hasWeather("rain"))) {
         return true;
       }
 
@@ -387,10 +391,7 @@ const createGeneration = (): Generation => {
 
           if (poke.base.hp) {
             if (poke.v.thrashing && --poke.v.thrashing.turns === 0) {
-              if (
-                !poke.owner.screens.safeguard &&
-                poke.v.lastMove !== battle.gen.moveList.rollout
-              ) {
+              if (poke.v.lastMove !== battle.gen.moveList.rollout) {
                 poke.confuse(battle, "cConfusedFatigueMax");
               }
               poke.v.thrashing = undefined;

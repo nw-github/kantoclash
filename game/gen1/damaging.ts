@@ -180,7 +180,7 @@ export function tryDamage(
       return dealt;
     }
 
-    target.status(effect, battle, user);
+    target.status(effect, battle, user, {});
   }
   return dealt;
 }

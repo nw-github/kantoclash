@@ -61,7 +61,9 @@ export const tryDamage = (
         battle.info(user, "cAttract", [{id: user.id, v: {flags: user.v.cflags}}]);
       } else {
         battle.ability(target);
-        user.status(Array.isArray(status) ? battle.rng.choice(status)! : status, battle, target);
+        user.status(Array.isArray(status) ? battle.rng.choice(status)! : status, battle, target, {
+          ignoreSafeguard: true,
+        });
       }
     } else if (target.v.ability === "roughskin") {
       battle.ability(target);
@@ -77,7 +79,8 @@ export const tryDamage = (
     spread = false;
   }
 
-  const {eff, fail, type, abilityImmunity} = checkUsefulness(self, battle, user, target);
+  // eslint-disable-next-line prefer-const
+  let {eff, fail, type, abilityImmunity} = checkUsefulness(self, battle, user, target);
   if (self.flag === "explosion") {
     // Explosion into destiny bond, who dies first?
     user.damage(user.base.hp, user, battle, false, "explosion", true);
@@ -91,6 +94,10 @@ export const tryDamage = (
         battle.event({type: "screen", user: opp.id, screen, kind: "end"});
       }
     }
+  }
+
+  if (self.flag === "dream_eater" && target.v.substitute) {
+    fail = true;
   }
 
   const protect = target.v.hasFlag(VF.protect);
@@ -412,7 +419,7 @@ export const tryDamage = (
     } else if ((effect === "psn" || effect === "tox") && target.v.hasAnyType("poison", "steel")) {
       return dealt;
     } else {
-      target.status(effect, battle, user);
+      target.status(effect, battle, user, {});
     }
   }
 

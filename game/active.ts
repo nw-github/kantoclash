@@ -308,7 +308,12 @@ export class ActivePokemon {
     });
   }
 
-  status(status: Status, battle: Battle, src: ActivePokemon, override = false, loud = false) {
+  status(
+    status: Status,
+    battle: Battle,
+    src: ActivePokemon,
+    {override, loud, ignoreSafeguard}: {override?: bool; loud?: bool; ignoreSafeguard?: bool},
+  ) {
     if (!override && this.base.status) {
       if (loud) {
         battle.info(this, "fail_generic");
@@ -316,7 +321,7 @@ export class ActivePokemon {
       return;
     }
 
-    if (this.owner.screens.safeguard) {
+    if (this.owner.screens.safeguard && !ignoreSafeguard) {
       if (loud) {
         battle.info(this, "safeguard_protect");
       }
@@ -383,7 +388,7 @@ export class ActivePokemon {
       ) {
         battle.info(src, "immune");
       } else {
-        src.status(statusNoTox, battle, this, false, true);
+        src.status(statusNoTox, battle, this, {override: false, loud: true});
       }
     }
   }
@@ -590,21 +595,25 @@ export class ActivePokemon {
   }
 
   handleRage(battle: Battle) {
-    if (
-      !this.v.fainted &&
-      this.v.thrashing?.move === battle.gen.moveList.rage &&
-      this.v.stages.atk < 6
-    ) {
-      battle.info(this, "rage");
-      this.modStages([["atk", +1]], battle);
-    } else if (
-      battle.gen.id >= 2 &&
-      !this.v.fainted &&
-      this.v.lastMove?.kind === "damage" &&
-      this.v.lastMove.flag === "rage"
-    ) {
-      battle.info(this, "rage");
-      this.v.rage++;
+    if (this.v.fainted) {
+      return;
+    }
+
+    if (battle.gen.id === 1) {
+      if (this.v.thrashing?.move === battle.gen.moveList.rage && this.v.stages.atk < 6) {
+        battle.info(this, "rage");
+        this.modStages([["atk", +1]], battle);
+      }
+    } else if (battle.gen.id === 2) {
+      if (this.v.lastMove?.kind === "damage" && this.v.lastMove.flag === "rage") {
+        battle.info(this, "rage");
+        this.v.rage++;
+      }
+    } else if (battle.gen.id === 3) {
+      if (this.v.lastMove?.kind === "damage" && this.v.lastMove.flag === "rage") {
+        battle.info(this, "rage");
+        this.modStages([["atk", +1]], battle);
+      }
     }
   }
 

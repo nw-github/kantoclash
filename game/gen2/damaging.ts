@@ -25,7 +25,7 @@ export const tryDamage = (
   }
 
   const {eff, fail, type, abilityImmunity} = checkUsefulness(self, battle, user, target);
-  if (self.flag === "drain" && target.v.substitute) {
+  if ((self.flag === "drain" || self.flag === "dream_eater") && target.v.substitute) {
     user.v.rollout = 0;
     user.v.furyCutter = 0;
     battle.miss(user, target);
@@ -327,7 +327,7 @@ export const tryDamage = (
     ) {
       return dealt;
     } else {
-      target.status(effect, battle, user);
+      target.status(effect, battle, user, {});
     }
   }
 

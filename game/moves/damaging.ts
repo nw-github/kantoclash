@@ -96,15 +96,18 @@ export function getDamage(
     }
 
     let weather: CalcDamageParams["weather"];
-    if (battle.hasWeather("rain")) {
+    const w = battle.getWeather();
+    if (w === "rain") {
       weather =
         type === "fire" || self.charge === "sun"
           ? "penalty"
           : type === "water"
           ? "bonus"
           : undefined;
-    } else if (battle.hasWeather("sun")) {
+    } else if (w === "sun") {
       weather = type === "fire" ? "bonus" : type === "water" ? "penalty" : undefined;
+    } else if ((w === "hail" || w === "sand") && battle.gen.id >= 3) {
+      weather = self.charge === "sun" ? "penalty" : undefined;
     }
 
     let doubleDmg = user.v.inPursuit;

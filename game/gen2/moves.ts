@@ -1,5 +1,4 @@
 import {Range, type Move, type MoveFunctions, type MoveId} from "../moves";
-import {abilityList} from "../species";
 import {isSpecial, stageKeys} from "../utils";
 
 /*
@@ -30,25 +29,18 @@ export const moveFunctionPatches: Partial<MoveFunctions> = {
     }
 
     if (this.why === "rest") {
-      if (abilityList[user.v.ability!]?.preventsStatus === "slp") {
-        return battle.info(user, "fail_generic");
-      }
-
       user.base.status = "slp";
       user.base.sleepTurns = 3;
-      if (user.v.ability === "earlybird") {
-        user.base.sleepTurns--;
-      }
       user.v.counter = 0;
       user.recover(diff, user, battle, this.why, true);
     } else {
       let amount = Math.floor(user.base.stats.hp / 2);
       if (this.weather && !battle.getWeather()) {
         amount = Math.floor(user.base.stats.hp / 4);
-      } else if (this.weather && battle.hasWeather("sun")) {
+      } else if (this.weather && !battle.hasWeather("sun")) {
         amount = Math.floor(user.base.stats.hp / 8);
       }
-      user.recover(amount, user, battle, this.why);
+      user.recover(Math.max(1, amount), user, battle, this.why);
     }
   },
   status(battle, user, [target]) {
@@ -67,7 +59,7 @@ export const moveFunctionPatches: Partial<MoveFunctions> = {
       return;
     }
 
-    target.status(this.status, battle, user, false, true);
+    target.status(this.status, battle, user, {override: false, loud: true});
   },
 };
 
