@@ -383,19 +383,29 @@ const createGeneration = (): Generation => {
             poke.handlePartialTrapping(battle);
           }
 
-          // TODO: uproar & petal dance?
+          // TODO: uproar
 
           if (poke.base.hp) {
+            if (poke.v.thrashing && --poke.v.thrashing.turns === 0) {
+              if (
+                !poke.owner.screens.safeguard &&
+                poke.v.lastMove !== battle.gen.moveList.rollout
+              ) {
+                poke.confuse(battle, "cConfusedFatigueMax");
+              }
+              poke.v.thrashing = undefined;
+            }
+
+            if (poke.v.disabled && --poke.v.disabled.turns === 0) {
+              poke.v.disabled = undefined;
+              battle.info(poke, "disable_end", [{id: poke.id, v: {flags: poke.v.cflags}}]);
+            }
+
             poke.handleEncore(battle);
-          }
 
-          if (poke.base.hp && poke.v.disabled && --poke.v.disabled.turns === 0) {
-            poke.v.disabled = undefined;
-            battle.info(poke, "disable_end", [{id: poke.id, v: {flags: poke.v.cflags}}]);
-          }
-
-          if (poke.base.hp && poke.v.tauntTurns && --poke.v.tauntTurns === 0) {
-            battle.info(poke, "taunt_end", [{id: poke.id, v: {flags: poke.v.cflags}}]);
+            if (poke.v.tauntTurns && --poke.v.tauntTurns === 0) {
+              battle.info(poke, "taunt_end", [{id: poke.id, v: {flags: poke.v.cflags}}]);
+            }
           }
 
           // TODO: lockon/mind reader?, yawn

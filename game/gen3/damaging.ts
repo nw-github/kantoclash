@@ -10,17 +10,6 @@ export const tryDamage = (
   target: ActivePokemon,
   spread: bool,
 ): number => {
-  const checkThrashing = () => {
-    if (user.v.thrashing && --user.v.thrashing.turns === 0) {
-      user.v.rollout = 0;
-      user.v.furyCutter = 0;
-      if (!user.owner.screens.safeguard && self.flag !== "rollout") {
-        user.confuse(battle, user.v.thrashing.max ? "cConfusedFatigueMax" : "cConfusedFatigue");
-      }
-      user.v.thrashing = undefined;
-    }
-  };
-
   const onHit = (type: Type, hadSub: bool) => {
     if (
       user.base.item === "kingsrock" &&
@@ -123,7 +112,6 @@ export const tryDamage = (
         battle.gen.handleCrashDamage(battle, user, target, dmg);
       }
     }
-    checkThrashing();
     return 0;
   }
 
@@ -131,17 +119,19 @@ export const tryDamage = (
     (type === "electric" && target.v.ability === "voltabsorb") ||
     (type === "water" && target.v.ability === "waterabsorb")
   ) {
+    user.v.rollout = 0;
+    user.v.furyCutter = 0;
     battle.ability(target);
     battle.info(target, "immune");
     target.recover(Math.max(1, Math.floor(target.base.stats.hp / 4)), user, battle, "ability");
-    checkThrashing();
     return 0;
   }
 
   if (type === "fire" && target.v.ability === "flashfire" && target.base.status !== "frz") {
+    user.v.rollout = 0;
+    user.v.furyCutter = 0;
     battle.ability(target, [target.setFlag(VF.flashFire)]);
     battle.info(target, "immune");
-    checkThrashing();
     return 0;
   }
 
@@ -152,7 +142,6 @@ export const tryDamage = (
       const {dmg} = getDamage(self, battle, user, target, {});
       battle.gen.handleCrashDamage(battle, user, target, dmg);
     }
-    checkThrashing();
     return 0;
   }
 
@@ -251,7 +240,6 @@ export const tryDamage = (
 
   target.v.lastHitBy = {move: self, user};
 
-  checkThrashing();
   if (
     user.base.hp &&
     self.recoil &&
