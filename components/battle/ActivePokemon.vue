@@ -75,6 +75,8 @@
               }}x {{ statShortName[stage] }}
             </UBadge>
           </template>
+
+          <!-- <UBadge variant="subtle" color="pink" label="Test" /> -->
         </div>
       </div>
     </div>
@@ -314,6 +316,7 @@ const scrColor: Record<Screen, string> = {
   safeguard: "bg-purple-500",
   light_screen: "bg-pink-500",
   reflect: "bg-blue-400",
+  mist: "bg-sky-400",
 };
 
 const screens = computed(() => {
@@ -368,12 +371,7 @@ const badges: {flag: VF; props: InstanceType<typeof UBadge>["$props"]}[] = [
   },
   {
     flag: VF.identified,
-    props: {
-      color: "violet",
-      icon: "material-symbols:search-rounded",
-      variant: "subtle",
-      class: "ring-violet-500 dark:ring-violet-400",
-    },
+    props: {color: "violet", icon: "material-symbols:search-rounded", variant: "subtle"},
   },
   {flag: VF.curse, props: {color: "red", icon: "mdi:nail", label: "Curse"}},
   {flag: VF.focus, props: {color: "emerald", label: "Focus Energy"}},

@@ -33,7 +33,7 @@ export const stageStatKeys = ["atk", "def", "spa", "spd", "spe"] as const;
 export const statKeys = ["hp", ...stageStatKeys] as const;
 export const stageKeys = [...stageStatKeys, "acc", "eva"] as const;
 
-export const screens = ["light_screen", "reflect", "safeguard"] as const;
+export const screens = ["light_screen", "reflect", "safeguard", "mist"] as const;
 export type Screen = (typeof screens)[number];
 
 // prettier-ignore

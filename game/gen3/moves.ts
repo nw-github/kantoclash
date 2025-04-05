@@ -1,4 +1,4 @@
-import type {Move, MoveFunctions, MoveId} from "../moves";
+import {Range, type Move, type MoveFunctions, type MoveId} from "../moves";
 import {HP_TYPES} from "../utils";
 
 /*
@@ -36,6 +36,7 @@ export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
   conversion2: {protect: false},
   detect: {priority: +3},
   endure: {priority: +3},
+  flail: {flag: "none"},
   hiddenpower: {
     getPower(user) {
       const v =
@@ -61,10 +62,12 @@ export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
   lowkick: {acc: 100, effect: [0, "flinch"]},
   meanlook: {protect: true},
   mimic: {acc: 0},
+  mist: {kind: "screen", screen: "mist", range: Range.Field},
   nightmare: {protect: true},
   painsplit: {acc: 0},
   protect: {priority: +3},
   razorwind: {acc: 100},
+  reversal: {flag: "none"},
   roar: {priority: -6},
   skyattack: {flag: "high_crit", effect: [30, "flinch"]},
   spiderweb: {protect: true},

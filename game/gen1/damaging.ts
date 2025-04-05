@@ -301,6 +301,7 @@ type DamageExtras = {
   band?: bool;
   beatUp?: Pokemon;
   power?: number;
+  spread?: bool;
 };
 
 export function getDamage(

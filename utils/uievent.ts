@@ -161,6 +161,10 @@ export const screenMessage: Record<Screen, Record<ScreenEvent["kind"], string>> 
     start: "Reflect raised {l}'s Defense!",
     end: "{}'s Reflect wore off...",
   },
+  mist: {
+    start: "{} became shrouded in Mist!",
+    end: "{}'s Mist wore off...",
+  },
 };
 
 export const damageMessage: Partial<Record<DamageReason, string>> = {

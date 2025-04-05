@@ -229,7 +229,7 @@ export const tryDamage = (
     dealt = 0;
   } else {
     let dmg, isCrit;
-    ({dmg, isCrit, endured, band} = getDamage(self, battle, user, target, {power}));
+    ({dmg, isCrit, endured, band} = getDamage(self, battle, user, target, {power, spread}));
     ({dealt, dead, event} = target.damage(
       dmg,
       user,
@@ -254,7 +254,7 @@ export const tryDamage = (
     user.damage(Math.max(Math.floor(dealt / self.recoil), 1), user, battle, false, "recoil", true);
   }
 
-  if ((user.base.hp && self.flag === "drain") || self.flag === "dream_eater") {
+  if (user.base.hp && (self.flag === "drain" || self.flag === "dream_eater")) {
     user.recover(Math.max(Math.floor(dealt / 2), 1), target, battle, "drain");
   } else if (self.flag === "payday") {
     battle.info(user, "payday");
@@ -310,12 +310,6 @@ export const tryDamage = (
   }
 
   // BUG GEN2:
-  // https://pret.github.io/pokecrystal/bugs_and_glitches.html#moves-that-do-damage-and-increase-your-stats-do-not-increase-stats-after-a-ko
-  if (dead) {
-    return dealt;
-  }
-
-  // BUG GEN2:
   // https://pret.github.io/pokecrystal/bugs_and_glitches.html#beat-up-may-trigger-kings-rock-even-if-it-failed
   if (
     user.base.item === "kingsrock" &&
@@ -332,6 +326,12 @@ export const tryDamage = (
     battle.info(user, "fail_generic");
   } else if (!hadSub) {
     target.v.hasFocus = false;
+  }
+
+  // BUG GEN2:
+  // https://pret.github.io/pokecrystal/bugs_and_glitches.html#moves-that-do-damage-and-increase-your-stats-do-not-increase-stats-after-a-ko
+  if (dead) {
+    return dealt;
   }
 
   if (self.flag === "trap" && !hadSub) {

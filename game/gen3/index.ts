@@ -7,6 +7,7 @@ import {moveFunctionPatches, movePatches} from "./moves";
 import speciesPatches from "./species.json";
 import items from "./items.json";
 import {reduceAccItem} from "../item";
+import {tryDamage} from "./damaging";
 
 const critStages: Record<number, number> = {
   [0]: 1 / 16,
@@ -128,6 +129,7 @@ const createGeneration = (): Generation => {
         return Math.floor((base + 5) * (natureTable[nature ?? Nature.hardy][stat] ?? 1));
       }
     },
+    tryDamage,
     getShiny: desired => desired ?? false,
     getGender: (desired, species) => {
       // prettier-ignore

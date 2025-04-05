@@ -63,7 +63,7 @@
             :key="i"
             :option
             :gen
-            :poke="players.poke(currOption.id)!.base!"
+            :poke="players.poke(currOption.id)!"
             @click="selectMove(currOption, i)"
           />
         </template>

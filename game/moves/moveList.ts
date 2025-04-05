@@ -3627,7 +3627,7 @@ const internalMoveList = createMoveList({
     exec(battle, user, [target]) {
       let faint = true;
       // prettier-ignore
-      if (target.v.hasFlag(VF.mist)) {
+      if (target.v.hasFlag(VF.mist) || target.owner.screens.mist) {
         battle.info(target, "mist_protect");
       } else if (target.v.hasFlag(VF.protect)) {
         battle.info(target, "protect");

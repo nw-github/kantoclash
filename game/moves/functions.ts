@@ -81,7 +81,7 @@ export const moveFunctions: MoveFunctions = {
     let failed = true;
     for (const target of targets) {
       if (this.range !== Range.Self) {
-        if (target.v.hasFlag(VF.mist)) {
+        if (target.v.hasFlag(VF.mist) || target.owner.screens.mist) {
           failed = false;
           battle.info(target, "mist_protect");
           continue;

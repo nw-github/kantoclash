@@ -508,6 +508,9 @@ export class ActivePokemon {
       // TODO: after gen 3 it will be possible for this array to be empty
       for (const poke of battle.getTargets(this, {adjacent: true, oppOnly: true})) {
         if (!poke.v.fainted && !poke.v.substitute) {
+          if (poke.owner.screens.mist) {
+            battle.info(poke, "mist_protect");
+          }
           poke.modStages([["atk", -1]], battle);
         }
       }
