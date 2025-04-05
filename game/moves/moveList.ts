@@ -1901,8 +1901,8 @@ const internalMoveList = createMoveList({
     protect: true,
     exec(battle, user, [target]) {
       if (
-        !user.base.gender ||
-        !target.base.gender ||
+        user.base.gender === "N" ||
+        target.base.gender === "N" ||
         user.base.gender === target.base.gender ||
         target.v.attract
       ) {

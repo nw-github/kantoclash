@@ -352,7 +352,7 @@ export const tryDamage = (
   }
 
   // Fire-type hidden power does not thaw in Gen 3
-  if (self.type === "fire") {
+  if (self.type === "fire" && target.base.status === "frz") {
     target.unstatus(battle, "thaw");
     // TODO: can you thaw and then burn?
     return dealt;

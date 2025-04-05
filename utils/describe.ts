@@ -106,6 +106,7 @@ const descriptions: Partial<Record<MoveId, string>> = {
     "hit while behind a substitute does not disrupt this move. ",
   naturepower: "Always calls Swift. ",
   refresh: "Cures the user of poison, paralysis, or burn. ",
+  skillswap: "Swaps the user and target's abilities. ",
 };
 
 const gen2Descriptions: Partial<Record<MoveId, string>> = {

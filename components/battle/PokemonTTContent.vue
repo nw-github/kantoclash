@@ -3,7 +3,7 @@
     <div class="flex justify-between items-center gap-4">
       <div class="flex gap-0.5 items-center justify-center">
         <span>{{ poke.species.name }}</span>
-        <GenderIcon class="size-4" :gender="poke.gender ?? gen1Gender[poke.speciesId]" />
+        <GenderIcon class="size-4" :gender="gen1Gender[poke.speciesId] ?? poke.gender" />
 
         <template v-if="poke._item">
           <ItemSprite :item="poke._item" />
@@ -33,7 +33,7 @@
       <StatusOrFaint :poke="poke" :faint="!active || active.fainted" />
     </div>
 
-    <div class="flex gap-1">
+    <div class="flex gap-1 justify-center">
       <template v-for="(name, stat) in statKeys">
         <template v-if="stat !== 'hp'">
           <UBadge :key="stat" color="black" :class="statClass(stat)">
