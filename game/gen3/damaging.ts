@@ -1,5 +1,5 @@
 import type {ActivePokemon, Battle} from "../battle";
-import {checkUsefulness, getDamage, multiHitCount, Range, type DamagingMove} from "../moves";
+import {checkUsefulness, getDamage, Range, type DamagingMove} from "../moves";
 import {abilityList} from "../species";
 import {idiv, isSpecial, randChoiceWeighted, VF, type Type} from "../utils";
 
@@ -195,7 +195,7 @@ export const tryDamage = (
     const counts = {
       double: 2,
       triple: battle.rng.int(1, 3),
-      multi: multiHitCount(battle.rng),
+      multi: battle.gen.rng.multiHitCount(battle),
     };
 
     const count = counts[self.flag];
@@ -311,7 +311,7 @@ export const tryDamage = (
   }
 
   if (self.flag === "trap" && !hadSub && target.base.hp) {
-    target.v.trapped = {user, move: self, turns: multiHitCount(battle.rng) + 1};
+    target.v.trapped = {user, move: self, turns: battle.gen.rng.multiHitCount(battle) + 1};
     const move = battle.moveIdOf(self)!;
     battle.event({
       type: "trap",

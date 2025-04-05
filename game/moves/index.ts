@@ -4,9 +4,9 @@ import type {Pokemon, Status} from "../pokemon";
 import type {Stages, Type, VF, Weather, Screen} from "../utils";
 import type {Range} from "./moveList";
 
-export * from "../gen1/damaging";
 export * from "./functions";
 export * from "./moveList";
+export * from "./damaging";
 
 export interface BaseMove {
   readonly idx?: number;

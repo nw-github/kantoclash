@@ -289,7 +289,7 @@ export const moveFunctions: MoveFunctions = {
     }
   },
   foresight(battle, user, [target]) {
-    if (user.v.hasFlag(VF.identified)) {
+    if (target.v.hasFlag(VF.identified)) {
       return battle.info(user, "fail_generic");
     } else if (!battle.checkAccuracy(this, user, target)) {
       return;

@@ -1,7 +1,7 @@
 import type {Random} from "random";
-import {tryDamage} from "./damaging";
+import {accumulateBide, tryDamage} from "./damaging";
 import type {ActivePokemon, Battle} from "../battle";
-import {accumulateBide, moveFunctions, moveList, type Move, type MoveId} from "../moves";
+import {moveFunctions, moveList, type Move, type MoveId} from "../moves";
 import {speciesList, type Species, type SpeciesId} from "../species";
 import {
   clamp,
@@ -12,6 +12,7 @@ import {
   type Stats,
   type StatStages,
   type Type,
+  randChoiceWeighted,
 } from "../utils";
 import type {ItemData, ItemId} from "../item";
 import type {Gender, Nature} from "../pokemon";
@@ -495,6 +496,9 @@ const createGeneration = () => {
         return sleepTurns;
       },
       disableTurns: (battle: Battle) => battle.rng.int(1, 8),
+      multiHitCount: (battle: Battle) => {
+        return randChoiceWeighted(battle.rng, [2, 3, 4, 5], [37.5, 37.5, 12.5, 12.5]);
+      },
     },
     checkAccuracy,
     calcDamage,

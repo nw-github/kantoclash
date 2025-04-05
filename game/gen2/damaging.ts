@@ -1,7 +1,6 @@
 import type {ActivePokemon, Battle} from "../battle";
-import {checkUsefulness, getDamage, multiHitCount, Range, type DamagingMove} from "../moves";
-import {abilityList} from "../species";
-import {idiv, isSpecial, randChoiceWeighted, VF, type Type} from "../utils";
+import {checkUsefulness, getDamage, Range, type DamagingMove} from "../moves";
+import {idiv, isSpecial, randChoiceWeighted, VF} from "../utils";
 
 export const tryDamage = (
   self: DamagingMove,
@@ -21,57 +20,6 @@ export const tryDamage = (
     }
   };
 
-  const tryOnHitAbility = (type: Type, hadSub: bool) => {
-    // TODO: test if color change activates before move secondary effect
-    if (
-      !hadSub &&
-      target.base.hp &&
-      target.v.ability === "colorchange" &&
-      !target.v.types.includes(type)
-    ) {
-      battle.ability(target);
-      battle.event({
-        type: "conversion",
-        src: target.id,
-        types: [type],
-        volatiles: [target.setVolatile("types", [type])],
-      });
-      return;
-    }
-
-    if (!self.contact) {
-      return;
-    }
-
-    const status = abilityList[target.v.ability!]?.contactStatus;
-    if (status && battle.gen.rng.tryContactStatus(battle)) {
-      if (status === "attract") {
-        if (
-          target.v.attract ||
-          target.base.gender === "N" ||
-          user.base.gender === "N" ||
-          target.base.gender === user.base.gender
-        ) {
-          return;
-        }
-
-        battle.ability(target);
-        user.v.attract = target;
-        battle.info(user, "cAttract", [{id: user.id, v: {flags: user.v.cflags}}]);
-      } else {
-        battle.ability(target);
-        user.status(Array.isArray(status) ? battle.rng.choice(status)! : status, battle, target);
-      }
-    } else if (target.v.ability === "roughskin") {
-      battle.ability(target);
-      user.damage2(battle, {
-        dmg: Math.max(1, Math.floor(user.base.stats.hp / 16)),
-        src: target,
-        why: "roughskin",
-      });
-    }
-  };
-
   if (self.range === Range.AllAdjacent) {
     spread = false;
   }
@@ -87,16 +35,6 @@ export const tryDamage = (
   if (self.flag === "explosion") {
     // Explosion into destiny bond, who dies first?
     user.damage(user.base.hp, user, battle, false, "explosion", true);
-  } else if (self.flag === "remove_screens") {
-    // In Gen 3, light screen removes from the opponent even if you target an ally, or the target is
-    // immune
-    const opp = battle.opponentOf(user.owner);
-    for (const screen of ["light_screen", "reflect"] as const) {
-      if (opp.screens[screen]) {
-        opp.screens[screen] = 0;
-        battle.event({type: "screen", user: opp.id, screen, kind: "end"});
-      }
-    }
   }
 
   const protect = target.v.hasFlag(VF.protect);
@@ -120,27 +58,7 @@ export const tryDamage = (
     }
     checkThrashing();
     return 0;
-  }
-
-  if (
-    (type === "electric" && target.v.ability === "voltabsorb") ||
-    (type === "water" && target.v.ability === "waterabsorb")
-  ) {
-    battle.ability(target);
-    battle.info(target, "immune");
-    target.recover(Math.max(1, Math.floor(target.base.stats.hp / 4)), user, battle, "ability");
-    checkThrashing();
-    return 0;
-  }
-
-  if (type === "fire" && target.v.ability === "flashfire" && target.base.status !== "frz") {
-    battle.ability(target, [target.setFlag(VF.flashFire)]);
-    battle.info(target, "immune");
-    checkThrashing();
-    return 0;
-  }
-
-  if (!battle.checkAccuracy(self, user, target, !isSpecial(type))) {
+  } else if (!battle.checkAccuracy(self, user, target, !isSpecial(type))) {
     user.v.rollout = 0;
     user.v.furyCutter = 0;
     if (self.flag === "crash") {
@@ -192,9 +110,6 @@ export const tryDamage = (
       hadSub = target.v.substitute !== 0;
       ({dmg, isCrit, endured, band} = getDamage(self, battle, user, target, {band, beatUp: poke}));
       ({dead, event, dealt} = target.damage2(battle, {dmg, src: user, why: "attacked", isCrit}));
-      user.handleShellBell(battle, dealt);
-
-      tryOnHitAbility(type, hadSub);
       if (dead || user.base.hp === 0) {
         break;
       }
@@ -204,7 +119,7 @@ export const tryDamage = (
     const counts = {
       double: 2,
       triple: battle.rng.int(1, 3),
-      multi: multiHitCount(battle.rng),
+      multi: battle.gen.rng.multiHitCount(battle),
     };
 
     const count = counts[self.flag];
@@ -222,9 +137,6 @@ export const tryDamage = (
       }
       ({dead, event, dealt} = target.damage(dmg, user, battle, isCrit, "attacked", false, eff));
       event.hitCount = hits + 1;
-      user.handleShellBell(battle, dealt);
-
-      tryOnHitAbility(type, hadSub);
     }
     dealt = 0;
   } else {
@@ -239,18 +151,12 @@ export const tryDamage = (
       false,
       eff,
     ));
-
-    tryOnHitAbility(type, hadSub);
   }
 
   target.v.lastHitBy = {move: self, user};
 
   checkThrashing();
-  if (
-    user.base.hp &&
-    self.recoil &&
-    (self === battle.gen.moveList.struggle || user.v.ability !== "rockhead")
-  ) {
+  if (user.base.hp && self.recoil) {
     user.damage(Math.max(Math.floor(dealt / self.recoil), 1), user, battle, false, "recoil", true);
   }
 
@@ -258,7 +164,7 @@ export const tryDamage = (
     user.recover(Math.max(Math.floor(dealt / 2), 1), target, battle, "drain");
   } else if (self.flag === "payday") {
     battle.info(user, "payday");
-  } else if (self.flag === "rapid_spin" && user.base.hp) {
+  } else if (self.flag === "rapid_spin") {
     if (user.owner.spikes) {
       user.owner.spikes = false;
       battle.event({type: "spikes", src: user.id, player: user.owner.id, spin: true});
@@ -313,7 +219,6 @@ export const tryDamage = (
   // https://pret.github.io/pokecrystal/bugs_and_glitches.html#beat-up-may-trigger-kings-rock-even-if-it-failed
   if (
     user.base.item === "kingsrock" &&
-    target.v.ability !== "innerfocus" &&
     self.kingsRock &&
     !hadSub &&
     battle.gen.rng.tryKingsRock(battle)
@@ -335,7 +240,7 @@ export const tryDamage = (
   }
 
   if (self.flag === "trap" && !hadSub) {
-    target.v.trapped = {user, move: self, turns: multiHitCount(battle.rng) + 1};
+    target.v.trapped = {user, move: self, turns: battle.gen.rng.multiHitCount(battle) + 1};
     const move = battle.moveIdOf(self)!;
     battle.event({
       type: "trap",
@@ -353,12 +258,6 @@ export const tryDamage = (
 
   // eslint-disable-next-line prefer-const
   let [chance, effect, effectSelf] = self.effect;
-  if (user.v.ability === "serenegrace") {
-    chance *= 2;
-  }
-  if (target.v.ability === "shielddust" && !effectSelf && effect !== "thief") {
-    return dealt;
-  }
 
   const wasTriAttack = effect === "tri_attack";
   if (effect === "tri_attack") {
@@ -388,19 +287,9 @@ export const tryDamage = (
       return dealt;
     }
 
-    if (target.v.ability !== "innerfocus") {
-      target.v.flinch = true;
-    } else if (chance === 100) {
-      battle.ability(target);
-      battle.info(target, "wont_flinch");
-    }
+    target.v.flinch = true;
   } else if (effect === "thief") {
-    if (
-      user.base.item ||
-      !target.base.item ||
-      target.base.item.includes("mail") ||
-      target.v.ability === "stickyhold"
-    ) {
+    if (user.base.item || !target.base.item || target.base.item.includes("mail")) {
       return dealt;
     }
 
@@ -413,7 +302,7 @@ export const tryDamage = (
     user.base.item = target.base.item;
     target.base.item = undefined;
   } else if (effect === "knockoff") {
-    if (target.base.item && target.v.ability !== "stickyhold") {
+    if (target.base.item) {
       battle.event({
         type: "knockoff",
         src: user.id,
