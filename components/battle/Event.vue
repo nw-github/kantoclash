@@ -173,6 +173,7 @@
   <div v-else-if="e.type === 'copy_ability'">{{ pn(e.src) }} copied {{ pn(e.target, false) }}'s {{ abilityList[e.ability].name }}!</div>
   <div v-else-if="e.type === 'trace'">{{ pn(e.src) }} traced {{ pn(e.target, false) }}'s {{ abilityList[e.ability].name }}!</div>
   <div v-else-if="e.type === 'skill_swap'">{{ pn(e.src) }} swapped abilities with {{ pn(e.target, false) }}!</div>
+  <div v-else-if="e.type === 'stockpile'">{{ pn(e.src) }} stockpiled {{ e.count }}!</div>
   <div v-else>Unknown event: <code>{{ e }}</code></div>
 </template>
 

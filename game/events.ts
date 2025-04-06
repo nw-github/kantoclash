@@ -44,7 +44,8 @@ type AnyEvent =
   | BatonPass
   | SpikesEvent
   | ProcAbilityEvent
-  | AbilityEvent;
+  | AbilityEvent
+  | StockPileEvent;
 
 export type ChangedVolatiles = {id: PokeId; v: NullOrOptional<ClientVolatiles>}[];
 
@@ -342,4 +343,10 @@ type AbilityEvent = {
   src: PokeId;
   target: PokeId;
   ability: AbilityId;
+};
+
+type StockPileEvent = {
+  type: "stockpile";
+  src: PokeId;
+  count: number;
 };

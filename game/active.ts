@@ -1039,6 +1039,7 @@ class Volatiles {
   substitute = 0;
   confusion = 0;
   counter = 0;
+  stockpile = 0;
   flinch = false;
   invuln = false;
   hazed = false;

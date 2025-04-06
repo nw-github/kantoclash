@@ -4007,12 +4007,18 @@ const internalMoveList = createMoveList({
     why: "fail_generic",
   },
   stockpile: {
-    kind: "fail",
     name: "Stockpile",
-    pp: 1,
+    pp: 10,
     type: "normal",
     range: Range.Self,
-    why: "fail_generic",
+    exec(battle, user) {
+      if (user.v.stockpile === 3) {
+        return battle.info(user, "fail_generic");
+      }
+
+      user.v.stockpile++;
+      battle.event({type: "stockpile", src: user.id, count: user.v.stockpile});
+    },
   },
   superpower: {
     kind: "damage",
@@ -4028,12 +4034,19 @@ const internalMoveList = createMoveList({
     effect: [100, [["atk", -1], ["def", -1]], true],
   },
   swallow: {
-    kind: "fail",
     name: "Swallow",
-    pp: 1,
+    pp: 10,
     type: "normal",
     range: Range.Self,
-    why: "fail_generic",
+    exec(battle, user) {
+      if (!user.v.stockpile) {
+        return battle.info(user, "fail_generic");
+      }
+
+      const d = {3: 1, 2: 2, 1: 4}[user.v.stockpile] ?? 4;
+      user.recover(Math.max(1, idiv(user.base.hp, d)), user, battle, "recover");
+      user.v.stockpile = 0;
+    },
   },
   tailglow: {
     kind: "stage",
