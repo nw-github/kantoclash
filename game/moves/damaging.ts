@@ -124,6 +124,9 @@ export function getDamage(
     if (self.type === "electric" && user.v.hasFlag(VF.charge)) {
       doubleDmg = true;
     }
+    if (self.flag === "smellingsalt" && !target.v.substitute && target.base.status === "par") {
+      doubleDmg = true;
+    }
 
     const explosion = self.flag === "explosion" ? 2 : 1;
     const spc = isSpecial(type);
@@ -146,7 +149,9 @@ export function getDamage(
     }
 
     const itemBonus = user.base.item && battle.gen.itemTypeBoost[user.base.item];
-    // console.log(`${user.base.name} => ${target.base.name}`);
+    if (import.meta.dev) {
+      console.log(`\n${user.base.name} => ${target.base.name}`);
+    }
     dmg = battle.gen.calcDamage({
       lvl: extras.beatUp ? extras.beatUp.level : user.base.level,
       pow,

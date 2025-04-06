@@ -281,6 +281,14 @@ export const tryDamage = (
       });
       user.v.trapped = undefined;
     }
+  } else if (self.flag === "smellingsalt" && !hadSub && target.base.status === "par") {
+    target.base.status = undefined;
+    battle.event({
+      type: "cure",
+      src: target.id,
+      status: "par",
+      volatiles: [{id: target.id, v: {status: null, stats: target.clientStats(battle)}}],
+    });
   }
 
   if (endured) {

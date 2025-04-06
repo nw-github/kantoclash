@@ -165,6 +165,7 @@ const flagDesc: Record<NonNullable<DamagingMove["flag"]>, string> = {
     "Hits with a typeless 10 power attack for each Pokémon in the user's party without a non-volatile status condition. ",
   facade: "Doubles damage when poisoned, paralyzed or burned.",
   remove_screens: "Removes the effects of Light Screen and Reflect. ",
+  smellingsalt: "Doubles power against paralyzed a paralyzed target, but cures its paralysis. ",
 };
 
 const formatStages = (gen: Generation, stages: [Stages, number][]) => {

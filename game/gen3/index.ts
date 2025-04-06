@@ -556,20 +556,20 @@ const createGeneration = (): Generation => {
       const r = typeof rand === "number" ? rand : rand ? rand.int(85, 100) : 100;
       dmg = Math.max(1, idiv(dmg * r, 100));
 
-      // console.log({dmg, lvl, pow, atk, def, eff, r});
-      // console.log({
-      //   isCrit,
-      //   hasStab,
-      //   itemBonus,
-      //   weather,
-      //   tripleKick,
-      //   flashFire,
-      //   moveMod,
-      //   doubleDmg,
-      //   helpingHand,
-      //   screen,
-      //   spread,
-      // });
+      if (import.meta.dev) {
+        let extra = "";
+        const c = (n: string, b?: bool) => b && (extra += n + " ");
+        c("crit", isCrit);
+        c("stab", hasStab);
+        c("ff", flashFire);
+        c("double", doubleDmg);
+        c("hh", helpingHand);
+        c("screen", screen);
+        c("spread", spread);
+        console.log(`flag: ${extra}`);
+        console.log("vars:", {dmg, lvl, pow, atk, def, eff, r});
+        console.log("misc:", {itemBonus, weather, tripleKick, moveMod});
+      }
       return dmg;
     },
   };

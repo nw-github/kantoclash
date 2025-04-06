@@ -221,4 +221,5 @@ type Flag =
   | "present"
   | "beatup"
   | "facade"
-  | "remove_screens";
+  | "remove_screens"
+  | "smellingsalt";
