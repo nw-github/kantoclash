@@ -2116,7 +2116,9 @@ const internalMoveList = createMoveList({
     type: "ghost",
     range: Range.Adjacent,
     exec(battle, user, [target]) {
-      if (!battle.checkAccuracy(this, user, target)) {
+      if (target.v.substitute) {
+        return battle.info(user, "fail_generic");
+      } else if (!battle.checkAccuracy(this, user, target)) {
         return;
       }
 
@@ -4184,12 +4186,18 @@ const internalMoveList = createMoveList({
     status: "brn",
   },
   wish: {
-    kind: "fail",
     name: "Wish",
-    pp: 1,
+    pp: 10,
     type: "normal",
     range: Range.Self,
-    why: "fail_generic",
+    exec(battle, user) {
+      if (user.wish) {
+        return battle.info(user, "fail_generic");
+      }
+
+      battle.info(user, "wish");
+      user.wish = {user: user.base, turns: 2};
+    },
   },
   yawn: {
     kind: "fail",

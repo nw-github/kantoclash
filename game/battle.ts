@@ -365,7 +365,7 @@ export class Battle {
         this.turnType = TurnType.Switch;
 
         for (const poke of this.allActive) {
-          if (poke.v.fainted && poke.canBeReplaced(this)) {
+          if ((poke.v.fainted && poke.canBeReplaced(this)) || !this.doubles) {
             poke.updateOptions(this);
           } else {
             poke.options = undefined;
