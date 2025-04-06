@@ -73,6 +73,8 @@ export enum VF {
   cSeeded      = 0x0200_0000,
   /** Client only */
   cTaunt       = 0x0100_0000,
+  /** Client only */
+  cDrowsy      = 0x0080_0000,
 }
 
 // prettier-ignore

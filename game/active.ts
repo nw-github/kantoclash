@@ -1055,6 +1055,7 @@ class Volatiles {
   perishCount = 0;
   tauntTurns = 0;
   rollout = 0;
+  drowsy = 0;
   rage = 1;
   furyCutter = 0;
   retaliateDamage = 0;
@@ -1141,6 +1142,9 @@ class Volatiles {
     }
     if (this.tauntTurns) {
       flags |= VF.cTaunt;
+    }
+    if (this.drowsy) {
+      flags |= VF.cDrowsy;
     }
     return flags;
   }

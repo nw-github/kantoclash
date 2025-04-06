@@ -421,7 +421,14 @@ const createGeneration = (): Generation => {
             }
           }
 
-          // TODO: lockon/mind reader?, yawn
+          // TODO: lockon/mind reader?
+
+          if (poke.v.drowsy && --poke.v.drowsy === 0) {
+            battle.event({type: "sv", volatiles: [{id: poke.id, v: {flags: poke.v.cflags}}]});
+            if (!poke.base.status && abilityList[poke.v.ability!]?.preventsStatus !== "slp") {
+              poke.status("slp", battle, poke, {ignoreSafeguard: true});
+            }
+          }
 
           someoneDied = battle.checkFaint(poke, true) || someoneDied;
         }

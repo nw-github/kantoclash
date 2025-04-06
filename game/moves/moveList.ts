@@ -10,6 +10,7 @@ import {
   VF,
   type Type,
 } from "../utils";
+import {abilityList} from "../species";
 
 export type MoveId = keyof typeof internalMoveList;
 
@@ -4200,12 +4201,25 @@ const internalMoveList = createMoveList({
     },
   },
   yawn: {
-    kind: "fail",
     name: "Yawn",
-    pp: 1,
+    pp: 10,
     type: "normal",
-    range: Range.Self,
-    why: "fail_generic",
+    range: Range.Adjacent,
+    exec(battle, user, [target]) {
+      if (target.v.substitute || target.base.status || target.v.drowsy) {
+        return battle.info(user, "fail_generic");
+      } else if (abilityList[target.v.ability!]?.preventsStatus === "slp") {
+        battle.ability(target);
+        return battle.info(target, "immune");
+      } else if (target.owner.screens.safeguard) {
+        return battle.info(target, "safeguard_protect");
+      } else if (!battle.checkAccuracy(this, user, target)) {
+        return;
+      }
+
+      target.v.drowsy = 2;
+      battle.info(target, "cDrowsy", [{id: target.id, v: {flags: target.v.cflags}}]);
+    },
   },
 });
 
