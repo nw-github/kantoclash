@@ -3206,20 +3206,27 @@ const internalMoveList = createMoveList({
     ],
   },
   camouflage: {
-    kind: "fail",
     name: "Camouflage",
-    pp: 1,
+    pp: 20,
     type: "normal",
     range: Range.Self,
-    why: "fail_generic",
+    exec(battle, user) {
+      battle.event({
+        type: "conversion",
+        types: ["normal"],
+        src: user.id,
+        volatiles: [user.setVolatile("types", ["normal"])],
+      });
+    },
   },
   charge: {
-    kind: "fail",
     name: "Charge",
-    pp: 1,
-    type: "normal",
+    pp: 20,
+    type: "electric",
     range: Range.Self,
-    why: "fail_generic",
+    exec(battle, user) {
+      battle.info(user, "charge", [user.setFlag(VF.charge)]);
+    },
   },
   cosmicpower: {
     kind: "stage",

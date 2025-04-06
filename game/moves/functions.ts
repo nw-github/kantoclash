@@ -163,6 +163,7 @@ export const moveFunctions: MoveFunctions = {
     }
 
     user.handleShellBell(battle, dealt);
+    battle.sv([user.clearFlag(VF.charge)]);
   },
   fail(battle, user) {
     battle.info(user, this.why);

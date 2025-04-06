@@ -56,6 +56,7 @@ export enum VF {
   helpingHand  = 0x0000_1000,
   ingrain      = 0x0000_2000,
   flashFire    = 0x0000_4000,
+  charge       = 0x0000_8000,
 
   /** Client only */
   cConfused    = 0x8000_0000,

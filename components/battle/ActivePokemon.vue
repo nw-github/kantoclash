@@ -78,6 +78,7 @@
           <UBadge variant="subtle" color="pink" />
           <UBadge variant="subtle" color="violet" />
           <UBadge variant="subtle" color="red" />
+          <UBadge variant="subtle" color="yellow" />
           <UBadge variant="subtle" color="sky" /> -->
         </div>
       </div>
@@ -362,6 +363,7 @@ const badges: {flag: VF; props: InstanceType<typeof UBadge>["$props"]}[] = [
   {flag: VF.cSeeded, props: {color: "lime", icon: "tabler:seedling-filled", variant: "subtle"}},
   {flag: VF.flashFire, props: {color: "red", icon: "mdi:fire", variant: "subtle"}},
   {flag: VF.helpingHand, props: {color: "lime", icon: "mdi:hand-clap", variant: "subtle"}},
+  {flag: VF.charge, props: {color: "yellow", icon: "material-symbols:bolt", variant: "subtle"}},
   {
     flag: VF.cEncore,
     props: {color: "sky", icon: "material-symbols:celebration", variant: "subtle"},

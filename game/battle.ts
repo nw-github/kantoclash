@@ -237,6 +237,10 @@ export class Battle {
     return this.event({type: "info", src: src.id, why, volatiles});
   }
 
+  sv(volatiles?: ChangedVolatiles) {
+    this.event({type: "sv", volatiles});
+  }
+
   ability(src: ActivePokemon, volatiles?: ChangedVolatiles) {
     return this.event({type: "proc_ability", src: src.id, ability: src.v.ability!, volatiles});
   }
@@ -649,56 +653,59 @@ export class Battle {
       }
     }
 
-    if (move.kind === "damage") {
-      const damp = this.allActive.find(p => p.v.ability === "damp");
+    if (move.kind !== "switch") {
       const moveId = this.moveIdOf(move)!;
-      if (damp && move.damp) {
-        this.ability(damp);
-        this.event({type: "cantuse", src: damp.id, move: moveId});
-      }
-
-      if (user.v.trapping && targets[0].v.trapped) {
-        const dead = targets[0].damage(this.gen1LastDamage, user, this, false, "trap").dead;
-        if (dead || --user.v.trapping.turns === 0) {
-          user.v.trapping = undefined;
-        }
-        return;
-      }
-
-      if (move.charge && user.v.charging?.move !== move) {
-        this.event({type: "charge", src: user.id, move: moveId});
-        if (Array.isArray(move.charge)) {
-          user.modStages(move.charge, this);
+      if (move.kind === "damage") {
+        const damp = this.allActive.find(p => p.v.ability === "damp");
+        if (damp && move.damp) {
+          this.ability(damp);
+          this.event({type: "cantuse", src: damp.id, move: moveId});
         }
 
-        if (move.charge !== "sun" || !this.hasWeather("sun")) {
-          user.v.charging = {move: move, target: targets[0]};
-          user.v.invuln = move.charge === "invuln" || user.v.invuln;
+        if (user.v.trapping && targets[0].v.trapped) {
+          const dead = targets[0].damage(this.gen1LastDamage, user, this, false, "trap").dead;
+          if (dead || --user.v.trapping.turns === 0) {
+            user.v.trapping = undefined;
+          }
           return;
         }
+
+        if (move.charge && user.v.charging?.move !== move) {
+          this.event({type: "charge", src: user.id, move: moveId});
+          if (Array.isArray(move.charge)) {
+            user.modStages(move.charge, this);
+          }
+
+          if (move.charge !== "sun" || !this.hasWeather("sun")) {
+            user.v.charging = {move: move, target: targets[0]};
+            user.v.invuln = move.charge === "invuln" || user.v.invuln;
+            this.sv([user.clearFlag(VF.charge)]);
+            return;
+          }
+        }
+
+        user.v.charging = undefined;
+        user.v.trapping = undefined;
+        if (move.charge === "invuln") {
+          user.v.invuln = false;
+        }
+
+        if (move.range === Range.Random) {
+          targets = [this.rng.choice(this.getTargets(user, {adjacent: true, oppOnly: true}))!];
+        }
+      } else {
+        this.sv([user.clearFlag(VF.charge)]);
       }
 
-      user.v.charging = undefined;
-      user.v.trapping = undefined;
-      if (move.charge === "invuln") {
-        user.v.invuln = false;
-      }
-
-      if (move.range === Range.Random) {
-        targets = [this.rng.choice(this.getTargets(user, {adjacent: true, oppOnly: true}))!];
-      }
-    }
-
-    if (move.kind !== "switch") {
       // TODO: does choice band lock you in if your move was disabled?
       if (moveIndex !== undefined && user.base.item === "choiceband") {
         user.v.choiceLock = moveIndex;
       }
 
-      const moveId = this.moveIdOf(move)!;
       if (moveId === user.base.moves[user.v.disabled?.indexInMoves ?? -1]) {
         this.event({move: moveId, type: "move", src: user.id, disabled: true});
         user.v.charging = undefined;
+        this.sv([user.clearFlag(VF.charge)]);
         return;
       }
 
@@ -740,12 +747,16 @@ export class Battle {
       if (move.sleepOnly && user.base.status !== "slp") {
         return this.info(user, "fail_generic");
       } else if (!targets.length) {
+        user.v.charging = undefined;
+        this.sv([user.clearFlag(VF.charge)]);
         return this.info(user, "fail_notarget");
       } else if (
         move.kind === "damage" &&
         move.checkSuccess &&
         !move.checkSuccess(this, user, targets)
       ) {
+        user.v.charging = undefined;
+        this.sv([user.clearFlag(VF.charge)]);
         return;
       }
 

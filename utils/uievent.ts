@@ -125,6 +125,7 @@ export const infoMessage: Record<InfoReason, string> = {
   begin_focuspunch: "{} is tightening its focus!",
   wish: "{} made a wish!",
   cDrowsy: "{} grew drowsy!",
+  charge: "{} began charging power!",
 };
 
 export const weatherMessage: Record<Weather, Record<WeatherEvent["kind"], string>> = {
