@@ -50,6 +50,7 @@ export class ActivePokemon {
   v: Volatiles;
   lastChosenMove?: Move;
   futureSight?: {move: FutureSightMove; damage: number; turns: number};
+  wish?: {user: Pokemon; turns: number};
   choice?: ChosenMove;
   options?: {switches: number[]; moves: MoveOption[]; id: PokeId};
   id: PokeId;

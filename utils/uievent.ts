@@ -123,6 +123,7 @@ export const infoMessage: Record<InfoReason, string> = {
   cTaunt: "{} fell for the taunt!",
   taunt_end: "{}'s taunt wore off...",
   begin_focuspunch: "{} is tightening its focus!",
+  wish: "{} made a wish!",
 };
 
 export const weatherMessage: Record<Weather, Record<WeatherEvent["kind"], string>> = {

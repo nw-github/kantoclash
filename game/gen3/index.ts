@@ -322,7 +322,19 @@ const createGeneration = (): Generation => {
           }
         }
 
-        // TODO: wish
+        for (const poke of turnOrder) {
+          if (poke.wish && --poke.wish.turns === 0) {
+            if (!poke.v.fainted) {
+              poke.recover(
+                Math.max(1, Math.floor(poke.base.stats.hp / 2)),
+                poke,
+                battle,
+                `wish:${poke.base.name}`,
+              );
+            }
+            poke.wish = undefined;
+          }
+        }
 
         let someoneDied = false;
         weather: if (battle.weather) {
@@ -360,7 +372,7 @@ const createGeneration = (): Generation => {
 
             if (battle.hasWeather("rain") && poke.v.ability === "raindish") {
               battle.ability(poke);
-              poke.recover(Math.max(1, idiv(poke.base.stats.hp, 16)), poke, battle, "raindish");
+              poke.recover(Math.max(1, idiv(poke.base.stats.hp, 16)), poke, battle, "none");
             }
 
             if (poke.v.ability === "speedboost" && poke.v.canSpeedBoost && poke.v.stages.spe < 6) {

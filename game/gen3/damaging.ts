@@ -130,7 +130,7 @@ export const tryDamage = (
     user.v.furyCutter = 0;
     battle.ability(target);
     battle.info(target, "immune");
-    target.recover(Math.max(1, Math.floor(target.base.stats.hp / 4)), user, battle, "ability");
+    target.recover(Math.max(1, Math.floor(target.base.stats.hp / 4)), user, battle, "none");
     return 0;
   }
 

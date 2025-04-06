@@ -105,9 +105,9 @@ export type RecoveryReason =
   | "leftovers"
   | "shellbell"
   | "item"
-  | "raindish"
   | "ingrain"
-  | "ability";
+  | "none"
+  | `wish:${string}`;
 
 export type DamageEvent = {
   type: "damage";
@@ -229,7 +229,8 @@ export type InfoReason =
   | "withdraw"
   | "wont_flinch"
   | "miss"
-  | "begin_focuspunch";
+  | "begin_focuspunch"
+  | "wish";
 
 type InfoEvent = {type: "info"; src: PokeId; why: InfoReason};
 
