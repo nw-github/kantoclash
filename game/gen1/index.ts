@@ -193,11 +193,11 @@ export type CalcDamageParams = {
   atk: number;
   def: number;
   eff: number;
-  isCrit: boolean;
-  isStab: boolean;
-  rand: number | Random | false;
+  isCrit: bool;
+  hasStab: bool;
+  rand: Random | number | false;
 
-  itemBonus?: boolean;
+  itemBonus?: number;
   weather?: "bonus" | "penalty";
   tripleKick?: number;
   /**
@@ -207,20 +207,28 @@ export type CalcDamageParams = {
    */
   moveMod?: number;
   /**
-   * Pursuit & target is switching, Stomp and target has minimized, Gust/Twister and target is
-   * flying, Earthquake/Magnitude and target is digging
+   * Pursuit & target is switching
+   * "minimize" flag  and target has minimized
+   * ignore + punish and target is in semi-invulnerable move
+   * SmellingSalt and target is paralyzed
+   * Facade and target is burned
    */
-  doubleDmg?: boolean;
+  doubleDmg?: bool;
+  stockpile?: number;
+  helpingHand?: bool;
+  screen?: bool;
+  spread?: bool;
+  flashFire?: bool;
 };
 
-const calcDamage = ({lvl, pow, atk, def, eff, isCrit, isStab, rand}: CalcDamageParams) => {
+const calcDamage = ({lvl, pow, atk, def, eff, isCrit, hasStab, rand}: CalcDamageParams) => {
   if (eff === 0) {
     return 0;
   }
 
   lvl *= isCrit ? 2 : 1;
   let dmg = Math.min(idiv(idiv((idiv(2 * lvl, 5) + 2) * pow * atk, def), 50), 997) + 2;
-  if (isStab) {
+  if (hasStab) {
     dmg += idiv(dmg, 2);
   }
 
@@ -369,7 +377,7 @@ const beforeUseMove = (battle: Battle, move: Move, user: ActivePokemon) => {
       eff: 1,
       rand: false,
       isCrit: false,
-      isStab: false,
+      hasStab: false,
     });
 
     if (!user.v.substitute) {

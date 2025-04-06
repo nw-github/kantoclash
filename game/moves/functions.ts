@@ -269,7 +269,7 @@ export const moveFunctions: MoveFunctions = {
       lvl: user.base.level,
       eff: 1,
       isCrit: false,
-      isStab: false,
+      hasStab: false,
       rand: battle.rng,
     });
     target.futureSight = {damage: dmg, turns: 3, move: this};

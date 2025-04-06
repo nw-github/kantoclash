@@ -72,14 +72,9 @@ const createGeneration = (): Generation => {
       sleepTurns: battle => battle.rng.int(1, 4),
       disableTurns: battle => battle.rng.int(2, 5) + 1,
     },
-    getDamageVariables(special, battle, user, target, isCrit) {
-      const [atks, defs] = special ? (["spa", "spd"] as const) : (["atk", "def"] as const);
-      if (isCrit && target.v.stages[defs] < user.v.stages[atks]) {
-        isCrit = false;
-      }
-
-      const atk = user.base.gen.getStat(battle, user, atks, isCrit);
-      const def = user.base.gen.getStat(battle, target, defs, isCrit, true);
+    getDamageVariables(spc, battle, user, target, isCrit) {
+      const atk = user.base.gen.getStat(battle, user, spc ? "spa" : "atk", isCrit);
+      const def = user.base.gen.getStat(battle, target, spc ? "spd" : "def", isCrit, true);
       return [atk, def] as const;
     },
     handleCrashDamage(battle, user, target, dmg) {
@@ -494,6 +489,88 @@ const createGeneration = (): Generation => {
       }
 
       battle.betweenTurns = BetweenTurns.Begin;
+    },
+    calcDamage({
+      lvl,
+      pow,
+      atk,
+      def,
+      eff,
+      isCrit,
+      hasStab,
+      rand,
+      itemBonus,
+      weather,
+      tripleKick,
+      flashFire,
+      moveMod,
+      doubleDmg,
+      stockpile,
+      helpingHand,
+      screen,
+      spread,
+    }) {
+      pow = Math.floor(pow * (moveMod || 1));
+      pow = Math.floor(pow * (itemBonus || 1));
+      pow = Math.floor(pow * (tripleKick || 1));
+      pow = Math.floor(pow * (flashFire ? 1.5 : 1));
+
+      let dmg = idiv(idiv((idiv(2 * lvl, 5) + 2) * pow * atk, def), 50);
+      // TODO: brn should be applied here
+      if (screen && !isCrit) {
+        if (spread) {
+          dmg = idiv(dmg, 3) * 2;
+        } else {
+          dmg = idiv(dmg, 2);
+        }
+      }
+
+      if (spread) {
+        dmg = idiv(dmg, 2);
+      }
+
+      if (weather === "penalty") {
+        dmg = idiv(dmg, 2);
+      } else if (weather === "bonus") {
+        dmg += idiv(dmg, 2);
+      }
+
+      // TODO: for physical attacks only???
+      dmg = Math.max(dmg, 1);
+      dmg += 2;
+
+      if (isCrit) {
+        dmg *= 2;
+      }
+      if (doubleDmg) {
+        dmg *= 2;
+      }
+      dmg *= stockpile || 1;
+      if (helpingHand) {
+        dmg += idiv(dmg, 2);
+      }
+      if (hasStab) {
+        dmg += idiv(dmg, 2);
+      }
+      dmg = Math.floor(dmg * eff);
+      const r = typeof rand === "number" ? rand : rand ? rand.int(85, 100) : 100;
+      dmg = Math.max(1, idiv(dmg * r, 100));
+
+      // console.log({dmg, lvl, pow, atk, def, eff, r});
+      // console.log({
+      //   isCrit,
+      //   hasStab,
+      //   itemBonus,
+      //   weather,
+      //   tripleKick,
+      //   flashFire,
+      //   moveMod,
+      //   doubleDmg,
+      //   helpingHand,
+      //   screen,
+      //   spread,
+      // });
+      return dmg;
     },
   };
 

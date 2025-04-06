@@ -50,7 +50,7 @@ const calcDamage = ({
   def,
   eff,
   isCrit,
-  isStab,
+  hasStab,
   rand,
   itemBonus,
   tripleKick,
@@ -65,7 +65,7 @@ const calcDamage = ({
   const item = itemBonus ? 1.1 : 1;
   const crit = isCrit ? 2 : 1;
   const tk = tripleKick ?? 1;
-  const stab = isStab ? 1.5 : 1;
+  const stab = hasStab ? 1.5 : 1;
   const w = weather === "bonus" ? 1.5 : weather === "penalty" ? 0.5 : 1;
   const double = doubleDmg ? 2 : 1;
 

@@ -406,7 +406,9 @@ export class ActivePokemon {
     this.v.hazed = this.v.hazed || why === "thaw";
     this.v.clearFlag(VF.nightmare);
 
-    const v = [{id: this.id, v: {status: null, flags: this.v.cflags}}];
+    const v = [
+      {id: this.id, v: {status: null, flags: this.v.cflags, stats: this.clientStats(battle)}},
+    ];
     if (why) {
       return battle.info(this, why, v);
     } else {
@@ -582,7 +584,7 @@ export class ActivePokemon {
         eff: 1,
         rand: false,
         isCrit: false,
-        isStab: false,
+        hasStab: false,
       });
 
       this.damage(dmg, this, battle, false, "confusion");

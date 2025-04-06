@@ -81,7 +81,7 @@ export function getDamage(
     isCrit = false;
   } else {
     let pow = extras.power ?? (self.getPower ? self.getPower(user.base) : self.power);
-    let rand: number | false | Random = battle.rng;
+    let rand: false | Random = battle.rng;
     if (self.flag === "norand") {
       isCrit = false;
       rand = false;
@@ -120,12 +120,17 @@ export function getDamage(
     if (["brn", "par", "psn", "tox"].includes(user.base.status) && self.flag === "facade") {
       doubleDmg = true;
     }
+    // Charge checks the original type?
+    if (self.type === "electric" && user.v.hasFlag(VF.charge)) {
+      doubleDmg = true;
+    }
 
     const explosion = self.flag === "explosion" ? 2 : 1;
+    const spc = isSpecial(type);
     // eslint-disable-next-line prefer-const
     let [atk, def] = extras.beatUp
       ? ([extras.beatUp.stats.atk, target.base.stats.def] as const)
-      : battle.gen.getDamageVariables(isSpecial(type), battle, user, target, isCrit);
+      : battle.gen.getDamageVariables(spc, battle, user, target, isCrit);
     if ((type === "ice" || type === "fire") && target.v.ability === "thickfat") {
       atk -= Math.floor(atk / 2);
     }
@@ -140,20 +145,26 @@ export function getDamage(
       moveMod = 2 ** Math.min(user.v.furyCutter, 4);
     }
 
+    const itemBonus = user.base.item && battle.gen.itemTypeBoost[user.base.item];
+    // console.log(`${user.base.name} => ${target.base.name}`);
     dmg = battle.gen.calcDamage({
       lvl: extras.beatUp ? extras.beatUp.level : user.base.level,
       pow,
       atk,
       def: Math.max(Math.floor(def / explosion), 1),
       isCrit,
-      isStab: user.v.types.includes(type),
+      hasStab: user.v.types.includes(type),
       rand,
       eff,
       weather,
       moveMod,
       doubleDmg,
-      tripleKick: extras.tripleKick ?? 1,
-      itemBonus: user.base.item && battle.gen.itemTypeBoost[user.base.item]?.type === type,
+      tripleKick: extras.tripleKick,
+      itemBonus: itemBonus?.type === type ? 1 + 100 / itemBonus.percent : 1,
+      helpingHand: user.v.hasFlag(VF.helpingHand),
+      spread: extras.spread,
+      screen: !!target.owner.screens[spc ? "light_screen" : "reflect"],
+      flashFire: user.v.hasFlag(VF.flashFire) && type === "fire",
     });
 
     if (self.flag === "false_swipe" && dmg >= target.base.hp && !target.v.substitute) {
