@@ -126,6 +126,8 @@ export const infoMessage: Record<InfoReason, string> = {
   wish: "{} made a wish!",
   cDrowsy: "{} grew drowsy!",
   charge: "{} began charging power!",
+  mudSport: "Electricity's power was weakened!",
+  waterSport: "Fire's power was weakened!",
 };
 
 export const weatherMessage: Record<Weather, Record<WeatherEvent["kind"], string>> = {

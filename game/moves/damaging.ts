@@ -94,6 +94,15 @@ export function getDamage(
     ) {
       pow += Math.floor(pow / 2);
     }
+    if (
+      type === "electric" &&
+      battle.allActive.some(p => !p.v.fainted && p.v.hasFlag(VF.mudSport))
+    ) {
+      pow -= Math.floor(pow / 2);
+    }
+    if (type === "fire" && battle.allActive.some(p => !p.v.fainted && p.v.hasFlag(VF.waterSport))) {
+      pow -= Math.floor(pow / 2);
+    }
 
     let weather: CalcDamageParams["weather"];
     const w = battle.getWeather();

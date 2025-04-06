@@ -3704,12 +3704,12 @@ const internalMoveList = createMoveList({
     kingsRock: true,
   },
   mudsport: {
-    kind: "fail",
+    kind: "volatile",
     name: "Mud Sport",
-    pp: 1,
-    type: "normal",
+    pp: 15,
+    type: "ground",
     range: Range.Self,
-    why: "fail_generic",
+    flag: VF.mudSport,
   },
   muddywater: {
     kind: "damage",
@@ -4168,12 +4168,12 @@ const internalMoveList = createMoveList({
     effect: [20, "confusion"],
   },
   watersport: {
-    kind: "fail",
+    kind: "volatile",
     name: "Water Sport",
-    pp: 1,
-    type: "normal",
+    pp: 15,
+    type: "water",
     range: Range.Self,
-    why: "fail_generic",
+    flag: VF.waterSport,
   },
   waterspout: {
     kind: "damage",

@@ -57,6 +57,8 @@ export enum VF {
   ingrain      = 0x0000_2000,
   flashFire    = 0x0000_4000,
   charge       = 0x0000_8000,
+  waterSport   = 0x0001_0000,
+  mudSport     = 0x0002_0000,
 
   /** Client only */
   cConfused    = 0x8000_0000,

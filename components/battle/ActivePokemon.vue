@@ -386,6 +386,8 @@ const badges: {flag: VF; props: InstanceType<typeof UBadge>["$props"]}[] = [
   {flag: VF.endure, props: {color: "black", label: "Endure"}},
   {flag: VF.nightmare, props: {color: "black", label: "Nightmare"}},
   {flag: VF.cDrowsy, props: {color: "black", label: "Drowsy"}},
+  {flag: VF.waterSport, props: {color: "sky", label: "Water Sport"}},
+  {flag: VF.mudSport, props: {color: "orange", label: "Mud Sport"}},
 ];
 
 const rem = (rem: number) => parseFloat(getComputedStyle(document.documentElement).fontSize) * rem;
