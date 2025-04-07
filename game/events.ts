@@ -231,6 +231,7 @@ export type InfoReason =
   | "wont_flinch"
   | "miss"
   | "begin_focuspunch"
+  | "not_confused"
   | "wish";
 
 type InfoEvent = {type: "info"; src: PokeId; why: InfoReason};

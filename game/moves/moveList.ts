@@ -1901,7 +1901,10 @@ const internalMoveList = createMoveList({
     range: Range.Adjacent,
     protect: true,
     exec(battle, user, [target]) {
-      if (
+      if (target.v.ability === "oblivious") {
+        battle.ability(target);
+        return battle.info(target, "immune");
+      } else if (
         user.base.gender === "N" ||
         target.base.gender === "N" ||
         user.base.gender === target.base.gender ||

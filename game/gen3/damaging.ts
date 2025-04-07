@@ -369,7 +369,7 @@ export const tryDamage = (
   }
 
   if (effect === "confusion") {
-    if (!target.v.confusion && !user.owner.screens.safeguard) {
+    if (!target.v.confusion && !user.owner.screens.safeguard && target.v.ability !== "owntempo") {
       target.confuse(battle);
     }
   } else if (Array.isArray(effect)) {

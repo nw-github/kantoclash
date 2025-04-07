@@ -398,7 +398,10 @@ const createGeneration = (): Generation => {
 
           if (poke.base.hp) {
             if (poke.v.thrashing && --poke.v.thrashing.turns === 0) {
-              if (poke.v.lastMove !== battle.gen.moveList.rollout) {
+              if (
+                poke.v.lastMove !== battle.gen.moveList.rollout &&
+                poke.v.ability !== "owntempo"
+              ) {
                 poke.confuse(battle, "cConfusedFatigueMax");
               }
               poke.v.thrashing = undefined;

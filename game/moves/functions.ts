@@ -30,6 +30,10 @@ export const moveFunctions: MoveFunctions = {
     for (const target of targets) {
       if (target.v.substitute) {
         continue;
+      } else if (target.v.ability === "owntempo") {
+        battle.ability(target);
+        battle.info(target, "immune");
+        continue;
       } else if (target.owner.screens.safeguard) {
         battle.info(target, "safeguard_protect");
         failed = false;
@@ -279,6 +283,10 @@ export const moveFunctions: MoveFunctions = {
     if (target.owner.screens.safeguard) {
       target.modStages(this.stages, battle);
       return battle.info(target, "safeguard_protect");
+    } else if (target.v.ability === "owntempo") {
+      target.modStages(this.stages, battle);
+      battle.ability(target);
+      return battle.info(target, "not_confused");
     } else if (!battle.checkAccuracy(this, user, target)) {
       return;
     } else if (!target.modStages(this.stages, battle)) {

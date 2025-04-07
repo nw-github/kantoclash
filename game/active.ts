@@ -498,7 +498,7 @@ export class ActivePokemon {
   }
 
   handleWeatherAbility(battle: Battle) {
-    const weather = abilityList[this.base.ability!]?.startsWeather;
+    const weather = abilityList[this.v.ability!]?.startsWeather;
     if (weather) {
       battle.ability(this);
       battle.setWeather(weather, -1);
@@ -506,7 +506,7 @@ export class ActivePokemon {
   }
 
   handleSwitchInAbility(battle: Battle) {
-    if (this.base.ability === "intimidate" && !this.v.usedIntimidate) {
+    if (this.v.ability === "intimidate" && !this.v.usedIntimidate) {
       this.v.usedIntimidate = true;
       battle.ability(this);
 
@@ -521,7 +521,7 @@ export class ActivePokemon {
       }
     }
 
-    if (this.base.ability === "trace" && !this.v.usedTrace) {
+    if (this.v.ability === "trace" && !this.v.usedTrace) {
       const target = battle.rng.choice(battle.getTargets(this, {adjacent: true, oppOnly: true}));
       if (target) {
         battle.ability(this);
@@ -541,7 +541,7 @@ export class ActivePokemon {
   }
 
   handleForecast(battle: Battle) {
-    if (this.base.ability !== "forecast" || this.base.speciesId !== "castform") {
+    if (this.v.ability !== "forecast" || this.base.speciesId !== "castform") {
       return;
     }
 
@@ -677,6 +677,19 @@ export class ActivePokemon {
         this.unstatus(battle);
       }
 
+      if (this.v.attract && this.v.ability === "oblivious") {
+        this.v.attract = undefined;
+        // is this silent?
+        battle.ability(this);
+        battle.event({type: "sv", volatiles: [{id: this.id, v: {flags: this.v.cflags}}]});
+      }
+
+      if (this.v.confusion && this.v.ability === "owntempo") {
+        this.v.confusion = 0;
+        battle.ability(this);
+        battle.info(this, "confused_end", [{id: this.id, v: {flags: this.v.cflags}}]);
+      }
+
       if (statusBerry[this.base.item!] && statusBerry[this.base.item!] === status) {
         cureStatus(this);
       } else if (statusBerry[this.base.item!] === "any") {
@@ -735,7 +748,7 @@ export class ActivePokemon {
         this.recover(Math.max(1, Math.floor(this.base.stats.hp / 8)), this, battle, "item");
         if (this.base.nature !== undefined) {
           const [, minus] = Object.keys(natureTable[this.base.nature]);
-          if (minus === healPinchBerry[this.base.item!]) {
+          if (minus === healPinchBerry[this.base.item!] && this.v.ability !== "owntempo") {
             this.confuse(battle, "cConfused");
           }
         }
