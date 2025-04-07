@@ -3561,12 +3561,22 @@ const internalMoveList = createMoveList({
     flag: "multi",
   },
   imprison: {
-    kind: "fail",
     name: "Imprison",
-    pp: 1,
-    type: "normal",
+    pp: 10,
+    type: "psychic",
     range: Range.Self,
-    why: "fail_generic",
+    exec(battle, user) {
+      const moves = new Set(user.moveset());
+      const good = battle.allActive.some(
+        p => !p.v.fainted && p.owner !== user.owner && !new Set(p.moveset()).isDisjointFrom(moves),
+      );
+
+      if (!good) {
+        return battle.info(user, "fail_generic");
+      }
+
+      return battle.info(user, "imprisoning", [user.setFlag(VF.imprisoning)]);
+    },
   },
   ingrain: {
     kind: "volatile",

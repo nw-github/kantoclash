@@ -61,6 +61,7 @@ export enum VF {
   mudSport     = 0x0002_0000,
   followMe     = 0x0004_0000,
   loafing      = 0x0008_0000,
+  imprisoning  = 0x0010_0000,
 
   /** Client only */
   cConfused    = 0x8000_0000,

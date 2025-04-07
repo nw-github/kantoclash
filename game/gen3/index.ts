@@ -262,10 +262,13 @@ const createGeneration = (): Generation => {
         resetVolatiles();
         return false;
       } else if (move.kind !== "damage" && user.v.tauntTurns) {
-        battle.event({move: battle.moveIdOf(move)!, type: "cantusetaunt", src: user.id});
+        battle.event({move: moveId, type: "cantusetaunt", src: user.id});
         resetVolatiles();
         return false;
-        // TODO: imprison
+      } else if (battle.allActive.some(p => p.isImprisoning(user, moveId))) {
+        battle.event({move: moveId, type: "cantuse", src: user.id});
+        resetVolatiles();
+        return false;
       } else if (user.handleConfusion(battle)) {
         resetVolatiles();
         return false;

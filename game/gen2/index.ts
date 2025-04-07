@@ -221,6 +221,8 @@ const createGeneration = (): Generation => {
         return false;
       } else if (user.v.tauntTurns && battle.gen.moveList[move].kind !== "damage") {
         return false;
+      } else if (battle.allActive.some(p => p.isImprisoning(user, move))) {
+        return false;
       }
 
       return true;

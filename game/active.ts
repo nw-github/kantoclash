@@ -969,6 +969,24 @@ export class ActivePokemon {
     };
   }
 
+  moveset() {
+    if (this.v.mimic) {
+      const moves = [...this.base.moves];
+      moves[this.v.mimic.indexInMoves] = this.v.mimic.move;
+      return moves;
+    }
+    return this.base.moves;
+  }
+
+  isImprisoning(target: ActivePokemon, move: MoveId) {
+    return (
+      !this.v.fainted &&
+      this.owner !== target.owner &&
+      this.v.hasFlag(VF.imprisoning) &&
+      this.moveset().includes(move)
+    );
+  }
+
   isGrounded() {
     return !this.v.types.includes("flying") && this.v.ability !== "levitate";
   }

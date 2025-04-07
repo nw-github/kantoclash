@@ -32,7 +32,7 @@
           icon="material-symbols:close"
           variant="link"
           color="gray"
-          :disabled="!challengeUser"
+          :disabled="!challengeUser || findingMatch || cancelling"
           @click="challengeUser = undefined"
         />
       </div>
