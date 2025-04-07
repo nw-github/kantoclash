@@ -2,17 +2,27 @@
   <div class="all w-full flex flex-col items-center">
     <div
       class="flex flex-col gap-0.5 sm:gap-1 text-sm z-40"
-      :class="[(!poke || poke.hidden) && 'invisible', !isSingles ? 'w-20 sm:w-32' : 'w-28 sm:w-40']"
+      :class="[(!poke || poke.hidden) && 'invisible', !isSingles ? 'w-16 sm:w-32' : 'w-28 sm:w-40']"
     >
       <div class="flex justify-between flex-col sm:flex-row">
         <div class="font-bold flex items-center grow overflow-hidden">
           <span class="truncate text-xs">{{ poke?.name || "--" }}</span>
           <!-- @vue-expect-error -->
-          <GenderIcon class="size-4" :gender="gen1Gender[poke?.speciesId] ?? poke?.gender" />
+          <GenderIcon
+            class="size-4 hidden sm:block"
+            :gender="gen1Gender[poke?.speciesId] ?? poke?.gender"
+          />
         </div>
-        <span class="text-[0.65rem] sm:text-xs whitespace-nowrap">
-          Lv. {{ poke?.level ?? 100 }}
-        </span>
+        <div class="flex items-center">
+          <span class="text-[0.65rem] sm:text-xs whitespace-nowrap">
+            Lv. {{ poke?.level ?? 100 }}
+          </span>
+          <!-- @vue-expect-error -->
+          <GenderIcon
+            class="size-4 sm:hidden"
+            :gender="gen1Gender[poke?.speciesId] ?? poke?.gender"
+          />
+        </div>
       </div>
       <div class="relative overflow-hidden rounded-md bg-[#333] flex">
         <div class="hp-fill absolute h-full rounded-md" />

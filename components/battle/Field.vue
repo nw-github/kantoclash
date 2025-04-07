@@ -1,8 +1,5 @@
 <template>
-  <div
-    class="flex w-full px-4 justify-center sm:justify-around relative"
-    :class="isSingles && 'gap-8'"
-  >
+  <div class="flex w-full px-4 justify-around relative" :class="isSingles && 'gap-8'">
     <div
       v-for="(player, id) in players.items"
       :key="id"

@@ -508,14 +508,18 @@ const runEvent = async (e: BattleEvent) => {
       const src = players.poke(e.src)!;
       src.transformed = target.transformed ?? target.speciesId;
     } else if (e.type === "hit_sub") {
-      await playAnimation(e.src, {
-        anim: "attack",
-        target: e.target,
-        cb() {
-          pushEvent(e);
-          playDmg(e.eff ?? 1);
-        },
-      });
+      if (e.confusion) {
+        await Promise.allSettled([playDmg(e.eff ?? 1), playAnimation(e.src, {anim: "hurt"})]);
+      } else {
+        await playAnimation(e.src, {
+          anim: "attack",
+          target: e.target,
+          cb() {
+            pushEvent(e);
+            playDmg(e.eff ?? 1);
+          },
+        });
+      }
       if (e.broken) {
         pushEvent({type: "sub_break", target: e.target});
         await playAnimation(e.target, {anim: "lose_sub", cb: () => handleVolatiles(e)});

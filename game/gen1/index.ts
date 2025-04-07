@@ -615,7 +615,7 @@ const createGeneration = () => {
         poke.v.flinch = false;
         poke.v.inPursuit = false;
         poke.v.retaliateDamage = 0;
-        if (poke.v.trapped && !poke.v.trapped.user.v.trapping) {
+        if (battle.gen.id === 1 && poke.v.trapped && !poke.v.trapped.user.v.trapping) {
           poke.v.trapped = undefined;
         }
         if (poke.v.hasFlag(VF.protect | VF.endure | VF.helpingHand)) {
