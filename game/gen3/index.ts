@@ -243,7 +243,11 @@ const createGeneration = (): Generation => {
         return false;
       }
 
-      // TODO: Truant
+      if (user.v.ability === "truant" && user.v.hasFlag(VF.loafing)) {
+        battle.info(user, "loafing");
+        resetVolatiles();
+        return false;
+      }
 
       if (user.v.flinch) {
         battle.info(user, "flinch");
@@ -304,7 +308,8 @@ const createGeneration = (): Generation => {
       return battle.checkFaint(user) && shouldReturn(battle);
     },
     betweenTurns(battle) {
-      // FIXME: actually use turn order
+      // TODO: should this turn order take into account priority/pursuit/etc. or should it use
+      // out of battle speeed?
       const turnOrder = battle.turnOrder;
 
       // Screens Wish & Weather
@@ -375,7 +380,15 @@ const createGeneration = (): Generation => {
               poke.modStages([["spe", +1]], battle);
             }
 
-            // TODO: truant
+            if (poke.v.canSpeedBoost) {
+              if (poke.v.hasFlag(VF.loafing)) {
+                console.log("clearing truant for", poke.base.name);
+                poke.v.clearFlag(VF.loafing);
+              } else if (poke.v.ability === "truant") {
+                console.log("setting truant for", poke.base.name);
+                poke.v.setFlag(VF.loafing);
+              }
+            }
 
             if (
               poke.base.status &&

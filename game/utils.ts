@@ -60,6 +60,7 @@ export enum VF {
   waterSport   = 0x0001_0000,
   mudSport     = 0x0002_0000,
   followMe     = 0x0004_0000,
+  loafing      = 0x0008_0000,
 
   /** Client only */
   cConfused    = 0x8000_0000,
