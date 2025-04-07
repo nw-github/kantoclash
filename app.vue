@@ -225,7 +225,7 @@ onMounted(() => {
       }
     });
 
-    navigateTo(`/room/${roomId}`);
+    navigateTo(`/room/${roomId}?intro=true`);
   });
   $conn.on("maintenanceState", enabled => {
     if (route.path.startsWith("/admin")) {

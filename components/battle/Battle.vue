@@ -7,7 +7,7 @@
       <div class="flex w-full relative justify-between items-start">
         <div class="flex gap-2 items-center">
           <div
-            :class="[!currentTurnNo && 'invisible']"
+            :class="[!currentTurnNo && 'invisible order-1']"
             class="rounded-md bg-gray-300 dark:bg-gray-700 flex justify-center py-0.5 px-1"
           >
             <span class="text-lg font-medium">Turn {{ currentTurnNo }}</span>

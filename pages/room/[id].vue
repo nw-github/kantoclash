@@ -50,6 +50,7 @@ const {user} = useUserSession();
 const title = useTitle("Battle");
 const toast = useToast();
 const route = useRoute();
+const router = useRouter();
 const mounted = useMounted();
 const {track: currentTrack} = useBGMusic();
 const battle = ref<InstanceType<typeof Battle>>();
@@ -68,7 +69,7 @@ const ready = ref(false);
 
 let sequenceNo = 0;
 let needsFreshStart = true;
-let firstConnect = true;
+let firstConnect = false;
 
 onMounted(() => {
   if ($conn.connected) {
@@ -80,6 +81,9 @@ onMounted(() => {
   $conn.on("nextTurn", onNextTurn);
   $conn.on("info", onInfo);
   $conn.on("timerStart", onTimerStart);
+
+  firstConnect = Boolean(route.query.intro);
+  router.replace({query: {}});
 });
 
 onUnmounted(() => {
@@ -243,22 +247,19 @@ const onJoinRoom = (resp: JoinRoomResponse | "bad_room") => {
   title.value = `${resp.battlers.map(b => b.name).join(" vs. ")} - ${fmt.name}`;
   finished.value = resp.finished;
 
-  let isFirstConnect = firstConnect;
-  if (
-    (firstConnect &&
-      !!user.value &&
-      resp.battlers.find(b => b.id === user.value?.id) &&
-      events.value.reduce((acc, x) => acc + +(x.type === "next_turn"), 0) === 0) ||
-    resp.finished
-  ) {
-    isFirstConnect = false;
+  let startAtBeginning = firstConnect;
+  if (!resp.battlers.find(b => b.id === user.value?.id)) {
+    startAtBeginning = false;
+  }
+  if (resp.finished) {
+    startAtBeginning = true;
   }
 
-  ready.value = true;
-
   firstConnect = false;
+
+  ready.value = true;
   if (needsFreshStart) {
-    battle.value!.skipToTurn(isFirstConnect ? -1 : 0);
+    nextTick().then(() => battle.value!.skipToTurn(startAtBeginning ? 0 : -1));
   }
 };
 
