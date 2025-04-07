@@ -174,7 +174,7 @@ export function getDamage(
       moveMod,
       doubleDmg,
       tripleKick: extras.tripleKick,
-      itemBonus: itemBonus?.type === type ? 1 + 100 / itemBonus.percent : 1,
+      itemBonus: itemBonus?.type === type ? 1 + itemBonus.percent / 100 : 1,
       helpingHand: user.v.hasFlag(VF.helpingHand),
       spread: extras.spread,
       screen: !!target.owner.screens[spc ? "light_screen" : "reflect"],
