@@ -8,6 +8,7 @@ import speciesPatches from "./species.json";
 import items from "./items.json";
 import {reduceAccItem} from "../item";
 import {tryDamage} from "./damaging";
+import type {ActivePokemon} from "../active";
 
 const critStages: Record<number, number> = {
   [0]: 1 / 16,
@@ -308,9 +309,20 @@ const createGeneration = (): Generation => {
       return battle.checkFaint(user) && shouldReturn(battle);
     },
     betweenTurns(battle) {
+      const checkFaint = (poke: ActivePokemon) => {
+        return battle.checkFaint(poke, true) && poke.canBeReplaced(battle);
+      };
+
       // TODO: should this turn order take into account priority/pursuit/etc. or should it use
       // out of battle speeed?
       const turnOrder = battle.turnOrder;
+
+      if (import.meta.dev) {
+        console.log(
+          `\nbetweenTurns(${BetweenTurns[battle.betweenTurns]}):`,
+          battle.turnOrder.map(t => t.base.name),
+        );
+      }
 
       // Screens Wish & Weather
       if (battle.betweenTurns < BetweenTurns.Weather) {
@@ -351,7 +363,7 @@ const createGeneration = (): Generation => {
 
           for (const poke of turnOrder) {
             poke.handleWeather(battle, battle.weather!.kind);
-            someoneDied = battle.checkFaint(poke, true) || someoneDied;
+            someoneDied = checkFaint(poke) || someoneDied;
           }
         }
 
@@ -441,7 +453,7 @@ const createGeneration = (): Generation => {
             }
           }
 
-          someoneDied = battle.checkFaint(poke, true) || someoneDied;
+          someoneDied = checkFaint(poke) || someoneDied;
         }
 
         battle.betweenTurns = BetweenTurns.PartialTrapping;
@@ -456,7 +468,7 @@ const createGeneration = (): Generation => {
           poke.handleFutureSight(battle);
           // FIXME: after future sight, the affected pokemon should die and be forced to switch
           // immediately, even before other future sights go off
-          someoneDied = battle.checkFaint(poke, true) || someoneDied;
+          someoneDied = checkFaint(poke) || someoneDied;
         }
 
         battle.betweenTurns = BetweenTurns.FutureSight;
@@ -469,7 +481,7 @@ const createGeneration = (): Generation => {
         let someoneDied = false;
         for (const poke of turnOrder) {
           poke.handlePerishSong(battle);
-          someoneDied = battle.checkFaint(poke, true) || someoneDied;
+          someoneDied = checkFaint(poke) || someoneDied;
         }
 
         // FIXME: after perish song the affected pokemon should die and be forced to switch

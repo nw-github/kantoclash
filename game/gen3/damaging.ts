@@ -28,6 +28,7 @@ export const tryDamage = (
       !hadSub &&
       target.base.hp &&
       target.v.ability === "colorchange" &&
+      type !== "???" &&
       !target.v.types.includes(type)
     ) {
       battle.ability(target);
@@ -60,10 +61,14 @@ export const tryDamage = (
         user.v.attract = target;
         battle.info(user, "cAttract", [{id: user.id, v: {flags: user.v.cflags}}]);
       } else if (!user.base.status) {
-        battle.ability(target);
-        user.status(Array.isArray(status) ? battle.rng.choice(status)! : status, battle, target, {
-          ignoreSafeguard: true,
-        });
+        const ss = Array.isArray(status) ? status : [status];
+        const s = battle.rng.choice(
+          ss.filter(s => abilityList[target.v.ability!]?.preventsStatus !== s),
+        );
+        if (s) {
+          battle.ability(target);
+          user.status(s, battle, target, {ignoreSafeguard: true});
+        }
       }
     } else if (target.v.ability === "roughskin") {
       battle.ability(target);
