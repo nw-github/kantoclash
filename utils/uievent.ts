@@ -128,6 +128,7 @@ export const infoMessage: Record<InfoReason, string> = {
   charge: "{} began charging power!",
   mudSport: "Electricity's power was weakened!",
   waterSport: "Fire's power was weakened!",
+  followMe: "{} became the center of attention!",
 };
 
 export const weatherMessage: Record<Weather, Record<WeatherEvent["kind"], string>> = {

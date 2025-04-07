@@ -59,6 +59,7 @@ export enum VF {
   charge       = 0x0000_8000,
   waterSport   = 0x0001_0000,
   mudSport     = 0x0002_0000,
+  followMe     = 0x0004_0000,
 
   /** Client only */
   cConfused    = 0x8000_0000,

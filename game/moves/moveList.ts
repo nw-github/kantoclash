@@ -3426,13 +3426,14 @@ const internalMoveList = createMoveList({
     },
   },
   followme: {
-    kind: "fail",
+    kind: "volatile",
     name: "Follow Me",
-    pp: 1,
+    pp: 20,
     type: "normal",
     range: Range.Self,
-    why: "fail_generic",
+    priority: +3,
     noAssist: true,
+    flag: VF.followMe,
   },
   frenzyplant: {
     kind: "damage",
