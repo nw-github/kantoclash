@@ -3968,11 +3968,18 @@ const internalMoveList = createMoveList({
       }
 
       const mine = user.v.ability;
-      const his = target.v.ability;
-
-      const a = user.setVolatile("ability", his);
-      const b = target.setVolatile("ability", mine);
-      battle.event({type: "skill_swap", src: user.id, target: target.id, volatiles: [a, b]});
+      user.v.ability = target.v.ability;
+      target.v.ability = mine;
+      // skill swap doesn't reveal the abilities until Gen V
+      battle.event({
+        type: "skill_swap",
+        src: user.id,
+        target: target.id,
+        volatiles: [
+          {id: user.id, v: {ability: null}},
+          {id: target.id, v: {ability: null}},
+        ],
+      });
     },
   },
   skyuppercut: {

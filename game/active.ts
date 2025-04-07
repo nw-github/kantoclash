@@ -114,6 +114,8 @@ export class ActivePokemon {
       volatiles: [{id: this.id, v: this.getClientVolatiles(next, battle)}],
     });
 
+    this.freeOpponents(battle);
+
     if (this.base.item === "berserkgene") {
       battle.event({type: "item", item: "berserkgene", src: this.id});
       this.modStages([["atk", +2]], battle);
@@ -142,6 +144,11 @@ export class ActivePokemon {
       this.clearFlag(VF.protect | VF.mist | VF.lightScreen | VF.reflect),
     ]);
 
+    this.freeOpponents(battle);
+    this.v.fainted = true;
+  }
+
+  freeOpponents(battle: Battle) {
     const {active: oppActive} = battle.opponentOf(this.owner);
     for (const opp of oppActive) {
       let changed = false;
@@ -174,8 +181,6 @@ export class ActivePokemon {
         opp.v.trapped = undefined;
       }
     }
-
-    this.v.fainted = true;
   }
 
   transform(battle: Battle, target: ActivePokemon) {
@@ -587,7 +592,7 @@ export class ActivePokemon {
         hasStab: false,
       });
 
-      this.damage(dmg, this, battle, false, "confusion");
+      this.damage2(battle, {dmg, src: this, why: "confusion", direct: true});
       return true;
     }
 

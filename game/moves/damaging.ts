@@ -80,7 +80,7 @@ export function getDamage(
       typeof self.getDamage === "number" ? self.getDamage : self.getDamage(battle, user, target);
     isCrit = false;
   } else {
-    let pow = extras.power ?? (self.getPower ? self.getPower(user.base) : self.power);
+    let pow = extras.power ?? (self.getPower ? self.getPower(user.base, target.base) : self.power);
     let rand: false | Random = battle.rng;
     if (self.flag === "norand") {
       isCrit = false;

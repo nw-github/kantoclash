@@ -645,24 +645,24 @@ export class Battle {
   }
 
   useMove(move: Move, user: ActivePokemon, targets: ActivePokemon[], moveIndex?: number) {
-    targets = targets.filter(t => !t.v.fainted);
-    const availableTargets = this.getTargets(user, move.range, true);
-
-    let target;
-    if (isSpreadMove(move.range)) {
-      targets = availableTargets;
-    } else if ((target = availableTargets.find(t => t.v.hasFlag(VF.followMe)))) {
-      targets = [target];
-    } else if (
-      move.type === "electric" &&
-      (target = availableTargets.find(t => t.v.ability === "lightningrod"))
-    ) {
-      targets = [target];
-    } else if (!targets.length) {
-      targets = targets.slice(0, 1);
-    }
-
     if (move.kind !== "switch") {
+      targets = targets.filter(t => !t.v.fainted);
+      const availableTargets = this.getTargets(user, move.range, true);
+
+      let target;
+      if (isSpreadMove(move.range)) {
+        targets = availableTargets;
+      } else if ((target = availableTargets.find(t => t.v.hasFlag(VF.followMe)))) {
+        targets = [target];
+      } else if (
+        move.type === "electric" &&
+        (target = availableTargets.find(t => t.v.ability === "lightningrod"))
+      ) {
+        targets = [target];
+      } else if (!targets.length) {
+        targets = availableTargets.slice(0, 1);
+      }
+
       const moveId = this.moveIdOf(move)!;
       if (move.kind === "damage") {
         const damp = this.allActive.find(p => p.v.ability === "damp");
