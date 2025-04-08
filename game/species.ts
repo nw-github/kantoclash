@@ -33,7 +33,7 @@ export type Ability = {
   weatherSpeedBoost?: Weather;
   weatherEva?: Weather;
   startsWeather?: Weather;
-  contactStatus: Status | [Status] | "attract";
+  contactStatus: Status | "attract";
 };
 
 export const speciesList = __speciesList as Record<SpeciesId, Species>;

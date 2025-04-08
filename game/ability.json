@@ -6,8 +6,7 @@
   },
   "effectspore": {
     "name": "Effect Spore",
-    "desc": "May PSN/PAR/SLP on contact.",
-    "contactStatus": ["psn", "par", "slp"]
+    "desc": "May PSN/PAR/SLP on contact."
   },
   "flamebody": {"name": "Flame Body", "desc": "May BRN on contact.", "contactStatus": "brn"},
   "flashfire": {"name": "Flash Fire", "desc": "Immune to and boosted by Fire-type attacks."},

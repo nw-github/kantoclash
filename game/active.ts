@@ -668,7 +668,7 @@ export class ActivePokemon {
         if (slot !== -1) {
           const move = battle.gen.moveList[this.base.moves[slot]];
           this.base.pp[slot] = Math.min(ppBerry[this.base.item!]!, battle.gen.getMaxPP(move));
-          battle.event({type: "item", src: this.id, item: "mysteryberry"});
+          battle.event({type: "item", src: this.id, item: this.base.item!});
           battle.event({type: "pp", src: this.id, move: this.base.moves[slot]});
           this.base.item = undefined;
         }

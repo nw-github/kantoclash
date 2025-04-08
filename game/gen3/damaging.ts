@@ -1,5 +1,6 @@
 import type {ActivePokemon, Battle} from "../battle";
 import {checkUsefulness, getDamage, Range, type DamagingMove} from "../moves";
+import type {Status} from "../pokemon";
 import {abilityList} from "../species";
 import {idiv, isSpecial, randChoiceWeighted, VF, type Type} from "../utils";
 
@@ -10,6 +11,20 @@ export const tryDamage = (
   target: ActivePokemon,
   spread: bool,
 ): number => {
+  const isTargetImmune = (status: Status) => {
+    if (target.base.status) {
+      return true;
+    } else if (status === "brn" && target.v.types.includes("fire")) {
+      return true;
+    } else if (status === "frz" && target.v.types.includes("ice")) {
+      return true;
+    } else if ((status === "psn" || status === "tox") && target.v.hasAnyType("poison", "steel")) {
+      return true;
+    } else {
+      return false;
+    }
+  };
+
   const onHit = (type: Type, hadSub: bool) => {
     if (
       user.base.item === "kingsrock" &&
@@ -45,8 +60,14 @@ export const tryDamage = (
       return;
     }
 
-    const status = abilityList[target.v.ability!]?.contactStatus;
-    if (status && battle.gen.rng.tryContactStatus(battle)) {
+    let status: Status | "attract" | undefined = abilityList[target.v.ability!]?.contactStatus;
+    if (target.v.ability === "effectspore") {
+      status = battle.rand100(10) ? battle.rng.choice(["psn", "par", "slp"])! : undefined;
+    } else if (!battle.gen.rng.tryContactStatus(battle)) {
+      status = undefined;
+    }
+
+    if (status) {
       if (status === "attract") {
         if (
           user.v.attract ||
@@ -61,13 +82,9 @@ export const tryDamage = (
         user.v.attract = target;
         battle.info(user, "cAttract", [{id: user.id, v: {flags: user.v.cflags}}]);
       } else if (!user.base.status) {
-        const ss = Array.isArray(status) ? status : [status];
-        const s = battle.rng.choice(
-          ss.filter(s => abilityList[target.v.ability!]?.preventsStatus !== s),
-        );
-        if (s) {
+        if (abilityList[target.v.ability!]?.preventsStatus !== status && !isTargetImmune(status)) {
           battle.ability(target);
-          user.status(s, battle, target, {ignoreSafeguard: true});
+          user.status(status, battle, target, {ignoreSafeguard: true});
         }
       }
     } else if (target.v.ability === "roughskin") {
@@ -423,15 +440,7 @@ export const tryDamage = (
       target.base.itemUnusable = true;
     }
   } else {
-    if (target.owner.screens.safeguard || target.base.status) {
-      return dealt;
-    } else if (effect === "brn" && target.v.types.includes("fire")) {
-      return dealt;
-    } else if (effect === "frz" && target.v.types.includes("ice")) {
-      return dealt;
-    } else if ((effect === "psn" || effect === "tox") && target.v.hasAnyType("poison", "steel")) {
-      return dealt;
-    } else {
+    if (!target.owner.screens.safeguard && !isTargetImmune(effect)) {
       target.status(effect, battle, user, {});
     }
   }
