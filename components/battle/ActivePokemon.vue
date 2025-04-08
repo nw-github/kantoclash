@@ -407,7 +407,7 @@ const badges: {flag: VF; props: InstanceType<typeof UBadge>["$props"]}[] = [
 
 const rem = (rem: number) => parseFloat(getComputedStyle(document.documentElement).fontSize) * rem;
 
-export type AnimationParams = SwitchAnim | RetractAnim | AttackAnim | OtherAnim;
+export type AnimationParams = SwitchAnim | RetractAnim | AttackAnim | OtherAnim | HurtAnim;
 
 export type SwitchAnim = {
   anim: "sendin";
@@ -426,14 +426,18 @@ export type AttackAnim = {
   anim: "attack";
   cb?: () => void;
   target: PokeId;
-  name?: string;
 };
 
 export type OtherAnim = {
-  anim: "faint" | "get_sub" | "lose_sub" | "spikes" | "hurt";
+  anim: "faint" | "get_sub" | "lose_sub" | "spikes";
   cb?: () => void;
   batonPass?: boolean;
-  name?: string;
+};
+
+export type HurtAnim = {
+  anim: "hurt";
+  cb?: () => void;
+  direct: bool;
 };
 
 const subOpacity = 0.5;
@@ -441,9 +445,10 @@ const [subOffsetX, subOffsetY] = [1.5, 0.5];
 
 let hasSubstitute = false;
 const playAnimation = (params: AnimationParams) => {
-  const {cb, name} = params;
-  if (name) {
-    pbCol.value = name ? [...name].reduce((acc, x) => x.charCodeAt(0) + acc, 0) % 17 : 3;
+  if ("name" in params) {
+    pbCol.value = params.name
+      ? [...params.name].reduce((acc, x) => x.charCodeAt(0) + acc, 0) % 17
+      : 3;
   }
 
   const seq: AnimationSequence = [];
@@ -455,7 +460,7 @@ const playAnimation = (params: AnimationParams) => {
     }
     animations.faint(seq);
   } else if (params.anim === "sendin") {
-    animations.sendIn(seq, cb);
+    animations.sendIn(seq, params.cb);
     if (hasSubstitute) {
       animations.subAfterBatonPass(seq);
     }
@@ -474,7 +479,7 @@ const playAnimation = (params: AnimationParams) => {
     animations.getSub(seq);
   } else if (params.anim === "lose_sub") {
     hasSubstitute = false;
-    animations.loseSub(seq, cb);
+    animations.loseSub(seq, params.cb);
   } else if (params.anim === "phaze") {
     animations.phaze(seq, ".sprite");
     if (hasSubstitute) {
@@ -482,18 +487,18 @@ const playAnimation = (params: AnimationParams) => {
       animations.phaze(seq, ".substitute", "<");
     }
   } else if (params.anim === "spikes") {
-    animations.spikes(seq, cb);
+    animations.spikes(seq, params.cb);
   } else if (params.anim === "attack") {
     if (hasSubstitute) {
       animations.startSubAttack(seq);
     }
 
     const other = document.querySelector(`.sprite[data-poke-id="${params.target}"]`)!;
-    animations.attack(seq, other, cb);
+    animations.attack(seq, other, params.cb);
     opts.repeat = 1;
     opts.repeatType = "reverse";
   } else if (params.anim === "hurt") {
-    animations.hurt(".sprite", seq);
+    animations.hurt(seq, params.direct);
   }
 
   return animate(seq, opts);
@@ -518,7 +523,7 @@ const onComplete = (cb: () => void): Segment => {
   };
   // XXX: For some reason motion decides to run animations with 0 duration at the start of the
   // sequence
-  return [obj, {value: 5}, {duration: 0.01}];
+  return [obj, {value: 5}, {duration: 0.015}];
 };
 
 const animations = {
@@ -542,7 +547,6 @@ const animations = {
       {duration: ms(300), ease: easeOutExpo, at: "<"},
     ]);
   },
-
   subAfterBatonPass(seq: AnimationSequence) {
     seq.push([
       ".sprite",
@@ -611,7 +615,7 @@ const animations = {
       {
         x: [0, 0],
         y: [-rem(8), 0],
-        opacity: 1,
+        opacity: [0, 1],
         scaleX: [1, 1],
       },
       {duration: ms(350), ease: easeOutBounce},
@@ -696,20 +700,17 @@ const animations = {
         duration: ms(240),
       },
     ]);
-    seq.push(
-      onComplete(() => {
-        const seq: AnimationSequence = [];
-        this.hurt(other, seq);
-        animate(seq);
-      }),
-    );
-
     if (cb) {
       seq.push(onComplete(cb));
     }
   },
-  hurt(target: any, seq: AnimationSequence) {
-    seq.push([target, {opacity: [0, 1, 0, 1, 0, 1]}, {opacity: {ease: steps(6)}, duration: 0.35}]);
+  hurt(seq: AnimationSequence, direct: bool) {
+    const hitSub = hasSubstitute && !direct;
+    seq.push([
+      hitSub ? ".substitute" : ".sprite",
+      {opacity: [0, 1, 0, 1, 0, !hitSub && hasSubstitute ? subOpacity : 1]},
+      {opacity: {ease: steps(6)}, duration: 0.35},
+    ]);
   },
 };
 

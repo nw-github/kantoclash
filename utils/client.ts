@@ -1,5 +1,4 @@
 import type {PlayerId, PokeId} from "~/game/events";
-import type {Generation} from "~/game/gen1";
 import type {Move} from "~/game/moves";
 import type {Gender, Pokemon} from "~/game/pokemon";
 import type {SpeciesId} from "~/game/species";
@@ -70,20 +69,4 @@ export const getCategory = (move: Move, type?: Type) => {
       ? "special"
       : "physical"
     : "status";
-};
-
-export const getTypeAndPower = (gen: Generation, move: Move, poke: Pokemon) => {
-  let type = move.type;
-  let pow = move.power;
-  if (move.kind === "damage" && poke && move.getPower) {
-    pow = move.getPower(poke);
-  }
-  if (move.kind === "damage" && poke && move.getType) {
-    type = move.getType(poke);
-  }
-  if (pow && pow !== 1 && poke?.item && gen.itemTypeBoost[poke.item]?.type === type) {
-    pow += Math.floor(pow / gen.itemTypeBoost[poke.item]!.percent);
-  }
-
-  return [type, pow] as const;
 };

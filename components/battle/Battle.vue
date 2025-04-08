@@ -272,12 +272,6 @@ const isSingles = computed(() => players.get(perspective.value)?.active?.length 
 const mediaQuery = computed(() => (isSingles.value ? "(max-width: 900px)" : "(max-width: 1100px)"));
 const textBoxHidden = useMediaQuery(mediaQuery);
 
-watchImmediate([isBattler, () => players.items, myId], () => {
-  perspective.value = isBattler.value
-    ? myId.value
-    : randChoice(Object.keys(players.items).filter(id => !players.get(id).isSpectator)) ?? "";
-});
-
 const opponent = computed(() => {
   for (const id in players.items) {
     if (!players.get(id).isSpectator && id !== perspective.value) {
@@ -317,6 +311,12 @@ const timeLeft = () => {
 };
 
 const animations: AnimationPlaybackControls[] = [];
+
+const updatePerspective = () => {
+  perspective.value = isBattler.value
+    ? myId.value
+    : randChoice(Object.keys(players.items).filter(id => !players.get(id).isSpectator)) ?? "";
+};
 
 const runEvent = async (e: BattleEvent) => {
   const isLive = () => skipToEvent.value <= nextEvent.value && isMounted.value;
@@ -465,6 +465,7 @@ const runEvent = async (e: BattleEvent) => {
           cb() {
             update();
             playDmg(eff);
+            playAnimation(e.target, {anim: "hurt", direct: true});
           },
         });
       } else {
@@ -475,7 +476,10 @@ const runEvent = async (e: BattleEvent) => {
           e.why === "hail" ||
           e.why === "future_sight"
         ) {
-          await Promise.allSettled([playDmg(e.eff ?? 1), playAnimation(e.src, {anim: "hurt"})]);
+          await Promise.allSettled([
+            playDmg(e.eff ?? 1),
+            playAnimation(e.src, {anim: "hurt", direct: true}),
+          ]);
         }
       }
 
@@ -509,7 +513,10 @@ const runEvent = async (e: BattleEvent) => {
       src.transformed = target.transformed ?? target.speciesId;
     } else if (e.type === "hit_sub") {
       if (e.confusion) {
-        await Promise.allSettled([playDmg(e.eff ?? 1), playAnimation(e.src, {anim: "hurt"})]);
+        await Promise.allSettled([
+          playDmg(e.eff ?? 1),
+          playAnimation(e.src, {anim: "hurt", direct: false}),
+        ]);
       } else {
         await playAnimation(e.src, {
           anim: "attack",
@@ -517,6 +524,7 @@ const runEvent = async (e: BattleEvent) => {
           cb() {
             pushEvent(e);
             playDmg(e.eff ?? 1);
+            playAnimation(e.target, {anim: "hurt", direct: false});
           },
         });
       }
@@ -648,6 +656,8 @@ const skipToTurn = (turn: number) => {
   animations.length = 0;
 };
 
+watchImmediate([isBattler, () => players.items, myId], updatePerspective);
+
 watchImmediate([paused, () => events.length], ([paused, nEvents]) => {
   if (!paused) {
     playToIndex.value = nEvents;
@@ -658,6 +668,8 @@ watchImmediate([paused, () => events.length], ([paused, nEvents]) => {
 
 onMounted(async () => {
   await until(() => ready).toBe(true);
+
+  updatePerspective();
 
   while (isMounted.value) {
     if (nextEvent.value === 0) {

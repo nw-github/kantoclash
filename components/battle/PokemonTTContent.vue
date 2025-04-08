@@ -46,7 +46,7 @@
 
     <ul class="pl-8 flex flex-col gap-1">
       <li v-for="(id, i) in poke.moves" :key="id" class="flex items-center gap-1">
-        <TypeBadge :type="getTypeAndPower(poke.gen, poke.gen.moveList[id], poke)[0]" image />
+        <TypeBadge :type="getType(id)" image />
         <span>
           {{ poke.gen.moveList[id].name }} ({{ poke.pp[i] }}/{{
             poke.gen.getMaxPP(poke.gen.moveList[id])
@@ -61,9 +61,9 @@
 import type {Pokemon} from "~/game/pokemon";
 import {hpPercentExact, type StatStages} from "~/game/utils";
 import "assets/colors.css";
-import {getTypeAndPower} from "~/utils/client";
 import {itemList} from "~/game/item";
 import {abilityList} from "~/game/species";
+import type {MoveId} from "~/game/moves";
 
 const {active, poke} = defineProps<{active?: ClientActivePokemon; poke: Pokemon}>();
 const statKeys = computed(() => getStatKeys(poke.gen));
@@ -73,6 +73,14 @@ const statClass = (stat: StatStages) => {
     return "";
   }
   return poke.stats[stat] > active.v.stats[stat] ? "down" : "up";
+};
+
+const getType = (id: MoveId) => {
+  const move = poke.gen.moveList[id];
+  if (move.kind === "damage" && poke && move.getType) {
+    return move.getType(poke);
+  }
+  return move.type;
 };
 </script>
 
