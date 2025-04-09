@@ -166,7 +166,7 @@
                     </span>
                   </template>
                 </div>
-                <div class="flex gap-1">
+                <div class="flex gap-1 items-center">
                   <TypeBadge v-for="type in species!.types" :key="type" :type image />
                 </div>
               </div>
@@ -185,7 +185,7 @@
               <div class="pt-1.5">
                 <span v-if="gen.id >= 3">
                   {{
-                    gen.speciesList[poke.speciesId].abilities
+                    gen.speciesList[poke.transformed ?? poke.speciesId].abilities
                       .map(a => abilityList[a].name)
                       .join(", ")
                   }}
