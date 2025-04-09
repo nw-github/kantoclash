@@ -362,7 +362,11 @@ const runEvent = async (e: BattleEvent) => {
   const handleVolatiles = (e: BattleEvent) => {
     if (e.volatiles) {
       for (const {v, id} of e.volatiles) {
-        const poke = players.poke(id)!;
+        const poke = players.poke(id);
+        if (!poke) {
+          continue;
+        }
+
         poke.v = mergeVolatiles(v, poke.v) as ClientVolatiles;
         if (poke.base) {
           poke.base.status = poke.v.status;
@@ -501,6 +505,7 @@ const runEvent = async (e: BattleEvent) => {
         poke.fainted = true;
         poke.hidden = true;
         players.byPokeId(e.src).nFainted++;
+        handleVolatiles(e);
         return;
       } else if (e.why === "heal_bell") {
         if (playerId(e.src) === myId.value && team) {

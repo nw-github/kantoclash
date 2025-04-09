@@ -147,12 +147,18 @@ export class ActivePokemon {
   }
 
   faint(battle: Battle) {
-    battle.info(this, "faint", [
-      this.clearFlag(VF.protect | VF.mist | VF.lightScreen | VF.reflect),
-    ]);
+    this.v.fainted = true;
+    this.v.clearFlag(VF.protect | VF.mist | VF.lightScreen | VF.reflect);
+    battle.info(
+      this,
+      "faint",
+      battle.allActive.map(p => ({
+        id: p.id,
+        v: {stats: p.clientStats(battle), flags: p === this ? p.v.cflags : undefined},
+      })),
+    );
 
     this.freeOpponents(battle);
-    this.v.fainted = true;
   }
 
   freeOpponents(battle: Battle) {
@@ -487,7 +493,7 @@ export class ActivePokemon {
       });
       failed = false;
     }
-    return failed;
+    return !failed;
   }
 
   confuse(battle: Battle, reason?: InfoReason, turns?: number) {
@@ -525,6 +531,22 @@ export class ActivePokemon {
 
     if (this.v.ability === "marvelscale" && stat === "def" && this.base.status) {
       value += Math.floor(value / 2);
+    }
+
+    if (stat === "spa" && (this.v.ability === "plus" || this.v.ability === "minus")) {
+      let minus = false,
+        plus = false;
+      for (const poke of battle.allActive) {
+        // pre Gen V, plus and minus activate for opponents
+        if (!poke.v.fainted) {
+          minus = minus || poke.v.ability === "minus";
+          plus = plus || poke.v.ability === "plus";
+        }
+      }
+
+      if ((minus && this.v.ability === "plus") || (plus && this.v.ability === "minus")) {
+        value += Math.floor(value / 2);
+      }
     }
 
     return value;
@@ -571,6 +593,8 @@ export class ActivePokemon {
     }
 
     this.handleForecast(battle);
+
+    battle.sv(battle.allActive.map(p => ({id: p.id, v: {stats: p.clientStats(battle)}})));
   }
 
   handleForecast(battle: Battle) {

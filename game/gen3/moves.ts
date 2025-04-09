@@ -3,17 +3,8 @@ import {abilityList} from "../species";
 import {HP_TYPES, idiv, VF} from "../utils";
 
 /*
-bide duration is two turns, now locked in
-
-kings rock affects trapping move
-
-adjacent moves currently retarget to hit allies
-  - will also prefer ally instead of right diagonal opponent
-
+bide now locked in
 rollout targeting?
-
-trapping moves are broken again
-
 endure breaks randomly
 
 */
