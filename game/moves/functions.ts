@@ -93,9 +93,8 @@ export const moveFunctions: MoveFunctions = {
         }
       }
 
-      if (target.modStages(this.stages, battle)) {
-        failed = false;
-      }
+      target.modStages(this.stages, battle, user);
+      failed = false;
     }
 
     if (failed) {
@@ -281,16 +280,16 @@ export const moveFunctions: MoveFunctions = {
   },
   swagger(battle, user, [target]) {
     if (target.owner.screens.safeguard) {
-      target.modStages(this.stages, battle);
+      target.modStages(this.stages, battle, user);
       return battle.info(target, "safeguard_protect");
     } else if (target.v.ability === "owntempo") {
-      target.modStages(this.stages, battle);
+      target.modStages(this.stages, battle, user);
       battle.ability(target);
       return battle.info(target, "not_confused");
     } else if (!battle.checkAccuracy(this, user, target)) {
       return;
-    } else if (!target.modStages(this.stages, battle)) {
-      return battle.info(user, "fail_generic");
+    } else if (!target.modStages(this.stages, battle, user)) {
+      return;
     } else {
       target.confuse(battle);
     }

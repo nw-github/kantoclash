@@ -83,7 +83,18 @@
   <div v-else-if="e.type === 'sub_break'">{{ pn(e.target) }}'s substitute broke!</div>
   <div v-else-if="e.type === 'status'">{{ pn(e.src) }} {{ statusTable[e.status] }}!</div>
   <div v-else-if="e.type === 'stages'">
-    {{ pn(e.src) }}'s {{ getStageTable(gen)[e.stat] }} {{ e.count > 0 ? "rose" : "fell" }}{{ Math.abs(e.count) > 1 ? " sharply" : "" }}!
+    <template v-if="e.count === 6">
+      {{ pn(e.src) }}'s {{ getStageTable(gen)[e.stat] }} wont go any higher!
+    </template>
+    <template v-else-if="e.count === -6">
+      {{ pn(e.src) }}'s {{ getStageTable(gen)[e.stat] }} wont go any lower!
+    </template>
+    <template v-else-if="e.count === 0">
+      {{ pn(e.src) }}'s {{ getStageTable(gen)[e.stat] }} was not lowered!
+    </template>
+    <template v-else>
+      {{ pn(e.src) }}'s {{ getStageTable(gen)[e.stat] }} {{ e.count > 0 ? "rose" : "fell" }}{{ Math.abs(e.count) > 1 ? " sharply" : "" }}!
+    </template>
   </div>
   <div v-else-if="e.type === 'info'" :class="{ confused: e.why === 'confused', move: e.why === 'sleep' || e.why === 'disable_end' || e.why === 'wake' }">
     <p :class="[e.why === 'withdraw' && 'muted']">

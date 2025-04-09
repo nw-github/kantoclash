@@ -163,7 +163,16 @@ export type VictoryEvent = {
 
 type StatusEvent = {type: "status" | "cure"; src: PokeId; status: Status};
 
-type StagesEvent = {type: "stages"; src: PokeId; stat: Stages; count: number};
+type StagesEvent = {
+  type: "stages";
+  src: PokeId;
+  stat: Stages;
+  /**
+   * -6 and +6 are sentinel values meaning stat too low and stat too high respectively
+   * 0 means the stat couldn't be lowered due to an ability
+   */
+  count: number;
+};
 
 export type FailReason =
   | "immune"

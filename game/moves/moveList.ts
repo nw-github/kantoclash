@@ -3661,8 +3661,7 @@ const internalMoveList = createMoveList({
         battle.info(target, "protect");
       } else if (target.v.substitute) {
         battle.info(target, "fail_generic");
-      } else if (!target.modStages([["atk", -2], ["spa", -2]], battle)) {
-        battle.info(target, "fail_generic");
+      } else if (!target.modStages([["atk", -2], ["spa", -2]], battle, user)) {
         faint = false;
       }
 

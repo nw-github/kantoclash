@@ -214,7 +214,9 @@ export const tryDamage = (
       ({dead, event, dealt} = target.damage2(battle, {dmg, src: user, why: "attacked", isCrit}));
       user.handleShellBell(battle, dealt);
 
-      onHit(type, hadSub);
+      if (dmg !== 0) {
+        onHit(type, hadSub);
+      }
       if (dead || user.base.hp === 0) {
         break;
       }
@@ -248,7 +250,9 @@ export const tryDamage = (
       event.hitCount = hits + 1;
       user.handleShellBell(battle, dealt);
 
-      onHit(type, hadSub);
+      if (dmg !== 0) {
+        onHit(type, hadSub);
+      }
     }
     dealt = 0;
   } else {
@@ -264,7 +268,9 @@ export const tryDamage = (
       eff,
     ));
 
-    onHit(type, hadSub);
+    if (dmg !== 0) {
+      onHit(type, hadSub);
+    }
   }
 
   target.v.lastHitBy = {move: self, user};
@@ -396,7 +402,7 @@ export const tryDamage = (
     }
   } else if (Array.isArray(effect)) {
     if (effectSelf || !target.owner.screens.mist) {
-      (effectSelf ? user : target).modStages(effect, battle);
+      (effectSelf ? user : target).modStages(effect, battle, user, true);
     }
   } else if (effect === "flinch") {
     if (target.base.status === "frz" || target.base.status === "slp") {

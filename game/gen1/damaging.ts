@@ -172,7 +172,7 @@ export function tryDamage(
   } else if (hadSub) {
     return dealt;
   } else if (Array.isArray(effect)) {
-    target.modStages(effect, battle);
+    target.modStages(effect, battle, user, true);
   } else if (effect === "flinch") {
     target.v.flinch = true;
   } else if (effect !== "knockoff" && effect !== "thief") {

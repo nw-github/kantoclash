@@ -278,7 +278,7 @@ export const tryDamage = (
     }
   } else if (Array.isArray(effect)) {
     if (effectSelf || !target.v.hasFlag(VF.mist)) {
-      (effectSelf ? user : target).modStages(effect, battle);
+      (effectSelf ? user : target).modStages(effect, battle, user, true);
     }
   } else if (effect === "flinch") {
     if (target.base.status !== "frz" && target.base.status !== "slp") {

@@ -443,9 +443,29 @@ export class ActivePokemon {
     return v;
   }
 
-  modStages(mods: [Stages, number][], battle: Battle) {
-    mods = mods.filter(([stat]) => Math.abs(this.v.stages[stat]) !== 6);
+  modStages(mods: [Stages, number][], battle: Battle, src?: ActivePokemon, quiet?: bool) {
+    let failed = true;
     for (const [stat, count] of mods) {
+      const prevented = abilityList[this.v.ability!]?.preventsStatDrop;
+      if (src && src !== this && count < 0 && (prevented === stat || prevented === "all")) {
+        failed = false;
+        if (!quiet) {
+          battle.ability(this);
+          battle.event({type: "stages", src: this.id, stat, count: 0});
+        }
+        continue;
+      } else if (count > 0 && this.v.stages[stat] === 6) {
+        if (!quiet) {
+          battle.event({type: "stages", src: this.id, stat, count: +6});
+        }
+        continue;
+      } else if (count < 0 && this.v.stages[stat] === -6) {
+        if (!quiet) {
+          battle.event({type: "stages", src: this.id, stat, count: -6});
+        }
+        continue;
+      }
+
       battle.event({
         type: "stages",
         src: this.id,
@@ -458,8 +478,9 @@ export class ActivePokemon {
           count < 0,
         ),
       });
+      failed = false;
     }
-    return mods.length !== 0;
+    return failed;
   }
 
   confuse(battle: Battle, reason?: InfoReason, turns?: number) {
@@ -521,7 +542,7 @@ export class ActivePokemon {
           if (poke.owner.screens.mist) {
             battle.info(poke, "mist_protect");
           }
-          poke.modStages([["atk", -1]], battle);
+          poke.modStages([["atk", -1]], battle, this);
         }
       }
     }
