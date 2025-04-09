@@ -393,7 +393,7 @@ const badges: {flag: VF; props: InstanceType<typeof UBadge>["$props"]}[] = [
     props: {color: "red", icon: "material-symbols:lock", variant: "subtle", label: "Imprisoning"},
   },
   {flag: VF.curse, props: {color: "red", icon: "mdi:nail", label: "Cursed", variant: "subtle"}},
-  {flag: VF.focus, props: {color: "emerald", label: "Focus Energy"}},
+  {flag: VF.focusEnergy, props: {color: "emerald", label: "Focus Energy"}},
   {flag: VF.mist, props: {color: "teal", label: "Mist"}},
   {flag: VF.destinyBond, props: {color: "gray", label: "Destiny Bond"}},
   {flag: VF.grudge, props: {color: "gray", label: "Grudge"}},

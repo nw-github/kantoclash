@@ -110,7 +110,7 @@ const internalMoveList = createMoveList({
     range: Range.All,
     exec(battle, user, targets) {
       for (const target of targets) {
-        target.v.clearFlag(VF.lightScreen | VF.reflect | VF.mist | VF.focus);
+        target.v.clearFlag(VF.lightScreen | VF.reflect | VF.mist | VF.focusEnergy);
         for (const k of stageKeys) {
           target.v.stages[k] = 0;
         }
@@ -265,7 +265,7 @@ const internalMoveList = createMoveList({
     pp: 30,
     type: "normal",
     range: Range.Self,
-    flag: VF.focus,
+    flag: VF.focusEnergy,
     noAssist: true,
   },
   lightscreen: {
@@ -326,6 +326,7 @@ const internalMoveList = createMoveList({
     type: "normal",
     range: Range.Adjacent,
     acc: 55,
+    sound: true,
   },
   // --
   glare: {
@@ -381,6 +382,7 @@ const internalMoveList = createMoveList({
     range: Range.Adjacent,
     acc: 55,
     status: "slp",
+    sound: true,
   },
   sleeppowder: {
     kind: "status",
@@ -493,6 +495,7 @@ const internalMoveList = createMoveList({
     range: Range.Adjacent,
     acc: 100,
     stages: [["atk", -1]],
+    sound: true,
   },
   growth: {
     kind: "stage",
@@ -561,6 +564,7 @@ const internalMoveList = createMoveList({
     range: Range.Adjacent,
     acc: 85,
     stages: [["def", -2]],
+    sound: true,
   },
   sharpen: {
     kind: "stage",
@@ -1866,6 +1870,7 @@ const internalMoveList = createMoveList({
     type: "normal",
     range: Range.Adjacent,
     why: "whirlwind",
+    sound: true,
   },
   splash: {
     kind: "fail",
@@ -2097,6 +2102,7 @@ const internalMoveList = createMoveList({
     type: "normal",
     // user and all allies
     range: Range.Self,
+    sound: true,
   },
   nightmare: {
     name: "Nightmare",
@@ -2147,14 +2153,23 @@ const internalMoveList = createMoveList({
     pp: 5,
     type: "normal",
     range: Range.All,
+    sound: true,
     exec(battle, user, targets) {
       for (const poke of targets) {
-        poke.v.perishCount = 4;
+        if (poke.v.ability === "soundproof") {
+          battle.ability(poke);
+          battle.info(poke, "immune");
+          continue;
+        }
+
+        if (!poke.v.perishCount) {
+          poke.v.perishCount = 4;
+        }
       }
       battle.info(
         user,
         "perish_song",
-        targets.map(poke => ({id: poke.id, v: {perishCount: 4}})),
+        targets.map(poke => ({id: poke.id, v: {perishCount: poke.v.perishCount}})),
       );
     },
   },
@@ -2956,6 +2971,7 @@ const internalMoveList = createMoveList({
     sleepOnly: true,
     whileAsleep: true,
     kingsRock: true,
+    sound: true,
   },
   spark: {
     kind: "damage",
@@ -4163,6 +4179,7 @@ const internalMoveList = createMoveList({
     type: "normal",
     range: Range.Self,
     why: "fail_generic",
+    sound: true,
   },
   volttackle: {
     kind: "damage",

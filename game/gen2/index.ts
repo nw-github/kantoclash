@@ -181,7 +181,7 @@ const createGeneration = (): Generation => {
       tryDefrost: battle => battle.rand255(25),
       tryCrit(battle, user, hc) {
         let stages = hc ? 2 : 0;
-        if (user.v.hasFlag(VF.focus)) {
+        if (user.v.hasFlag(VF.focusEnergy)) {
           stages++;
         }
         if (user.base.item === "scopelens") {

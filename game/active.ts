@@ -87,7 +87,14 @@ export class ActivePokemon {
       this.v.seededBy = old.seededBy;
 
       const passedFlags =
-        VF.lightScreen | VF.reflect | VF.mist | VF.focus | VF.curse | VF.identified | VF.lockon;
+        VF.lightScreen |
+        VF.reflect |
+        VF.mist |
+        VF.focusEnergy |
+        VF.curse |
+        VF.identified |
+        VF.lockon |
+        VF.ingrain;
       this.v.setFlag(old.cflags & passedFlags);
 
       // Is trapping passed? Encore? Nightmare?
@@ -783,7 +790,7 @@ export class ActivePokemon {
         battle.event({type: "item", src: this.id, item: this.base.item!});
         const stage = statPinchBerry[this.base.item!]!;
         if (stage === "crit") {
-          battle.info(this, "focus", [this.setFlag(VF.focus)]);
+          battle.info(this, "focusEnergy", [this.setFlag(VF.focusEnergy)]);
         } else {
           if (stage === "random") {
             this.modStages([[battle.rng.choice([...stageStatKeys])!, +2]], battle);

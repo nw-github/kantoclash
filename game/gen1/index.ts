@@ -179,7 +179,7 @@ const checkAccuracy = (
 
 const tryCrit = (battle: Battle, user: ActivePokemon, hc: boolean) => {
   const baseSpe = user.base.species.stats.spe;
-  const focus = user.v.hasFlag(VF.focus);
+  const focus = user.v.hasFlag(VF.focusEnergy);
   if (hc) {
     return battle.rand255(focus ? 4 * Math.floor(baseSpe / 4) : 8 * Math.floor(baseSpe / 2));
   } else {

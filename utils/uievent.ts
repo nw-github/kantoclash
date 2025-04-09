@@ -77,7 +77,7 @@ export const infoMessage: Record<InfoReason, string> = {
   mist: "{}'s shrouded in mist!",
   lightScreen: "{}'s protected against special attacks!",
   reflect: "{} is gained armor!",
-  focus: "{} is getting pumped!",
+  focusEnergy: "{} is getting pumped!",
   payday: "Coins scattered everywhere!",
   cConfused: "{} became confused!",
   cConfusedFatigue: "{} became confused due to fatigue!",

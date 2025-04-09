@@ -44,7 +44,7 @@ export enum VF {
   /** Gen 1 only */
   reflect      = 0x0000_0002,
   mist         = 0x0000_0004,
-  focus        = 0x0000_0008,
+  focusEnergy        = 0x0000_0008,
   destinyBond  = 0x0000_0010,
   curse        = 0x0000_0020,
   protect      = 0x0000_0040,

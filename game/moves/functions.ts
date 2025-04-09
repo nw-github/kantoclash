@@ -30,9 +30,13 @@ export const moveFunctions: MoveFunctions = {
     for (const target of targets) {
       if (target.v.substitute) {
         continue;
-      } else if (target.v.ability === "owntempo") {
+      } else if (
+        target.v.ability === "owntempo" ||
+        (this.sound && target.v.ability === "soundproof")
+      ) {
         battle.ability(target);
         battle.info(target, "immune");
+        failed = false;
         continue;
       } else if (target.owner.screens.safeguard) {
         battle.info(target, "safeguard_protect");
@@ -79,7 +83,12 @@ export const moveFunctions: MoveFunctions = {
     let failed = true;
     for (const target of targets) {
       if (this.range !== Range.Self) {
-        if (target.v.hasFlag(VF.mist) || target.owner.screens.mist) {
+        if (target.v.ability === "soundproof") {
+          failed = false;
+          battle.ability(target);
+          battle.info(target, "immune");
+          continue;
+        } else if (target.v.hasFlag(VF.mist) || target.owner.screens.mist) {
           failed = false;
           battle.info(target, "mist_protect");
           continue;
@@ -186,7 +195,10 @@ export const moveFunctions: MoveFunctions = {
     const next = battle.rng.choice(target.owner.team.filter(p => p.hp && p !== target.base.real));
     if (!next || !target.choice?.executed) {
       return battle.info(user, "fail_generic");
-    } else if (target.v.ability === "suctioncups") {
+    } else if (
+      target.v.ability === "suctioncups" ||
+      (this.sound && target.v.ability === "soundproof")
+    ) {
       battle.ability(target);
       return battle.info(target, "immune");
     } else if (target.v.hasFlag(VF.ingrain)) {
@@ -246,17 +258,26 @@ export const moveFunctions: MoveFunctions = {
   },
   healbell(battle, user) {
     battle.info(user, "heal_bell");
-    for (const active of user.owner.active) {
-      active.unstatus(battle);
+    for (const poke of user.owner.active) {
+      if (poke.base.status && poke.v.ability === "soundproof") {
+        battle.ability(poke);
+        battle.info(poke, "immune");
+        continue;
+      }
+
+      poke.unstatus(battle);
     }
     const opp = battle.opponentOf(user.owner);
-    user.owner.team.forEach(poke => {
+    for (const poke of user.owner.team) {
+      if (poke.ability === "soundproof") {
+        continue;
+      }
+
       poke.status = undefined;
-      // TODO: soundproof
       if (opp.sleepClausePoke === poke) {
         opp.sleepClausePoke = undefined;
       }
-    });
+    }
   },
   futuresight(battle, user, [target]) {
     if (target.futureSight) {

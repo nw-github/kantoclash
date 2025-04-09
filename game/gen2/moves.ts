@@ -44,12 +44,15 @@ export const moveFunctionPatches: Partial<MoveFunctions> = {
     }
   },
   status(battle, user, [target]) {
-    if (target.v.substitute) {
+    if (target.v.ability === "soundproof") {
+      battle.ability(target);
+      return battle.info(target, "immune");
+    } else if (target.v.substitute) {
       return battle.info(target, "fail_generic");
     } else if (
       (this.checkType && battle.getEffectiveness(this.type, target) === 0) ||
       ((this.status === "psn" || this.status === "tox") &&
-        target.v.types.some(t => t === "poison" || t === "steel")) ||
+        target.v.hasAnyType("poison", "steel")) ||
       (this.status === "brn" && target.v.types.includes("fire"))
     ) {
       return battle.info(target, "immune");

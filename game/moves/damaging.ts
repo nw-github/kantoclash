@@ -23,9 +23,10 @@ export function checkUsefulness(
   if (type === "ground" && eff !== 0 && target.v.ability === "levitate") {
     eff = 0;
     abilityImmunity = true;
-  }
-
-  if (eff <= 1 && type !== "???" && target.v.ability === "wonderguard") {
+  } else if (eff <= 1 && type !== "???" && target.v.ability === "wonderguard") {
+    eff = 0;
+    abilityImmunity = true;
+  } else if (self.sound && target.v.ability === "soundproof") {
     eff = 0;
     abilityImmunity = true;
   }
