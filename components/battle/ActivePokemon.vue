@@ -454,11 +454,11 @@ const playAnimation = (params: AnimationParams) => {
   const seq: AnimationSequence = [];
   const opts: SequenceOptions = {};
   if (params.anim === "faint") {
+    animations.faint(seq);
     if (hasSubstitute) {
       hasSubstitute = false;
-      animations.loseSub(seq);
+      animations.fadeSub(seq);
     }
-    animations.faint(seq);
   } else if (params.anim === "sendin") {
     animations.sendIn(seq, params.cb);
     if (hasSubstitute) {
@@ -563,6 +563,9 @@ const animations = {
       {duration: ms(250), ease: easeOutExpo, at: "+0"},
     ]);
   },
+  fadeSub(seq: AnimationSequence) {
+    seq.push([".substitute", {opacity: 0, scaleX: 0}, {duration: ms(300), ease: easeInExpo}]);
+  },
 
   faint(seq: AnimationSequence) {
     seq.push([".sprite", {y: rem(7), opacity: 0}, {ease: easeInExpo, duration: ms(250)}]);
@@ -622,7 +625,7 @@ const animations = {
     ]);
   },
   loseSub(seq: AnimationSequence, cb?: () => void) {
-    seq.push([".substitute", {opacity: 0, scaleX: 0}, {duration: ms(300), ease: easeInExpo}]);
+    this.fadeSub(seq);
     if (cb) {
       seq.push(onComplete(cb));
     }

@@ -38,6 +38,7 @@
           Priority
         </li>
         <li class="pt-3">{{ describeMove(gen, option.move) }}</li>
+        <li class="pt-3 -mb-1.5 italic text-sm">{{ targeting }}</li>
         <li class="pt-3 space-x-1 flex">
           <TypeBadge :type="info[0]" />
           <MoveCategory :category="getCategory(move, info[0])" />
@@ -50,9 +51,10 @@
 
 <script setup lang="ts">
 import type {MoveOption} from "~/game/battle";
-import type {Generation} from "~/game/gen1";
+import type {Generation} from "~/game/gen";
 import TouchPopover from "../TouchPopover.vue";
 import {abilityList} from "~/game/species";
+import {Range} from "~/game/moves";
 
 defineEmits<{(e: "click"): void}>();
 
@@ -90,5 +92,23 @@ const info = computed(() => {
   }
 
   return [type, pow, acc] as const;
+});
+const targeting = computed(() => {
+  // prettier-ignore
+  switch (move.value.range) {
+  case Range.Self: return "Targets the user.";
+  case Range.Random: return "Targets a random opponent.";
+  case Range.Adjacent: return "Can target any adjacent Pokémon.";
+  case Range.AdjacentFoe: return "Can target any adjacent opponent.";
+  case Range.AdjacentAlly: return "Can target any adjacent ally.";
+  case Range.SelfOrAdjacentAlly: return "Can target the user or an adjacent ally.";
+  case Range.Any: return "Can target any other Pokémon.";
+  case Range.All: return "Targets all Pokémon.";
+  case Range.AllAllies: return "Targets all ally Pokémon.";
+  case Range.AllAdjacent: return "Targets all adjacent Pokémon.";
+  case Range.AllAdjacentFoe: return "Targets all adjacent foes.";
+  case Range.Field: return "Targets the field.";
+  default: return "";
+  }
 });
 </script>

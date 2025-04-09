@@ -1,7 +1,7 @@
-type Sprites = Record<string, {start: number; end: number}>;
-
 let context: (AudioContext & {unlocked?: boolean}) | undefined;
 const onUnlocks: (() => void)[] = [];
+
+let dummyAudio: AudioBuffer | undefined;
 
 const unlock = () => {
   if (context) {
@@ -10,6 +10,14 @@ const unlock = () => {
     document.removeEventListener("click", unlock, true);
     document.removeEventListener("keydown", unlock, true);
 
+    const gain = context.createGain();
+    gain.gain.value = 0;
+    gain.connect(context.destination);
+
+    const source = context.createBufferSource();
+    source.buffer = dummyAudio!;
+    source.connect(gain);
+    source.start();
     context.resume().catch(() => {});
 
     context.unlocked = true;
@@ -22,10 +30,15 @@ const unlock = () => {
 export const useAudioContext = (onUnlock?: () => void) => {
   if (import.meta.client && !context) {
     context = new AudioContext();
-    document.addEventListener("touchstart", unlock, true);
-    document.addEventListener("touchend", unlock, true);
-    document.addEventListener("click", unlock, true);
-    document.addEventListener("keydown", unlock, true);
+    (async () => {
+      const sound = await $fetch<Blob>("/silence.mp3", {method: "GET"}).then(s => s.arrayBuffer());
+      dummyAudio = await context.decodeAudioData(sound);
+
+      document.addEventListener("touchstart", unlock, true);
+      document.addEventListener("touchend", unlock, true);
+      document.addEventListener("click", unlock, true);
+      document.addEventListener("keydown", unlock, true);
+    })();
   }
 
   if (onUnlock) {
@@ -33,6 +46,8 @@ export const useAudioContext = (onUnlock?: () => void) => {
   }
   return context;
 };
+
+type Sprites = Record<string, {start: number; end: number}>;
 
 export const useAudio = (sounds: Record<string, {src: string; sprites?: Sprites}>) => {
   const saved: Record<string, [AudioBuffer, Sprites | undefined]> = {};

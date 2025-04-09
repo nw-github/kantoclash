@@ -1,5 +1,5 @@
 <template>
-  <audio ref="musicController" autoplay loop src="/15-seconds-of-silence.mp3" />
+  <audio ref="musicController" autoplay loop src="/silence.mp3" />
 </template>
 
 <script setup lang="ts">
