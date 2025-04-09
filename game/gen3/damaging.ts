@@ -386,7 +386,7 @@ export const tryDamage = (
     target.unstatus(battle, "thaw");
     // TODO: can you thaw and then burn?
     return dealt;
-  } else if (!battle.rand100(chance) || hadSub) {
+  } else if (!battle.rand100(chance) || (hadSub && !effectSelf)) {
     return dealt;
   }
 
@@ -395,11 +395,9 @@ export const tryDamage = (
       target.confuse(battle);
     }
   } else if (Array.isArray(effect)) {
-    if (!effectSelf && target.owner.screens.mist) {
-      return dealt;
+    if (effectSelf || !target.owner.screens.mist) {
+      (effectSelf ? user : target).modStages(effect, battle);
     }
-
-    (effectSelf ? user : target).modStages(effect, battle);
   } else if (effect === "flinch") {
     if (target.base.status === "frz" || target.base.status === "slp") {
       return dealt;

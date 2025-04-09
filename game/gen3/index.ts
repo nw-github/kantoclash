@@ -72,6 +72,7 @@ const createGeneration = (): Generation => {
       },
       sleepTurns: battle => battle.rng.int(1, 4),
       disableTurns: battle => battle.rng.int(2, 5) + 1,
+      bideDuration: () => 2,
     },
     getDamageVariables(spc, battle, user, target, isCrit) {
       const atk = user.base.gen.getStat(battle, user, spc ? "spa" : "atk", isCrit);
@@ -427,7 +428,7 @@ const createGeneration = (): Generation => {
           if (poke.base.hp) {
             if (poke.v.thrashing && --poke.v.thrashing.turns === 0) {
               if (
-                poke.v.lastMove !== battle.gen.moveList.rollout &&
+                !(poke.v.lastMove?.kind === "damage" && poke.v.lastMove.flag === "rollout") &&
                 poke.v.ability !== "owntempo"
               ) {
                 poke.confuse(battle, "cConfusedFatigueMax");

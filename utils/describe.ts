@@ -109,6 +109,7 @@ const descriptions: Partial<Record<MoveId, string>> = {
   skillswap: "Swaps the user and target's abilities. ",
   wish: "At the end of the next turn, the Pokémon in this slot will recover 1/2 its max HP. ",
   charge: "Boost the next move's damage by 50% if it is electric type. ",
+  followme: "Draws opponent single-target attacks toward the user. ",
 };
 
 const gen2Descriptions: Partial<Record<MoveId, string>> = {

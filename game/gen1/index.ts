@@ -484,6 +484,7 @@ const createGeneration = () => {
     beforeUseMove,
     isValidMove,
     rng: {
+      maxThrash: 3,
       tryDefrost: (_: Battle) => false,
       tryQuickClaw: (battle: Battle) => battle.rand255Good(60),
       tryKingsRock: (battle: Battle) => battle.rand255Good(30),
@@ -507,6 +508,10 @@ const createGeneration = () => {
       multiHitCount: (battle: Battle) => {
         return randChoiceWeighted(battle.rng, [2, 3, 4, 5], [37.5, 37.5, 12.5, 12.5]);
       },
+      thrashDuration(battle: Battle) {
+        return battle.rng.int(2, this.maxThrash);
+      },
+      bideDuration: (battle: Battle) => battle.rng.int(2, 3) + 1,
     },
     checkAccuracy,
     calcDamage,

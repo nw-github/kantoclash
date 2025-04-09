@@ -131,8 +131,8 @@ export const moveFunctions: MoveFunctions = {
   },
   damage(battle, user, targets) {
     if (this.flag === "multi_turn" && !user.v.thrashing) {
-      user.v.thrashing = {move: this, turns: battle.rng.int(2, 3), max: false};
-      user.v.thrashing.max = user.v.thrashing.turns == 3;
+      user.v.thrashing = {move: this, turns: battle.gen.rng.thrashDuration(battle), max: false};
+      user.v.thrashing.max = user.v.thrashing.turns === battle.gen.rng.maxThrash;
     } else if (this.flag === "rollout" && !user.v.thrashing) {
       user.v.thrashing = {move: this, turns: 5, max: false};
       user.v.rollout = 0;
@@ -140,7 +140,7 @@ export const moveFunctions: MoveFunctions = {
       user.v.furyCutter++;
     } else if (this.flag === "bide") {
       if (!user.v.bide) {
-        user.v.bide = {move: this, turns: battle.rng.int(2, 3) + 1, dmg: 0};
+        user.v.bide = {move: this, turns: battle.gen.rng.bideDuration(battle), dmg: 0};
         return;
       }
 
