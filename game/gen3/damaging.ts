@@ -11,14 +11,16 @@ export const tryDamage = (
   target: ActivePokemon,
   spread: bool,
 ): number => {
-  const isTargetImmune = (status: Status) => {
-    if (target.base.status) {
+  const isImmune = (poke: ActivePokemon, status: Status) => {
+    if (poke.base.status) {
       return true;
-    } else if (status === "brn" && target.v.types.includes("fire")) {
+    } else if (status === "brn" && poke.v.types.includes("fire")) {
       return true;
-    } else if (status === "frz" && target.v.types.includes("ice")) {
+    } else if (status === "frz" && poke.v.types.includes("ice")) {
       return true;
-    } else if ((status === "psn" || status === "tox") && target.v.hasAnyType("poison", "steel")) {
+    } else if ((status === "psn" || status === "tox") && poke.v.hasAnyType("poison", "steel")) {
+      return true;
+    } else if (abilityList[poke.v.ability!]?.preventsStatus === status) {
       return true;
     } else {
       return false;
@@ -82,7 +84,7 @@ export const tryDamage = (
         user.v.attract = target;
         battle.info(user, "cAttract", [{id: user.id, v: {flags: user.v.cflags}}]);
       } else if (!user.base.status) {
-        if (abilityList[target.v.ability!]?.preventsStatus !== status && !isTargetImmune(status)) {
+        if (!isImmune(user, status)) {
           battle.ability(target);
           user.status(status, battle, target, {ignoreSafeguard: true});
         }
@@ -444,7 +446,7 @@ export const tryDamage = (
       target.base.itemUnusable = true;
     }
   } else {
-    if (!target.owner.screens.safeguard && !isTargetImmune(effect)) {
+    if (!target.owner.screens.safeguard && !isImmune(target, effect)) {
       target.status(effect, battle, user, {});
     }
   }

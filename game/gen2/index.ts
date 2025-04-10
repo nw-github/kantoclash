@@ -205,7 +205,7 @@ const createGeneration = (): Generation => {
         return sleepTurns;
       },
       disableTurns: battle => battle.rng.int(2, 8) + 1,
-      thrashDuration: battle => battle.rng.int(2, 3) - 1,
+      thrashDuration: battle => battle.rng.int(2, 3),
       maxThrash: 2,
     },
     canSubstitute: (user, hp) => hp < user.base.hp,

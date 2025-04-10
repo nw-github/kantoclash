@@ -563,11 +563,14 @@ export class ActivePokemon {
   handleSwitchInAbility(battle: Battle) {
     if (this.v.ability === "intimidate" && !this.v.usedIntimidate) {
       this.v.usedIntimidate = true;
-      battle.ability(this);
-
-      // TODO: after gen 3 it will be possible for this array to be empty
+      let procd = false;
       for (const poke of battle.getTargets(this, {adjacent: true, oppOnly: true})) {
         if (!poke.v.fainted && !poke.v.substitute) {
+          if (!procd) {
+            battle.ability(this);
+            procd = true;
+          }
+
           if (poke.owner.screens.mist) {
             battle.info(poke, "mist_protect");
           }
@@ -691,15 +694,8 @@ export class ActivePokemon {
     {pp, pinch, status, heal}: {pp?: bool; pinch?: bool; status?: bool; heal?: bool},
   ) {
     const cureStatus = (poke: ActivePokemon) => {
-      const status = poke.base.status!;
-      poke.base.status = undefined;
       battle.event({type: "item", src: poke.id, item: poke.base.item!});
-      battle.event({
-        type: "cure",
-        src: poke.id,
-        status,
-        volatiles: [{id: poke.id, v: {status: null, stats: poke.clientStats(battle)}}],
-      });
+      poke.unstatus(battle);
       poke.base.item = undefined;
     };
 

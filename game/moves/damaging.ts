@@ -137,6 +137,9 @@ export function getDamage(
     if (self.flag === "smellingsalt" && !target.v.substitute && target.base.status === "par") {
       doubleDmg = true;
     }
+    if (battle.moveIdOf(self) === "weatherball" && battle.getWeather()) {
+      doubleDmg = true;
+    }
 
     const explosion = self.flag === "explosion" ? 2 : 1;
     const spc = isSpecial(type);

@@ -369,10 +369,13 @@ export class Battle {
         this.turnType = TurnType.Switch;
 
         for (const poke of this.allActive) {
-          if ((poke.v.fainted && poke.canBeReplaced(this)) || !this.doubles) {
+          if (poke.v.fainted && poke.canBeReplaced(this)) {
             poke.updateOptions(this);
           } else {
             poke.options = undefined;
+            if (!this.doubles && poke.choice) {
+              poke.choice.executed = true;
+            }
           }
         }
       } else {
