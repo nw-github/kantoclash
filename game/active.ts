@@ -300,6 +300,11 @@ export class ActivePokemon {
   }
 
   recover(amount: number, src: ActivePokemon, battle: Battle, why: RecoveryReason, v = false) {
+    if ((why === "seeder" || why === "drain") && src !== this && src.v.ability === "liquidooze") {
+      battle.ability(src);
+      return this.damage2(battle, {dmg: amount, src, why: "roughskin"});
+    }
+
     const hpBefore = this.base.hp;
     this.base.hp = Math.min(this.base.hp + amount, this.base.stats.hp);
     if (this.base.hp === hpBefore) {

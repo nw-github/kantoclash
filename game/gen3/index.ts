@@ -314,7 +314,10 @@ const createGeneration = (): Generation => {
     },
     betweenTurns(battle) {
       const checkFaint = (poke: ActivePokemon) => {
-        return battle.checkFaint(poke, true) && poke.canBeReplaced(battle);
+        return (
+          battle.checkFaint(poke, true) &&
+          battle.allActive.some(p => p.v.fainted && p.canBeReplaced(battle))
+        );
       };
 
       // TODO: should this turn order take into account priority/pursuit/etc. or should it use

@@ -570,11 +570,7 @@ const createGeneration = () => {
 
         const dmg = Math.max(Math.floor((m * poke.base.stats.hp) / d), 1);
         const {dead} = poke.damage(dmg, poke, battle, false, why, true);
-        if (
-          why === "seeded" &&
-          poke.v.seededBy &&
-          poke.v.seededBy.base.hp < poke.v.seededBy.base.stats.hp
-        ) {
+        if (why === "seeded" && poke.v.seededBy) {
           poke.v.seededBy.recover(dmg, poke, battle, "seeder");
         }
 
