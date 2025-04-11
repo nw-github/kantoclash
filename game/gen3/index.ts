@@ -598,9 +598,13 @@ const createGeneration = (): Generation => {
         c("hh", helpingHand);
         c("screen", screen);
         c("spread", spread);
+        c(`item:${itemBonus}`, (itemBonus || 1) > 1);
+        c(`weather:${weather}`, !!weather);
+        c(`TK:${tripleKick}`, (tripleKick || 1) > 1);
+        c(`MM:${moveMod}`, (moveMod || 1) > 1);
+        c(`SP:${stockpile}`, (stockpile || 1) > 1);
         console.log(`flag: ${extra}`);
         console.log("vars:", {dmg, lvl, pow, atk, def, eff, r});
-        console.log("misc:", {itemBonus, weather, tripleKick, moveMod});
       }
       return dmg;
     },

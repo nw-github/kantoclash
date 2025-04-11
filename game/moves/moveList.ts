@@ -4046,12 +4046,15 @@ const internalMoveList = createMoveList({
     noAssist: true,
   },
   spitup: {
-    kind: "fail",
+    kind: "damage",
     name: "Spit Up",
-    pp: 1,
+    pp: 10,
     type: "normal",
-    range: Range.Self,
-    why: "fail_generic",
+    range: Range.Adjacent,
+    power: 100,
+    acc: 100,
+    kingsRock: true,
+    flag: "spitup",
   },
   stockpile: {
     name: "Stockpile",
@@ -4064,7 +4067,12 @@ const internalMoveList = createMoveList({
       }
 
       user.v.stockpile++;
-      battle.event({type: "stockpile", src: user.id, count: user.v.stockpile});
+      battle.event({
+        type: "stockpile",
+        src: user.id,
+        count: user.v.stockpile,
+        volatiles: [{id: user.id, v: {stockpile: user.v.stockpile}}],
+      });
     },
   },
   superpower: {
@@ -4091,8 +4099,8 @@ const internalMoveList = createMoveList({
       }
 
       const d = {3: 1, 2: 2, 1: 4}[user.v.stockpile] ?? 4;
-      user.recover(Math.max(1, idiv(user.base.hp, d)), user, battle, "recover");
-      user.v.stockpile = 0;
+      user.recover(Math.max(1, idiv(user.base.stats.hp, d)), user, battle, "recover");
+      battle.sv([user.setVolatile("stockpile", 0)]);
     },
   },
   tailglow: {

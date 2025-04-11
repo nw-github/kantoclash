@@ -82,6 +82,10 @@ const info = computed(() => {
   if (pow && option.move === "facade" && poke.base!.status) {
     pow *= 2;
   }
+  if (pow && option.move === "spitup" && poke.v.stockpile) {
+    pow *= poke.v.stockpile;
+  }
+
   if (
     pow &&
     poke.base!.belowHp(3) &&

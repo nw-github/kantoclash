@@ -222,4 +222,5 @@ type Flag =
   | "beatup"
   | "facade"
   | "remove_screens"
-  | "smellingsalt";
+  | "smellingsalt"
+  | "spitup";

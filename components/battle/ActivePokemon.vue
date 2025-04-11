@@ -67,6 +67,14 @@
             variant="subtle"
           />
 
+          <UBadge
+            v-if="poke.v.stockpile"
+            color="green"
+            icon="material-symbols-light:money-bag"
+            :label="poke.v.stockpile"
+            variant="subtle"
+          />
+
           <template v-for="{flag, props} in badges">
             <UBadge v-if="((poke.v.flags ?? 0) & flag) !== 0" :key="flag" v-bind="props" />
           </template>

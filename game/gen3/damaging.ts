@@ -128,6 +128,9 @@ export const tryDamage = (
   if (eff === 0 || fail || protect) {
     user.v.rollout = 0;
     user.v.furyCutter = 0;
+    if (self.flag === "spitup") {
+      battle.sv([user.setVolatile("stockpile", 0)]);
+    }
     if (eff === 0) {
       if (abilityImmunity) {
         battle.ability(target);

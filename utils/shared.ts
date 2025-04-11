@@ -16,6 +16,7 @@ export type ClientVolatiles = {
   flags?: VF;
   perishCount?: number;
   ability?: AbilityId;
+  stockpile?: number;
 };
 
 type FormatInfo = {

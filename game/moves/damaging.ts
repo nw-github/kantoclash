@@ -32,7 +32,8 @@ export function checkUsefulness(
   }
 
   if (self.flag === "dream_eater" && target.base.status !== "slp") {
-    eff = 1;
+    fail = true;
+  } else if (self.flag === "spitup" && !user.v.stockpile) {
     fail = true;
   } else if (self.flag === "ohko" && !battle.gen.canOHKOHit(battle, user, target)) {
     fail = true;
@@ -83,7 +84,7 @@ export function getDamage(
   } else {
     let pow = extras.power ?? (self.getPower ? self.getPower(user.base, target.base) : self.power);
     let rand: false | Random = battle.rng;
-    if (self.flag === "norand") {
+    if (self.flag === "norand" || self.flag === "spitup") {
       isCrit = false;
       rand = false;
     }
@@ -161,6 +162,12 @@ export function getDamage(
       moveMod = 2 ** Math.min(user.v.furyCutter, 4);
     }
 
+    let stockpile = 1;
+    if (self.flag === "spitup") {
+      stockpile = user.v.stockpile;
+      battle.sv([user.setVolatile("stockpile", 0)]);
+    }
+
     const itemBonus = user.base.item && battle.gen.itemTypeBoost[user.base.item];
     if (import.meta.dev) {
       console.log(`\n${user.base.name} => ${target.base.name}`);
@@ -183,6 +190,7 @@ export function getDamage(
       spread: extras.spread,
       screen: !!target.owner.screens[spc ? "light_screen" : "reflect"],
       flashFire: user.v.hasFlag(VF.flashFire) && type === "fire",
+      stockpile,
     });
 
     if (self.flag === "false_swipe" && dmg >= target.base.hp && !target.v.substitute) {

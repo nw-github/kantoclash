@@ -110,6 +110,10 @@ const descriptions: Partial<Record<MoveId, string>> = {
   wish: "At the end of the next turn, the Pokémon in this slot will recover 1/2 its max HP. ",
   charge: "Boost the next move's damage by 50% if it is electric type. ",
   followme: "Draws opponent single-target attacks toward the user. ",
+  swallow:
+    "Heals 25%, 50%, or 100% of the user's HP, based on the number of stockpiles, which is reset " +
+    "after use of this move. Fails if the user has not used stockpile yet.",
+  stockpile: "+1 stockpile, changing the properties of Spit Up and Swallow. Max 3.",
 };
 
 const gen2Descriptions: Partial<Record<MoveId, string>> = {
@@ -168,6 +172,9 @@ const flagDesc: Record<NonNullable<DamagingMove["flag"]>, string> = {
   facade: "Doubles damage when poisoned, paralyzed or burned.",
   remove_screens: "Removes the effects of Light Screen and Reflect. ",
   smellingsalt: "Doubles power against paralyzed a paralyzed target, but cures its paralysis. ",
+  spitup:
+    "Damage multiplied by number of stockpiles, which is reset after use of this move. Fails if " +
+    "the user has not used stockpile yet.",
 };
 
 const formatStages = (gen: Generation, stages: [Stages, number][]) => {
