@@ -300,7 +300,9 @@ export const moveFunctions: MoveFunctions = {
     battle.info(user, this.msg);
   },
   swagger(battle, user, [target]) {
-    if (target.owner.screens.safeguard) {
+    if (target.v.substitute) {
+      return battle.info(user, "fail_generic");
+    } else if (target.owner.screens.safeguard) {
       target.modStages(this.stages, battle, user);
       return battle.info(target, "safeguard_protect");
     } else if (target.v.ability === "owntempo") {

@@ -1,4 +1,4 @@
-import {shouldReturn, type Generation, type GENERATION1} from "../gen1";
+import {shouldReturn, type Generation, GENERATION1} from "../gen1";
 import {GENERATION2, merge, type GenPatches} from "../gen2";
 import {applyItemStatBoost, Nature, natureTable} from "../pokemon";
 import {abilityList, type Species, type SpeciesId} from "../species";
@@ -41,7 +41,7 @@ const createGeneration = (): Generation => {
       Record<SpeciesId, Partial<Species>>
     > as typeof GENERATION1.speciesList,
     moveList: movePatches as typeof GENERATION1.moveList,
-    // lastMoveIdx: GENERATION1.moveList.zapcannon.idx!,
+    lastMoveIdx: GENERATION1.moveList.yawn.idx!,
     moveFunctions: moveFunctionPatches as typeof GENERATION1.moveFunctions,
     maxIv: 31,
     maxEv: 255,
@@ -288,7 +288,7 @@ const createGeneration = (): Generation => {
 
       return true;
     },
-    afterBeforeUseMove: (battle, user) => battle.checkFaint(user) && shouldReturn(battle),
+    afterBeforeUseMove: (battle, user) => battle.checkFaint(user) && shouldReturn(battle, false),
     afterUseMove(battle, user, isReplacement) {
       if (isReplacement) {
         if (user.base.hp === 0 && !user.v.fainted) {
@@ -310,7 +310,7 @@ const createGeneration = (): Generation => {
       }
 
       // Technically shell bell should happen here?
-      return battle.checkFaint(user) && shouldReturn(battle);
+      return battle.checkFaint(user) && shouldReturn(battle, true);
     },
     betweenTurns(battle) {
       const checkFaint = (poke: ActivePokemon) => {

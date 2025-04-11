@@ -601,7 +601,7 @@ export class Battle {
       let {move, target, indexInMoves, isReplacement} = user.choice;
 
       user.choice.executed = true;
-      if (user.v.fainted && !isReplacement) {
+      if (user.v.fainted && move.kind !== "switch") {
         continue;
       } else if (this.finished) {
         break;

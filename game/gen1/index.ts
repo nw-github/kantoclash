@@ -535,7 +535,7 @@ const createGeneration = () => {
     tryDamage,
     afterBeforeUseMove(battle: Battle, user: ActivePokemon): boolean {
       this.handleResidualDamage(battle, user);
-      return battle.checkFaint(user) && shouldReturn(battle);
+      return battle.checkFaint(user) && shouldReturn(battle, false);
     },
     afterUseMove(battle: Battle, user: ActivePokemon, isReplacement: bool): boolean {
       if (isReplacement) {
@@ -544,12 +544,12 @@ const createGeneration = () => {
 
       if (user.v.inBatonPass) {
         return true;
-      } else if (battle.checkFaint(user) && shouldReturn(battle)) {
+      } else if (battle.checkFaint(user) && shouldReturn(battle, true)) {
         return true;
       }
 
       this.handleResidualDamage(battle, user);
-      return battle.checkFaint(user) && shouldReturn(battle);
+      return battle.checkFaint(user) && shouldReturn(battle, false);
     },
     handleResidualDamage(battle: Battle, poke: ActivePokemon) {
       const tickCounter = (why: DamageReason) => {
@@ -738,8 +738,15 @@ const createGeneration = () => {
   };
 };
 
-export const shouldReturn = (battle: Battle) =>
-  battle.allActive.some(p => p.v.fainted && p.getOptions(battle));
+export const shouldReturn = (battle: Battle, pursuit: bool) => {
+  // Pursuit switches continue until Gen V
+  return battle.allActive.some(
+    p =>
+      p.v.fainted &&
+      p.getOptions(battle) &&
+      (!pursuit || p.choice?.move?.kind !== "switch" || p.choice.executed),
+  );
+};
 
 export const GENERATION1 = createGeneration();
 
