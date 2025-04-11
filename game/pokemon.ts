@@ -172,6 +172,7 @@ export class Pokemon {
 
   set item(value) {
     this._item = value;
+    this.itemUnusable = false;
   }
 
   get species() {

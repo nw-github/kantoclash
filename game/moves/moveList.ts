@@ -3827,12 +3827,19 @@ const internalMoveList = createMoveList({
     effect: [100, [["spa", -2]], true],
   },
   recycle: {
-    kind: "fail",
     name: "Recycle",
-    pp: 1,
+    pp: 10,
     type: "normal",
     range: Range.Self,
-    why: "fail_generic",
+    exec(battle, user) {
+      if (!user.consumed) {
+        return battle.info(user, "fail_generic");
+      }
+
+      battle.event({type: "recycle", src: user.id, item: user.consumed});
+      user.base.item = user.consumed;
+      user.consumed = undefined;
+    },
   },
   refresh: {
     name: "Refresh",

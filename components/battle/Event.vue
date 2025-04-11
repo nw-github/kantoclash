@@ -167,6 +167,7 @@
     <p v-if="e.targetItem">{{ pn(e.target) }} obtained one {{ itemList[e.targetItem].name }}!</p>
   </div>
   <div v-else-if="e.type === 'knockoff'">{{ pn(e.src) }} knocked off {{ pn(e.target, false) }}'s {{ itemList[e.item].name }}!</div>
+  <div v-else-if="e.type === 'recycle'">{{ pn(e.src) }} found one {{ itemList[e.item].name }}!</div>
   <div v-else-if="e.type === 'forfeit'">
     <template v-if="e.timer">{{ players.get(e.user).name }} ran out of time.</template>
     <template v-else><b>{{ players.get(e.user).name }}</b> forfeit the match.</template>

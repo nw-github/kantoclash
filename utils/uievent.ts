@@ -98,6 +98,7 @@ export const infoMessage: Record<InfoReason, string> = {
   trapped: "{} can't move!",
   faint: "{} fainted!",
   cAttract: "{} fell in love!",
+  cure_attract: "{} is no longer in love!",
   immobilized: "{} is immobilized by love!",
   destinyBond: "{} is trying to take its foe with it!",
   grudge: "{} wants the opponent to bear a grudge!",

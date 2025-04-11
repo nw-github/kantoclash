@@ -36,7 +36,7 @@ type AnyEvent =
   | PerishSongEvent
   | TrapEvent
   | BeatUpEvent
-  | UseItemEvent
+  | ItemEvent
   | RestorePPEvent
   | ThiefEvent
   | TrickEvent
@@ -241,7 +241,8 @@ export type InfoReason =
   | "miss"
   | "begin_focuspunch"
   | "not_confused"
-  | "wish";
+  | "wish"
+  | "cure_attract";
 
 type InfoEvent = {type: "info"; src: PokeId; why: InfoReason};
 
@@ -282,6 +283,7 @@ type MimicEvent = {type: "mimic"; src: PokeId; move: MoveId};
 type CantUseEvent = {type: "cantuse"; src: PokeId; move: MoveId};
 type TauntEvent = {type: "cantusetaunt"; src: PokeId; move: MoveId};
 type GrudgeEvent = {type: "grudge"; src: PokeId; move: MoveId};
+type RestorePPEvent = {type: "pp"; src: PokeId; move: MoveId};
 
 type TrapEvent = {
   type: "trap";
@@ -307,16 +309,10 @@ export type WeatherEvent = {type: "weather"; kind: "start" | "end" | "continue";
 
 type PerishSongEvent = {type: "perish"; src: PokeId; turns: number};
 
-type UseItemEvent = {
-  type: "item";
+type ItemEvent = {
+  type: "item" | "recycle";
   src: PokeId;
   item: ItemId;
-};
-
-type RestorePPEvent = {
-  type: "pp";
-  src: PokeId;
-  move: MoveId;
 };
 
 type ThiefEvent = {

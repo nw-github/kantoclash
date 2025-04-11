@@ -24,7 +24,7 @@ import {
 } from "./utils";
 import {TurnType, type Battle, type MoveOption, type Options, type Player} from "./battle";
 import {abilityList, type AbilityId} from "./species";
-import {healBerry, healPinchBerry, ppBerry, statPinchBerry, statusBerry} from "./item";
+import {healBerry, healPinchBerry, ppBerry, statPinchBerry, statusBerry, type ItemId} from "./item";
 
 export type DamageParams = {
   dmg: number;
@@ -53,11 +53,10 @@ export class ActivePokemon {
   wish?: {user: Pokemon; turns: number};
   choice?: ChosenMove;
   options?: {switches: number[]; moves: MoveOption[]; id: PokeId};
+  consumed?: ItemId;
   id: PokeId;
 
   constructor(public base: Pokemon, public readonly owner: Player, idx: number) {
-    this.base = base;
-    this.owner = owner;
     this.v = new Volatiles(base);
     this.id = `${this.owner.id}:${idx}`;
   }
@@ -129,7 +128,7 @@ export class ActivePokemon {
       // BUG GEN2: If you baton pass into a pokemon with a berserk gene, the confusion value
       // is not updated.
       this.confuse(battle, undefined, 256);
-      this.base.item = undefined;
+      this.consumeItem();
     }
 
     if (this.owner.spikes && this.isGrounded()) {
@@ -144,6 +143,11 @@ export class ActivePokemon {
       this.handleWeatherAbility(battle);
       this.handleSwitchInAbility(battle);
     }
+  }
+
+  consumeItem() {
+    this.consumed = this.base.item;
+    this.base.item = undefined;
   }
 
   faint(battle: Battle) {
@@ -701,14 +705,14 @@ export class ActivePokemon {
     const cureStatus = (poke: ActivePokemon) => {
       battle.event({type: "item", src: poke.id, item: poke.base.item!});
       poke.unstatus(battle);
-      poke.base.item = undefined;
+      this.consumeItem();
     };
 
     const cureConfuse = (poke: ActivePokemon) => {
       poke.v.confusion = 0;
       const v = [{id: poke.id, v: {flags: poke.v.cflags}}];
       battle.info(poke, "confused_end", v);
-      poke.base.item = undefined;
+      this.consumeItem();
     };
 
     if (this.v.fainted) {
@@ -723,7 +727,7 @@ export class ActivePokemon {
           this.base.pp[slot] = Math.min(ppBerry[this.base.item!]!, battle.gen.getMaxPP(move));
           battle.event({type: "item", src: this.id, item: this.base.item!});
           battle.event({type: "pp", src: this.id, move: this.base.moves[slot]});
-          this.base.item = undefined;
+          this.consumeItem();
         }
       }
     }
@@ -739,7 +743,7 @@ export class ActivePokemon {
         this.v.attract = undefined;
         // is this silent?
         battle.ability(this);
-        battle.event({type: "sv", volatiles: [{id: this.id, v: {flags: this.v.cflags}}]});
+        battle.info(this, "cure_attract", [{id: this.id, v: {flags: this.v.cflags}}]);
       }
 
       if (this.v.confusion && this.v.ability === "owntempo") {
@@ -772,7 +776,8 @@ export class ActivePokemon {
           item: this.base.item,
           volatiles: [{id: this.id, v: {flags: this.v.cflags}}],
         });
-        this.base.item = undefined;
+        battle.info(this, "cure_attract");
+        this.consumeItem();
       } else if (Object.values(this.v.stages).some(v => v < 0) && this.base.item === "whiteherb") {
         for (const stage in this.v.stages) {
           if (this.v.stages[stage as Stages] < 0) {
@@ -788,7 +793,7 @@ export class ActivePokemon {
             {id: this.id, v: {stages: {...this.v.stages}, stats: this.clientStats(battle)}},
           ],
         });
-        this.base.item = undefined;
+        this.consumeItem();
       }
     }
 
@@ -796,7 +801,7 @@ export class ActivePokemon {
       if (healBerry[this.base.item!] && this.base.belowHp(2)) {
         battle.event({type: "item", src: this.id, item: this.base.item!});
         this.recover(healBerry[this.base.item!]!, this, battle, "item");
-        this.base.item = undefined;
+        this.consumeItem();
       }
     }
 
@@ -810,7 +815,7 @@ export class ActivePokemon {
             this.confuse(battle, "cConfused");
           }
         }
-        this.base.item = undefined;
+        this.consumeItem();
       } else if (statPinchBerry[this.base.item!] && this.base.belowHp(4)) {
         battle.event({type: "item", src: this.id, item: this.base.item!});
         const stage = statPinchBerry[this.base.item!]!;
@@ -823,7 +828,7 @@ export class ActivePokemon {
             this.modStages([[stage, +1]], battle);
           }
         }
-        this.base.item = undefined;
+        this.consumeItem();
       }
     }
   }

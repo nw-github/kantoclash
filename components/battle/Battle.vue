@@ -577,6 +577,12 @@ const runEvent = async (e: BattleEvent) => {
       if (target) {
         target.itemUnusable = true;
       }
+    } else if (e.type === "recycle") {
+      const src = players.poke(e.src)?.base;
+      if (src) {
+        src.item = e.item;
+        src.itemUnusable = false;
+      }
     } else if (e.type === "baton_pass") {
       handleVolatiles(e);
       await playAnimation(e.src, {
