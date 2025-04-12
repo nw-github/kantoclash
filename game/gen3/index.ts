@@ -219,7 +219,8 @@ const createGeneration = (): Generation => {
       };
 
       if (user.base.status === "slp") {
-        if (--user.base.sleepTurns === 0) {
+        if (--user.base.sleepTurns === 0 || battle.hasUproar(user)) {
+          user.base.sleepTurns = 0;
           user.unstatus(battle, "wake");
         } else {
           battle.info(user, "sleep");
@@ -383,6 +384,7 @@ const createGeneration = (): Generation => {
       // A bunch of stuff
       if (battle.betweenTurns < BetweenTurns.PartialTrapping) {
         let someoneDied = false;
+        const hasUproar = battle.allActive.some(p => p.v.thrashing?.move?.flag === "uproar");
         for (const poke of turnOrder) {
           if (!poke.v.fainted) {
             if (poke.v.hasFlag(VF.ingrain)) {
@@ -401,10 +403,8 @@ const createGeneration = (): Generation => {
 
             if (poke.v.canSpeedBoost) {
               if (poke.v.hasFlag(VF.loafing)) {
-                console.log("clearing truant for", poke.base.name);
                 poke.v.clearFlag(VF.loafing);
               } else if (poke.v.ability === "truant") {
-                console.log("setting truant for", poke.base.name);
                 poke.v.setFlag(VF.loafing);
               }
             }
@@ -426,17 +426,23 @@ const createGeneration = (): Generation => {
             poke.handlePartialTrapping(battle);
           }
 
-          // TODO: uproar
-
           if (poke.base.hp) {
-            if (poke.v.thrashing && --poke.v.thrashing.turns === 0) {
-              if (
-                !(poke.v.lastMove?.kind === "damage" && poke.v.lastMove.flag === "rollout") &&
-                poke.v.ability !== "owntempo"
-              ) {
-                poke.confuse(battle, "cConfusedFatigueMax");
+            if (hasUproar && poke.base.status === "slp" && poke.v.ability !== "soundproof") {
+              poke.unstatus(battle, "wake");
+            }
+
+            if (poke.v.thrashing) {
+              const done = --poke.v.thrashing.turns === 0;
+              if (poke.v.thrashing.move.flag === "uproar") {
+                battle.info(poke, done ? "uproar_end" : "uproar_continue");
               }
-              poke.v.thrashing = undefined;
+
+              if (done) {
+                if (poke.v.thrashing.move.flag === "multi_turn" && poke.v.ability !== "owntempo") {
+                  poke.confuse(battle, "cConfusedFatigueMax");
+                }
+                poke.v.thrashing = undefined;
+              }
             }
 
             if (poke.v.disabled && --poke.v.disabled.turns === 0) {

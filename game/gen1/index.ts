@@ -512,6 +512,7 @@ const createGeneration = () => {
         return battle.rng.int(2, this.maxThrash);
       },
       bideDuration: (battle: Battle) => battle.rng.int(2, 3) + 1,
+      uproarDuration: (battle: Battle) => battle.rng.int(2, 5),
     },
     checkAccuracy,
     calcDamage,

@@ -25,6 +25,8 @@ export const moveFunctionPatches: Partial<MoveFunctions> = {
     if (this.why === "rest") {
       if (abilityList[user.v.ability!]?.preventsStatus === "slp" || user.base.status === "slp") {
         return battle.info(user, "fail_generic");
+      } else if (battle.hasUproar(user)) {
+        return battle.info(user, "fail_generic");
       }
 
       user.base.status = "slp";

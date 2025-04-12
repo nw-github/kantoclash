@@ -83,7 +83,7 @@ export const moveFunctions: MoveFunctions = {
     let failed = true;
     for (const target of targets) {
       if (this.range !== Range.Self) {
-        if (target.v.ability === "soundproof") {
+        if (target.v.ability === "soundproof" && this.sound) {
           failed = false;
           battle.ability(target);
           battle.info(target, "immune");
@@ -259,7 +259,7 @@ export const moveFunctions: MoveFunctions = {
   healbell(battle, user) {
     battle.info(user, "heal_bell");
     for (const poke of user.owner.active) {
-      if (poke.base.status && poke.v.ability === "soundproof") {
+      if (poke.base.status && poke.v.ability === "soundproof" && this.sound) {
         battle.ability(poke);
         battle.info(poke, "immune");
         continue;
@@ -269,7 +269,7 @@ export const moveFunctions: MoveFunctions = {
     }
     const opp = battle.opponentOf(user.owner);
     for (const poke of user.owner.team) {
-      if (poke.ability === "soundproof") {
+      if (poke.ability === "soundproof" && this.sound) {
         continue;
       }
 

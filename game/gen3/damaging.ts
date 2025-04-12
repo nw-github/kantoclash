@@ -22,6 +22,8 @@ export const tryDamage = (
       return true;
     } else if (abilityList[poke.v.ability!]?.preventsStatus === status) {
       return true;
+    } else if (status === "slp" && battle.hasUproar(poke)) {
+      return true;
     } else {
       return false;
     }
@@ -369,6 +371,11 @@ export const tryDamage = (
       move,
       volatiles: [{id: target.id, v: {trapped: move}}],
     });
+  }
+
+  if (self.flag === "uproar" && !user.v.thrashing) {
+    user.v.thrashing = {move: self, turns: battle.gen.rng.thrashDuration(battle), max: false};
+    battle.info(user, "uproar");
   }
 
   if (!self.effect) {

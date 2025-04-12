@@ -4188,13 +4188,15 @@ const internalMoveList = createMoveList({
     },
   },
   uproar: {
-    kind: "fail",
+    kind: "damage",
     name: "Uproar",
-    pp: 1,
+    pp: 10,
     type: "normal",
-    range: Range.Self,
-    why: "fail_generic",
+    range: Range.Random,
+    power: 50,
+    acc: 100,
     sound: true,
+    flag: "uproar",
   },
   volttackle: {
     kind: "damage",
@@ -4282,7 +4284,12 @@ const internalMoveList = createMoveList({
     type: "normal",
     range: Range.Adjacent,
     exec(battle, user, [target]) {
-      if (target.v.substitute || target.base.status || target.v.drowsy) {
+      if (
+        target.v.substitute ||
+        target.base.status ||
+        target.v.drowsy ||
+        battle.hasUproar(target)
+      ) {
         return battle.info(user, "fail_generic");
       } else if (abilityList[target.v.ability!]?.preventsStatus === "slp") {
         battle.ability(target);

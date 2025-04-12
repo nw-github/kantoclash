@@ -521,6 +521,13 @@ export class Battle {
     return this.gen.checkAccuracy(move, this, user, target, physical);
   }
 
+  hasUproar(user: ActivePokemon) {
+    return (
+      user.v.ability !== "soundproof" &&
+      this.allActive.some(p => p.v.thrashing?.move?.flag === "uproar")
+    );
+  }
+
   static censorEvents(events: BattleEvent[], player?: Player) {
     const result = [...events];
     for (let i = 0; i < result.length; i++) {

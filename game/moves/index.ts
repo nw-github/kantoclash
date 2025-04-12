@@ -223,4 +223,5 @@ type Flag =
   | "facade"
   | "remove_screens"
   | "smellingsalt"
-  | "spitup";
+  | "spitup"
+  | "uproar";

@@ -175,6 +175,9 @@ const flagDesc: Record<NonNullable<DamagingMove["flag"]>, string> = {
   spitup:
     "Damage multiplied by number of stockpiles, which is reset after use of this move. Fails if " +
     "the user has not used stockpile yet.",
+  uproar:
+    "Locks the user in for 2-5 turns and starts an uproar, waking sleeping Pokémon up and " +
+    "preventing Pokémon from falling asleep. ",
 };
 
 const formatStages = (gen: Generation, stages: [Stages, number][]) => {

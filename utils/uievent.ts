@@ -133,6 +133,9 @@ export const infoMessage: Record<InfoReason, string> = {
   not_confused: "{} was not confused!",
   loafing: "{} is loafing around!",
   imprisoning: "{} sealed the opponent's move(s)!",
+  uproar: "{} caused an uproar!",
+  uproar_continue: "{} is making an uproar!",
+  uproar_end: "{} is no longer making an uproar!",
 };
 
 export const weatherMessage: Record<Weather, Record<WeatherEvent["kind"], string>> = {

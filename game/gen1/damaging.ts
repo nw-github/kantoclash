@@ -23,7 +23,7 @@ export function tryDamage(
     if (user.v.thrashing && user.v.thrashing.turns !== -1 && --user.v.thrashing.turns === 0) {
       user.v.rollout = 0;
       user.v.furyCutter = 0;
-      if (!user.owner.screens.safeguard && self.flag !== "rollout") {
+      if (!user.owner.screens.safeguard && self.flag === "multi_turn") {
         user.confuse(battle, user.v.thrashing.max ? "cConfusedFatigueMax" : "cConfusedFatigue");
       }
       user.v.thrashing = undefined;
