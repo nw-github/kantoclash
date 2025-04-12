@@ -59,7 +59,7 @@ const getRandomPokemon = (
           return false;
         } else if (
           (statusBerry[item] === "frz" && species.types.includes("ice")) ||
-          (statusBerry[item] === "psn" && species.types.includes("psn")) ||
+          (statusBerry[item] === "psn" && species.types.includes("poison")) ||
           (statusBerry[item] === "psn" && species.types.includes("steel")) ||
           (statusBerry[item] === "brn" && species.types.includes("fire"))
         ) {

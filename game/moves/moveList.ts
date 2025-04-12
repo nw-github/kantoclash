@@ -3846,7 +3846,7 @@ const internalMoveList = createMoveList({
     type: "normal",
     range: Range.Self,
     exec(battle, user) {
-      if (!["brn", "psn", "par", "tox"].includes(user.status)) {
+      if (!["brn", "psn", "par", "tox"].includes(user.base.status)) {
         return battle.info(user, "fail_generic");
       }
       user.unstatus(battle);

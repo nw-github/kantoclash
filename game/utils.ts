@@ -160,13 +160,42 @@ export const randChoiceWeighted = <T>(rng: Random, arr: readonly T[], weights: n
 
 export const playerId = (poke: PokeId): PlayerId => poke.split(":")[0];
 
+// from ts-reset
+type WidenLiteral<T> = T extends string
+  ? string
+  : T extends number
+  ? number
+  : T extends boolean
+  ? boolean
+  : T extends bigint
+  ? bigint
+  : T extends symbol
+  ? symbol
+  : T;
+
 declare global {
   interface ReadonlyArray<T> {
-    includes(x: any): x is T;
+    includes(
+      searchElement: T | ((WidenLiteral<T> & {}) | undefined),
+      fromIndex?: number,
+    ): searchElement is T;
+    lastIndexOf(
+      searchElement: T | ((WidenLiteral<T> & {}) | undefined),
+      fromIndex?: number,
+    ): number;
+    indexOf(searchElement: T | (WidenLiteral<T> & {}) | undefined, fromIndex?: number): number;
   }
 
   interface Array<T> {
-    includes(x: any): x is T;
+    includes(
+      searchElement: T | ((WidenLiteral<T> & {}) | undefined),
+      fromIndex?: number,
+    ): searchElement is T;
+    lastIndexOf(
+      searchElement: T | ((WidenLiteral<T> & {}) | undefined),
+      fromIndex?: number,
+    ): number;
+    indexOf(searchElement: T | (WidenLiteral<T> & {}) | undefined, fromIndex?: number): number;
   }
 
   type bool = boolean;
