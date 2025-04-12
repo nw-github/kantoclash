@@ -2103,6 +2103,7 @@ const internalMoveList = createMoveList({
     // user and all allies
     range: Range.Self,
     sound: true,
+    why: "heal_bell",
   },
   nightmare: {
     name: "Nightmare",
@@ -3105,6 +3106,7 @@ const internalMoveList = createMoveList({
     pp: 5,
     type: "grass",
     range: Range.Self,
+    why: "aromatherapy",
   },
   assist: {
     name: "Assist",
@@ -3685,8 +3687,6 @@ const internalMoveList = createMoveList({
         user.damage(user.base.hp, user, battle, false, "explosion");
       }
     },
-    // prettier-ignore
-    stages: [["atk", -2], ["spa", -1]],
   },
   metalsound: {
     kind: "stage",

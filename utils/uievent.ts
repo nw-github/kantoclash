@@ -110,6 +110,7 @@ export const infoMessage: Record<InfoReason, string> = {
   cMeanLook: "{} can no longer escape!",
   nightmare: "{} fell into a nightmare!",
   heal_bell: "A bell chimed!",
+  aromatherapy: "A soothing aroma wafted through the area!",
   pain_split: "The battlers shared their pain!",
   perish_song: "All affected pokemon will faint in three turns!",
   future_sight: "{} foresaw an attack!",

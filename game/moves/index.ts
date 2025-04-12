@@ -119,6 +119,7 @@ export interface HealBellMove extends BaseMove {
   readonly kind: "healbell";
   // user and all allies
   readonly range: Range.Self;
+  readonly why: InfoReason;
 }
 
 export interface FutureSightMove extends BaseMove {

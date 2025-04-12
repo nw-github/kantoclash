@@ -233,6 +233,7 @@ export type InfoReason =
   | "endure_band"
   | "encore_end"
   | "heal_bell"
+  | "aromatherapy"
   | "pain_split"
   | "perish_song"
   | "future_sight"

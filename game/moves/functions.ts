@@ -257,7 +257,7 @@ export const moveFunctions: MoveFunctions = {
     });
   },
   healbell(battle, user) {
-    battle.info(user, "heal_bell");
+    battle.info(user, this.why);
     for (const poke of user.owner.active) {
       if (poke.base.status && poke.v.ability === "soundproof" && this.sound) {
         battle.ability(poke);
