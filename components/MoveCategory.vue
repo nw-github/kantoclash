@@ -4,7 +4,7 @@
 </template>
 
 <script setup lang="ts">
-defineProps<{category: "physical" | "special" | "status"; image?: bool}>();
+defineProps<{category: "physical" | "special" | "status"; image?: boolean}>();
 
 const color = {physical: "red", special: "gray", status: "gray"} as const;
 </script>

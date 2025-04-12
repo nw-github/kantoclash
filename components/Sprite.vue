@@ -11,6 +11,7 @@ img {
 </style>
 
 <script setup lang="ts">
+import type {FormId} from "~/game/pokemon";
 import {speciesList, type SpeciesId} from "~/game/species";
 
 const props = defineProps<{
@@ -18,6 +19,7 @@ const props = defineProps<{
   back?: bool;
   scale?: number;
   shiny?: bool;
+  form?: FormId;
 }>();
 const sprite = computed(() => {
   const scale = 1 / (props.scale ?? 1);
@@ -26,7 +28,11 @@ const sprite = computed(() => {
   }
 
   const species = speciesList[props.species as SpeciesId];
-  const id = species.sprite ?? species.dexId;
+  let id = species.sprite ?? String(species.dexId);
+  if (props.form) {
+    id += `-${props.form}`;
+  }
+
   const shiny = props.shiny ? "shiny/" : "";
   if (!props.back) {
     return `/sprites/battle/${shiny}${id}.gif ${scale}x`;

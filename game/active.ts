@@ -116,6 +116,7 @@ export class ActivePokemon {
       level: next.level,
       gender: next.gender,
       shiny: next.shiny || undefined,
+      form: next.form,
       indexInTeam: this.owner.team.indexOf(next),
       why,
       volatiles: [{id: this.id, v: this.getClientVolatiles(next, battle)}],

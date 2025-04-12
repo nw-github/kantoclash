@@ -61,7 +61,7 @@
         >
           <template #default="{item}">
             <div class="size-[64px] m-1">
-              <BoxSprite :species="item.species" :scale="2" />
+              <BoxSprite :species="item.species" :scale="2" :form="item.form" />
             </div>
           </template>
         </UTabs>
@@ -76,7 +76,7 @@
         >
           <template #default="{item}">
             <div class="size-[32px] m-1 flex items-center">
-              <BoxSprite :species="item.species" />
+              <BoxSprite :species="item.species" :form="item.form" />
             </div>
           </template>
         </UTabs>
@@ -181,6 +181,11 @@
                 :team
                 :gen
                 :shiny="gen.getShiny(selectedPoke.data.shiny, ivsToDvs(selectedPoke.data))"
+                :form="gen.getForm(
+                  undefined,
+                  selectedPoke.data.species as SpeciesId,
+                  ivsToDvs(selectedPoke.data),
+                )"
                 @chose="onSpeciesChange"
               />
               <InputWithMax
@@ -388,14 +393,18 @@
 import {abilityList, type Species, type SpeciesId} from "~/game/species";
 import type {Stats, StatId} from "~/game/utils";
 import {GENERATIONS} from "~/game/gen";
-import {Nature, natureTable} from "~/game/pokemon";
+import {Nature, natureTable, type FormId} from "~/game/pokemon";
 
 defineEmits<{(e: "delete" | "close"): void}>();
 
 const {team} = defineProps<{team: Team}>();
 const toast = useToast();
 const items = computed(() => {
-  return team.pokemon.map(poke => ({label: poke.name ?? "", species: poke.species}));
+  return team.pokemon.map(poke => ({
+    label: poke.name ?? "",
+    species: poke.species,
+    form: gen.value.getForm(poke.form as FormId, poke.species as SpeciesId, ivsToDvsRaw(poke.ivs)),
+  }));
 });
 const teamText = ref("");
 const currentPokeText = ref("");
@@ -540,12 +549,16 @@ const copyTextArea = (text: string) => {
   toast.add({title: `Copied to clipboard!`});
 };
 
-const ivsToDvs = (poke: TeamPokemonDesc) => {
+const ivsToDvsRaw = (ivs: Partial<Stats>) => {
   const dvs: Partial<Stats> = {};
   for (const stat in statKeys.value) {
-    dvs[stat as StatId] = ivToDv(poke.ivs[stat as StatId]);
+    dvs[stat as StatId] = ivToDv(ivs[stat as StatId]);
   }
   return dvs;
+};
+
+const ivsToDvs = (poke: TeamPokemonDesc) => {
+  return ivsToDvsRaw(poke.ivs);
 };
 
 const calcPokeStat = (stat: StatId, poke: TeamPokemonDesc) => {

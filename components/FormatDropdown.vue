@@ -3,7 +3,7 @@
 </template>
 
 <script setup lang="ts">
-const {teamOnly, noIcons} = defineProps<{teamOnly?: bool; noIcons?: bool}>();
+const {teamOnly, noIcons} = defineProps<{teamOnly?: boolean; noIcons?: boolean}>();
 
 const formats = battleFormats
   .filter(id => !teamOnly || formatInfo[id].needsTeam)

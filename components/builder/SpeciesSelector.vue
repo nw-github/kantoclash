@@ -15,14 +15,14 @@
         tabindex="0"
         @focus="open = true"
       >
-        <Sprite :species="(model as SpeciesId)" :scale="1.5" :shiny @click="open = true" />
+        <Sprite :species="(model as SpeciesId)" :scale="1.5" :shiny :form @click="open = true" />
       </div>
     </div>
 
     <template #item="{item: [id, species]}">
       <div class="flex justify-between gap-16 w-full">
         <div class="flex items-center gap-1">
-          <BoxSprite :species="id" />
+          <BoxSprite :species="id" :form />
           <span class="text-xs sm:text-sm truncate" :class="[isIllegal(species) && 'text-red-500']">
             {{ species.name }}
           </span>
@@ -52,11 +52,12 @@
 <script setup lang="ts">
 import type {Species, SpeciesId} from "@/game/species";
 import type {Generation} from "~/game/gen1";
+import type {FormId} from "~/game/pokemon";
 
 const emit = defineEmits<{(e: "chose", species: Species): void}>();
 
 const model = defineModel<string>();
-const {team, gen} = defineProps<{team: Team; gen: Generation; shiny: bool}>();
+const {team, gen} = defineProps<{team: Team; gen: Generation; shiny: boolean; form?: FormId}>();
 const open = ref(false);
 const items = computed(() => Object.entries(gen.speciesList) as [SpeciesId, Species][]);
 const statKeys = computed(() => getStatKeys(gen));

@@ -1,6 +1,6 @@
 import type {PlayerId, PokeId} from "~/game/events";
 import type {Move} from "~/game/moves";
-import type {Gender, Pokemon} from "~/game/pokemon";
+import type {FormId, Gender, Pokemon} from "~/game/pokemon";
 import type {SpeciesId} from "~/game/species";
 import {isSpecial, type ScreenId, type Type} from "~/game/utils";
 
@@ -14,6 +14,7 @@ export type ClientActivePokemon = {
   level: number;
   transformed?: SpeciesId;
   shiny?: bool;
+  form?: FormId;
   v: ClientVolatiles;
   base?: Pokemon;
   indexInTeam: number;

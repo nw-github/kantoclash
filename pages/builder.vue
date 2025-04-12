@@ -120,6 +120,7 @@
               :key="j"
               :species="(poke.species as SpeciesId)"
               :scale="isXS ? 1.2 : !isMdOrGreater ? 1.5 : 2"
+              :form="(poke.form as FormId)"
             />
           </div>
         </div>
@@ -175,6 +176,7 @@
 
 <script setup lang="ts">
 import {breakpointsTailwind} from "@vueuse/core";
+import type {FormId} from "~/game/pokemon";
 import type {SpeciesId} from "~/game/species";
 
 const toast = useToast();

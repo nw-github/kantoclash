@@ -2,7 +2,7 @@
   <UButton class="w-full" :disabled :color="active ? 'blue' : 'primary'" @click="$emit('click')">
     <div class="w-full space-y-0.5">
       <div class="flex items-center gap-1 w-full justify-start">
-        <BoxSprite :species="poke.speciesId" />
+        <BoxSprite :species="poke.speciesId" :form="poke.form" />
         <span class="truncate">{{ poke.name }}</span>
       </div>
       <UProgress :max="100" :value="poke.hpPercent" :color="colorForHp" class="w-full h-1" />
@@ -12,7 +12,7 @@
 
 <script setup lang="ts">
 defineEmits<{(e: "click"): void}>();
-const {poke} = defineProps<{poke: ClientActivePokemon; disabled: bool; active: bool}>();
+const {poke} = defineProps<{poke: ClientActivePokemon; disabled: boolean; active: boolean}>();
 
 const colorForHp = computed(() => {
   if (poke.hpPercent < 10) {

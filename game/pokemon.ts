@@ -12,6 +12,7 @@ export type PokemonDesc<
   Move extends string = string,
   Item extends string = string,
   Ability extends string = string,
+  Form extends string = string,
 > = {
   evs?: Partial<Stats>;
   ivs?: Partial<Stats>;
@@ -25,9 +26,23 @@ export type PokemonDesc<
   gender?: Gender;
   nature?: Nature;
   ability?: Ability;
+  form?: Form;
 };
 
-export type ValidatedPokemonDesc = PokemonDesc<SpeciesId, MoveId, ItemId, AbilityId>;
+// prettier-ignore
+export const UNOWN_FORM = [
+  "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m",
+  "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z",
+  "exclamation", "question",
+] as const;
+
+export const CASTFORM_FORM = ["rainy", "snowy", "sunny"] as const;
+
+export type UnownForm = (typeof UNOWN_FORM)[number];
+export type CastformForm = (typeof CASTFORM_FORM)[number];
+export type FormId = UnownForm | CastformForm;
+
+export type ValidatedPokemonDesc = PokemonDesc<SpeciesId, MoveId, ItemId, AbilityId, FormId>;
 
 export enum Nature {
   hardy,
@@ -108,6 +123,7 @@ export class Pokemon {
   gender: Gender;
   ability?: AbilityId;
   nature?: Nature;
+  form?: FormId;
 
   constructor(
     readonly gen: Generation,
@@ -124,6 +140,7 @@ export class Pokemon {
       gender,
       nature,
       ability,
+      form,
     }: ValidatedPokemonDesc,
   ) {
     this.ivs = {
@@ -156,10 +173,7 @@ export class Pokemon {
     this.gender =
       gen.getGender(gender, this.species, this.ivs.atk) ??
       (Math.random() * 100 < this.species.genderRatio! ? "M" : "F");
-    // const c2 = (iv?: number) => ((iv ?? 15) >> 1) & 0b11;
-    // const unownLetter = idiv(
-    //   gen1StatKeys.filter(v => v !== "hp").reduce((acc, v) => acc + c2(dvs[v]), 0), 10,
-    // );
+    this.form = gen.getForm(form, this.speciesId, this.ivs);
   }
 
   belowHp(amt: number) {

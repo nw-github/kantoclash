@@ -408,6 +408,7 @@ const runEvent = async (e: BattleEvent) => {
         // preload the image
         poke.speciesId = e.speciesId;
         poke.shiny = e.shiny;
+        poke.form = e.form;
       } else {
         players.setPoke(e.src, {
           speciesId: e.speciesId,

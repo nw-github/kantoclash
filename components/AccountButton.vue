@@ -39,7 +39,7 @@ const filter = useChatCensorEnabled();
 const challenges = useIgnoreChallenges();
 const autoMute = useAutoMuteMusic();
 const loading = ref(false);
-const model = defineModel<{open: bool}>();
+const model = defineModel<{open: boolean}>();
 
 const logout = async () => {
   await clear();

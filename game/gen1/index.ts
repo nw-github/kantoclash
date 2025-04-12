@@ -13,9 +13,10 @@ import {
   type StatStageId,
   type Type,
   randChoiceWeighted,
+  stageStatKeys,
 } from "../utils";
 import type {ItemData, ItemId} from "../item";
-import type {Gender, Nature} from "../pokemon";
+import {UNOWN_FORM, type FormId, type Gender, type Nature} from "../pokemon";
 import type {DamageReason} from "../events";
 
 export type TypeChart = Record<Type, Partial<Record<Type, number>>>;
@@ -525,6 +526,15 @@ const createGeneration = () => {
       _species: Species,
       _atk: number,
     ): Gender | undefined => "N",
+    getForm(_desired: FormId | undefined, id: SpeciesId, dvs: Partial<Stats>): FormId | undefined {
+      if (id === "unown") {
+        const c2 = (iv?: number) => ((iv ?? 15) >> 1) & 0b11;
+        const letter = (c2(dvs.atk) << 6) | (c2(dvs.def) << 4) | (c2(dvs.spe) << 2) | c2(dvs.spa);
+        return UNOWN_FORM[idiv(letter, 10)];
+      }
+
+      return;
+    },
     getShiny: (_desired: bool | undefined, _dvs: Partial<Stats>) => false,
     accumulateBide,
     tryDamage,

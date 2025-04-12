@@ -51,7 +51,7 @@ import type {PlayerId, PokeId} from "~/game/events";
 import type {Generation} from "~/game/gen";
 import type {AnimationParams} from "./ActivePokemon.vue";
 
-defineProps<{players: Players; perspective: PlayerId; isSingles: bool; gen: Generation}>();
+defineProps<{players: Players; perspective: PlayerId; isSingles: boolean; gen: Generation}>();
 
 const activePokemon = ref<InstanceType<typeof ActivePokemon>[]>([]);
 

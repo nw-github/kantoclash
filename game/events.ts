@@ -1,6 +1,6 @@
 import type {ClientVolatiles} from "~/utils/shared";
 import type {MoveId} from "./moves";
-import type {Gender, Status} from "./pokemon";
+import type {FormId, Gender, Status} from "./pokemon";
 import type {AbilityId, SpeciesId} from "./species";
 import type {StageId, Type, VF, Weather, ScreenId} from "./utils";
 import type {ItemId} from "./item";
@@ -67,6 +67,7 @@ type SwitchEvent = {
   indexInTeam: number;
   gender?: Gender;
   shiny?: bool;
+  form?: FormId;
   why?: "phaze" | "baton_pass";
 };
 
