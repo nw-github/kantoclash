@@ -573,7 +573,7 @@ export class ActivePokemon {
     if (this.v.ability === "intimidate" && !this.v.usedIntimidate) {
       this.v.usedIntimidate = true;
       let procd = false;
-      for (const poke of battle.getTargets(this, {adjacent: true, oppOnly: true})) {
+      for (const poke of battle.getTargets(this, Range.AllAdjacentFoe)) {
         if (!poke.v.fainted && !poke.v.substitute) {
           if (!procd) {
             battle.ability(this);
@@ -589,7 +589,7 @@ export class ActivePokemon {
     }
 
     if (this.v.ability === "trace" && !this.v.usedTrace) {
-      const target = battle.rng.choice(battle.getTargets(this, {adjacent: true, oppOnly: true}));
+      const target = battle.rng.choice(battle.getTargets(this, Range.AllAdjacentFoe));
       if (target) {
         battle.ability(this);
         this.v.ability = target.v.ability;
@@ -1064,12 +1064,12 @@ export class ActivePokemon {
     }
 
     // FIXME: sending this to the client leaks the pokemon's ability
-    for (const poke of battle.getTargets(this, {adjacent: true, oppOnly: true})) {
+    for (const poke of battle.getTargets(this, Range.AllAdjacent)) {
       if (poke.v.ability === "magnetpull" && this.v.types.includes("steel")) {
         return true;
-      } else if (poke.v.ability === "arenatrap" && this.isGrounded()) {
+      } else if (poke.v.ability === "arenatrap" && poke.owner !== this.owner && this.isGrounded()) {
         return true;
-      } else if (poke.v.ability === "shadowtag") {
+      } else if (poke.v.ability === "shadowtag" && poke.owner !== this.owner) {
         return true;
       }
     }
@@ -1257,5 +1257,5 @@ const getValidTargets = (battle: Battle, move: Move, user: ActivePokemon) => {
   if (move === battle.gen.moveList.curse && !user.v.types.includes("ghost")) {
     range = Range.Self;
   }
-  return battle.getTargets(user, range, false).map(u => u.id);
+  return battle.getTargets(user, range, true).map(u => u.id);
 };

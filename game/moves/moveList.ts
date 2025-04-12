@@ -2014,17 +2014,16 @@ const internalMoveList = createMoveList({
     range: Range.Adjacent,
     exec(battle, user, [target]) {
       if (!user.v.types.includes("ghost")) {
+        // prettier-ignore
         if (battle.gen.id <= 2 && user.v.stages.atk >= 6 && user.v.stages.def >= 6) {
           return battle.info(user, "fail_generic");
-        }
-        // prettier-ignore
-        if (!user.modStages([["spe", -1], ["atk", +1], ["def", +1]], battle)) {
+        } else if (!user.modStages([["spe", -1], ["atk", +1], ["def", +1]], battle)) {
           return battle.info(user, "fail_generic");
         }
       } else {
         // mid-turn type switch
         if (target === user) {
-          target = battle.getTargets(user, Range.Adjacent, false)[0];
+          target = battle.getTargets(user, Range.Adjacent)[0];
           // shouldn't be possible in gen 3?
           if (!target) {
             return battle.info(user, "fail_notarget");

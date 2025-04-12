@@ -156,8 +156,6 @@ type BattleParams = {
   seed?: string;
 };
 
-type GetTarget = {allyOnly?: bool; oppOnly?: bool; adjacent?: bool; self?: boolean};
-
 export class Battle {
   readonly players: [Player, Player];
   readonly events: BattleEvent[] = [];
@@ -390,90 +388,85 @@ export class Battle {
     return this.events.splice(0);
   }
 
-  getTargets(user: ActivePokemon, params: GetTarget): ActivePokemon[];
-  getTargets(user: ActivePokemon, params: Range, spread: bool): ActivePokemon[];
-  getTargets(user: ActivePokemon, params: GetTarget | Range, spread?: bool) {
+  getTargets(user: ActivePokemon, params: Range, forUser?: bool) {
     const pl = user.owner;
     const opp = this.opponentOf(pl);
 
-    const targets: ActivePokemon[] = [];
-    if (typeof params === "number") {
-      // prettier-ignore
-      switch (params) {
-      case Range.AllAdjacent:
-      case Range.AllAdjacentFoe: {
-        if (!spread) {
-          return [];
-        }
-
-        const targets = [];
-        const me = user.owner.active.indexOf(user);
-        const p0 = this.players.indexOf(user.owner) === 0;
-        for (let i = p0 ? me - 1 : me + 1; p0 ? (i <= me + 1) : (i >= me - 1); p0 ? i++ : i--) {
-          if (opp.active[i] && !opp.active[i].v.fainted) {
-            targets.push(opp.active[i]);
-          }
-          if (params === Range.AllAdjacent && i !== me && pl.active[i] && !pl.active[i].v.fainted) {
-            targets.push(pl.active[i]);
-          }
-        }
-        return targets;
+    let allyOnly = false,
+      oppOnly = false,
+      self = false;
+    // prettier-ignore
+    switch (params) {
+    case Range.AllAdjacent:
+    case Range.AllAdjacentFoe: {
+      if (forUser) {
+        return [];
       }
-      case Range.All:
-        return spread ? [...this.allActive.filter(a => !a.v.fainted)] : [];
-      case Range.AllAllies:
-        if (!spread) {
-          return [];
-        }
-        return user.owner.active.filter(a => a !== user && !a.v.fainted);
-      case Range.Field:
-      case Range.Self:
-      case Range.Random:
-        return [user];
-      case Range.Adjacent:
-        params = {adjacent: true};
-        break;
-      case Range.AdjacentFoe:
-        params = {oppOnly: true, adjacent: true};
-        break;
-      case Range.AdjacentAlly:
-        params = {allyOnly: true, adjacent: true};
-        break;
-      case Range.SelfOrAdjacentAlly:
-        params = {allyOnly: true, adjacent: true, self: true};
-        break;
-      case Range.Any:
-        params = {};
-        break;
-      }
-    }
 
-    const {allyOnly, oppOnly, adjacent, self} = params;
-    if (adjacent) {
-      const me = pl.active.indexOf(user);
+      const targets = [];
+      const me = user.owner.active.indexOf(user);
       const p0 = this.players.indexOf(user.owner) === 0;
-      if (!allyOnly) {
-        for (let i = p0 ? me - 1 : me + 1; p0 ? i <= me + 1 : i >= me - 1; p0 ? i++ : i--) {
-          if (opp.active[i] && !opp.active[i].v.fainted) {
-            targets.push(opp.active[i]);
-          }
+      for (let i = p0 ? me - 1 : me + 1; p0 ? (i <= me + 1) : (i >= me - 1); p0 ? i++ : i--) {
+        if (opp.active[i] && !opp.active[i].v.fainted) {
+          targets.push(opp.active[i]);
+        }
+        if (params === Range.AllAdjacent && i !== me && pl.active[i] && !pl.active[i].v.fainted) {
+          targets.push(pl.active[i]);
         }
       }
-
-      // don't pick teammate for metronome/sleep talk target
-      if (!oppOnly && (!spread || allyOnly)) {
-        for (let i = p0 ? me - 1 : me + 1; p0 ? i <= me + 1 : i >= me - 1; p0 ? i++ : i--) {
-          if ((self || i !== me) && pl.active[i] && !pl.active[i].v.fainted) {
-            targets.push(pl.active[i]);
-          }
-        }
+      return targets;
+    }
+    case Range.All:
+      return !forUser ? [...this.allActive.filter(a => !a.v.fainted)] : [];
+    case Range.AllAllies:
+      return !forUser ? user.owner.active.filter(a => a !== user && !a.v.fainted) : [];
+    case Range.Field:
+    case Range.Self:
+    case Range.Random:
+      return [user];
+    case Range.Adjacent:
+      break;
+    case Range.AdjacentFoe:
+      oppOnly = true;
+      break;
+    case Range.AdjacentAlly:
+      allyOnly = true;
+      break;
+    case Range.SelfOrAdjacentAlly:
+      allyOnly = true;
+      self = true;
+      break;
+    case Range.Any: {
+      const targets = [];
+      if (forUser) {
+        targets.push(...pl.active.filter(a => !a.v.fainted));
       }
-    } else {
-      targets.push(...pl.active.filter(a => !a.v.fainted));
       targets.push(...opp.active.filter(a => !a.v.fainted));
       const idx = targets.indexOf(user);
       if (!self && idx !== -1) {
         targets.splice(idx, 1);
+      }
+      return targets;
+    }
+    }
+
+    const targets: ActivePokemon[] = [];
+    const me = pl.active.indexOf(user);
+    const p0 = this.players.indexOf(user.owner) === 0;
+    if (!allyOnly) {
+      for (let i = p0 ? me - 1 : me + 1; p0 ? i <= me + 1 : i >= me - 1; p0 ? i++ : i--) {
+        if (opp.active[i] && !opp.active[i].v.fainted) {
+          targets.push(opp.active[i]);
+        }
+      }
+    }
+
+    // don't pick teammate for metronome/sleep talk target
+    if (!oppOnly && (forUser || allyOnly)) {
+      for (let i = p0 ? me - 1 : me + 1; p0 ? i <= me + 1 : i >= me - 1; p0 ? i++ : i--) {
+        if ((self || i !== me) && pl.active[i] && !pl.active[i].v.fainted) {
+          targets.push(pl.active[i]);
+        }
       }
     }
     return targets;
@@ -657,7 +650,7 @@ export class Battle {
   useMove(move: Move, user: ActivePokemon, targets: ActivePokemon[], moveIndex?: number) {
     if (move.kind !== "switch") {
       targets = targets.filter(t => !t.v.fainted);
-      const availableTargets = this.getTargets(user, move.range, true);
+      const availableTargets = this.getTargets(user, move.range);
 
       let target;
       if (isSpreadMove(move.range)) {
@@ -710,7 +703,7 @@ export class Battle {
         }
 
         if (move.range === Range.Random) {
-          targets = [this.rng.choice(this.getTargets(user, {adjacent: true, oppOnly: true}))!];
+          targets = [this.rng.choice(this.getTargets(user, Range.AllAdjacentFoe))!];
         }
       } else {
         this.sv([user.clearFlag(VF.charge)]);
@@ -802,7 +795,7 @@ export class Battle {
   }
 
   callMove(move: Move, user: ActivePokemon) {
-    let targets = this.getTargets(user, move.range, true);
+    let targets = this.getTargets(user, move.range);
     if (!isSpreadMove(move.range) && targets.length) {
       targets = [this.rng.choice(targets)!];
     }
