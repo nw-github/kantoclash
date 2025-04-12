@@ -1,4 +1,4 @@
-import type {Screen, Stages} from "~/game/utils";
+import type {ScreenId, StageId} from "~/game/utils";
 import type {Status} from "../game/pokemon";
 import type {DamagingMove, MoveId} from "~/game/moves";
 import type {Generation} from "~/game/gen1";
@@ -180,7 +180,7 @@ const flagDesc: Record<NonNullable<DamagingMove["flag"]>, string> = {
     "preventing Pokémon from falling asleep. ",
 };
 
-const formatStages = (gen: Generation, stages: [Stages, number][]) => {
+const formatStages = (gen: Generation, stages: [StageId, number][]) => {
   const table = getStageTable(gen);
   const statsBefore = stages.map(v => table[v[0]]);
   let stats = "";
@@ -296,7 +296,7 @@ export const describeMove = (gen: Generation, id: MoveId) => {
     }
     return base;
   } else if (move.kind === "screen") {
-    const msg: Record<Screen, string> = {
+    const msg: Record<ScreenId, string> = {
       light_screen:
         "Halves damage dealt by special attacks for all pokemon on the user's side for 5 turns. ",
       reflect:

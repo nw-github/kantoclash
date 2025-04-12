@@ -47,7 +47,7 @@
 import {motion} from "motion-v";
 
 const modelQuery = defineModel<string>("query", {default: ""});
-const open = defineModel<boolean>("open", {default: false});
+const open = defineModel<bool>("open", {default: false});
 const {
   items,
   filter,
@@ -56,7 +56,7 @@ const {
   items: T[];
   filter: (items: T[], query: string) => T[];
   base?: string;
-  searchable?: boolean;
+  searchable?: bool;
 }>();
 const emit = defineEmits<{(e: "chose", item: T): void}>();
 const container = ref<HTMLUListElement>();

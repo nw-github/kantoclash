@@ -1,7 +1,7 @@
 import type {Generation} from "./gen";
 import type {AbilityId, SpeciesId} from "./species";
 import type {MoveId} from "./moves";
-import type {StageStats, Stats, StatStages} from "./utils";
+import type {StageStats, Stats, StatStageId} from "./utils";
 import type {ItemId} from "./item";
 
 export type Status = "psn" | "par" | "slp" | "frz" | "tox" | "brn";
@@ -104,7 +104,7 @@ export class Pokemon {
   sleepTurns: number = 0;
   friendship: number;
   ivs: Stats;
-  shiny: boolean;
+  shiny: bool;
   gender: Gender;
   ability?: AbilityId;
   nature?: Nature;
@@ -216,7 +216,7 @@ export const transform = (user: Pokemon, transformed: Pokemon) => {
   });
 };
 
-export const applyItemStatBoost = (poke: Pokemon, stat: StatStages, value: number) => {
+export const applyItemStatBoost = (poke: Pokemon, stat: StatStageId, value: number) => {
   if (poke.item === "machobrace" && stat === "spe") {
     return Math.floor(value / 2);
   } else if (poke.item === "choiceband" && stat === "atk") {

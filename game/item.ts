@@ -1,6 +1,6 @@
 import __items from "./items.json";
 import type {Status} from "./pokemon";
-import type {StatStages} from "./utils";
+import type {StatStageId} from "./utils";
 
 export type ItemId = keyof typeof __items;
 export type ItemData = {
@@ -38,7 +38,7 @@ export const healBerry: Partial<Record<ItemId, number>> = {
   sitrusberry: 30,
 };
 
-export const healPinchBerry: Partial<Record<ItemId, StatStages>> = {
+export const healPinchBerry: Partial<Record<ItemId, StatStageId>> = {
   /** Confuses natures that are -Atk */
   figyberry: "atk",
   /** Confuses natures that are -SpA */
@@ -56,7 +56,7 @@ export const ppBerry: Partial<Record<ItemId, number>> = {
   leppaberry: 10,
 };
 
-export const statPinchBerry: Partial<Record<ItemId, StatStages | "random" | "crit">> = {
+export const statPinchBerry: Partial<Record<ItemId, StatStageId | "random" | "crit">> = {
   liechiberry: "atk",
   ganlonberry: "def",
   salacberry: "spe",

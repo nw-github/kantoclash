@@ -172,7 +172,7 @@ const internalMoveList = createMoveList({
     range: Range.Self,
     noEncore: true,
     noAssist: true,
-    exec(battle, user): boolean {
+    exec(battle, user): bool {
       battle.gen1LastDamage = 0;
       const moves = Object.entries(battle.gen.moveList)
         .filter(([, move]) => !move.noMetronome && move.idx! <= battle.gen.lastMoveIdx)

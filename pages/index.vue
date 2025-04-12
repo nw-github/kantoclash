@@ -163,7 +163,7 @@ const selectedTeam = ref<Team | undefined>();
 const errors = ref<Record<number, [string, string[]]>>({});
 const selectTeamMenu = ref<InstanceType<typeof TeamSelector>>();
 
-const rooms = ref<{to: string; name: string; format: FormatId; live: boolean}[]>([]);
+const rooms = ref<{to: string; name: string; format: FormatId; live: bool}[]>([]);
 const filterFormats = ref<string[]>([]);
 const battleQuery = ref("");
 const challengeUser = ref<Battler>();
@@ -197,7 +197,7 @@ const emptyState = computed(() => {
     : emptyStateEmpty;
 });
 
-const onMaintenanceMode = (state: boolean) => state && (findingMatch.value = false);
+const onMaintenanceMode = (state: bool) => state && (findingMatch.value = false);
 const onChallengeRejected = () => (findingMatch.value = false);
 
 useTitle("Kanto Clash");
@@ -253,7 +253,7 @@ const enterMatchmaking = () => {
   );
 };
 
-const respondToChallenge = (accept: boolean, challenge: Challenge, selected?: Team) => {
+const respondToChallenge = (accept: bool, challenge: Challenge, selected?: Team) => {
   acceptingChallenge.value = true;
 
   const team = accept && selected ? convertTeam(selected) : undefined;

@@ -23,18 +23,19 @@ export type Type =
   | "dark"
   | "steel"
   | "???";
-export type Stages = (typeof stageKeys)[number];
-export type StatStages = (typeof stageStatKeys)[number];
+export type StageId = (typeof stageKeys)[number];
+export type StatStageId = (typeof stageStatKeys)[number];
+export type StatId = (typeof statKeys)[number];
 
-export type Stats = Record<(typeof statKeys)[number], number>;
-export type StageStats = Record<StatStages, number>;
+export type Stats = Record<StatId, number>;
+export type StageStats = Record<StatStageId, number>;
 
 export const stageStatKeys = ["atk", "def", "spa", "spd", "spe"] as const;
 export const statKeys = ["hp", ...stageStatKeys] as const;
 export const stageKeys = [...stageStatKeys, "acc", "eva"] as const;
 
 export const screens = ["light_screen", "reflect", "safeguard", "mist"] as const;
-export type Screen = (typeof screens)[number];
+export type ScreenId = (typeof screens)[number];
 
 // prettier-ignore
 export enum VF {
@@ -44,7 +45,7 @@ export enum VF {
   /** Gen 1 only */
   reflect      = 0x0000_0002,
   mist         = 0x0000_0004,
-  focusEnergy        = 0x0000_0008,
+  focusEnergy  = 0x0000_0008,
   destinyBond  = 0x0000_0010,
   curse        = 0x0000_0020,
   protect      = 0x0000_0040,

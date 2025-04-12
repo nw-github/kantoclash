@@ -4,7 +4,7 @@ type InfoUserJoin = {
   type: "userJoin";
   id: string;
   name: string;
-  isSpectator: boolean;
+  isSpectator: bool;
   nPokemon: number;
 };
 

@@ -18,7 +18,7 @@ export type JoinRoomResponse = {
   chats: InfoRecord;
   format: FormatId;
   timer?: BattleTimer;
-  finished: boolean;
+  finished: bool;
   battlers: {id: string; name: string; nPokemon: number}[];
 };
 
@@ -30,7 +30,7 @@ export type Battler = {name: string; id: string};
 
 export type Challenge = {from: Battler; format: FormatId};
 
-export type RoomDescriptor = {id: string; battlers: Battler[]; format: FormatId; finished: boolean};
+export type RoomDescriptor = {id: string; battlers: Battler[]; format: FormatId; finished: bool};
 export type MMError = "must_login" | "invalid_team" | "too_many" | "maintenance" | "bad_user";
 
 export type MoveChoice = {
@@ -67,7 +67,7 @@ export interface ClientMessage {
   exitMatchmaking: (ack: () => void) => void;
   respondToChallenge: (
     id: string,
-    accept: boolean,
+    accept: bool,
     team: PokemonDesc[] | undefined,
     ack: (err?: MMError, problems?: TeamProblems) => void,
   ) => void;
@@ -92,7 +92,7 @@ export interface ClientMessage {
   ) => void;
 
   getConfig: (ack: (state: ServerConfig | false) => void) => void;
-  setConfig: (state: ServerConfig, ack: (ok: boolean) => void) => void;
+  setConfig: (state: ServerConfig, ack: (ok: bool) => void) => void;
 }
 
 export interface ServerMessage {
@@ -105,7 +105,7 @@ export interface ServerMessage {
   timerStart: (room: string, who: string, timer: BattleTimer) => void;
   info: (room: string, message: InfoMessage, turn: number) => void;
 
-  maintenanceState: (state: boolean) => void;
+  maintenanceState: (state: bool) => void;
 }
 
 export type InfoRecord = Record<number, InfoMessage[]>;
@@ -124,8 +124,8 @@ const TURN_DECISION_TIME_MS = 45 * 1000;
 type Account = {
   id: string;
   name: string;
-  admin?: boolean;
-  offline: boolean;
+  admin?: bool;
+  offline: bool;
   matchmaking?: {format: FormatId} | {challenged: Account};
   userRoom: string;
   activeBattles: Set<Room>;
@@ -232,7 +232,7 @@ class Room {
     this.server.to(this.id).emit("info", this.id, message, turn);
   }
 
-  onSocketJoin(socket: Socket, notifyJoin: boolean) {
+  onSocketJoin(socket: Socket, notifyJoin: bool) {
     socket.join(this.id);
     if (!socket.account) {
       socket.join(this.spectatorRoom);
@@ -286,7 +286,7 @@ class Room {
 
 export type Telemetry = {onBattleComplete(format: FormatId, battle: Battle): void};
 
-export type ServerConfig = {maintenance?: boolean; botMatchmaking?: boolean};
+export type ServerConfig = {maintenance?: bool; botMatchmaking?: bool};
 
 export class GameServer extends Server<ClientMessage, ServerMessage> {
   private readonly accounts = new Map<string, Account>();

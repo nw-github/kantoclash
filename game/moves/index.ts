@@ -1,7 +1,7 @@
 import type {ActivePokemon, Battle} from "../battle";
 import type {FailReason, InfoReason, RecoveryReason} from "../events";
 import type {Pokemon, Status} from "../pokemon";
-import type {Stages, Type, VF, Weather, Screen} from "../utils";
+import type {StageId, Type, VF, Weather, ScreenId} from "../utils";
 import type {Range} from "./moveList";
 
 export * from "./functions";
@@ -17,25 +17,25 @@ export interface BaseMove {
   readonly acc?: number;
   readonly priority?: number;
   readonly power?: number;
-  readonly sleepOnly?: boolean;
+  readonly sleepOnly?: bool;
   /** 50% accurate in sun, -- in rain */
-  readonly rainAcc?: boolean;
+  readonly rainAcc?: bool;
   /** Hits users in the semi-invuln state of these moves */
   readonly ignore?: string[] /* MoveId[] */;
   /** Not encoreable */
-  readonly noEncore?: boolean;
+  readonly noEncore?: bool;
   /** Not callable by metronome */
-  readonly noMetronome?: boolean;
+  readonly noMetronome?: bool;
   /** Not callable by assist */
-  readonly noAssist?: boolean;
+  readonly noAssist?: bool;
   /** Not callable by sleep talk */
-  readonly noSleepTalk?: boolean;
+  readonly noSleepTalk?: bool;
   /** Undefined: Inherit from kind, true: affected, false: unaffected */
-  readonly protect?: boolean;
-  readonly whileAsleep?: boolean;
-  readonly selfThaw?: boolean;
-  readonly kingsRock?: boolean;
-  readonly sound?: boolean;
+  readonly protect?: bool;
+  readonly whileAsleep?: bool;
+  readonly selfThaw?: bool;
+  readonly kingsRock?: bool;
+  readonly sound?: bool;
 }
 
 export interface CustomMove extends BaseMove {
@@ -57,20 +57,20 @@ export interface ConfuseMove extends BaseMove {
 export interface RecoveryMove extends BaseMove {
   readonly kind: "recover";
   readonly why: RecoveryReason;
-  readonly weather?: boolean;
+  readonly weather?: bool;
   readonly range: Range.Self;
 }
 
 export interface StageMove extends BaseMove {
   readonly kind: "stage";
-  readonly stages: [Stages, number][];
+  readonly stages: [StageId, number][];
   readonly ignoreSub?: bool;
 }
 
 export interface StatusMove extends BaseMove {
   readonly kind: "status";
   readonly status: Status;
-  readonly checkType?: boolean;
+  readonly checkType?: bool;
   readonly range: Range.Adjacent | Range.Any;
 }
 
@@ -78,7 +78,7 @@ export interface SwitchMove extends BaseMove {
   readonly kind: "switch";
   readonly poke: Pokemon;
   readonly priority: number;
-  readonly batonPass: boolean;
+  readonly batonPass: bool;
 }
 
 export interface FailMove extends BaseMove {
@@ -93,7 +93,7 @@ export interface WeatherMove extends BaseMove {
 
 export interface ScreenMove extends BaseMove {
   readonly kind: "screen";
-  readonly screen: Screen;
+  readonly screen: ScreenId;
 }
 
 export interface PhazingMove extends BaseMove {
@@ -102,7 +102,7 @@ export interface PhazingMove extends BaseMove {
 
 export interface ProtectMove extends BaseMove {
   readonly kind: "protect";
-  readonly endure?: boolean;
+  readonly endure?: bool;
 }
 
 export interface PreventEscapeMove extends BaseMove {
@@ -133,7 +133,7 @@ export interface FutureSightMove extends BaseMove {
 export interface SwaggerMove extends BaseMove {
   readonly kind: "swagger";
   readonly range: Range.Adjacent;
-  readonly stages: [Stages, number][];
+  readonly stages: [StageId, number][];
 }
 
 export interface ForesightMove extends BaseMove {
@@ -149,11 +149,11 @@ export interface DamagingMove extends BaseMove {
   readonly effect?: [number, Effect] | [number, Effect, true];
   /** Recoil: max(1 / recoil, 1) */
   readonly recoil?: number;
-  readonly punish?: boolean;
-  readonly contact?: boolean;
+  readonly punish?: bool;
+  readonly contact?: bool;
   /** Affected by damp */
-  readonly damp?: boolean;
-  readonly charge?: boolean | "sun" | "invuln" | [Stages, number][];
+  readonly damp?: bool;
+  readonly charge?: bool | "sun" | "invuln" | [StageId, number][];
   getPower?(user: Pokemon, target?: Pokemon): number;
   getType?(user: Pokemon, weather?: Weather): Type;
   checkSuccess?(battle: Battle, user: ActivePokemon, targets: ActivePokemon[]): bool;
@@ -188,7 +188,7 @@ export type Move =
 
 type Effect =
   | Status
-  | [Stages, number][]
+  | [StageId, number][]
   | "confusion"
   | "flinch"
   | "thief"

@@ -187,8 +187,8 @@ const props = defineProps<{
   perspective: string;
   chats: InfoRecord;
   victor?: string;
-  closable?: boolean;
-  smoothScroll?: boolean;
+  closable?: bool;
+  smoothScroll?: bool;
   format: FormatId;
 }>();
 const emit = defineEmits<{(e: "chat", message: string): void; (e: "forfeit" | "close"): void}>();

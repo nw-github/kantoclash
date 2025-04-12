@@ -1,4 +1,4 @@
-let context: (AudioContext & {unlocked?: boolean}) | undefined;
+let context: (AudioContext & {unlocked?: bool}) | undefined;
 const onUnlocks: (() => void)[] = [];
 
 let dummyAudio: AudioBuffer | undefined;

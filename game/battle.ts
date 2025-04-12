@@ -9,17 +9,17 @@ import type {
 } from "./events";
 import {type MoveId, type Move, Range, isSpreadMove} from "./moves";
 import {Pokemon, type ValidatedPokemonDesc} from "./pokemon";
-import {getEffectiveness, playerId, VF, type Type, type Weather, type Screen} from "./utils";
+import {getEffectiveness, playerId, VF, type Type, type Weather, type ScreenId} from "./utils";
 import type {Generation} from "./gen";
-import {ActivePokemon, type VolatileStats} from "./active";
+import {ActivePokemon} from "./active";
 import {abilityList} from "./species";
 
-export {ActivePokemon, type VolatileStats};
+export {ActivePokemon};
 
 export type MoveOption = {
   move: MoveId;
-  valid: boolean;
-  display: boolean;
+  valid: bool;
+  display: bool;
   pp?: number;
   indexInMoves?: number;
   targets: PokeId[];
@@ -36,7 +36,7 @@ export class Player {
   readonly active: NonEmptyArray<ActivePokemon>;
   readonly team: Pokemon[];
   readonly teamDesc: ValidatedPokemonDesc[];
-  readonly screens: Partial<Record<Screen, number>> = {};
+  readonly screens: Partial<Record<ScreenId, number>> = {};
 
   sleepClausePoke?: Pokemon;
   spikes = 0;
@@ -137,7 +137,7 @@ export class Player {
   }
 }
 
-export type Mods = {sleepClause?: boolean; freezeClause?: boolean; endlessBattle?: boolean};
+export type Mods = {sleepClause?: bool; freezeClause?: bool; endlessBattle?: bool};
 
 export enum TurnType {
   Lead,
@@ -259,7 +259,7 @@ export class Battle {
     return this.players.find(pl => pl.id === id);
   }
 
-  forfeit(player: Player, timer: boolean) {
+  forfeit(player: Player, timer: bool) {
     this.victor = this.opponentOf(player);
     this.event({type: "forfeit", user: player.id, timer});
     this.event({type: "end", victor: this.victor.id});

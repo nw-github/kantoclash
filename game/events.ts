@@ -2,7 +2,7 @@ import type {ClientVolatiles} from "~/utils/shared";
 import type {MoveId} from "./moves";
 import type {Gender, Status} from "./pokemon";
 import type {AbilityId, SpeciesId} from "./species";
-import type {Stages, Type, VF, Weather, Screen} from "./utils";
+import type {StageId, Type, VF, Weather, ScreenId} from "./utils";
 import type {ItemId} from "./item";
 
 type NullOrOptional<T> = {[P in keyof T]?: T[P] | null};
@@ -66,7 +66,7 @@ type SwitchEvent = {
   name: string;
   indexInTeam: number;
   gender?: Gender;
-  shiny?: boolean;
+  shiny?: bool;
   why?: "phaze" | "baton_pass";
 };
 
@@ -118,7 +118,7 @@ export type DamageEvent = {
   hpPercentAfter: number;
   hpBefore?: number;
   hpAfter?: number;
-  isCrit?: boolean;
+  isCrit?: bool;
   why: DamageReason;
   /* when why === "trap", this is a moveId */
   move?: string;
@@ -146,8 +146,8 @@ export type HitSubstituteEvent = {
   type: "hit_sub";
   src: PokeId;
   target: PokeId;
-  broken: boolean;
-  confusion: boolean;
+  broken: bool;
+  confusion: bool;
   hitCount?: number;
   eff?: number;
 };
@@ -166,7 +166,7 @@ type StatusEvent = {type: "status" | "cure"; src: PokeId; status: Status};
 type StagesEvent = {
   type: "stages";
   src: PokeId;
-  stat: Stages;
+  stat: StageId;
   /**
    * -6 and +6 are sentinel values meaning stat too low and stat too high respectively
    * 0 means the stat couldn't be lowered due to an ability
@@ -301,7 +301,7 @@ type ConversionEvent = {type: "conversion"; src: PokeId; target?: PokeId; types:
 
 type MagnitudeEvent = {type: "magnitude"; magnitude: number};
 
-export type ScreenEvent = {type: "screen"; kind: "start" | "end"; screen: Screen; user: PlayerId};
+export type ScreenEvent = {type: "screen"; kind: "start" | "end"; screen: ScreenId; user: PlayerId};
 
 type SetVolatilesEvent = {type: "sv"};
 
@@ -337,7 +337,7 @@ type TrickEvent = {
 type ForfeitEvent = {
   type: "forfeit";
   user: PlayerId;
-  timer: boolean;
+  timer: bool;
 };
 
 type BatonPass = {type: "baton_pass"; src: PokeId};

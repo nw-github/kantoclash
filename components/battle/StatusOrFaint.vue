@@ -8,5 +8,5 @@
 <script setup lang="ts">
 import type {Pokemon} from "~/game/pokemon";
 
-defineProps<{poke: Pokemon; faint?: boolean}>();
+defineProps<{poke: Pokemon; faint?: bool}>();
 </script>

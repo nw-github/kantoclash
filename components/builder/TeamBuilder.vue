@@ -386,7 +386,7 @@
 
 <script setup lang="ts">
 import {abilityList, type Species, type SpeciesId} from "~/game/species";
-import type {Stats} from "~/game/utils";
+import type {Stats, StatId} from "~/game/utils";
 import {GENERATIONS} from "~/game/gen";
 import {Nature, natureTable} from "~/game/pokemon";
 
@@ -414,9 +414,9 @@ const selectedPoke = computed(() => ({
           if (prop === "spd") {
             prop = "spa";
           }
-          return target[prop as keyof Stats] ?? 255;
+          return target[prop as StatId] ?? 255;
         } else {
-          return target[prop as keyof Stats] ?? 0;
+          return target[prop as StatId] ?? 0;
         }
       },
       set(target, prop, val) {
@@ -425,11 +425,11 @@ const selectedPoke = computed(() => ({
         }
 
         const prev = getTotalEvs(target);
-        target[prop as keyof Stats] = val;
+        target[prop as StatId] = val;
         const curr = getTotalEvs(target);
 
         if (gen.value.id >= 3 && curr > gen.value.maxTotalEv && curr - prev > 0) {
-          target[prop as keyof Stats] = val - (curr - prev);
+          target[prop as StatId] = val - (curr - prev);
         }
 
         return true;
@@ -446,13 +446,13 @@ const selectedPoke = computed(() => ({
             prop = "spa";
           }
         }
-        return target[prop as keyof Stats];
+        return target[prop as StatId];
       },
       set(target, prop, val) {
         if (gen.value.id <= 2 && prop === "spd") {
           prop = "spa";
         }
-        target[prop as keyof Stats] = val;
+        target[prop as StatId] = val;
         return true;
       },
     }),
@@ -498,15 +498,15 @@ const natures = computed(() => {
     .map(k => ({
       value: k,
       name: toTitleCase(Nature[k]),
-      plus: Object.keys(natureTable[k]).map(k => `+${statKeys.value[k as keyof Stats]!}`)[0],
-      minus: Object.keys(natureTable[k]).map(k => `-${statKeys.value[k as keyof Stats]!}`)[1],
+      plus: Object.keys(natureTable[k]).map(k => `+${statKeys.value[k as StatId]!}`)[0],
+      minus: Object.keys(natureTable[k]).map(k => `-${statKeys.value[k as StatId]!}`)[1],
     }));
 });
 
 const getTotalEvs = (stats: Partial<Stats>) => {
   let v = 0;
   for (const stat in statKeys.value) {
-    v += stats[stat as keyof Stats] ?? 0;
+    v += stats[stat as StatId] ?? 0;
   }
   return v;
 };
@@ -543,12 +543,12 @@ const copyTextArea = (text: string) => {
 const ivsToDvs = (poke: TeamPokemonDesc) => {
   const dvs: Partial<Stats> = {};
   for (const stat in statKeys.value) {
-    dvs[stat as keyof Stats] = ivToDv(poke.ivs[stat as keyof Stats]);
+    dvs[stat as StatId] = ivToDv(poke.ivs[stat as StatId]);
   }
   return dvs;
 };
 
-const calcPokeStat = (stat: keyof Stats, poke: TeamPokemonDesc) => {
+const calcPokeStat = (stat: StatId, poke: TeamPokemonDesc) => {
   if (gen.value.id <= 2) {
     return gen.value.calcStat(
       stat,
@@ -612,13 +612,13 @@ const teamTextChange = () => {
   team.pokemon = parsed.pokemon;
 };
 
-const prevStat = ref<keyof Stats>();
+const prevStat = ref<StatId>();
 
 watch([selectedPoke, gen], () => {
   prevStat.value = undefined;
 });
 
-const trySetNature = (stat: keyof Stats) => {
+const trySetNature = (stat: StatId) => {
   if (stat === "hp") {
     return;
   } else if (!prevStat.value) {

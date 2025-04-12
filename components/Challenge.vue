@@ -25,7 +25,7 @@
 import type {TeamSelector} from "#components";
 import type {Challenge} from "~/server/gameServer";
 
-const {challenge} = defineProps<{challenge: Challenge; disabled?: boolean}>();
+const {challenge} = defineProps<{challenge: Challenge; disabled?: bool}>();
 const emit = defineEmits<{(e: "reject"): void; (e: "accept", team?: Team): void}>();
 
 const team = ref<Team>();

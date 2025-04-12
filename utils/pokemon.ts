@@ -1,6 +1,6 @@
 import type {MoveId, Move, DamagingMove} from "~/game/moves";
 import {abilityList, type Species, type SpeciesId} from "~/game/species";
-import {HP_TYPES, statKeys, type Stats, type Type} from "~/game/utils";
+import {HP_TYPES, statKeys, type StatId, type Stats, type Type} from "~/game/utils";
 import {battleFormats, formatInfo, type FormatId} from "./shared";
 import {Nature, Pokemon, type PokemonDesc} from "~/game/pokemon";
 import {GENERATIONS, type Generation} from "~/game/gen";
@@ -19,8 +19,8 @@ export const descToString = (format: FormatId, poke: PokemonDesc) => {
   const stats = (stats: Partial<Stats>, def: number, name: string) => {
     const result = [];
     for (const k in stats) {
-      if (stats[k as keyof Stats] !== undefined && stats[k as keyof Stats] !== def) {
-        result.push(`${stats[k as keyof Stats]!} ${k}`);
+      if (stats[k as StatId] !== undefined && stats[k as StatId] !== def) {
+        result.push(`${stats[k as StatId]!} ${k}`);
       }
     }
 
@@ -315,7 +315,7 @@ export const statexpToEv = (v?: number) => Math.floor((v ?? 65535) / 257);
 export const ivsToDvs = (gen: Generation, ivs: Partial<Stats>) => {
   const dvs: Partial<Stats> = {};
   for (const stat in getStatKeys(gen)) {
-    dvs[stat as keyof Stats] = ivToDv(ivs[stat as keyof Stats]);
+    dvs[stat as StatId] = ivToDv(ivs[stat as StatId]);
   }
   return dvs;
 };

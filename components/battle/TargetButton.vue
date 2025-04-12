@@ -12,7 +12,7 @@
 
 <script setup lang="ts">
 defineEmits<{(e: "click"): void}>();
-const {poke} = defineProps<{poke: ClientActivePokemon; disabled: boolean; active: boolean}>();
+const {poke} = defineProps<{poke: ClientActivePokemon; disabled: bool; active: bool}>();
 
 const colorForHp = computed(() => {
   if (poke.hpPercent < 10) {

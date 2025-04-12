@@ -414,7 +414,7 @@ export function randomBot({options, me}: BotParams) {
 //     return result.length ? random.choice(result)! : {score: -1, i: -1};
 //   };
 //
-//   const rankMove = ({move: id, valid}: {move: MoveId; valid: boolean}) => {
+//   const rankMove = ({move: id, valid}: {move: MoveId; valid: bool}) => {
 //     if (!valid) {
 //       return -1;
 //     }

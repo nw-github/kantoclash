@@ -15,9 +15,9 @@ import {speciesList, type SpeciesId} from "~/game/species";
 
 const props = defineProps<{
   species?: string;
-  back?: boolean;
+  back?: bool;
   scale?: number;
-  shiny?: boolean;
+  shiny?: bool;
 }>();
 const sprite = computed(() => {
   const scale = 1 / (props.scale ?? 1);

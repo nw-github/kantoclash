@@ -1,5 +1,5 @@
 import type {MoveId} from "./moves";
-import type {Stages, Stats, Type, Weather} from "./utils";
+import type {StageId, Stats, Type, Weather} from "./utils";
 import __speciesList from "./species.json";
 import __abilityList from "./ability.json";
 import type {Status} from "./pokemon";
@@ -34,7 +34,7 @@ export type Ability = {
   weatherEva?: Weather;
   startsWeather?: Weather;
   contactStatus?: Status | "attract";
-  preventsStatDrop?: Stages | "all";
+  preventsStatDrop?: StageId | "all";
 };
 
 export const speciesList = __speciesList as Record<SpeciesId, Species>;

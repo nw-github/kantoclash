@@ -2,18 +2,18 @@ import type {PlayerId, PokeId} from "~/game/events";
 import type {Move} from "~/game/moves";
 import type {Gender, Pokemon} from "~/game/pokemon";
 import type {SpeciesId} from "~/game/species";
-import {isSpecial, type Screen, type Type} from "~/game/utils";
+import {isSpecial, type ScreenId, type Type} from "~/game/utils";
 
 export type ClientActivePokemon = {
-  hidden?: boolean;
+  hidden?: bool;
   gender?: Gender;
   speciesId: SpeciesId;
   name: string;
-  fainted: boolean;
+  fainted: bool;
   hpPercent: number;
   level: number;
   transformed?: SpeciesId;
-  shiny?: boolean;
+  shiny?: bool;
   v: ClientVolatiles;
   base?: Pokemon;
   indexInTeam: number;
@@ -21,14 +21,14 @@ export type ClientActivePokemon = {
 
 export type ClientPlayer = {
   name: string;
-  isSpectator: boolean;
-  connected: boolean;
+  isSpectator: bool;
+  connected: bool;
 
   active: (ClientActivePokemon | undefined)[];
   nPokemon: number;
   nFainted: number;
   spikes?: number;
-  screens?: Partial<Record<Screen, boolean>>;
+  screens?: Partial<Record<ScreenId, bool>>;
 };
 
 export class Players {

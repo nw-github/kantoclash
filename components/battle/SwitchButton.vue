@@ -21,7 +21,7 @@
 import type {Pokemon} from "@/game/pokemon";
 
 defineEmits<{(e: "click"): void}>();
-const {poke} = defineProps<{poke: Pokemon; disabled: boolean; active: boolean}>();
+const {poke} = defineProps<{poke: Pokemon; disabled: bool; active: bool}>();
 
 const colorForHp = computed(() => {
   if (poke.stats.hp / poke.hp < 0.1) {

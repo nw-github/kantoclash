@@ -33,7 +33,7 @@ const uselessNfe = new Set<SpeciesId>(["weedle", "metapod", "kakuna", "magikarp"
 const getRandomPokemon = (
   gen: Generation,
   count: number,
-  validSpecies: (s: Species, id: SpeciesId) => boolean,
+  validSpecies: (s: Species, id: SpeciesId) => bool,
   customize: (s: Species, id: SpeciesId) => ValidatedPokemonDesc,
 ) => {
   return speciesIds
@@ -91,7 +91,7 @@ const getRandomPokemon = (
 const getRandomMoves = (
   count: number,
   moves: readonly MoveId[],
-  validMove: (m: Move, id: MoveId) => boolean,
+  validMove: (m: Move, id: MoveId) => bool,
 ) => {
   return moves
     .filter(id => validMove(moveList[id], id))
@@ -124,7 +124,7 @@ const isBadMove = (s: Species, move: Move, id: MoveId) => {
 
 export const randoms = (
   gen: Generation,
-  validSpecies: (s: Species, id: SpeciesId) => boolean,
+  validSpecies: (s: Species, id: SpeciesId) => bool,
   level = 100,
 ) => {
   return getRandomPokemon(gen, 6, validSpecies, (s, id) => {

@@ -25,11 +25,11 @@ export const useBGMusic = () => {
 
 export const useMutedPlayerIds = () => useLocalStorage<string[]>("mutedPlayers", []);
 
-export const useChatCensorEnabled = () => useLocalStorage<boolean>("profanity", true);
+export const useChatCensorEnabled = () => useLocalStorage<bool>("profanity", true);
 
-export const useIgnoreChallenges = () => useLocalStorage<boolean>("ignoreChallenges", false);
+export const useIgnoreChallenges = () => useLocalStorage<bool>("ignoreChallenges", false);
 
-export const useAutoMuteMusic = () => useLocalStorage<boolean>("autoMuteMusic", false);
+export const useAutoMuteMusic = () => useLocalStorage<bool>("autoMuteMusic", false);
 
 export const useChallenges = () => useState<Challenge[]>("challenges", () => []);
 

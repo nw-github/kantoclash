@@ -47,7 +47,7 @@ import {breakpointsTailwind} from "@vueuse/core";
 
 const selectTeamMenu = ref<HTMLDivElement>();
 const model = defineModel<Team | undefined>();
-const {format} = defineProps<{format: FormatId; disabled?: boolean}>();
+const {format} = defineProps<{format: FormatId; disabled?: bool}>();
 
 const myTeams = useMyTeams();
 const validTeams = computed(() => myTeams.value.filter(team => team.format === format));

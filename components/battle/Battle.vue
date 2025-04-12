@@ -238,7 +238,7 @@ const {team, options, players, events, chats, timer, finished, format, ready} = 
   events: BattleEvent[];
   chats: InfoRecord;
   timer?: BattleTimer;
-  finished: boolean;
+  finished: bool;
   format: FormatId;
   ready: bool;
 }>();

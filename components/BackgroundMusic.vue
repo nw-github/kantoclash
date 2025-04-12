@@ -48,7 +48,7 @@ watch(fadeOutRequested, async req => {
 
 let stopping: Promise<void> | undefined;
 
-const stop = async (fade: boolean) => {
+const stop = async (fade: bool) => {
   if (!context || !source) {
     return;
   }

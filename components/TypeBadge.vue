@@ -11,5 +11,5 @@
 <script setup lang="ts">
 import type {Type} from "~/game/utils";
 
-defineProps<{type: Type; image?: boolean; label?: string}>();
+defineProps<{type: Type; image?: bool; label?: string}>();
 </script>

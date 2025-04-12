@@ -10,7 +10,7 @@ import {
   VF,
   screens,
   type Stats,
-  type StatStages,
+  type StatStageId,
   type Type,
   randChoiceWeighted,
 } from "../utils";
@@ -117,7 +117,7 @@ type PRecord<K extends string | number | symbol, V> = Partial<Record<K, V>>;
 
 const statBoostItem: PRecord<
   ItemId,
-  PRecord<SpeciesId, {stats: StatStages[]; transformed: bool; amount: number}>
+  PRecord<SpeciesId, {stats: StatStageId[]; transformed: bool; amount: number}>
 > = {
   metalpowder: {ditto: {stats: ["def", "spd"], transformed: true, amount: 0.5}},
   lightball: {pikachu: {stats: ["spa"], transformed: false, amount: 1}},
@@ -177,7 +177,7 @@ const checkAccuracy = (
   return true;
 };
 
-const tryCrit = (battle: Battle, user: ActivePokemon, hc: boolean) => {
+const tryCrit = (battle: Battle, user: ActivePokemon, hc: bool) => {
   const baseSpe = user.base.species.stats.spe;
   const focus = user.v.hasFlag(VF.focusEnergy);
   if (hc) {
@@ -248,11 +248,11 @@ const calcDamage = ({lvl, pow, atk, def, eff, isCrit, hasStab, rand}: CalcDamage
 };
 
 const getDamageVariables = (
-  special: boolean,
+  special: bool,
   battle: Battle,
   user: ActivePokemon,
   target: ActivePokemon,
-  isCrit: boolean,
+  isCrit: bool,
 ) => {
   const [atks, defs] = special ? (["spa", "spa"] as const) : (["atk", "def"] as const);
   let atk = getStat(battle, user, atks, isCrit);
@@ -403,13 +403,7 @@ const beforeUseMove = (battle: Battle, move: Move, user: ActivePokemon) => {
   return true;
 };
 
-const getStat = (
-  _: Battle,
-  poke: ActivePokemon,
-  stat: StatStages,
-  isCrit?: boolean,
-  def?: boolean,
-) => {
+const getStat = (_: Battle, poke: ActivePokemon, stat: StatStageId, isCrit?: bool, def?: bool) => {
   // In gen 1, a crit against a transformed pokemon will use its untransformed stats
   let value = poke.v.stats[stat];
   if (def && isCrit && poke.base.transformed) {
@@ -531,14 +525,14 @@ const createGeneration = () => {
       _species: Species,
       _atk: number,
     ): Gender | undefined => "N",
-    getShiny: (_desired: boolean | undefined, _dvs: Partial<Stats>) => false,
+    getShiny: (_desired: bool | undefined, _dvs: Partial<Stats>) => false,
     accumulateBide,
     tryDamage,
-    afterBeforeUseMove(battle: Battle, user: ActivePokemon): boolean {
+    afterBeforeUseMove(battle: Battle, user: ActivePokemon): bool {
       this.handleResidualDamage(battle, user);
       return battle.checkFaint(user) && shouldReturn(battle, false);
     },
-    afterUseMove(battle: Battle, user: ActivePokemon, isReplacement: bool): boolean {
+    afterUseMove(battle: Battle, user: ActivePokemon, isReplacement: bool): bool {
       if (isReplacement) {
         return false;
       }

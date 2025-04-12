@@ -283,7 +283,7 @@ img {
 </style>
 
 <script setup lang="ts">
-import {VF, hpPercentExact, type Screen} from "~/game/utils";
+import {VF, hpPercentExact, type ScreenId} from "~/game/utils";
 import {breakpointsTailwind} from "@vueuse/core";
 import type {Generation} from "~/game/gen";
 import {UPopover, type UBadge} from "#components";
@@ -302,10 +302,10 @@ import {abilityList} from "~/game/species";
 const {poke, back, gen, player, pokeId} = defineProps<{
   player?: ClientPlayer;
   poke?: ClientActivePokemon;
-  back?: boolean;
+  back?: bool;
   gen: Generation;
   pokeId: PokeId;
-  isSingles: boolean;
+  isSingles: bool;
 }>();
 const species = computed(() => poke && gen.speciesList[poke.transformed ?? poke.speciesId]);
 const minSpe = computed(
@@ -333,7 +333,7 @@ const sprite = ref<HTMLDivElement>();
 const ground = ref<HTMLDivElement>();
 const pbRow = ref(0);
 const pbCol = ref(3);
-const scrColor: Record<Screen, string> = {
+const scrColor: Record<ScreenId, string> = {
   safeguard: "bg-purple-500",
   light_screen: "bg-pink-500",
   reflect: "bg-blue-400",
@@ -355,8 +355,8 @@ const screens = computed(() => {
   }
 
   for (const screen in scrColor) {
-    if (player?.screens?.[screen as Screen]) {
-      screens.push({name: screen, clazz: scrColor[screen as Screen]});
+    if (player?.screens?.[screen as ScreenId]) {
+      screens.push({name: screen, clazz: scrColor[screen as ScreenId]});
     }
   }
 
@@ -426,7 +426,7 @@ export type SwitchAnim = {
 export type RetractAnim = {
   anim: "sendin" | "retract" | "phaze";
   cb?: () => void;
-  batonPass: boolean;
+  batonPass: bool;
   name: string;
 };
 
@@ -439,7 +439,7 @@ export type AttackAnim = {
 export type OtherAnim = {
   anim: "faint" | "get_sub" | "lose_sub" | "spikes";
   cb?: () => void;
-  batonPass?: boolean;
+  batonPass?: bool;
 };
 
 export type HurtAnim = {

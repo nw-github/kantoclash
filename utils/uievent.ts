@@ -11,7 +11,7 @@ import type {
 } from "~/game/events";
 import type {MoveId} from "~/game/moves";
 import type {Status} from "~/game/pokemon";
-import type {Weather, Screen} from "~/game/utils";
+import type {Weather, ScreenId} from "~/game/utils";
 
 export type RawUIBattleEvent =
   | BattleEvent
@@ -162,7 +162,7 @@ export const weatherMessage: Record<Weather, Record<WeatherEvent["kind"], string
   },
 };
 
-export const screenMessage: Record<Screen, Record<ScreenEvent["kind"], string>> = {
+export const screenMessage: Record<ScreenId, Record<ScreenEvent["kind"], string>> = {
   safeguard: {
     start: "{} became cloaked in a mystical veil!",
     end: "{}'s Safeguard wore off...",

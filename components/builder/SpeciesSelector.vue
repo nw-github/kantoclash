@@ -56,7 +56,7 @@ import type {Generation} from "~/game/gen1";
 const emit = defineEmits<{(e: "chose", species: Species): void}>();
 
 const model = defineModel<string>();
-const {team, gen} = defineProps<{team: Team; gen: Generation; shiny: boolean}>();
+const {team, gen} = defineProps<{team: Team; gen: Generation; shiny: bool}>();
 const open = ref(false);
 const items = computed(() => Object.entries(gen.speciesList) as [SpeciesId, Species][]);
 const statKeys = computed(() => getStatKeys(gen));

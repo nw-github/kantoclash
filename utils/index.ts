@@ -1,5 +1,5 @@
 import type {Mods} from "~/game/battle";
-import type {Stages} from "../game/utils";
+import type {StageId} from "../game/utils";
 import type {Generation} from "~/game/gen1";
 
 export const randChoice = <T>(arr: T[]) => arr[Math.floor(Math.random() * arr.length)];
@@ -41,7 +41,7 @@ export const modNames: Record<keyof Mods, {name: string; desc: string}> = {
   },
 };
 
-const stageTable: Record<Stages, string> = {
+const stageTable: Record<StageId, string> = {
   atk: "Attack",
   def: "Defense",
   spa: "Special",

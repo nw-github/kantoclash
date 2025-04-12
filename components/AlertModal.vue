@@ -9,7 +9,7 @@ defineProps<{
   title?: string;
   description?: string;
   icon?: string;
-  preventClose?: boolean;
+  preventClose?: bool;
   actions?: any[];
 }>();
 </script>

@@ -17,8 +17,9 @@ import {
   stageKeys,
   stageStatKeys,
   VF,
-  type Stages,
-  type StatStages,
+  type StageId,
+  type StageStats,
+  type StatStageId,
   type Type,
   type Weather,
 } from "./utils";
@@ -30,8 +31,8 @@ export type DamageParams = {
   dmg: number;
   src: ActivePokemon;
   why: DamageReason;
-  isCrit?: boolean;
-  direct?: boolean;
+  isCrit?: bool;
+  direct?: bool;
   eff?: number;
   move?: MoveId;
   volatiles?: ChangedVolatiles;
@@ -226,9 +227,9 @@ export class ActivePokemon {
     dmg: number,
     src: ActivePokemon,
     battle: Battle,
-    isCrit: boolean,
+    isCrit: bool,
     why: DamageReason,
-    direct?: boolean,
+    direct?: bool,
     eff?: number,
     volatiles?: ChangedVolatiles,
   ) {
@@ -443,7 +444,7 @@ export class ActivePokemon {
     }
   }
 
-  setStage(stat: Stages, value: number, battle: Battle, negative: boolean) {
+  setStage(stat: StageId, value: number, battle: Battle, negative: bool) {
     this.v.stages[stat] = value;
 
     if (stageStatKeys.includes(stat)) {
@@ -465,7 +466,7 @@ export class ActivePokemon {
     return v;
   }
 
-  modStages(mods: [Stages, number][], battle: Battle, src?: ActivePokemon, quiet?: bool) {
+  modStages(mods: [StageId, number][], battle: Battle, src?: ActivePokemon, quiet?: bool) {
     let failed = true;
     for (const [stat, count] of mods) {
       const prevented = abilityList[this.v.ability!]?.preventsStatDrop;
@@ -515,7 +516,7 @@ export class ActivePokemon {
     return true;
   }
 
-  applyAbilityStatBoost(battle: Battle, stat: StatStages, value: number) {
+  applyAbilityStatBoost(battle: Battle, stat: StatStageId, value: number) {
     if ((this.v.ability === "hugepower" || this.v.ability === "purepower") && stat === "atk") {
       value *= 2;
     }
@@ -780,8 +781,8 @@ export class ActivePokemon {
         this.consumeItem();
       } else if (Object.values(this.v.stages).some(v => v < 0) && this.base.item === "whiteherb") {
         for (const stage in this.v.stages) {
-          if (this.v.stages[stage as Stages] < 0) {
-            this.setStage(stage as Stages, 0, battle, false);
+          if (this.v.stages[stage as StageId] < 0) {
+            this.setStage(stage as StageId, 0, battle, false);
           }
         }
 
@@ -933,7 +934,7 @@ export class ActivePokemon {
     }
   }
 
-  recalculateStat(battle: Battle, stat: StatStages, negative: boolean) {
+  recalculateStat(battle: Battle, stat: StatStageId, negative: bool) {
     this.v.stats[stat] = Math.floor(
       this.base.stats[stat] * battle.gen.stageMultipliers[this.v.stages[stat]],
     );
@@ -1104,7 +1105,7 @@ export class ActivePokemon {
     if (!this.base.transformed) {
       return Object.fromEntries(
         stageStatKeys.map(key => [key, battle.gen.getStat(battle, this, key)]),
-      ) as VolatileStats;
+      ) as StageStats;
     }
   }
 
@@ -1123,12 +1124,10 @@ export class ActivePokemon {
   }
 }
 
-export type VolatileStats = Volatiles["stats"];
-
 class Volatiles {
   stages = {atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0};
   /** Gen 1 only */
-  stats: Record<StatStages, number>;
+  stats: StageStats;
   types: Type[];
   substitute = 0;
   confusion = 0;
@@ -1166,7 +1165,7 @@ class Volatiles {
   lastMoveIndex?: number;
   charging?: {move: Move; target: ActivePokemon};
   recharge?: Move;
-  thrashing?: {move: DamagingMove; turns: number; max: boolean; acc?: number};
+  thrashing?: {move: DamagingMove; turns: number; max: bool; acc?: number};
   bide?: {move: Move; turns: number; dmg: number};
   disabled?: {turns: number; indexInMoves: number};
   encore?: {turns: number; indexInMoves: number};
