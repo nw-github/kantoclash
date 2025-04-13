@@ -53,383 +53,27 @@ export const createMoveList = <T extends Record<string, Move>>(list: T) => {
 };
 
 const internalMoveList = createMoveList({
-  conversion: {
-    name: "Conversion",
-    pp: 30,
-    type: "normal",
-    range: Range.Adjacent,
-    exec(battle, user, [target]) {
-      user.v.types = [...target.v.types];
-      battle.event({
-        type: "conversion",
-        src: user.id,
-        target: target.id,
-        types: [...user.v.types],
-        volatiles: [{id: user.id, v: {types: [...user.v.types]}}],
-      });
-
-      return false;
-    },
-  },
-  disable: {
-    name: "Disable",
+  // >== GENERATION 1
+  absorb: {
+    kind: "damage",
+    name: "Absorb",
     pp: 20,
-    type: "normal",
-    range: Range.Adjacent,
-    acc: 55,
-    protect: true,
-    exec(battle, user, [target]) {
-      battle.gen1LastDamage = 0;
-
-      const options = [...target.base.moves.keys()].filter(i => target.base.pp[i] !== 0);
-      if (!options.length || target.v.disabled) {
-        battle.info(user, "fail_generic");
-        target.handleRage(battle);
-        return false;
-      } else if (!battle.checkAccuracy(this, user, target)) {
-        target.handleRage(battle);
-        return false;
-      }
-
-      const indexInMoves = battle.rng.choice(options)!;
-      target.v.disabled = {indexInMoves, turns: battle.gen.rng.disableTurns(battle)};
-      battle.event({
-        type: "disable",
-        src: target.id,
-        move: target.base.moves[indexInMoves],
-        volatiles: [{id: target.id, v: {flags: target.v.cflags}}],
-      });
-      target.handleRage(battle);
-      return false;
-    },
-  },
-  haze: {
-    name: "Haze",
-    pp: 30,
-    type: "ice",
-    range: Range.All,
-    exec(battle, user, targets) {
-      for (const target of targets) {
-        target.v.clearFlag(VF.lightScreen | VF.reflect | VF.mist | VF.focusEnergy);
-        for (const k of stageKeys) {
-          target.v.stages[k] = 0;
-        }
-        target.v.counter = 0;
-        target.v.confusion = 0;
-        target.v.disabled = undefined;
-        target.v.seededBy = undefined;
-        target.v.stats = {...target.base.stats};
-        if (target === user) {
-          continue;
-        }
-
-        if (target.base.status === "frz" || target.base.status === "slp") {
-          target.base.sleepTurns = 0;
-          target.v.hazed = true;
-        }
-
-        target.base.status = undefined;
-      }
-
-      if (user.base.status === "tox") {
-        user.base.status = "psn";
-      }
-
-      battle.info(
-        user,
-        "haze",
-        targets.map(t => ({id: user.id, v: t.getClientVolatiles(user.base, battle)})),
-      );
-      return false;
-    },
-  },
-  leechseed: {
-    name: "Leech Seed",
-    pp: 15,
     type: "grass",
     range: Range.Adjacent,
-    acc: 90,
-    protect: true,
-    exec(battle, user, [target]) {
-      if (target.v.types.includes(this.type)) {
-        return battle.info(target, "immune");
-      } else if (target.v.seededBy) {
-        return battle.info(target, "fail_generic");
-      } else if (battle.gen.id >= 2 && target.v.substitute) {
-        return battle.info(target, "fail_generic");
-      } else if (!battle.checkAccuracy(this, user, target)) {
-        return;
-      }
-
-      target.v.seededBy = user;
-      battle.info(target, "cSeeded", [{id: target.id, v: {flags: target.v.cflags}}]);
-    },
-  },
-  metronome: {
-    name: "Metronome",
-    pp: 10,
-    type: "normal",
-    range: Range.Self,
-    noEncore: true,
-    noAssist: true,
-    exec(battle, user): bool {
-      battle.gen1LastDamage = 0;
-      const moves = Object.entries(battle.gen.moveList)
-        .filter(([, move]) => !move.noMetronome && move.idx! <= battle.gen.lastMoveIdx)
-        .filter(
-          ([id]) => (battle.gen.id !== 2 && battle.gen.id !== 4) || !user.base.moves.includes(id),
-        )
-        .map(([, move]) => move);
-      return battle.callMove(battle.rng.choice(moves)!, user);
-    },
-  },
-  mimic: {
-    name: "Mimic",
-    pp: 10,
-    type: "normal",
-    range: Range.Adjacent,
+    power: 20,
     acc: 100,
-    noEncore: true,
-    noSleepTalk: true,
-    noAssist: true,
-    exec(battle, user, [target], indexInMoves) {
-      if (!battle.checkAccuracy(this, user, target)) {
-        return false;
-      }
-
-      user.v.mimic = {
-        indexInMoves: indexInMoves ?? user.v.lastMoveIndex ?? -1,
-        move: battle.rng.choice(target.base.moves)!,
-      };
-
-      battle.event({
-        type: "mimic",
-        src: user.id,
-        move: user.v.mimic.move,
-      });
-      return false;
-    },
+    kingsRock: true,
   },
-  mirrormove: {
-    name: "Mirror Move",
-    pp: 20,
-    type: "flying",
-    range: Range.Self,
-    noEncore: true,
-    noAssist: true,
-    exec(battle, user) {
-      battle.gen1LastDamage = 0;
-      const lastHitBy = user.v.lastHitBy;
-      if (user.base.transformed && battle.gen.id === 2) {
-        return battle.info(user, "fail_generic");
-      } else if (!lastHitBy || lastHitBy.user.v.lastMove !== lastHitBy.move) {
-        return battle.info(user, "fail_generic");
-      }
-      return battle.callMove(lastHitBy.move, user);
-    },
-  },
-  substitute: {
-    name: "Substitute",
-    pp: 10,
-    type: "normal",
-    range: Range.Self,
-    exec(battle, user) {
-      const hp = Math.floor(user.base.stats.hp / 4);
-      if (user.v.substitute) {
-        return battle.info(user, "has_substitute");
-      } else if (!battle.gen.canSubstitute(user, hp)) {
-        return battle.info(user, "cant_substitute");
-      }
-
-      user.v.substitute = battle.gen.id === 1 ? hp + 1 : hp;
-      user.damage(hp, user, battle, false, "substitute", true, undefined, [
-        {id: user.id, v: {flags: user.v.cflags}},
-      ]);
-    },
-  },
-  transform: {
-    name: "Transform",
-    pp: 10,
-    type: "normal",
-    range: Range.Adjacent,
-    noEncore: true,
-    exec(battle, user, [target]) {
-      battle.gen1LastDamage = 0;
-      user.transform(battle, target);
-    },
-  },
-  // --
-  focusenergy: {
-    kind: "volatile",
-    name: "Focus Energy",
+  acid: {
+    kind: "damage",
+    name: "Acid",
     pp: 30,
-    type: "normal",
-    range: Range.Self,
-    flag: VF.focusEnergy,
-    noAssist: true,
-  },
-  lightscreen: {
-    kind: "volatile",
-    name: "Light Screen",
-    pp: 30,
-    type: "psychic",
-    range: Range.Self,
-    flag: VF.lightScreen,
-  },
-  mist: {kind: "volatile", name: "Mist", pp: 30, type: "ice", range: Range.Self, flag: VF.mist},
-  reflect: {
-    kind: "volatile",
-    name: "Reflect",
-    pp: 20,
-    type: "psychic",
-    range: Range.Self,
-    flag: VF.reflect,
-  },
-  // --
-  recover: {
-    kind: "recover",
-    name: "Recover",
-    pp: 20,
-    type: "normal",
-    range: Range.Self,
-    why: "recover",
-  },
-  rest: {
-    kind: "recover",
-    name: "Rest",
-    pp: 10,
-    type: "psychic",
-    range: Range.Self,
-    why: "rest",
-  },
-  softboiled: {
-    kind: "recover",
-    name: "Softboiled",
-    pp: 10,
-    type: "normal",
-    range: Range.Self,
-    why: "recover",
-  },
-  // --
-  confuseray: {
-    kind: "confuse",
-    name: "Confuse Ray",
-    pp: 10,
-    type: "ghost",
-    range: Range.Adjacent,
-    acc: 100,
-  },
-  supersonic: {
-    kind: "confuse",
-    name: "Supersonic",
-    pp: 20,
-    type: "normal",
-    range: Range.Adjacent,
-    acc: 55,
-    sound: true,
-  },
-  // --
-  glare: {
-    kind: "status",
-    name: "Glare",
-    pp: 30,
-    type: "normal",
-    range: Range.Adjacent,
-    acc: 75,
-    status: "par",
-  },
-  hypnosis: {
-    kind: "status",
-    name: "Hypnosis",
-    pp: 20,
-    type: "psychic",
-    range: Range.Adjacent,
-    acc: 60,
-    status: "slp",
-  },
-  lovelykiss: {
-    kind: "status",
-    name: "Lovely Kiss",
-    pp: 10,
-    type: "normal",
-    range: Range.Adjacent,
-    acc: 75,
-    status: "slp",
-  },
-  poisongas: {
-    kind: "status",
-    name: "Poison Gas",
-    pp: 40,
     type: "poison",
-    range: Range.Adjacent,
-    acc: 55,
-    status: "psn",
-  },
-  poisonpowder: {
-    kind: "status",
-    name: "Poison Powder",
-    pp: 35,
-    type: "poison",
-    range: Range.Adjacent,
-    acc: 75,
-    status: "psn",
-  },
-  sing: {
-    kind: "status",
-    name: "Sing",
-    pp: 15,
-    type: "normal",
-    range: Range.Adjacent,
-    acc: 55,
-    status: "slp",
-    sound: true,
-  },
-  sleeppowder: {
-    kind: "status",
-    name: "Sleep Powder",
-    pp: 15,
-    type: "grass",
-    range: Range.Adjacent,
-    acc: 75,
-    status: "slp",
-  },
-  spore: {
-    kind: "status",
-    name: "Spore",
-    pp: 15,
-    type: "grass",
-    range: Range.Adjacent,
+    range: Range.AllAdjacentFoe,
+    power: 40,
     acc: 100,
-    status: "slp",
+    effect: [33.21 /* 85/256 */, [["spa", -1]]],
   },
-  stunspore: {
-    kind: "status",
-    name: "Stun Spore",
-    pp: 30,
-    type: "grass",
-    range: Range.Adjacent,
-    acc: 75,
-    status: "par",
-  },
-  thunderwave: {
-    kind: "status",
-    name: "Thunder Wave",
-    pp: 20,
-    type: "electric",
-    range: Range.Adjacent,
-    acc: 100,
-    status: "par",
-  },
-  toxic: {
-    kind: "status",
-    name: "Toxic",
-    pp: 15,
-    type: "poison",
-    range: Range.Adjacent,
-    acc: 85,
-    status: "tox",
-  },
-  // --
   acidarmor: {
     kind: "stage",
     name: "Acid Armor",
@@ -454,190 +98,6 @@ const internalMoveList = createMoveList({
     range: Range.Self,
     stages: [["spa", 2]],
   },
-  barrier: {
-    kind: "stage",
-    name: "Barrier",
-    pp: 30,
-    type: "psychic",
-    range: Range.Self,
-    stages: [["def", 2]],
-  },
-  defensecurl: {
-    kind: "stage",
-    name: "Defense Curl",
-    pp: 40,
-    type: "normal",
-    range: Range.Self,
-    stages: [["def", 1]],
-  },
-  doubleteam: {
-    kind: "stage",
-    name: "Double Team",
-    pp: 15,
-    type: "normal",
-    range: Range.Self,
-    stages: [["eva", 1]],
-  },
-  flash: {
-    kind: "stage",
-    name: "Flash",
-    pp: 20,
-    type: "normal",
-    range: Range.Adjacent,
-    acc: 70,
-    stages: [["acc", -1]],
-  },
-  growl: {
-    kind: "stage",
-    name: "Growl",
-    pp: 40,
-    type: "normal",
-    range: Range.Adjacent,
-    acc: 100,
-    stages: [["atk", -1]],
-    sound: true,
-  },
-  growth: {
-    kind: "stage",
-    name: "Growth",
-    pp: 40,
-    type: "normal",
-    range: Range.Self,
-    stages: [["spa", 1]],
-  },
-  harden: {
-    kind: "stage",
-    name: "Harden",
-    pp: 30,
-    type: "normal",
-    range: Range.Self,
-    stages: [["def", 1]],
-  },
-  kinesis: {
-    kind: "stage",
-    name: "Kinesis",
-    pp: 15,
-    type: "psychic",
-    range: Range.Adjacent,
-    acc: 80,
-    stages: [["acc", -1]],
-  },
-  leer: {
-    kind: "stage",
-    name: "Leer",
-    pp: 30,
-    type: "normal",
-    range: Range.Adjacent,
-    acc: 100,
-    stages: [["def", -1]],
-  },
-  meditate: {
-    kind: "stage",
-    name: "Meditate",
-    pp: 40,
-    type: "psychic",
-    range: Range.Self,
-    stages: [["atk", 1]],
-  },
-  minimize: {
-    kind: "stage",
-    name: "Minimize",
-    pp: 15,
-    type: "normal",
-    range: Range.Self,
-    stages: [["eva", +1]],
-  },
-  sandattack: {
-    kind: "stage",
-    name: "Sand-Attack",
-    pp: 15,
-    type: "normal",
-    range: Range.Adjacent,
-    acc: 100,
-    stages: [["acc", -1]],
-  },
-  screech: {
-    kind: "stage",
-    name: "Screech",
-    pp: 40,
-    type: "normal",
-    range: Range.Adjacent,
-    acc: 85,
-    stages: [["def", -2]],
-    sound: true,
-  },
-  sharpen: {
-    kind: "stage",
-    name: "Sharpen",
-    pp: 30,
-    type: "normal",
-    range: Range.Self,
-    stages: [["atk", 1]],
-  },
-  smokescreen: {
-    kind: "stage",
-    name: "Smokescreen",
-    pp: 20,
-    type: "normal",
-    range: Range.Adjacent,
-    acc: 100,
-    stages: [["acc", -1]],
-  },
-  stringshot: {
-    kind: "stage",
-    name: "String Shot",
-    pp: 40,
-    type: "bug",
-    range: Range.AllAdjacentFoe,
-    acc: 95,
-    stages: [["spe", -1]],
-  },
-  swordsdance: {
-    kind: "stage",
-    name: "Swords Dance",
-    pp: 30,
-    type: "normal",
-    range: Range.Self,
-    stages: [["atk", 2]],
-  },
-  tailwhip: {
-    kind: "stage",
-    name: "Tail Whip",
-    pp: 30,
-    type: "normal",
-    range: Range.Adjacent,
-    acc: 100,
-    stages: [["def", -1]],
-  },
-  withdraw: {
-    kind: "stage",
-    name: "Withdraw",
-    pp: 40,
-    type: "water",
-    range: Range.Self,
-    stages: [["def", 1]],
-  },
-  // --
-  absorb: {
-    kind: "damage",
-    name: "Absorb",
-    pp: 20,
-    type: "grass",
-    range: Range.Adjacent,
-    power: 20,
-    acc: 100,
-    kingsRock: true,
-  },
-  acid: {
-    kind: "damage",
-    name: "Acid",
-    pp: 30,
-    type: "poison",
-    range: Range.AllAdjacentFoe,
-    power: 40,
-    acc: 100,
-    effect: [33.21 /* 85/256 */, [["spa", -1]]],
-  },
   aurorabeam: {
     kind: "damage",
     name: "Aurora Beam",
@@ -658,6 +118,14 @@ const internalMoveList = createMoveList({
     acc: 85,
     flag: "multi",
     kingsRock: true,
+  },
+  barrier: {
+    kind: "stage",
+    name: "Barrier",
+    pp: 30,
+    type: "psychic",
+    range: Range.Self,
+    stages: [["def", 2]],
   },
   bide: {
     kind: "damage",
@@ -783,6 +251,14 @@ const internalMoveList = createMoveList({
     kingsRock: true,
     contact: true,
   },
+  confuseray: {
+    kind: "confuse",
+    name: "Confuse Ray",
+    pp: 10,
+    type: "ghost",
+    range: Range.Adjacent,
+    acc: 100,
+  },
   confusion: {
     kind: "damage",
     name: "Confusion",
@@ -803,6 +279,24 @@ const internalMoveList = createMoveList({
     acc: 100,
     effect: [33.21 /* 85/256 */, [["spe", -1]]],
     contact: true,
+  },
+  conversion: {
+    name: "Conversion",
+    pp: 30,
+    type: "normal",
+    range: Range.Adjacent,
+    exec(battle, user, [target]) {
+      user.v.types = [...target.v.types];
+      battle.event({
+        type: "conversion",
+        src: user.id,
+        target: target.id,
+        types: [...user.v.types],
+        volatiles: [{id: user.id, v: {types: [...user.v.types]}}],
+      });
+
+      return false;
+    },
   },
   counter: {
     kind: "damage",
@@ -861,6 +355,14 @@ const internalMoveList = createMoveList({
     kingsRock: true,
     contact: true,
   },
+  defensecurl: {
+    kind: "stage",
+    name: "Defense Curl",
+    pp: 40,
+    type: "normal",
+    range: Range.Self,
+    stages: [["def", 1]],
+  },
   dig: {
     kind: "damage",
     name: "Dig",
@@ -873,6 +375,38 @@ const internalMoveList = createMoveList({
     noSleepTalk: true,
     kingsRock: true,
     contact: true,
+  },
+  disable: {
+    name: "Disable",
+    pp: 20,
+    type: "normal",
+    range: Range.Adjacent,
+    acc: 55,
+    protect: true,
+    exec(battle, user, [target]) {
+      battle.gen1LastDamage = 0;
+
+      const options = [...target.base.moves.keys()].filter(i => target.base.pp[i] !== 0);
+      if (!options.length || target.v.disabled) {
+        battle.info(user, "fail_generic");
+        target.handleRage(battle);
+        return false;
+      } else if (!battle.checkAccuracy(this, user, target)) {
+        target.handleRage(battle);
+        return false;
+      }
+
+      const indexInMoves = battle.rng.choice(options)!;
+      target.v.disabled = {indexInMoves, turns: battle.gen.rng.disableTurns(battle)};
+      battle.event({
+        type: "disable",
+        src: target.id,
+        move: target.base.moves[indexInMoves],
+        volatiles: [{id: target.id, v: {flags: target.v.cflags}}],
+      });
+      target.handleRage(battle);
+      return false;
+    },
   },
   dizzypunch: {
     kind: "damage",
@@ -919,6 +453,14 @@ const internalMoveList = createMoveList({
     flag: "multi",
     kingsRock: true,
     contact: true,
+  },
+  doubleteam: {
+    kind: "stage",
+    name: "Double Team",
+    pp: 15,
+    type: "normal",
+    range: Range.Self,
+    stages: [["eva", 1]],
   },
   dragonrage: {
     kind: "damage",
@@ -1044,6 +586,15 @@ const internalMoveList = createMoveList({
     acc: 100,
     effect: [10.2 /* 26/256 */, "brn"],
   },
+  flash: {
+    kind: "stage",
+    name: "Flash",
+    pp: 20,
+    type: "normal",
+    range: Range.Adjacent,
+    acc: 70,
+    stages: [["acc", -1]],
+  },
   fly: {
     kind: "damage",
     name: "Fly",
@@ -1056,6 +607,15 @@ const internalMoveList = createMoveList({
     noSleepTalk: true,
     kingsRock: true,
     contact: true,
+  },
+  focusenergy: {
+    kind: "volatile",
+    name: "Focus Energy",
+    pp: 30,
+    type: "normal",
+    range: Range.Self,
+    flag: VF.focusEnergy,
+    noAssist: true,
   },
   furyattack: {
     kind: "damage",
@@ -1081,6 +641,33 @@ const internalMoveList = createMoveList({
     kingsRock: true,
     contact: true,
   },
+  glare: {
+    kind: "status",
+    name: "Glare",
+    pp: 30,
+    type: "normal",
+    range: Range.Adjacent,
+    acc: 75,
+    status: "par",
+  },
+  growl: {
+    kind: "stage",
+    name: "Growl",
+    pp: 40,
+    type: "normal",
+    range: Range.Adjacent,
+    acc: 100,
+    stages: [["atk", -1]],
+    sound: true,
+  },
+  growth: {
+    kind: "stage",
+    name: "Growth",
+    pp: 40,
+    type: "normal",
+    range: Range.Self,
+    stages: [["spa", 1]],
+  },
   guillotine: {
     kind: "damage",
     name: "Guillotine",
@@ -1101,6 +688,54 @@ const internalMoveList = createMoveList({
     range: Range.Any,
     power: 40,
     acc: 100,
+  },
+  harden: {
+    kind: "stage",
+    name: "Harden",
+    pp: 30,
+    type: "normal",
+    range: Range.Self,
+    stages: [["def", 1]],
+  },
+  haze: {
+    name: "Haze",
+    pp: 30,
+    type: "ice",
+    range: Range.All,
+    exec(battle, user, targets) {
+      for (const target of targets) {
+        target.v.clearFlag(VF.lightScreen | VF.reflect | VF.mist | VF.focusEnergy);
+        for (const k of stageKeys) {
+          target.v.stages[k] = 0;
+        }
+        target.v.counter = 0;
+        target.v.confusion = 0;
+        target.v.disabled = undefined;
+        target.v.seededBy = undefined;
+        target.v.stats = {...target.base.stats};
+        if (target === user) {
+          continue;
+        }
+
+        if (target.base.status === "frz" || target.base.status === "slp") {
+          target.base.sleepTurns = 0;
+          target.v.hazed = true;
+        }
+
+        target.base.status = undefined;
+      }
+
+      if (user.base.status === "tox") {
+        user.base.status = "psn";
+      }
+
+      battle.info(
+        user,
+        "haze",
+        targets.map(t => ({id: user.id, v: t.getClientVolatiles(user.base, battle)})),
+      );
+      return false;
+    },
   },
   headbutt: {
     kind: "damage",
@@ -1179,6 +814,15 @@ const internalMoveList = createMoveList({
     effect: [10.2 /* 26/256 */, "flinch"],
     contact: true,
   },
+  hypnosis: {
+    kind: "status",
+    name: "Hypnosis",
+    pp: 20,
+    type: "psychic",
+    range: Range.Adjacent,
+    acc: 60,
+    status: "slp",
+  },
   icebeam: {
     kind: "damage",
     name: "Ice Beam",
@@ -1224,6 +868,15 @@ const internalMoveList = createMoveList({
     kingsRock: true,
     contact: true,
   },
+  kinesis: {
+    kind: "stage",
+    name: "Kinesis",
+    pp: 15,
+    type: "psychic",
+    range: Range.Adjacent,
+    acc: 80,
+    stages: [["acc", -1]],
+  },
   leechlife: {
     kind: "damage",
     name: "Leech Life",
@@ -1236,6 +889,37 @@ const internalMoveList = createMoveList({
     kingsRock: true,
     contact: true,
   },
+  leechseed: {
+    name: "Leech Seed",
+    pp: 15,
+    type: "grass",
+    range: Range.Adjacent,
+    acc: 90,
+    protect: true,
+    exec(battle, user, [target]) {
+      if (target.v.types.includes(this.type)) {
+        return battle.info(target, "immune");
+      } else if (target.v.seededBy) {
+        return battle.info(target, "fail_generic");
+      } else if (battle.gen.id >= 2 && target.v.substitute) {
+        return battle.info(target, "fail_generic");
+      } else if (!battle.checkAccuracy(this, user, target)) {
+        return;
+      }
+
+      target.v.seededBy = user;
+      battle.info(target, "cSeeded", [{id: target.id, v: {flags: target.v.cflags}}]);
+    },
+  },
+  leer: {
+    kind: "stage",
+    name: "Leer",
+    pp: 30,
+    type: "normal",
+    range: Range.Adjacent,
+    acc: 100,
+    stages: [["def", -1]],
+  },
   lick: {
     kind: "damage",
     name: "Lick",
@@ -1247,6 +931,23 @@ const internalMoveList = createMoveList({
     effect: [30.1 /* 77/256 */, "par"],
     contact: true,
   },
+  lightscreen: {
+    kind: "volatile",
+    name: "Light Screen",
+    pp: 30,
+    type: "psychic",
+    range: Range.Self,
+    flag: VF.lightScreen,
+  },
+  lovelykiss: {
+    kind: "status",
+    name: "Lovely Kiss",
+    pp: 10,
+    type: "normal",
+    range: Range.Adjacent,
+    acc: 75,
+    status: "slp",
+  },
   lowkick: {
     kind: "damage",
     name: "Low Kick",
@@ -1257,6 +958,14 @@ const internalMoveList = createMoveList({
     acc: 90,
     effect: [30.1 /* 77/256 */, "flinch"],
     contact: true,
+  },
+  meditate: {
+    kind: "stage",
+    name: "Meditate",
+    pp: 40,
+    type: "psychic",
+    range: Range.Self,
+    stages: [["atk", 1]],
   },
   megadrain: {
     kind: "damage",
@@ -1290,6 +999,85 @@ const internalMoveList = createMoveList({
     acc: 85,
     kingsRock: true,
     contact: true,
+  },
+  metronome: {
+    name: "Metronome",
+    pp: 10,
+    type: "normal",
+    range: Range.Self,
+    noEncore: true,
+    noAssist: true,
+    exec(battle, user): bool {
+      battle.gen1LastDamage = 0;
+      const moves = Object.entries(battle.gen.moveList)
+        .filter(([, move]) => !move.noMetronome && move.idx! <= battle.gen.lastMoveIdx)
+        .filter(
+          ([id]) => (battle.gen.id !== 2 && battle.gen.id !== 4) || !user.base.moves.includes(id),
+        )
+        .map(([, move]) => move);
+      return battle.callMove(battle.rng.choice(moves)!, user);
+    },
+  },
+  mimic: {
+    name: "Mimic",
+    pp: 10,
+    type: "normal",
+    range: Range.Adjacent,
+    acc: 100,
+    noEncore: true,
+    noSleepTalk: true,
+    noAssist: true,
+    exec(battle, user, [target], indexInMoves) {
+      if (!battle.checkAccuracy(this, user, target)) {
+        return false;
+      }
+
+      user.v.mimic = {
+        indexInMoves: indexInMoves ?? user.v.lastMoveIndex ?? -1,
+        move: battle.rng.choice(target.base.moves)!,
+      };
+
+      battle.event({
+        type: "mimic",
+        src: user.id,
+        move: user.v.mimic.move,
+      });
+      return false;
+    },
+  },
+  minimize: {
+    kind: "stage",
+    name: "Minimize",
+    pp: 15,
+    type: "normal",
+    range: Range.Self,
+    stages: [["eva", +1]],
+  },
+  mirrormove: {
+    name: "Mirror Move",
+    pp: 20,
+    type: "flying",
+    range: Range.Self,
+    noEncore: true,
+    noAssist: true,
+    exec(battle, user) {
+      battle.gen1LastDamage = 0;
+      const lastHitBy = user.v.lastHitBy;
+      if (user.base.transformed && battle.gen.id === 2) {
+        return battle.info(user, "fail_generic");
+      } else if (!lastHitBy || lastHitBy.user.v.lastMove !== lastHitBy.move) {
+        return battle.info(user, "fail_generic");
+      }
+      return battle.callMove(lastHitBy.move, user);
+    },
+  },
+  mist: {
+    kind: "volatile",
+    name: "Mist",
+    pp: 30,
+    type: "ice",
+    range: Range.Self,
+    flag: VF.mist,
   },
   nightshade: {
     kind: "damage",
@@ -1346,6 +1134,24 @@ const internalMoveList = createMoveList({
     acc: 85,
     flag: "multi",
     kingsRock: true,
+  },
+  poisongas: {
+    kind: "status",
+    name: "Poison Gas",
+    pp: 40,
+    type: "poison",
+    range: Range.Adjacent,
+    acc: 55,
+    status: "psn",
+  },
+  poisonpowder: {
+    kind: "status",
+    name: "Poison Powder",
+    pp: 35,
+    type: "poison",
+    range: Range.Adjacent,
+    acc: 75,
+    status: "psn",
   },
   poisonsting: {
     kind: "damage",
@@ -1449,6 +1255,40 @@ const internalMoveList = createMoveList({
     noSleepTalk: true,
     kingsRock: true,
   },
+  recover: {
+    kind: "recover",
+    name: "Recover",
+    pp: 20,
+    type: "normal",
+    range: Range.Self,
+    why: "recover",
+  },
+  reflect: {
+    kind: "volatile",
+    name: "Reflect",
+    pp: 20,
+    type: "psychic",
+    range: Range.Self,
+    flag: VF.reflect,
+  },
+  rest: {
+    kind: "recover",
+    name: "Rest",
+    pp: 10,
+    type: "psychic",
+    range: Range.Self,
+    why: "rest",
+  },
+  roar: {
+    kind: "fail",
+    name: "Roar",
+    pp: 20,
+    acc: 100,
+    type: "normal",
+    range: Range.Adjacent,
+    why: "whirlwind",
+    sound: true,
+  },
   rockslide: {
     kind: "damage",
     name: "Rock Slide",
@@ -1479,6 +1319,15 @@ const internalMoveList = createMoveList({
     effect: [30.1 /* 77/256 */, "flinch"],
     contact: true,
   },
+  sandattack: {
+    kind: "stage",
+    name: "Sand-Attack",
+    pp: 15,
+    type: "normal",
+    range: Range.Adjacent,
+    acc: 100,
+    stages: [["acc", -1]],
+  },
   selfdestruct: {
     kind: "damage",
     name: "Self-Destruct",
@@ -1502,6 +1351,16 @@ const internalMoveList = createMoveList({
     kingsRock: true,
     contact: true,
   },
+  screech: {
+    kind: "stage",
+    name: "Screech",
+    pp: 40,
+    type: "normal",
+    range: Range.Adjacent,
+    acc: 85,
+    stages: [["def", -2]],
+    sound: true,
+  },
   seismictoss: {
     kind: "damage",
     name: "Seismic Toss",
@@ -1513,6 +1372,24 @@ const internalMoveList = createMoveList({
     kingsRock: true,
     contact: true,
     getDamage: (_, user) => user.base.level,
+  },
+  sharpen: {
+    kind: "stage",
+    name: "Sharpen",
+    pp: 30,
+    type: "normal",
+    range: Range.Self,
+    stages: [["atk", 1]],
+  },
+  sing: {
+    kind: "status",
+    name: "Sing",
+    pp: 15,
+    type: "normal",
+    range: Range.Adjacent,
+    acc: 55,
+    status: "slp",
+    sound: true,
   },
   skullbash: {
     kind: "damage",
@@ -1562,6 +1439,15 @@ const internalMoveList = createMoveList({
     kingsRock: true,
     contact: true,
   },
+  sleeppowder: {
+    kind: "status",
+    name: "Sleep Powder",
+    pp: 15,
+    type: "grass",
+    range: Range.Adjacent,
+    acc: 75,
+    status: "slp",
+  },
   sludge: {
     kind: "damage",
     name: "Sludge",
@@ -1581,6 +1467,23 @@ const internalMoveList = createMoveList({
     power: 20,
     acc: 70,
     effect: [40.4 /* 103/256 */, "psn"],
+  },
+  smokescreen: {
+    kind: "stage",
+    name: "Smokescreen",
+    pp: 20,
+    type: "normal",
+    range: Range.Adjacent,
+    acc: 100,
+    stages: [["acc", -1]],
+  },
+  softboiled: {
+    kind: "recover",
+    name: "Softboiled",
+    pp: 10,
+    type: "normal",
+    range: Range.Self,
+    why: "recover",
   },
   solarbeam: {
     kind: "damage",
@@ -1615,6 +1518,23 @@ const internalMoveList = createMoveList({
     acc: 100,
     flag: "multi",
     kingsRock: true,
+  },
+  splash: {
+    kind: "fail",
+    name: "Splash",
+    pp: 40,
+    type: "normal",
+    range: Range.Self,
+    why: "splash",
+  },
+  spore: {
+    kind: "status",
+    name: "Spore",
+    pp: 15,
+    type: "grass",
+    range: Range.Adjacent,
+    acc: 100,
+    status: "slp",
   },
   stomp: {
     kind: "damage",
@@ -1654,6 +1574,24 @@ const internalMoveList = createMoveList({
     kingsRock: true,
     contact: true,
   },
+  stringshot: {
+    kind: "stage",
+    name: "String Shot",
+    pp: 40,
+    type: "bug",
+    range: Range.AllAdjacentFoe,
+    acc: 95,
+    stages: [["spe", -1]],
+  },
+  stunspore: {
+    kind: "status",
+    name: "Stun Spore",
+    pp: 30,
+    type: "grass",
+    range: Range.Adjacent,
+    acc: 75,
+    status: "par",
+  },
   submission: {
     kind: "damage",
     name: "Submission",
@@ -1666,6 +1604,25 @@ const internalMoveList = createMoveList({
     kingsRock: true,
     contact: true,
   },
+  substitute: {
+    name: "Substitute",
+    pp: 10,
+    type: "normal",
+    range: Range.Self,
+    exec(battle, user) {
+      const hp = Math.floor(user.base.stats.hp / 4);
+      if (user.v.substitute) {
+        return battle.info(user, "has_substitute");
+      } else if (!battle.gen.canSubstitute(user, hp)) {
+        return battle.info(user, "cant_substitute");
+      }
+
+      user.v.substitute = battle.gen.id === 1 ? hp + 1 : hp;
+      user.damage(hp, user, battle, false, "substitute", true, undefined, [
+        {id: user.id, v: {flags: user.v.cflags}},
+      ]);
+    },
+  },
   superfang: {
     kind: "damage",
     name: "Super Fang",
@@ -1677,6 +1634,15 @@ const internalMoveList = createMoveList({
     kingsRock: true,
     contact: true,
     getDamage: (_battle, _, target) => Math.max(Math.floor(target.base.hp / 2), 1),
+  },
+  supersonic: {
+    kind: "confuse",
+    name: "Supersonic",
+    pp: 20,
+    type: "normal",
+    range: Range.Adjacent,
+    acc: 55,
+    sound: true,
   },
   surf: {
     kind: "damage",
@@ -1698,6 +1664,14 @@ const internalMoveList = createMoveList({
     range: Range.AllAdjacentFoe,
     power: 60,
     kingsRock: true,
+  },
+  swordsdance: {
+    kind: "stage",
+    name: "Swords Dance",
+    pp: 30,
+    type: "normal",
+    range: Range.Self,
+    stages: [["atk", 2]],
   },
   tackle: {
     kind: "damage",
@@ -1722,6 +1696,23 @@ const internalMoveList = createMoveList({
     kingsRock: true,
     contact: true,
   },
+  tailwhip: {
+    kind: "stage",
+    name: "Tail Whip",
+    pp: 30,
+    type: "normal",
+    range: Range.Adjacent,
+    acc: 100,
+    stages: [["def", -1]],
+  },
+  teleport: {
+    kind: "fail",
+    name: "Teleport",
+    pp: 20,
+    type: "psychic",
+    range: Range.Self,
+    why: "fail_generic",
+  },
   thrash: {
     kind: "damage",
     name: "Thrash",
@@ -1742,6 +1733,16 @@ const internalMoveList = createMoveList({
     range: Range.Adjacent,
     power: 120,
     acc: 70,
+    effect: [10.2 /* 26/256 */, "par"],
+  },
+  thunderbolt: {
+    kind: "damage",
+    name: "Thunderbolt",
+    pp: 15,
+    type: "electric",
+    range: Range.Adjacent,
+    power: 95,
+    acc: 100,
     effect: [10.2 /* 26/256 */, "par"],
   },
   thunderpunch: {
@@ -1765,15 +1766,34 @@ const internalMoveList = createMoveList({
     acc: 100,
     effect: [10.2 /* 26/256 */, "par"],
   },
-  thunderbolt: {
-    kind: "damage",
-    name: "Thunderbolt",
-    pp: 15,
+  thunderwave: {
+    kind: "status",
+    name: "Thunder Wave",
+    pp: 20,
     type: "electric",
     range: Range.Adjacent,
-    power: 95,
     acc: 100,
-    effect: [10.2 /* 26/256 */, "par"],
+    status: "par",
+  },
+  toxic: {
+    kind: "status",
+    name: "Toxic",
+    pp: 15,
+    type: "poison",
+    range: Range.Adjacent,
+    acc: 85,
+    status: "tox",
+  },
+  transform: {
+    name: "Transform",
+    pp: 10,
+    type: "normal",
+    range: Range.Adjacent,
+    noEncore: true,
+    exec(battle, user, [target]) {
+      battle.gen1LastDamage = 0;
+      user.transform(battle, target);
+    },
   },
   triattack: {
     kind: "damage",
@@ -1839,6 +1859,15 @@ const internalMoveList = createMoveList({
     kingsRock: true,
     contact: true,
   },
+  whirlwind: {
+    kind: "fail",
+    name: "Whirlwind",
+    pp: 20,
+    acc: 85,
+    type: "normal",
+    range: Range.Adjacent,
+    why: "whirlwind",
+  },
   wingattack: {
     kind: "damage",
     name: "Wing Attack",
@@ -1849,6 +1878,14 @@ const internalMoveList = createMoveList({
     acc: 100,
     kingsRock: true,
     contact: true,
+  },
+  withdraw: {
+    kind: "stage",
+    name: "Withdraw",
+    pp: 40,
+    type: "water",
+    range: Range.Self,
+    stages: [["def", 1]],
   },
   wrap: {
     kind: "damage",
@@ -1861,43 +1898,30 @@ const internalMoveList = createMoveList({
     flag: "trap",
     contact: true,
   },
-  // --
-  roar: {
-    kind: "fail",
-    name: "Roar",
-    pp: 20,
-    acc: 100,
-    type: "normal",
-    range: Range.Adjacent,
-    why: "whirlwind",
-    sound: true,
-  },
-  splash: {
-    kind: "fail",
-    name: "Splash",
-    pp: 40,
-    type: "normal",
-    range: Range.Self,
-    why: "splash",
-  },
-  teleport: {
-    kind: "fail",
-    name: "Teleport",
-    pp: 20,
-    type: "psychic",
-    range: Range.Self,
-    why: "fail_generic",
-  },
-  whirlwind: {
-    kind: "fail",
-    name: "Whirlwind",
-    pp: 20,
-    acc: 85,
-    type: "normal",
-    range: Range.Adjacent,
-    why: "whirlwind",
-  },
   // >== Generation 2
+  aeroblast: {
+    kind: "damage",
+    name: "Aeroblast",
+    pp: 5,
+    type: "flying",
+    range: Range.Any,
+    power: 100,
+    acc: 95,
+    flag: "high_crit",
+    kingsRock: true,
+  },
+  ancientpower: {
+    kind: "damage",
+    name: "Ancient Power",
+    pp: 5,
+    type: "rock",
+    range: Range.Adjacent,
+    power: 60,
+    acc: 100,
+    // prettier-ignore
+    effect: [10, [["atk", +1], ["def", +1], ["spa", +1], ["spd", +1], ["spe", +1]], true],
+    contact: true,
+  },
   attract: {
     name: "Attract",
     pp: 15,
@@ -1939,6 +1963,17 @@ const internalMoveList = createMoveList({
       battle.event({type: "baton_pass", src: user.id});
     },
   },
+  beatup: {
+    kind: "damage",
+    name: "Beat Up",
+    pp: 10,
+    type: "dark",
+    range: Range.Adjacent,
+    power: 10,
+    acc: 100,
+    kingsRock: true,
+    flag: "beatup",
+  },
   bellydrum: {
     name: "Belly Drum",
     pp: 10,
@@ -1977,6 +2012,26 @@ const internalMoveList = createMoveList({
       );
     },
   },
+  bonerush: {
+    kind: "damage",
+    name: "Bone Rush",
+    pp: 10,
+    type: "ground",
+    range: Range.Adjacent,
+    power: 25,
+    acc: 90,
+    flag: "multi",
+    kingsRock: true,
+  },
+  charm: {
+    kind: "stage",
+    name: "Charm",
+    pp: 20,
+    type: "normal",
+    range: Range.Adjacent,
+    acc: 100,
+    stages: [["atk", -2]],
+  },
   conversion2: {
     name: "Conversion2",
     pp: 30,
@@ -2006,6 +2061,39 @@ const internalMoveList = createMoveList({
         volatiles: [v],
       });
     },
+  },
+  cottonspore: {
+    kind: "stage",
+    name: "Cotton Spore",
+    pp: 40,
+    type: "grass",
+    // TODO: check if Any or Adjacent in Gen V
+    range: Range.Any,
+    acc: 100,
+    stages: [["spe", -2]],
+  },
+  crosschop: {
+    kind: "damage",
+    name: "Cross Chop",
+    pp: 5,
+    type: "fight",
+    range: Range.Adjacent,
+    power: 100,
+    acc: 80,
+    flag: "high_crit",
+    kingsRock: true,
+    contact: true,
+  },
+  crunch: {
+    kind: "damage",
+    name: "Crunch",
+    pp: 15,
+    type: "dark",
+    range: Range.Adjacent,
+    power: 80,
+    acc: 100,
+    effect: [20, [["spd", -1]]],
+    contact: true,
   },
   curse: {
     name: "Curse",
@@ -2049,6 +2137,47 @@ const internalMoveList = createMoveList({
       }
     },
   },
+  detect: {
+    kind: "protect",
+    name: "Detect",
+    pp: 5,
+    priority: +3,
+    type: "fight",
+    range: Range.Self,
+    noMetronome: true,
+    noAssist: true,
+  },
+  destinybond: {
+    kind: "volatile",
+    name: "Destiny Bond",
+    pp: 5,
+    type: "ghost",
+    range: Range.Self,
+    noMetronome: true,
+    flag: VF.destinyBond,
+    noAssist: true,
+  },
+  dragonbreath: {
+    kind: "damage",
+    name: "DragonBreath",
+    pp: 20,
+    type: "dragon",
+    range: Range.Adjacent,
+    power: 60,
+    acc: 100,
+    effect: [30, "par"],
+  },
+  dynamicpunch: {
+    kind: "damage",
+    name: "DynamicPunch",
+    pp: 5,
+    type: "fight",
+    range: Range.Adjacent,
+    power: 100,
+    acc: 50,
+    effect: [99.6 /* 255/256 */, "confusion"],
+    contact: true,
+  },
   encore: {
     name: "Encore",
     pp: 5,
@@ -2073,292 +2202,6 @@ const internalMoveList = createMoveList({
       battle.info(target, "cEncore", [{id: target.id, v: {flags: target.v.cflags}}]);
     },
   },
-  foresight: {
-    kind: "foresight",
-    name: "Foresight",
-    pp: 40,
-    acc: 100,
-    type: "normal",
-    range: Range.Adjacent,
-    protect: true,
-  },
-  futuresight: {
-    kind: "futuresight",
-    name: "Future Sight",
-    pp: 15,
-    power: 80,
-    acc: 90,
-    type: "psychic",
-    range: Range.Adjacent,
-    msg: "future_sight",
-    release: "future_sight_release",
-  },
-  healbell: {
-    kind: "healbell",
-    name: "Heal Bell",
-    pp: 5,
-    type: "normal",
-    // user and all allies
-    range: Range.Self,
-    sound: true,
-    why: "heal_bell",
-  },
-  nightmare: {
-    name: "Nightmare",
-    pp: 15,
-    type: "ghost",
-    range: Range.Adjacent,
-    exec(battle, user, [target]) {
-      if (target.v.hasFlag(VF.nightmare) || target.base.status !== "slp") {
-        return battle.info(user, "fail_generic");
-      } else if (!battle.checkAccuracy(this, user, target)) {
-        return;
-      }
-
-      battle.info(target, "nightmare", [target.setFlag(VF.nightmare)]);
-    },
-  },
-  painsplit: {
-    name: "Pain Split",
-    pp: 20,
-    acc: 100,
-    type: "ghost",
-    range: Range.Adjacent,
-    exec(battle, user, [target]) {
-      if (target.v.substitute) {
-        return battle.info(user, "fail_generic");
-      } else if (!battle.checkAccuracy(this, user, target)) {
-        return;
-      }
-
-      battle.info(user, "pain_split");
-
-      const hp = idiv(user.base.hp + target.base.hp, 2);
-      if (user.base.hp < hp) {
-        user.recover(hp - user.base.hp, user, battle, "pain_split");
-      } else {
-        user.damage(user.base.hp - hp, user, battle, false, "pain_split", true);
-      }
-
-      if (target.base.hp < hp) {
-        target.recover(hp - target.base.hp, user, battle, "pain_split");
-      } else {
-        target.damage(target.base.hp - hp, user, battle, false, "pain_split", true);
-      }
-    },
-  },
-  perishsong: {
-    name: "Perish Song",
-    pp: 5,
-    type: "normal",
-    range: Range.All,
-    sound: true,
-    exec(battle, user, targets) {
-      for (const poke of targets) {
-        if (poke.v.ability === "soundproof") {
-          battle.ability(poke);
-          battle.info(poke, "immune");
-          continue;
-        }
-
-        if (!poke.v.perishCount) {
-          poke.v.perishCount = 4;
-        }
-      }
-      battle.info(
-        user,
-        "perish_song",
-        targets.map(poke => ({id: poke.id, v: {perishCount: poke.v.perishCount}})),
-      );
-    },
-  },
-  psychup: {
-    name: "Psych Up",
-    pp: 10,
-    type: "normal",
-    range: Range.Adjacent,
-    exec(battle, user, [target]) {
-      if (Object.values(target.v.stages).every(v => v === 0)) {
-        return battle.info(user, "fail_generic");
-      } else if (!battle.checkAccuracy(this, user, target)) {
-        return;
-      }
-
-      user.v.stages = {...target.v.stages};
-      for (const stat of stageStatKeys) {
-        user.recalculateStat(battle, stat, false);
-      }
-      battle.event({
-        type: "psych_up",
-        src: user.id,
-        target: target.id,
-        volatiles: [
-          {id: user.id, v: {stats: user.clientStats(battle), stages: {...user.v.stages}}},
-        ],
-      });
-    },
-  },
-  sketch: {
-    name: "Sketch",
-    pp: 1,
-    type: "normal",
-    range: Range.Adjacent,
-    noMetronome: true,
-    noEncore: true,
-    noAssist: true,
-    exec(battle, user, [target], moveIndex) {
-      if (!battle.checkAccuracy(this, user, target)) {
-        return;
-      }
-
-      if (moveIndex === undefined) {
-        // called by sleep talk
-        moveIndex = user.base.moves.indexOf("sketch");
-        // TODO: call by mirror move? is that even possible
-        if (moveIndex === -1) {
-          console.warn("sketch called with no moveIndex: ", user);
-          return battle.info(user, "fail_generic");
-        }
-      }
-
-      if (!target.v.lastMove) {
-        return battle.info(user, "fail_generic");
-      }
-
-      const id = battle.moveIdOf(target.v.lastMove)!;
-      const idx = target.base.moves.indexOf(id);
-      // Fail for struggle, metronome, mirror move, sleep talk
-      if (
-        idx === -1 ||
-        target.v.lastMove === this ||
-        target.v.lastMove.noEncore ||
-        user.base.moves.includes(id)
-      ) {
-        return battle.info(user, "fail_generic");
-      }
-
-      user.base.moves[moveIndex] = id;
-      user.base.pp[moveIndex] = battle.gen.getMaxPP(target.v.lastMove);
-      battle.event({type: "sketch", src: user.id, move: id});
-    },
-  },
-  sleeptalk: {
-    name: "Sleep Talk",
-    pp: 10,
-    type: "normal",
-    range: Range.Self,
-    noMetronome: true,
-    noEncore: true,
-    sleepOnly: true,
-    whileAsleep: true,
-    noSleepTalk: true,
-    noAssist: true,
-    exec(battle, user) {
-      const m = battle.rng.choice(user.base.moves.filter(m => !battle.gen.moveList[m].noSleepTalk));
-      if (!m) {
-        return battle.info(user, "fail_generic");
-      }
-
-      // TODO: https://bulbapedia.bulbagarden.net/wiki/Sleep_Talk_(move)
-      // If Sleep Talk calls Metronome or Mirror Move (which are selectable by Sleep Talk only in
-      // this generation) and thus in turn calls a two-turn move, the move will fail.
-      return battle.callMove(battle.gen.moveList[m], user);
-    },
-  },
-  spikes: {
-    name: "Spikes",
-    pp: 20,
-    type: "ground",
-    range: Range.Field,
-    exec(battle, user) {
-      const target = battle.opponentOf(user.owner);
-      if (target.spikes) {
-        return battle.info(user, "fail_generic");
-      }
-
-      battle.event({type: "spikes", src: user.id, player: target.id, spin: false});
-      target.spikes++;
-    },
-  },
-  spite: {
-    name: "Spite",
-    pp: 10,
-    acc: 100,
-    type: "ghost",
-    range: Range.Adjacent,
-    protect: true,
-    exec(battle, user, [target]) {
-      if (!battle.checkAccuracy(this, user, target)) {
-        return;
-      } else if (!target.v.lastMove) {
-        return battle.info(user, "fail_generic");
-      }
-      const id = battle.moveIdOf(target.v.lastMove)!;
-      const idx = target.base.moves.indexOf(id);
-      // Fail for struggle, metronome, mirror move, sleep talk unless it called a move we already
-      // know (which metronome cant in gen 2)
-      if (idx === -1 || !target.base.pp[idx]) {
-        return battle.info(user, "fail_generic");
-      }
-
-      const amount = Math.min(battle.rng.int(2, 5), target.base.pp[idx]);
-      target.base.pp[idx] -= amount;
-      battle.event({type: "spite", src: target.id, move: id, amount});
-    },
-  },
-  swagger: {
-    kind: "swagger",
-    name: "Swagger",
-    pp: 15,
-    acc: 90,
-    type: "normal",
-    range: Range.Adjacent,
-    protect: true,
-    stages: [["atk", +2]],
-  },
-  // --
-  lockon: {
-    kind: "lockOn",
-    name: "Lock On",
-    pp: 5,
-    type: "normal",
-    range: Range.Adjacent,
-    acc: 100,
-  },
-  mindreader: {
-    kind: "lockOn",
-    name: "Mind Reader",
-    pp: 5,
-    type: "normal",
-    range: Range.Adjacent,
-    acc: 100,
-  },
-  // --
-  meanlook: {
-    kind: "noSwitch",
-    name: "Mean Look",
-    pp: 5,
-    type: "normal",
-    range: Range.Adjacent,
-  },
-  spiderweb: {
-    kind: "noSwitch",
-    name: "Spider Web",
-    pp: 10,
-    type: "bug",
-    range: Range.Adjacent,
-  },
-  // --
-  detect: {
-    kind: "protect",
-    name: "Detect",
-    pp: 5,
-    priority: +3,
-    type: "fight",
-    range: Range.Self,
-    noMetronome: true,
-    noAssist: true,
-  },
   endure: {
     kind: "protect",
     name: "Endure",
@@ -2369,233 +2212,6 @@ const internalMoveList = createMoveList({
     noMetronome: true,
     endure: true,
     noAssist: true,
-  },
-  protect: {
-    kind: "protect",
-    name: "Protect",
-    pp: 10,
-    priority: +3,
-    type: "normal",
-    range: Range.Self,
-    noMetronome: true,
-    noAssist: true,
-  },
-  // --
-  milkdrink: {
-    kind: "recover",
-    name: "Milk Drink",
-    pp: 10,
-    type: "normal",
-    range: Range.Self,
-    why: "recover",
-  },
-  moonlight: {
-    kind: "recover",
-    name: "Moonlight",
-    pp: 5,
-    type: "normal",
-    range: Range.Self,
-    why: "recover",
-    weather: true,
-  },
-  morningsun: {
-    kind: "recover",
-    name: "Morning Sun",
-    pp: 5,
-    type: "normal",
-    range: Range.Self,
-    why: "recover",
-    weather: true,
-  },
-  synthesis: {
-    kind: "recover",
-    name: "Synthesis",
-    pp: 5,
-    type: "grass",
-    range: Range.Self,
-    why: "recover",
-    weather: true,
-  },
-  // --
-  destinybond: {
-    kind: "volatile",
-    name: "Destiny Bond",
-    pp: 5,
-    type: "ghost",
-    range: Range.Self,
-    noMetronome: true,
-    flag: VF.destinyBond,
-    noAssist: true,
-  },
-  safeguard: {
-    kind: "screen",
-    name: "Safeguard",
-    pp: 25,
-    type: "normal",
-    range: Range.Field,
-    screen: "safeguard",
-  },
-  // --
-  raindance: {
-    kind: "weather",
-    weather: "rain",
-    name: "Rain Dance",
-    pp: 5,
-    type: "water",
-    range: Range.Field,
-  },
-  sandstorm: {
-    kind: "weather",
-    weather: "sand",
-    name: "Sandstorm",
-    pp: 10,
-    type: "rock",
-    range: Range.Field,
-  },
-  sunnyday: {
-    kind: "weather",
-    weather: "sun",
-    name: "Sunny Day",
-    pp: 5,
-    type: "fire",
-    range: Range.Field,
-  },
-  // --
-  sweetkiss: {
-    kind: "confuse",
-    name: "Sweet Kiss",
-    pp: 10,
-    type: "normal",
-    range: Range.Adjacent,
-    acc: 75,
-  },
-  // --
-  charm: {
-    kind: "stage",
-    name: "Charm",
-    pp: 20,
-    type: "normal",
-    range: Range.Adjacent,
-    acc: 100,
-    stages: [["atk", -2]],
-  },
-  cottonspore: {
-    kind: "stage",
-    name: "Cotton Spore",
-    pp: 40,
-    type: "grass",
-    // TODO: check if Any or Adjacent in Gen V
-    range: Range.Any,
-    acc: 100,
-    stages: [["spe", -2]],
-  },
-  scaryface: {
-    kind: "stage",
-    name: "Scary Face",
-    pp: 10,
-    type: "normal",
-    range: Range.Adjacent,
-    acc: 90,
-    stages: [["spe", -2]],
-  },
-  sweetscent: {
-    kind: "stage",
-    name: "Sweet Scent",
-    pp: 20,
-    type: "normal",
-    range: Range.AllAdjacentFoe,
-    acc: 100,
-    stages: [["eva", -1]],
-  },
-  // --
-  aeroblast: {
-    kind: "damage",
-    name: "Aeroblast",
-    pp: 5,
-    type: "flying",
-    range: Range.Any,
-    power: 100,
-    acc: 95,
-    flag: "high_crit",
-    kingsRock: true,
-  },
-  ancientpower: {
-    kind: "damage",
-    name: "Ancient Power",
-    pp: 5,
-    type: "rock",
-    range: Range.Adjacent,
-    power: 60,
-    acc: 100,
-    // prettier-ignore
-    effect: [10, [["atk", +1], ["def", +1], ["spa", +1], ["spd", +1], ["spe", +1]], true],
-    contact: true,
-  },
-  beatup: {
-    kind: "damage",
-    name: "Beat Up",
-    pp: 10,
-    type: "dark",
-    range: Range.Adjacent,
-    power: 10,
-    acc: 100,
-    kingsRock: true,
-    flag: "beatup",
-  },
-  bonerush: {
-    kind: "damage",
-    name: "Bone Rush",
-    pp: 10,
-    type: "ground",
-    range: Range.Adjacent,
-    power: 25,
-    acc: 90,
-    flag: "multi",
-    kingsRock: true,
-  },
-  crosschop: {
-    kind: "damage",
-    name: "Cross Chop",
-    pp: 5,
-    type: "fight",
-    range: Range.Adjacent,
-    power: 100,
-    acc: 80,
-    flag: "high_crit",
-    kingsRock: true,
-    contact: true,
-  },
-  crunch: {
-    kind: "damage",
-    name: "Crunch",
-    pp: 15,
-    type: "dark",
-    range: Range.Adjacent,
-    power: 80,
-    acc: 100,
-    effect: [20, [["spd", -1]]],
-    contact: true,
-  },
-  dragonbreath: {
-    kind: "damage",
-    name: "DragonBreath",
-    pp: 20,
-    type: "dragon",
-    range: Range.Adjacent,
-    power: 60,
-    acc: 100,
-    effect: [30, "par"],
-  },
-  dynamicpunch: {
-    kind: "damage",
-    name: "DynamicPunch",
-    pp: 5,
-    type: "fight",
-    range: Range.Adjacent,
-    power: 100,
-    acc: 50,
-    effect: [99.6 /* 255/256 */, "confusion"],
-    contact: true,
   },
   extremespeed: {
     kind: "damage",
@@ -2656,6 +2272,15 @@ const internalMoveList = createMoveList({
     selfThaw: true,
     contact: true,
   },
+  foresight: {
+    kind: "foresight",
+    name: "Foresight",
+    pp: 40,
+    acc: 100,
+    type: "normal",
+    range: Range.Adjacent,
+    protect: true,
+  },
   frustration: {
     kind: "damage",
     name: "Frustration",
@@ -2680,6 +2305,17 @@ const internalMoveList = createMoveList({
     kingsRock: true,
     contact: true,
   },
+  futuresight: {
+    kind: "futuresight",
+    name: "Future Sight",
+    pp: 15,
+    power: 80,
+    acc: 90,
+    type: "psychic",
+    range: Range.Adjacent,
+    msg: "future_sight",
+    release: "future_sight_release",
+  },
   gigadrain: {
     kind: "damage",
     name: "Giga Drain",
@@ -2690,6 +2326,16 @@ const internalMoveList = createMoveList({
     acc: 100,
     flag: "drain",
     kingsRock: true,
+  },
+  healbell: {
+    kind: "healbell",
+    name: "Heal Bell",
+    pp: 5,
+    type: "normal",
+    // user and all allies
+    range: Range.Self,
+    sound: true,
+    why: "heal_bell",
   },
   hiddenpower: {
     kind: "damage",
@@ -2732,6 +2378,14 @@ const internalMoveList = createMoveList({
     effect: [30, [["def", -1]]],
     contact: true,
   },
+  lockon: {
+    kind: "lockOn",
+    name: "Lock On",
+    pp: 5,
+    type: "normal",
+    range: Range.Adjacent,
+    acc: 100,
+  },
   machpunch: {
     kind: "damage",
     name: "Mach Punch",
@@ -2757,6 +2411,13 @@ const internalMoveList = createMoveList({
     punish: true,
     kingsRock: true,
   },
+  meanlook: {
+    kind: "noSwitch",
+    name: "Mean Look",
+    pp: 5,
+    type: "normal",
+    range: Range.Adjacent,
+  },
   megahorn: {
     kind: "damage",
     name: "Megahorn",
@@ -2778,6 +2439,22 @@ const internalMoveList = createMoveList({
     acc: 95,
     effect: [10, [["atk", +1]], true],
     contact: true,
+  },
+  milkdrink: {
+    kind: "recover",
+    name: "Milk Drink",
+    pp: 10,
+    type: "normal",
+    range: Range.Self,
+    why: "recover",
+  },
+  mindreader: {
+    kind: "lockOn",
+    name: "Mind Reader",
+    pp: 5,
+    type: "normal",
+    range: Range.Adjacent,
+    acc: 100,
   },
   mirrorcoat: {
     kind: "damage",
@@ -2803,6 +2480,24 @@ const internalMoveList = createMoveList({
       return user.v.retaliateDamage * 2;
     },
   },
+  moonlight: {
+    kind: "recover",
+    name: "Moonlight",
+    pp: 5,
+    type: "normal",
+    range: Range.Self,
+    why: "recover",
+    weather: true,
+  },
+  morningsun: {
+    kind: "recover",
+    name: "Morning Sun",
+    pp: 5,
+    type: "normal",
+    range: Range.Self,
+    why: "recover",
+    weather: true,
+  },
   mudslap: {
     kind: "damage",
     name: "Mud Slap",
@@ -2812,6 +2507,21 @@ const internalMoveList = createMoveList({
     power: 20,
     acc: 100,
     effect: [99.6 /* 255/256 */, [["acc", -1]]],
+  },
+  nightmare: {
+    name: "Nightmare",
+    pp: 15,
+    type: "ghost",
+    range: Range.Adjacent,
+    exec(battle, user, [target]) {
+      if (target.v.hasFlag(VF.nightmare) || target.base.status !== "slp") {
+        return battle.info(user, "fail_generic");
+      } else if (!battle.checkAccuracy(this, user, target)) {
+        return;
+      }
+
+      battle.info(target, "nightmare", [target.setFlag(VF.nightmare)]);
+    },
   },
   octazooka: {
     kind: "damage",
@@ -2835,6 +2545,60 @@ const internalMoveList = createMoveList({
     kingsRock: true,
     contact: true,
   },
+  painsplit: {
+    name: "Pain Split",
+    pp: 20,
+    acc: 100,
+    type: "ghost",
+    range: Range.Adjacent,
+    exec(battle, user, [target]) {
+      if (target.v.substitute) {
+        return battle.info(user, "fail_generic");
+      } else if (!battle.checkAccuracy(this, user, target)) {
+        return;
+      }
+
+      battle.info(user, "pain_split");
+
+      const hp = idiv(user.base.hp + target.base.hp, 2);
+      if (user.base.hp < hp) {
+        user.recover(hp - user.base.hp, user, battle, "pain_split");
+      } else {
+        user.damage(user.base.hp - hp, user, battle, false, "pain_split", true);
+      }
+
+      if (target.base.hp < hp) {
+        target.recover(hp - target.base.hp, user, battle, "pain_split");
+      } else {
+        target.damage(target.base.hp - hp, user, battle, false, "pain_split", true);
+      }
+    },
+  },
+  perishsong: {
+    name: "Perish Song",
+    pp: 5,
+    type: "normal",
+    range: Range.All,
+    sound: true,
+    exec(battle, user, targets) {
+      for (const poke of targets) {
+        if (poke.v.ability === "soundproof") {
+          battle.ability(poke);
+          battle.info(poke, "immune");
+          continue;
+        }
+
+        if (!poke.v.perishCount) {
+          poke.v.perishCount = 4;
+        }
+      }
+      battle.info(
+        user,
+        "perish_song",
+        targets.map(poke => ({id: poke.id, v: {perishCount: poke.v.perishCount}})),
+      );
+    },
+  },
   powdersnow: {
     kind: "damage",
     name: "Powder Snow",
@@ -2856,6 +2620,42 @@ const internalMoveList = createMoveList({
     flag: "present",
     kingsRock: true,
   },
+  protect: {
+    kind: "protect",
+    name: "Protect",
+    pp: 10,
+    priority: +3,
+    type: "normal",
+    range: Range.Self,
+    noMetronome: true,
+    noAssist: true,
+  },
+  psychup: {
+    name: "Psych Up",
+    pp: 10,
+    type: "normal",
+    range: Range.Adjacent,
+    exec(battle, user, [target]) {
+      if (Object.values(target.v.stages).every(v => v === 0)) {
+        return battle.info(user, "fail_generic");
+      } else if (!battle.checkAccuracy(this, user, target)) {
+        return;
+      }
+
+      user.v.stages = {...target.v.stages};
+      for (const stat of stageStatKeys) {
+        user.recalculateStat(battle, stat, false);
+      }
+      battle.event({
+        type: "psych_up",
+        src: user.id,
+        target: target.id,
+        volatiles: [
+          {id: user.id, v: {stats: user.clientStats(battle), stages: {...user.v.stages}}},
+        ],
+      });
+    },
+  },
   pursuit: {
     kind: "damage",
     name: "Pursuit",
@@ -2866,6 +2666,14 @@ const internalMoveList = createMoveList({
     acc: 100,
     kingsRock: true,
     contact: true,
+  },
+  raindance: {
+    kind: "weather",
+    weather: "rain",
+    name: "Rain Dance",
+    pp: 5,
+    type: "water",
+    range: Range.Field,
   },
   rapidspin: {
     kind: "damage",
@@ -2938,6 +2746,31 @@ const internalMoveList = createMoveList({
     effect: [50, "brn"],
     selfThaw: true,
   },
+  safeguard: {
+    kind: "screen",
+    name: "Safeguard",
+    pp: 25,
+    type: "normal",
+    range: Range.Field,
+    screen: "safeguard",
+  },
+  sandstorm: {
+    kind: "weather",
+    weather: "sand",
+    name: "Sandstorm",
+    pp: 10,
+    type: "rock",
+    range: Range.Field,
+  },
+  scaryface: {
+    kind: "stage",
+    name: "Scary Face",
+    pp: 10,
+    type: "normal",
+    range: Range.Adjacent,
+    acc: 90,
+    stages: [["spe", -2]],
+  },
   shadowball: {
     kind: "damage",
     name: "Shadow Ball",
@@ -2947,6 +2780,73 @@ const internalMoveList = createMoveList({
     power: 80,
     acc: 100,
     effect: [20, [["spd", -1]]],
+  },
+  sketch: {
+    name: "Sketch",
+    pp: 1,
+    type: "normal",
+    range: Range.Adjacent,
+    noMetronome: true,
+    noEncore: true,
+    noAssist: true,
+    exec(battle, user, [target], moveIndex) {
+      if (!battle.checkAccuracy(this, user, target)) {
+        return;
+      }
+
+      if (moveIndex === undefined) {
+        // called by sleep talk
+        moveIndex = user.base.moves.indexOf("sketch");
+        // TODO: call by mirror move? is that even possible
+        if (moveIndex === -1) {
+          console.warn("sketch called with no moveIndex: ", user);
+          return battle.info(user, "fail_generic");
+        }
+      }
+
+      if (!target.v.lastMove) {
+        return battle.info(user, "fail_generic");
+      }
+
+      const id = battle.moveIdOf(target.v.lastMove)!;
+      const idx = target.base.moves.indexOf(id);
+      // Fail for struggle, metronome, mirror move, sleep talk
+      if (
+        idx === -1 ||
+        target.v.lastMove === this ||
+        target.v.lastMove.noEncore ||
+        user.base.moves.includes(id)
+      ) {
+        return battle.info(user, "fail_generic");
+      }
+
+      user.base.moves[moveIndex] = id;
+      user.base.pp[moveIndex] = battle.gen.getMaxPP(target.v.lastMove);
+      battle.event({type: "sketch", src: user.id, move: id});
+    },
+  },
+  sleeptalk: {
+    name: "Sleep Talk",
+    pp: 10,
+    type: "normal",
+    range: Range.Self,
+    noMetronome: true,
+    noEncore: true,
+    sleepOnly: true,
+    whileAsleep: true,
+    noSleepTalk: true,
+    noAssist: true,
+    exec(battle, user) {
+      const m = battle.rng.choice(user.base.moves.filter(m => !battle.gen.moveList[m].noSleepTalk));
+      if (!m) {
+        return battle.info(user, "fail_generic");
+      }
+
+      // TODO: https://bulbapedia.bulbagarden.net/wiki/Sleep_Talk_(move)
+      // If Sleep Talk calls Metronome or Mirror Move (which are selectable by Sleep Talk only in
+      // this generation) and thus in turn calls a two-turn move, the move will fail.
+      return battle.callMove(battle.gen.moveList[m], user);
+    },
   },
   sludgebomb: {
     kind: "damage",
@@ -2983,6 +2883,54 @@ const internalMoveList = createMoveList({
     effect: [30, "par"],
     contact: true,
   },
+  spiderweb: {
+    kind: "noSwitch",
+    name: "Spider Web",
+    pp: 10,
+    type: "bug",
+    range: Range.Adjacent,
+  },
+  spikes: {
+    name: "Spikes",
+    pp: 20,
+    type: "ground",
+    range: Range.Field,
+    exec(battle, user) {
+      const target = battle.opponentOf(user.owner);
+      if (target.spikes) {
+        return battle.info(user, "fail_generic");
+      }
+
+      battle.event({type: "spikes", src: user.id, player: target.id, spin: false});
+      target.spikes++;
+    },
+  },
+  spite: {
+    name: "Spite",
+    pp: 10,
+    acc: 100,
+    type: "ghost",
+    range: Range.Adjacent,
+    protect: true,
+    exec(battle, user, [target]) {
+      if (!battle.checkAccuracy(this, user, target)) {
+        return;
+      } else if (!target.v.lastMove) {
+        return battle.info(user, "fail_generic");
+      }
+      const id = battle.moveIdOf(target.v.lastMove)!;
+      const idx = target.base.moves.indexOf(id);
+      // Fail for struggle, metronome, mirror move, sleep talk unless it called a move we already
+      // know (which metronome cant in gen 2)
+      if (idx === -1 || !target.base.pp[idx]) {
+        return battle.info(user, "fail_generic");
+      }
+
+      const amount = Math.min(battle.rng.int(2, 5), target.base.pp[idx]);
+      target.base.pp[idx] -= amount;
+      battle.event({type: "spite", src: target.id, move: id, amount});
+    },
+  },
   steelwing: {
     kind: "damage",
     name: "Steel Wing",
@@ -2993,6 +2941,50 @@ const internalMoveList = createMoveList({
     acc: 90,
     effect: [10, [["def", +1]], true],
     contact: true,
+  },
+  sunnyday: {
+    kind: "weather",
+    weather: "sun",
+    name: "Sunny Day",
+    pp: 5,
+    type: "fire",
+    range: Range.Field,
+  },
+  swagger: {
+    kind: "swagger",
+    name: "Swagger",
+    pp: 15,
+    acc: 90,
+    type: "normal",
+    range: Range.Adjacent,
+    protect: true,
+    stages: [["atk", +2]],
+  },
+  sweetkiss: {
+    kind: "confuse",
+    name: "Sweet Kiss",
+    pp: 10,
+    type: "normal",
+    range: Range.Adjacent,
+    acc: 75,
+  },
+  sweetscent: {
+    kind: "stage",
+    name: "Sweet Scent",
+    pp: 20,
+    type: "normal",
+    range: Range.AllAdjacentFoe,
+    acc: 100,
+    stages: [["eva", -1]],
+  },
+  synthesis: {
+    kind: "recover",
+    name: "Synthesis",
+    pp: 5,
+    type: "grass",
+    range: Range.Self,
+    why: "recover",
+    weather: true,
   },
   thief: {
     kind: "damage",
