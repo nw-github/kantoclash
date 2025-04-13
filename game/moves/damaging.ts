@@ -170,7 +170,7 @@ export function getDamage(
 
     const itemBonus = user.base.item && battle.gen.itemTypeBoost[user.base.item];
     if (import.meta.dev) {
-      console.log(`\n${user.base.name} => ${target.base.name}`);
+      console.log(`\n\x1b[0;32m${user.base.name}\x1b[0m => \x1b[0;31m${target.base.name}\x1b[0m`);
     }
     dmg = battle.gen.calcDamage({
       lvl: extras.beatUp ? extras.beatUp.level : user.base.level,

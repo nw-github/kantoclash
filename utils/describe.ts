@@ -86,6 +86,10 @@ const descriptions: Partial<Record<number, Partial<Record<MoveId, string>>>> = {
       "While this move is in effect, accuracy checks against the target ignore evasion and " +
       "accuracy stages if the target's evasion is greater than the user's accuracy, and Normal and " +
       "Fighting-type moves deal neutral damage to Ghost types. Switching removes this effect. ",
+    odorsleuth:
+      "While this move is in effect, accuracy checks against the target ignore evasion and " +
+      "accuracy stages if the target's evasion is greater than the user's accuracy, and Normal and " +
+      "Fighting-type moves deal neutral damage to Ghost types. Switching removes this effect. ",
     batonpass: "Switches while retaining stages and certain volatile status conditions. ",
     nightmare:
       "The target loses 1/4 its max HP at the end of every turn while asleep. Fails if the " +
@@ -141,6 +145,7 @@ const descriptions: Partial<Record<number, Partial<Record<MoveId, string>>>> = {
       "HP, depending on the number of uses of this move (Max 3). ",
     psychup: "Copies the stat stages of the target. ",
     focusenergy: "Raises the user's critical hit stages by 2. Does not stack. ",
+    lowkick: "Power increases with the weight of the target. ",
   },
 };
 
@@ -234,8 +239,12 @@ export const describeMove = (gen: Generation, id: MoveId) => {
       }
     }
 
-    if (move.effect) {
+    effect: if (move.effect) {
       const [chance, effect] = move.effect;
+      if (!chance) {
+        break effect;
+      }
+
       buf += `Has a ${chance}% chance to `;
       if (Array.isArray(effect)) {
         const raise = effect[0][1] < 0 ? "drop" : "raise";
