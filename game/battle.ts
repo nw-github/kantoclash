@@ -629,7 +629,11 @@ export class Battle {
         continue;
       }
 
-      this.useMove(move, user, target ? [target] : [], indexInMoves);
+      if (user.v.encore) {
+        this.callMove(move, user, indexInMoves);
+      } else {
+        this.useMove(move, user, target ? [target] : [], indexInMoves);
+      }
       if (this.gen.afterUseMove(this, user, isReplacement)) {
         return;
       }
@@ -794,12 +798,12 @@ export class Battle {
     return func.call(move, this, user, targets, moveIndex);
   }
 
-  callMove(move: Move, user: ActivePokemon) {
+  callMove(move: Move, user: ActivePokemon, moveIndex?: number) {
     let targets = this.getTargets(user, move.range);
     if (!isSpreadMove(move.range) && targets.length) {
       targets = [this.rng.choice(targets)!];
     }
-    return this.useMove(move, user, targets);
+    return this.useMove(move, user, targets, moveIndex);
   }
 
   checkFaint(user: ActivePokemon, causedFaint = false) {

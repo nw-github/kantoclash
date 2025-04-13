@@ -74,6 +74,7 @@ const createGeneration = (): Generation => {
       disableTurns: battle => battle.rng.int(2, 5) + 1,
       bideDuration: () => 2,
     },
+    invalidSketchMoves: [],
     getDamageVariables(spc, battle, user, target, isCrit) {
       const atk = user.base.gen.getStat(battle, user, spc ? "spa" : "atk", isCrit);
       const def = user.base.gen.getStat(battle, target, spc ? "spd" : "def", isCrit, true);
@@ -174,8 +175,13 @@ const createGeneration = (): Generation => {
         chance = 50;
       }
 
+      let eva = target.v.stages.eva;
+      if (target.v.hasFlag(VF.identified)) {
+        eva = 0;
+      }
+
       let acc = Math.floor(
-        chance * this.accStageMultipliers![clamp(user.v.stages.acc - target.v.stages.eva, -6, 6)]!,
+        chance * this.accStageMultipliers![clamp(user.v.stages.acc - eva, -6, 6)]!,
       );
       if (reduceAccItem[target.base.item!]) {
         acc -= Math.floor(acc * (reduceAccItem[target.base.item!]! / 100));

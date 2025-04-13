@@ -232,17 +232,24 @@ export const tryDamage = (
   } else if (self.flag === "double" || self.flag === "triple" || self.flag === "multi") {
     const counts = {
       double: 2,
-      triple: battle.rng.int(1, 3),
+      triple: 3,
       multi: battle.gen.rng.multiHitCount(battle),
     };
 
+    const wasSleeping = user.base.status === "slp";
     const count = counts[self.flag];
     let dmg, isCrit;
-    for (
-      let hits = 0;
-      !dead && user.base.hp && user.base.status !== "slp" && !endured && hits < count;
-      hits++
-    ) {
+    for (let hits = 0; !dead && user.base.hp && !endured && hits < count; hits++) {
+      if (
+        self.flag === "triple" &&
+        hits !== 0 &&
+        !battle.checkAccuracy(self, user, target, !isSpecial(type))
+      ) {
+        // TODO: lazy
+        battle.events.splice(-1, 1);
+        break;
+      }
+
       hadSub = target.v.substitute !== 0;
       ({dmg, isCrit, endured, band} = getDamage(self, battle, user, target, {
         tripleKick: self.flag === "triple" ? hits + 1 : 1,
@@ -259,6 +266,10 @@ export const tryDamage = (
 
       if (dmg !== 0) {
         onHit(type, hadSub);
+
+        if (user.base.status === "slp" && !wasSleeping) {
+          break;
+        }
       }
     }
     dealt = 0;

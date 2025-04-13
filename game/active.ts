@@ -93,7 +93,7 @@ export class ActivePokemon {
       this.v.counter = old.counter;
       this.v.seededBy = old.seededBy;
 
-      const passedFlags =
+      let passedFlags =
         VF.lightScreen |
         VF.reflect |
         VF.mist |
@@ -102,6 +102,10 @@ export class ActivePokemon {
         VF.identified |
         VF.lockon |
         VF.ingrain;
+      if (battle.gen.id >= 3) {
+        passedFlags &= ~VF.identified;
+      }
+
       this.v.setFlag(old.cflags & passedFlags);
 
       // Is trapping passed? Encore? Nightmare?
@@ -1272,7 +1276,9 @@ class Volatiles {
 
 const getValidTargets = (battle: Battle, move: Move, user: ActivePokemon) => {
   // TODO: retarget if dead && hyper beam
-  if (move === user.v.charging?.move) {
+  if (user.v.encore) {
+    return [user.id];
+  } else if (move === user.v.charging?.move) {
     return [user.v.charging.target.id];
   }
 

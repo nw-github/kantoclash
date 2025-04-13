@@ -2033,8 +2033,7 @@ const internalMoveList = createMoveList({
         if (!battle.checkAccuracy(this, user, target)) {
           return;
         } else if (target.v.substitute) {
-          battle.info(user, "fail_generic");
-          return;
+          return battle.info(user, "fail_generic");
         }
 
         user.damage(
@@ -2660,7 +2659,7 @@ const internalMoveList = createMoveList({
   frustration: {
     kind: "damage",
     name: "Frustration",
-    pp: 15,
+    pp: 20,
     type: "normal",
     range: Range.Adjacent,
     power: 0,

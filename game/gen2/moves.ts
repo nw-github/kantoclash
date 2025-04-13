@@ -1,26 +1,6 @@
 import {Range, type Move, type MoveFunctions, type MoveId} from "../moves";
 import {isSpecial, stageKeys} from "../utils";
 
-/*
-https://bulbapedia.bulbagarden.net/wiki/Dig_(move)
-In Generation II only, due to a glitch, when Lock-On or Mind Reader are in effect, the moves Attract, Curse, Foresight, Mean Look, Mimic, Nightmare, Spider Web, and Transform cannot hit targets in the semi-invulnerable turn of Dig, and moves cannot lower stats of targets in the semi-invulnerable turn of Dig (status moves such as String Shot will fail, and additional effects of moves such as Bubble will not activate).
-
-https://bulbapedia.bulbagarden.net/wiki/Metronome_(move)
-pp rollover
-
-https://bulbapedia.bulbagarden.net/wiki/Mimic_(move)
-has 5 pp like transform
-
-https://bulbapedia.bulbagarden.net/wiki/Solar_Beam_(move)
-If the user is prevented from attacking with SolarBeam during harsh sunlight by conditions such as flinching, paralysis, and confusion, then PP will still be deducted regardless, due to the fact that SolarBeam was designed as a two-turn attack.
-
-In this generation only, Mirror Move always fails when used by a transformed Pokémon.
-
-Mimic
-*/
-
-// Does 10% chance mean 10.2 /* 26/256 */ like in gen 1?
-
 export const moveFunctionPatches: Partial<MoveFunctions> = {
   recover(battle, user) {
     const diff = user.base.stats.hp - user.base.hp;

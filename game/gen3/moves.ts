@@ -2,13 +2,6 @@ import {Range, type Move, type MoveFunctions, type MoveId} from "../moves";
 import {abilityList} from "../species";
 import {HP_TYPES, idiv, VF} from "../utils";
 
-/*
-bide now locked in
-rollout targeting?
-endure breaks randomly
-
-*/
-
 export const moveFunctionPatches: Partial<MoveFunctions> = {
   weather(battle, user) {
     if (battle.weather?.kind === this.weather) {
@@ -63,6 +56,26 @@ export const moveFunctionPatches: Partial<MoveFunctions> = {
     }
 
     target.switchTo(next, battle, "phaze");
+  },
+  protect(battle, user) {
+    if (battle.turnOrder.at(-1) === user) {
+      user.v.protectCount = 0;
+      return battle.info(user, "fail_generic");
+    }
+
+    const table = [65535, 32767, 16383, 8191];
+    // gen 3 never caps the protectCount and happily indexes oob past the 3rd protect.
+    if (battle.rng.int(0, 65535) > table[Math.min(user.v.protectCount, 3)]) {
+      user.v.protectCount = 0;
+      return battle.info(user, "fail_generic");
+    }
+
+    user.v.protectCount++;
+    if (!this.endure) {
+      battle.info(user, "protect", [user.setFlag(VF.protect)]);
+    } else {
+      battle.info(user, "endure", [user.setFlag(VF.endure)]);
+    }
   },
 };
 
@@ -132,6 +145,7 @@ export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
   },
   meanlook: {protect: true},
   megadrain: {kingsRock: false},
+  metronome: {noEncore: false},
   mimic: {acc: 0},
   mirrorcoat: {priority: -5},
   mist: {kind: "screen", screen: "mist", range: Range.Field},
@@ -173,6 +187,7 @@ export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
   roar: {priority: -6},
   rollingkick: {kingsRock: true},
   skyattack: {flag: "high_crit", effect: [30, "flinch"]},
+  sleeptalk: {noEncore: false},
   spiderweb: {protect: true},
   spikes: {
     exec(battle, user) {
@@ -183,6 +198,26 @@ export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
 
       battle.event({type: "spikes", src: user.id, player: target.id, spin: false});
       target.spikes++;
+    },
+  },
+  spite: {
+    exec(this: Move, battle, user, [target]) {
+      if (!battle.checkAccuracy(this, user, target)) {
+        return;
+      } else if (target.v.lastMoveIndex === undefined) {
+        return battle.info(user, "fail_generic");
+      } else if (target.base.pp[target.v.lastMoveIndex] === 1) {
+        return battle.info(user, "fail_generic");
+      }
+
+      const amount = Math.min(battle.rng.int(2, 5), target.base.pp[target.v.lastMoveIndex]);
+      target.base.pp[target.v.lastMoveIndex] -= amount;
+      battle.event({
+        type: "spite",
+        src: target.id,
+        move: target.base.moves[target.v.lastMoveIndex],
+        amount,
+      });
     },
   },
   steelwing: {kingsRock: true},

@@ -239,8 +239,7 @@ export const moveFunctions: MoveFunctions = {
     }
   },
   protect(battle, user) {
-    const sub = battle.gen.id <= 2 && user.v.substitute;
-    if (sub || (battle.turnOrder.at(-1) === user && (!this.endure || battle.gen.id >= 3))) {
+    if (user.v.substitute || (battle.turnOrder.at(-1) === user && !this.endure)) {
       user.v.protectCount = 0;
       return battle.info(user, "fail_generic");
     }
@@ -337,14 +336,14 @@ export const moveFunctions: MoveFunctions = {
       return battle.info(target, "not_confused");
     } else if (!battle.checkAccuracy(this, user, target)) {
       return;
-    } else if (!target.modStages(this.stages, battle, user)) {
+    } else if (!target.modStages(this.stages, battle, user) && battle.gen.id <= 2) {
       return;
     } else {
       target.confuse(battle);
     }
   },
   foresight(battle, user, [target]) {
-    if (target.v.hasFlag(VF.identified)) {
+    if (target.v.hasFlag(VF.identified) && battle.gen.id <= 2 && battle.gen.id <= 5) {
       return battle.info(user, "fail_generic");
     } else if (!battle.checkAccuracy(this, user, target)) {
       return;
