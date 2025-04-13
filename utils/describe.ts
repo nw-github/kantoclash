@@ -118,6 +118,8 @@ const descriptions: Partial<Record<number, Partial<Record<MoveId, string>>>> = {
       "after use of this move. Fails if the user has not used stockpile yet.",
     stockpile: "+1 stockpile, changing the properties of Spit Up and Swallow. Max 3.",
     weatherball: "Power doubles if weather is active. Changes type with the weather. ",
+    watersport: "Reduces power of Fire-type attacks by 50% until the user switches out. ",
+    mudsport: "Reduces power of Electric-type attacks by 50% until the user switches out. ",
   },
   [2]: {
     conversion:

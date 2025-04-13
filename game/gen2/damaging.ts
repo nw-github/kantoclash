@@ -194,23 +194,6 @@ export const tryDamage = (
     battle.info(target, "endure_band");
   }
 
-  if (dead) {
-    if (target.v.hasFlag(VF.destinyBond)) {
-      user.damage(user.base.hp, target, battle, false, "destiny_bond", true);
-      // user should die first
-      battle.checkFaint(target);
-    }
-
-    if (target.v.hasFlag(VF.grudge)) {
-      if (user.v.lastMoveIndex === undefined) {
-        console.error("Grudge with no lastMoveIndex: ", user);
-      } else {
-        user.base.pp[user.v.lastMoveIndex] = 0;
-        battle.event({type: "grudge", src: user.id, move: user.base.moves[user.v.lastMoveIndex]});
-      }
-    }
-  }
-
   if (self.flag === "recharge") {
     user.v.recharge = self;
   }

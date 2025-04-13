@@ -170,8 +170,34 @@ export const moveFunctions: MoveFunctions = {
     }
 
     let dealt = 0;
+    const killed = [];
     for (const target of targets) {
       dealt += battle.gen.tryDamage(this, battle, user, target, targets.length > 1);
+
+      if (!target.base.hp && target.owner !== user.owner) {
+        killed.push(target);
+      }
+    }
+
+    for (const target of killed) {
+      if (target.v.hasFlag(VF.destinyBond)) {
+        user.damage(user.base.hp, target, battle, false, "destiny_bond", true);
+        // user should die first
+        battle.checkFaint(target);
+      }
+
+      if (target.v.hasFlag(VF.grudge)) {
+        if (user.v.lastMoveIndex === undefined) {
+          console.error("Grudge with no lastMoveIndex: ", user);
+        } else {
+          user.base.pp[user.v.lastMoveIndex] = 0;
+          battle.event({
+            type: "grudge",
+            src: user.id,
+            move: user.base.moves[user.v.lastMoveIndex],
+          });
+        }
+      }
     }
 
     user.handleShellBell(battle, dealt);
