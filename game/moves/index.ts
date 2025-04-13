@@ -225,4 +225,5 @@ type Flag =
   | "remove_screens"
   | "smellingsalt"
   | "spitup"
-  | "uproar";
+  | "uproar"
+  | "revenge";

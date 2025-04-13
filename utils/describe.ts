@@ -196,6 +196,7 @@ const flagDesc: Record<NonNullable<DamagingMove["flag"]>, string> = {
   uproar:
     "Locks the user in for 2-5 turns and starts an uproar, waking sleeping Pokémon up and " +
     "preventing Pokémon from falling asleep. ",
+  revenge: "Doubles damage if the target was the last Pokémon to hit the user in this turn. ",
 };
 
 const formatStages = (gen: Generation, stages: [StageId, number][]) => {

@@ -141,6 +141,14 @@ export function getDamage(
     if (battle.moveIdOf(self) === "weatherball" && battle.getWeather()) {
       doubleDmg = true;
     }
+    if (
+      self.flag === "revenge" &&
+      user.v.lastHitBy?.user === target &&
+      target.choice?.move.kind === "damage" &&
+      target.choice?.executed
+    ) {
+      doubleDmg = true;
+    }
 
     const explosion = self.flag === "explosion" ? 2 : 1;
     const spc = isSpecial(type);
