@@ -209,7 +209,7 @@
 </template>
 
 <script setup lang="ts">
-import type {Pokemon} from "~/game/pokemon";
+import type {FormId, Pokemon} from "~/game/pokemon";
 import type {BattleEvent, PokeId} from "~/game/events";
 import type {SpeciesId} from "~/game/species";
 import type {BattleTimer, Choice, InfoRecord} from "~/server/gameServer";
@@ -340,7 +340,7 @@ const runEvent = async (e: BattleEvent) => {
     if (!isLive()) {
       params.cb?.();
       params.cb = undefined;
-      if (params.anim !== "attack" && params.anim !== "spikes") {
+      if (params.anim !== "attack" && params.anim !== "spikes" && params.anim !== "transform") {
         field.value?.playAnimation(id, params)?.complete();
       }
     } else {
@@ -391,9 +391,22 @@ const runEvent = async (e: BattleEvent) => {
     }
   };
 
+  const preloadSprite = (
+    species: string,
+    female?: bool,
+    shiny?: bool,
+    back?: bool,
+    form?: FormId,
+  ) => {
+    const img = new Image();
+    img.src = getSpritePath(species, female, shiny, back, form);
+    return img;
+  };
+
   const handleEvent = async (e: BattleEvent) => {
     if (e.type === "switch") {
       const poke = players.poke(e.src);
+      let _img;
       if (poke) {
         if (!poke.fainted && e.why !== "baton_pass") {
           if (e.why !== "phaze") {
@@ -406,10 +419,13 @@ const runEvent = async (e: BattleEvent) => {
           });
         }
 
-        // preload the image
-        poke.speciesId = e.speciesId;
-        poke.shiny = e.shiny;
-        poke.form = e.form;
+        _img = preloadSprite(
+          e.speciesId,
+          e.gender === "F",
+          e.shiny,
+          playerId(e.src) === perspective.value,
+          e.form,
+        );
       } else {
         players.setPoke(e.src, {
           speciesId: e.speciesId,
@@ -515,16 +531,33 @@ const runEvent = async (e: BattleEvent) => {
         }
       }
     } else if (e.type === "transform") {
+      const _img = preloadSprite(
+        e.speciesId,
+        e.gender === "F",
+        e.shiny,
+        playerId(e.src) === perspective.value,
+        e.form,
+      );
+
+      pushEvent(e);
+
       const src = players.poke(e.src)!;
-      if (e.target) {
-        const target = players.poke(e.target)!;
-        src.transformed = target.transformed ?? target.speciesId;
-      } else {
-        src.speciesId = e.speciesId;
-      }
-      src.form = e.form;
-      src.gender = e.gender;
-      src.shiny = e.shiny;
+      await playAnimation(e.src, {
+        anim: "transform",
+        cb() {
+          handleVolatiles(e);
+          if (e.target) {
+            const target = players.poke(e.target)!;
+            src.transformed = target.transformed ?? target.speciesId;
+          } else {
+            src.speciesId = e.speciesId;
+          }
+          src.form = e.form;
+          src.gender = e.gender;
+          src.shiny = e.shiny;
+        },
+      });
+      return;
     } else if (e.type === "hit_sub") {
       if (e.confusion) {
         await Promise.allSettled([

@@ -12,7 +12,6 @@ img {
 
 <script setup lang="ts">
 import type {FormId} from "~/game/pokemon";
-import {speciesList, type SpeciesId} from "~/game/species";
 
 const props = defineProps<{
   species?: string;
@@ -23,21 +22,6 @@ const props = defineProps<{
 }>();
 const sprite = computed(() => {
   const scale = 1 / (props.scale ?? 1);
-  if (!props.species || !(props.species in speciesList)) {
-    return `/sprites/battle/unknown.png ${scale}x`;
-  }
-
-  const species = speciesList[props.species as SpeciesId];
-  let id = species.sprite ?? String(species.dexId);
-  if (props.form) {
-    id += `-${props.form}`;
-  }
-
-  const shiny = props.shiny ? "shiny/" : "";
-  if (!props.back) {
-    return `/sprites/battle/${shiny}${id}.gif ${scale}x`;
-  } else {
-    return `/sprites/battle/back/${shiny}${id}.gif ${scale}x`;
-  }
+  return getSpritePath(props.species, false, props.shiny, props.back, props.form) + ` ${scale}x`;
 });
 </script>

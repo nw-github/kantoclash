@@ -1,7 +1,7 @@
 import type {PlayerId, PokeId} from "~/game/events";
 import type {Move} from "~/game/moves";
 import type {FormId, Gender, Pokemon} from "~/game/pokemon";
-import type {SpeciesId} from "~/game/species";
+import {speciesList, type SpeciesId} from "~/game/species";
 import {isSpecial, type ScreenId, type Type} from "~/game/utils";
 
 export type ClientActivePokemon = {
@@ -70,4 +70,29 @@ export const getCategory = (move: Move, type?: Type) => {
       ? "special"
       : "physical"
     : "status";
+};
+
+export const getSpritePath = (
+  species: string | undefined,
+  _female?: bool,
+  shiny?: bool,
+  back?: bool,
+  form?: FormId,
+) => {
+  if (!species || !(species in speciesList)) {
+    return `/sprites/battle/unknown.png`;
+  }
+
+  const sp = speciesList[species as SpeciesId];
+  let id = sp.sprite ?? String(sp.dexId);
+  if (form) {
+    id += `-${form}`;
+  }
+
+  const sh = shiny ? "shiny/" : "";
+  if (!back) {
+    return `/sprites/battle/${sh}${id}.gif`;
+  } else {
+    return `/sprites/battle/back/${sh}${id}.gif`;
+  }
 };

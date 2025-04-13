@@ -418,7 +418,13 @@ const badges: {flag: VF; props: InstanceType<typeof UBadge>["$props"]}[] = [
 
 const rem = (rem: number) => parseFloat(getComputedStyle(document.documentElement).fontSize) * rem;
 
-export type AnimationParams = SwitchAnim | RetractAnim | AttackAnim | OtherAnim | HurtAnim;
+export type AnimationParams =
+  | SwitchAnim
+  | RetractAnim
+  | AttackAnim
+  | OtherAnim
+  | HurtAnim
+  | TransformAnim;
 
 export type SwitchAnim = {
   anim: "sendin";
@@ -449,6 +455,11 @@ export type HurtAnim = {
   anim: "hurt";
   cb?: () => void;
   direct: bool;
+};
+
+export type TransformAnim = {
+  anim: "transform";
+  cb?: () => void;
 };
 
 const subOpacity = 0.5;
@@ -510,6 +521,8 @@ const playAnimation = (params: AnimationParams) => {
     opts.repeatType = "reverse";
   } else if (params.anim === "hurt") {
     animations.hurt(seq, params.direct);
+  } else if (params.anim === "transform") {
+    animations.transform(seq, params.cb);
   }
 
   return animate(seq, opts);
@@ -641,6 +654,13 @@ const animations = {
       seq.push(onComplete(cb));
     }
     seq.push([".sprite", {x: 0, y: 0, opacity: 1}, {duration: ms(500), ease: easeInExpo}]);
+  },
+  transform(seq: AnimationSequence, cb?: () => void) {
+    seq.push([".sprite", {scale: 0}, {duration: ms(400), ease: easeInExpo}]);
+    if (cb) {
+      seq.push(onComplete(cb));
+    }
+    seq.push([".sprite", {scale: 1}, {duration: ms(400), ease: easeInExpo}]);
   },
   phaze(seq: AnimationSequence, target: any, at?: SequenceTime) {
     const x = back ? -rem(8) : rem(8); // 120
