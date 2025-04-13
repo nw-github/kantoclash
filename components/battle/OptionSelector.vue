@@ -66,6 +66,7 @@
             :key="i"
             :option
             :gen
+            :weather
             :poke="players.poke(currOption.id)!"
             @click="selectMove(currOption, i)"
           />
@@ -77,6 +78,7 @@
           v-for="(poke, i) in team"
           :key="i"
           :poke
+          :weather
           :disabled="!isValidSwitch(currOption, i)"
           :active="players.get(myId).active.some(p => p?.indexInTeam === i)"
           @click="selectSwitch(currOption, i)"
@@ -92,7 +94,7 @@ import type {Pokemon} from "~/game/pokemon";
 import type {Choice, MoveChoice} from "~/server/gameServer";
 import type {Generation} from "~/game/gen";
 import type {PokeId} from "~/game/events";
-import {playerId} from "~/game/utils";
+import {playerId, type Weather} from "~/game/utils";
 import {isSpreadMove} from "~/game/moves";
 
 const emit = defineEmits<{(e: "choice", choice: Choice): void; (e: "cancel"): void}>();
@@ -103,6 +105,7 @@ const {players, myId, options, team, opponent, gen} = defineProps<{
   gen: Generation;
   options?: Options[];
   team: Pokemon[];
+  weather?: Weather;
 }>();
 
 const choices = ref<[Options, Choice][]>([]);

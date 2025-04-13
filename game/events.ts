@@ -45,7 +45,8 @@ type AnyEvent =
   | SpikesEvent
   | ProcAbilityEvent
   | AbilityEvent
-  | StockPileEvent;
+  | StockPileEvent
+  | TransformEvent;
 
 export type ChangedVolatiles = {id: PokeId; v: NullOrOptional<ClientVolatiles>}[];
 
@@ -69,6 +70,16 @@ type SwitchEvent = {
   shiny?: bool;
   form?: FormId;
   why?: "phaze" | "baton_pass";
+};
+
+type TransformEvent = {
+  type: "transform";
+  src: PokeId;
+  target?: PokeId;
+  speciesId: SpeciesId;
+  shiny: bool;
+  gender?: Gender;
+  form?: FormId;
 };
 
 export type DamageReason =
@@ -254,15 +265,7 @@ type InfoEvent = {type: "info"; src: PokeId; why: InfoReason};
 type BugEvent = {type: "bug"; bug: BugType};
 
 type SrcTargetEvent = {
-  type:
-    | "transform"
-    | "in_love"
-    | "psych_up"
-    | "foresight"
-    | "lock_on"
-    | "miss"
-    | "helping_hand"
-    | "skill_swap";
+  type: "in_love" | "psych_up" | "foresight" | "lock_on" | "miss" | "helping_hand" | "skill_swap";
   src: PokeId;
   target: PokeId;
 };

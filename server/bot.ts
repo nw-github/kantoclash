@@ -193,9 +193,16 @@ export async function startBot(format?: FormatId, botFunction: BotFunction = ran
           }
         }
       } else if (e.type === "transform") {
-        const target = players.poke(e.target)!;
         const src = players.poke(e.src)!;
-        src.transformed = target.transformed ?? target.speciesId;
+        if (e.target) {
+          const target = players.poke(e.target)!;
+          src.transformed = target.transformed ?? target.speciesId;
+        } else {
+          src.speciesId = e.speciesId;
+        }
+        src.form = e.form;
+        src.gender = e.gender;
+        src.shiny = e.shiny;
       } else if (e.type === "weather") {
         // if (e.kind === "start") {
         //   weather.value = e.weather;

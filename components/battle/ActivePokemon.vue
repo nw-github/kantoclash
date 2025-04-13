@@ -156,6 +156,7 @@
               v-if="poke?.base && !poke.transformed"
               :poke="poke?.base"
               :active="poke"
+              :weather
             />
             <div v-else class="p-2 flex flex-col items-center">
               <div class="flex gap-10">
@@ -284,7 +285,7 @@ img {
 </style>
 
 <script setup lang="ts">
-import {VF, hpPercentExact, type ScreenId} from "~/game/utils";
+import {VF, hpPercentExact, type ScreenId, type Weather} from "~/game/utils";
 import {breakpointsTailwind} from "@vueuse/core";
 import type {Generation} from "~/game/gen";
 import {UPopover, type UBadge} from "#components";
@@ -307,6 +308,7 @@ const {poke, back, gen, player, pokeId} = defineProps<{
   gen: Generation;
   pokeId: PokeId;
   isSingles: bool;
+  weather?: Weather;
 }>();
 const species = computed(() => poke && gen.speciesList[poke.transformed ?? poke.speciesId]);
 const minSpe = computed(

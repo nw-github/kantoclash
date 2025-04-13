@@ -117,6 +117,7 @@ const descriptions: Partial<Record<number, Partial<Record<MoveId, string>>>> = {
       "Heals 25%, 50%, or 100% of the user's HP, based on the number of stockpiles, which is reset " +
       "after use of this move. Fails if the user has not used stockpile yet.",
     stockpile: "+1 stockpile, changing the properties of Spit Up and Swallow. Max 3.",
+    weatherball: "Power doubles if weather is active. Changes type with the weather. ",
   },
   [2]: {
     conversion:

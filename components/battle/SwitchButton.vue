@@ -12,16 +12,22 @@
     </UButton>
 
     <template #panel>
-      <PokemonTTContent :poke />
+      <PokemonTTContent :poke :weather />
     </template>
   </TouchPopover>
 </template>
 
 <script setup lang="ts">
 import type {Pokemon} from "@/game/pokemon";
+import type {Weather} from "~/game/utils";
 
 defineEmits<{(e: "click"): void}>();
-const {poke} = defineProps<{poke: Pokemon; disabled: boolean; active: boolean}>();
+const {poke} = defineProps<{
+  poke: Pokemon;
+  disabled: boolean;
+  active: boolean;
+  weather?: Weather;
+}>();
 
 const colorForHp = computed(() => {
   if (poke.stats.hp / poke.hp < 0.1) {

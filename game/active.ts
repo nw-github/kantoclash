@@ -8,7 +8,14 @@ import type {
   PokeId,
 } from "./events";
 import {type MoveId, type Move, type DamagingMove, Range, type FutureSightMove} from "./moves";
-import {natureTable, transform, type Pokemon, type Status} from "./pokemon";
+import {
+  natureTable,
+  transform,
+  type CastformForm,
+  type FormId,
+  type Pokemon,
+  type Status,
+} from "./pokemon";
 import {
   arraysEqual,
   clamp,
@@ -216,10 +223,15 @@ export class ActivePokemon {
     }
 
     this.v.types = [...target.v.types];
+    this.v.form = target.v.form;
     battle.event({
       type: "transform",
       src: this.id,
       target: target.id,
+      speciesId: this.base.speciesId,
+      shiny: this.base.shiny,
+      gender: this.base.gender,
+      form: this.v.form,
       volatiles: [{id: this.id, v: this.getClientVolatiles(this.base, battle)}],
     });
   }
@@ -622,16 +634,25 @@ export class ActivePokemon {
       sun: "fire",
       rain: "water",
     };
+    const forms: Partial<Record<Weather, CastformForm>> = {
+      sun: "sunny",
+      rain: "rainy",
+      hail: "snowy",
+    };
+
     const type = types[battle.getWeather() ?? "sand"];
     if (!arraysEqual([type], this.v.types)) {
+      this.v.form = forms[battle.getWeather() ?? "sand"];
       battle.ability(this);
       battle.event({
-        type: "conversion",
+        type: "transform",
         src: this.id,
-        types: [type],
+        speciesId: this.base.speciesId,
+        shiny: this.base.shiny,
+        gender: this.base.gender,
+        form: this.v.form,
         volatiles: [this.setVolatile("types", [type])],
       });
-      // TODO: change castform visual form
     }
   }
 
@@ -1130,6 +1151,7 @@ class Volatiles {
   /** Gen 1 only */
   stats: StageStats;
   types: Type[];
+  form?: FormId;
   substitute = 0;
   confusion = 0;
   counter = 0;
@@ -1186,6 +1208,7 @@ class Volatiles {
     };
     this.ability = base.ability;
     this.counter = base.status === "tox" ? 1 : 0;
+    this.form = base.form;
   }
 
   hasAnyType(...types: Type[]) {

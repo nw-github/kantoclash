@@ -29,7 +29,7 @@
         </div>
       </div>
 
-      <Field ref="field" :players :perspective :is-singles :gen />
+      <Field ref="field" :players :perspective :is-singles :gen :weather />
 
       <!-- Events -->
       <div class="relative w-full">
@@ -110,6 +110,7 @@
             :my-id
             :gen
             :opponent
+            :weather
             @cancel="$emit('cancel')"
             @choice="$emit('choice', $event)"
           />
@@ -514,9 +515,16 @@ const runEvent = async (e: BattleEvent) => {
         }
       }
     } else if (e.type === "transform") {
-      const target = players.poke(e.target)!;
       const src = players.poke(e.src)!;
-      src.transformed = target.transformed ?? target.speciesId;
+      if (e.target) {
+        const target = players.poke(e.target)!;
+        src.transformed = target.transformed ?? target.speciesId;
+      } else {
+        src.speciesId = e.speciesId;
+      }
+      src.form = e.form;
+      src.gender = e.gender;
+      src.shiny = e.shiny;
     } else if (e.type === "hit_sub") {
       if (e.confusion) {
         await Promise.allSettled([

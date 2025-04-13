@@ -13,7 +13,6 @@ import {
   type StatStageId,
   type Type,
   randChoiceWeighted,
-  stageStatKeys,
 } from "../utils";
 import type {ItemData, ItemId} from "../item";
 import {UNOWN_FORM, type FormId, type Gender, type Nature} from "../pokemon";

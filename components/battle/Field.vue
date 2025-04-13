@@ -14,6 +14,7 @@
             :player
             :is-singles
             :gen
+            :weather
           />
         </div>
         <div class="relative flex justify-center w-full">
@@ -50,8 +51,15 @@ import type {ActivePokemon} from "#components";
 import type {PlayerId, PokeId} from "~/game/events";
 import type {Generation} from "~/game/gen";
 import type {AnimationParams} from "./ActivePokemon.vue";
+import type {Weather} from "~/game/utils";
 
-defineProps<{players: Players; perspective: PlayerId; isSingles: boolean; gen: Generation}>();
+defineProps<{
+  players: Players;
+  perspective: PlayerId;
+  isSingles: boolean;
+  gen: Generation;
+  weather?: Weather;
+}>();
 
 const activePokemon = ref<InstanceType<typeof ActivePokemon>[]>([]);
 

@@ -59,13 +59,17 @@
 
 <script setup lang="ts">
 import type {Pokemon} from "~/game/pokemon";
-import {hpPercentExact, type StatStageId} from "~/game/utils";
+import {hpPercentExact, type StatStageId, type Weather} from "~/game/utils";
 import "assets/colors.css";
 import {itemList} from "~/game/item";
 import {abilityList} from "~/game/species";
 import type {MoveId} from "~/game/moves";
 
-const {active, poke} = defineProps<{active?: ClientActivePokemon; poke: Pokemon}>();
+const {active, poke, weather} = defineProps<{
+  active?: ClientActivePokemon;
+  poke: Pokemon;
+  weather?: Weather;
+}>();
 const statKeys = computed(() => getStatKeys(poke.gen));
 
 const statClass = (stat: StatStageId) => {
@@ -78,7 +82,7 @@ const statClass = (stat: StatStageId) => {
 const getType = (id: MoveId) => {
   const move = poke.gen.moveList[id];
   if (move.kind === "damage" && poke && move.getType) {
-    return move.getType(poke);
+    return move.getType(poke, weather);
   }
   return move.type;
 };

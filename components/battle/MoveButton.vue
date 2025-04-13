@@ -55,13 +55,15 @@ import type {Generation} from "~/game/gen";
 import TouchPopover from "../TouchPopover.vue";
 import {abilityList} from "~/game/species";
 import {Range} from "~/game/moves";
+import type {Weather} from "~/game/utils";
 
 defineEmits<{(e: "click"): void}>();
 
-const {gen, option, poke} = defineProps<{
+const {gen, option, poke, weather} = defineProps<{
   option: MoveOption;
   gen: Generation;
   poke: ClientActivePokemon;
+  weather?: Weather;
 }>();
 const move = computed(() => gen.moveList[option.move]);
 const info = computed(() => {
@@ -72,9 +74,7 @@ const info = computed(() => {
     pow = move.value.getPower(poke.base!);
   }
   if (move.value.kind === "damage" && poke && move.value.getType) {
-    if (option.move !== "hiddenpower" || !poke.transformed) {
-      type = move.value.getType(poke.base!);
-    }
+    type = move.value.getType(poke.base!, weather);
   }
   if (pow && pow !== 1 && poke.base!.item && gen.itemTypeBoost[poke.base!.item]?.type === type) {
     pow += Math.floor(pow / 10);
@@ -84,6 +84,9 @@ const info = computed(() => {
   }
   if (pow && option.move === "spitup" && poke.v.stockpile) {
     pow *= poke.v.stockpile;
+  }
+  if (pow && option.move === "weatherball" && weather) {
+    pow *= 2;
   }
 
   if (

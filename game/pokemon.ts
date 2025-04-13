@@ -206,6 +206,7 @@ export const transform = (user: Pokemon, transformed: Pokemon) => {
   const moves = [...transformed.moves];
   const pp = transformed.moves.map(move => Math.min(user.gen.getMaxPP(user.gen.moveList[move]), 5));
   const stats = {...transformed.stats, hp: user.stats.hp};
+  let form = transformed.form;
 
   return new Proxy(user, {
     get(target, prop: keyof Pokemon) {
@@ -219,12 +220,18 @@ export const transform = (user: Pokemon, transformed: Pokemon) => {
       case "speciesId":
       case "shiny":
         return transformed[prop];
+      case "form":
+        return form;
       default:
         return target[prop];
       }
     },
     set(target, prop: keyof Pokemon, val) {
-      (target as any)[prop] = val;
+      if (prop === "form") {
+        form = val;
+      } else {
+        (target as any)[prop] = val;
+      }
       return true;
     },
   });
