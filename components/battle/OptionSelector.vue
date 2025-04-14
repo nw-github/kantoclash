@@ -42,9 +42,12 @@
           <TargetButton
             v-if="poke"
             :poke
-            :disabled="poke.fainted || !currTargets.includes(`${opponent}:${i}`)"
+            :disabled="
+              poke.fainted ||
+              !currTargets.includes(`${opponent}:${players.get(opponent).active.length - i - 1}`)
+            "
             :active="false"
-            @click="selectTarget(`${opponent}:${i}`)"
+            @click="selectTarget(`${opponent}:${players.get(opponent).active.length - i - 1}`)"
           />
         </template>
         <template v-for="(poke, i) in players.get(myId).active" :key="i">

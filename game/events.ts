@@ -46,7 +46,8 @@ type AnyEvent =
   | ProcAbilityEvent
   | AbilityEvent
   | StockPileEvent
-  | TransformEvent;
+  | TransformEvent
+  | BounceEvent;
 
 export type ChangedVolatiles = {id: PokeId; v: NullOrOptional<ClientVolatiles>}[];
 
@@ -293,6 +294,7 @@ type CantUseEvent = {type: "cantuse"; src: PokeId; move: MoveId};
 type TauntEvent = {type: "cantusetaunt"; src: PokeId; move: MoveId};
 type GrudgeEvent = {type: "grudge"; src: PokeId; move: MoveId};
 type RestorePPEvent = {type: "pp"; src: PokeId; move: MoveId};
+type BounceEvent = {type: "bounce"; src: PokeId; move: MoveId};
 
 type TrapEvent = {
   type: "trap";

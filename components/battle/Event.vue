@@ -137,6 +137,7 @@
     It reduced the PP of {{ pn(e.src, false) }}'s {{ gen.moveList[e.move].name }} by {{ e.amount }}!
   </div>
   <div v-else-if="e.type === 'sketch'">{{ pn(e.src) }} sketched {{ gen.moveList[e.move].name }}!</div>
+  <div v-else-if="e.type === 'bounce'">{{ pn(e.src) }} bounced the <b>{{ gen.moveList[e.move].name }}</b> back!</div>
   <div v-else-if="e.type === 'cantuse'" class="move">{{ pn(e.src) }} can't use <b>{{ gen.moveList[e.move].name }}</b>!</div>
   <div v-else-if="e.type === 'cantusetaunt'" class="move">{{ pn(e.src) }} can't use <b>{{ gen.moveList[e.move].name }}</b> after the taunt!</div>
   <div v-else-if="e.type === 'grudge'">{{ pn(e.src) }}'s {{ gen.moveList[e.move].name }} lost all its PP due to the grudge!</div>

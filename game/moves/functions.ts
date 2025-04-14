@@ -28,7 +28,9 @@ export const moveFunctions: MoveFunctions = {
   confuse(battle, user, targets) {
     let failed = true;
     for (const target of targets) {
-      if (target.v.substitute) {
+      if (battle.tryMagicBounce(this, user, target)) {
+        return;
+      } else if (target.v.substitute) {
         continue;
       } else if (target.v.ability === "owntempo") {
         battle.ability(target);
@@ -80,7 +82,9 @@ export const moveFunctions: MoveFunctions = {
     let failed = true;
     for (const target of targets) {
       if (this.range !== Range.Self) {
-        if (target.v.hasFlag(VF.mist) || target.owner.screens.mist) {
+        if (battle.tryMagicBounce(this, user, target)) {
+          return;
+        } else if (target.v.hasFlag(VF.mist) || target.owner.screens.mist) {
           failed = false;
           battle.info(target, "mist_protect");
           continue;

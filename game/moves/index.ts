@@ -37,6 +37,7 @@ export interface BaseMove {
   readonly kingsRock?: bool;
   readonly sound?: bool;
   readonly snatch?: bool;
+  readonly magicCoat?: bool;
 }
 
 export interface CustomMove extends BaseMove {

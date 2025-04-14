@@ -258,6 +258,7 @@ const internalMoveList = createMoveList({
     type: "ghost",
     range: Range.Adjacent,
     acc: 100,
+    magicCoat: true,
   },
   confusion: {
     kind: "damage",
@@ -597,6 +598,7 @@ const internalMoveList = createMoveList({
     range: Range.Adjacent,
     acc: 70,
     stages: [["acc", -1]],
+    magicCoat: true,
   },
   fly: {
     kind: "damage",
@@ -653,6 +655,7 @@ const internalMoveList = createMoveList({
     range: Range.Adjacent,
     acc: 75,
     status: "par",
+    magicCoat: true,
   },
   growl: {
     kind: "stage",
@@ -663,6 +666,7 @@ const internalMoveList = createMoveList({
     acc: 100,
     stages: [["atk", -1]],
     sound: true,
+    magicCoat: true,
   },
   growth: {
     kind: "stage",
@@ -828,6 +832,7 @@ const internalMoveList = createMoveList({
     range: Range.Adjacent,
     acc: 60,
     status: "slp",
+    magicCoat: true,
   },
   icebeam: {
     kind: "damage",
@@ -902,6 +907,7 @@ const internalMoveList = createMoveList({
     range: Range.Adjacent,
     acc: 90,
     protect: true,
+    magicCoat: true,
     exec(battle, user, [target]) {
       if (target.v.types.includes(this.type)) {
         return battle.info(target, "immune");
@@ -925,6 +931,7 @@ const internalMoveList = createMoveList({
     range: Range.Adjacent,
     acc: 100,
     stages: [["def", -1]],
+    magicCoat: true,
   },
   lick: {
     kind: "damage",
@@ -954,6 +961,7 @@ const internalMoveList = createMoveList({
     range: Range.Adjacent,
     acc: 75,
     status: "slp",
+    magicCoat: true,
   },
   lowkick: {
     kind: "damage",
@@ -1153,6 +1161,7 @@ const internalMoveList = createMoveList({
     range: Range.Adjacent,
     acc: 55,
     status: "psn",
+    magicCoat: true,
   },
   poisonpowder: {
     kind: "status",
@@ -1162,6 +1171,7 @@ const internalMoveList = createMoveList({
     range: Range.Adjacent,
     acc: 75,
     status: "psn",
+    magicCoat: true,
   },
   poisonsting: {
     kind: "damage",
@@ -1340,6 +1350,7 @@ const internalMoveList = createMoveList({
     range: Range.Adjacent,
     acc: 100,
     stages: [["acc", -1]],
+    magicCoat: true,
   },
   selfdestruct: {
     kind: "damage",
@@ -1373,6 +1384,7 @@ const internalMoveList = createMoveList({
     acc: 85,
     stages: [["def", -2]],
     sound: true,
+    magicCoat: true,
   },
   seismictoss: {
     kind: "damage",
@@ -1404,6 +1416,7 @@ const internalMoveList = createMoveList({
     acc: 55,
     status: "slp",
     sound: true,
+    magicCoat: true,
   },
   skullbash: {
     kind: "damage",
@@ -1461,6 +1474,7 @@ const internalMoveList = createMoveList({
     range: Range.Adjacent,
     acc: 75,
     status: "slp",
+    magicCoat: true,
   },
   sludge: {
     kind: "damage",
@@ -1490,6 +1504,7 @@ const internalMoveList = createMoveList({
     range: Range.Adjacent,
     acc: 100,
     stages: [["acc", -1]],
+    magicCoat: true,
   },
   softboiled: {
     kind: "recover",
@@ -1550,6 +1565,7 @@ const internalMoveList = createMoveList({
     range: Range.Adjacent,
     acc: 100,
     status: "slp",
+    magicCoat: true,
   },
   stomp: {
     kind: "damage",
@@ -1597,6 +1613,7 @@ const internalMoveList = createMoveList({
     range: Range.AllAdjacentFoe,
     acc: 95,
     stages: [["spe", -1]],
+    magicCoat: true,
   },
   stunspore: {
     kind: "status",
@@ -1606,6 +1623,7 @@ const internalMoveList = createMoveList({
     range: Range.Adjacent,
     acc: 75,
     status: "par",
+    magicCoat: true,
   },
   submission: {
     kind: "damage",
@@ -1659,6 +1677,7 @@ const internalMoveList = createMoveList({
     range: Range.Adjacent,
     acc: 55,
     sound: true,
+    magicCoat: true,
   },
   surf: {
     kind: "damage",
@@ -1721,6 +1740,7 @@ const internalMoveList = createMoveList({
     range: Range.Adjacent,
     acc: 100,
     stages: [["def", -1]],
+    magicCoat: true,
   },
   teleport: {
     kind: "fail",
@@ -1791,6 +1811,7 @@ const internalMoveList = createMoveList({
     range: Range.Adjacent,
     acc: 100,
     status: "par",
+    magicCoat: true,
   },
   toxic: {
     kind: "status",
@@ -1800,6 +1821,7 @@ const internalMoveList = createMoveList({
     range: Range.Adjacent,
     acc: 85,
     status: "tox",
+    magicCoat: true,
   },
   transform: {
     name: "Transform",
@@ -1947,6 +1969,7 @@ const internalMoveList = createMoveList({
     type: "normal",
     range: Range.Adjacent,
     protect: true,
+    magicCoat: true,
     exec(battle, user, [target]) {
       if (target.v.ability === "oblivious") {
         battle.ability(target);
@@ -2050,6 +2073,7 @@ const internalMoveList = createMoveList({
     range: Range.Adjacent,
     acc: 100,
     stages: [["atk", -2]],
+    magicCoat: true,
   },
   conversion2: {
     name: "Conversion2",
@@ -2089,6 +2113,7 @@ const internalMoveList = createMoveList({
     range: Range.Any,
     acc: 100,
     stages: [["spe", -2]],
+    magicCoat: true,
   },
   crosschop: {
     kind: "damage",
@@ -2436,6 +2461,7 @@ const internalMoveList = createMoveList({
     pp: 5,
     type: "normal",
     range: Range.Adjacent,
+    magicCoat: true,
   },
   megahorn: {
     kind: "damage",
@@ -2794,6 +2820,7 @@ const internalMoveList = createMoveList({
     range: Range.Adjacent,
     acc: 90,
     stages: [["spe", -2]],
+    magicCoat: true,
   },
   shadowball: {
     kind: "damage",
@@ -2913,6 +2940,7 @@ const internalMoveList = createMoveList({
     pp: 10,
     type: "bug",
     range: Range.Adjacent,
+    magicCoat: true,
   },
   spikes: {
     name: "Spikes",
@@ -2983,6 +3011,7 @@ const internalMoveList = createMoveList({
     range: Range.Adjacent,
     protect: true,
     stages: [["atk", +2]],
+    magicCoat: true,
   },
   sweetkiss: {
     kind: "confuse",
@@ -2991,6 +3020,7 @@ const internalMoveList = createMoveList({
     type: "normal",
     range: Range.Adjacent,
     acc: 75,
+    magicCoat: true,
   },
   sweetscent: {
     kind: "stage",
@@ -3000,6 +3030,7 @@ const internalMoveList = createMoveList({
     range: Range.AllAdjacentFoe,
     acc: 100,
     stages: [["eva", -1]],
+    magicCoat: true,
   },
   synthesis: {
     kind: "recover",
@@ -3186,6 +3217,7 @@ const internalMoveList = createMoveList({
     type: "normal",
     range: Range.Adjacent,
     protect: true,
+    magicCoat: true,
   },
   bounce: {
     kind: "damage",
@@ -3420,6 +3452,7 @@ const internalMoveList = createMoveList({
     range: Range.Adjacent,
     acc: 100,
     stages: [["spd", -2]],
+    magicCoat: true,
   },
   featherdance: {
     kind: "stage",
@@ -3429,6 +3462,7 @@ const internalMoveList = createMoveList({
     range: Range.Adjacent,
     acc: 100,
     stages: [["atk", -2]],
+    magicCoat: true,
   },
   flatter: {
     kind: "swagger",
@@ -3439,6 +3473,7 @@ const internalMoveList = createMoveList({
     range: Range.Adjacent,
     protect: true,
     stages: [["spa", +2]],
+    magicCoat: true,
   },
   focuspunch: {
     kind: "damage",
@@ -3489,6 +3524,7 @@ const internalMoveList = createMoveList({
     acc: 55,
     status: "slp",
     sound: true,
+    magicCoat: true,
   },
   grudge: {
     kind: "volatile",
@@ -3714,6 +3750,7 @@ const internalMoveList = createMoveList({
     acc: 85,
     stages: [["spd", -2]],
     sound: true,
+    magicCoat: true,
   },
   meteormash: {
     kind: "damage",
@@ -4171,6 +4208,7 @@ const internalMoveList = createMoveList({
     // prettier-ignore
     stages: [["atk", -1], ["def", -1]],
     ignoreSub: true,
+    magicCoat: true,
   },
   torment: {
     name: "Torment",
@@ -4299,6 +4337,7 @@ const internalMoveList = createMoveList({
     range: Range.Adjacent,
     acc: 75,
     status: "brn",
+    magicCoat: true,
   },
   wish: {
     name: "Wish",
@@ -4319,6 +4358,8 @@ const internalMoveList = createMoveList({
     pp: 10,
     type: "normal",
     range: Range.Adjacent,
+    magicCoat: true,
+    protect: true,
     exec(battle, user, [target]) {
       if (
         target.v.substitute ||

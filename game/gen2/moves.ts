@@ -24,7 +24,9 @@ export const moveFunctionPatches: Partial<MoveFunctions> = {
     }
   },
   status(battle, user, [target]) {
-    if (target.v.substitute) {
+    if (battle.tryMagicBounce(this, user, target)) {
+      return;
+    } else if (target.v.substitute) {
       return battle.info(target, "fail_generic");
     } else if (battle.hasUproar(target)) {
       return battle.info(user, "fail_generic");

@@ -651,14 +651,22 @@ export class Battle {
     }
   }
 
-  useMove(move: Move, user: ActivePokemon, targets: ActivePokemon[], moveIndex?: number) {
+  useMove(
+    move: Move,
+    user: ActivePokemon,
+    targets: ActivePokemon[],
+    moveIndex?: number,
+    quiet?: bool,
+  ) {
     if (move.kind !== "switch") {
       targets = targets.filter(t => !t.v.fainted);
       const availableTargets = this.getTargets(user, move.range);
 
       let target;
       if (isSpreadMove(move.range)) {
-        targets = availableTargets;
+        if (!targets.length) {
+          targets = availableTargets;
+        }
       } else if ((target = availableTargets.find(t => t.v.hasFlag(VF.followMe)))) {
         targets = [target];
       } else if (
@@ -750,7 +758,7 @@ export class Battle {
         user.unstatus(this, "thaw");
       }
 
-      if (!user.v.bide) {
+      if (!user.v.bide && !quiet) {
         this.event({
           type: "move",
           move: moveId,
@@ -792,6 +800,7 @@ export class Battle {
         return this.sv([user.clearFlag(VF.charge)]);
       }
 
+      const leftmost = targets[0];
       if (this.affectedByProtect(move)) {
         for (let i = 0; i < targets.length; i++) {
           if (targets[i].v.hasFlag(VF.protect)) {
@@ -810,6 +819,15 @@ export class Battle {
           return;
         }
       }
+
+      if (targets.includes(leftmost) && leftmost.v.hasFlag(VF.magicCoat) && move.magicCoat) {
+        const newTargets = isSpreadMove(move.range)
+          ? this.getTargets(leftmost, move.range)
+          : [user];
+        this.event({type: "bounce", src: leftmost.id, move: moveId});
+        this.useMove(move, leftmost, newTargets, undefined, true);
+        return;
+      }
     }
 
     if (!move.kind) {
@@ -826,6 +844,15 @@ export class Battle {
       targets = [this.rng.choice(targets)!];
     }
     return this.useMove(move, user, targets, moveIndex);
+  }
+
+  tryMagicBounce(move: Move, user: ActivePokemon, target: ActivePokemon) {
+    if (target.v.hasFlag(VF.magicCoat) && move.magicCoat) {
+      this.event({type: "bounce", src: target.id, move: this.moveIdOf(move)!});
+      this.useMove(move, target, [user], undefined, true);
+      return true;
+    }
+    return false;
   }
 
   checkFaint(user: ActivePokemon, causedFaint = false) {
