@@ -206,6 +206,10 @@ export const moveFunctions: MoveFunctions = {
 
     user.handleShellBell(battle, dealt);
     battle.sv([user.clearFlag(VF.charge)]);
+
+    if (this.flag === "bide") {
+      user.v.bide = undefined;
+    }
   },
   fail(battle, user) {
     battle.info(user, this.why);

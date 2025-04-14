@@ -138,11 +138,7 @@ const internalMoveList = createMoveList({
     kingsRock: true,
     flag: "bide",
     contact: true,
-    getDamage(_, user) {
-      const dmg = user.v.bide?.dmg;
-      user.v.bide = undefined;
-      return (dmg ?? 0) * 2;
-    },
+    getDamage: (_, user) => (user.v.bide?.dmg ?? 0) * 2,
   },
   bind: {
     kind: "damage",

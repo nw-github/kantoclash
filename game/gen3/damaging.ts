@@ -205,9 +205,8 @@ export const tryDamage = (
     dead = false,
     event,
     endured = false,
-    band = false;
-
-  // TODO: should bide include damage taken by a substitute?
+    band = false,
+    handledShellBell = true;
 
   if (self.flag === "beatup") {
     let dmg, isCrit;
@@ -230,12 +229,6 @@ export const tryDamage = (
         break;
       }
     }
-
-    if (!hadSub && target.v.bide) {
-      target.v.bide.dmg += dealt;
-    }
-
-    dealt = 0;
   } else if (self.flag === "double" || self.flag === "triple" || self.flag === "multi") {
     const counts = {
       double: 2,
@@ -279,12 +272,6 @@ export const tryDamage = (
         }
       }
     }
-
-    if (!hadSub && target.v.bide) {
-      target.v.bide.dmg += dealt;
-    }
-
-    dealt = 0;
   } else {
     let dmg, isCrit;
     ({dmg, isCrit, endured, band} = getDamage(self, battle, user, target, {power, spread}));
@@ -302,9 +289,16 @@ export const tryDamage = (
       onHit(type, hadSub);
     }
 
-    if (!hadSub && target.v.bide) {
-      target.v.bide.dmg += dealt;
-    }
+    handledShellBell = false;
+  }
+
+  // TODO: should bide include damage taken by a substitute?
+  if (!hadSub && target.v.bide) {
+    target.v.bide.dmg += dealt;
+  }
+
+  if (handledShellBell) {
+    dealt = 0;
   }
 
   target.v.lastHitBy = {move: self, user};
