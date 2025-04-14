@@ -2041,8 +2041,7 @@ const internalMoveList = createMoveList({
     exec(battle, user) {
       let lastType = user.v.lastHitBy?.move?.type;
       if (!lastType) {
-        battle.info(user, "fail_generic");
-        return;
+        return battle.info(user, "fail_generic");
       }
 
       if (lastType === "???") {

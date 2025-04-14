@@ -114,6 +114,10 @@ export const tryDamage = (
         break;
       }
     }
+
+    if (!hadSub && target.v.bide) {
+      target.v.bide.dmg += dealt;
+    }
     dealt = 0;
   } else if (self.flag === "double" || self.flag === "triple" || self.flag === "multi") {
     const counts = {
@@ -138,6 +142,10 @@ export const tryDamage = (
       ({dead, event, dealt} = target.damage(dmg, user, battle, isCrit, "attacked", false, eff));
       event.hitCount = hits + 1;
     }
+
+    if (!hadSub && target.v.bide) {
+      target.v.bide.dmg += dealt;
+    }
     dealt = 0;
   } else {
     let dmg, isCrit;
@@ -151,6 +159,10 @@ export const tryDamage = (
       false,
       eff,
     ));
+
+    if (!hadSub && target.v.bide) {
+      target.v.bide.dmg += dealt;
+    }
   }
 
   target.v.lastHitBy = {move: self, user};

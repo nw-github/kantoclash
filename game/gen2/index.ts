@@ -328,10 +328,7 @@ const createGeneration = (): Generation => {
         [2, 3, 6, 7, 10, 11, 14, 15].includes(dvs.atk)
       );
     },
-    accumulateBide(_battle, user, bide) {
-      // FIXME: this is wrong since retaliateDamage is reset at the end of the turn
-      bide.dmg += user.v.retaliateDamage;
-    },
+    accumulateBide() {},
     tryDamage,
   };
 

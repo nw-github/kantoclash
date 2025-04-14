@@ -161,12 +161,16 @@ export const moveFunctions: MoveFunctions = {
     }
 
     if (this.range === Range.Self) {
-      if (!user.v.lastHitBy) {
-        user.v.rollout = 0;
-        user.v.furyCutter = 0;
-        return battle.info(user, battle.gen.id <= 2 ? "miss" : "fail_generic");
+      if (user.v.lastHitBy && !user.v.lastHitBy.user.v.fainted) {
+        targets = [user.v.lastHitBy.user];
+      } else {
+        targets = battle.getTargets(user, Range.AdjacentFoe).slice(0, 1);
+        if (!targets.length) {
+          user.v.rollout = 0;
+          user.v.furyCutter = 0;
+          return battle.info(user, "fail_notarget");
+        }
       }
-      targets = [user.v.lastHitBy.user];
     }
 
     let dealt = 0;

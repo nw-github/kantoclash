@@ -207,6 +207,8 @@ export const tryDamage = (
     endured = false,
     band = false;
 
+  // TODO: should bide include damage taken by a substitute?
+
   if (self.flag === "beatup") {
     let dmg, isCrit;
     for (const poke of user.owner.team) {
@@ -228,6 +230,11 @@ export const tryDamage = (
         break;
       }
     }
+
+    if (!hadSub && target.v.bide) {
+      target.v.bide.dmg += dealt;
+    }
+
     dealt = 0;
   } else if (self.flag === "double" || self.flag === "triple" || self.flag === "multi") {
     const counts = {
@@ -272,6 +279,11 @@ export const tryDamage = (
         }
       }
     }
+
+    if (!hadSub && target.v.bide) {
+      target.v.bide.dmg += dealt;
+    }
+
     dealt = 0;
   } else {
     let dmg, isCrit;
@@ -288,6 +300,10 @@ export const tryDamage = (
 
     if (dmg !== 0) {
       onHit(type, hadSub);
+    }
+
+    if (!hadSub && target.v.bide) {
+      target.v.bide.dmg += dealt;
     }
   }
 
