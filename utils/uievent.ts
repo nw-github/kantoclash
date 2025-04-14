@@ -169,18 +169,22 @@ export const screenMessage: Record<ScreenId, Record<ScreenEvent["kind"], string>
   safeguard: {
     start: "{} became cloaked in a mystical veil!",
     end: "{}'s Safeguard wore off...",
+    shattered: "{}'s Safeguard wore off...",
   },
   light_screen: {
     start: "Light Screen raised {l}'s Special Defense!",
     end: "{}'s Light Screen wore off...",
+    shattered: "{}'s Light Screen shattered!",
   },
   reflect: {
     start: "Reflect raised {l}'s Defense!",
     end: "{}'s Reflect wore off...",
+    shattered: "{}'s Reflect shattered!",
   },
   mist: {
     start: "{} became shrouded in Mist!",
     end: "{}'s Mist wore off...",
+    shattered: "{}'s Mist wore off...",
   },
 };
 

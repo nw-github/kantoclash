@@ -118,7 +118,7 @@ export const tryDamage = (
     for (const screen of ["light_screen", "reflect"] as const) {
       if (opp.screens[screen]) {
         opp.screens[screen] = 0;
-        battle.event({type: "screen", user: opp.id, screen, kind: "end"});
+        battle.event({type: "screen", user: opp.id, screen, kind: "shattered"});
       }
     }
   }

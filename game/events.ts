@@ -308,7 +308,12 @@ type ConversionEvent = {type: "conversion"; src: PokeId; target?: PokeId; types:
 
 type MagnitudeEvent = {type: "magnitude"; magnitude: number};
 
-export type ScreenEvent = {type: "screen"; kind: "start" | "end"; screen: ScreenId; user: PlayerId};
+export type ScreenEvent = {
+  type: "screen";
+  kind: "start" | "end" | "shattered";
+  screen: ScreenId;
+  user: PlayerId;
+};
 
 type SetVolatilesEvent = {type: "sv"};
 
