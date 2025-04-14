@@ -134,6 +134,7 @@ export const moveFunctions: MoveFunctions = {
     user.switchTo(this.poke, battle, this.batonPass ? "baton_pass" : undefined);
   },
   damage(battle, user, targets) {
+    let power: number | undefined;
     if (this.flag === "multi_turn" && !user.v.thrashing) {
       // when called by sleep talk, thrashing moves don't lock the user in
       if (user.lastChosenMove !== battle.gen.moveList.sleeptalk) {
@@ -159,11 +160,15 @@ export const moveFunctions: MoveFunctions = {
       }
 
       battle.info(user, "bide");
+    } else if (this.flag === "magnitude") {
+      const magnitude = battle.rng.int(4, 10);
+      power = [10, 30, 50, 70, 90, 110, 150][magnitude - 4];
+      battle.event({type: "magnitude", magnitude});
     }
 
     if (this.range === Range.Self) {
-      if (user.v.lastHitBy && !user.v.lastHitBy.user.v.fainted) {
-        targets = [user.v.lastHitBy.user];
+      if (user.v.lastHitBy && !user.v.lastHitBy.poke.v.fainted) {
+        targets = [user.v.lastHitBy.poke];
       } else {
         targets = battle.getTargets(user, Range.AdjacentFoe).slice(0, 1);
         if (!targets.length) {
@@ -177,7 +182,7 @@ export const moveFunctions: MoveFunctions = {
     let dealt = 0;
     const killed = [];
     for (const target of targets) {
-      dealt += battle.gen.tryDamage(this, battle, user, target, targets.length > 1);
+      dealt += battle.gen.tryDamage(this, battle, user, target, targets.length > 1, power);
 
       if (!target.base.hp && target.owner !== user.owner) {
         killed.push(target);

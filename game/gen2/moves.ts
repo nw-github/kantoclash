@@ -1,5 +1,5 @@
 import {Range, type Move, type MoveFunctions, type MoveId} from "../moves";
-import {isSpecial, stageKeys} from "../utils";
+import {stageKeys} from "../utils";
 
 export const moveFunctionPatches: Partial<MoveFunctions> = {
   recover(battle, user) {
@@ -138,14 +138,8 @@ export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
   counter: {
     power: 0,
     noMetronome: true,
-    getDamage(battle, user, target) {
-      if (
-        !target.v.lastMove ||
-        (isSpecial(target.v.lastMove.type) && target.v.lastMove !== battle.gen.moveList.beatup)
-      ) {
-        return 0;
-      }
-      return user.v.retaliateDamage * 2;
+    getDamage(_battle, user) {
+      return !user.v.lastHitBy || user.v.lastHitBy.special ? 0 : user.v.retaliateDamage * 2;
     },
   },
   dig: {power: 60},

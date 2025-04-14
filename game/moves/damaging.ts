@@ -143,7 +143,7 @@ export function getDamage(
     }
     if (
       self.flag === "revenge" &&
-      user.v.lastHitBy?.user === target &&
+      user.v.lastHitBy?.poke === target &&
       target.choice?.move.kind === "damage" &&
       target.choice?.executed
     ) {

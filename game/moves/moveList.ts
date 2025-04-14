@@ -1,15 +1,6 @@
 import type {DamagingMove, Move} from "./index";
 import type {Pokemon} from "../pokemon";
-import {
-  HP_TYPES,
-  hpPercentExact,
-  idiv,
-  isSpecial,
-  stageKeys,
-  stageStatKeys,
-  VF,
-  type Type,
-} from "../utils";
+import {HP_TYPES, hpPercentExact, idiv, stageKeys, stageStatKeys, VF, type Type} from "../utils";
 import {abilityList} from "../species";
 
 export type MoveId = keyof typeof internalMoveList;
@@ -1082,7 +1073,7 @@ const internalMoveList = createMoveList({
       const lastHitBy = user.v.lastHitBy;
       if (user.base.transformed && battle.gen.id === 2) {
         return battle.info(user, "fail_generic");
-      } else if (!lastHitBy || lastHitBy.user.v.lastMove !== lastHitBy.move) {
+      } else if (!lastHitBy || lastHitBy.poke.v.lastMove !== lastHitBy.move) {
         return battle.info(user, "fail_generic");
       }
       return battle.callMove(lastHitBy.move, user);
@@ -2514,16 +2505,8 @@ const internalMoveList = createMoveList({
     noMetronome: true,
     kingsRock: true,
     noAssist: true,
-    getDamage(battle, user, target) {
-      if (
-        !user.v.retaliateDamage ||
-        !target.v.lastMove ||
-        !isSpecial(target.v.lastMove.type) ||
-        target.v.lastMove === battle.gen.moveList.beatup
-      ) {
-        return 0;
-      }
-      return user.v.retaliateDamage * 2;
+    getDamage(_battle, user) {
+      return !user.v.lastHitBy || !user.v.lastHitBy.special ? 0 : user.v.retaliateDamage * 2;
     },
   },
   moonlight: {
@@ -2618,7 +2601,10 @@ const internalMoveList = createMoveList({
       if (target.base.hp < hp) {
         target.recover(hp - target.base.hp, user, battle, "pain_split");
       } else {
-        target.damage(target.base.hp - hp, user, battle, false, "pain_split", true);
+        const {dealt} = target.damage(target.base.hp - hp, user, battle, false, "pain_split", true);
+        if (battle.gen.id === 3 && target.v.bide) {
+          target.v.bide.dmg += dealt;
+        }
       }
     },
   },
@@ -2888,7 +2874,13 @@ const internalMoveList = createMoveList({
     noSleepTalk: true,
     noAssist: true,
     exec(battle, user) {
-      const m = battle.rng.choice(user.base.moves.filter(m => !battle.gen.moveList[m].noSleepTalk));
+      const m = battle.rng.choice(
+        user.base.moves.filter(
+          m =>
+            !battle.gen.moveList[m].noSleepTalk &&
+            (!user.v.disabled || m !== user.base.moves[user.v.disabled.indexInMoves]),
+        ),
+      );
       if (!m) {
         return battle.info(user, "fail_generic");
       }
@@ -3161,6 +3153,7 @@ const internalMoveList = createMoveList({
     type: "normal",
     range: Range.Self,
     noAssist: true,
+    noSleepTalk: true,
     exec(battle, user) {
       const moves = user.owner.team
         .flatMap(p => (p !== user.base.real ? p.moves : []))
@@ -3486,6 +3479,7 @@ const internalMoveList = createMoveList({
     priority: -3,
     contact: true,
     kingsRock: true,
+    noSleepTalk: true,
     checkSuccess(battle, user) {
       if (!user.v.hasFocus) {
         battle.info(user, "fail_focus");
@@ -4271,6 +4265,7 @@ const internalMoveList = createMoveList({
     acc: 100,
     sound: true,
     flag: "uproar",
+    noSleepTalk: true,
   },
   volttackle: {
     kind: "damage",

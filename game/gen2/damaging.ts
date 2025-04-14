@@ -8,6 +8,7 @@ export const tryDamage = (
   user: ActivePokemon,
   target: ActivePokemon,
   spread: bool,
+  power?: number,
 ): number => {
   const checkThrashing = () => {
     if (user.v.thrashing && --user.v.thrashing.turns === 0) {
@@ -72,12 +73,7 @@ export const tryDamage = (
     return 0;
   }
 
-  let power: number | undefined;
-  if (self.flag === "magnitude") {
-    const magnitude = battle.rng.int(4, 10);
-    power = [10, 30, 50, 70, 90, 110, 150][magnitude - 4];
-    battle.event({type: "magnitude", magnitude});
-  } else if (self.flag === "present") {
+  if (self.flag === "present") {
     const result = randChoiceWeighted(battle.rng, [40, 80, 120, -4], [40, 30, 10, 20]);
     if (result < 0) {
       if (target.base.hp === target.base.stats.hp) {
@@ -165,7 +161,11 @@ export const tryDamage = (
     }
   }
 
-  target.v.lastHitBy = {move: self, user};
+  target.v.lastHitBy = {
+    move: self,
+    poke: user,
+    special: battle.moveIdOf(self) === "hiddenpower" ? false : isSpecial(type),
+  };
 
   checkThrashing();
   if (user.base.hp && self.recoil) {

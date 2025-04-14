@@ -18,6 +18,7 @@ export function tryDamage(
   user: ActivePokemon,
   target: ActivePokemon,
   _spread: bool,
+  _power?: number,
 ): number {
   const checkThrashing = () => {
     if (user.v.thrashing && user.v.thrashing.turns !== -1 && --user.v.thrashing.turns === 0) {
@@ -65,7 +66,7 @@ export function tryDamage(
     return 0;
   }
 
-  target.v.lastHitBy = {move: self, user};
+  target.v.lastHitBy = {move: self, poke: user, special: isSpecial(self.type)};
 
   checkThrashing();
   if (self.flag === "rage") {

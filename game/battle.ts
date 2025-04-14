@@ -501,10 +501,12 @@ export class Battle {
     if (target.v.hasFlag(VF.lockon)) {
       this.event({type: "sv", volatiles: [target.clearFlag(VF.lockon)]});
 
-      const moveId = this.moveIdOf(move);
-      if (moveId === "earthquake" || moveId === "fissure" || moveId === "magnitude") {
-        if (target.v.charging && this.moveIdOf(target.v.charging.move) === "fly") {
-          return false;
+      if (this.gen.id === 2) {
+        const moveId = this.moveIdOf(move);
+        if (moveId === "earthquake" || moveId === "fissure" || moveId === "magnitude") {
+          if (target.v.charging && this.moveIdOf(target.v.charging.move) === "fly") {
+            return false;
+          }
         }
       }
 
