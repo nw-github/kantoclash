@@ -114,7 +114,7 @@
     <template v-else>{{ pn(e.src) }} transformed!</template>
   </div>
   <div v-else-if="e.type === 'disable'">{{ pn(e.src) }}'s {{ gen.moveList[e.move].name }} was disabled!</div>
-  <div v-else-if="e.type === 'charge'" class="charge">{{ chargeMessage[e.move]?.replace("{}", pn(e.src)) }}</div>
+  <div v-else-if="e.type === 'charge'" class="move">{{ chargeMessage[e.move]?.replace("{}", pn(e.src)) }}</div>
   <div v-else-if="e.type === 'mimic'">{{ pn(e.src) }} learned {{ gen.moveList[e.move].name }}!</div>
   <div v-else-if="e.type === 'conversion'">
     <template v-if="e.target">

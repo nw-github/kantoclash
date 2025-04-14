@@ -245,9 +245,6 @@ export const moveFunctions: MoveFunctions = {
     }
 
     target.switchTo(next, battle, "phaze");
-    if (target.choice) {
-      target.choice.executed = true;
-    }
   },
   protect(battle, user) {
     if (user.v.substitute || (battle.turnOrder.at(-1) === user && !this.endure)) {

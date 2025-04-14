@@ -41,8 +41,8 @@ const getRandomPokemon = (
     .sort(() => Math.random() - 0.5)
     .slice(0, count)
     .map(id => {
-      const species = gen.speciesList[id];
-      const poke = customize(species, id);
+      const s = gen.speciesList[id];
+      const poke = customize(s, id);
       const items = (Object.keys(gen.items) as ItemId[]).filter(item => {
         if (!(item in itemDesc)) {
           return false;
@@ -58,10 +58,10 @@ const getRandomPokemon = (
         ) {
           return false;
         } else if (
-          (statusBerry[item] === "frz" && species.types.includes("ice")) ||
-          (statusBerry[item] === "psn" && species.types.includes("poison")) ||
-          (statusBerry[item] === "psn" && species.types.includes("steel")) ||
-          (statusBerry[item] === "brn" && species.types.includes("fire"))
+          (statusBerry[item] === "frz" && s.types.includes("ice")) ||
+          (statusBerry[item] === "psn" && s.types.includes("poison")) ||
+          (statusBerry[item] === "psn" && s.types.includes("steel")) ||
+          (statusBerry[item] === "brn" && s.types.includes("fire"))
         ) {
           return false;
         } else if (item === "mysteryberry" && !poke.moves.some(m => gen.moveList[m].pp === 5)) {
@@ -82,6 +82,38 @@ const getRandomPokemon = (
 
         return true;
       });
+
+      poke.evs ??= {};
+      if (gen.id >= 3) {
+        const otherStats = statKeys.filter(k => k !== "hp" && k !== "spe");
+
+        const best = otherStats.reduce((prev, c) => (s.stats[c] > s.stats[prev] ? c : prev), "atk");
+        poke.evs.hp = 4;
+        poke.evs.spe = 252;
+        poke.evs[best] = 252;
+
+        const natures: Nature[] = [];
+        for (const k of Object.values(Nature)) {
+          if (typeof k === "number") {
+            const [plus, minus] = Object.keys(natureTable[k]);
+            if (plus === "spe" && minus !== best && otherStats.includes(minus)) {
+              natures.push(k);
+            }
+          }
+        }
+
+        poke.nature = random.choice(natures);
+        poke.shiny = random.int(0, 1024) === 0;
+        poke.ability = random.choice((s.abilities as AbilityId[]).filter(a => abilityList[a].desc));
+        if (!poke.ability) {
+          poke.ability = random.choice(s.abilities as AbilityId[]);
+        }
+
+        // nature = random.choice(Object.values(Nature).filter(v => typeof v === "number"));
+        // const plusStat = Object.keys(natureTable)[0];
+        // evs[plusStat as keyof Stats] = 252;
+      }
+
       poke.item = random.choice(items);
       poke.friendship = poke.moves.includes("frustration") ? 0 : 255;
       return poke;
@@ -158,39 +190,7 @@ export const randoms = (
 
     let nature: Nature | undefined;
     let ability: AbilityId | undefined;
-    let shiny = false;
-    const evs: Partial<Stats> = {};
-    if (gen.id >= 3) {
-      const otherStats = statKeys.filter(k => k !== "hp" && k !== "spe");
-
-      const best = otherStats.reduce((prev, c) => (s.stats[c] > s.stats[prev] ? c : prev), "atk");
-      evs.hp = 4;
-      evs.spe = 252;
-      evs[best] = 252;
-
-      const natures: Nature[] = [];
-      for (const k of Object.values(Nature)) {
-        if (typeof k === "number") {
-          const [plus, minus] = Object.keys(natureTable[k]);
-          if (plus === "spe" && minus !== best && otherStats.includes(minus)) {
-            natures.push(k);
-          }
-        }
-      }
-
-      nature = random.choice(natures);
-      shiny = random.int(0, 1024) === 0;
-
-      ability = random.choice((s.abilities as AbilityId[]).filter(a => abilityList[a].desc));
-      if (!ability) {
-        ability = random.choice(s.abilities as AbilityId[]);
-      }
-
-      // nature = random.choice(Object.values(Nature).filter(v => typeof v === "number"));
-      // const plusStat = Object.keys(natureTable)[0];
-      // evs[plusStat as keyof Stats] = 252;
-    }
-    return {species: id, level, moves, ivs, evs, nature, shiny, ability};
+    return {species: id, level, moves, ivs, evs: {}, nature, ability};
   });
 };
 
@@ -269,8 +269,9 @@ const createValidator = (gen: Generation) => {
     .max(6, "Team must have between 1 and 6 pokemon")
     .nonempty("Team must have between 1 and 6 pokemon")
     .refine(
-      team => new Set(team.map(p => p.species)).size === team.length,
-      "Cannot contain two pokemon of the same species",
+      team =>
+        new Set(team.map(p => gen.speciesList[p.species as SpeciesId].dexId)).size === team.length,
+      "Cannot contain two pokemon with the same national dex number",
     );
 };
 
@@ -304,17 +305,8 @@ const validateTeam = (
 
 export const formatDescs: Record<FormatId, FormatFunctions> = {
   g3_standard: {validate: team => validateTeam(VALIDATOR_GEN3, team)},
-  g3_randoms: {
-    generate: () => randoms(GENERATION3, (s, _) => !s.evolvesTo),
-  },
-  g3_randoms_doubles: {
-    generate: () => randoms(GENERATION3, s => !s.evolvesTo),
-  },
   g3_doubles: {validate: team => validateTeam(VALIDATOR_GEN3, team)},
   g2_standard: {validate: team => validateTeam(VALIDATOR_GEN2, team)},
-  g2_randoms: {
-    generate: () => randoms(GENERATION2, (s, id) => !s.evolvesTo && id !== "mewtwo"),
-  },
   g1_standard: {validate: team => validateTeam(VALIDATOR_GEN1, team)},
   g1_nfe: {
     validate(team) {
@@ -325,6 +317,16 @@ export const formatDescs: Record<FormatId, FormatFunctions> = {
         }
       });
     },
+  },
+
+  g3_randoms: {
+    generate: () => randoms(GENERATION3, (s, _) => !s.evolvesTo),
+  },
+  g3_randoms_doubles: {
+    generate: () => randoms(GENERATION3, s => !s.evolvesTo),
+  },
+  g2_randoms: {
+    generate: () => randoms(GENERATION2, (s, id) => !s.evolvesTo && id !== "mewtwo"),
   },
   g1_truly_randoms: {
     generate() {
@@ -353,6 +355,7 @@ export const formatDescs: Record<FormatId, FormatFunctions> = {
       return randoms(GENERATION1, (s, id) => !!s.evolvesTo && !uselessNfe.has(id));
     },
   },
+
   g1_metronome: {
     generate() {
       return getRandomPokemon(
@@ -367,6 +370,16 @@ export const formatDescs: Record<FormatId, FormatFunctions> = {
     generate() {
       return getRandomPokemon(
         GENERATION2,
+        6,
+        s => !s.evolvesTo,
+        (_, species) => ({species, moves: ["metronome"]}),
+      );
+    },
+  },
+  g3_metronome: {
+    generate() {
+      return getRandomPokemon(
+        GENERATION3,
         6,
         s => !s.evolvesTo,
         (_, species) => ({species, moves: ["metronome"]}),

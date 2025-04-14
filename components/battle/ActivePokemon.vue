@@ -26,7 +26,11 @@
       </div>
       <div class="relative overflow-hidden rounded-md bg-[#333] flex">
         <div class="hp-fill absolute h-full rounded-md" />
-        <div class="w-full text-center text-gray-100 text-xs font-medium z-30">{{ hp }}%</div>
+        <div
+          class="w-full text-center text-gray-100 text-[0.65rem] leading-4 sm:text-xs font-medium z-30"
+        >
+          {{ hp }}%
+        </div>
       </div>
       <div class="relative">
         <div
@@ -387,6 +391,7 @@ const badges: {flag: VF; props: InstanceType<typeof UBadge>["$props"]}[] = [
   {flag: VF.flashFire, props: {color: "red", icon: "mdi:fire", variant: "subtle"}},
   {flag: VF.helpingHand, props: {color: "lime", icon: "mdi:hand-clap", variant: "subtle"}},
   {flag: VF.charge, props: {color: "yellow", icon: "material-symbols:bolt", variant: "subtle"}},
+  {flag: VF.magicCoat, props: {color: "pink", icon: "mdi:mirror", variant: "subtle"}},
   {
     flag: VF.cEncore,
     props: {color: "sky", icon: "material-symbols:celebration", variant: "subtle"},
@@ -405,6 +410,10 @@ const badges: {flag: VF; props: InstanceType<typeof UBadge>["$props"]}[] = [
     props: {color: "red", icon: "material-symbols:lock", variant: "subtle", label: "Imprisoning"},
   },
   {flag: VF.curse, props: {color: "red", icon: "mdi:nail", label: "Cursed", variant: "subtle"}},
+  {
+    flag: VF.ingrain,
+    props: {color: "lime", icon: "tabler:prison", variant: "subtle", label: "Ingrain"},
+  },
   {flag: VF.focusEnergy, props: {color: "emerald", label: "Focus Energy"}},
   {flag: VF.mist, props: {color: "teal", label: "Mist"}},
   {flag: VF.destinyBond, props: {color: "gray", label: "Destiny Bond"}},

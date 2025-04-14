@@ -34,6 +34,7 @@ export const battleFormats = [
   "g3_randoms_doubles",
   "g3_doubles",
   "g3_standard",
+  "g3_metronome",
   "g3_randoms",
   "g2_standard",
   "g2_randoms",
@@ -82,6 +83,13 @@ export const formatInfo: Record<FormatId, FormatInfo> = {
     mods: {endlessBattle: true},
     generation: 3,
     doubles: true,
+  },
+  g3_metronome: {
+    name: "[ADV] Random Metronome Battle",
+    icon: "mdi:metronome",
+    desc: "A random battle where all Pokémon only know the move Metronome.",
+    mods: {},
+    generation: 3,
   },
   g2_standard: {
     name: "[GSC] Standard Battle",

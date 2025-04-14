@@ -6,7 +6,11 @@
         :species="players.poke(currOption.id)!.speciesId"
         :form="players.poke(currOption.id)!.form"
       />
-      What will {{ players.poke(currOption.id)!.name }} do?
+
+      <span v-if="players.poke(currOption.id)!.fainted">
+        Choose a Pokémon to replace {{ players.poke(currOption.id)!.name }}
+      </span>
+      <span v-else> What will {{ players.poke(currOption.id)!.name }} do?</span>
     </div>
 
     <div v-if="!options || !options.length" class="italic">Waiting for opponent...</div>

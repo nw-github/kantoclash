@@ -70,6 +70,10 @@ export class ActivePokemon {
   }
 
   switchTo(next: Pokemon, battle: Battle, why?: "phaze" | "baton_pass") {
+    if (this.choice) {
+      this.choice.executed = true;
+    }
+
     if (this.base.status === "tox" && battle.gen.id <= 2) {
       this.base.status = "psn";
       battle.event({type: "sv", volatiles: [{id: this.id, v: {status: "psn"}}]});

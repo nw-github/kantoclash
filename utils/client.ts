@@ -18,6 +18,7 @@ export type ClientActivePokemon = {
   v: ClientVolatiles;
   base?: Pokemon;
   indexInTeam: number;
+  abilityUnknown?: bool;
 };
 
 export type ClientPlayer = {

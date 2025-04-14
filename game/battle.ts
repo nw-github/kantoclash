@@ -613,7 +613,7 @@ export class Battle {
         this.event({type: "sv", volatiles: [user.clearFlag(VF.destinyBond | VF.grudge)]});
       }
 
-      if (move.kind !== "switch" && user.v.encore) {
+      if (move.kind !== "switch" && user.v.encore && indexInMoves !== undefined) {
         indexInMoves = user.v.encore.indexInMoves;
         move = this.gen.moveList[user.base.moves[user.v.encore.indexInMoves]];
       }

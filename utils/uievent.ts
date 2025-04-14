@@ -57,6 +57,7 @@ export const chargeMessage: Partial<Record<MoveId, string>> = {
   dig: "{} dug a hole!",
   fly: "{} flew up high!",
   dive: "{} hid underwater!",
+  bounce: "{} sprang up!",
 };
 
 export const infoMessage: Record<InfoReason, string> = {
@@ -70,7 +71,7 @@ export const infoMessage: Record<InfoReason, string> = {
   whirlwind: "But it failed!",
   fail_focus: "{} lost its focus and couldn't move!",
   flinch: "{} flinched!",
-  splash: "No effect!",
+  splash: "But nothing happened!",
   cSeeded: "{} was seeded!",
   mist_protect: "{} is protected by the mist!",
   safeguard_protect: "{} is protected by Safeguard!",

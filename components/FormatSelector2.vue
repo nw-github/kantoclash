@@ -42,6 +42,7 @@ const formats: Record<string, Record<string, FormatId>> = {
     ADV: "g3_randoms_doubles",
   },
   "Random Metronome Battle": {
+    ADV: "g3_metronome",
     GSC: "g2_metronome",
     RBY: "g1_metronome",
   },

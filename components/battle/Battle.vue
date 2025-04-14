@@ -650,6 +650,15 @@ const runEvent = async (e: BattleEvent) => {
           },
         });
       }
+    } else if (e.type === "skill_swap") {
+      const src = players.poke(e.src);
+      const target = players.poke(e.target);
+      if (src) {
+        src.abilityUnknown = true;
+      }
+      if (target) {
+        target.abilityUnknown = true;
+      }
     }
 
     handleVolatiles(e);
