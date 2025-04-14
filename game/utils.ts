@@ -63,6 +63,7 @@ export enum VF {
   followMe     = 0x0004_0000,
   loafing      = 0x0008_0000,
   imprisoning  = 0x0010_0000,
+  torment      = 0x0020_0000,
 
   /** Client only */
   cConfused    = 0x8000_0000,

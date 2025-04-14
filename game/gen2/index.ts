@@ -225,6 +225,8 @@ const createGeneration = (): Generation => {
         return false;
       } else if (battle.allActive.some(p => p.isImprisoning(user, move))) {
         return false;
+      } else if (user.v.hasFlag(VF.torment) && battle.gen.moveList[move] === user.v.lastMove) {
+        return false;
       }
 
       return true;

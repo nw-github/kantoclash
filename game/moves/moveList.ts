@@ -4140,12 +4140,21 @@ const internalMoveList = createMoveList({
     ignoreSub: true,
   },
   torment: {
-    kind: "fail",
     name: "Torment",
-    pp: 1,
-    type: "normal",
-    range: Range.Self,
-    why: "fail_generic",
+    pp: 15,
+    type: "dark",
+    range: Range.Adjacent,
+    acc: 100,
+    protect: true,
+    exec(battle, user, [target]) {
+      if (target.v.hasFlag(VF.torment)) {
+        return battle.info(user, "fail_generic");
+      } else if (!battle.checkAccuracy(this, user, target)) {
+        return;
+      }
+
+      battle.info(target, "torment", [target.setFlag(VF.torment)]);
+    },
   },
   trick: {
     name: "Trick",

@@ -1050,7 +1050,7 @@ export class ActivePokemon {
       });
     }
 
-    const moveLocked = !!(this.v.bide || this.v.trapping);
+    const moveLocked = !!((this.v.bide && battle.gen.id <= 2) || this.v.trapping);
     const cantEscape = this.cantEscape(battle);
     return {
       switches: ((!lockedIn || moveLocked) && !cantEscape) || this.v.fainted ? switches : [],
