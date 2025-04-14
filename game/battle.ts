@@ -651,13 +651,7 @@ export class Battle {
     }
   }
 
-  useMove(
-    move: Move,
-    user: ActivePokemon,
-    targets: ActivePokemon[],
-    moveIndex?: number,
-    snatch?: bool,
-  ) {
+  useMove(move: Move, user: ActivePokemon, targets: ActivePokemon[], moveIndex?: number) {
     if (move.kind !== "switch") {
       targets = targets.filter(t => !t.v.fainted);
       const availableTargets = this.getTargets(user, move.range);
@@ -756,7 +750,7 @@ export class Battle {
         user.unstatus(this, "thaw");
       }
 
-      if (!user.v.bide && !snatch) {
+      if (!user.v.bide) {
         this.event({
           type: "move",
           move: moveId,
@@ -769,12 +763,16 @@ export class Battle {
       if (move.snatch) {
         for (const poke of this.turnOrder) {
           if (!poke.v.fainted && poke.v.hasFlag(VF.snatch)) {
-            poke.v.clearFlag(VF.snatch);
-            // psych up targets the pokémon snatch was stolen from, even if its another snatch
+            this.event({
+              type: "snatch",
+              src: poke.id,
+              target: user.id,
+              volatiles: [poke.clearFlag(VF.snatch)],
+            });
+            // psych up targets the pokémon snatch was stolen from, even if its another snatch user
+            user = poke;
             targets = move.range === Range.Adjacent ? [user] : [poke];
-            this.event({type: "snatch", src: poke.id, target: user.id});
-            this.useMove(move, user, targets, undefined, true);
-            return;
+            moveIndex = undefined;
           }
         }
       }
@@ -798,6 +796,12 @@ export class Battle {
         for (let i = 0; i < targets.length; i++) {
           if (targets[i].v.hasFlag(VF.protect)) {
             this.info(targets[i], "protect");
+            targets.splice(i--, 1);
+          }
+
+          if (targets[i].v.ability === "soundproof" && move.sound) {
+            this.ability(targets[i]);
+            this.info(targets[i], "immune");
             targets.splice(i--, 1);
           }
         }
@@ -860,7 +864,7 @@ export class Battle {
     }
 
     return (
-      (move.kind === "stage" && move.acc) ||
+      (move.kind === "stage" && move.range !== Range.Self) ||
       move.kind === "confuse" ||
       move.kind === "status" ||
       move.kind === "phaze"

@@ -130,6 +130,7 @@ export const tryDamage = (
   if (eff === 0 || fail || protect) {
     user.v.rollout = 0;
     user.v.furyCutter = 0;
+    user.v.thrashing = undefined;
     if (self.flag === "spitup") {
       battle.sv([user.setVolatile("stockpile", 0)]);
     }
@@ -157,6 +158,7 @@ export const tryDamage = (
   ) {
     user.v.rollout = 0;
     user.v.furyCutter = 0;
+    user.v.thrashing = undefined;
     battle.ability(target);
     battle.info(target, "immune");
     target.recover(Math.max(1, Math.floor(target.base.stats.hp / 4)), user, battle, "none");
@@ -166,6 +168,7 @@ export const tryDamage = (
   if (type === "fire" && target.v.ability === "flashfire" && target.base.status !== "frz") {
     user.v.rollout = 0;
     user.v.furyCutter = 0;
+    user.v.thrashing = undefined;
     battle.ability(target, [target.setFlag(VF.flashFire)]);
     battle.info(target, "immune");
     return 0;
@@ -174,6 +177,7 @@ export const tryDamage = (
   if (!battle.checkAccuracy(self, user, target, !isSpecial(type))) {
     user.v.rollout = 0;
     user.v.furyCutter = 0;
+    user.v.thrashing = undefined;
     if (self.flag === "crash") {
       const {dmg} = getDamage(self, battle, user, target, {});
       battle.gen.handleCrashDamage(battle, user, target, dmg);

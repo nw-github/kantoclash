@@ -379,6 +379,7 @@ const relativePos = (src: DOMRect, x: number, y: number) => [x - src.left, y - s
 */
 const badges: {flag: VF; props: InstanceType<typeof UBadge>["$props"]}[] = [
   {flag: VF.followMe, props: {color: "lime", icon: "tabler:hand-finger", variant: "subtle"}},
+  {flag: VF.snatch, props: {color: "lime", icon: "tabler:hand-grab", variant: "subtle"}},
   {flag: VF.cAttract, props: {color: "pink", icon: "material-symbols:favorite", variant: "subtle"}},
   {flag: VF.lockon, props: {color: "red", icon: "ri:crosshair-2-line", variant: "subtle"}},
   {flag: VF.cMeanLook, props: {color: "red", icon: "tabler:prison", variant: "subtle"}},

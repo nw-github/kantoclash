@@ -3664,12 +3664,13 @@ const internalMoveList = createMoveList({
     kingsRock: true,
   },
   magiccoat: {
-    kind: "fail",
+    kind: "volatile",
     name: "Magic Coat",
-    pp: 1,
-    type: "normal",
+    pp: 15,
+    type: "psychic",
     range: Range.Self,
-    why: "fail_generic",
+    priority: +4,
+    flag: VF.magicCoat,
   },
   magicalleaf: {
     kind: "damage",

@@ -24,10 +24,7 @@ export const moveFunctionPatches: Partial<MoveFunctions> = {
     }
   },
   status(battle, user, [target]) {
-    if (target.v.ability === "soundproof" && this.sound) {
-      battle.ability(target);
-      return battle.info(target, "immune");
-    } else if (target.v.substitute) {
+    if (target.v.substitute) {
       return battle.info(target, "fail_generic");
     } else if (battle.hasUproar(target)) {
       return battle.info(user, "fail_generic");

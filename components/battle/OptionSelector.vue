@@ -29,7 +29,7 @@
 
     <div v-if="currTargets">
       <div class="flex gap-1 pb-2 items-center">
-        <span>Target who?</span>
+        <span>Target whom?</span>
         <TooltipButton
           icon="material-symbols:arrow-back-rounded"
           label="Back"
@@ -38,7 +38,7 @@
       </div>
 
       <div class="grid gap-2 grid-cols-2 h-min sm:w-1/2">
-        <template v-for="(poke, i) in players.get(opponent).active" :key="i">
+        <template v-for="(poke, i) in players.get(opponent).active.toReversed()" :key="i">
           <TargetButton
             v-if="poke"
             :poke

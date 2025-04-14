@@ -65,6 +65,7 @@ export enum VF {
   imprisoning  = 0x0010_0000,
   torment      = 0x0020_0000,
   snatch       = 0x0040_0000,
+  magicCoat    = 0x0080_0000,
 
   /** Client only */
   cConfused    = 0x8000_0000,
@@ -73,15 +74,15 @@ export enum VF {
   /** Client only */
   cAttract     = 0x2000_0000,
   /** Client only */
-  cEncore      = 0x0800_0000,
+  cEncore      = 0x1000_0000,
   /** Client only */
-  cMeanLook    = 0x0400_0000,
+  cMeanLook    = 0x0800_0000,
   /** Client only */
-  cSeeded      = 0x0200_0000,
+  cSeeded      = 0x0400_0000,
   /** Client only */
-  cTaunt       = 0x0100_0000,
+  cTaunt       = 0x0200_0000,
   /** Client only */
-  cDrowsy      = 0x0080_0000,
+  cDrowsy      = 0x0100_0000,
 }
 
 // prettier-ignore

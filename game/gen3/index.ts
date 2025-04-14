@@ -525,7 +525,8 @@ const createGeneration = (): Generation => {
           poke.v.canFakeOut = false;
         }
 
-        const flags = VF.protect | VF.endure | VF.helpingHand | VF.followMe | VF.snatch;
+        const flags =
+          VF.protect | VF.endure | VF.helpingHand | VF.followMe | VF.snatch | VF.magicCoat;
         if (poke.v.hasFlag(flags)) {
           battle.event({type: "sv", volatiles: [poke.clearFlag(flags)]});
         }

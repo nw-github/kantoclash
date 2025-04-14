@@ -30,10 +30,7 @@ export const moveFunctions: MoveFunctions = {
     for (const target of targets) {
       if (target.v.substitute) {
         continue;
-      } else if (
-        target.v.ability === "owntempo" ||
-        (this.sound && target.v.ability === "soundproof")
-      ) {
+      } else if (target.v.ability === "owntempo") {
         battle.ability(target);
         battle.info(target, "immune");
         failed = false;
@@ -83,12 +80,7 @@ export const moveFunctions: MoveFunctions = {
     let failed = true;
     for (const target of targets) {
       if (this.range !== Range.Self) {
-        if (target.v.ability === "soundproof" && this.sound) {
-          failed = false;
-          battle.ability(target);
-          battle.info(target, "immune");
-          continue;
-        } else if (target.v.hasFlag(VF.mist) || target.owner.screens.mist) {
+        if (target.v.hasFlag(VF.mist) || target.owner.screens.mist) {
           failed = false;
           battle.info(target, "mist_protect");
           continue;
@@ -139,11 +131,16 @@ export const moveFunctions: MoveFunctions = {
   },
   damage(battle, user, targets) {
     if (this.flag === "multi_turn" && !user.v.thrashing) {
-      user.v.thrashing = {move: this, turns: battle.gen.rng.thrashDuration(battle), max: false};
-      user.v.thrashing.max = user.v.thrashing.turns === battle.gen.rng.maxThrash;
+      // when called by sleep talk, thrashing moves don't lock the user in
+      if (user.lastChosenMove !== battle.gen.moveList.sleeptalk) {
+        user.v.thrashing = {move: this, turns: battle.gen.rng.thrashDuration(battle), max: false};
+        user.v.thrashing.max = user.v.thrashing.turns === battle.gen.rng.maxThrash;
+      }
     } else if (this.flag === "rollout" && !user.v.thrashing) {
-      user.v.thrashing = {move: this, turns: 5, max: false};
-      user.v.rollout = 0;
+      if (user.lastChosenMove !== battle.gen.moveList.sleeptalk) {
+        user.v.thrashing = {move: this, turns: 5, max: false};
+        user.v.rollout = 0;
+      }
     } else if (this.flag === "fury_cutter") {
       user.v.furyCutter++;
     } else if (this.flag === "bide") {
@@ -229,10 +226,7 @@ export const moveFunctions: MoveFunctions = {
     const next = battle.rng.choice(target.owner.team.filter(p => p.hp && p !== target.base.real));
     if (!next || !target.choice?.executed) {
       return battle.info(user, "fail_generic");
-    } else if (
-      target.v.ability === "suctioncups" ||
-      (this.sound && target.v.ability === "soundproof")
-    ) {
+    } else if (target.v.ability === "suctioncups") {
       battle.ability(target);
       return battle.info(target, "immune");
     } else if (target.v.hasFlag(VF.ingrain)) {

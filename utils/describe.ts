@@ -124,6 +124,7 @@ const descriptions: Partial<Record<number, Partial<Record<MoveId, string>>>> = {
     weatherball: "Power doubles if weather is active. Changes type with the weather. ",
     watersport: "Reduces power of Fire-type attacks by 50% until the user switches out. ",
     mudsport: "Reduces power of Electric-type attacks by 50% until the user switches out. ",
+    snatch: "Steals the next beneficial status move used by any Pokémon this turn. ",
   },
   [2]: {
     conversion:

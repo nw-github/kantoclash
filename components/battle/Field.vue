@@ -2,12 +2,12 @@
   <div class="flex w-full px-4 justify-around relative" :class="isSingles && 'gap-8'">
     <template v-for="(player, id) in players.items" :key="id">
       <div v-if="!player.isSpectator" :class="[id !== perspective ? 'order-2' : 'pt-10 sm:pt-14']">
-        <div class="flex gap-2 sm:gap-4">
+        <div class="flex gap-2 sm:gap-4" :class="id !== perspective && 'flex-row-reverse'">
           <ActivePokemon
             v-for="(active, i) in player.active"
             :key="i"
             :ref="(c) => activePokemon.push(c as any)"
-            :class="i !== 0 && 'pt-2 sm:pt-4'"
+            :class="(id !== perspective ? i === 0 : i !== 0) && 'pt-2 sm:pt-4'"
             :poke="active"
             :back="id === perspective"
             :poke-id="`${id}:${i}`"
