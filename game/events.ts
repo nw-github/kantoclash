@@ -205,14 +205,7 @@ export type BugType = "bug_gen2_bellydrum" | "bug_gen2_spikes";
 
 type VFReason = Exclude<
   keyof typeof VF,
-  | "cSubstitute"
-  | "curse"
-  | "none"
-  | "cDisabled"
-  | "identified"
-  | "lockon"
-  | "helpingHand"
-  | "flashFire"
+  "curse" | "none" | "cDisabled" | "identified" | "lockon" | "helpingHand" | "flashFire"
 >;
 
 export type InfoReason =
@@ -265,7 +258,15 @@ type InfoEvent = {type: "info"; src: PokeId; why: InfoReason};
 type BugEvent = {type: "bug"; bug: BugType};
 
 type SrcTargetEvent = {
-  type: "in_love" | "psych_up" | "foresight" | "lock_on" | "miss" | "helping_hand" | "skill_swap";
+  type:
+    | "in_love"
+    | "psych_up"
+    | "foresight"
+    | "lock_on"
+    | "miss"
+    | "helping_hand"
+    | "skill_swap"
+    | "snatch";
   src: PokeId;
   target: PokeId;
 };

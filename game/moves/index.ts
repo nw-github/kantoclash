@@ -36,6 +36,7 @@ export interface BaseMove {
   readonly selfThaw?: bool;
   readonly kingsRock?: bool;
   readonly sound?: bool;
+  readonly snatch?: bool;
 }
 
 export interface CustomMove extends BaseMove {

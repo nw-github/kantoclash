@@ -138,6 +138,7 @@ export const infoMessage: Record<InfoReason, string> = {
   uproar_continue: "{} is making an uproar!",
   uproar_end: "{} is no longer making an uproar!",
   torment: "{} was subjected to torment!",
+  snatch: "{} waits for a target to make a move!",
 };
 
 export const weatherMessage: Record<Weather, Record<WeatherEvent["kind"], string>> = {

@@ -651,7 +651,13 @@ export class Battle {
     }
   }
 
-  useMove(move: Move, user: ActivePokemon, targets: ActivePokemon[], moveIndex?: number) {
+  useMove(
+    move: Move,
+    user: ActivePokemon,
+    targets: ActivePokemon[],
+    moveIndex?: number,
+    snatch?: bool,
+  ) {
     if (move.kind !== "switch") {
       targets = targets.filter(t => !t.v.fainted);
       const availableTargets = this.getTargets(user, move.range);
@@ -750,7 +756,7 @@ export class Battle {
         user.unstatus(this, "thaw");
       }
 
-      if (!user.v.bide) {
+      if (!user.v.bide && !snatch) {
         this.event({
           type: "move",
           move: moveId,
@@ -759,6 +765,19 @@ export class Battle {
         });
       }
       user.v.lastMove = move;
+
+      if (move.snatch) {
+        for (const poke of this.turnOrder) {
+          if (!poke.v.fainted && poke.v.hasFlag(VF.snatch)) {
+            poke.v.clearFlag(VF.snatch);
+            // psych up targets the pokémon snatch was stolen from, even if its another snatch
+            targets = move.range === Range.Adjacent ? [user] : [poke];
+            this.event({type: "snatch", src: poke.id, target: user.id});
+            this.useMove(move, user, targets, undefined, true);
+            return;
+          }
+        }
+      }
 
       if (move.sleepOnly && user.base.status !== "slp") {
         return this.info(user, "fail_generic");
@@ -772,8 +791,7 @@ export class Battle {
         !move.checkSuccess(this, user, targets)
       ) {
         user.v.charging = undefined;
-        this.sv([user.clearFlag(VF.charge)]);
-        return;
+        return this.sv([user.clearFlag(VF.charge)]);
       }
 
       if (this.affectedByProtect(move)) {

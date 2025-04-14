@@ -524,11 +524,10 @@ const createGeneration = (): Generation => {
         } else {
           poke.v.canFakeOut = false;
         }
-        if (poke.v.hasFlag(VF.protect | VF.endure | VF.helpingHand | VF.followMe)) {
-          battle.event({
-            type: "sv",
-            volatiles: [poke.clearFlag(VF.protect | VF.endure | VF.helpingHand | VF.followMe)],
-          });
+
+        const flags = VF.protect | VF.endure | VF.helpingHand | VF.followMe | VF.snatch;
+        if (poke.v.hasFlag(flags)) {
+          battle.event({type: "sv", volatiles: [poke.clearFlag(flags)]});
         }
       }
 

@@ -1252,9 +1252,6 @@ class Volatiles {
     if (this.confusion) {
       flags |= VF.cConfused;
     }
-    if (this.substitute) {
-      flags |= VF.cSubstitute;
-    }
     if (this.encore) {
       flags |= VF.cEncore;
     }

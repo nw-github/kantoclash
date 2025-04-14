@@ -81,6 +81,7 @@ const internalMoveList = createMoveList({
     type: "poison",
     range: Range.Self,
     stages: [["def", 2]],
+    snatch: true,
   },
   agility: {
     kind: "stage",
@@ -89,6 +90,7 @@ const internalMoveList = createMoveList({
     type: "psychic",
     range: Range.Self,
     stages: [["spe", 2]],
+    snatch: true,
   },
   amnesia: {
     kind: "stage",
@@ -97,6 +99,7 @@ const internalMoveList = createMoveList({
     type: "psychic",
     range: Range.Self,
     stages: [["spa", 2]],
+    snatch: true,
   },
   aurorabeam: {
     kind: "damage",
@@ -126,6 +129,7 @@ const internalMoveList = createMoveList({
     type: "psychic",
     range: Range.Self,
     stages: [["def", 2]],
+    snatch: true,
   },
   bide: {
     kind: "damage",
@@ -358,6 +362,7 @@ const internalMoveList = createMoveList({
     type: "normal",
     range: Range.Self,
     stages: [["def", 1]],
+    snatch: true,
   },
   dig: {
     kind: "damage",
@@ -371,6 +376,7 @@ const internalMoveList = createMoveList({
     noSleepTalk: true,
     kingsRock: true,
     contact: true,
+    snatch: true,
   },
   disable: {
     name: "Disable",
@@ -457,6 +463,7 @@ const internalMoveList = createMoveList({
     type: "normal",
     range: Range.Self,
     stages: [["eva", 1]],
+    snatch: true,
   },
   dragonrage: {
     kind: "damage",
@@ -612,6 +619,7 @@ const internalMoveList = createMoveList({
     range: Range.Self,
     flag: VF.focusEnergy,
     noAssist: true,
+    snatch: true,
   },
   furyattack: {
     kind: "damage",
@@ -663,6 +671,7 @@ const internalMoveList = createMoveList({
     type: "normal",
     range: Range.Self,
     stages: [["spa", 1]],
+    snatch: true,
   },
   guillotine: {
     kind: "damage",
@@ -692,6 +701,7 @@ const internalMoveList = createMoveList({
     type: "normal",
     range: Range.Self,
     stages: [["def", 1]],
+    snatch: true,
   },
   haze: {
     name: "Haze",
@@ -934,6 +944,7 @@ const internalMoveList = createMoveList({
     type: "psychic",
     range: Range.Self,
     flag: VF.lightScreen,
+    snatch: true,
   },
   lovelykiss: {
     kind: "status",
@@ -962,6 +973,7 @@ const internalMoveList = createMoveList({
     type: "psychic",
     range: Range.Self,
     stages: [["atk", 1]],
+    snatch: true,
   },
   megadrain: {
     kind: "damage",
@@ -1048,6 +1060,7 @@ const internalMoveList = createMoveList({
     type: "normal",
     range: Range.Self,
     stages: [["eva", +1]],
+    snatch: true,
   },
   mirrormove: {
     name: "Mirror Move",
@@ -1074,6 +1087,7 @@ const internalMoveList = createMoveList({
     type: "ice",
     range: Range.Self,
     flag: VF.mist,
+    snatch: true,
   },
   nightshade: {
     kind: "damage",
@@ -1258,6 +1272,7 @@ const internalMoveList = createMoveList({
     type: "normal",
     range: Range.Self,
     why: "recover",
+    snatch: true,
   },
   reflect: {
     kind: "volatile",
@@ -1266,6 +1281,7 @@ const internalMoveList = createMoveList({
     type: "psychic",
     range: Range.Self,
     flag: VF.reflect,
+    snatch: true,
   },
   rest: {
     kind: "recover",
@@ -1274,6 +1290,7 @@ const internalMoveList = createMoveList({
     type: "psychic",
     range: Range.Self,
     why: "rest",
+    snatch: true,
   },
   roar: {
     kind: "fail",
@@ -1376,6 +1393,7 @@ const internalMoveList = createMoveList({
     type: "normal",
     range: Range.Self,
     stages: [["atk", 1]],
+    snatch: true,
   },
   sing: {
     kind: "status",
@@ -1480,6 +1498,7 @@ const internalMoveList = createMoveList({
     type: "normal",
     range: Range.Self,
     why: "recover",
+    snatch: true,
   },
   solarbeam: {
     kind: "damage",
@@ -1605,6 +1624,7 @@ const internalMoveList = createMoveList({
     pp: 10,
     type: "normal",
     range: Range.Self,
+    snatch: true,
     exec(battle, user) {
       const hp = Math.floor(user.base.stats.hp / 4);
       if (user.v.substitute) {
@@ -1668,6 +1688,7 @@ const internalMoveList = createMoveList({
     type: "normal",
     range: Range.Self,
     stages: [["atk", 2]],
+    snatch: true,
   },
   tackle: {
     kind: "damage",
@@ -1882,6 +1903,7 @@ const internalMoveList = createMoveList({
     type: "water",
     range: Range.Self,
     stages: [["def", 1]],
+    snatch: true,
   },
   wrap: {
     kind: "damage",
@@ -1976,6 +1998,7 @@ const internalMoveList = createMoveList({
     acc: 100,
     type: "normal",
     range: Range.Self,
+    snatch: true,
     exec(battle, user) {
       if (user.v.stages.atk >= 6) {
         battle.info(user, "fail_generic");
@@ -2330,6 +2353,7 @@ const internalMoveList = createMoveList({
     // user and all allies
     range: Range.Self,
     sound: true,
+    snatch: true,
     why: "heal_bell",
   },
   hiddenpower: {
@@ -2442,6 +2466,7 @@ const internalMoveList = createMoveList({
     type: "normal",
     range: Range.Self,
     why: "recover",
+    snatch: true,
   },
   mindreader: {
     kind: "lockOn",
@@ -2483,6 +2508,7 @@ const internalMoveList = createMoveList({
     range: Range.Self,
     why: "recover",
     weather: true,
+    snatch: true,
   },
   morningsun: {
     kind: "recover",
@@ -2492,6 +2518,7 @@ const internalMoveList = createMoveList({
     range: Range.Self,
     why: "recover",
     weather: true,
+    snatch: true,
   },
   mudslap: {
     kind: "damage",
@@ -2630,6 +2657,7 @@ const internalMoveList = createMoveList({
     pp: 10,
     type: "normal",
     range: Range.Adjacent,
+    snatch: true,
     exec(battle, user, [target]) {
       if (Object.values(target.v.stages).every(v => v === 0)) {
         return battle.info(user, "fail_generic");
@@ -2748,6 +2776,7 @@ const internalMoveList = createMoveList({
     type: "normal",
     range: Range.Field,
     screen: "safeguard",
+    snatch: true,
   },
   sandstorm: {
     kind: "weather",
@@ -2980,6 +3009,7 @@ const internalMoveList = createMoveList({
     range: Range.Self,
     why: "recover",
     weather: true,
+    snatch: true,
   },
   thief: {
     kind: "damage",
@@ -3092,6 +3122,7 @@ const internalMoveList = createMoveList({
     type: "grass",
     range: Range.Self,
     why: "aromatherapy",
+    snatch: true,
   },
   assist: {
     name: "Assist",
@@ -3184,10 +3215,9 @@ const internalMoveList = createMoveList({
     pp: 20,
     type: "fight",
     range: Range.Self,
-    stages: [
-      ["atk", +1],
-      ["def", +1],
-    ],
+    // prettier-ignore
+    stages: [["atk", +1], ["def", +1]],
+    snatch: true,
   },
   bulletseed: {
     kind: "damage",
@@ -3206,16 +3236,16 @@ const internalMoveList = createMoveList({
     pp: 20,
     type: "psychic",
     range: Range.Self,
-    stages: [
-      ["spa", +1],
-      ["spd", +1],
-    ],
+    // prettier-ignore
+    stages: [["spa", +1], ["spd", +1]],
+    snatch: true,
   },
   camouflage: {
     name: "Camouflage",
     pp: 20,
     type: "normal",
     range: Range.Self,
+    snatch: true,
     exec(battle, user) {
       battle.event({
         type: "conversion",
@@ -3240,10 +3270,9 @@ const internalMoveList = createMoveList({
     pp: 20,
     type: "psychic",
     range: Range.Self,
-    stages: [
-      ["def", +1],
-      ["spd", +1],
-    ],
+    // prettier-ignore
+    stages: [["def", +1], ["spd", +1]],
+    snatch: true,
   },
   covet: {
     kind: "damage",
@@ -3309,10 +3338,9 @@ const internalMoveList = createMoveList({
     pp: 20,
     type: "dragon",
     range: Range.Self,
-    stages: [
-      ["atk", +1],
-      ["spe", +1],
-    ],
+    // prettier-ignore
+    stages: [["atk", +1], ["spe", +1]],
+    snatch: true,
   },
   endeavor: {
     kind: "damage",
@@ -3517,6 +3545,7 @@ const internalMoveList = createMoveList({
     type: "normal",
     range: Range.Self,
     stages: [["atk", 1]],
+    snatch: true,
   },
   hydrocannon: {
     kind: "damage",
@@ -3588,6 +3617,7 @@ const internalMoveList = createMoveList({
     type: "grass",
     range: Range.Self,
     flag: VF.ingrain,
+    snatch: true,
   },
   irondefense: {
     kind: "stage",
@@ -3596,6 +3626,7 @@ const internalMoveList = createMoveList({
     type: "steel",
     range: Range.Self,
     stages: [["def", +2]],
+    snatch: true,
   },
   knockoff: {
     kind: "damage",
@@ -3831,6 +3862,7 @@ const internalMoveList = createMoveList({
     pp: 20,
     type: "normal",
     range: Range.Self,
+    snatch: true,
     exec(battle, user) {
       if (!["brn", "psn", "par", "tox"].includes(user.base.status)) {
         return battle.info(user, "fail_generic");
@@ -4013,6 +4045,7 @@ const internalMoveList = createMoveList({
     type: "normal",
     range: Range.Self,
     why: "recover",
+    snatch: true,
   },
   smellingsalt: {
     kind: "damage",
@@ -4027,13 +4060,13 @@ const internalMoveList = createMoveList({
     flag: "smellingsalt",
   },
   snatch: {
-    kind: "fail",
+    kind: "volatile",
     name: "Snatch",
-    pp: 1,
-    type: "normal",
+    pp: 10,
+    type: "dark",
     range: Range.Self,
-    why: "fail_generic",
-    noAssist: true,
+    priority: +4,
+    flag: VF.snatch,
   },
   spitup: {
     kind: "damage",
@@ -4051,6 +4084,7 @@ const internalMoveList = createMoveList({
     pp: 10,
     type: "normal",
     range: Range.Self,
+    snatch: true,
     exec(battle, user) {
       if (user.v.stockpile === 3) {
         return battle.info(user, "fail_generic");
@@ -4083,6 +4117,7 @@ const internalMoveList = createMoveList({
     pp: 10,
     type: "normal",
     range: Range.Self,
+    snatch: true,
     exec(battle, user) {
       if (!user.v.stockpile) {
         return battle.info(user, "fail_generic");
@@ -4100,6 +4135,7 @@ const internalMoveList = createMoveList({
     type: "bug",
     range: Range.Self,
     stages: [["spa", +2]],
+    snatch: true,
   },
   taunt: {
     name: "Taunt",

@@ -146,6 +146,7 @@
   </div>
   <div v-else-if="e.type === 'foresight'">{{ pn(e.src) }} identified {{ pn(e.target, false) }}!</div>
   <div v-else-if="e.type === 'lock_on'">{{ pn(e.src) }} took aim at {{ pn(e.target, false) }}!</div>
+  <div v-else-if="e.type === 'snatch'">{{ pn(e.src) }} snatched {{ pn(e.target, false) }}'s move!</div>
   <div v-else-if="e.type === 'helping_hand'">{{ pn(e.src) }} is ready to help {{ pn(e.target, false) }}!</div>
   <div v-else-if="e.type === 'trap'">
     <template v-if="e.kind === 'start'">
