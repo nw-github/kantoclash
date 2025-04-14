@@ -206,7 +206,7 @@ export function getDamage(
     }
   }
 
-  const deadly = dmg > 0 && dmg > target.base.hp;
+  const deadly = dmg > 0 && dmg >= target.base.hp;
   const endured = deadly && target.v.hasFlag(VF.endure);
   const band =
     extras.band ||
