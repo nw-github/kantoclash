@@ -266,6 +266,7 @@
                 :step="gen.id <= 2 ? 1 : 4"
                 color="green"
                 :disabled="gen.id <= 2 && stat === 'spd'"
+                @input="onRangeInput($event, stat)"
               />
               <span class="text-center px-1.5 min-w-8 text-xs">
                 {{ selectedPoke.evProxy[stat] }}
@@ -431,12 +432,15 @@ const selectedPoke = computed(() => ({
           prop = "spa";
         }
 
-        const prev = getTotalEvs(target);
         target[prop as StatId] = val;
-        const curr = getTotalEvs(target);
 
-        if (gen.value.id >= 3 && curr > gen.value.maxTotalEv && curr - prev > 0) {
-          target[prop as StatId] = val - (curr - prev);
+        const total = getTotalEvs(target);
+        if (total > gen.value.maxTotalEv) {
+          let result = val - (total - gen.value.maxTotalEv);
+          if (gen.value.id >= 3 && result % 4) {
+            result -= result % 4;
+          }
+          target[prop as StatId] = result;
         }
 
         return true;
@@ -465,6 +469,14 @@ const selectedPoke = computed(() => ({
     }),
   ),
 }));
+
+const onRangeInput = (e: Event & {target: HTMLInputElement}, stat: StatId) => {
+  if (getTotalEvs(selectedPoke.value.evProxy) > gen.value.maxTotalEv) {
+    e.target.value = String(selectedPoke.value.evProxy[stat]);
+    e.preventDefault();
+  }
+};
+
 const selectedTab = ref(0);
 const teamPokepaste = ref(false);
 const currGender = computed(() => {
