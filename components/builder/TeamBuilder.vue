@@ -138,10 +138,7 @@
         >
           <div class="flex gap-2">
             <div class="flex flex-col relative grow">
-              <div
-                v-if="gen.id > 1 && gen.speciesList[selectedPoke.data.species as SpeciesId]"
-                class="absolute p-1 flex flex-col gap-1 z-10"
-              >
+              <div v-if="gen.id >= 2" class="absolute p-1 flex flex-col gap-1 z-10">
                 <div class="relative">
                   <TooltipButton
                     text="Gender"
@@ -178,6 +175,7 @@
 
               <SpeciesSelector
                 v-model="selectedPoke.data.species"
+                :class="gen.id >= 2 && 'pl-10'"
                 :team
                 :gen
                 :shiny="gen.getShiny(selectedPoke.data.shiny, ivsToDvs(selectedPoke.data))"
@@ -227,7 +225,7 @@
                 <span class="text-sm">Nature</span>
                 <USelectMenu
                   v-model="selectedPoke.data.nature"
-                  class="w-28"
+                  class="w-24 sm:w-28"
                   :options="natures"
                   searchable
                   placeholder="Hardy"
@@ -470,24 +468,25 @@ const selectedPoke = computed(() => ({
 const selectedTab = ref(0);
 const teamPokepaste = ref(false);
 const currGender = computed(() => {
-  let gender = gen.value.getGender(
-    undefined,
-    gen.value.speciesList[selectedPoke.value.data.species as SpeciesId],
-    ivToDv(selectedPoke.value.data.ivs.atk),
-  );
+  const species = gen.value.speciesList[selectedPoke.value.data.species as SpeciesId];
+  if (!species) {
+    return {icon: "material-symbols:question-mark", clazz: "", forced: true};
+  }
+
+  let gender = gen.value.getGender(undefined, species, ivToDv(selectedPoke.value.data.ivs.atk));
   const forced = gender !== undefined;
   if (!forced) {
     gender = selectedPoke.value.data.gender;
   }
 
   if (gender === "M") {
-    return {gender, icon: "material-symbols:male", clazz: "text-sky-400", forced};
+    return {icon: "material-symbols:male", clazz: "text-sky-400", forced};
   } else if (gender === "F") {
-    return {gender, icon: "material-symbols:female", clazz: "text-pink-400", forced};
+    return {icon: "material-symbols:female", clazz: "text-pink-400", forced};
   } else if (gender === "N") {
-    return {gender, icon: "material-symbols:question-mark", clazz: "", forced};
+    return {icon: "material-symbols:question-mark", clazz: "", forced};
   } else {
-    return {gender, icon: "material-symbols:male", clazz: "text-sky-400", random: true};
+    return {icon: "material-symbols:male", clazz: "text-sky-400", random: true};
   }
 });
 

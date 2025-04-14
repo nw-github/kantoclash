@@ -20,7 +20,7 @@
     </div>
 
     <template #item="{item: [id, species]}">
-      <div class="flex justify-between gap-16 w-full">
+      <div class="flex justify-between gap-8 sm:gap-16 w-full">
         <div class="flex items-center gap-1">
           <BoxSprite :species="id" :form />
           <span class="text-xs sm:text-sm truncate" :class="[isIllegal(species) && 'text-red-500']">
