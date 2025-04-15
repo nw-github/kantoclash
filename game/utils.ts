@@ -91,6 +91,12 @@ export const HP_TYPES: Type[] = [
   "grass", "electric", "psychic", "ice", "dragon", "dark",
 ];
 
+export enum MC {
+  physical,
+  special,
+  status,
+}
+
 export const floatTo255 = (num: number) => Math.floor((num / 100) * 255);
 
 export const clamp = (num: number, min: number, max: number) => Math.max(Math.min(num, max), min);

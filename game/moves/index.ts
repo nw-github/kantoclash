@@ -1,7 +1,7 @@
 import type {ActivePokemon, Battle} from "../battle";
 import type {FailReason, InfoReason, RecoveryReason} from "../events";
 import type {Pokemon, Status} from "../pokemon";
-import type {StageId, Type, VF, Weather, ScreenId} from "../utils";
+import type {StageId, Type, VF, Weather, ScreenId, MC} from "../utils";
 import type {Range} from "./moveList";
 
 export * from "./functions";
@@ -154,6 +154,7 @@ export interface ForesightMove extends BaseMove {
 export interface DamagingMove extends BaseMove {
   readonly kind: "damage";
   readonly power: number;
+  readonly category: MC.physical | MC.special;
   readonly flag?: Flag;
   readonly effect?: [number, Effect] | [number, Effect, true];
   /** Recoil: max(1 / recoil, 1) */
