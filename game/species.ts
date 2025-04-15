@@ -18,6 +18,7 @@ export type Species = {
   readonly sprite?: string;
   /** Weight in kilograms */
   readonly weight: number;
+  readonly unselectable?: bool;
 };
 
 export type SpeciesId = keyof typeof __speciesList;
