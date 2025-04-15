@@ -144,7 +144,6 @@ export const moveFunctions: MoveFunctions = {
     } else if (this.flag === "rollout" && !user.v.thrashing) {
       if (user.lastChosenMove !== battle.gen.moveList.sleeptalk) {
         user.v.thrashing = {move: this, turns: 5, max: false};
-        user.v.rollout = 0;
       }
     } else if (this.flag === "fury_cutter") {
       user.v.furyCutter++;
@@ -172,7 +171,6 @@ export const moveFunctions: MoveFunctions = {
       } else {
         targets = battle.getTargets(user, Range.AdjacentFoe).slice(0, 1);
         if (!targets.length) {
-          user.v.rollout = 0;
           user.v.furyCutter = 0;
           return battle.info(user, "fail_notarget");
         }

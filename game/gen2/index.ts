@@ -99,7 +99,6 @@ const beforeUseMove = (battle: Battle, move: Move, user: ActivePokemon) => {
     }
     user.v.trapping = undefined;
     user.v.furyCutter = 0;
-    user.v.rollout = 0;
   };
 
   if (user.v.recharge) {

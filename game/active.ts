@@ -1181,7 +1181,6 @@ class Volatiles {
   protectCount = 0;
   perishCount = 0;
   tauntTurns = 0;
-  rollout = 0;
   drowsy = 0;
   rage = 1;
   furyCutter = 0;

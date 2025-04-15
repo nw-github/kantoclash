@@ -127,6 +127,7 @@ const descriptions: Partial<Record<number, Partial<Record<MoveId, string>>>> = {
     snatch: "Steals the next beneficial status move used by any Pokémon this turn. ",
     imprison: "Prevents opponents from using any move known by the user until it switches out. ",
     torment: "Prevents the target from using the same move twice in a row. ",
+    assist: "Calls a random eligible move known by one of the user's teammates. ",
   },
   [2]: {
     conversion:

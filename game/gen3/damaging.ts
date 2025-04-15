@@ -129,7 +129,6 @@ export const tryDamage = (
 
   const protect = target.v.hasFlag(VF.protect);
   if (eff === 0 || fail || protect) {
-    user.v.rollout = 0;
     user.v.furyCutter = 0;
     user.v.thrashing = undefined;
     if (self.flag === "spitup") {
@@ -157,7 +156,6 @@ export const tryDamage = (
     (type === "electric" && target.v.ability === "voltabsorb") ||
     (type === "water" && target.v.ability === "waterabsorb")
   ) {
-    user.v.rollout = 0;
     user.v.furyCutter = 0;
     user.v.thrashing = undefined;
     battle.ability(target);
@@ -167,7 +165,6 @@ export const tryDamage = (
   }
 
   if (type === "fire" && target.v.ability === "flashfire" && target.base.status !== "frz") {
-    user.v.rollout = 0;
     user.v.furyCutter = 0;
     user.v.thrashing = undefined;
     battle.ability(target, [target.setFlag(VF.flashFire)]);
@@ -176,7 +173,6 @@ export const tryDamage = (
   }
 
   if (!battle.checkAccuracy(self, user, target, !isSpecial(type))) {
-    user.v.rollout = 0;
     user.v.furyCutter = 0;
     user.v.thrashing = undefined;
     if (self.flag === "crash") {

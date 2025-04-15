@@ -221,7 +221,6 @@ const createGeneration = (): Generation => {
         }
         user.v.trapping = undefined;
         user.v.furyCutter = 0;
-        user.v.rollout = 0;
       };
 
       if (user.base.status === "slp") {

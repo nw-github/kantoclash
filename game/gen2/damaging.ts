@@ -12,7 +12,6 @@ export const tryDamage = (
 ): number => {
   const checkThrashing = () => {
     if (user.v.thrashing && --user.v.thrashing.turns === 0) {
-      user.v.rollout = 0;
       user.v.furyCutter = 0;
       if (!user.owner.screens.safeguard && self.flag === "multi_turn") {
         user.confuse(battle, user.v.thrashing.max ? "cConfusedFatigueMax" : "cConfusedFatigue");
@@ -27,7 +26,6 @@ export const tryDamage = (
 
   const {eff, fail, type, abilityImmunity} = checkUsefulness(self, battle, user, target);
   if ((self.flag === "drain" || self.flag === "dream_eater") && target.v.substitute) {
-    user.v.rollout = 0;
     user.v.furyCutter = 0;
     battle.miss(user, target);
     return 0;
@@ -40,8 +38,11 @@ export const tryDamage = (
 
   const protect = target.v.hasFlag(VF.protect);
   if (eff === 0 || fail || protect) {
-    user.v.rollout = 0;
     user.v.furyCutter = 0;
+    if (user.v.thrashing && user.v.thrashing.move.flag === "rollout") {
+      user.v.thrashing = undefined;
+    }
+
     if (eff === 0) {
       if (abilityImmunity) {
         battle.ability(target);
@@ -60,7 +61,10 @@ export const tryDamage = (
     checkThrashing();
     return 0;
   } else if (!battle.checkAccuracy(self, user, target, !isSpecial(type))) {
-    user.v.rollout = 0;
+    if (user.v.thrashing && user.v.thrashing.move.flag === "rollout") {
+      user.v.thrashing = undefined;
+    }
+
     user.v.furyCutter = 0;
     if (self.flag === "crash") {
       const {dmg} = getDamage(self, battle, user, target, {});
