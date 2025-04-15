@@ -289,7 +289,7 @@ const currOptions = computed(() =>
 );
 
 const sound = useAudio({
-  cries: {src: "/effects/cries.wav", sprites: criesSpritesheet},
+  cries: {src: "/effects/cries.mp3", sprites: criesSpritesheet},
   supereffective: {src: "/effects/supereffective.mp3"},
   ineffective: {src: "/effects/ineffective.mp3"},
   neutral: {src: "/effects/neutral.mp3"},
@@ -324,7 +324,7 @@ const runEvent = async (e: BattleEvent) => {
 
   const playCry = (speciesId: SpeciesId, pitchDown = false) => {
     if (isLive()) {
-      const sprite = gen.value.speciesList[speciesId].dexId.toString().padStart(3, "0");
+      const sprite = gen.value.speciesList[speciesId].dexId.toString();
       return sound.play("cries", {sprite, volume: sfxVol.value, detune: pitchDown ? -350 : 0});
     }
   };

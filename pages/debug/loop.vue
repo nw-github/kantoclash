@@ -1,5 +1,10 @@
 <template>
   <div class="space-y-2 p-1">
+    <div class="p-1 flex gap-2">
+      <NumericInput v-model="cry" class="w-20" />
+      <UButton label="Play" @click="playCry" />
+    </div>
+
     <UFormGroup label="Start Seconds Before">
       <UInput v-model.number="offset" />
     </UFormGroup>
@@ -27,6 +32,19 @@
 
 <script setup lang="ts">
 import loops from "@/public/music/loops.json";
+import criesSpritesheet from "~/public/effects/cries.json";
+
+const cry = ref(1);
+
+const sound = useAudio({
+  cries: {src: "/effects/cries.mp3", sprites: criesSpritesheet},
+});
+
+const playCry = () => {
+  const sprite = cry.value.toString();
+  sound.play("cries", {sprite});
+  cry.value++;
+};
 
 definePageMeta({middleware: ["admin"]});
 
@@ -169,7 +187,7 @@ watch(textAreaText, text => {
   }
 });
 
-watchImmediate(track, async track => {
+watch(track, async track => {
   stop();
   if (!import.meta.client || !track) {
     return;
