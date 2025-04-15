@@ -3222,6 +3222,7 @@ const internalMoveList = createMoveList({
     acc: 85,
     charge: "invuln",
     kingsRock: true,
+    effect: [30, "par"],
   },
   brickbreak: {
     kind: "damage",
