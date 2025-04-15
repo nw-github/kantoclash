@@ -1,37 +1,68 @@
-import type {Generation} from "~/game/gen1";
+import type {PlayerId, PokeId} from "~/game/events";
 import type {Move} from "~/game/moves";
-import type {Gender, Pokemon} from "~/game/pokemon";
-import type {SpeciesId} from "~/game/species";
-import {isSpecial, type Screen, type Type} from "~/game/utils";
+import type {FormId, Gender, Pokemon} from "~/game/pokemon";
+import {speciesList, type SpeciesId} from "~/game/species";
+import {isSpecial, type ScreenId, type Type} from "~/game/utils";
 
 export type ClientActivePokemon = {
-  hidden?: boolean;
+  hidden?: bool;
   gender?: Gender;
   speciesId: SpeciesId;
   name: string;
-  fainted: boolean;
+  fainted: bool;
   hpPercent: number;
   level: number;
   transformed?: SpeciesId;
-  shiny?: boolean;
+  shiny?: bool;
+  form?: FormId;
   v: ClientVolatiles;
+  base?: Pokemon;
+  indexInTeam: number;
+  abilityUnknown?: bool;
 };
 
 export type ClientPlayer = {
   name: string;
-  isSpectator: boolean;
-  connected: boolean;
+  isSpectator: bool;
+  connected: bool;
 
-  active?: ClientActivePokemon;
+  active: (ClientActivePokemon | undefined)[];
   nPokemon: number;
   nFainted: number;
-  spikes?: boolean;
-  screens?: Partial<Record<Screen, boolean>>;
+  spikes?: number;
+  screens?: Partial<Record<ScreenId, bool>>;
 };
 
+export class Players {
+  items: Record<string, ClientPlayer> = {};
+
+  get(id: PlayerId) {
+    return this.items[id];
+  }
+
+  byPokeId(id: PlayerId) {
+    const [player] = id.split(":");
+    return this.items[player];
+  }
+
+  poke(id: PokeId) {
+    const [player, pos] = id.split(":");
+    return this.items[player]?.active[Number(pos)];
+  }
+
+  setPoke(id: PokeId, active: ClientActivePokemon | undefined) {
+    const [player, pos] = id.split(":");
+    this.items[player].active[Number(pos)] = active;
+  }
+
+  add(id: PlayerId, player: ClientPlayer) {
+    this.items[id] = player;
+  }
+}
+
 export const gen1Gender: Partial<Record<SpeciesId, Gender>> = {
-  nidoranf: "female",
-  nidoranm: "male",
+  nidoranf: "F",
+  nidoranm: "M",
 };
 
 export const getCategory = (move: Move, type?: Type) => {
@@ -42,18 +73,31 @@ export const getCategory = (move: Move, type?: Type) => {
     : "status";
 };
 
-export const getTypeAndPower = (gen: Generation, move: Move, poke: Pokemon) => {
-  let type = move.type;
-  let pow = move.power;
-  if (move.kind === "damage" && poke && move.getPower) {
-    pow = move.getPower(poke);
-  }
-  if (move.kind === "damage" && poke && move.getType) {
-    type = move.getType(poke);
-  }
-  if (pow && pow !== 1 && poke?.item && gen.itemTypeBoost[poke.item] === type) {
-    pow += Math.floor(pow / 10);
+export const getSpritePath = (
+  species: string | undefined,
+  female?: bool,
+  shiny?: bool,
+  back?: bool,
+  form?: FormId,
+) => {
+  if (!species || !(species in speciesList)) {
+    return `/sprites/battle/unknown.png`;
   }
 
-  return [type, pow] as const;
+  const sp = speciesList[species as SpeciesId];
+  let id = sp.sprite ?? String(sp.dexId);
+  if (form) {
+    id += `-${form}`;
+  }
+
+  let extra = shiny ? "shiny/" : "";
+  if (female && femaleIds.has(id)) {
+    extra += "female/";
+  }
+
+  if (!back) {
+    return `/sprites/battle/${extra}${id}.gif`;
+  } else {
+    return `/sprites/battle/back/${extra}${id}.gif`;
+  }
 };

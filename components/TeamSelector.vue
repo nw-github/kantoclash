@@ -20,6 +20,7 @@
               v-for="(poke, i) in team.pokemon"
               :key="i"
               :species="poke.species"
+              :form="poke.form"
               :scale="lessThanSm ? 1 : 1.2"
             />
           </div>

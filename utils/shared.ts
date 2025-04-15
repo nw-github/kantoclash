@@ -1,32 +1,41 @@
 import type {Status} from "~/game/pokemon";
-import type {Mods, VolatileStats} from "../game/battle";
-import type {Stages, Type, VF} from "../game/utils";
+import type {Mods} from "~/game/battle";
+import type {StageId, StageStats, Type, VF} from "~/game/utils";
 import type {MoveId} from "~/game/moves";
-import type {Generation} from "~/game/gen1";
+import type {Generation} from "~/game/gen";
+import type {AbilityId} from "~/game/species";
 
 export type ClientVolatiles = {
-  stages: Partial<Record<Stages, number>>;
+  stages: Partial<Record<StageId, number>>;
   // Status isnt really a volatile, but multiple things can inflict/remove it, so let server handle it
   status?: Status;
-  stats?: VolatileStats;
+  stats?: StageStats;
   charging?: MoveId;
   trapped?: MoveId;
   types?: Type[];
   flags?: VF;
   perishCount?: number;
+  ability?: AbilityId;
+  stockpile?: number;
 };
 
 type FormatInfo = {
   name: string;
   icon: string;
-  needsTeam?: boolean;
+  needsTeam?: bool;
   desc: string;
   mods: Mods;
-  chooseLead?: boolean;
+  chooseLead?: bool;
   generation: number;
+  doubles?: bool;
 };
 
 export const battleFormats = [
+  "g3_randoms_doubles",
+  "g3_doubles",
+  "g3_standard",
+  "g3_metronome",
+  "g3_randoms",
   "g2_standard",
   "g2_randoms",
   "g2_metronome",
@@ -41,6 +50,47 @@ export const battleFormats = [
 export type FormatId = (typeof battleFormats)[number];
 
 export const formatInfo: Record<FormatId, FormatInfo> = {
+  g3_standard: {
+    name: "[ADV] Standard Battle",
+    icon: "akar-icons:sword",
+    desc: "A standard battle allowing all RSE and FRLG Pokémon.",
+    needsTeam: true,
+    chooseLead: true,
+    mods: {sleepClause: true, endlessBattle: true},
+    generation: 3,
+  },
+  g3_randoms: {
+    name: "[ADV] Random Battle",
+    icon: "mdi:dice-3-outline",
+    desc: "A standard Pokémon battle, but your team and sets are randomly generated.",
+    mods: {sleepClause: true, endlessBattle: true},
+    generation: 3,
+  },
+  g3_randoms_doubles: {
+    name: "[ADV] Random Doubles",
+    icon: "mdi:dice-3-outline",
+    desc: "A random double battle.",
+    mods: {endlessBattle: true},
+    generation: 3,
+    doubles: true,
+  },
+  g3_doubles: {
+    name: "[ADV] Doubles",
+    icon: "akar-icons:sword",
+    desc: "A standard double battle allowing all FRLG and RSE Pokémon.",
+    needsTeam: true,
+    chooseLead: true,
+    mods: {endlessBattle: true},
+    generation: 3,
+    doubles: true,
+  },
+  g3_metronome: {
+    name: "[ADV] Random Metronome Battle",
+    icon: "mdi:metronome",
+    desc: "A random battle where all Pokémon only know the move Metronome.",
+    mods: {},
+    generation: 3,
+  },
   g2_standard: {
     name: "[GSC] Standard Battle",
     icon: "akar-icons:sword",
@@ -54,7 +104,6 @@ export const formatInfo: Record<FormatId, FormatInfo> = {
     name: "[GSC] Random Battle",
     icon: "mdi:dice-3-outline",
     desc: "A standard Pokémon battle, but your team and sets are randomly generated.",
-    needsTeam: false,
     mods: {sleepClause: true, freezeClause: true, endlessBattle: true},
     generation: 2,
   },
@@ -62,7 +111,6 @@ export const formatInfo: Record<FormatId, FormatInfo> = {
     name: "[GSC] Random Metronome Battle",
     icon: "mdi:metronome",
     desc: "A random battle where all Pokémon only know the move Metronome.",
-    needsTeam: false,
     mods: {},
     generation: 2,
   },
@@ -88,7 +136,6 @@ export const formatInfo: Record<FormatId, FormatInfo> = {
     name: "[RBY] Random Battle",
     icon: "mdi:dice-3-outline",
     desc: "A standard Pokémon battle, but your team and sets are randomly generated.",
-    needsTeam: false,
     mods: {sleepClause: true, freezeClause: true, endlessBattle: true},
     generation: 1,
   },
@@ -96,7 +143,6 @@ export const formatInfo: Record<FormatId, FormatInfo> = {
     name: "[RBY] Random Metronome Battle",
     icon: "mdi:metronome",
     desc: "A random battle where all Pokémon only know the move Metronome.",
-    needsTeam: false,
     mods: {},
     generation: 1,
   },
@@ -104,7 +150,6 @@ export const formatInfo: Record<FormatId, FormatInfo> = {
     name: "[RBY] Truly Random Battle",
     icon: "mdi:dice-5-outline",
     desc: "A random battle with no limits on the generated move sets.",
-    needsTeam: false,
     mods: {sleepClause: true, freezeClause: true, endlessBattle: true},
     generation: 1,
   },
@@ -112,7 +157,6 @@ export const formatInfo: Record<FormatId, FormatInfo> = {
     name: "[RBY] Random Battle (NFE)",
     icon: "mdi:dice-1-outline",
     desc: "A random battle where only Pokémon that are not fully evolved are included.",
-    needsTeam: false,
     mods: {sleepClause: true, freezeClause: true, endlessBattle: true},
     generation: 1,
   },

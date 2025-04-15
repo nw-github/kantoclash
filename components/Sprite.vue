@@ -11,27 +11,18 @@ img {
 </style>
 
 <script setup lang="ts">
-import {speciesList, type SpeciesId} from "~/game/species";
+import type {FormId, Gender} from "~/game/pokemon";
 
-const props = defineProps<{
+const {scale, species, shiny, back, form, gender} = defineProps<{
   species?: string;
-  back?: boolean;
+  back?: bool;
   scale?: number;
-  substitute?: boolean;
-  shiny?: boolean;
+  shiny?: bool;
+  form?: FormId;
+  gender?: Gender;
 }>();
 const sprite = computed(() => {
-  const scale = 1 / (props.substitute && props.back ? (props.scale ?? 1) / 2 : props.scale ?? 1);
-  if (!props.species || !(props.species in speciesList)) {
-    return `/sprites/battle/unknown.png ${scale}x`;
-  }
-
-  const id = props.substitute ? "substitute" : speciesList[props.species as SpeciesId].dexId;
-  const shiny = props.shiny ? "shiny/" : "";
-  if (!props.back) {
-    return `/sprites/battle/${shiny}${id}.gif ${scale}x`;
-  } else {
-    return `/sprites/battle/back/${shiny}${id}.gif ${scale}x`;
-  }
+  const sc = 1 / (scale ?? 1);
+  return getSpritePath(species, gender === "F", shiny, back, form) + ` ${sc}x`;
 });
 </script>

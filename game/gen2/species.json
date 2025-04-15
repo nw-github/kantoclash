@@ -2707,7 +2707,7 @@
     "genderRatio": 50
   },
   "dugtrio": {
-    "stats": {"hp": 35, "atk": 100, "def": 50, "spa": 50, "spd": 70, "spe": 120},
+    "stats": {"hp": 35, "atk": 80, "def": 50, "spa": 50, "spd": 70, "spe": 120},
     "moves": [
       "scratch",
       "cut",

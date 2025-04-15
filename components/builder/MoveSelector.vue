@@ -12,6 +12,7 @@
       v-model="query"
       placeholder="Add move..."
       :color="isIllegal(normalizeName(query)) || hasConflict() ? 'red' : undefined"
+      :trailing-icon="trailing ? undefined : 'heroicons:chevron-down-20-solid'"
       @focus="open = true"
       @update:model-value="open = true"
       @keydown.tab="open = false"
@@ -40,7 +41,7 @@
         </div>
         <div class="flex flex-col w-8">
           <span class="text-[0.6rem] text-center text-gray-400">Acc</span>
-          <span class="text-sm text-center">{{ move.acc ?? "--" }}</span>
+          <span class="text-sm text-center">{{ move.acc || "--" }}</span>
         </div>
         <div class="flex flex-col w-8">
           <span class="text-[0.6rem] text-center text-gray-400">PP</span>
@@ -75,7 +76,7 @@ const trailing = computed(() => {
   const base = new Pokemon(gen, {
     species: "abra",
     moves: [],
-    ivs: ivsToDvs(gen, poke.ivs ?? {}),
+    ivs: gen.id <= 2 ? ivsToDvs(gen, poke.ivs ?? {}) : poke.ivs,
     friendship: poke.friendship,
   });
   const type = move.getType ? move.getType(base) : move.type;
@@ -112,7 +113,7 @@ const hasConflict = () => {
   if (!q) {
     return false;
   }
-  return poke.moves.findIndex((m, i) => normalizeName(m) === q && i !== idx) !== -1;
+  return poke.moves.findIndex((m, i) => m && normalizeName(m) === q && i !== idx) !== -1;
 };
 
 const isIllegal = (id: string) => {

@@ -3,15 +3,22 @@
     <div class="flex justify-between items-center gap-4">
       <div class="flex gap-0.5 items-center justify-center">
         <span>{{ poke.species.name }}</span>
-        <GenderIcon class="size-4" :gender="poke.gender ?? gen1Gender[poke.speciesId]" />
+        <GenderIcon class="size-4" :gender="gen1Gender[poke.speciesId] ?? poke.gender" />
 
-        <template v-if="poke.item">
-          <ItemSprite :item="poke.item" />
-          <span class="text-xs">{{ poke.gen.items[poke.item] }}</span>
+        <template v-if="poke._item">
+          <ItemSprite :item="poke._item" />
+          <span class="text-xs" :class="poke.itemUnusable && 'line-through italic text-primary'">
+            {{ itemList[poke._item].name }}
+          </span>
         </template>
       </div>
 
       <div class="flex gap-1 items-center">
+        <span v-if="active?.abilityUnknown">???</span>
+        <span v-else-if="active?.v.ability ?? poke.ability" class="text-xs">
+          {{ abilityList[(active?.v.ability ?? poke.ability)!].name }}
+        </span>
+
         <TypeBadge v-for="type in poke.species.types" :key="type" :type image />
       </div>
     </div>
@@ -27,7 +34,7 @@
       <StatusOrFaint :poke="poke" :faint="!active || active.fainted" />
     </div>
 
-    <div class="flex gap-1">
+    <div class="flex gap-1 justify-center">
       <template v-for="(name, stat) in statKeys">
         <template v-if="stat !== 'hp'">
           <UBadge :key="stat" color="black" :class="statClass(stat)">
@@ -40,7 +47,7 @@
 
     <ul class="pl-8 flex flex-col gap-1">
       <li v-for="(id, i) in poke.moves" :key="id" class="flex items-center gap-1">
-        <TypeBadge :type="getTypeAndPower(poke.gen, poke.gen.moveList[id], poke)[0]" image />
+        <TypeBadge :type="getType(id)" image />
         <span>
           {{ poke.gen.moveList[id].name }} ({{ poke.pp[i] }}/{{
             poke.gen.getMaxPP(poke.gen.moveList[id])
@@ -53,18 +60,32 @@
 
 <script setup lang="ts">
 import type {Pokemon} from "~/game/pokemon";
-import {hpPercentExact, type StatStages} from "~/game/utils";
+import {hpPercentExact, type StatStageId, type Weather} from "~/game/utils";
 import "assets/colors.css";
-import {getTypeAndPower} from "~/utils/client";
+import {itemList} from "~/game/item";
+import {abilityList} from "~/game/species";
+import type {MoveId} from "~/game/moves";
 
-const {active, poke} = defineProps<{active?: ClientActivePokemon; poke: Pokemon}>();
+const {active, poke, weather} = defineProps<{
+  active?: ClientActivePokemon;
+  poke: Pokemon;
+  weather?: Weather;
+}>();
 const statKeys = computed(() => getStatKeys(poke.gen));
 
-const statClass = (stat: StatStages) => {
+const statClass = (stat: StatStageId) => {
   if (!active?.v.stats || poke.stats[stat] === active.v.stats[stat]) {
     return "";
   }
   return poke.stats[stat] > active.v.stats[stat] ? "down" : "up";
+};
+
+const getType = (id: MoveId) => {
+  const move = poke.gen.moveList[id];
+  if (move.kind === "damage" && poke && move.getType) {
+    return move.getType(poke, weather);
+  }
+  return move.type;
 };
 </script>
 

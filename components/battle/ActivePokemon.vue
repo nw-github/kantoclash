@@ -1,25 +1,41 @@
 <template>
-  <div class="w-full flex flex-col items-center">
+  <div class="all w-full flex flex-col items-center">
     <div
-      class="w-11/12 sm:w-3/4 flex flex-col gap-0.5 sm:gap-1 text-sm z-40"
-      :class="{invisible: !poke || poke.hidden}"
+      class="flex flex-col gap-0.5 sm:gap-1 text-sm z-40"
+      :class="[(!poke || poke.hidden) && 'invisible', !isSingles ? 'w-16 sm:w-32' : 'w-28 sm:w-40']"
     >
       <div class="flex justify-between flex-col sm:flex-row">
-        <div class="font-bold flex items-center">
-          <span class="truncate max-w-24">{{ poke?.name ?? "--" }}</span>
+        <div class="font-bold flex items-center grow overflow-hidden">
+          <span class="truncate text-xs">{{ poke?.name || "--" }}</span>
           <!-- @vue-expect-error -->
-          <GenderIcon class="size-4" :gender="poke?.gender ?? gen1Gender[poke?.speciesId]" />
+          <GenderIcon
+            class="size-4 hidden sm:block"
+            :gender="gen1Gender[poke?.speciesId] ?? poke?.gender"
+          />
         </div>
-        <span class="text-[0.75rem] sm:text-sm">Lv. {{ poke?.level ?? 100 }}</span>
+        <div class="flex items-center">
+          <span class="text-[0.65rem] sm:text-xs whitespace-nowrap">
+            Lv. {{ poke?.level ?? 100 }}
+          </span>
+          <!-- @vue-expect-error -->
+          <GenderIcon
+            class="size-4 sm:hidden"
+            :gender="gen1Gender[poke?.speciesId] ?? poke?.gender"
+          />
+        </div>
       </div>
       <div class="relative overflow-hidden rounded-md bg-[#333] flex">
         <div class="hp-fill absolute h-full rounded-md" />
-        <div class="w-full text-center text-gray-100 text-xs sm:text-sm z-30">{{ hp }}%</div>
+        <div
+          class="w-full text-center text-gray-100 text-[0.65rem] leading-4 sm:text-xs font-medium z-30"
+        >
+          {{ hp }}%
+        </div>
       </div>
       <div class="relative">
         <div
           v-if="poke"
-          class="flex gap-1 flex-wrap absolute *:px-[0.2rem] *:py-[0.1rem] *:text-[0.6rem] sm:*:text-xs"
+          class="flex gap-1 flex-wrap absolute *:px-[0.2rem] *:py-[0.1rem] *:text-[0.6rem] *:leading-3 sm:*:text-xs"
         >
           <UBadge v-if="poke.transformed" color="black" label="Transformed" variant="subtle" />
 
@@ -55,64 +71,99 @@
             variant="subtle"
           />
 
+          <UBadge
+            v-if="poke.v.stockpile"
+            color="green"
+            icon="material-symbols-light:money-bag"
+            :label="poke.v.stockpile"
+            variant="subtle"
+          />
+
           <template v-for="{flag, props} in badges">
             <UBadge v-if="((poke.v.flags ?? 0) & flag) !== 0" :key="flag" v-bind="props" />
           </template>
 
           <template v-for="(val, stage) in poke.v.stages">
             <UBadge v-if="val" :key="stage" :color="val > 0 ? 'lime' : 'red'">
-              {{ roundTo(stageMultipliers[val] / 100, 2) }}x {{ statShortName[stage] }}
+              {{
+                roundTo(
+                  stage === "acc" || stage === "eva"
+                    ? gen.accStageMultipliers[val]
+                    : gen.stageMultipliers[val],
+                  2,
+                )
+              }}x {{ statShortName[stage] }}
             </UBadge>
           </template>
+
+          <!-- <UBadge variant="subtle" color="lime" />
+          <UBadge variant="subtle" color="pink" />
+          <UBadge variant="subtle" color="violet" />
+          <UBadge variant="subtle" color="red" />
+          <UBadge variant="subtle" color="yellow" />
+          <UBadge variant="subtle" color="sky" /> -->
         </div>
       </div>
     </div>
 
     <div ref="scope" class="flex flex-col items-center relative">
-      <div class="w-[128px] h-[117px] sm:w-[256px] sm:h-[234px] items-center justify-center flex">
+      <div class="items-center justify-center flex">
         <UPopover mode="hover" :popper="{placement: 'top'}">
           <div
             ref="sprite"
-            class="sprite relative z-20 flex justify-center"
-            :class="{back, front: !back, invisible: !poke}"
+            class="sprite relative z-20 flex justify-center h-28 sm:h-56"
+            :class="!poke && 'invisible'"
+            :data-poke-id="pokeId"
           >
-            <Sprite
-              :species="poke?.transformed ?? poke?.speciesId"
-              :scale="lessThanSm ? 1 : 2"
-              :shiny="poke?.shiny"
-              :back
-            />
-
-            <img
-              v-if="poke && !poke.fainted && ((poke.v.flags ?? 0) & VF.cConfused) !== 0"
-              class="absolute size-10 sm:size-20 -top-3 sm:-top-6 z-30 dark:invisible"
-              src="/dizzy-light.gif"
-              alt="confused"
-            />
-
-            <img
-              v-if="poke && !poke.fainted && ((poke.v.flags ?? 0) & VF.cConfused) !== 0"
-              class="absolute size-10 sm:size-20 -top-3 sm:-top-6 z-30 invisible dark:visible"
-              src="/dizzy.gif"
-              alt="confused"
-            />
-
-            <AnimatePresence>
-              <motion.img
-                v-if="poke?.v.status === 'slp'"
-                class="absolute size-6 sm:size-10 -top-4 z-30 invert dark:invert-0 rotate-180 ml-20"
-                src="/zzz.gif"
-                alt="confused"
-                :initial="{opacity: 0}"
-                :transition="{duration: 0.2}"
-                :animate="{opacity: 1}"
-                :exit="{opacity: 0}"
+            <div
+              class="absolute w-[128px] h-[117px] sm:w-[256px] sm:h-[234px] flex justify-center items-center select-none"
+            >
+              <Sprite
+                v-show="poke?.transformed ?? poke?.speciesId"
+                :species="poke?.transformed ?? poke?.speciesId"
+                :scale="lessThanSm ? 1 : 2"
+                :shiny="poke?.shiny"
+                :form="poke?.form"
+                :gender="poke?.gender"
+                :back
               />
-            </AnimatePresence>
+
+              <img
+                v-if="poke && !poke.fainted && ((poke.v.flags ?? 0) & VF.cConfused) !== 0"
+                class="absolute size-10 sm:size-20 -top-3 sm:-top-0 z-30 dark:invisible"
+                src="/dizzy-light.gif"
+                alt="confused"
+              />
+
+              <img
+                v-if="poke && !poke.fainted && ((poke.v.flags ?? 0) & VF.cConfused) !== 0"
+                class="absolute size-10 sm:size-20 -top-3 sm:-top-0 z-30 invisible dark:visible"
+                src="/dizzy.gif"
+                alt="confused"
+              />
+
+              <AnimatePresence>
+                <motion.img
+                  v-if="poke?.v.status === 'slp'"
+                  class="absolute size-6 sm:size-10 top-6 z-30 invert dark:invert-0 rotate-180 ml-24"
+                  src="/zzz.gif"
+                  alt="confused"
+                  :initial="{opacity: 0}"
+                  :transition="{duration: 0.2}"
+                  :animate="{opacity: 1}"
+                  :exit="{opacity: 0}"
+                />
+              </AnimatePresence>
+            </div>
           </div>
 
           <template v-if="poke && !poke.hidden" #panel>
-            <PokemonTTContent v-if="base && !poke.transformed" :poke="base" :active="poke" />
+            <PokemonTTContent
+              v-if="poke?.base && !poke.transformed"
+              :poke="poke?.base"
+              :active="poke"
+              :weather
+            />
             <div v-else class="p-2 flex flex-col items-center">
               <div class="flex gap-10">
                 <div class="flex gap-0.5 items-center justify-center">
@@ -121,26 +172,40 @@
                     (Was: {{ gen.speciesList[poke.speciesId].name }})
                   </span>
 
-                  <template v-if="base && poke.transformed && base.item">
-                    <ItemSprite :item="base.item" />
-                    <span class="text-xs">{{ base.gen.items[base.item] }}</span>
+                  <template v-if="poke?.base && poke.transformed && poke?.base._item">
+                    <ItemSprite :item="poke.base._item" />
+                    <span
+                      class="text-xs"
+                      :class="poke.base.itemUnusable && 'line-through italic text-primary'"
+                    >
+                      {{ poke?.base.gen.items[poke.base._item].name }}
+                    </span>
                   </template>
                 </div>
-                <div class="flex gap-1">
+                <div class="flex gap-1 items-center">
                   <TypeBadge v-for="type in species!.types" :key="type" :type image />
                 </div>
               </div>
-              <div v-if="base && poke.transformed" class="pt-1.5 space-y-1.5 w-full">
-                <UProgress :max="base.stats.hp" :value="base.hp" />
+              <div v-if="poke?.base && poke.transformed" class="pt-1.5 space-y-1.5 w-full">
+                <UProgress :max="poke?.base.stats.hp" :value="poke?.base.hp" />
                 <div class="flex justify-between gap-4">
                   <span>
-                    {{ base.hp }}/{{ base.stats.hp }} HP ({{
-                      roundTo(hpPercentExact(base.hp, base.stats.hp), 2)
+                    {{ poke?.base.hp }}/{{ poke?.base.stats.hp }} HP ({{
+                      roundTo(hpPercentExact(poke?.base.hp, poke?.base.stats.hp), 2)
                     }}%)
                   </span>
 
-                  <StatusOrFaint :poke="base" :faint="!poke || poke.fainted" />
+                  <StatusOrFaint :poke="poke?.base" :faint="!poke || poke.fainted" />
                 </div>
+              </div>
+              <div class="pt-1.5">
+                <span v-if="gen.id >= 3">
+                  {{
+                    gen.speciesList[poke.transformed ?? poke.speciesId].abilities
+                      .map(a => abilityList[a].name)
+                      .join(", ")
+                  }}
+                </span>
               </div>
               <span class="pt-5 italic text-center">{{ minSpe }} to {{ maxSpe }} Spe</span>
             </div>
@@ -164,7 +229,7 @@
 
       <div
         ref="ground"
-        class="ground absolute bottom-4 sm:bottom-8 bg-gray-200 dark:bg-gray-600 h-10 w-20 sm:h-16 sm:w-40 rounded-[100%] flex justify-center"
+        class="ground absolute bottom-4 sm:bottom-8 h-10 w-20 sm:h-16 sm:w-40 rounded-[100%] flex justify-center"
         :class="{back, front: !back}"
       >
         <div
@@ -174,24 +239,25 @@
 
         <div
           class="substitute absolute opacity-0 bottom-[50%] pointer-events-none"
-          :class="!back && 'z-40'"
+          :class="back ? 'z-10' : 'z-40'"
         >
-          <Sprite species="marowak" substitute :scale="lessThanSm ? 1 : 2" :back />
+          <NuxtImg
+            :srcset="
+              back
+                ? `/sprites/battle/back/substitute.gif ${lessThanSm ? 2 : 1}x`
+                : `/sprites/battle/substitute.gif ${lessThanSm ? 1 : 0.5}x`
+            "
+            alt="substitute"
+          />
         </div>
+
+        <img
+          v-for="i in 3"
+          :key="i"
+          class="caltrop absolute size-4 sm:size-7 opacity-0 z-30 pointer-events-none"
+          src="/caltrop.svg"
+        />
       </div>
-
-      <img
-        v-if="player?.spikes"
-        class="absolute size-4 sm:size-7 bottom-10 sm:bottom-14 opacity-80 pointer-events-none"
-        src="/caltrop.svg"
-      />
-
-      <img
-        v-for="i in 3"
-        :key="i"
-        class="caltrop absolute bottom-4 sm:bottom-8 size-4 sm:size-7 opacity-0 pointer-events-none"
-        src="/caltrop.svg"
-      />
     </div>
   </div>
 </template>
@@ -216,11 +282,16 @@
     scale: 0.5;
   }
 }
+
+img {
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+}
 </style>
 
 <script setup lang="ts">
-import {stageMultipliers, VF, hpPercentExact, type Screen} from "~/game/utils";
-import {calcStat, type Pokemon} from "~/game/pokemon";
+import {VF, hpPercentExact, type ScreenId, type Weather} from "~/game/utils";
 import {breakpointsTailwind} from "@vueuse/core";
 import type {Generation} from "~/game/gen";
 import {UPopover, type UBadge} from "#components";
@@ -232,21 +303,34 @@ import {
   type SequenceOptions,
   type SequenceTime,
 } from "motion-v";
+import type {PokeId} from "~/game/events";
+import {Nature} from "~/game/pokemon";
+import {abilityList} from "~/game/species";
 
-const {poke, base, back, gen, player} = defineProps<{
+const {poke, back, gen, player, pokeId} = defineProps<{
   player?: ClientPlayer;
   poke?: ClientActivePokemon;
-  base?: Pokemon;
-  back?: boolean;
+  back?: bool;
   gen: Generation;
+  pokeId: PokeId;
+  isSingles: bool;
+  weather?: Weather;
 }>();
 const species = computed(() => poke && gen.speciesList[poke.transformed ?? poke.speciesId]);
 const minSpe = computed(
-  () => poke && calcStat("spe", species.value!.stats, poke.level, {spe: 0}, {spe: 0}),
+  () => poke && gen.calcStat("spe", species.value!.stats, poke.level, {spe: 0}, {spe: 0}),
 );
 const maxSpe = computed(
   () =>
-    poke && calcStat("spe", species.value!.stats, poke.level, {spe: gen.maxIv}, {spe: gen.maxEv}),
+    poke &&
+    gen.calcStat(
+      "spe",
+      species.value!.stats,
+      poke.level,
+      {spe: gen.maxIv},
+      {spe: gen.maxEv},
+      Nature.timid,
+    ),
 );
 const hp = computed(() => poke?.hpPercent ?? 0);
 const statShortName = computed(() => ({...getStatKeys(gen), spd: "SpD", acc: "Acc", eva: "Eva"}));
@@ -258,10 +342,11 @@ const sprite = ref<HTMLDivElement>();
 const ground = ref<HTMLDivElement>();
 const pbRow = ref(0);
 const pbCol = ref(3);
-const scrColor: Record<Screen, string> = {
+const scrColor: Record<ScreenId, string> = {
   safeguard: "bg-purple-500",
   light_screen: "bg-pink-500",
   reflect: "bg-blue-400",
+  mist: "bg-sky-400",
 };
 
 const screens = computed(() => {
@@ -279,8 +364,8 @@ const screens = computed(() => {
   }
 
   for (const screen in scrColor) {
-    if (player?.screens?.[screen as Screen]) {
-      screens.push({name: screen, clazz: scrColor[screen as Screen]});
+    if (player?.screens?.[screen as ScreenId]) {
+      screens.push({name: screen, clazz: scrColor[screen as ScreenId]});
     }
   }
 
@@ -293,108 +378,129 @@ const offsX = (number: number) => `-${number * 42 - number}px`;
 const offsY = (number: number) => `-${number * 42 - number * 2}px`;
 const relativePos = (src: DOMRect, x: number, y: number) => [x - src.left, y - src.top];
 
-onMounted(async () => {
-  // await playAnimation({anim: "get_sub", batonPass: true, name: ""});
-  // await playAnimation({anim: "retract", batonPass: true, name: ""});
-  // await playAnimation({anim: "sendin", batonPass: true, name: ""});
-  // await playAnimation({anim: "attack", batonPass: false, name: ""});
-  // await playAnimation({anim: "lose_sub", batonPass: false, name: ""});
-  // await playAnimation({anim: "attack", batonPass: false, name: ""});
-  // await playAnimation({anim: "retract", batonPass: false, name: ""});
-  // await playAnimation({anim: "sendin", batonPass: false, name: ""});
-  //   await playAnimation({
-  //     anim: "get_sub",
-  //     batonPass: false,
-  //     name: "l",
-  //     cb: () => log("cb called"),
-  //   });
-  //
-  //   await playAnimation({
-  //     anim: "lose_sub",
-  //     batonPass: false,
-  //     name: "l",
-  //     cb: () => log("cb called"),
-  //   });
-  // await playAnimation({
-  //   anim: "sendin",
-  //   batonPass: false,
-  //   name: "l",
-  // });
-});
-
 /*
 "red" | "pink" | "emerald" | "teal" | "lime" | "gray" | "black" | "sky" | "white" | "green" |
 "orange" | "amber" | "yellow" | "cyan" | "blue" | "indigo" | "violet" | "purple" | "fuchsia" |
 "rose" | "primary"
 */
 const badges: {flag: VF; props: InstanceType<typeof UBadge>["$props"]}[] = [
+  {flag: VF.followMe, props: {color: "lime", icon: "tabler:hand-finger", variant: "subtle"}},
+  {flag: VF.snatch, props: {color: "lime", icon: "tabler:hand-grab", variant: "subtle"}},
   {flag: VF.cAttract, props: {color: "pink", icon: "material-symbols:favorite", variant: "subtle"}},
   {flag: VF.lockon, props: {color: "red", icon: "ri:crosshair-2-line", variant: "subtle"}},
   {flag: VF.cMeanLook, props: {color: "red", icon: "tabler:prison", variant: "subtle"}},
+  {flag: VF.cSeeded, props: {color: "lime", icon: "tabler:seedling-filled", variant: "subtle"}},
+  {flag: VF.flashFire, props: {color: "red", icon: "mdi:fire", variant: "subtle"}},
+  {flag: VF.helpingHand, props: {color: "lime", icon: "mdi:hand-clap", variant: "subtle"}},
+  {flag: VF.charge, props: {color: "yellow", icon: "material-symbols:bolt", variant: "subtle"}},
+  {flag: VF.magicCoat, props: {color: "pink", icon: "mdi:mirror", variant: "subtle"}},
   {
-    flag: VF.foresight,
-    props: {
-      color: "violet",
-      icon: "material-symbols:search-rounded",
-      variant: "subtle",
-      class: "ring-violet-500 dark:ring-violet-400",
-    },
+    flag: VF.cEncore,
+    props: {color: "sky", icon: "material-symbols:celebration", variant: "subtle"},
   },
-  {flag: VF.curse, props: {color: "red", label: "Curse"}},
-  {flag: VF.cDisabled, props: {color: "red", label: "Disable"}},
-  {flag: VF.focus, props: {color: "emerald", label: "Focus Energy"}},
+  {flag: VF.cDisabled, props: {color: "red", icon: "fe:disabled", variant: "subtle"}},
+  {
+    flag: VF.cTaunt,
+    props: {color: "red", icon: "fluent-emoji-high-contrast:anger-symbol", variant: "subtle"},
+  },
+  {
+    flag: VF.identified,
+    props: {color: "violet", icon: "material-symbols:search-rounded", variant: "subtle"},
+  },
+  {
+    flag: VF.imprisoning,
+    props: {color: "red", icon: "material-symbols:lock", variant: "subtle", label: "Imprisoning"},
+  },
+  {flag: VF.curse, props: {color: "red", icon: "mdi:nail", label: "Cursed", variant: "subtle"}},
+  {
+    flag: VF.ingrain,
+    props: {color: "lime", icon: "tabler:prison", variant: "subtle", label: "Ingrain"},
+  },
+  {flag: VF.focusEnergy, props: {color: "emerald", label: "Focus Energy"}},
   {flag: VF.mist, props: {color: "teal", label: "Mist"}},
-  {flag: VF.seeded, props: {color: "lime", label: "Seeded"}},
   {flag: VF.destinyBond, props: {color: "gray", label: "Destiny Bond"}},
+  {flag: VF.grudge, props: {color: "gray", label: "Grudge"}},
   {flag: VF.protect, props: {color: "black", label: "Protect"}},
   {flag: VF.endure, props: {color: "black", label: "Endure"}},
-  {flag: VF.cEncore, props: {color: "sky", label: "Encore"}},
   {flag: VF.nightmare, props: {color: "black", label: "Nightmare"}},
+  {flag: VF.cDrowsy, props: {color: "black", label: "Drowsy"}},
+  {flag: VF.waterSport, props: {color: "sky", label: "Water Sport"}},
+  {flag: VF.mudSport, props: {color: "orange", label: "Mud Sport"}},
 ];
 
 const rem = (rem: number) => parseFloat(getComputedStyle(document.documentElement).fontSize) * rem;
 
 export type AnimationParams =
   | SwitchAnim
-  | {
-      anim: "faint" | "get_sub" | "lose_sub" | "spikes" | "attack";
-      cb?: () => void;
-      batonPass?: boolean;
-      name?: string;
-    };
+  | RetractAnim
+  | AttackAnim
+  | OtherAnim
+  | HurtAnim
+  | TransformAnim;
 
 export type SwitchAnim = {
+  anim: "sendin";
+  cb?: () => void;
+  name: string;
+};
+
+export type RetractAnim = {
   anim: "sendin" | "retract" | "phaze";
   cb?: () => void;
-  batonPass: boolean;
+  batonPass: bool;
   name: string;
+};
+
+export type AttackAnim = {
+  anim: "attack";
+  cb?: () => void;
+  target: PokeId;
+};
+
+export type OtherAnim = {
+  anim: "faint" | "get_sub" | "lose_sub" | "spikes";
+  cb?: () => void;
+  batonPass?: bool;
+};
+
+export type HurtAnim = {
+  anim: "hurt";
+  cb?: () => void;
+  direct: bool;
+};
+
+export type TransformAnim = {
+  anim: "transform";
+  cb?: () => void;
 };
 
 const subOpacity = 0.5;
 const [subOffsetX, subOffsetY] = [1.5, 0.5];
 
 let hasSubstitute = false;
-const playAnimation = ({anim, cb, batonPass, name}: AnimationParams) => {
-  if (name) {
-    pbCol.value = name ? [...name].reduce((acc, x) => x.charCodeAt(0) + acc, 0) % 17 : 3;
+const playAnimation = (params: AnimationParams) => {
+  if ("name" in params) {
+    pbCol.value = params.name
+      ? [...params.name].reduce((acc, x) => x.charCodeAt(0) + acc, 0) % 17
+      : 3;
   }
 
   const seq: AnimationSequence = [];
   const opts: SequenceOptions = {};
-  if (anim === "faint") {
+  if (params.anim === "faint") {
+    animations.faint(seq);
     if (hasSubstitute) {
       hasSubstitute = false;
-      animations.loseSub(seq);
+      animations.fadeSub(seq);
     }
-    animations.faint(seq);
-  } else if (anim === "sendin") {
-    animations.sendIn(seq, cb);
+  } else if (params.anim === "sendin") {
+    animations.sendIn(seq, params.cb);
     if (hasSubstitute) {
       animations.subAfterBatonPass(seq);
     }
-  } else if (anim === "retract") {
+  } else if (params.anim === "retract") {
     if (hasSubstitute) {
-      if (batonPass) {
+      if (params.batonPass) {
         animations.startSubAttack(seq);
       } else {
         hasSubstitute = false;
@@ -402,28 +508,33 @@ const playAnimation = ({anim, cb, batonPass, name}: AnimationParams) => {
       }
     }
     animations.retract(seq);
-  } else if (anim === "get_sub") {
+  } else if (params.anim === "get_sub") {
     hasSubstitute = true;
     animations.getSub(seq);
-  } else if (anim === "lose_sub") {
+  } else if (params.anim === "lose_sub") {
     hasSubstitute = false;
-    animations.loseSub(seq, cb);
-  } else if (anim === "phaze") {
+    animations.loseSub(seq, params.cb);
+  } else if (params.anim === "phaze") {
     animations.phaze(seq, ".sprite");
     if (hasSubstitute) {
       hasSubstitute = false;
       animations.phaze(seq, ".substitute", "<");
     }
-  } else if (anim === "spikes") {
-    animations.spikes(seq, cb);
-  } else {
+  } else if (params.anim === "spikes") {
+    animations.spikes(seq, params.cb);
+  } else if (params.anim === "attack") {
     if (hasSubstitute) {
       animations.startSubAttack(seq);
     }
 
-    animations.attack(seq, cb);
+    const other = document.querySelector(`.sprite[data-poke-id="${params.target}"]`)!;
+    animations.attack(seq, other, params.cb);
     opts.repeat = 1;
     opts.repeatType = "reverse";
+  } else if (params.anim === "hurt") {
+    animations.hurt(seq, params.direct);
+  } else if (params.anim === "transform") {
+    animations.transform(seq, params.cb);
   }
 
   return animate(seq, opts);
@@ -448,7 +559,7 @@ const onComplete = (cb: () => void): Segment => {
   };
   // XXX: For some reason motion decides to run animations with 0 duration at the start of the
   // sequence
-  return [obj, {value: 5}, {duration: 0.01}];
+  return [obj, {value: 5}, {duration: 0.015}];
 };
 
 const animations = {
@@ -472,7 +583,6 @@ const animations = {
       {duration: ms(300), ease: easeOutExpo, at: "<"},
     ]);
   },
-
   subAfterBatonPass(seq: AnimationSequence) {
     seq.push([
       ".sprite",
@@ -488,6 +598,9 @@ const animations = {
       {x: 0, y: 0, opacity: 1},
       {duration: ms(250), ease: easeOutExpo, at: "+0"},
     ]);
+  },
+  fadeSub(seq: AnimationSequence) {
+    seq.push([".substitute", {opacity: 0, scaleX: 0}, {duration: ms(300), ease: easeInExpo}]);
   },
 
   faint(seq: AnimationSequence) {
@@ -541,18 +654,25 @@ const animations = {
       {
         x: [0, 0],
         y: [-rem(8), 0],
-        opacity: 1,
+        opacity: [0, 1],
         scaleX: [1, 1],
       },
       {duration: ms(350), ease: easeOutBounce},
     ]);
   },
   loseSub(seq: AnimationSequence, cb?: () => void) {
-    seq.push([".substitute", {opacity: 0, scaleX: 0}, {duration: ms(300), ease: easeInExpo}]);
+    this.fadeSub(seq);
     if (cb) {
       seq.push(onComplete(cb));
     }
     seq.push([".sprite", {x: 0, y: 0, opacity: 1}, {duration: ms(500), ease: easeInExpo}]);
+  },
+  transform(seq: AnimationSequence, cb?: () => void) {
+    seq.push([".sprite", {scale: 0}, {duration: ms(400), ease: easeInExpo}]);
+    if (cb) {
+      seq.push(onComplete(cb));
+    }
+    seq.push([".sprite", {scale: 1}, {duration: ms(400), ease: easeInExpo}]);
   },
   phaze(seq: AnimationSequence, target: any, at?: SequenceTime) {
     const x = back ? -rem(8) : rem(8); // 120
@@ -563,18 +683,19 @@ const animations = {
     ]);
   },
   retract(seq: AnimationSequence) {
-    const sprite = scope.value.querySelector(".sprite")!;
-    const sprRect = sprite.getBoundingClientRect();
-    const gRect = ground.value!.getBoundingClientRect();
-    const [_, sprY] = relativePos(sprRect, 0, gRect.top - rem(lessThanSm.value ? 1.2 : 2.8));
-
     pbRow.value = 10;
 
     seq.push([".pokeball", {x: 0, y: 0, opacity: 1}, {ease: steps(1, "start"), duration: 0}]);
     seq.push([
-      sprite,
-      {scale: 0.45, opacity: 0, y: sprY},
-      {duration: ms(550), at: "<", ease: easeOutQuart, opacity: {ease: easeInCubic}},
+      sprite.value!,
+      {scale: 0.45, opacity: 0, transformOrigin: ["bottom", "center"]},
+      {
+        duration: ms(550),
+        at: "<",
+        ease: easeOutQuart,
+        opacity: {ease: easeInCubic},
+        transformOrigin: {ease: steps(2, "start")},
+      },
     ]);
     seq.push(onComplete(() => (pbRow.value = 9)));
     seq.push([".pokeball", {opacity: 0}, {duration: ms(200), ease: "linear"}]);
@@ -614,13 +735,10 @@ const animations = {
       ]);
     }
   },
-  attack(seq: AnimationSequence, cb?: () => void) {
-    const other = document.querySelector(`.sprite${back ? ".front" : ".back"}`)!;
-    const sprite = scope.value.querySelector(".sprite")!;
-
-    const [x, y] = arcTo(sprite, other);
+  attack(seq: AnimationSequence, other: Element, cb?: () => void) {
+    const [x, y] = arcTo(sprite.value!, other);
     seq.push([
-      sprite,
+      sprite.value!,
       {x: [0, x], y: [0, ...y]},
       {
         x: {ease: "linear"},
@@ -631,6 +749,14 @@ const animations = {
     if (cb) {
       seq.push(onComplete(cb));
     }
+  },
+  hurt(seq: AnimationSequence, direct: bool) {
+    const hitSub = hasSubstitute && !direct;
+    seq.push([
+      hitSub ? ".substitute" : ".sprite",
+      {opacity: [0, 1, 0, 1, 0, !hitSub && hasSubstitute ? subOpacity : 1]},
+      {opacity: {ease: steps(6)}, duration: 0.35},
+    ]);
   },
 };
 
@@ -644,8 +770,6 @@ const arcTo = (self: Element, other: Element, height = 50, offs?: readonly [numb
   const yOffs = offs?.[1] ?? 0;
   return [x + xOffs, [midYRel, y + yOffs]] as const;
 };
-
-const isBack = () => back;
 
 // https://easings.net
 
@@ -670,5 +794,7 @@ function easeOutBounce(x: number): number {
   }
 }
 
-defineExpose({playAnimation, isBack});
+const getId = () => pokeId;
+
+defineExpose({playAnimation, getId});
 </script>

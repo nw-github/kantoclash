@@ -1,8 +1,8 @@
 import type {ClientVolatiles} from "~/utils/shared";
 import type {MoveId} from "./moves";
-import type {Gender, Status} from "./pokemon";
-import type {SpeciesId} from "./species";
-import type {Stages, Type, VF, Weather, Screen} from "./utils";
+import type {FormId, Gender, Status} from "./pokemon";
+import type {AbilityId, SpeciesId} from "./species";
+import type {StageId, Type, VF, Weather, ScreenId} from "./utils";
 import type {ItemId} from "./item";
 
 type NullOrOptional<T> = {[P in keyof T]?: T[P] | null};
@@ -22,6 +22,9 @@ type AnyEvent =
   | DisableEvent
   | ChargeEvent
   | MimicEvent
+  | CantUseEvent
+  | TauntEvent
+  | GrudgeEvent
   | ConversionEvent
   | MagnitudeEvent
   | WeatherEvent
@@ -33,23 +36,31 @@ type AnyEvent =
   | PerishSongEvent
   | TrapEvent
   | BeatUpEvent
-  | UseItemEvent
+  | ItemEvent
   | RestorePPEvent
   | ThiefEvent
+  | TrickEvent
   | ForfeitEvent
-  | BatonPass;
+  | BatonPass
+  | SpikesEvent
+  | ProcAbilityEvent
+  | AbilityEvent
+  | StockPileEvent
+  | TransformEvent
+  | BounceEvent;
 
-export type ChangedVolatiles = {id: PlayerId; v: NullOrOptional<ClientVolatiles>}[];
+export type ChangedVolatiles = {id: PokeId; v: NullOrOptional<ClientVolatiles>}[];
 
 export type BattleEvent = AnyEvent & {volatiles?: ChangedVolatiles};
 
 export type PlayerId = string;
+export type PokeId = `${PlayerId}:${number}`;
 
 type NextTurnEvent = {type: "next_turn"; turn: number};
 
 type SwitchEvent = {
   type: "switch";
-  src: PlayerId;
+  src: PokeId;
   speciesId: SpeciesId;
   level: number;
   hpPercent: number;
@@ -57,8 +68,19 @@ type SwitchEvent = {
   name: string;
   indexInTeam: number;
   gender?: Gender;
-  shiny?: boolean;
+  shiny?: bool;
+  form?: FormId;
   why?: "phaze" | "baton_pass";
+};
+
+type TransformEvent = {
+  type: "transform";
+  src: PokeId;
+  target?: PokeId;
+  speciesId: SpeciesId;
+  shiny: bool;
+  gender?: Gender;
+  form?: FormId;
 };
 
 export type DamageReason =
@@ -73,7 +95,8 @@ export type DamageReason =
   | "brn"
   | "confusion"
   | "trap"
-  | "sandstorm"
+  | "sand"
+  | "hail"
   | "belly_drum"
   | "set_curse"
   | "curse"
@@ -83,7 +106,8 @@ export type DamageReason =
   | "perish_song"
   | "future_sight"
   | "spikes"
-  | "trap_eot";
+  | "trap_eot"
+  | "roughskin";
 
 export type RecoveryReason =
   | "drain"
@@ -93,17 +117,21 @@ export type RecoveryReason =
   | "pain_split"
   | "present"
   | "leftovers"
-  | "item";
+  | "shellbell"
+  | "item"
+  | "ingrain"
+  | "none"
+  | `wish:${string}`;
 
 export type DamageEvent = {
   type: "damage";
-  src: PlayerId;
-  target: PlayerId;
+  src: PokeId;
+  target: PokeId;
   hpPercentBefore: number;
   hpPercentAfter: number;
   hpBefore?: number;
   hpAfter?: number;
-  isCrit?: boolean;
+  isCrit?: bool;
   why: DamageReason;
   /* when why === "trap", this is a moveId */
   move?: string;
@@ -118,8 +146,8 @@ export type DamageEvent = {
 
 export type RecoverEvent = {
   type: "recover";
-  src: PlayerId;
-  target: PlayerId;
+  src: PokeId;
+  target: PokeId;
   hpPercentBefore: number;
   hpPercentAfter: number;
   hpBefore?: number;
@@ -129,15 +157,15 @@ export type RecoverEvent = {
 
 export type HitSubstituteEvent = {
   type: "hit_sub";
-  src: PlayerId;
-  target: PlayerId;
-  broken: boolean;
-  confusion: boolean;
+  src: PokeId;
+  target: PokeId;
+  broken: bool;
+  confusion: bool;
   hitCount?: number;
   eff?: number;
 };
 
-type UseMoveEvent = {type: "move"; src: PlayerId; move: MoveId; disabled?: true; thrashing?: true};
+type UseMoveEvent = {type: "move"; src: PokeId; move: MoveId; disabled?: true; thrashing?: true};
 
 export type VictoryEvent = {
   type: "end";
@@ -146,15 +174,26 @@ export type VictoryEvent = {
   why?: "endless" | "too_long" | "timer";
 };
 
-type StatusEvent = {type: "status" | "cure"; src: PlayerId; status: Status};
+type StatusEvent = {type: "status" | "cure"; src: PokeId; status: Status};
 
-type StagesEvent = {type: "stages"; src: PlayerId; stat: Stages; count: number};
+type StagesEvent = {
+  type: "stages";
+  src: PokeId;
+  stat: StageId;
+  /**
+   * -6 and +6 are sentinel values meaning stat too low and stat too high respectively
+   * 0 means the stat couldn't be lowered due to an ability
+   */
+  count: number;
+};
 
 export type FailReason =
   | "immune"
-  | "miss"
   | "fail_generic"
+  | "fail_notarget"
   | "fail_sleep_clause"
+  | "fail_present"
+  | "fail_focus"
   | "has_substitute"
   | "cant_substitute"
   | "flinch"
@@ -167,7 +206,7 @@ export type BugType = "bug_gen2_bellydrum" | "bug_gen2_spikes";
 
 type VFReason = Exclude<
   keyof typeof VF,
-  "cSubstitute" | "curse" | "none" | "cDisabled" | "foresight" | "lockon"
+  "curse" | "none" | "cDisabled" | "identified" | "lockon" | "helpingHand" | "flashFire"
 >;
 
 export type InfoReason =
@@ -187,93 +226,149 @@ export type InfoReason =
   | "paralyze"
   | "rage"
   | "disable_end"
+  | "taunt_end"
   | "bide"
   | "bide_store"
   | "trapped"
   | "faint"
   | "immobilized"
+  | "uproar"
+  | "uproar_continue"
+  | "uproar_end"
   | "endure_hit"
   | "endure_band"
   | "encore_end"
   | "heal_bell"
+  | "aromatherapy"
   | "pain_split"
   | "perish_song"
   | "future_sight"
   | "future_sight_release"
+  | "doom_desire"
+  | "doom_desire_release"
   | "withdraw"
-  | "spikes"
-  | "spin_spikes"
-  | "fail_present";
+  | "wont_flinch"
+  | "miss"
+  | "begin_focuspunch"
+  | "not_confused"
+  | "wish"
+  | "cure_attract";
 
-type InfoEvent = {type: "info"; src: PlayerId; why: InfoReason};
+type InfoEvent = {type: "info"; src: PokeId; why: InfoReason};
 
 type BugEvent = {type: "bug"; bug: BugType};
 
 type SrcTargetEvent = {
-  type: "transform" | "in_love" | "psych_up" | "foresight" | "lock_on";
-  src: PlayerId;
-  target: PlayerId;
+  type:
+    | "in_love"
+    | "psych_up"
+    | "foresight"
+    | "lock_on"
+    | "miss"
+    | "helping_hand"
+    | "skill_swap"
+    | "snatch";
+  src: PokeId;
+  target: PokeId;
+};
+
+type SpikesEvent = {
+  type: "spikes";
+  src: PokeId;
+  player: PlayerId;
+  spin: bool;
 };
 
 // For some reason making these 1 thing causes MoveId to become a recursive type
 // type SrcMoveEvent = {
 //   type: "disable" | "charge" | "sketch" | "mimic";
-//   src: PlayerId;
+//   src: PokeId;
 //   move: MoveId;
 // };
 
-type DisableEvent = {type: "disable"; src: PlayerId; move: MoveId};
-type ChargeEvent = {type: "charge"; src: PlayerId; move: MoveId};
-type SketchEvent = {type: "sketch"; src: PlayerId; move: MoveId};
-type MimicEvent = {type: "mimic"; src: PlayerId; move: MoveId};
+type DisableEvent = {type: "disable"; src: PokeId; move: MoveId};
+type ChargeEvent = {type: "charge"; src: PokeId; move: MoveId};
+type SketchEvent = {type: "sketch"; src: PokeId; move: MoveId};
+type MimicEvent = {type: "mimic"; src: PokeId; move: MoveId};
+type CantUseEvent = {type: "cantuse"; src: PokeId; move: MoveId};
+type TauntEvent = {type: "cantusetaunt"; src: PokeId; move: MoveId};
+type GrudgeEvent = {type: "grudge"; src: PokeId; move: MoveId};
+type RestorePPEvent = {type: "pp"; src: PokeId; move: MoveId};
+type BounceEvent = {type: "bounce"; src: PokeId; move: MoveId};
 
 type TrapEvent = {
   type: "trap";
   kind: "start" | "end";
-  src: PlayerId;
-  target: PlayerId;
+  src: PokeId;
+  target: PokeId;
   move: MoveId;
 };
 
-type ConversionEvent = {type: "conversion"; src: PlayerId; target?: PlayerId; types: Type[]};
+type ConversionEvent = {type: "conversion"; src: PokeId; target?: PokeId; types: Type[]};
 
 type MagnitudeEvent = {type: "magnitude"; magnitude: number};
 
-export type ScreenEvent = {type: "screen"; kind: "start" | "end"; screen: Screen; src: PlayerId};
+export type ScreenEvent = {
+  type: "screen";
+  kind: "start" | "end" | "shattered";
+  screen: ScreenId;
+  user: PlayerId;
+};
 
 type SetVolatilesEvent = {type: "sv"};
 
-type SpiteEvent = {type: "spite"; src: PlayerId; move: MoveId; amount: number};
+type SpiteEvent = {type: "spite"; src: PokeId; move: MoveId; amount: number};
 
 type BeatUpEvent = {type: "beatup"; name: string};
 
 export type WeatherEvent = {type: "weather"; kind: "start" | "end" | "continue"; weather: Weather};
 
-type PerishSongEvent = {type: "perish"; src: PlayerId; turns: number};
+type PerishSongEvent = {type: "perish"; src: PokeId; turns: number};
 
-type UseItemEvent = {
-  type: "item";
-  src: PlayerId;
+type ItemEvent = {
+  type: "item" | "recycle";
+  src: PokeId;
   item: ItemId;
-};
-
-type RestorePPEvent = {
-  type: "pp";
-  src: PlayerId;
-  move: MoveId;
 };
 
 type ThiefEvent = {
-  type: "thief";
-  src: PlayerId;
-  target: PlayerId;
+  type: "thief" | "knockoff";
+  src: PokeId;
+  target: PokeId;
   item: ItemId;
+};
+
+type TrickEvent = {
+  type: "trick";
+  src: PokeId;
+  target: PokeId;
+  srcItem?: ItemId;
+  targetItem?: ItemId;
 };
 
 type ForfeitEvent = {
   type: "forfeit";
   user: PlayerId;
-  timer: boolean;
+  timer: bool;
 };
 
-type BatonPass = {type: "baton_pass"; src: PlayerId};
+type BatonPass = {type: "baton_pass"; src: PokeId};
+
+type ProcAbilityEvent = {
+  type: "proc_ability";
+  src: PokeId;
+  ability: AbilityId;
+};
+
+type AbilityEvent = {
+  type: "trace" | "copy_ability";
+  src: PokeId;
+  target: PokeId;
+  ability: AbilityId;
+};
+
+type StockPileEvent = {
+  type: "stockpile";
+  src: PokeId;
+  count: number;
+};

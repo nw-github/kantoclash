@@ -1,5 +1,5 @@
 <template>
-  <audio ref="musicController" autoplay loop src="/15-seconds-of-silence.mp3" />
+  <audio ref="musicController" autoplay loop src="/silence.mp3" />
 </template>
 
 <script setup lang="ts">
@@ -48,7 +48,7 @@ watch(fadeOutRequested, async req => {
 
 let stopping: Promise<void> | undefined;
 
-const stop = async (fade: boolean) => {
+const stop = async (fade: bool) => {
   if (!context || !source) {
     return;
   }

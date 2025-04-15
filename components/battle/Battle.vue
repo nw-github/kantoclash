@@ -1,12 +1,13 @@
 <template>
   <div
-    class="flex h-full flex-col sm:flex-row p-4 overflow-auto rounded-lg gap-4 dark:divide-gray-800 ring-1 ring-gray-200 dark:ring-gray-800 shadow"
+    class="flex h-full p-4 rounded-lg gap-4 dark:divide-gray-800 ring-1 ring-gray-200 dark:ring-gray-800 shadow"
   >
-    <div class="flex flex-col w-full items-center">
+    <div class="flex flex-col w-full items-center overflow-x-hidden overflow-y-auto">
+      <!-- Top Bar -->
       <div class="flex w-full relative justify-between items-start">
         <div class="flex gap-2 items-center">
           <div
-            :class="[!currentTurnNo && 'invisible']"
+            :class="[!currentTurnNo && 'invisible order-1']"
             class="rounded-md bg-gray-300 dark:bg-gray-700 flex justify-center py-0.5 px-1"
           >
             <span class="text-lg font-medium">Turn {{ currentTurnNo }}</span>
@@ -21,46 +22,42 @@
         </div>
 
         <div v-if="opponent" class="absolute sm:static right-0 flex flex-col items-end gap-1">
-          <span class="text-xs pr-0.5 pb-1 sm:order-1 font-semibold">
-            {{ players[opponent].name }}
+          <TeamDisplay :player="players.get(opponent)" />
+          <span class="text-xs pr-0.5 pb-1 font-semibold">
+            {{ players.get(opponent).name }}
           </span>
-          <TeamDisplay :player="players[opponent]" class="flex-col sm:flex-row" />
         </div>
       </div>
 
-      <div class="flex">
-        <template v-for="(player, id) in players" :key="id">
-          <ActivePokemon
-            v-if="!player.isSpectator"
-            ref="activePokemon"
-            :class="id === perspective ? 'pt-10 sm:pt-14 pb-2 sm:pb-0' : 'order-2'"
-            :base="id === myId ? activeInTeam : undefined"
-            :poke="player?.active"
-            :player
-            :back="id === perspective"
-            :gen
-          />
-        </template>
-      </div>
+      <Field ref="field" :players :perspective :is-singles :gen :weather />
 
+      <!-- Events & Bottom Bar -->
       <div class="relative w-full">
-        <div class="absolute w-full flex flex-col bottom-1 gap-0.5 z-30">
-          <TransitionGroup name="list">
-            <div
+        <div class="absolute w-full flex flex-col bottom-1 gap-1 z-30 pointer-events-none">
+          <AnimatePresence>
+            <motion.div
               v-for="e in liveEvents"
               :key="e.time"
               class="w-full bg-gray-300/90 dark:bg-gray-700/95 rounded-lg px-2 pb-0.5"
+              :initial="{opacity: 0, y: 20}"
+              :animate="{opacity: 1, y: 0}"
+              :exit="{opacity: 0, y: -10}"
+              :transition="{duration: 0.5, ease: 'easeOut'}"
+              layout
             >
               <Event class="first:pt-0" :e :my-id :players :perspective :gen />
-            </div>
-          </TransitionGroup>
+            </motion.div>
+          </AnimatePresence>
         </div>
 
         <div
-          v-if="players[perspective]"
+          v-if="players.get(perspective)"
           class="absolute bottom-0 z-0 flex flex-row justify-between w-full p-0.5 items-end"
         >
-          <TeamDisplay :player="players[perspective]" class="self-end flex-col sm:flex-row p-2" />
+          <TeamDisplay
+            :player="players.get(perspective)"
+            class="self-end p-2 invisible sm:visible"
+          />
 
           <div class="flex flex-row">
             <UTooltip
@@ -72,14 +69,21 @@
                 class="my-1"
                 leading-icon="material-symbols:alarm-outline"
                 variant="ghost"
-                :color="currentOptions && timeLeft() <= 10 ? 'red' : 'gray'"
-                :disabled="!players[myId] || players[myId].isSpectator || !!victor || !!timer"
-                :label="timer && !currentOptions ? '--' : timer ? `${Math.max(timeLeft(), 0)}` : ''"
+                :color="currOptions && timeLeft() <= 10 ? 'red' : 'gray'"
+                :disabled="
+                  !players.get(myId) || players.get(myId).isSpectator || !!victor || !!timer
+                "
+                :label="timer && !currOptions ? '--' : timer ? `${Math.max(timeLeft(), 0)}` : ''"
                 @click="$emit('timer')"
               />
             </UTooltip>
 
-            <UTooltip text="Open Chat" :popper="{placement: 'top'}" class="min-[900px]:hidden px-2">
+            <UTooltip
+              v-if="textBoxHidden"
+              text="Open Chat"
+              :popper="{placement: 'top'}"
+              class="px-2"
+            >
               <UChip :show="unseenChats !== 0" :text="unseenChats" size="xl" inset>
                 <UButton
                   ref="menuButton"
@@ -96,41 +100,20 @@
 
       <UDivider class="pb-2" />
 
+      <!-- Selectors & Buttons -->
       <div class="w-full pb-2">
-        <template v-if="currentOptions && !selectionText.length && !playingEvents">
-          <div class="grid gap-2 sm:grid-cols-[1fr,1.5fr] h-min">
-            <div class="flex flex-col gap-1 sm:gap-2">
-              <template v-for="(option, i) in currentOptions.moves">
-                <MoveButton
-                  v-if="option.display"
-                  :key="i"
-                  :option
-                  :gen
-                  :poke="activeInTeam"
-                  @click="selectMove(i)"
-                />
-              </template>
-              <div v-if="!currentOptions.moves.length && activeIndex === -1">Choose your lead</div>
-            </div>
-
-            <div class="grid grid-cols-2 gap-1 sm:gap-2 items-center">
-              <SwitchButton
-                v-for="(poke, i) in team"
-                :key="i"
-                :poke
-                :disabled="i === activeIndex || !currentOptions.canSwitch"
-                :active="i === activeIndex"
-                @click="selectSwitch(i)"
-              />
-            </div>
-          </div>
-        </template>
-        <div v-else-if="currentOptions && !playingEvents">
-          <div class="italic">{{ selectionText }}...</div>
-          <TooltipButton icon="material-symbols:cancel" label="Cancel" @click="cancelMove" />
-        </div>
-        <div v-else-if="!isBattleOver && isBattler && !playingEvents" class="italic">
-          Waiting for opponent...
+        <div v-if="team && !playingEvents && isBattler && !isBattleOver">
+          <OptionSelector
+            :team
+            :options="currOptions"
+            :players
+            :my-id
+            :gen
+            :opponent
+            :weather
+            @cancel="$emit('cancel')"
+            @choice="$emit('choice', $event)"
+          />
         </div>
         <div v-else class="flex flex-wrap gap-0.5">
           <template v-if="!isBattler || isBattleOver">
@@ -193,17 +176,17 @@
       </div>
     </div>
 
-    <div class="hidden min-[900px]:block h-full w-full">
+    <div v-if="!textBoxHidden" class="h-full w-3/5">
       <Textbox
         :players
         :chats
         :victor
         :perspective
         :format
+        :smooth-scroll
         :turns="htmlTurns"
-        :smooth-scroll="smoothScroll"
-        @chat="message => $emit('chat', message)"
-        @forfeit="$emit('forfeit')"
+        @chat="$emit('chat', $event)"
+        @forfeit="$emit('choice', {type: 'forfeit'})"
       />
     </div>
 
@@ -214,81 +197,57 @@
         :victor
         :perspective
         :format
+        :smooth-scroll
         :turns="htmlTurns"
-        :smooth-scroll="smoothScroll"
         closable
-        @chat="message => $emit('chat', message)"
-        @forfeit="$emit('forfeit')"
+        @chat="$emit('chat', $event)"
+        @forfeit="$emit('choice', {type: 'forfeit'})"
         @close="slideoverOpen = false"
       />
     </USlideover>
   </div>
 </template>
 
-<style scoped>
-.list-move,
-.list-enter-active,
-.list-leave-active {
-  transition: all 0.5s ease;
-}
-
-.list-enter-from {
-  opacity: 0;
-  transform: translateY(20px);
-}
-
-.list-leave-to {
-  opacity: 0;
-  transform: translateY(-10px);
-}
-
-.list-leave-active {
-  position: relative;
-}
-</style>
-
 <script setup lang="ts">
-import type {Options} from "~/game/battle";
-import type {Pokemon} from "~/game/pokemon";
-import type {BattleEvent} from "~/game/events";
+import type {FormId, Pokemon} from "~/game/pokemon";
+import type {BattleEvent, PokeId} from "~/game/events";
 import type {SpeciesId} from "~/game/species";
-import type {BattleTimer, InfoRecord} from "~/server/gameServer";
-import type {ActivePokemon} from "#build/components";
+import type {BattleTimer, Choice, InfoRecord} from "~/server/gameServer";
 import criesSpritesheet from "~/public/effects/cries.json";
 import {GENERATIONS} from "~/game/gen";
-import type {Weather} from "~/game/utils";
+import {playerId, type Weather} from "~/game/utils";
 import type {AnimationParams} from "./ActivePokemon.vue";
-import type {AnimationPlaybackControls} from "motion-v";
+import {AnimatePresence, motion, type AnimationPlaybackControls} from "motion-v";
+import type {Options} from "~/game/battle";
 
 const weatherData = {
   rain: {icon: "material-symbols:rainy", tooltip: "Raining", class: "text-sky-400"},
   sun: {icon: "material-symbols:clear-day-rounded", tooltip: "Harsh Sun", class: "text-orange-500"},
   sand: {icon: "mingcute:sandstorm-fill", tooltip: "Sandstorm", class: "text-amber-700"},
-  // material-symbols:weather-hail
+  hail: {icon: "material-symbols:weather-hail", tooltip: "Hail", class: ""},
 } satisfies Record<Weather, any>;
 
-const emit = defineEmits<{
+defineEmits<{
   (e: "chat", message: string): void;
-  (e: "forfeit" | "timer" | "cancel"): void;
-  (e: "move" | "switch", index: number): void;
+  (e: "timer" | "cancel"): void;
+  (e: "choice", choice: Choice): void;
 }>();
-const {team, options, players, events, chats, battlers, timer, finished, format} = defineProps<{
+const {team, options, players, events, chats, timer, finished, format, ready} = defineProps<{
   team?: Pokemon[];
-  options: Partial<Record<number, Options>>;
-  players: Record<string, ClientPlayer>;
+  options: Partial<Record<number, Options[]>>;
+  players: Players;
   events: BattleEvent[];
   chats: InfoRecord;
-  battlers: string[];
   timer?: BattleTimer;
-  finished: boolean;
+  finished: bool;
   format: FormatId;
+  ready: bool;
 }>();
 const myId = useMyId();
 const sfxVol = useSfxVolume();
 const {fadeOut} = useBGMusic();
 const isMounted = useMounted();
 const gen = computed(() => GENERATIONS[formatInfo[format].generation]!);
-const selectionText = ref("");
 const menuButton = ref<HTMLElement>();
 const isMenuVisible = useElementVisibility(menuButton);
 const unseenChats = ref(0);
@@ -298,24 +257,36 @@ const skipToEvent = ref(0);
 const updateMarker = ref(0);
 const currentTurnNo = ref(0);
 const weather = ref<Weather>();
-const activePokemon = useTemplateRef<InstanceType<typeof ActivePokemon>[]>("activePokemon");
+const field = useTemplateRef("field");
 
 const nextEvent = ref(0);
 const playToIndex = ref(0);
 const paused = ref(false);
-const playingEvents = ref(false);
-
-const activeIndex = ref(-1);
-const activeInTeam = computed(() => (isBattler.value ? team?.[activeIndex.value] : undefined));
+const playingEvents = ref(true);
 
 const victor = ref<string>();
-const currentOptions = computed(() => (!playingEvents.value ? options[events.length] : undefined));
 const isBattleOver = computed(() => finished || !!victor.value);
-const isBattler = computed(() => battlers.includes(myId.value));
+const isBattler = computed(() => players.get(myId.value) && !players.get(myId.value).isSpectator);
 const perspective = ref("");
-const opponent = computed(() => battlers.find(v => v != perspective.value) ?? "");
+const isSingles = computed(() => players.get(perspective.value)?.active?.length === 1);
+
+const mediaQuery = computed(() => (isSingles.value ? "(max-width: 900px)" : "(max-width: 1100px)"));
+const textBoxHidden = useMediaQuery(mediaQuery);
+
+const opponent = computed(() => {
+  for (const id in players.items) {
+    if (!players.get(id).isSpectator && id !== perspective.value) {
+      return id;
+    }
+  }
+  return "";
+});
 const htmlTurns = ref<UIBattleEvent[][]>([[]]);
 const liveEvents = ref<UIBattleEvent[]>([]);
+
+const currOptions = computed(() =>
+  !playingEvents.value && !isBattleOver.value ? options[events.length] : undefined,
+);
 
 const sound = useAudio({
   cries: {src: "/effects/cries.wav", sprites: criesSpritesheet},
@@ -336,56 +307,17 @@ watchDeep(chats, () => {
   }
 });
 
-watchImmediate([battlers, myId], () => {
-  if (battlers.includes(myId.value)) {
-    perspective.value = myId.value;
-  } else {
-    perspective.value = randChoice(battlers) ?? "";
-  }
-});
-
-const selectMove = (index: number) => {
-  selectionText.value = `${players[myId.value].active!.name} will use ${
-    gen.value.moveList[currentOptions.value!.moves[index].move].name
-  }`;
-
-  emit("move", index);
-};
-
-const selectSwitch = (index: number) => {
-  if (players[myId.value].active) {
-    selectionText.value = `${players[myId.value].active!.name} will be replaced by ${
-      team![index].name
-    }`;
-  } else {
-    selectionText.value = `${team![index].name} will be sent out first`;
-  }
-
-  emit("switch", index);
-};
-
-const cancelMove = () => {
-  selectionText.value = "";
-
-  emit("cancel");
-};
-
 const timeLeft = () => {
   return timer ? Math.floor((timer.startedAt + timer.duration - Date.now()) / 1000) : 1000;
 };
 
-const handleVolatiles = (e: BattleEvent) => {
-  if (e.volatiles) {
-    for (const {v, id} of e.volatiles) {
-      players[id].active!.v = mergeVolatiles(v, players[id].active!.v) as ClientVolatiles;
-      if (id === myId.value) {
-        activeInTeam.value!.status = players[id].active!.v.status;
-      }
-    }
-  }
-};
-
 const animations: AnimationPlaybackControls[] = [];
+
+const updatePerspective = () => {
+  perspective.value = isBattler.value
+    ? myId.value
+    : randChoice(Object.keys(players.items).filter(id => !players.get(id).isSpectator)) ?? "";
+};
 
 const runEvent = async (e: BattleEvent) => {
   const isLive = () => skipToEvent.value <= nextEvent.value && isMounted.value;
@@ -404,16 +336,21 @@ const runEvent = async (e: BattleEvent) => {
     }
   };
 
-  const playAnimation = async (id: string, params: AnimationParams) => {
-    const isMe = id === perspective.value;
-    const component = activePokemon.value!.find(a => a.isBack() === isMe);
-
+  const playAnimation = async (id: PokeId, params: AnimationParams) => {
     if (!isLive()) {
       params.cb?.();
       params.cb = undefined;
-      component?.playAnimation(params)?.complete();
+      if (params.anim !== "attack" && params.anim !== "spikes" && params.anim !== "transform") {
+        field.value?.playAnimation(id, params)?.complete();
+      }
     } else {
-      const animation = component!.playAnimation(params);
+      const animation = field.value?.playAnimation(id, params);
+      if (!animation) {
+        params.cb?.();
+        console.log("wtf");
+        return;
+      }
+
       animations.push(animation);
       await animation;
       const idx = animations.indexOf(animation);
@@ -423,13 +360,29 @@ const runEvent = async (e: BattleEvent) => {
     }
   };
 
+  const handleVolatiles = (e: BattleEvent) => {
+    if (e.volatiles) {
+      for (const {v, id} of e.volatiles) {
+        const poke = players.poke(id);
+        if (!poke) {
+          continue;
+        }
+
+        poke.v = mergeVolatiles(v, poke.v) as ClientVolatiles;
+        if (poke.base) {
+          poke.base.status = poke.v.status;
+        }
+      }
+    }
+  };
+
   const pushEvent = (e: RawUIBattleEvent) => {
     const ev = {...e, time: Date.now()} as UIBattleEvent;
     if ("src" in ev) {
-      ev[ev.src] = players[ev.src].active!.name;
+      ev[ev.src] = players.poke(ev.src as PokeId)!.name;
     }
     if ("target" in ev && ev.target) {
-      ev[ev.target] = players[ev.target].active!.name;
+      ev[ev.target] = players.poke(ev.target as PokeId)!.name;
     }
 
     htmlTurns.value.at(-1)!.push(ev);
@@ -438,26 +391,43 @@ const runEvent = async (e: BattleEvent) => {
     }
   };
 
+  const preloadSprite = (
+    species: string,
+    female?: bool,
+    shiny?: bool,
+    back?: bool,
+    form?: FormId,
+  ) => {
+    const img = new Image();
+    img.src = getSpritePath(species, female, shiny, back, form);
+    return img;
+  };
+
   const handleEvent = async (e: BattleEvent) => {
     if (e.type === "switch") {
-      const player = players[e.src];
-      if (player.active) {
-        if (!player.active.fainted && e.why !== "baton_pass") {
+      const poke = players.poke(e.src);
+      let _img;
+      if (poke) {
+        if (!poke.fainted && e.why !== "baton_pass") {
           if (e.why !== "phaze") {
-            pushEvent({type: "retract", src: e.src, name: player.active.name});
+            pushEvent({type: "retract", src: e.src, name: poke.name});
           }
           await playAnimation(e.src, {
             anim: e.why === "phaze" ? "phaze" : "retract",
             batonPass: false,
-            name: player.active.name,
+            name: poke.name,
           });
         }
 
-        // preload the image
-        player.active!.speciesId = e.speciesId;
-        player.active!.shiny = e.shiny;
+        _img = preloadSprite(
+          e.speciesId,
+          e.gender === "F",
+          e.shiny,
+          playerId(e.src) === perspective.value,
+          e.form,
+        );
       } else {
-        player.active = {
+        players.setPoke(e.src, {
           speciesId: e.speciesId,
           hidden: true,
           v: {stages: {}},
@@ -465,7 +435,8 @@ const runEvent = async (e: BattleEvent) => {
           name: "",
           hpPercent: 0,
           level: 100,
-        };
+          indexInTeam: -1,
+        });
       }
 
       pushEvent(e);
@@ -475,10 +446,10 @@ const runEvent = async (e: BattleEvent) => {
         name: e.name,
         batonPass: e.why === "baton_pass",
         cb() {
-          player.active = {...e, v: {stages: {}}, fainted: false};
-          if (e.src === myId.value) {
-            activeIndex.value = e.indexInTeam;
-            activeInTeam.value!.hp = e.hp!;
+          const base = e.indexInTeam !== -1 ? team?.[e.indexInTeam] : undefined;
+          players.setPoke(e.src, {...e, base, v: {stages: {}}, fainted: false});
+          if (base) {
+            base.hp = e.hp!;
           }
           handleVolatiles(e);
           playCry(e.speciesId)?.then(() => {
@@ -491,12 +462,13 @@ const runEvent = async (e: BattleEvent) => {
       return;
     } else if (e.type === "damage" || e.type === "recover") {
       const update = () => {
-        players[e.target].active!.hpPercent = e.hpPercentAfter;
+        const target = players.poke(e.target)!;
+        target.hpPercent = e.hpPercentAfter;
 
         const ev = e as UIDamageEvent | UIRecoverEvent;
-        if (e.target === myId.value) {
-          activeInTeam.value!.hp = e.hpAfter!;
-          ev.maxHp = activeInTeam.value!.stats.hp;
+        if (target.base) {
+          target.base.hp = e.hpAfter!;
+          ev.maxHp = target.base.stats.hp;
         }
 
         if (e.why !== "substitute") {
@@ -511,15 +483,25 @@ const runEvent = async (e: BattleEvent) => {
         const eff = e.why === "ohko" || !e.eff ? 1 : e.eff;
         await playAnimation(e.src, {
           anim: "attack",
+          target: e.target,
           cb() {
             update();
             playDmg(eff);
+            playAnimation(e.target, {anim: "hurt", direct: true});
           },
         });
       } else {
         update();
-        if (e.why === "confusion" || e.why === "sandstorm" || e.why === "future_sight") {
-          await playDmg(e.eff ?? 1);
+        if (
+          e.why === "confusion" ||
+          e.why === "sand" ||
+          e.why === "hail" ||
+          e.why === "future_sight"
+        ) {
+          await Promise.allSettled([
+            playDmg(e.eff ?? 1),
+            playAnimation(e.src, {anim: "hurt", direct: true}),
+          ]);
         }
       }
 
@@ -530,38 +512,69 @@ const runEvent = async (e: BattleEvent) => {
       return;
     } else if (e.type === "info") {
       if (e.why === "faint") {
-        playCry(players[e.src].active!.speciesId, true);
+        const poke = players.poke(e.src)!;
+        playCry(poke.speciesId, true);
         pushEvent(e);
         await playAnimation(e.src, {anim: "faint"});
         if (isLive()) {
           await delay(400);
         }
 
-        players[e.src].active!.fainted = true;
-        players[e.src].nFainted++;
+        poke.fainted = true;
+        poke.hidden = true;
+        players.byPokeId(e.src).nFainted++;
+        handleVolatiles(e);
         return;
       } else if (e.why === "heal_bell") {
-        if (e.src === myId.value && team) {
+        if (playerId(e.src) === myId.value && team) {
           team.forEach(poke => (poke.status = undefined));
         }
-      } else if (e.why === "spikes") {
-        const opp = Object.keys(players).filter(id => id !== e.src && !players[id].isSpectator)[0];
-        await playAnimation(opp, {anim: "spikes", cb: () => (players[e.src].spikes = true)});
-      } else if (e.why === "spin_spikes") {
-        players[e.src].spikes = false;
       }
     } else if (e.type === "transform") {
-      const target = players[e.target].active!;
-      const src = players[e.src].active!;
-      src.transformed = target.transformed ?? target.speciesId;
-    } else if (e.type === "hit_sub") {
+      const _img = preloadSprite(
+        e.speciesId,
+        e.gender === "F",
+        e.shiny,
+        playerId(e.src) === perspective.value,
+        e.form,
+      );
+
+      pushEvent(e);
+
+      const src = players.poke(e.src)!;
       await playAnimation(e.src, {
-        anim: "attack",
+        anim: "transform",
         cb() {
-          pushEvent(e);
-          playDmg(e.eff ?? 1);
+          handleVolatiles(e);
+          if (e.target) {
+            const target = players.poke(e.target)!;
+            src.transformed = target.transformed ?? target.speciesId;
+          } else {
+            src.speciesId = e.speciesId;
+          }
+          src.form = e.form;
+          src.gender = e.gender;
+          src.shiny = e.shiny;
         },
       });
+      return;
+    } else if (e.type === "hit_sub") {
+      if (e.confusion) {
+        await Promise.allSettled([
+          playDmg(e.eff ?? 1),
+          playAnimation(e.src, {anim: "hurt", direct: false}),
+        ]);
+      } else {
+        await playAnimation(e.src, {
+          anim: "attack",
+          target: e.target,
+          cb() {
+            pushEvent(e);
+            playDmg(e.eff ?? 1);
+            playAnimation(e.target, {anim: "hurt", direct: false});
+          },
+        });
+      }
       if (e.broken) {
         pushEvent({type: "sub_break", target: e.target});
         await playAnimation(e.target, {anim: "lose_sub", cb: () => handleVolatiles(e)});
@@ -576,30 +589,75 @@ const runEvent = async (e: BattleEvent) => {
         weather.value = undefined;
       }
     } else if (e.type === "item") {
-      if (e.src === myId.value) {
-        activeInTeam.value!.item = undefined;
+      const src = players.poke(e.src)?.base;
+      if (src) {
+        src.item = undefined;
       }
     } else if (e.type === "screen") {
-      players[e.src].screens ??= {};
-      players[e.src].screens![e.screen] = e.kind === "start";
+      players.get(e.user).screens ??= {};
+      players.get(e.user).screens![e.screen] = e.kind === "start";
     } else if (e.type === "thief") {
-      if (e.src === myId.value) {
-        activeInTeam.value!.item = e.item;
+      const src = players.poke(e.src)?.base;
+      const target = players.poke(e.target)?.base;
+      if (src) {
+        src.item = e.item;
       }
-      if (e.target === myId.value) {
-        activeInTeam.value!.item = undefined;
+      if (target) {
+        target.item = undefined;
+      }
+    } else if (e.type === "trick") {
+      const src = players.poke(e.src)?.base;
+      const target = players.poke(e.target)?.base;
+      if (src) {
+        src.item = e.srcItem;
+      }
+      if (target) {
+        target.item = e.targetItem;
+      }
+    } else if (e.type === "knockoff") {
+      const target = players.poke(e.target)?.base;
+      if (target) {
+        target.itemUnusable = true;
+      }
+    } else if (e.type === "recycle") {
+      const src = players.poke(e.src)?.base;
+      if (src) {
+        src.item = e.item;
+        src.itemUnusable = false;
       }
     } else if (e.type === "baton_pass") {
       handleVolatiles(e);
       await playAnimation(e.src, {
         anim: "retract",
-        name: players[e.src].active!.name,
+        name: players.poke(e.src)!.name,
         batonPass: true,
       });
       return;
     } else if (e.type === "sketch") {
-      if (e.src === myId.value) {
-        activeInTeam.value!.moves[activeInTeam.value!.moves.indexOf("sketch")] = e.move;
+      const src = players.poke(e.src)?.base;
+      if (src) {
+        src.moves[src.moves.indexOf("sketch")] = e.move;
+      }
+    } else if (e.type === "spikes") {
+      const player = players.get(e.player);
+      if (e.spin) {
+        player.spikes = 0;
+      } else {
+        await playAnimation(e.src, {
+          anim: "spikes",
+          cb() {
+            player.spikes = (player.spikes || 0) + 1;
+          },
+        });
+      }
+    } else if (e.type === "skill_swap") {
+      const src = players.poke(e.src);
+      const target = players.poke(e.target);
+      if (src) {
+        src.abilityUnknown = true;
+      }
+      if (target) {
+        target.abilityUnknown = true;
       }
     }
 
@@ -619,11 +677,10 @@ const runEvent = async (e: BattleEvent) => {
     return;
   }
 
-  selectionText.value = "";
   smoothScroll.value = isLive();
 
   await handleEvent(e);
-  if (isLive() && e.type !== "sv") {
+  if (isLive() && e.type !== "sv" && e.type !== "beatup") {
     await delay(e.type === "weather" && e.kind === "continue" ? 450 : 250);
   }
 
@@ -634,9 +691,6 @@ const runEvent = async (e: BattleEvent) => {
 
 const skipToTurn = (turn: number) => {
   // console.log(`skipTo() | index: ${index} currentTurn: ${currentTurn}`);
-
-  console.log("skip to turn: ", turn);
-
   let index = 0;
   if (turn < 0) {
     index = events.length + 1;
@@ -664,10 +718,10 @@ const skipToTurn = (turn: number) => {
   animations.length = 0;
 };
 
-watchImmediate([isMounted, paused, () => events.length], ([mounted, paused, nEvents]) => {
-  if (!mounted) {
-    playToIndex.value = -1;
-  } else if (!paused) {
+watchImmediate([isBattler, () => players.items, myId], updatePerspective);
+
+watchImmediate([paused, () => events.length], ([paused, nEvents]) => {
+  if (!paused) {
     playToIndex.value = nEvents;
   } else {
     playToIndex.value = nextEvent.value;
@@ -675,41 +729,48 @@ watchImmediate([isMounted, paused, () => events.length], ([mounted, paused, nEve
 });
 
 onMounted(async () => {
-  while (true) {
-    await until([playToIndex, nextEvent]).changed();
-    if (!isMounted.value) {
-      return;
-    }
+  await until(() => ready).toBe(true);
 
+  updatePerspective();
+
+  while (isMounted.value) {
     if (nextEvent.value === 0) {
       htmlTurns.value = [[]];
       currentTurnNo.value = 0;
       weather.value = undefined;
 
-      for (const k in players) {
-        players[k].nFainted = 0;
-        players[k].active = undefined;
-        players[k].screens = undefined;
-        players[k].spikes = undefined;
+      for (const k in players.items) {
+        players.items[k].nFainted = 0;
+        players.items[k].active = Array(players.items[k].active.length);
+        players.items[k].screens = undefined;
+        players.items[k].spikes = undefined;
       }
     }
 
     while (nextEvent.value < playToIndex.value && nextEvent.value < events.length) {
+      if (!isMounted.value) {
+        return;
+      }
+
       playingEvents.value = true;
       const event = events[nextEvent.value];
       const idx = ++nextEvent.value;
       await runEvent(event);
 
-      const opts = options[idx];
-      if (opts && activeInTeam.value) {
-        for (const {pp, indexInMoves} of opts.moves) {
+      for (const opt of options[idx] ?? []) {
+        for (const {pp, indexInMoves} of opt.moves) {
           if (indexInMoves !== undefined && pp !== undefined) {
-            activeInTeam.value.pp[indexInMoves] = pp;
+            const poke = players.poke(opt.id)?.base;
+            if (poke) {
+              poke.pp[indexInMoves] = pp;
+            }
           }
         }
       }
     }
     playingEvents.value = false;
+
+    await until([playToIndex, nextEvent, isMounted]).changed();
   }
 });
 

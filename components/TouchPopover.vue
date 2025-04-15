@@ -1,13 +1,13 @@
 <template>
   <UPopover v-model:open="open" v-bind="$attrs">
     <div
+      ref="element"
       class="w-full h-full"
+      :class="open && 'touch-none select-none'"
       @touchstart="startTouch"
       @touchend="endTouch"
       @mouseover="open = true"
       @mouseleave="open = false"
-      :class="open && 'touch-none select-none'"
-      ref="element"
     >
       <slot></slot>
     </div>

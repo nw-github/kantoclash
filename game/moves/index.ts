@@ -1,76 +1,93 @@
 import type {ActivePokemon, Battle} from "../battle";
-import type {FailReason, RecoveryReason} from "../events";
+import type {FailReason, InfoReason, RecoveryReason} from "../events";
 import type {Pokemon, Status} from "../pokemon";
-import type {Stages, Type, VF, Weather, Screen} from "../utils";
+import type {StageId, Type, VF, Weather, ScreenId} from "../utils";
+import type {Range} from "./moveList";
 
-export * from "../gen1/damaging";
 export * from "./functions";
 export * from "./moveList";
+export * from "./damaging";
 
 export interface BaseMove {
   readonly idx?: number;
   readonly name: string;
   readonly pp: number;
   readonly type: Type;
+  readonly range: Range;
   readonly acc?: number;
   readonly priority?: number;
   readonly power?: number;
-  readonly sleepOnly?: boolean;
   /** 50% accurate in sun, -- in rain */
-  readonly rainAcc?: boolean;
+  readonly rainAcc?: bool;
   /** Hits users in the semi-invuln state of these moves */
   readonly ignore?: string[] /* MoveId[] */;
-  /** Not callable by metronome */
-  readonly noMetronome?: boolean;
   /** Not encoreable */
-  readonly noEncore?: boolean;
-  /** Unselectable for sleep talk */
-  readonly noSleepTalk?: boolean;
+  readonly noEncore?: bool;
+  /** Not callable by metronome */
+  readonly noMetronome?: bool;
+  /** Not callable by assist */
+  readonly noAssist?: bool;
+  /** Not callable by sleep talk */
+  readonly noSleepTalk?: bool;
+  /** Not copyable by mimic */
+  readonly noMimic?: bool;
   /** Undefined: Inherit from kind, true: affected, false: unaffected */
-  readonly protect?: boolean;
-  readonly whileAsleep?: boolean;
-  readonly selfThaw?: boolean;
-  readonly kingsRock?: boolean;
+  readonly protect?: bool;
+  /** Only usable while sleeping */
+  readonly sleepOnly?: bool;
+  /** Usable while frozen; thaws the user out */
+  readonly selfThaw?: bool;
+  /** Affected by kings rock pre Gen V */
+  readonly kingsRock?: bool;
+  /** Soundproof Pokémon are immune */
+  readonly sound?: bool;
+  /** Affected by snatch */
+  readonly snatch?: bool;
+  /** Affected by magic coat */
+  readonly magicCoat?: bool;
 }
 
 export interface CustomMove extends BaseMove {
   readonly kind?: never;
-
-  use?(battle: Battle, user: ActivePokemon, target: ActivePokemon, moveIndex?: number): void;
-  exec(battle: Battle, user: ActivePokemon, target: ActivePokemon, moveIndex?: number): void;
+  exec(battle: Battle, user: ActivePokemon, targets: ActivePokemon[], moveIndex?: number): void;
 }
 
 export interface VolatileFlagMove extends BaseMove {
   readonly kind: "volatile";
   readonly flag: VF;
+  readonly range: Range.Self;
 }
 
 export interface ConfuseMove extends BaseMove {
   readonly kind: "confuse";
+  readonly range: Range.Adjacent | Range.AllAdjacent;
 }
 
 export interface RecoveryMove extends BaseMove {
   readonly kind: "recover";
   readonly why: RecoveryReason;
-  readonly weather?: boolean;
+  readonly weather?: bool;
+  readonly range: Range.Self;
 }
 
 export interface StageMove extends BaseMove {
   readonly kind: "stage";
-  readonly stages: [Stages, number][];
+  readonly stages: [StageId, number][];
+  readonly ignoreSub?: bool;
 }
 
 export interface StatusMove extends BaseMove {
   readonly kind: "status";
   readonly status: Status;
-  readonly checkType?: boolean;
+  readonly checkType?: bool;
+  readonly range: Range.Adjacent | Range.Any;
 }
 
 export interface SwitchMove extends BaseMove {
   readonly kind: "switch";
   readonly poke: Pokemon;
   readonly priority: number;
-  readonly batonPass: boolean;
+  readonly batonPass: bool;
 }
 
 export interface FailMove extends BaseMove {
@@ -85,7 +102,7 @@ export interface WeatherMove extends BaseMove {
 
 export interface ScreenMove extends BaseMove {
   readonly kind: "screen";
-  readonly screen: Screen;
+  readonly screen: ScreenId;
 }
 
 export interface PhazingMove extends BaseMove {
@@ -94,15 +111,44 @@ export interface PhazingMove extends BaseMove {
 
 export interface ProtectMove extends BaseMove {
   readonly kind: "protect";
-  readonly endure?: boolean;
+  readonly endure?: bool;
 }
 
 export interface PreventEscapeMove extends BaseMove {
   readonly kind: "noSwitch";
+  readonly range: Range.Adjacent;
 }
 
 export interface LockOnMove extends BaseMove {
   readonly kind: "lockOn";
+  readonly range: Range.Adjacent;
+}
+
+export interface HealBellMove extends BaseMove {
+  readonly kind: "healbell";
+  // user and all allies
+  readonly range: Range.Self;
+  readonly why: InfoReason;
+}
+
+export interface FutureSightMove extends BaseMove {
+  readonly kind: "futuresight";
+  readonly range: Range.Adjacent;
+  readonly power: number;
+  readonly msg: InfoReason;
+  readonly release: InfoReason;
+}
+
+export interface SwaggerMove extends BaseMove {
+  readonly kind: "swagger";
+  readonly range: Range.Adjacent;
+  readonly stages: [StageId, number][];
+}
+
+export interface ForesightMove extends BaseMove {
+  readonly kind: "foresight";
+  readonly range: Range.Adjacent;
+  readonly protect: true;
 }
 
 export interface DamagingMove extends BaseMove {
@@ -112,16 +158,20 @@ export interface DamagingMove extends BaseMove {
   readonly effect?: [number, Effect] | [number, Effect, true];
   /** Recoil: max(1 / recoil, 1) */
   readonly recoil?: number;
-  readonly punish?: boolean;
-  readonly charge?: boolean | "sun" | "invuln" | [Stages, number][];
-  getPower?(user: Pokemon): number;
-  getType?(user: Pokemon): Type;
+  readonly punish?: bool;
+  readonly contact?: bool;
+  /** Affected by damp */
+  readonly damp?: bool;
+  readonly charge?: bool | "sun" | "invuln" | [StageId, number][];
+  getPower?(user: Pokemon, target?: Pokemon): number;
+  getType?(user: Pokemon, weather?: Weather): Type;
+  checkSuccess?(battle: Battle, user: ActivePokemon, targets: ActivePokemon[]): bool;
   /** If a number, the amount of damage the move should do. If a function, returns the amount of
-   * damage done by the move, or false if the move failed.
+   * damage done by the move, or 0 if the move failed.
    */
   readonly getDamage?:
     | number
-    | ((battle: Battle, user: ActivePokemon, target: ActivePokemon) => number | false);
+    | ((battle: Battle, user: ActivePokemon, target: ActivePokemon) => number);
 }
 
 export type Move =
@@ -139,11 +189,23 @@ export type Move =
   | PhazingMove
   | ProtectMove
   | PreventEscapeMove
-  | LockOnMove;
+  | LockOnMove
+  | HealBellMove
+  | FutureSightMove
+  | SwaggerMove
+  | ForesightMove;
 
-type Effect = Status | [Stages, number][] | "confusion" | "flinch" | "thief" | "tri_attack";
+type Effect =
+  | Status
+  | [StageId, number][]
+  | "confusion"
+  | "flinch"
+  | "thief"
+  | "tri_attack"
+  | "knockoff";
 
 type Flag =
+  | "none"
   | "high_crit"
   | "drain"
   | "explosion"
@@ -159,7 +221,7 @@ type Flag =
   | "rage"
   | "trap"
   | "ohko"
-  | "flail"
+  | "norand"
   | "magnitude"
   | "false_swipe"
   | "rapid_spin"
@@ -167,4 +229,10 @@ type Flag =
   | "rollout"
   | "minimize"
   | "present"
-  | "beatup";
+  | "beatup"
+  | "facade"
+  | "remove_screens"
+  | "smellingsalt"
+  | "spitup"
+  | "uproar"
+  | "revenge";

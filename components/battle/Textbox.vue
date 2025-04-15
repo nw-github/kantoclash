@@ -26,7 +26,7 @@
             variant="link"
             color="red"
             size="lg"
-            :disabled="!players[myId] || players[myId].isSpectator || !!victor"
+            :disabled="!players.get(myId) || players.get(myId).isSpectator || !!victor"
             @click="forfeitModalOpen = true"
           />
           <!-- <TooltipButton
@@ -40,7 +40,7 @@
           <FormatInfoButton :format />
         </div>
 
-        <TouchPopover :popper="{placement: 'bottom-end'}">
+        <UPopover mode="hover" :popper="{placement: 'bottom-end'}">
           <UButton
             color="white"
             variant="ghost"
@@ -48,11 +48,11 @@
             trailing-icon="heroicons:chevron-down-20-solid"
           />
           <template #panel>
-            <div class="p-2 gap-1 flex flex-col">
+            <div class="p-2 gap-1 flex flex-col max-h-40 overflow-y-auto">
               <UChip
-                v-for="(player, id) in players"
+                v-for="(player, id) in players.items"
                 :key="id"
-                :color="players[id].connected ? 'lime' : 'red'"
+                :color="player.connected ? 'lime' : 'red'"
                 class="text-left"
                 :ui="{wrapper: 'justify-between'}"
               >
@@ -71,7 +71,7 @@
               </UChip>
             </div>
           </template>
-        </TouchPopover>
+        </UPopover>
       </div>
     </template>
 
@@ -152,14 +152,20 @@
 <style>
 .events {
   .move,
+  .charge,
   .confused {
     padding-top: 0.5rem;
   }
 
-  .move + .move,
-  .move:first-child,
-  .confused:first-child,
-  .confused + .move {
+  .ability {
+    @apply text-lg font-medium;
+  }
+
+  div.move + div.move,
+  div.move:first-child,
+  div.confused:first-child,
+  div.charge:first-child,
+  div.confused + div.move {
     padding-top: 0;
   }
 
@@ -177,7 +183,7 @@ import {until} from "@vueuse/core";
 
 const props = defineProps<{
   turns: UIBattleEvent[][];
-  players: Record<string, ClientPlayer>;
+  players: Players;
   perspective: string;
   chats: InfoRecord;
   victor?: string;

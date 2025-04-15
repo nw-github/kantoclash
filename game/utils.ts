@@ -1,8 +1,8 @@
 import type {Random} from "random";
-import type {ActivePokemon} from "./battle";
 import type {TypeChart} from "./gen";
+import type {PlayerId, PokeId} from "./events";
 
-export type Weather = "rain" | "sun" | "sand";
+export type Weather = "rain" | "sun" | "sand" | "hail";
 
 export type Type =
   | "normal"
@@ -23,18 +23,19 @@ export type Type =
   | "dark"
   | "steel"
   | "???";
-export type Stages = (typeof stageKeys)[number];
-export type StatStages = (typeof stageStatKeys)[number];
+export type StageId = (typeof stageKeys)[number];
+export type StatStageId = (typeof stageStatKeys)[number];
+export type StatId = (typeof statKeys)[number];
 
-export type Stats = Record<(typeof statKeys)[number], number>;
-export type StageStats = Record<StatStages, number>;
+export type Stats = Record<StatId, number>;
+export type StageStats = Record<StatStageId, number>;
 
 export const stageStatKeys = ["atk", "def", "spa", "spd", "spe"] as const;
 export const statKeys = ["hp", ...stageStatKeys] as const;
 export const stageKeys = [...stageStatKeys, "acc", "eva"] as const;
 
-export const screens = ["light_screen", "reflect", "safeguard"] as const;
-export type Screen = (typeof screens)[number];
+export const screens = ["light_screen", "reflect", "safeguard", "mist"] as const;
+export type ScreenId = (typeof screens)[number];
 
 // prettier-ignore
 export enum VF {
@@ -44,29 +45,51 @@ export enum VF {
   /** Gen 1 only */
   reflect      = 0x0000_0002,
   mist         = 0x0000_0004,
-  focus        = 0x0000_0008,
-  seeded       = 0x0000_0010,
-  destinyBond  = 0x0000_0020,
-  curse        = 0x0000_0040,
-  protect      = 0x0000_0080,
-  endure       = 0x0000_0100,
-  nightmare    = 0x0000_0200,
-  foresight    = 0x0000_0400,
-  lockon       = 0x0000_0800,
+  focusEnergy  = 0x0000_0008,
+  destinyBond  = 0x0000_0010,
+  curse        = 0x0000_0020,
+  protect      = 0x0000_0040,
+  endure       = 0x0000_0080,
+  nightmare    = 0x0000_0100,
+  identified   = 0x0000_0200,
+  lockon       = 0x0000_0400,
+  grudge       = 0x0000_0800,
+  helpingHand  = 0x0000_1000,
+  ingrain      = 0x0000_2000,
+  flashFire    = 0x0000_4000,
+  charge       = 0x0000_8000,
+  waterSport   = 0x0001_0000,
+  mudSport     = 0x0002_0000,
+  followMe     = 0x0004_0000,
+  loafing      = 0x0008_0000,
+  imprisoning  = 0x0010_0000,
+  torment      = 0x0020_0000,
+  snatch       = 0x0040_0000,
+  magicCoat    = 0x0080_0000,
 
   /** Client only */
-  cConfused     = 0x8000_0000,
+  cConfused    = 0x8000_0000,
   /** Client only */
-  cDisabled     = 0x4000_0000,
+  cDisabled    = 0x4000_0000,
   /** Client only */
-  cAttract      = 0x2000_0000,
+  cAttract     = 0x2000_0000,
   /** Client only */
-  cSubstitute   = 0x1000_0000,
+  cEncore      = 0x1000_0000,
   /** Client only */
-  cEncore       = 0x0800_0000,
+  cMeanLook    = 0x0800_0000,
   /** Client only */
-  cMeanLook     = 0x0400_0000,
+  cSeeded      = 0x0400_0000,
+  /** Client only */
+  cTaunt       = 0x0200_0000,
+  /** Client only */
+  cDrowsy      = 0x0100_0000,
 }
+
+// prettier-ignore
+export const HP_TYPES: Type[] = [
+  "fight", "flying", "poison", "ground", "rock", "bug", "ghost", "steel", "fire", "water",
+  "grass", "electric", "psychic", "ice", "dragon", "dark",
+];
 
 export const floatTo255 = (num: number) => Math.floor((num / 100) * 255);
 
@@ -81,19 +104,6 @@ export const hpPercent = (current: number, max: number) => {
     return 1;
   }
   return percent;
-};
-
-export const scaleAccuracy255 = (acc: number, user: ActivePokemon, target: ActivePokemon) => {
-  // https://bulbapedia.bulbagarden.net/wiki/Accuracy#Generation_I_and_II
-  let userStages = user.v.stages["acc"];
-  let targetStages = target.v.stages["eva"];
-  if (userStages < targetStages && target.v.hasFlag(VF.foresight)) {
-    userStages = 0;
-    targetStages = 0;
-  }
-
-  acc *= (stageMultipliers[userStages] / 100) * (stageMultipliers[-targetStages] / 100);
-  return clamp(Math.floor(acc), 1, 255);
 };
 
 export const getEffectiveness = (typeChart: TypeChart, atk: Type, def: readonly Type[]) => {
@@ -129,22 +139,6 @@ export const idiv = (a: number, b: number) => Math.floor(a / b);
 
 export const imul = (a: number, b: number) => Math.floor(a * b);
 
-export const stageMultipliers: Record<number, number> = {
-  [-6]: 25,
-  [-5]: 28,
-  [-4]: 33,
-  [-3]: 40,
-  [-2]: 50,
-  [-1]: 66,
-  0: 100,
-  1: 150,
-  2: 200,
-  3: 250,
-  4: 300,
-  5: 350,
-  6: 400,
-};
-
 export const arraysEqual = <T>(a: readonly T[], b: readonly T[]) => {
   return a.length === b.length && a.every((item, i) => b[i] === item);
 };
@@ -165,12 +159,45 @@ export const randChoiceWeighted = <T>(rng: Random, arr: readonly T[], weights: n
   return arr[i];
 };
 
+export const playerId = (poke: PokeId): PlayerId => poke.split(":")[0];
+
+// from ts-reset
+type WidenLiteral<T> = T extends string
+  ? string
+  : T extends number
+  ? number
+  : T extends boolean
+  ? boolean
+  : T extends bigint
+  ? bigint
+  : T extends symbol
+  ? symbol
+  : T;
+
 declare global {
   interface ReadonlyArray<T> {
-    includes(x: any): x is T;
+    includes(
+      searchElement: T | ((WidenLiteral<T> & {}) | undefined),
+      fromIndex?: number,
+    ): searchElement is T;
+    lastIndexOf(
+      searchElement: T | ((WidenLiteral<T> & {}) | undefined),
+      fromIndex?: number,
+    ): number;
+    indexOf(searchElement: T | (WidenLiteral<T> & {}) | undefined, fromIndex?: number): number;
   }
 
   interface Array<T> {
-    includes(x: any): x is T;
+    includes(
+      searchElement: T | ((WidenLiteral<T> & {}) | undefined),
+      fromIndex?: number,
+    ): searchElement is T;
+    lastIndexOf(
+      searchElement: T | ((WidenLiteral<T> & {}) | undefined),
+      fromIndex?: number,
+    ): number;
+    indexOf(searchElement: T | (WidenLiteral<T> & {}) | undefined, fromIndex?: number): number;
   }
+
+  type bool = boolean;
 }

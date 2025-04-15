@@ -14,14 +14,12 @@
       :players
       :events
       :chats
-      :battlers
       :timer
       :finished
       :format
+      :ready
       @chat="sendChat"
-      @forfeit="() => makeChoice('forfeit')"
-      @move="i => makeChoice('move', i)"
-      @switch="i => makeChoice('switch', i)"
+      @choice="makeChoice"
       @cancel="cancelMove"
       @timer="startTimer"
     />
@@ -44,7 +42,7 @@ import type {Options} from "~/game/battle";
 import type {BattleEvent} from "~/game/events";
 import {GENERATIONS} from "~/game/gen";
 import {Pokemon} from "~/game/pokemon";
-import type {BattleTimer, InfoRecord, JoinRoomResponse} from "~/server/gameServer";
+import type {BattleTimer, Choice, InfoRecord, JoinRoomResponse} from "~/server/gameServer";
 import type {InfoMessage} from "~/server/utils/info";
 
 const {$conn} = useNuxtApp();
@@ -52,14 +50,14 @@ const {user} = useUserSession();
 const title = useTitle("Battle");
 const toast = useToast();
 const route = useRoute();
+const router = useRouter();
 const mounted = useMounted();
 const {track: currentTrack} = useBGMusic();
 const battle = ref<InstanceType<typeof Battle>>();
 const loading = ref(true);
-const players = reactive<Record<string, ClientPlayer>>({});
-const battlers = ref<string[]>([]);
+const players = ref<Players>(new Players());
 const events = ref<BattleEvent[]>([]);
-const options = reactive<Partial<Record<number, Options>>>({});
+const options = reactive<Partial<Record<number, Options[]>>>({});
 const chats = reactive<InfoRecord>({});
 const team = ref<Pokemon[]>();
 const timer = ref<BattleTimer>();
@@ -67,10 +65,11 @@ const modalOpen = ref(false);
 const room = `${route.params.id}`;
 const finished = ref(false);
 const format = ref<FormatId>("g1_standard");
+const ready = ref(false);
 
 let sequenceNo = 0;
 let needsFreshStart = true;
-let firstConnect = true;
+let firstConnect = false;
 
 onMounted(() => {
   if ($conn.connected) {
@@ -82,6 +81,9 @@ onMounted(() => {
   $conn.on("nextTurn", onNextTurn);
   $conn.on("info", onInfo);
   $conn.on("timerStart", onTimerStart);
+
+  firstConnect = Boolean(route.query.intro);
+  router.replace({query: {}});
 });
 
 onUnmounted(() => {
@@ -97,8 +99,8 @@ onUnmounted(() => {
 });
 
 const sendChat = (message: string) => $conn.emit("chat", room, message, displayErrorToast);
-const makeChoice = (e: "move" | "switch" | "forfeit", index?: number) => {
-  $conn.emit("choose", room, index ?? 0, e, sequenceNo, displayErrorToast);
+const makeChoice = (choice: Choice) => {
+  $conn.emit("choose", room, sequenceNo, choice, displayErrorToast);
 };
 const cancelMove = () => $conn.emit("cancel", room, sequenceNo, displayErrorToast);
 const startTimer = () => $conn.emit("startTimer", room, displayErrorToast);
@@ -158,28 +160,27 @@ const displayErrorToast = (err?: string) => {
 
 const processMessage = (message: InfoMessage) => {
   if (message.type === "userJoin") {
-    if (message.id in players) {
-      players[message.id].connected = true;
-      if (!battlers.value.includes(message.id) && !message.isSpectator) {
-        battlers.value.push(message.id);
-      }
-    } else {
-      players[message.id] = {
+    const player = players.value.get(message.id);
+    if (player) {
+      player.connected = true;
+    } else if (message.isSpectator) {
+      players.value.add(message.id, {
         name: message.name,
         isSpectator: message.isSpectator,
         nPokemon: message.nPokemon,
         nFainted: 0,
         connected: true,
-      };
+        active: [],
+      });
     }
   } else if (message.type === "userLeave") {
-    players[message.id].connected = false;
+    players.value.get(message.id).connected = false;
   }
 };
 
 // Event listeners
 
-const onJoinRoom = async (resp: JoinRoomResponse | "bad_room") => {
+const onJoinRoom = (resp: JoinRoomResponse | "bad_room") => {
   const clearObj = (foo: Record<string, any>) => {
     for (const k in foo) {
       // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
@@ -200,17 +201,25 @@ const onJoinRoom = async (resp: JoinRoomResponse | "bad_room") => {
     currentTrack.value = randChoice(allMusicTracks);
   }
 
+  const fmt = formatInfo[resp.format];
   for (const {id, name, nPokemon} of resp.battlers) {
-    if (!(id in players)) {
-      players[id] = {name, isSpectator: false, connected: false, nPokemon, nFainted: 0};
-      if (!battlers.value.includes(id)) {
-        battlers.value.push(id);
-      }
+    const player = players.value.get(id);
+    if (player) {
+      continue;
     }
+
+    players.value.add(id, {
+      name,
+      isSpectator: false,
+      connected: false,
+      nPokemon,
+      nFainted: 0,
+      active: Array(fmt.doubles ? 2 : 1).fill(undefined),
+    });
   }
 
   if (needsFreshStart) {
-    const gen = GENERATIONS[formatInfo[resp.format].generation]!;
+    const gen = GENERATIONS[fmt.generation]!;
 
     sequenceNo = resp.events.length;
     events.value = resp.events;
@@ -235,25 +244,22 @@ const onJoinRoom = async (resp: JoinRoomResponse | "bad_room") => {
   }
 
   loading.value = false;
-  title.value =
-    battlers.value.map(id => players[id].name).join(" vs. ") + " - " + formatInfo[resp.format].name;
+  title.value = `${resp.battlers.map(b => b.name).join(" vs. ")} - ${fmt.name}`;
   finished.value = resp.finished;
 
-  let isFirstConnect = firstConnect;
-  if (
-    (firstConnect &&
-      !!user.value &&
-      battlers.value.includes(user.value.id) &&
-      events.value.reduce((acc, x) => acc + +(x.type === "next_turn"), 0) === 0) ||
-    resp.finished
-  ) {
-    isFirstConnect = false;
+  let startAtBeginning = firstConnect;
+  if (!resp.battlers.find(b => b.id === user.value?.id)) {
+    startAtBeginning = false;
+  }
+  if (resp.finished) {
+    startAtBeginning = true;
   }
 
   firstConnect = false;
+
+  ready.value = true;
   if (needsFreshStart) {
-    await nextTick();
-    battle.value!.skipToTurn(isFirstConnect ? -1 : 0);
+    nextTick().then(() => battle.value!.skipToTurn(startAtBeginning ? 0 : -1));
   }
 };
 
@@ -274,7 +280,7 @@ const onDisconnect = (reason: Socket.DisconnectReason) => {
   needsFreshStart = reason === "io client disconnect";
 };
 
-const onNextTurn = (roomId: string, turn: BattleEvent[], opts?: Options, tmr?: BattleTimer) => {
+const onNextTurn = (roomId: string, turn: BattleEvent[], opts?: Options[], tmr?: BattleTimer) => {
   timer.value = tmr || undefined;
   if (roomId === room) {
     events.value.push(...turn);

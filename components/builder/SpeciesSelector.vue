@@ -11,18 +11,25 @@
     <div class="w-full h-full flex items-center justify-center">
       <div
         class="w-[128px] h-[117px] cursor-pointer flex items-center justify-center rounded-md hover:bg-gray-200 focus:bg-gray-200 hover:dark:bg-gray-600 focus:dark:bg-gray-600"
-        :class="model && model in gen.speciesList && isIllegal(gen.speciesList[model as SpeciesId]) && 'bg-red-500 bg-opacity-50'"
+        :class="model && model in gen.speciesList && isIllegal(gen.speciesList[model as SpeciesId]) && 'border border-primary'"
         tabindex="0"
         @focus="open = true"
       >
-        <Sprite :species="(model as SpeciesId)" :scale="1.5" :shiny @click="open = true" />
+        <Sprite
+          :species="(model as SpeciesId)"
+          :scale="1.5"
+          :shiny
+          :form
+          :gender
+          @click="open = true"
+        />
       </div>
     </div>
 
     <template #item="{item: [id, species]}">
-      <div class="flex justify-between gap-16 w-full">
+      <div class="flex justify-between gap-8 sm:gap-16 w-full">
         <div class="flex items-center gap-1">
-          <BoxSprite :species="id" />
+          <BoxSprite :species="id" :form />
           <span class="text-xs sm:text-sm truncate" :class="[isIllegal(species) && 'text-red-500']">
             {{ species.name }}
           </span>
@@ -52,9 +59,18 @@
 <script setup lang="ts">
 import type {Species, SpeciesId} from "@/game/species";
 import type {Generation} from "~/game/gen1";
+import type {FormId, Gender} from "~/game/pokemon";
+
+const emit = defineEmits<{(e: "chose", species: Species): void}>();
 
 const model = defineModel<string>();
-const {team, gen} = defineProps<{team: Team; gen: Generation; shiny: boolean}>();
+const {team, gen} = defineProps<{
+  team: Team;
+  gen: Generation;
+  gender?: Gender;
+  shiny: boolean;
+  form?: FormId;
+}>();
 const open = ref(false);
 const items = computed(() => Object.entries(gen.speciesList) as [SpeciesId, Species][]);
 const statKeys = computed(() => getStatKeys(gen));
@@ -72,10 +88,10 @@ const filter = (species: [SpeciesId, Species][], query: string) => {
   return subset.length ? subset : all;
 };
 
-const onChoose = ([id, _]: [SpeciesId, Species]) => (model.value = id);
+const onChoose = ([id, s]: [SpeciesId, Species]) => ((model.value = id), emit("chose", s));
 
 const isIllegal = (species: Species) => {
-  if (team.format.startsWith("g1") && species.dexId > 151) {
+  if (!gen.validSpecies(species)) {
     return true;
   } else if (team.format === "g1_nfe") {
     return !species.evolvesTo;

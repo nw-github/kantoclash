@@ -5,8 +5,8 @@
         {{ user ? `Welcome ${user.name}!` : "You must first log in to find a battle" }}
       </h1>
       <ClientOnly>
-        <div class="flex items-center gap-2">
-          <FormatDropdown v-model="selectedFormat" :disabled="findingMatch" class="grow" />
+        <div class="flex items-center gap-1.5">
+          <FormatSelector2 v-model="selectedFormat" />
           <FormatInfoButton :format="selectedFormat" />
         </div>
         <TeamSelector
@@ -32,7 +32,7 @@
           icon="material-symbols:close"
           variant="link"
           color="gray"
-          :disabled="!challengeUser"
+          :disabled="!challengeUser || findingMatch || cancelling"
           @click="challengeUser = undefined"
         />
       </div>
@@ -159,12 +159,11 @@ const loadingRooms = ref(false);
 const acceptingChallenge = ref(false);
 const modalOpen = ref(false);
 const recentlyPlayed = useLocalStorage("showRecentlyPlayed", true);
-const selectedFormat = useLocalStorage<FormatId>("lastFormat", "g2_randoms");
 const selectedTeam = ref<Team | undefined>();
 const errors = ref<Record<number, [string, string[]]>>({});
 const selectTeamMenu = ref<InstanceType<typeof TeamSelector>>();
 
-const rooms = ref<{to: string; name: string; format: FormatId; live: boolean}[]>([]);
+const rooms = ref<{to: string; name: string; format: FormatId; live: bool}[]>([]);
 const filterFormats = ref<string[]>([]);
 const battleQuery = ref("");
 const challengeUser = ref<Battler>();
@@ -177,6 +176,7 @@ const filteredRooms = computed(() => {
     .filter(room => !f.length || f.includes(room.format))
     .filter(room => recentlyPlayed.value || room.live);
 });
+const selectedFormat = ref<FormatId>("g1_randoms");
 
 const roomsCols = [
   {key: "live", label: "Live"},
@@ -197,11 +197,12 @@ const emptyState = computed(() => {
     : emptyStateEmpty;
 });
 
-const onMaintenanceMode = (state: boolean) => state && (findingMatch.value = false);
+const onMaintenanceMode = (state: bool) => state && (findingMatch.value = false);
 const onChallengeRejected = () => (findingMatch.value = false);
 
+useTitle("Kanto Clash");
+
 onMounted(() => {
-  useTitle("Kanto Clash");
   loadRooms();
   $conn.on("maintenanceState", onMaintenanceMode);
   $conn.on("challengeRejected", onChallengeRejected);
@@ -252,7 +253,7 @@ const enterMatchmaking = () => {
   );
 };
 
-const respondToChallenge = (accept: boolean, challenge: Challenge, selected?: Team) => {
+const respondToChallenge = (accept: bool, challenge: Challenge, selected?: Team) => {
   acceptingChallenge.value = true;
 
   const team = accept && selected ? convertTeam(selected) : undefined;

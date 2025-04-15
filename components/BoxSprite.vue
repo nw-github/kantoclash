@@ -1,6 +1,6 @@
 <template>
   <div class="flex items-center justify-center">
-    <span class="pokesprite pokemon" :class="species" />
+    <span class="pokesprite pokemon" :class="clazz" />
   </div>
 </template>
 
@@ -20,7 +20,20 @@ span {
 </style>
 
 <script setup lang="ts">
+import type {FormId} from "~/game/pokemon";
 import type {SpeciesId} from "~/game/species";
 
-defineProps<{species?: SpeciesId; scale?: number; shiny?: boolean}>();
+const {form, species} = defineProps<{
+  species?: SpeciesId;
+  scale?: number;
+  shiny?: boolean;
+  form?: FormId;
+}>();
+
+const clazz = computed(() => {
+  if (species === "unown" && form && form !== "a") {
+    return `${species}${form}`;
+  }
+  return species;
+});
 </script>

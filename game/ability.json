@@ -1,0 +1,113 @@
+{
+  "cutecharm": {
+    "name": "Cute Charm",
+    "desc": "May infatuate opposite gender on contact.",
+    "contactStatus": "attract"
+  },
+  "effectspore": {
+    "name": "Effect Spore",
+    "desc": "May PSN/PAR/SLP on contact."
+  },
+  "flamebody": {"name": "Flame Body", "desc": "May BRN on contact.", "contactStatus": "brn"},
+  "flashfire": {"name": "Flash Fire", "desc": "Immune to and boosted by Fire-type attacks."},
+  "forecast": {"name": "Forecast", "desc": "Type switches with weather."},
+  "hustle": {"name": "Hustle", "desc": "Lowers Acc for physical moves, raises Atk."},
+  "intimidate": {"name": "Intimidate", "desc": "-1 Atk for all opponents on entry."},
+  "lightningrod": {"name": "Lightning Rod", "desc": "Redirects Electric-type moves to the user."},
+  "minus": {"name": "Minus", "desc": "+50% SpA with Plus."},
+  "plus": {"name": "Plus", "desc": "+50% SpA with Minus."},
+  "poisonpoint": {"name": "Poison Point", "desc": "May poison on contact.", "contactStatus": "psn"},
+  "pressure": {"name": "Pressure", "desc": "Extra PP reduction when targeted."},
+  "raindish": {"name": "Rain Dish", "desc": "Recover 1/16 HP every turn in rain."},
+  "roughskin": {"name": "Rough Skin", "desc": "Damages 1/16 HP on contact."},
+  "shadowtag": {"name": "Shadow Tag", "desc": "Traps all other Pokémon."},
+  "static": {"name": "Static", "desc": "May paralyze on contact.", "contactStatus": "par"},
+  "trace": {"name": "Trace", "desc": "Copies an adjacent Pokémon's ablity."},
+  "truant": {"name": "Truant", "desc": "Can only move every other turn."},
+  "voltabsorb": {"name": "Volt Absorb", "desc": "Heals from damaging Electric type moves."},
+  "airlock": {"name": "Air Lock", "desc": "Removes effects of weather.", "negatesWeather": true},
+  "blaze": {
+    "name": "Blaze",
+    "desc": "Boosts Fire-type moves below 1/3 HP.",
+    "pinchBoostType": "fire"
+  },
+  "cloudnine": {
+    "name": "Cloud Nine",
+    "desc": "Removes effects of weather.",
+    "negatesWeather": true
+  },
+  "colorchange": {"name": "Color Change", "desc": ""},
+  "compoundeyes": {"name": "Compound Eyes", "desc": "Increases accuracy."},
+  "insomnia": {"name": "Insomnia", "desc": "Prevents sleep.", "preventsStatus": "slp"},
+  "liquidooze": {"name": "Liquid Ooze", "desc": "Opposing draining moves cause damage."},
+  "naturalcure": {"name": "Natural Cure", "desc": "Heals status on switch out."},
+  "overgrow": {
+    "name": "Overgrow",
+    "desc": "Boosts Grass-type moves below 1/3 HP.",
+    "pinchBoostType": "grass"
+  },
+  "pickup": {"name": "Pickup", "desc": ""},
+  "sandveil": {
+    "name": "Sand Veil",
+    "desc": "Increased evasiveness in sandstorm.",
+    "weatherEva": "sand"
+  },
+  "serenegrace": {"name": "Serene Grace", "desc": "Doubles secondary effect chance."},
+  "shedskin": {"name": "Shed Skin", "desc": "May cure status at the end of a turn."},
+  "speedboost": {"name": "Speed Boost", "desc": "+1 Spe at the end of every turn."},
+  "stench": {"name": "Stench", "desc": ""},
+  "stickyhold": {"name": "Sticky Hold", "desc": "Prevents loss of item."},
+  "sturdy": {"name": "Sturdy", "desc": "Immune to OHKO moves."},
+  "swarm": {
+    "name": "Swarm",
+    "desc": "Boosts Bug-type moves below 1/3 HP.",
+    "pinchBoostType": "bug"
+  },
+  "synchronize": {"name": "Synchronize", "desc": "Inflicts target when statused."},
+  "thickfat": {"name": "Thick Fat", "desc": "Resist Fire and Ice-type moves."},
+  "torrent": {
+    "name": "Torrent",
+    "desc": "Boosts Water-type moves below 1/3 HP.",
+    "pinchBoostType": "water"
+  },
+  "vitalspirit": {"name": "Vital Spirit", "desc": "Prevents sleep.", "preventsStatus": "slp"},
+  "wonderguard": {"name": "Wonder Guard", "desc": "Only hurt by super effective hits."},
+  "keeneye": {"name": "Keen Eye", "desc": "Accuracy cannot be lowered.", "preventsStatDrop": "acc"},
+  "oblivious": {"name": "Oblivious", "desc": "Prevents infatuation."},
+  "soundproof": {"name": "Soundproof", "desc": "Immune to sound moves."},
+  "innerfocus": {"name": "Inner Focus", "desc": "Prevents flinching."},
+  "owntempo": {"name": "Own Tempo", "desc": "Prevents confusion."},
+  "arenatrap": {"name": "Arena Trap", "desc": "Traps grounded Pokémon."},
+  "battlearmor": {"name": "Battle Armor", "desc": "Prevents critical hits.", "preventsCrit": true},
+  "chlorophyll": {"name": "Chlorophyll", "desc": "Doubles Spe in sun.", "weatherSpeedBoost": "sun"},
+  "clearbody": {"name": "Clear Body", "desc": "Prevents stat drops.", "preventsStatDrop": "all"},
+  "damp": {"name": "Damp", "desc": "Prevents explosion moves."},
+  "drizzle": {"name": "Drizzle", "desc": "Starts rain on entry.", "startsWeather": "rain"},
+  "drought": {"name": "Drought", "desc": "Starts sun on entry.", "startsWeather": "sun"},
+  "earlybird": {"name": "Early Bird", "desc": "Decreased sleep duration."},
+  "guts": {"name": "Guts", "desc": "Atk boosted when statused."},
+  "hugepower": {"name": "Huge Power", "desc": "Doubles Atk."},
+  "hypercutter": {"name": "Hyper Cutter", "desc": "Prevents Atk drops.", "preventsStatDrop": "atk"},
+  "illuminate": {"name": "Illuminate", "desc": ""},
+  "immunity": {"name": "Immunity", "desc": "Prevents poison.", "preventsStatus": "psn"},
+  "levitate": {"name": "Levitate", "desc": "Immune to Ground-type moves."},
+  "limber": {"name": "Limber", "desc": "Prevents paralysis.", "preventsStatus": "par"},
+  "magmaarmor": {"name": "Magma Armor", "desc": "Prevents freeze.", "preventsStatus": "frz"},
+  "magnetpull": {"name": "Magnet Pull", "desc": "Traps steel-type Pokémon."},
+  "marvelscale": {"name": "Marvel Scale", "desc": "Boosts Def when statused."},
+  "purepower": {"name": "Pure Power", "desc": "Doubles Atk."},
+  "rockhead": {"name": "Rock Head", "desc": "Prevents recoil damage."},
+  "runaway": {"name": "Run Away", "desc": ""},
+  "sandstream": {
+    "name": "Sand Stream",
+    "desc": "Starts sandstorm on entry.",
+    "startsWeather": "sand"
+  },
+  "shellarmor": {"name": "Shell Armor", "desc": "Prevents critical hits.", "preventsCrit": true},
+  "shielddust": {"name": "Shield Dust", "desc": "Prevents damaging move secondary effects."},
+  "suctioncups": {"name": "Suction Cups", "desc": "Prevents forced switching."},
+  "swiftswim": {"name": "Swift Swim", "desc": "Doubles Spe in rain.", "weatherSpeedBoost": "rain"},
+  "waterabsorb": {"name": "Water Absorb", "desc": "Heals from damaging Water type moves."},
+  "waterveil": {"name": "Water Veil", "desc": "Prevents burn.", "preventsStatus": "brn"},
+  "whitesmoke": {"name": "White Smoke", "desc": "Prevents stat drops.", "preventsStatDrop": "all"}
+}

@@ -1,81 +1,56 @@
-import type {Move, MoveFunctions, MoveId} from "../moves";
-import {isSpecial, stageKeys} from "../utils";
-import {exec as execDamagingMove} from "./damaging";
-
-/*
-https://bulbapedia.bulbagarden.net/wiki/Dig_(move)
-In Generation II only, due to a glitch, when Lock-On or Mind Reader are in effect, the moves Attract, Curse, Foresight, Mean Look, Mimic, Nightmare, Spider Web, and Transform cannot hit targets in the semi-invulnerable turn of Dig, and moves cannot lower stats of targets in the semi-invulnerable turn of Dig (status moves such as String Shot will fail, and additional effects of moves such as Bubble will not activate).
-
-https://bulbapedia.bulbagarden.net/wiki/Metronome_(move)
-pp rollover
-
-https://bulbapedia.bulbagarden.net/wiki/Mimic_(move)
-has 5 pp like transform
-
-https://bulbapedia.bulbagarden.net/wiki/Solar_Beam_(move)
-If the user is prevented from attacking with SolarBeam during harsh sunlight by conditions such as flinching, paralysis, and confusion, then PP will still be deducted regardless, due to the fact that SolarBeam was designed as a two-turn attack.
-
-In this generation only, Mirror Move always fails when used by a transformed Pokémon.
-
-Mimic
-*/
-
-// Does 10% chance mean 10.2 /* 26/256 */ like in gen 1?
+import {Range, type Move, type MoveFunctions, type MoveId} from "../moves";
+import {stageKeys} from "../utils";
 
 export const moveFunctionPatches: Partial<MoveFunctions> = {
-  recover: {
-    exec(battle, user) {
-      const diff = user.base.stats.hp - user.base.hp;
-      if (diff === 0) {
-        return battle.info(user, "fail_generic");
-      }
+  recover(battle, user) {
+    const diff = user.base.stats.hp - user.base.hp;
+    if (diff === 0) {
+      return battle.info(user, "fail_generic");
+    }
 
-      if (this.why === "rest") {
-        user.clearStatusAndRecalculate(battle);
-        user.base.status = "slp";
-        user.base.sleepTurns = 3;
-        user.v.counter = 0;
-        user.recover(diff, user, battle, this.why, true);
-      } else {
-        let amount = Math.floor(user.base.stats.hp / 2);
-        if (this.weather && !battle.weather) {
-          amount = Math.floor(user.base.stats.hp / 4);
-        } else if (this.weather && battle.weather?.kind !== "sun") {
-          amount = Math.floor(user.base.stats.hp / 8);
-        }
-        user.recover(amount, user, battle, this.why);
+    if (this.why === "rest") {
+      user.base.status = "slp";
+      user.base.sleepTurns = 3;
+      user.v.counter = 0;
+      user.recover(diff, user, battle, this.why, true);
+    } else {
+      let amount = Math.floor(user.base.stats.hp / 2);
+      if (this.weather && !battle.getWeather()) {
+        amount = Math.floor(user.base.stats.hp / 4);
+      } else if (this.weather && !battle.hasWeather("sun")) {
+        amount = Math.floor(user.base.stats.hp / 8);
       }
-    },
+      user.recover(Math.max(1, amount), user, battle, this.why);
+    }
   },
-  status: {
-    exec(battle, user, target) {
-      if (target.v.substitute) {
-        return battle.info(target, "fail_generic");
-      } else if (
-        (this.checkType && battle.getEffectiveness(this.type, target) === 0) ||
-        ((this.status === "psn" || this.status === "tox") &&
-          target.v.types.some(t => t === "poison" || t === "steel"))
-      ) {
-        return battle.info(target, "immune");
-      } else if (target.owner.screens.safeguard) {
-        return battle.info(target, "safeguard_protect");
-      } else if (!battle.checkAccuracy(this, user, target)) {
-        return;
-      }
+  status(battle, user, [target]) {
+    if (battle.tryMagicBounce(this, user, target)) {
+      return;
+    } else if (target.v.substitute) {
+      return battle.info(target, "fail_generic");
+    } else if (battle.hasUproar(target)) {
+      return battle.info(user, "fail_generic");
+    } else if (
+      (this.checkType && battle.getEffectiveness(this.type, target) === 0) ||
+      ((this.status === "psn" || this.status === "tox") &&
+        target.v.hasAnyType("poison", "steel")) ||
+      (this.status === "brn" && target.v.types.includes("fire"))
+    ) {
+      return battle.info(target, "immune");
+    } else if (target.owner.screens.safeguard) {
+      return battle.info(target, "safeguard_protect");
+    } else if (!battle.checkAccuracy(this, user, target)) {
+      return;
+    }
 
-      if (!target.status(this.status, battle)) {
-        battle.info(target, "fail_generic");
-      }
-    },
-  },
-  damage: {
-    exec: execDamagingMove,
+    target.status(this.status, battle, user, {override: false, loud: true});
   },
 };
 
 export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
   bide: {acc: 100, power: 0},
   conversion: {
+    range: Range.Self,
     exec(battle, user) {
       const type = battle.rng.choice(
         user.base.moves
@@ -88,11 +63,11 @@ export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
       }
 
       const v = user.setVolatile("types", [type]);
-      battle.event({type: "conversion", src: user.owner.id, types: [type], volatiles: [v]});
+      battle.event({type: "conversion", src: user.id, types: [type], volatiles: [v]});
     },
   },
   disable: {
-    exec(this: Move, battle, user, target) {
+    exec(this: Move, battle, user, [target]) {
       if (
         target.v.disabled ||
         !target.v.lastMove ||
@@ -106,35 +81,66 @@ export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
 
       const indexInMoves = target.v.lastMoveIndex!;
 
-      target.v.disabled = {indexInMoves, turns: battle.rng.int(2, 8) + 1};
+      target.v.disabled = {indexInMoves, turns: battle.gen.rng.disableTurns(battle)};
       battle.event({
         type: "disable",
-        src: target.owner.id,
+        src: target.id,
         move: target.base.moves[indexInMoves],
-        volatiles: [{id: target.owner.id, v: {flags: target.v.cflags}}],
+        volatiles: [{id: target.id, v: {flags: target.v.cflags}}],
       });
     },
   },
   haze: {
-    exec(battle, user, target) {
-      for (const k of stageKeys) {
-        user.setStage(k, 0, battle, false);
-        target.setStage(k, 0, battle, false);
+    exec(battle, user, targets) {
+      for (const target of targets) {
+        for (const k of stageKeys) {
+          user.setStage(k, 0, battle, false);
+          target.setStage(k, 0, battle, false);
+        }
       }
 
-      battle.info(user, "haze", [
-        {id: user.owner.id, v: {stages: null, stats: user.clientStats(battle)}},
-        {id: target.owner.id, v: {stages: null, stats: target.clientStats(battle)}},
-      ]);
+      battle.info(
+        user,
+        "haze",
+        targets.map(user => ({id: user.id, v: {stages: null, stats: user.clientStats(battle)}})),
+      );
     },
   },
-  mimic: {noMetronome: true},
+  transform: {
+    exec(this: Move, battle, user, [target]) {
+      if (target.base.transformed) {
+        return battle.info(user, "fail_generic");
+      } else if (!battle.checkAccuracy(this, user, target)) {
+        return;
+      }
+      user.transform(battle, target);
+    },
+  },
+  mimic: {
+    noMetronome: true,
+    exec(this: Move, battle, user, [target], indexInMoves) {
+      const lastMove = target.v.lastMove;
+      const move = lastMove && battle.moveIdOf(lastMove);
+      if (!move || lastMove.noMimic || user.moveset().includes(move)) {
+        return battle.info(user, "fail_generic");
+      }
+
+      if (!battle.checkAccuracy(this, user, target)) {
+        return false;
+      }
+
+      // TODO: mimic PP
+      user.v.mimic = {indexInMoves: indexInMoves ?? user.v.lastMoveIndex ?? -1, move};
+      battle.event({type: "mimic", src: user.id, move});
+      return false;
+    },
+  },
   // --
   roar: {kind: "phaze", acc: 100, priority: -1},
   whirlwind: {kind: "phaze", acc: 100, priority: -1, ignore: ["fly"]},
   // --
-  lightscreen: {kind: "screen", screen: "light_screen"},
-  reflect: {kind: "screen", screen: "reflect"},
+  lightscreen: {kind: "screen", screen: "light_screen", range: Range.Field},
+  reflect: {kind: "screen", screen: "reflect", range: Range.Field},
   // --
   amnesia: {stages: [["spd", 2]]},
   glare: {checkType: true},
@@ -150,16 +156,8 @@ export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
   counter: {
     power: 0,
     noMetronome: true,
-    getDamage(battle, user, target) {
-      if (
-        !user.v.retaliateDamage ||
-        !target.v.lastMove ||
-        (isSpecial(target.v.lastMove.type) && target.v.lastMove !== battle.gen.moveList.beatup)
-      ) {
-        return false;
-      }
-
-      return user.v.retaliateDamage * 2;
+    getDamage(_battle, user) {
+      return !user.v.lastHitBy || user.v.lastHitBy.special ? 0 : user.v.retaliateDamage * 2;
     },
   },
   dig: {power: 60},
