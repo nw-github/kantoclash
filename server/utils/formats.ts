@@ -11,7 +11,7 @@ import {HP_TYPES, statKeys, type Stats} from "~/game/utils";
 import random from "random";
 import {z} from "zod";
 import {isValidSketchMove, type FormatId} from "~/utils/shared";
-import {type Generation, GENERATION1, GENERATION2, GENERATION3} from "~/game/gen";
+import {type Generation, GENERATION1, GENERATION2, GENERATION3, GENERATION4} from "~/game/gen";
 import {statusBerry, type ItemId} from "~/game/item";
 import {profanityMatcher} from "~/utils/schema";
 import {HP_IVS} from "~/utils/pokemon";
@@ -278,6 +278,7 @@ const createValidator = (gen: Generation) => {
 const VALIDATOR_GEN1 = createValidator(GENERATION1);
 const VALIDATOR_GEN2 = createValidator(GENERATION2);
 const VALIDATOR_GEN3 = createValidator(GENERATION3);
+const VALIDATOR_GEN4 = createValidator(GENERATION4);
 
 const validateTeam = (
   validator: typeof VALIDATOR_GEN1,
@@ -304,6 +305,8 @@ const validateTeam = (
 };
 
 export const formatDescs: Record<FormatId, FormatFunctions> = {
+  g4_standard: {validate: team => validateTeam(VALIDATOR_GEN4, team)},
+  g4_doubles: {validate: team => validateTeam(VALIDATOR_GEN4, team)},
   g3_standard: {validate: team => validateTeam(VALIDATOR_GEN3, team)},
   g3_doubles: {validate: team => validateTeam(VALIDATOR_GEN3, team)},
   g2_standard: {validate: team => validateTeam(VALIDATOR_GEN2, team)},
@@ -319,6 +322,12 @@ export const formatDescs: Record<FormatId, FormatFunctions> = {
     },
   },
 
+  g4_randoms: {
+    generate: () => randoms(GENERATION4, (s, _) => !s.evolvesTo),
+  },
+  g4_randoms_doubles: {
+    generate: () => randoms(GENERATION4, (s, _) => !s.evolvesTo),
+  },
   g3_randoms: {
     generate: () => randoms(GENERATION3, (s, _) => !s.evolvesTo),
   },

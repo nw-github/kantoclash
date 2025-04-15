@@ -26,19 +26,23 @@ const model = defineModel<FormatId>();
 
 const formats: Record<string, Record<string, FormatId>> = {
   "Standard Battle": {
+    DPP: "g4_standard",
     ADV: "g3_standard",
     GSC: "g2_standard",
     RBY: "g1_standard",
   },
   "Double Battle": {
+    DPP: "g4_doubles",
     ADV: "g3_doubles",
   },
   "Random Battle": {
+    DPP: "g4_randoms",
     ADV: "g3_randoms",
     GSC: "g2_randoms",
     RBY: "g1_randoms",
   },
   "Random Double Battle": {
+    DPP: "g4_randoms_doubles",
     ADV: "g3_randoms_doubles",
   },
   "Random Metronome Battle": {

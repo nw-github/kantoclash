@@ -31,6 +31,11 @@ type FormatInfo = {
 };
 
 export const battleFormats = [
+  "g4_doubles",
+  "g4_standard",
+  "g4_randoms",
+  "g4_randoms_doubles",
+
   "g3_randoms_doubles",
   "g3_doubles",
   "g3_standard",
@@ -50,6 +55,40 @@ export const battleFormats = [
 export type FormatId = (typeof battleFormats)[number];
 
 export const formatInfo: Record<FormatId, FormatInfo> = {
+  g4_standard: {
+    name: "[DPP] Standard Battle",
+    icon: "akar-icons:sword",
+    desc: "A standard battle allowing all DPP and HGSS Pokémon.",
+    needsTeam: true,
+    chooseLead: true,
+    mods: {sleepClause: true, endlessBattle: true},
+    generation: 4,
+  },
+  g4_randoms: {
+    name: "[DPP] Random Battle",
+    icon: "mdi:dice-3-outline",
+    desc: "A standard Pokémon battle, but your team and sets are randomly generated.",
+    mods: {sleepClause: true, endlessBattle: true},
+    generation: 4,
+  },
+  g4_randoms_doubles: {
+    name: "[DPP] Random Doubles",
+    icon: "mdi:dice-3-outline",
+    desc: "A random double battle.",
+    mods: {endlessBattle: true},
+    generation: 4,
+    doubles: true,
+  },
+  g4_doubles: {
+    name: "[DPP] Doubles",
+    icon: "akar-icons:sword",
+    desc: "A standard double battle allowing all DPP and HGSS Pokémon.",
+    needsTeam: true,
+    chooseLead: true,
+    mods: {endlessBattle: true},
+    generation: 4,
+    doubles: true,
+  },
   g3_standard: {
     name: "[ADV] Standard Battle",
     icon: "akar-icons:sword",

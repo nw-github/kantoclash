@@ -5809,7 +5809,8 @@
       "triattack",
       "zapcannon"
     ],
-    "abilities": ["magnetpull", "sturdy"]
+    "abilities": ["magnetpull", "sturdy"],
+    "evolvesTo": "magnezone"
   },
   "farfetchd": {
     "moves": [
@@ -7709,7 +7710,8 @@
       "wringout",
       "zenheadbutt"
     ],
-    "abilities": ["owntempo", "oblivious"]
+    "abilities": ["owntempo", "oblivious"],
+    "evolvesTo": "lickilicky"
   },
   "koffing": {
     "moves": [
@@ -8008,7 +8010,8 @@
       "thunderpunch",
       "whirlpool"
     ],
-    "abilities": ["lightningrod", "rockhead"]
+    "abilities": ["lightningrod", "rockhead"],
+    "evolvesTo": "rhyperior"
   },
   "chansey": {
     "evolvesFrom": "happiny",
@@ -8266,7 +8269,8 @@
       "worryseed",
       "wringout"
     ],
-    "abilities": ["chlorophyll", "leafguard"]
+    "abilities": ["chlorophyll", "leafguard"],
+    "evolvesTo": "tangrowth"
   },
   "kangaskhan": {
     "moves": [
@@ -9273,7 +9277,8 @@
       "thunderwave",
       "toxic"
     ],
-    "abilities": ["static"]
+    "abilities": ["static"],
+    "evolvesTo": "electivire"
   },
   "magby": {
     "moves": [
@@ -9385,7 +9390,8 @@
       "toxic",
       "willowisp"
     ],
-    "abilities": ["flamebody"]
+    "abilities": ["flamebody"],
+    "evolvesTo": "magmortar"
   },
   "pinsir": {
     "moves": [
@@ -10200,7 +10206,8 @@
       "zenheadbutt",
       "defensecurl"
     ],
-    "abilities": ["trace", "download"]
+    "abilities": ["trace", "download"],
+    "evolvesTo": "porygonz"
   },
   "omanyte": {
     "moves": [
@@ -12734,7 +12741,8 @@
       "tailwind",
       "twister"
     ],
-    "abilities": ["hustle", "serenegrace"]
+    "abilities": ["hustle", "serenegrace"],
+    "evolvesTo": "togekiss"
   },
   "natu": {
     "moves": [
@@ -13742,7 +13750,8 @@
       "whirlwind",
       "wingattack"
     ],
-    "abilities": ["speedboost", "compoundeyes"]
+    "abilities": ["speedboost", "compoundeyes"],
+    "evolvesTo": "yanmega"
   },
   "wooper": {
     "moves": [
@@ -14033,9 +14042,6 @@
     ],
     "abilities": ["levitate"]
   },
-  "unown": {"abilities": ["levitate"]},
-  "wynaut": {},
-  "wobbuffet": {"abilities": ["shadowtag"]},
   "girafarig": {
     "moves": [
       "agility",
@@ -14399,7 +14405,8 @@
       "wingattack",
       "xscissor"
     ],
-    "abilities": ["hypercutter", "sandveil"]
+    "abilities": ["hypercutter", "sandveil"],
+    "evolvesTo": "gliscor"
   },
   "snubbull": {
     "moves": [
@@ -14838,7 +14845,8 @@
       "whirlpool",
       "xscissor"
     ],
-    "abilities": ["innerfocus", "keeneye"]
+    "abilities": ["innerfocus", "keeneye"],
+    "evolvesTo": "weavile"
   },
   "teddiursa": {
     "moves": [
@@ -15250,7 +15258,8 @@
       "peck",
       "stoneedge"
     ],
-    "abilities": ["oblivious", "snowcloak"]
+    "abilities": ["oblivious", "snowcloak"],
+    "evolvesTo": "mamoswine"
   },
   "corsola": {
     "moves": [
@@ -19757,7 +19766,8 @@
       "torment",
       "toxic",
       "zapcannon"
-    ]
+    ],
+    "evolvesTo": "probopass"
   },
   "skitty": {
     "moves": [
@@ -23628,7 +23638,8 @@
       "shadowpunch",
       "strength",
       "thunderpunch"
-    ]
+    ],
+    "evolvesTo": "dusknoir"
   },
   "tropius": {
     "moves": [
