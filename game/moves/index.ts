@@ -17,7 +17,6 @@ export interface BaseMove {
   readonly acc?: number;
   readonly priority?: number;
   readonly power?: number;
-  readonly sleepOnly?: bool;
   /** 50% accurate in sun, -- in rain */
   readonly rainAcc?: bool;
   /** Hits users in the semi-invuln state of these moves */
@@ -30,13 +29,21 @@ export interface BaseMove {
   readonly noAssist?: bool;
   /** Not callable by sleep talk */
   readonly noSleepTalk?: bool;
+  /** Not copyable by mimic */
+  readonly noMimic?: bool;
   /** Undefined: Inherit from kind, true: affected, false: unaffected */
   readonly protect?: bool;
-  readonly whileAsleep?: bool;
+  /** Only usable while sleeping */
+  readonly sleepOnly?: bool;
+  /** Usable while frozen; thaws the user out */
   readonly selfThaw?: bool;
+  /** Affected by kings rock pre Gen V */
   readonly kingsRock?: bool;
+  /** Soundproof Pokémon are immune */
   readonly sound?: bool;
+  /** Affected by snatch */
   readonly snatch?: bool;
+  /** Affected by magic coat */
   readonly magicCoat?: bool;
 }
 

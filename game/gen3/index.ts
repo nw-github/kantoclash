@@ -229,7 +229,7 @@ const createGeneration = (): Generation => {
           user.unstatus(battle, "wake");
         } else {
           battle.info(user, "sleep");
-          if (!move.whileAsleep) {
+          if (!move.sleepOnly) {
             resetVolatiles();
             return false;
           }

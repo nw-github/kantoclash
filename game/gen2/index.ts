@@ -112,7 +112,7 @@ const beforeUseMove = (battle: Battle, move: Move, user: ActivePokemon) => {
       resetVolatiles();
     } else {
       battle.info(user, "sleep");
-      if (!move.whileAsleep) {
+      if (!move.sleepOnly) {
         resetVolatiles();
         return false;
       }

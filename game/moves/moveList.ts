@@ -1014,6 +1014,7 @@ const internalMoveList = createMoveList({
     range: Range.Self,
     noEncore: true,
     noAssist: true,
+    noMimic: true,
     exec(battle, user): bool {
       battle.gen1LastDamage = 0;
       const moves = Object.entries(battle.gen.moveList)
@@ -1593,6 +1594,7 @@ const internalMoveList = createMoveList({
     noMetronome: true,
     noEncore: true,
     noAssist: true,
+    noMimic: true,
     kingsRock: true,
     contact: true,
   },
@@ -1820,6 +1822,7 @@ const internalMoveList = createMoveList({
     type: "normal",
     range: Range.Adjacent,
     noEncore: true,
+    noMimic: true,
     exec(battle, user, [target]) {
       battle.gen1LastDamage = 0;
       user.transform(battle, target);
@@ -2826,6 +2829,7 @@ const internalMoveList = createMoveList({
     noMetronome: true,
     noEncore: true,
     noAssist: true,
+    noMimic: true,
     exec(battle, user, [target], moveIndex) {
       if (!battle.checkAccuracy(this, user, target)) {
         return;
@@ -2870,7 +2874,6 @@ const internalMoveList = createMoveList({
     noMetronome: true,
     noEncore: true,
     sleepOnly: true,
-    whileAsleep: true,
     noSleepTalk: true,
     noAssist: true,
     exec(battle, user) {
@@ -2911,7 +2914,6 @@ const internalMoveList = createMoveList({
     acc: 100,
     effect: [30, "flinch"],
     sleepOnly: true,
-    whileAsleep: true,
     kingsRock: true,
     sound: true,
   },

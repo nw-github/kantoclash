@@ -116,7 +116,25 @@ export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
       user.transform(battle, target);
     },
   },
-  mimic: {noMetronome: true},
+  mimic: {
+    noMetronome: true,
+    exec(this: Move, battle, user, [target], indexInMoves) {
+      const lastMove = target.v.lastMove;
+      const move = lastMove && battle.moveIdOf(lastMove);
+      if (!move || lastMove.noMimic || user.moveset().includes(move)) {
+        return battle.info(user, "fail_generic");
+      }
+
+      if (!battle.checkAccuracy(this, user, target)) {
+        return false;
+      }
+
+      // TODO: mimic PP
+      user.v.mimic = {indexInMoves: indexInMoves ?? user.v.lastMoveIndex ?? -1, move};
+      battle.event({type: "mimic", src: user.id, move});
+      return false;
+    },
+  },
   // --
   roar: {kind: "phaze", acc: 100, priority: -1},
   whirlwind: {kind: "phaze", acc: 100, priority: -1, ignore: ["fly"]},
