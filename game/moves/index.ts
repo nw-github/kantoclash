@@ -80,7 +80,7 @@ export interface StatusMove extends BaseMove {
   readonly kind: "status";
   readonly status: Status;
   readonly checkType?: bool;
-  readonly range: Range.Adjacent | Range.Any;
+  readonly range: Range.Adjacent | Range.Any | Range.AllAdjacentFoe;
 }
 
 export interface SwitchMove extends BaseMove {
@@ -237,4 +237,6 @@ type Flag =
   | "smellingsalt"
   | "spitup"
   | "uproar"
-  | "revenge";
+  | "revenge"
+  | "bugbite"
+  | "assurance";
