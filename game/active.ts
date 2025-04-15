@@ -604,6 +604,7 @@ export class ActivePokemon {
 
           if (poke.owner.screens.mist) {
             battle.info(poke, "mist_protect");
+            continue;
           }
           poke.modStages([["atk", -1]], battle, this);
         }
