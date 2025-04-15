@@ -362,4 +362,31 @@ export const moveFunctions: MoveFunctions = {
       volatiles: [target.setFlag(VF.identified)],
     });
   },
+  trick(battle, user, [target]) {
+    if (target.v.substitute) {
+      return battle.info(user, "fail_generic");
+    } else if (target.v.ability === "stickyhold") {
+      battle.ability(target);
+      return battle.info(target, "immune");
+    } else if (
+      (!target.base.item && !user.base.item) ||
+      target.base.itemUnusable ||
+      user.base.itemUnusable ||
+      target.base.item === "enigmaberry" ||
+      target.base.item?.includes("mail")
+    ) {
+      return battle.info(user, "fail_generic");
+    }
+
+    const userItem = user.base.item;
+    user.base.item = target.base.item;
+    target.base.item = userItem;
+    battle.event({
+      type: "trick",
+      src: user.id,
+      target: target.id,
+      srcItem: user.base.item,
+      targetItem: target.base.item,
+    });
+  },
 };

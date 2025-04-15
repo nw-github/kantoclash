@@ -90,6 +90,11 @@ export interface SwitchMove extends BaseMove {
   readonly batonPass: bool;
 }
 
+export interface TrickMove extends BaseMove {
+  readonly kind: "trick";
+  readonly range: Range.Adjacent;
+}
+
 export interface FailMove extends BaseMove {
   readonly kind: "fail";
   readonly why: FailReason;
@@ -186,6 +191,7 @@ export type Move =
   | StatusMove
   | SwitchMove
   | FailMove
+  | TrickMove
   | WeatherMove
   | ScreenMove
   | PhazingMove
