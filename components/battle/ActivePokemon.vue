@@ -35,7 +35,7 @@
       <div class="relative">
         <div
           v-if="poke"
-          class="flex gap-1 flex-wrap absolute *:px-[0.2rem] *:py-[0.1rem] *:text-[0.6rem] sm:*:text-xs"
+          class="flex gap-1 flex-wrap absolute *:px-[0.2rem] *:py-[0.1rem] *:text-[0.6rem] *:leading-3 sm:*:text-xs"
         >
           <UBadge v-if="poke.transformed" color="black" label="Transformed" variant="subtle" />
 

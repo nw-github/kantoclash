@@ -31,9 +31,9 @@
 
       <Field ref="field" :players :perspective :is-singles :gen :weather />
 
-      <!-- Events -->
+      <!-- Events & Bottom Bar -->
       <div class="relative w-full">
-        <div class="absolute w-full flex flex-col bottom-1 gap-1 z-30">
+        <div class="absolute w-full flex flex-col bottom-1 gap-1 z-30 pointer-events-none">
           <AnimatePresence>
             <motion.div
               v-for="e in liveEvents"
@@ -680,7 +680,7 @@ const runEvent = async (e: BattleEvent) => {
   smoothScroll.value = isLive();
 
   await handleEvent(e);
-  if (isLive() && e.type !== "sv") {
+  if (isLive() && e.type !== "sv" && e.type !== "beatup") {
     await delay(e.type === "weather" && e.kind === "continue" ? 450 : 250);
   }
 
