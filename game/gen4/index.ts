@@ -5,6 +5,7 @@ import type {Species, SpeciesId} from "../species";
 import {merge, type GenPatches} from "../gen2";
 import {moveFunctionPatches, movePatches} from "./moves";
 import {GENERATION3} from "../gen3";
+import {MC} from "../utils";
 
 const createGeneration = (): Generation => {
   const patches: Partial<GenPatches> = {
@@ -16,6 +17,8 @@ const createGeneration = (): Generation => {
     lastMoveIdx: GENERATION1.moveList.zenheadbutt.idx!,
     moveFunctions: moveFunctionPatches as typeof GENERATION1.moveFunctions,
     validSpecies: species => species.dexId <= 493 && !species.unselectable,
+    getCategory: move => ("category" in move ? move.category : MC.status),
+    isSpecial: move => "category" in move && move.category === MC.special,
   };
 
   const r = merge(patches as any, GENERATION3);

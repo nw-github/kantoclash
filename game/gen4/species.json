@@ -20843,6 +20843,7 @@
   },
   "roselia": {
     "evolvesFrom": "budew",
+    "evolvesTo": "roserade",
     "moves": [
       "absorb",
       "aromatherapy",

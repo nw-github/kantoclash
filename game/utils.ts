@@ -116,31 +116,6 @@ export const getEffectiveness = (typeChart: TypeChart, atk: Type, def: readonly 
   return def.reduce((eff, def) => eff * (typeChart[atk][def] ?? 1), 1);
 };
 
-export const isSpecial = (atk: Type) => {
-  switch (atk) {
-    case "normal":
-    case "rock":
-    case "ground":
-    case "ghost":
-    case "poison":
-    case "bug":
-    case "flying":
-    case "fight":
-    case "steel":
-    case "???":
-      return false;
-    case "water":
-    case "grass":
-    case "fire":
-    case "electric":
-    case "ice":
-    case "psychic":
-    case "dragon":
-    case "dark":
-      return true;
-  }
-};
-
 export const idiv = (a: number, b: number) => Math.floor(a / b);
 
 export const imul = (a: number, b: number) => Math.floor(a * b);

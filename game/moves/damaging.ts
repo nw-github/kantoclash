@@ -1,7 +1,7 @@
 import type {Random} from "random";
 import type {CalcDamageParams} from "../gen";
 import {abilityList} from "../species";
-import {isSpecial, VF} from "../utils";
+import {VF} from "../utils";
 import type {DamagingMove} from ".";
 import type {ActivePokemon, Battle} from "../battle";
 import type {Pokemon} from "../pokemon";
@@ -151,7 +151,7 @@ export function getDamage(
     }
 
     const explosion = self.flag === "explosion" ? 2 : 1;
-    const spc = isSpecial(type);
+    const spc = battle.gen.isSpecial(self, type);
     // eslint-disable-next-line prefer-const
     let [atk, def] = extras.beatUp
       ? ([extras.beatUp.stats.atk, target.base.stats.def] as const)

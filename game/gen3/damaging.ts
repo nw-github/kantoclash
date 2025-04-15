@@ -2,7 +2,7 @@ import type {ActivePokemon, Battle} from "../battle";
 import {checkUsefulness, getDamage, Range, type DamagingMove} from "../moves";
 import type {Status} from "../pokemon";
 import {abilityList} from "../species";
-import {idiv, isSpecial, randChoiceWeighted, VF, type Type} from "../utils";
+import {idiv, randChoiceWeighted, VF, type Type} from "../utils";
 
 export const tryDamage = (
   self: DamagingMove,
@@ -172,7 +172,8 @@ export const tryDamage = (
     return 0;
   }
 
-  if (!battle.checkAccuracy(self, user, target, !isSpecial(type))) {
+  const special = battle.gen.isSpecial(self, type);
+  if (!battle.checkAccuracy(self, user, target, special)) {
     user.v.furyCutter = 0;
     user.v.thrashing = undefined;
     if (self.flag === "crash") {
@@ -239,7 +240,7 @@ export const tryDamage = (
       if (
         self.flag === "triple" &&
         hits !== 0 &&
-        !battle.checkAccuracy(self, user, target, !isSpecial(type))
+        !battle.checkAccuracy(self, user, target, !special)
       ) {
         // TODO: lazy
         battle.events.splice(-1, 1);
@@ -297,11 +298,7 @@ export const tryDamage = (
     dealt = 0;
   }
 
-  target.v.lastHitBy = {
-    move: self,
-    poke: user,
-    special: battle.moveIdOf(self) === "hiddenpower" ? false : isSpecial(type),
-  };
+  target.v.lastHitBy = {move: self, poke: user, special: battle.gen.isSpecial(self, type, true)};
 
   if (
     user.base.hp &&

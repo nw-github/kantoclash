@@ -135,6 +135,7 @@ export interface FutureSightMove extends BaseMove {
   readonly kind: "futuresight";
   readonly range: Range.Adjacent;
   readonly power: number;
+  readonly category: MC.physical | MC.special;
   readonly msg: InfoReason;
   readonly release: InfoReason;
 }

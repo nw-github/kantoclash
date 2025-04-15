@@ -1,6 +1,6 @@
 import type {ActivePokemon, Battle} from "../battle";
 import {checkUsefulness, getDamage, Range, type DamagingMove} from "../moves";
-import {idiv, isSpecial, randChoiceWeighted, VF} from "../utils";
+import {idiv, randChoiceWeighted, VF} from "../utils";
 
 export const tryDamage = (
   self: DamagingMove,
@@ -60,7 +60,7 @@ export const tryDamage = (
     }
     checkThrashing();
     return 0;
-  } else if (!battle.checkAccuracy(self, user, target, !isSpecial(type))) {
+  } else if (!battle.checkAccuracy(self, user, target, !battle.gen.isSpecial(self, type))) {
     if (user.v.thrashing && user.v.thrashing.move.flag === "rollout") {
       user.v.thrashing = undefined;
     }
@@ -165,11 +165,7 @@ export const tryDamage = (
     }
   }
 
-  target.v.lastHitBy = {
-    move: self,
-    poke: user,
-    special: battle.moveIdOf(self) === "hiddenpower" ? false : isSpecial(type),
-  };
+  target.v.lastHitBy = {move: self, poke: user, special: battle.gen.isSpecial(self, type, true)};
 
   checkThrashing();
   if (user.base.hp && self.recoil) {

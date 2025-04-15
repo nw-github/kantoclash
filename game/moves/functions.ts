@@ -1,7 +1,7 @@
 import {Range, type CustomMove, type Move} from ".";
 import type {InfoReason} from "../events";
 import {abilityList} from "../species";
-import {isSpecial, VF} from "../utils";
+import {VF} from "../utils";
 
 type ExecMoveFn = CustomMove["exec"];
 
@@ -315,7 +315,7 @@ export const moveFunctions: MoveFunctions = {
       return battle.info(user, "fail_generic");
     }
 
-    const spc = isSpecial(this.type);
+    const spc = battle.gen.isSpecial(this);
     const [atk, def] = battle.gen.getDamageVariables(spc, battle, user, target, false);
     const dmg = battle.gen.calcDamage({
       atk,

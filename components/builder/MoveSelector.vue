@@ -33,7 +33,7 @@
           <TypeBadge :type="move.type" image />
         </div>
         <div class="flex items-center">
-          <MoveCategory :category="getCategory(move)" image />
+          <MoveCategory :category="gen.getCategory(move)" image />
         </div>
         <div class="flex flex-col w-8">
           <span class="text-[0.6rem] text-center text-gray-400">Power</span>

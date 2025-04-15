@@ -2,7 +2,7 @@ import {shouldReturn, type Generation, GENERATION1} from "../gen1";
 import {GENERATION2, merge, type GenPatches} from "../gen2";
 import {applyItemStatBoost, Nature, natureTable} from "../pokemon";
 import {abilityList, type Species, type SpeciesId} from "../species";
-import {clamp, idiv, isSpecial, screens, VF} from "../utils";
+import {clamp, idiv, MC, screens, VF} from "../utils";
 import {moveFunctionPatches, movePatches} from "./moves";
 import speciesPatches from "./species.json";
 import items from "./items.json";
@@ -191,7 +191,7 @@ const createGeneration = (): Generation => {
         acc += Math.floor(acc * 0.3);
       }
 
-      phys ??= !isSpecial(move.type);
+      phys ??= battle.gen.getCategory(move) === MC.physical;
       if (user.v.ability === "hustle" && phys) {
         acc -= Math.floor(acc * 0.2);
       }

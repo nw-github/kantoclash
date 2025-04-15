@@ -1,8 +1,7 @@
 import type {PlayerId, PokeId} from "~/game/events";
-import type {Move} from "~/game/moves";
 import type {FormId, Gender, Pokemon} from "~/game/pokemon";
 import {speciesList, type SpeciesId} from "~/game/species";
-import {isSpecial, type ScreenId, type Type} from "~/game/utils";
+import type {ScreenId} from "~/game/utils";
 
 export type ClientActivePokemon = {
   hidden?: bool;
@@ -63,14 +62,6 @@ export class Players {
 export const gen1Gender: Partial<Record<SpeciesId, Gender>> = {
   nidoranf: "F",
   nidoranm: "M",
-};
-
-export const getCategory = (move: Move, type?: Type) => {
-  return move.kind === "damage" || move.power
-    ? isSpecial(type ?? move.type)
-      ? "special"
-      : "physical"
-    : "status";
 };
 
 export const getSpritePath = (

@@ -1,5 +1,5 @@
 import type {ActivePokemon, Battle} from "../battle";
-import {isSpecial, VF} from "../utils";
+import {VF} from "../utils";
 import type {DamagingMove} from "../moves";
 import {getDamage} from "../moves";
 
@@ -36,7 +36,7 @@ export function tryDamage(
 
   // eslint-disable-next-line prefer-const
   let {dmg, isCrit, eff, endured, type} = getDamage(self, battle, user, target, {});
-  if (dmg === 0 || !battle.checkAccuracy(self, user, target, !isSpecial(type))) {
+  if (dmg === 0 || !battle.checkAccuracy(self, user, target, !battle.gen.isSpecial(self, type))) {
     battle.gen1LastDamage = 0;
     if (dmg === 0) {
       if (eff === 0) {
@@ -65,7 +65,7 @@ export function tryDamage(
     return 0;
   }
 
-  target.v.lastHitBy = {move: self, poke: user, special: isSpecial(self.type)};
+  target.v.lastHitBy = {move: self, poke: user, special: battle.gen.isSpecial(self, type)};
 
   checkThrashing();
   if (self.flag === "rage") {

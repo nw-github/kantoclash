@@ -13,6 +13,7 @@ import {
   type StatStageId,
   type Type,
   randChoiceWeighted,
+  MC,
 } from "../utils";
 import type {ItemData, ItemId} from "../item";
 import {UNOWN_FORM, type FormId, type Gender, type Nature} from "../pokemon";
@@ -733,6 +734,41 @@ const createGeneration = () => {
         if (!poke.base.hp && !poke.v.fainted) {
           battle.event({type: "bug", bug: "bug_gen2_spikes"});
         }
+      }
+    },
+    getCategory(move: Move, overrideType?: Type) {
+      return move.kind === "damage"
+        ? this.isSpecial(move, overrideType)
+          ? MC.special
+          : MC.physical
+        : MC.status;
+    },
+    isSpecial(move: Move, overrideType?: Type, other?: bool) {
+      if (other && (move === this.moveList.beatup || move === this.moveList.hiddenpower)) {
+        return false;
+      }
+
+      switch (overrideType ?? move.type) {
+        case "normal":
+        case "rock":
+        case "ground":
+        case "ghost":
+        case "poison":
+        case "bug":
+        case "flying":
+        case "fight":
+        case "steel":
+        case "???":
+          return false;
+        case "water":
+        case "grass":
+        case "fire":
+        case "electric":
+        case "ice":
+        case "psychic":
+        case "dragon":
+        case "dark":
+          return true;
       }
     },
   };
