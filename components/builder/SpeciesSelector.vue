@@ -15,7 +15,14 @@
         tabindex="0"
         @focus="open = true"
       >
-        <Sprite :species="(model as SpeciesId)" :scale="1.5" :shiny :form @click="open = true" />
+        <Sprite
+          :species="(model as SpeciesId)"
+          :scale="1.5"
+          :shiny
+          :form
+          :gender
+          @click="open = true"
+        />
       </div>
     </div>
 
@@ -52,12 +59,18 @@
 <script setup lang="ts">
 import type {Species, SpeciesId} from "@/game/species";
 import type {Generation} from "~/game/gen1";
-import type {FormId} from "~/game/pokemon";
+import type {FormId, Gender} from "~/game/pokemon";
 
 const emit = defineEmits<{(e: "chose", species: Species): void}>();
 
 const model = defineModel<string>();
-const {team, gen} = defineProps<{team: Team; gen: Generation; shiny: boolean; form?: FormId}>();
+const {team, gen} = defineProps<{
+  team: Team;
+  gen: Generation;
+  gender?: Gender;
+  shiny: boolean;
+  form?: FormId;
+}>();
 const open = ref(false);
 const items = computed(() => Object.entries(gen.speciesList) as [SpeciesId, Species][]);
 const statKeys = computed(() => getStatKeys(gen));

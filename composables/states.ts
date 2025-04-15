@@ -10,6 +10,12 @@ export const useMyTeams = () => useLocalStorage<Team[]>("myTeams", () => []);
 
 export const allMusicTracks = Object.keys(import.meta.glob("/public/music/**/*.{mp3,wav}"));
 
+export const femaleIds = new Set(
+  Object.keys(import.meta.glob("/public/sprites/battle/female/*.gif")).map(spr =>
+    spr.slice(spr.lastIndexOf("/") + 1, spr.lastIndexOf(".")),
+  ),
+);
+
 export const useSfxVolume = () => useLocalStorage("sfxVolume", 0.4);
 
 const fadeOutRequested = ref(false);

@@ -11,17 +11,18 @@ img {
 </style>
 
 <script setup lang="ts">
-import type {FormId} from "~/game/pokemon";
+import type {FormId, Gender} from "~/game/pokemon";
 
-const props = defineProps<{
+const {scale, species, shiny, back, form, gender} = defineProps<{
   species?: string;
   back?: bool;
   scale?: number;
   shiny?: bool;
   form?: FormId;
+  gender?: Gender;
 }>();
 const sprite = computed(() => {
-  const scale = 1 / (props.scale ?? 1);
-  return getSpritePath(props.species, false, props.shiny, props.back, props.form) + ` ${scale}x`;
+  const sc = 1 / (scale ?? 1);
+  return getSpritePath(species, gender === "F", shiny, back, form) + ` ${sc}x`;
 });
 </script>

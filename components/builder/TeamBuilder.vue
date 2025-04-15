@@ -178,6 +178,7 @@
                 :class="gen.id >= 2 && 'pl-10'"
                 :team
                 :gen
+                :gender="currGender.gender"
                 :shiny="gen.getShiny(selectedPoke.data.shiny, ivsToDvs(selectedPoke.data))"
                 :form="gen.getForm(
                   undefined,
@@ -482,7 +483,7 @@ const teamPokepaste = ref(false);
 const currGender = computed(() => {
   const species = gen.value.speciesList[selectedPoke.value.data.species as SpeciesId];
   if (!species) {
-    return {icon: "material-symbols:question-mark", clazz: "", forced: true};
+    return {gender: "N", icon: "material-symbols:question-mark", clazz: "", forced: true} as const;
   }
 
   let gender = gen.value.getGender(undefined, species, ivToDv(selectedPoke.value.data.ivs.atk));
@@ -492,13 +493,13 @@ const currGender = computed(() => {
   }
 
   if (gender === "M") {
-    return {icon: "material-symbols:male", clazz: "text-sky-400", forced};
+    return {gender, icon: "material-symbols:male", clazz: "text-sky-400", forced} as const;
   } else if (gender === "F") {
-    return {icon: "material-symbols:female", clazz: "text-pink-400", forced};
+    return {gender, icon: "material-symbols:female", clazz: "text-pink-400", forced} as const;
   } else if (gender === "N") {
-    return {icon: "material-symbols:question-mark", clazz: "", forced};
+    return {gender, icon: "material-symbols:question-mark", clazz: "", forced} as const;
   } else {
-    return {icon: "material-symbols:male", clazz: "text-sky-400", random: true};
+    return {gender, icon: "material-symbols:male", clazz: "text-sky-400", random: true} as const;
   }
 });
 

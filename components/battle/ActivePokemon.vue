@@ -119,10 +119,12 @@
               class="absolute w-[128px] h-[117px] sm:w-[256px] sm:h-[234px] flex justify-center items-center select-none"
             >
               <Sprite
+                v-show="poke?.transformed ?? poke?.speciesId"
                 :species="poke?.transformed ?? poke?.speciesId"
                 :scale="lessThanSm ? 1 : 2"
                 :shiny="poke?.shiny"
                 :form="poke?.form"
+                :gender="poke?.gender"
                 :back
               />
 

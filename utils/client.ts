@@ -75,7 +75,7 @@ export const getCategory = (move: Move, type?: Type) => {
 
 export const getSpritePath = (
   species: string | undefined,
-  _female?: bool,
+  female?: bool,
   shiny?: bool,
   back?: bool,
   form?: FormId,
@@ -90,10 +90,14 @@ export const getSpritePath = (
     id += `-${form}`;
   }
 
-  const sh = shiny ? "shiny/" : "";
+  let extra = shiny ? "shiny/" : "";
+  if (female && femaleIds.has(id)) {
+    extra += "female/";
+  }
+
   if (!back) {
-    return `/sprites/battle/${sh}${id}.gif`;
+    return `/sprites/battle/${extra}${id}.gif`;
   } else {
-    return `/sprites/battle/back/${sh}${id}.gif`;
+    return `/sprites/battle/back/${extra}${id}.gif`;
   }
 };
