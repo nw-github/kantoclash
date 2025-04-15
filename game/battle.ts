@@ -808,9 +808,7 @@ export class Battle {
           if (targets[i].v.hasFlag(VF.protect)) {
             this.info(targets[i], "protect");
             targets.splice(i--, 1);
-          }
-
-          if (targets[i].v.ability === "soundproof" && move.sound) {
+          } else if (targets[i].v.ability === "soundproof" && move.sound) {
             this.ability(targets[i]);
             this.info(targets[i], "immune");
             targets.splice(i--, 1);
