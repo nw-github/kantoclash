@@ -404,6 +404,15 @@ const badges: {flag: VF; props: InstanceType<typeof UBadge>["$props"]}[] = [
     props: {color: "red", icon: "fluent-emoji-high-contrast:anger-symbol", variant: "subtle"},
   },
   {
+    flag: VF.torment,
+    props: {
+      color: "red",
+      icon: "fluent-emoji-high-contrast:anger-symbol",
+      variant: "subtle",
+      label: "Torment",
+    },
+  },
+  {
     flag: VF.identified,
     props: {color: "violet", icon: "material-symbols:search-rounded", variant: "subtle"},
   },
