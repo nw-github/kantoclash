@@ -43,7 +43,13 @@ export class Player {
 
   constructor(gen: Generation, {id, team}: PlayerParams, doubles: bool) {
     this.id = id;
-    this.team = team.map(p => new Pokemon(gen, p));
+    this.team = team.map(p => {
+      const poke = new Pokemon(gen, p);
+      p.gender = poke.gender;
+      p.form = poke.form;
+      p.shiny = poke.shiny;
+      return poke;
+    });
     this.teamDesc = team;
     this.active = [new ActivePokemon(this.team[0], this, 0)];
     if (doubles && this.team.length > 1) {
