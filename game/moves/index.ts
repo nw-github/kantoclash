@@ -170,6 +170,7 @@ export interface DamagingMove extends BaseMove {
   /** Affected by damp */
   readonly damp?: bool;
   readonly charge?: bool | "sun" | "invuln" | [StageId, number][];
+  readonly ignoreType?: bool;
   getPower?(user: Pokemon, target?: Pokemon): number;
   getType?(user: Pokemon, weather?: Weather): Type;
   checkSuccess?(battle: Battle, user: ActivePokemon, targets: ActivePokemon[]): bool;

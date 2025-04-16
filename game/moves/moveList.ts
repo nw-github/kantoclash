@@ -1103,6 +1103,7 @@ const internalMoveList = createMoveList({
     noEncore: true,
     noSleepTalk: true,
     noAssist: true,
+    protect: true,
     exec(battle, user, [target], indexInMoves) {
       if (!battle.checkAccuracy(this, user, target)) {
         return false;
@@ -1890,7 +1891,7 @@ const internalMoveList = createMoveList({
     pp: 15,
     type: "electric",
     range: Range.Adjacent,
-    category: MC.special,
+    category: MC.physical,
     power: 75,
     acc: 100,
     effect: [10.2 /* 26/256 */, "par"],
@@ -2227,8 +2228,8 @@ const internalMoveList = createMoveList({
     pp: 40,
     type: "grass",
     // TODO: check if Any or Adjacent in Gen V
-    range: Range.Any,
-    acc: 100,
+    range: Range.Adjacent,
+    acc: 85,
     stages: [["spe", -2]],
     magicCoat: true,
   },
@@ -4774,6 +4775,7 @@ const internalMoveList = createMoveList({
     type: "normal",
     range: Range.Self,
     why: "fail_generic",
+    noMimic: true,
   },
   closecombat: {
     kind: "damage",
@@ -5305,12 +5307,13 @@ const internalMoveList = createMoveList({
     why: "fail_generic",
   },
   miracleeye: {
-    kind: "fail",
+    kind: "foresight",
     name: "Miracle Eye",
-    pp: 1,
-    type: "normal",
+    pp: 40,
+    acc: 100,
+    type: "psychic",
     range: Range.Adjacent,
-    why: "fail_generic",
+    protect: true,
   },
   mirrorshot: {
     kind: "damage",

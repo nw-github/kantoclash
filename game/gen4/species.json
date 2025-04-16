@@ -8791,8 +8791,8 @@
     ],
     "abilities": ["illuminate", "naturalcure"]
   },
-  "mr.mime": {"evolvesFrom": "mimejr"},
   "mrmime": {
+    "evolvesFrom": "mimejr",
     "moves": [
       "aerialace",
       "attract",
@@ -13578,7 +13578,8 @@
       "uturn",
       "waterpulse"
     ],
-    "abilities": ["runaway", "pickup"]
+    "abilities": ["runaway", "pickup"],
+    "evolvesTo": "ambipom"
   },
   "sunkern": {
     "moves": [
@@ -13967,7 +13968,8 @@
       "whirlwind",
       "wingattack"
     ],
-    "abilities": ["insomnia", "superluck"]
+    "abilities": ["insomnia", "superluck"],
+    "evolvesTo": "honchkrow"
   },
   "misdreavus": {
     "moves": [
@@ -14040,7 +14042,8 @@
       "uproar",
       "willowisp"
     ],
-    "abilities": ["levitate"]
+    "abilities": ["levitate"],
+    "evolvesTo": "mismagius"
   },
   "girafarig": {
     "moves": [
@@ -18619,7 +18622,8 @@
       "trickroom",
       "willowisp",
       "zenheadbutt"
-    ]
+    ],
+    "evolvesTo": ["gallade", "gardevoir"]
   },
   "gardevoir": {
     "moves": [
@@ -23927,7 +23931,8 @@
       "waterpulse",
       "weatherball"
     ],
-    "abilities": ["innerfocus", "icebody"]
+    "abilities": ["innerfocus", "icebody"],
+    "evolvesTo": ["glalie", "froslass"]
   },
   "glalie": {
     "moves": [

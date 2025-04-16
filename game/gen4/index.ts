@@ -16,6 +16,9 @@ const createGeneration = (): Generation => {
     moveList: movePatches as typeof GENERATION1.moveList,
     lastMoveIdx: GENERATION1.moveList.zenheadbutt.idx!,
     moveFunctions: moveFunctionPatches as typeof GENERATION1.moveFunctions,
+    rng: {
+      disableTurns: battle => battle.rng.int(4, 7) + 1,
+    },
     validSpecies: species => species.dexId <= 493 && !species.unselectable,
     getCategory: move => ("category" in move ? move.category : MC.status),
     isSpecial: move => "category" in move && move.category === MC.special,

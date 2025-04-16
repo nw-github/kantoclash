@@ -21571,6 +21571,7 @@
     "types": ["grass", "poison"],
     "abilities": ["naturalcure", "poisonpoint"],
     "stats": {"hp": 60, "atk": 70, "def": 55, "spa": 125, "spd": 105, "spe": 90},
+    "evolvesFrom": "roselia",
     "genderRatio": 50,
     "weight": 14.5,
     "moves": [
@@ -22028,6 +22029,7 @@
     "evolvesFrom": "burmy",
     "name": "Wormadam-Sandy",
     "dexId": 413,
+    "sprite": "413-sandy",
     "types": ["bug", "ground"],
     "abilities": ["anticipation"],
     "stats": {"hp": 60, "atk": 79, "def": 105, "spa": 59, "spd": 85, "spe": 36},
@@ -22089,6 +22091,7 @@
     "evolvesFrom": "burmy",
     "name": "Wormadam-Trash",
     "dexId": 413,
+    "sprite": "413-trash",
     "types": ["bug", "steel"],
     "abilities": ["anticipation"],
     "stats": {"hp": 60, "atk": 69, "def": 95, "spa": 69, "spd": 95, "spe": 36},
@@ -22852,6 +22855,7 @@
     "stats": {"hp": 75, "atk": 100, "def": 66, "spa": 60, "spd": 66, "spe": 115},
     "genderRatio": 50,
     "weight": 20.3,
+    "evolvesFrom": "aipom",
     "moves": [
       "aerialace",
       "agility",
@@ -23269,6 +23273,7 @@
     "abilities": ["levitate"],
     "stats": {"hp": 60, "atk": 60, "def": 60, "spa": 105, "spd": 105, "spe": 105},
     "genderRatio": 50,
+    "evolvesFrom": "misdreavus",
     "weight": 4.4,
     "moves": [
       "aerialace",
@@ -23340,6 +23345,7 @@
     "abilities": ["insomnia", "superluck"],
     "stats": {"hp": 100, "atk": 125, "def": 52, "spa": 105, "spd": 52, "spe": 71},
     "genderRatio": 50,
+    "evolvesFrom": "murkrow",
     "weight": 27.3,
     "moves": [
       "aerialace",
@@ -23988,7 +23994,7 @@
     "abilities": ["soundproof", "filter"],
     "stats": {"hp": 20, "atk": 25, "def": 45, "spa": 70, "spd": 90, "spe": 60},
     "genderRatio": 50,
-    "evolvesTo": "mr.mime",
+    "evolvesTo": "mrmime",
     "weight": 13,
     "moves": [
       "attract",
@@ -25665,6 +25671,7 @@
     "abilities": ["pressure"],
     "stats": {"hp": 70, "atk": 120, "def": 65, "spa": 45, "spd": 85, "spe": 125},
     "genderRatio": 50,
+    "evolvesFrom": "sneasel",
     "weight": 34,
     "moves": [
       "aerialace",
@@ -25751,6 +25758,7 @@
     "abilities": ["magnetpull", "sturdy"],
     "stats": {"hp": 70, "atk": 70, "def": 115, "spa": 130, "spd": 90, "spe": 60},
     "weight": 180,
+    "evolvesFrom": "magneton",
     "moves": [
       "barrier",
       "chargebeam",
@@ -25815,6 +25823,7 @@
     "abilities": ["owntempo", "oblivious"],
     "stats": {"hp": 110, "atk": 85, "def": 95, "spa": 80, "spd": 95, "spe": 50},
     "genderRatio": 50,
+    "evolvesFrom": "lickitung",
     "weight": 140,
     "moves": [
       "aquatail",
@@ -25902,6 +25911,7 @@
     "abilities": ["lightningrod", "solidrock"],
     "stats": {"hp": 115, "atk": 140, "def": 130, "spa": 55, "spd": 55, "spe": 40},
     "genderRatio": 50,
+    "evolvesFrom": "rhydon",
     "weight": 282.8,
     "moves": [
       "ancientpower",
@@ -25998,6 +26008,7 @@
     "abilities": ["chlorophyll", "leafguard"],
     "stats": {"hp": 100, "atk": 100, "def": 125, "spa": 110, "spd": 50, "spe": 50},
     "genderRatio": 50,
+    "evolvesFrom": "tangela",
     "weight": 128.6,
     "moves": [
       "absorb",
@@ -26077,6 +26088,7 @@
     "abilities": ["motordrive"],
     "stats": {"hp": 75, "atk": 123, "def": 67, "spa": 95, "spd": 85, "spe": 95},
     "genderRatio": 75,
+    "evolvesFrom": "electabuzz",
     "weight": 138.6,
     "moves": [
       "attract",
@@ -26148,6 +26160,7 @@
     "abilities": ["flamebody"],
     "stats": {"hp": 75, "atk": 95, "def": 67, "spa": 125, "spd": 95, "spe": 83},
     "genderRatio": 75,
+    "evolvesFrom": "magmar",
     "weight": 68,
     "moves": [
       "attract",
@@ -26215,6 +26228,7 @@
     "abilities": ["hustle", "serenegrace"],
     "stats": {"hp": 85, "atk": 50, "def": 95, "spa": 120, "spd": 115, "spe": 80},
     "genderRatio": 87.5,
+    "evolvesFrom": "togetic",
     "weight": 38,
     "moves": [
       "aerialace",
@@ -26295,6 +26309,7 @@
     "abilities": ["speedboost", "tintedlens"],
     "stats": {"hp": 86, "atk": 76, "def": 86, "spa": 116, "spd": 56, "spe": 95},
     "genderRatio": 50,
+    "evolvesFrom": "yanma",
     "weight": 51.5,
     "moves": [
       "aerialace",
@@ -26365,6 +26380,7 @@
     "stats": {"hp": 65, "atk": 110, "def": 130, "spa": 60, "spd": 65, "spe": 95},
     "genderRatio": 87.5,
     "weight": 25.5,
+    "evolvesFrom": "eevee",
     "moves": [
       "aerialace",
       "attract",
@@ -26430,6 +26446,7 @@
     "abilities": ["snowcloak"],
     "stats": {"hp": 65, "atk": 60, "def": 110, "spa": 130, "spd": 95, "spe": 65},
     "genderRatio": 87.5,
+    "evolvesFrom": "eevee",
     "weight": 25.9,
     "moves": [
       "aquatail",
@@ -26491,6 +26508,7 @@
     "abilities": ["hypercutter", "sandveil"],
     "stats": {"hp": 75, "atk": 95, "def": 125, "spa": 45, "spd": 75, "spe": 95},
     "genderRatio": 50,
+    "evolvesFrom": "gligar",
     "weight": 42.5,
     "moves": [
       "aerialace",
@@ -26571,6 +26589,7 @@
     "abilities": ["oblivious", "snowcloak"],
     "stats": {"hp": 110, "atk": 130, "def": 80, "spa": 70, "spd": 60, "spe": 80},
     "genderRatio": 50,
+    "evolvesFrom": "piloswine",
     "weight": 291,
     "moves": [
       "ancientpower",
@@ -26640,6 +26659,7 @@
     "abilities": ["adaptability", "download"],
     "stats": {"hp": 85, "atk": 80, "def": 70, "spa": 135, "spd": 75, "spe": 90},
     "weight": 34,
+    "evolvesFrom": "porygon2",
     "moves": [
       "aerialace",
       "agility",
@@ -26711,6 +26731,7 @@
     "abilities": ["steadfast"],
     "stats": {"hp": 68, "atk": 125, "def": 65, "spa": 65, "spd": 115, "spe": 80},
     "genderRatio": 100,
+    "evolvesFrom": "kirlia",
     "weight": 52,
     "moves": [
       "aerialace",
@@ -26807,6 +26828,7 @@
     "abilities": ["sturdy", "magnetpull"],
     "stats": {"hp": 60, "atk": 55, "def": 145, "spa": 75, "spd": 150, "spe": 40},
     "genderRatio": 50,
+    "evolvesFrom": "nosepass",
     "weight": 340,
     "moves": [
       "ancientpower",
@@ -26876,6 +26898,7 @@
     "abilities": ["pressure"],
     "stats": {"hp": 45, "atk": 100, "def": 135, "spa": 65, "spd": 135, "spe": 45},
     "genderRatio": 50,
+    "evolvesFrom": "dusclops",
     "weight": 106.6,
     "moves": [
       "astonish",
@@ -27085,6 +27108,7 @@
   "rotomfan": {
     "name": "Rotom-Fan",
     "dexId": 479,
+    "sprite": "479-fan",
     "types": ["electric", "ghost"],
     "abilities": ["levitate"],
     "stats": {"hp": 50, "atk": 65, "def": 107, "spa": 105, "spd": 107, "spe": 86},
@@ -27142,6 +27166,7 @@
   "rotomfrost": {
     "name": "Rotom-Frost",
     "dexId": 479,
+    "sprite": "479-frost",
     "types": ["electric", "ghost"],
     "abilities": ["levitate"],
     "stats": {"hp": 50, "atk": 65, "def": 107, "spa": 105, "spd": 107, "spe": 86},
@@ -27199,6 +27224,7 @@
   "rotomheat": {
     "name": "Rotom-Heat",
     "dexId": 479,
+    "sprite": "479-heat",
     "types": ["electric", "ghost"],
     "abilities": ["levitate"],
     "stats": {"hp": 50, "atk": 65, "def": 107, "spa": 105, "spd": 107, "spe": 86},
@@ -27256,6 +27282,7 @@
   "rotommow": {
     "name": "Rotom-Mow",
     "dexId": 479,
+    "sprite": "479-mow",
     "types": ["electric", "ghost"],
     "abilities": ["levitate"],
     "stats": {"hp": 50, "atk": 65, "def": 107, "spa": 105, "spd": 107, "spe": 86},
@@ -27313,6 +27340,7 @@
   "rotomwash": {
     "name": "Rotom-Wash",
     "dexId": 479,
+    "sprite": "479-wash",
     "types": ["electric", "ghost"],
     "abilities": ["levitate"],
     "stats": {"hp": 50, "atk": 65, "def": 107, "spa": 105, "spd": 107, "spe": 86},
