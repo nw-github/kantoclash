@@ -251,7 +251,7 @@ export const moveFunctions: MoveFunctions = {
       return;
     }
 
-    target.switchTo(next, battle, "phaze");
+    target.switchTo(next, battle, "phaze", user);
   },
   protect(battle, user) {
     if (user.v.substitute || (battle.turnOrder.at(-1) === user && !this.endure)) {
@@ -397,5 +397,20 @@ export const moveFunctions: MoveFunctions = {
       srcItem: user.base.item,
       targetItem: target.base.item,
     });
+  },
+  hazard(battle, user) {
+    const target = battle.opponentOf(user.owner);
+    if ((target.hazards[this.hazard] ?? 0) >= this.max) {
+      return battle.info(user, "fail_generic");
+    }
+
+    battle.event({
+      type: "hazard",
+      src: user.id,
+      player: target.id,
+      hazard: this.hazard,
+      spin: false,
+    });
+    target.hazards[this.hazard] = (target.hazards[this.hazard] ?? 0) + 1;
   },
 };

@@ -2,7 +2,7 @@ import type {ClientVolatiles} from "~/utils/shared";
 import type {MoveId} from "./moves";
 import type {FormId, Gender, Status} from "./pokemon";
 import type {AbilityId, SpeciesId} from "./species";
-import type {StageId, Type, VF, Weather, ScreenId} from "./utils";
+import type {StageId, Type, VF, Weather, ScreenId, HazardId} from "./utils";
 import type {ItemId} from "./item";
 
 type NullOrOptional<T> = {[P in keyof T]?: T[P] | null};
@@ -106,6 +106,7 @@ export type DamageReason =
   | "perish_song"
   | "future_sight"
   | "spikes"
+  | "rocks"
   | "trap_eot"
   | "roughskin";
 
@@ -273,9 +274,10 @@ type SrcTargetEvent = {
 };
 
 type SpikesEvent = {
-  type: "spikes";
+  type: "hazard";
   src: PokeId;
   player: PlayerId;
+  hazard: HazardId;
   spin: bool;
 };
 

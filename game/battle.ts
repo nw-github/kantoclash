@@ -9,7 +9,15 @@ import type {
 } from "./events";
 import {type MoveId, type Move, Range, isSpreadMove} from "./moves";
 import {Pokemon, type ValidatedPokemonDesc} from "./pokemon";
-import {getEffectiveness, playerId, VF, type Type, type Weather, type ScreenId} from "./utils";
+import {
+  getEffectiveness,
+  playerId,
+  VF,
+  type Type,
+  type Weather,
+  type ScreenId,
+  type HazardId,
+} from "./utils";
 import type {Generation} from "./gen";
 import {ActivePokemon} from "./active";
 import {abilityList} from "./species";
@@ -38,9 +46,9 @@ export class Player {
   readonly team: Pokemon[];
   readonly teamDesc: ValidatedPokemonDesc[];
   readonly screens: Partial<Record<ScreenId, number>> = {};
+  readonly hazards: Partial<Record<HazardId, number>> = {};
 
   sleepClausePoke?: Pokemon;
-  spikes = 0;
 
   constructor(gen: Generation, {id, team}: PlayerParams, doubles: bool) {
     this.id = id;

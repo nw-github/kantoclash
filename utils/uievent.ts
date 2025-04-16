@@ -11,7 +11,7 @@ import type {
 } from "~/game/events";
 import type {MoveId} from "~/game/moves";
 import type {Status} from "~/game/pokemon";
-import type {Weather, ScreenId} from "~/game/utils";
+import type {Weather, ScreenId, HazardId} from "~/game/utils";
 
 export type RawUIBattleEvent =
   | BattleEvent
@@ -199,11 +199,27 @@ export const screenMessage: Record<ScreenId, Record<ScreenEvent["kind"], string>
   },
 };
 
+export const hazardMessage: Record<HazardId, {set: string; spin: string}> = {
+  spikes: {
+    set: "Spikes were scattered all around the feet of {l}!",
+    spin: "Rapid Spin blew away the Spikes around {l}'s feet!",
+  },
+  rocks: {
+    set: "Pointed stones float in the air around {l}!",
+    spin: "The pointed stones disappeared from the ground around {l}'s feet!",
+  },
+  tspikes: {
+    set: "Poison spikes were scattered all around {l}'s feet!",
+    spin: "The poison spikes disappeared from the ground around {l}'s feet!",
+  },
+};
+
 export const damageMessage: Partial<Record<DamageReason, string>> = {
   recoil: "{} was hurt by recoil!",
   psn: "{} is hurt by poison!",
   brn: "{} is hurt by its burn!",
   spikes: "{} is hurt by the spikes!",
+  rocks: "Pointed stones dug into {l}!",
   confusion: "It hurt itself in its confusion!",
   crash: "{} kept going and crashed!",
   trap: "{}'s attack continues!",
@@ -226,6 +242,7 @@ export const trapStart: Partial<Record<MoveId, string>> = {
   clamp: "{t} was clamped by {s}!",
   firespin: "{t} was trapped in the vortex!",
   sandtomb: "{t} was trapped by Sand Tomb!",
+  magmastorm: "{t} became trapped by swirling magma!",
 };
 
 export const bugMessage: Record<BugType, string> = {

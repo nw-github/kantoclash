@@ -3098,19 +3098,13 @@ const internalMoveList = createMoveList({
     magicCoat: true,
   },
   spikes: {
+    kind: "hazard",
     name: "Spikes",
     pp: 20,
     type: "ground",
     range: Range.Field,
-    exec(battle, user) {
-      const target = battle.opponentOf(user.owner);
-      if (target.spikes) {
-        return battle.info(user, "fail_generic");
-      }
-
-      battle.event({type: "spikes", src: user.id, player: target.id, spin: false});
-      target.spikes++;
-    },
+    hazard: "spikes",
+    max: 1,
   },
   spite: {
     name: "Spite",
@@ -5620,12 +5614,13 @@ const internalMoveList = createMoveList({
     kingsRock: true,
   },
   stealthrock: {
-    kind: "fail",
+    kind: "hazard",
     name: "Stealth Rock",
-    pp: 1,
-    type: "normal",
-    range: Range.Adjacent,
-    why: "fail_generic",
+    pp: 20,
+    type: "ground",
+    range: Range.Field,
+    hazard: "rocks",
+    max: 1,
   },
   stoneedge: {
     kind: "damage",
@@ -5679,12 +5674,13 @@ const internalMoveList = createMoveList({
     effect2: [10, "flinch"],
   },
   toxicspikes: {
-    kind: "fail",
+    kind: "hazard",
     name: "Toxic Spikes",
-    pp: 1,
-    type: "normal",
-    range: Range.Adjacent,
-    why: "fail_generic",
+    pp: 20,
+    type: "poison",
+    range: Range.Field,
+    hazard: "tspikes",
+    max: 2,
   },
   trickroom: {
     kind: "fail",

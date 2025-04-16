@@ -19,6 +19,7 @@ import {
 import {
   arraysEqual,
   clamp,
+  getEffectiveness,
   hpPercent,
   idiv,
   stageKeys,
@@ -69,7 +70,7 @@ export class ActivePokemon {
     this.id = `${this.owner.id}:${idx}`;
   }
 
-  switchTo(next: Pokemon, battle: Battle, why?: "phaze" | "baton_pass") {
+  switchTo(next: Pokemon, battle: Battle, why?: "phaze" | "baton_pass", phazer?: ActivePokemon) {
     if (this.choice) {
       this.choice.executed = true;
     }
@@ -148,19 +149,51 @@ export class ActivePokemon {
       this.consumeItem();
     }
 
-    if (battle.turnType === TurnType.Normal || battle.gen.id <= 3) {
-      if (this.owner.spikes && this.isGrounded()) {
-        const mod = 8 - (this.owner.spikes - 1) * 2;
-        this.damage(Math.floor(this.base.stats.hp / mod), this, battle, false, "spikes", true);
+    if (this.isGrounded()) {
+      if (this.owner.hazards.tspikes && this.v.types.includes("poison")) {
+        this.owner.hazards.tspikes = 0;
+        battle.event({
+          type: "hazard",
+          src: this.id,
+          player: this.owner.id,
+          hazard: "tspikes",
+          spin: true,
+        });
+      }
+
+      if (
+        this.owner.hazards.tspikes &&
+        !this.base.status &&
+        !this.v.hasAnyType("steel", "poison")
+      ) {
+        this.status(this.owner.hazards.tspikes > 1 ? "tox" : "psn", battle, phazer ?? this, {});
+      }
+
+      if (this.owner.hazards.spikes && this.isGrounded()) {
+        const mod = 8 - (this.owner.hazards.spikes - 1) * 2;
+        const dmg = Math.max(1, Math.floor(this.base.stats.hp / mod));
+        this.damage(dmg, this, battle, false, "spikes", true);
         if (this.base.hp === 0) {
           return;
         }
       }
+    }
 
-      if (battle.turnType !== TurnType.Lead) {
-        this.handleWeatherAbility(battle);
-        this.handleSwitchInAbility(battle);
+    if (this.owner.hazards.rocks) {
+      const eff = getEffectiveness(battle.gen.typeChart, "rock", this.v.types);
+      const dmg = Math.max(1, Math.floor(this.base.stats.hp * (0.125 * eff)));
+      this.damage(dmg, this, battle, false, "rocks", true);
+      if (this.base.hp === 0) {
+        return;
       }
+    }
+
+    if (
+      battle.turnType === TurnType.Normal ||
+      (battle.gen.id <= 3 && battle.turnType !== TurnType.Lead)
+    ) {
+      this.handleWeatherAbility(battle);
+      this.handleSwitchInAbility(battle);
     }
   }
 

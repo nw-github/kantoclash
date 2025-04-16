@@ -1,7 +1,7 @@
 import type {PlayerId, PokeId} from "~/game/events";
 import type {FormId, Gender, Pokemon} from "~/game/pokemon";
 import {speciesList, type SpeciesId} from "~/game/species";
-import type {ScreenId} from "~/game/utils";
+import type {HazardId, ScreenId} from "~/game/utils";
 
 export type ClientActivePokemon = {
   hidden?: bool;
@@ -28,7 +28,7 @@ export type ClientPlayer = {
   active: (ClientActivePokemon | undefined)[];
   nPokemon: number;
   nFainted: number;
-  spikes?: number;
+  hazards?: Partial<Record<HazardId, number>>;
   screens?: Partial<Record<ScreenId, bool>>;
 };
 

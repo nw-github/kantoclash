@@ -1,7 +1,7 @@
 import type {ActivePokemon, Battle} from "../battle";
 import type {FailReason, InfoReason, RecoveryReason} from "../events";
 import type {Pokemon, Status} from "../pokemon";
-import type {StageId, Type, VF, Weather, ScreenId, MC} from "../utils";
+import type {StageId, Type, VF, Weather, ScreenId, MC, HazardId} from "../utils";
 import type {Range} from "./moveList";
 
 export * from "./functions";
@@ -111,6 +111,13 @@ export interface ScreenMove extends BaseMove {
   readonly turns?: number;
 }
 
+export interface HazardMove extends BaseMove {
+  readonly kind: "hazard";
+  readonly range: Range.Field;
+  readonly hazard: HazardId;
+  readonly max: number;
+}
+
 export interface PhazingMove extends BaseMove {
   readonly kind: "phaze";
 }
@@ -197,6 +204,7 @@ export type Move =
   | TrickMove
   | WeatherMove
   | ScreenMove
+  | HazardMove
   | PhazingMove
   | ProtectMove
   | PreventEscapeMove

@@ -44,6 +44,9 @@ export const screens = [
 ] as const;
 export type ScreenId = (typeof screens)[number];
 
+export const hazards = ["spikes", "rocks", "tspikes"] as const;
+export type HazardId = (typeof hazards)[number];
+
 // prettier-ignore
 export enum VF {
   none         = 0,

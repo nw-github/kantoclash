@@ -638,15 +638,16 @@ const runEvent = async (e: BattleEvent) => {
       if (src) {
         src.moves[src.moves.indexOf("sketch")] = e.move;
       }
-    } else if (e.type === "spikes") {
+    } else if (e.type === "hazard") {
       const player = players.get(e.player);
+      player.hazards ??= {};
       if (e.spin) {
-        player.spikes = 0;
+        player.hazards[e.hazard] = 0;
       } else {
         await playAnimation(e.src, {
           anim: "spikes",
           cb() {
-            player.spikes = (player.spikes || 0) + 1;
+            player.hazards![e.hazard] = (player.hazards![e.hazard] || 0) + 1;
           },
         });
       }
@@ -743,7 +744,7 @@ onMounted(async () => {
         players.items[k].nFainted = 0;
         players.items[k].active = Array(players.items[k].active.length);
         players.items[k].screens = undefined;
-        players.items[k].spikes = undefined;
+        players.items[k].hazards = undefined;
       }
     }
 

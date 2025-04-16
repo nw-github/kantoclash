@@ -55,7 +55,7 @@ export const moveFunctionPatches: Partial<MoveFunctions> = {
       return;
     }
 
-    target.switchTo(next, battle, "phaze");
+    target.switchTo(next, battle, "phaze", user);
   },
   protect(battle, user) {
     if (battle.turnOrder.at(-1) === user) {
@@ -203,17 +203,7 @@ export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
   sleeptalk: {noEncore: false},
   smog: {effect: [40, "psn"]},
   spiderweb: {protect: true},
-  spikes: {
-    exec(battle, user) {
-      const target = battle.opponentOf(user.owner);
-      if (target.spikes === 3) {
-        return battle.info(user, "fail_generic");
-      }
-
-      battle.event({type: "spikes", src: user.id, player: target.id, spin: false});
-      target.spikes++;
-    },
-  },
+  spikes: {max: 3},
   spite: {
     exec(this: Move, battle, user, [target]) {
       if (!battle.checkAccuracy(this, user, target)) {

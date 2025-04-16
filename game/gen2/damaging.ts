@@ -1,6 +1,6 @@
 import type {ActivePokemon, Battle} from "../battle";
 import {checkUsefulness, getDamage, Range, type DamagingMove} from "../moves";
-import {idiv, randChoiceWeighted, VF} from "../utils";
+import {hazards, idiv, randChoiceWeighted, VF} from "../utils";
 
 export const tryDamage = (
   self: DamagingMove,
@@ -177,9 +177,11 @@ export const tryDamage = (
   } else if (self.flag === "payday") {
     battle.info(user, "payday");
   } else if (self.flag === "rapid_spin") {
-    if (user.owner.spikes) {
-      user.owner.spikes = 0;
-      battle.event({type: "spikes", src: user.id, player: user.owner.id, spin: true});
+    for (const hazard of hazards) {
+      if (user.owner.hazards[hazard]) {
+        user.owner.hazards[hazard] = 0;
+        battle.event({type: "hazard", src: user.id, player: user.owner.id, hazard, spin: true});
+      }
     }
 
     if (user.v.seededBy) {

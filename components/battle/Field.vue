@@ -24,19 +24,19 @@
           />
 
           <img
-            v-if="(player.spikes || 0) >= 1"
+            v-if="(player.hazards?.spikes || 0) >= 1"
             class="absolute size-4 sm:size-7 bottom-10 sm:bottom-14 opacity-80 pointer-events-none"
             src="/caltrop.svg"
           />
 
           <img
-            v-if="(player.spikes || 0) >= 2"
+            v-if="(player.hazards?.spikes || 0) >= 2"
             class="absolute size-4 sm:size-7 bottom-11 sm:bottom-16 right-10 opacity-80 pointer-events-none"
             src="/caltrop.svg"
           />
 
           <img
-            v-if="(player.spikes || 0) >= 3"
+            v-if="(player.hazards?.spikes || 0) >= 3"
             class="absolute size-4 sm:size-7 bottom-11 sm:bottom-16 left-10 opacity-80 pointer-events-none"
             src="/caltrop.svg"
           />
