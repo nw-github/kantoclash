@@ -738,22 +738,22 @@ onMounted(async () => {
   updatePerspective();
 
   while (isMounted.value) {
-    if (nextEvent.value === 0) {
-      htmlTurns.value = [[]];
-      currentTurnNo.value = 0;
-      weather.value = undefined;
-
-      for (const k in players.items) {
-        players.items[k].nFainted = 0;
-        players.items[k].active = Array(players.items[k].active.length);
-        players.items[k].screens = undefined;
-        players.items[k].hazards = undefined;
-      }
-    }
-
     while (nextEvent.value < playToIndex.value && nextEvent.value < events.length) {
       if (!isMounted.value) {
         return;
+      }
+
+      if (nextEvent.value === 0) {
+        htmlTurns.value = [[]];
+        currentTurnNo.value = 0;
+        weather.value = undefined;
+
+        for (const k in players.items) {
+          players.items[k].nFainted = 0;
+          players.items[k].active = Array(players.items[k].active.length);
+          players.items[k].screens = undefined;
+          players.items[k].hazards = undefined;
+        }
       }
 
       playingEvents.value = true;
