@@ -1131,5 +1131,722 @@
   },
   "oldseamap": {
     "name": "Old Sea Map"
+  },
+  "none": {
+    "name": "None"
+  },
+  "duskball": {
+    "name": "Dusk Ball"
+  },
+  "healball": {
+    "name": "Heal Ball"
+  },
+  "quickball": {
+    "name": "Quick Ball"
+  },
+  "cherishball": {
+    "name": "Cherish Ball"
+  },
+  "oldgateau": {
+    "name": "Old Gateau"
+  },
+  "xdefense": {
+    "name": "X Defense"
+  },
+  "xspdef": {
+    "name": "X Sp. Def"
+  },
+  "honey": {
+    "name": "Honey"
+  },
+  "growthmulch": {
+    "name": "Growth Mulch"
+  },
+  "dampmulch": {
+    "name": "Damp Mulch"
+  },
+  "stablemulch": {
+    "name": "Stable Mulch"
+  },
+  "gooeymulch": {
+    "name": "Gooey Mulch"
+  },
+  "armorfossil": {
+    "name": "Armor Fossil"
+  },
+  "skullfossil": {
+    "name": "Skull Fossil"
+  },
+  "rarebone": {
+    "name": "Rare Bone"
+  },
+  "shinystone": {
+    "name": "Shiny Stone"
+  },
+  "duskstone": {
+    "name": "Dusk Stone"
+  },
+  "dawnstone": {
+    "name": "Dawn Stone"
+  },
+  "ovalstone": {
+    "name": "Oval Stone"
+  },
+  "oddkeystone": {
+    "name": "Odd Keystone"
+  },
+  "griseousorb": {
+    "name": "Griseous Orb"
+  },
+  "adamantorb": {
+    "name": "Adamant Orb"
+  },
+  "lustrousorb": {
+    "name": "Lustrous Orb"
+  },
+  "grassmail": {
+    "name": "Grass Mail"
+  },
+  "flamemail": {
+    "name": "Flame Mail"
+  },
+  "bubblemail": {
+    "name": "Bubble Mail"
+  },
+  "bloommail": {
+    "name": "Bloom Mail"
+  },
+  "tunnelmail": {
+    "name": "Tunnel Mail"
+  },
+  "steelmail": {
+    "name": "Steel Mail"
+  },
+  "heartmail": {
+    "name": "Heart Mail"
+  },
+  "snowmail": {
+    "name": "Snow Mail"
+  },
+  "spacemail": {
+    "name": "Space Mail"
+  },
+  "airmail": {
+    "name": "Air Mail"
+  },
+  "mosaicmail": {
+    "name": "Mosaic Mail"
+  },
+  "brickmail": {
+    "name": "Brick Mail"
+  },
+  "occaberry": {
+    "name": "Occa Berry"
+  },
+  "passhoberry": {
+    "name": "Passho Berry"
+  },
+  "wacanberry": {
+    "name": "Wacan Berry"
+  },
+  "rindoberry": {
+    "name": "Rindo Berry"
+  },
+  "yacheberry": {
+    "name": "Yache Berry"
+  },
+  "chopleberry": {
+    "name": "Chople Berry"
+  },
+  "kebiaberry": {
+    "name": "Kebia Berry"
+  },
+  "shucaberry": {
+    "name": "Shuca Berry"
+  },
+  "cobaberry": {
+    "name": "Coba Berry"
+  },
+  "payapaberry": {
+    "name": "Payapa Berry"
+  },
+  "tangaberry": {
+    "name": "Tanga Berry"
+  },
+  "chartiberry": {
+    "name": "Charti Berry"
+  },
+  "kasibberry": {
+    "name": "Kasib Berry"
+  },
+  "habanberry": {
+    "name": "Haban Berry"
+  },
+  "colburberry": {
+    "name": "Colbur Berry"
+  },
+  "babiriberry": {
+    "name": "Babiri Berry"
+  },
+  "chilanberry": {
+    "name": "Chilan Berry"
+  },
+  "micleberry": {
+    "name": "Micle Berry"
+  },
+  "custapberry": {
+    "name": "Custap Berry"
+  },
+  "jabocaberry": {
+    "name": "Jaboca Berry"
+  },
+  "rowapberry": {
+    "name": "Rowap Berry"
+  },
+  "widelens": {
+    "name": "Wide Lens"
+  },
+  "muscleband": {
+    "name": "Muscle Band"
+  },
+  "wiseglasses": {
+    "name": "Wise Glasses"
+  },
+  "expertbelt": {
+    "name": "Expert Belt"
+  },
+  "lightclay": {
+    "name": "Light Clay"
+  },
+  "lifeorb": {
+    "name": "Life Orb"
+  },
+  "powerherb": {
+    "name": "Power Herb"
+  },
+  "toxicorb": {
+    "name": "Toxic Orb"
+  },
+  "flameorb": {
+    "name": "Flame Orb"
+  },
+  "quickpowder": {
+    "name": "Quick Powder"
+  },
+  "focussash": {
+    "name": "Focus Sash"
+  },
+  "zoomlens": {
+    "name": "Zoom Lens"
+  },
+  "metronome": {
+    "name": "Metronome"
+  },
+  "ironball": {
+    "name": "Iron Ball"
+  },
+  "laggingtail": {
+    "name": "Lagging Tail"
+  },
+  "destinyknot": {
+    "name": "Destiny Knot"
+  },
+  "blacksludge": {
+    "name": "Black Sludge"
+  },
+  "icyrock": {
+    "name": "Icy Rock"
+  },
+  "smoothrock": {
+    "name": "Smooth Rock"
+  },
+  "heatrock": {
+    "name": "Heat Rock"
+  },
+  "damprock": {
+    "name": "Damp Rock"
+  },
+  "gripclaw": {
+    "name": "Grip Claw"
+  },
+  "choicescarf": {
+    "name": "Choice Scarf"
+  },
+  "stickybarb": {
+    "name": "Sticky Barb"
+  },
+  "powerbracer": {
+    "name": "Power Bracer"
+  },
+  "powerbelt": {
+    "name": "Power Belt"
+  },
+  "powerlens": {
+    "name": "Power Lens"
+  },
+  "powerband": {
+    "name": "Power Band"
+  },
+  "poweranklet": {
+    "name": "Power Anklet"
+  },
+  "powerweight": {
+    "name": "Power Weight"
+  },
+  "shedshell": {
+    "name": "Shed Shell"
+  },
+  "bigroot": {
+    "name": "Big Root"
+  },
+  "choicespecs": {
+    "name": "Choice Specs"
+  },
+  "flameplate": {
+    "name": "Flame Plate"
+  },
+  "splashplate": {
+    "name": "Splash Plate"
+  },
+  "zapplate": {
+    "name": "Zap Plate"
+  },
+  "meadowplate": {
+    "name": "Meadow Plate"
+  },
+  "icicleplate": {
+    "name": "Icicle Plate"
+  },
+  "fistplate": {
+    "name": "Fist Plate"
+  },
+  "toxicplate": {
+    "name": "Toxic Plate"
+  },
+  "earthplate": {
+    "name": "Earth Plate"
+  },
+  "skyplate": {
+    "name": "Sky Plate"
+  },
+  "mindplate": {
+    "name": "Mind Plate"
+  },
+  "insectplate": {
+    "name": "Insect Plate"
+  },
+  "stoneplate": {
+    "name": "Stone Plate"
+  },
+  "spookyplate": {
+    "name": "Spooky Plate"
+  },
+  "dracoplate": {
+    "name": "Draco Plate"
+  },
+  "dreadplate": {
+    "name": "Dread Plate"
+  },
+  "ironplate": {
+    "name": "Iron Plate"
+  },
+  "oddincense": {
+    "name": "Odd Incense"
+  },
+  "rockincense": {
+    "name": "Rock Incense"
+  },
+  "fullincense": {
+    "name": "Full Incense"
+  },
+  "waveincense": {
+    "name": "Wave Incense"
+  },
+  "roseincense": {
+    "name": "Rose Incense"
+  },
+  "luckincense": {
+    "name": "Luck Incense"
+  },
+  "pureincense": {
+    "name": "Pure Incense"
+  },
+  "protector": {
+    "name": "Protector"
+  },
+  "electirizer": {
+    "name": "Electirizer"
+  },
+  "magmarizer": {
+    "name": "Magmarizer"
+  },
+  "dubiousdisc": {
+    "name": "Dubious Disc"
+  },
+  "reapercloth": {
+    "name": "Reaper Cloth"
+  },
+  "razorclaw": {
+    "name": "Razor Claw"
+  },
+  "razorfang": {
+    "name": "Razor Fang"
+  },
+  "tm51": {
+    "name": "TM51"
+  },
+  "tm52": {
+    "name": "TM52"
+  },
+  "tm53": {
+    "name": "TM53"
+  },
+  "tm54": {
+    "name": "TM54"
+  },
+  "tm55": {
+    "name": "TM55"
+  },
+  "tm56": {
+    "name": "TM56"
+  },
+  "tm57": {
+    "name": "TM57"
+  },
+  "tm58": {
+    "name": "TM58"
+  },
+  "tm59": {
+    "name": "TM59"
+  },
+  "tm60": {
+    "name": "TM60"
+  },
+  "tm61": {
+    "name": "TM61"
+  },
+  "tm62": {
+    "name": "TM62"
+  },
+  "tm63": {
+    "name": "TM63"
+  },
+  "tm64": {
+    "name": "TM64"
+  },
+  "tm65": {
+    "name": "TM65"
+  },
+  "tm66": {
+    "name": "TM66"
+  },
+  "tm67": {
+    "name": "TM67"
+  },
+  "tm68": {
+    "name": "TM68"
+  },
+  "tm69": {
+    "name": "TM69"
+  },
+  "tm70": {
+    "name": "TM70"
+  },
+  "tm71": {
+    "name": "TM71"
+  },
+  "tm72": {
+    "name": "TM72"
+  },
+  "tm73": {
+    "name": "TM73"
+  },
+  "tm74": {
+    "name": "TM74"
+  },
+  "tm75": {
+    "name": "TM75"
+  },
+  "tm76": {
+    "name": "TM76"
+  },
+  "tm77": {
+    "name": "TM77"
+  },
+  "tm78": {
+    "name": "TM78"
+  },
+  "tm79": {
+    "name": "TM79"
+  },
+  "tm80": {
+    "name": "TM80"
+  },
+  "tm81": {
+    "name": "TM81"
+  },
+  "tm82": {
+    "name": "TM82"
+  },
+  "tm83": {
+    "name": "TM83"
+  },
+  "tm84": {
+    "name": "TM84"
+  },
+  "tm85": {
+    "name": "TM85"
+  },
+  "tm86": {
+    "name": "TM86"
+  },
+  "tm87": {
+    "name": "TM87"
+  },
+  "tm88": {
+    "name": "TM88"
+  },
+  "tm89": {
+    "name": "TM89"
+  },
+  "tm90": {
+    "name": "TM90"
+  },
+  "tm91": {
+    "name": "TM91"
+  },
+  "tm92": {
+    "name": "TM92"
+  },
+  "explorerkit": {
+    "name": "Explorer Kit"
+  },
+  "lootsack": {
+    "name": "Loot Sack"
+  },
+  "rulebook": {
+    "name": "Rule Book"
+  },
+  "pokeradar": {
+    "name": "Poke Radar"
+  },
+  "pointcard": {
+    "name": "Point Card"
+  },
+  "journal": {
+    "name": "Journal"
+  },
+  "sealcase": {
+    "name": "Seal Case"
+  },
+  "fashioncase": {
+    "name": "Fashion Case"
+  },
+  "sealbag": {
+    "name": "Seal Bag"
+  },
+  "palpad": {
+    "name": "Pal Pad"
+  },
+  "workskey": {
+    "name": "Works Key"
+  },
+  "oldcharm": {
+    "name": "Old Charm"
+  },
+  "galactickey": {
+    "name": "Galactic Key"
+  },
+  "redchain": {
+    "name": "Red Chain"
+  },
+  "sprayduck": {
+    "name": "Sprayduck"
+  },
+  "poffincase": {
+    "name": "Poffin Case"
+  },
+  "suitekey": {
+    "name": "Suite Key"
+  },
+  "oaksletter": {
+    "name": "Oak's Letter"
+  },
+  "lunarwing": {
+    "name": "Lunar Wing"
+  },
+  "membercard": {
+    "name": "Member Card"
+  },
+  "azureflute": {
+    "name": "Azure Flute"
+  },
+  "magmastone": {
+    "name": "Magma Stone"
+  },
+  "parcel": {
+    "name": "Parcel"
+  },
+  "coupon1": {
+    "name": "Coupon 1"
+  },
+  "coupon2": {
+    "name": "Coupon 2"
+  },
+  "coupon3": {
+    "name": "Coupon 3"
+  },
+  "secretpotion": {
+    "name": "SecretPotion"
+  },
+  "vsrecorder": {
+    "name": "Vs. Recorder"
+  },
+  "gracidea": {
+    "name": "Gracidea"
+  },
+  "apricornbox": {
+    "name": "Apricorn Box"
+  },
+  "unownreport": {
+    "name": "Unown Report"
+  },
+  "berrypots": {
+    "name": "Berry Pots"
+  },
+  "dowsingmchn": {
+    "name": "Dowsing MCHN"
+  },
+  "bluecard": {
+    "name": "Blue Card"
+  },
+  "clearbell": {
+    "name": "Clear Bell"
+  },
+  "squirtbottle": {
+    "name": "SquirtBottle"
+  },
+  "redscale": {
+    "name": "Red Scale"
+  },
+  "lostitem": {
+    "name": "Lost Item"
+  },
+  "pass": {
+    "name": "Pass"
+  },
+  "machinepart": {
+    "name": "Machine Part"
+  },
+  "silverwing": {
+    "name": "Silver Wing"
+  },
+  "rainbowwing": {
+    "name": "Rainbow Wing"
+  },
+  "mysteryegg": {
+    "name": "Mystery Egg"
+  },
+  "sportball": {
+    "name": "Sport Ball"
+  },
+  "photoalbum": {
+    "name": "Photo Album"
+  },
+  "gbsounds": {
+    "name": "GB Sounds"
+  },
+  "tidalbell": {
+    "name": "Tidal Bell"
+  },
+  "datacard01": {
+    "name": "Data Card 01"
+  },
+  "datacard02": {
+    "name": "Data Card 02"
+  },
+  "datacard03": {
+    "name": "Data Card 03"
+  },
+  "datacard04": {
+    "name": "Data Card 04"
+  },
+  "datacard05": {
+    "name": "Data Card 05"
+  },
+  "datacard06": {
+    "name": "Data Card 06"
+  },
+  "datacard07": {
+    "name": "Data Card 07"
+  },
+  "datacard08": {
+    "name": "Data Card 08"
+  },
+  "datacard09": {
+    "name": "Data Card 09"
+  },
+  "datacard10": {
+    "name": "Data Card 10"
+  },
+  "datacard11": {
+    "name": "Data Card 11"
+  },
+  "datacard12": {
+    "name": "Data Card 12"
+  },
+  "datacard13": {
+    "name": "Data Card 13"
+  },
+  "datacard14": {
+    "name": "Data Card 14"
+  },
+  "datacard15": {
+    "name": "Data Card 15"
+  },
+  "datacard16": {
+    "name": "Data Card 16"
+  },
+  "datacard17": {
+    "name": "Data Card 17"
+  },
+  "datacard18": {
+    "name": "Data Card 18"
+  },
+  "datacard19": {
+    "name": "Data Card 19"
+  },
+  "datacard20": {
+    "name": "Data Card 20"
+  },
+  "datacard21": {
+    "name": "Data Card 21"
+  },
+  "datacard22": {
+    "name": "Data Card 22"
+  },
+  "datacard23": {
+    "name": "Data Card 23"
+  },
+  "datacard24": {
+    "name": "Data Card 24"
+  },
+  "datacard25": {
+    "name": "Data Card 25"
+  },
+  "datacard26": {
+    "name": "Data Card 26"
+  },
+  "datacard27": {
+    "name": "Data Card 27"
+  },
+  "jadeorb": {
+    "name": "Jade Orb"
+  },
+  "lockcapsule": {
+    "name": "Lock Capsule"
+  },
+  "enigmastone": {
+    "name": "Enigma Stone"
   }
 }

@@ -253,7 +253,7 @@ const createGeneration = (): Generation => {
   };
 
   const r = merge(patches as any, GENERATION3);
-  // r.items = items;
+  r.items = items;
   return r;
 };
 
