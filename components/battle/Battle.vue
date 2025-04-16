@@ -324,7 +324,10 @@ const runEvent = async (e: BattleEvent) => {
 
   const playCry = (speciesId: SpeciesId, pitchDown = false) => {
     if (isLive()) {
-      const sprite = gen.value.speciesList[speciesId].dexId.toString();
+      let sprite = gen.value.speciesList[speciesId].dexId.toString();
+      if (speciesId === "shayminsky") {
+        sprite += "-sky";
+      }
       return sound.play("cries", {sprite, volume: sfxVol.value, detune: pitchDown ? -350 : 0});
     }
   };
