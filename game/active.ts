@@ -148,17 +148,19 @@ export class ActivePokemon {
       this.consumeItem();
     }
 
-    if (this.owner.spikes && this.isGrounded()) {
-      const mod = 8 - (this.owner.spikes - 1) * 2;
-      this.damage(Math.floor(this.base.stats.hp / mod), this, battle, false, "spikes", true);
-      if (this.base.hp === 0) {
-        return;
+    if (battle.turnType === TurnType.Normal || battle.gen.id <= 3) {
+      if (this.owner.spikes && this.isGrounded()) {
+        const mod = 8 - (this.owner.spikes - 1) * 2;
+        this.damage(Math.floor(this.base.stats.hp / mod), this, battle, false, "spikes", true);
+        if (this.base.hp === 0) {
+          return;
+        }
       }
-    }
 
-    if (battle.turnType !== TurnType.Lead) {
-      this.handleWeatherAbility(battle);
-      this.handleSwitchInAbility(battle);
+      if (battle.turnType !== TurnType.Lead) {
+        this.handleWeatherAbility(battle);
+        this.handleSwitchInAbility(battle);
+      }
     }
   }
 

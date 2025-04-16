@@ -9,6 +9,7 @@ import items from "./items.json";
 import {reduceAccItem} from "../item";
 import {tryDamage} from "./damaging";
 import type {ActivePokemon} from "../active";
+import {TurnType} from "../battle";
 
 const critStages: Record<number, number> = {
   [0]: 1 / 16,
@@ -532,6 +533,15 @@ const createGeneration = (): Generation => {
       }
 
       battle.betweenTurns = BetweenTurns.Begin;
+      if (battle.turnType === TurnType.Lead) {
+        for (const poke of battle.inTurnOrder()) {
+          poke.handleWeatherAbility(battle);
+        }
+
+        for (const user of battle.turnOrder) {
+          user.handleSwitchInAbility(battle);
+        }
+      }
     },
     calcDamage({
       lvl,

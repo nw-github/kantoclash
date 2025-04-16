@@ -1,5 +1,5 @@
 <template>
-  <img v-if="image" class="size-[24px]" :src="`/sprites/misc/move-${category}.png`" />
+  <img v-if="image" class="size-[24px]" :src="`/sprites/misc/move-${MC[category]}.png`" />
   <UBadge v-else :color="color[category]" :label="toTitleCase(MC[category])" />
 </template>
 

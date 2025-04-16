@@ -308,8 +308,12 @@ export class Battle {
   }
 
   calcTurnOrder() {
-    const switches = this.switchOrder().filter(p => p.choice?.move?.kind === "switch");
-    return switches.concat(this.inTurnOrder().filter(p => p.choice?.move?.kind !== "switch"));
+    if (this.gen.id <= 3 && this.turnType !== TurnType.Normal) {
+      const switches = this.switchOrder().filter(p => p.choice?.move?.kind === "switch");
+      return switches.concat(this.inTurnOrder().filter(p => p.choice?.move?.kind !== "switch"));
+    } else {
+      return this.inTurnOrder();
+    }
   }
 
   nextTurn() {
@@ -642,15 +646,6 @@ export class Battle {
     }
 
     this.gen.betweenTurns(this);
-    if (this.turnType === TurnType.Lead) {
-      for (const poke of this.inTurnOrder()) {
-        poke.handleWeatherAbility(this);
-      }
-
-      for (const user of this.turnOrder) {
-        user.handleSwitchInAbility(this);
-      }
-    }
   }
 
   useMove(

@@ -20,13 +20,16 @@ export function checkUsefulness(
 
   let eff = battle.getEffectiveness(type, target);
   let abilityImmunity = false;
-  if (type === "ground" && eff !== 0 && target.v.ability === "levitate") {
+  if (self.sound && target.v.ability === "soundproof") {
     eff = 0;
     abilityImmunity = true;
-  } else if (eff <= 1 && type !== "???" && target.v.ability === "wonderguard") {
-    eff = 0;
-    abilityImmunity = true;
-  } else if (self.sound && target.v.ability === "soundproof") {
+  } else if (
+    (type !== "???" && eff <= 1 && target.v.ability === "wonderguard") ||
+    (type === "ground" && eff !== 0 && target.v.ability === "levitate") ||
+    (type === "electric" && target.v.ability === "voltabsorb") ||
+    (type === "water" && target.v.ability === "waterabsorb") ||
+    (type === "fire" && target.v.ability === "flashfire" && target.base.status !== "frz")
+  ) {
     eff = 0;
     abilityImmunity = true;
   }
