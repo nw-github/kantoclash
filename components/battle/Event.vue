@@ -48,7 +48,7 @@
   </div>
   <div v-else-if="e.type === 'get_sub'">{{ pn(e.src) }} put in a substitute!</div>
   <div v-else-if="e.type === 'recover'">
-    <p v-if="e.why === 'drain'">{{ pn(e.src) }} has its energy drained!</p>
+    <p v-if="e.why === 'drain'">{{ pn(e.src) }} had its energy drained!</p>
     <p v-else-if="e.why === 'recover'">{{ pn(e.src) }} regained health!</p>
     <p v-else-if="e.why === 'rest'">{{ pn(e.src) }} started sleeping!</p>
     <p v-else-if="e.why === 'leftovers'">{{ pn(e.src) }} restored a little HP using its Leftovers!</p>
@@ -182,9 +182,8 @@
     <template v-else-if="e.status === 'frz'">{{ pn(e.src) }} thawed out!</template>
     <template v-else>{{ pn(e.src) }} was cured of its {{ statusNameTable[e.status] }}!</template>
   </div>
-  <div v-else-if="e.type === 'spikes'">
-    <template v-if="e.spin">Rapid Spin blew away the Spikes around {{ tn(e.player, false) }}'s feet!</template>
-    <template v-else>Spikes were scattered all around the feet of {{ tn(e.player, false) }}!</template>
+  <div v-else-if="e.type === 'hazard'">
+    {{ hazardMessage[e.hazard][e.spin ? 'spin' : 'set'].replace("{}", tn(e.player, true)).replace("{l}", tn(e.player, false)) }}
   </div>
   <div v-else-if="e.type === 'proc_ability'" class="move ability">[{{ pn(e.src) }}'s {{ abilityList[e.ability].name }}]</div>
   <div v-else-if="e.type === 'copy_ability'">{{ pn(e.src) }} copied {{ pn(e.target, false) }}'s {{ abilityList[e.ability].name }}!</div>
