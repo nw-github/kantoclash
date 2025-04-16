@@ -2,7 +2,7 @@ import type {Generation} from "./gen";
 import type {AbilityId, SpeciesId} from "./species";
 import type {MoveId} from "./moves";
 import type {StageStats, Stats, StatStageId} from "./utils";
-import type {ItemId} from "./item";
+import {choiceItem, type ItemId} from "./item";
 
 export type Status = "psn" | "par" | "slp" | "frz" | "tox" | "brn";
 export type Gender = "M" | "F" | "N";
@@ -240,7 +240,7 @@ export const transform = (user: Pokemon, transformed: Pokemon) => {
 export const applyItemStatBoost = (poke: Pokemon, stat: StatStageId, value: number) => {
   if (poke.item === "machobrace" && stat === "spe") {
     return Math.floor(value / 2);
-  } else if (poke.item === "choiceband" && stat === "atk") {
+  } else if (choiceItem[poke.item!] && choiceItem[poke.item!] === stat) {
     return value + Math.floor(value / 2);
   }
 

@@ -323,10 +323,10 @@ export const formatDescs: Record<FormatId, FormatFunctions> = {
   },
 
   g4_randoms: {
-    generate: () => randoms(GENERATION4, (s, _) => !s.evolvesTo),
+    generate: () => randoms(GENERATION4, (s, _) => !s.evolvesTo && s.dexId >= 252),
   },
   g4_randoms_doubles: {
-    generate: () => randoms(GENERATION4, (s, _) => !s.evolvesTo),
+    generate: () => randoms(GENERATION4, (s, _) => !s.evolvesTo && s.dexId >= 252),
   },
   g3_randoms: {
     generate: () => randoms(GENERATION3, (s, _) => !s.evolvesTo),

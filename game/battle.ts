@@ -13,6 +13,7 @@ import {getEffectiveness, playerId, VF, type Type, type Weather, type ScreenId} 
 import type {Generation} from "./gen";
 import {ActivePokemon} from "./active";
 import {abilityList} from "./species";
+import {choiceItem} from "./item";
 
 export {ActivePokemon};
 
@@ -719,7 +720,7 @@ export class Battle {
       }
 
       // TODO: does choice band lock you in if your move was disabled?
-      if (moveIndex !== undefined && user.base.item === "choiceband") {
+      if (moveIndex !== undefined && choiceItem[user.base.item!]) {
         user.v.choiceLock = moveIndex;
       }
 

@@ -150,7 +150,11 @@
   "rivalry": {"name": "Rivalry", "desc": ""},
   "skilllink": {"name": "Skill Link", "desc": ""},
   "sniper": {"name": "Sniper", "desc": ""},
-  "snowwarning": {"name": "Snow Warning", "desc": ""},
+  "snowwarning": {
+    "name": "Snow Warning",
+    "desc": "Starts hail on entry.",
+    "startsWeather": "hail"
+  },
   "solarpower": {"name": "Solar Power", "desc": ""},
   "solidrock": {"name": "Solid Rock", "desc": ""},
   "stall": {"name": "Stall", "desc": ""},

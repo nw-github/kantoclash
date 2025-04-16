@@ -201,6 +201,8 @@ const flagDesc: Record<NonNullable<DamagingMove["flag"]>, string> = {
     "Locks the user in for 2-5 turns and starts an uproar, waking sleeping Pokémon up and " +
     "preventing Pokémon from falling asleep. ",
   revenge: "Doubles damage if the target was the last Pokémon to hit the user in this turn. ",
+  bugbite: "Consumes the target's berry and gains its effect if it has one. ",
+  assurance: "Doubles damage if the target has already taken damage this turn. ",
 };
 
 const formatStages = (gen: Generation, stages: [StageId, number][]) => {
@@ -215,6 +217,34 @@ const formatStages = (gen: Generation, stages: [StageId, number][]) => {
 
   const [, count] = stages[0];
   return `${stats} by ${Math.abs(count)} stage${Math.abs(count) > 1 ? "s" : ""}`;
+};
+
+const describeEffect = (gen: Generation, eff: DamagingMove["effect"]) => {
+  let buf = "";
+  const [chance, effect] = eff!;
+  if (!chance) {
+    return "";
+  }
+
+  buf += `Has a ${chance}% chance to `;
+  if (Array.isArray(effect)) {
+    const raise = effect[0][1] < 0 ? "drop" : "raise";
+    buf += `${raise} ${formatStages(gen, effect)}. `;
+  } else if (effect === "confusion") {
+    buf += "confuse the target. ";
+  } else if (effect === "flinch") {
+    buf += "flinch the target. ";
+  } else if (effect === "thief") {
+    buf += "steal the target's item if it has one and the user does not. ";
+  } else if (effect === "tri_attack") {
+    buf +=
+      "burn, paralyze, or freeze the target, and a 1/3 chance to thaw the target if it is frozen. ";
+  } else if (effect === "knockoff") {
+    buf += "render the target's item unusable. ";
+  } else {
+    buf += dmgStatusTable[effect];
+  }
+  return buf;
 };
 
 export const describeMove = (gen: Generation, id: MoveId) => {
@@ -244,30 +274,12 @@ export const describeMove = (gen: Generation, id: MoveId) => {
       }
     }
 
-    effect: if (move.effect) {
-      const [chance, effect] = move.effect;
-      if (!chance) {
-        break effect;
-      }
+    if (move.effect) {
+      buf += describeEffect(gen, move.effect);
+    }
 
-      buf += `Has a ${chance}% chance to `;
-      if (Array.isArray(effect)) {
-        const raise = effect[0][1] < 0 ? "drop" : "raise";
-        buf += `${raise} ${formatStages(gen, effect)}. `;
-      } else if (effect === "confusion") {
-        buf += "confuse the target. ";
-      } else if (effect === "flinch") {
-        buf += "flinch the target. ";
-      } else if (effect === "thief") {
-        buf += "steal the target's item if it has one and the user does not. ";
-      } else if (effect === "tri_attack") {
-        buf +=
-          "burn, paralyze, or freeze the target, and a 1/3 chance to thaw the target if it is frozen. ";
-      } else if (effect === "knockoff") {
-        buf += "render the target's item unusable. ";
-      } else {
-        buf += dmgStatusTable[effect];
-      }
+    if (move.effect2) {
+      buf += describeEffect(gen, move.effect2);
     }
 
     if (typeof move.getDamage === "number") {
@@ -333,6 +345,8 @@ export const describeMove = (gen: Generation, id: MoveId) => {
       safeguard:
         "Protects the user's side from non-volatile status conditions and confusion for 5 turns. ",
       mist: "Protects the user's side from stat stage drops for 5 turns. ",
+      tailwind: "Doubles speed on the user's side for 3 turns. ",
+      luckychant: "Protects the user's side from critical hits for 5 turns. ",
     };
     return msg[move.screen];
   } else if (move.kind === "protect") {
@@ -430,6 +444,8 @@ export const itemDesc: Partial<Record<ItemId, string>> = {
   starfberry: "Raises a random stat by 2 when below 25% HP.",
 
   choiceband: "Boosts Atk by 50% but prevents switching moves.",
+  choicespecs: "Boosts SpA by 50% but prevents switching moves.",
+  choicescarf: "Boosts Spe by 50% but prevents switching moves.",
   mentalherb: "Prevents infatuation.",
   shellbell: "Restores 1/8 damage dealt on each attack.",
   whiteherb: "Resets negative stat stages once.",

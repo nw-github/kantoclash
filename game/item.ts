@@ -70,3 +70,9 @@ export const reduceAccItem: Partial<Record<ItemId, number>> = {
   brightpowder: 10,
   laxincense: 5,
 };
+
+export const choiceItem: Partial<Record<ItemId, StatStageId>> = {
+  choiceband: "atk",
+  choicespecs: "spa",
+  choicescarf: "spe",
+};

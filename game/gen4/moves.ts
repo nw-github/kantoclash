@@ -10,6 +10,7 @@ import {Range, type Move, type MoveFunctions, type MoveId} from "../moves";
 export const moveFunctionPatches: Partial<MoveFunctions> = {};
 
 export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
+  acid: {effect: [10, [["spd", -1]]]},
   astonish: {flag: "none"},
   bide: {ignoreType: true, acc: 0, priority: +1},
   covet: {contact: true},
