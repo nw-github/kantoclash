@@ -53,7 +53,7 @@ const createGeneration = (): Generation => {
     },
     afterUseMove(battle, user, isReplacement) {
       if (isReplacement) {
-        if (user.base.hp === 0 && !user.v.fainted) {
+        if (!user.base.hp && !user.v.fainted) {
           user.faint(battle);
           return true;
         }
@@ -62,17 +62,13 @@ const createGeneration = (): Generation => {
       }
 
       for (const poke of battle.allActive) {
-        if (poke.base.hp !== 0) {
+        if (poke.base.hp) {
           poke.handleBerry(battle, {pp: true, pinch: true, status: true, heal: true});
         }
       }
 
-      if (user.v.inBatonPass) {
-        return true;
-      }
-
       battle.checkFaint(user);
-      return false;
+      return !!user.v.inBatonPass;
     },
 
     betweenTurns(battle) {

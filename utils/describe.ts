@@ -203,6 +203,7 @@ const flagDesc: Record<NonNullable<DamagingMove["flag"]>, string> = {
   revenge: "Doubles damage if the target was the last Pokémon to hit the user in this turn. ",
   bugbite: "Consumes the target's berry and gains its effect if it has one. ",
   assurance: "Doubles damage if the target has already taken damage this turn. ",
+  uturn: "Switches the user out. ",
 };
 
 const formatStages = (gen: Generation, stages: [StageId, number][]) => {

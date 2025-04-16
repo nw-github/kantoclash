@@ -98,7 +98,7 @@
   </div>
   <div v-else-if="e.type === 'info'" :class="{ confused: e.why === 'confused', move: e.why === 'sleep' || e.why === 'disable_end' || e.why === 'wake' }">
     <p :class="[e.why === 'withdraw' && 'muted']">
-      {{ infoMessage[e.why].replace("{}", pn(e.src)).replace("{l}", pn(e.src, false)).replace("{tl}", tn(e.src, false)) }}
+      {{ infoMessage[e.why].replace("{}", pn(e.src)).replace("{l}", pn(e.src, false)).replace("{tl}", tn(e.src, false)).replace("{p}", players.byPokeId(e.src).name) }}
     </p>
 
     <p v-if="e.why === 'fail_sleep_clause'">

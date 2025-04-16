@@ -55,6 +55,8 @@ export type ChosenMove = {
   executed: bool;
 };
 
+export type SwitchReason = "phaze" | "uturn" | "batonpass";
+
 export class ActivePokemon {
   v: Volatiles;
   lastChosenMove?: Move;
@@ -70,7 +72,7 @@ export class ActivePokemon {
     this.id = `${this.owner.id}:${idx}`;
   }
 
-  switchTo(next: Pokemon, battle: Battle, why?: "phaze" | "baton_pass", phazer?: ActivePokemon) {
+  switchTo(next: Pokemon, battle: Battle, why?: SwitchReason, phazer?: ActivePokemon) {
     if (this.choice) {
       this.choice.executed = true;
     }
@@ -89,7 +91,7 @@ export class ActivePokemon {
     this.v = new Volatiles(next);
     this.base = next;
 
-    if (why === "baton_pass") {
+    if (why === "batonpass") {
       this.v.substitute = old.substitute;
       this.v.stages = old.stages;
       this.v.confusion = old.confusion;
@@ -200,6 +202,10 @@ export class ActivePokemon {
   consumeItem() {
     this.consumed = this.base.item;
     this.base.item = undefined;
+  }
+
+  canBatonPass() {
+    return this.owner.team.some(p => p.hp && !this.owner.active.some(a => a.base.real === p));
   }
 
   faint(battle: Battle) {
@@ -1034,7 +1040,9 @@ export class ActivePokemon {
 
   getOptions(battle: Battle): Options | undefined {
     const switches = this.getSwitches(battle);
-    if (this.v.fainted && !this.canBeReplaced(switches)) {
+    if (battle.turnType === TurnType.BatonPass) {
+      return this.v.inBatonPass ? {switches, moves: [], id: this.id} : undefined;
+    } else if (this.v.fainted && !this.canBeReplaced(switches)) {
       return;
     } else if (
       !this.v.fainted &&
@@ -1043,8 +1051,6 @@ export class ActivePokemon {
       return;
     } else if (battle.turnType === TurnType.Lead) {
       return {switches, moves: [], id: this.id};
-    } else if (battle.turnType === TurnType.BatonPass) {
-      return this.v.inBatonPass ? {switches, moves: [], id: this.id} : undefined;
     }
 
     // send all moves so PP can be updated
@@ -1205,7 +1211,7 @@ class Volatiles {
   hazed = false;
   fainted = false;
   inPursuit = false;
-  inBatonPass = false;
+  inBatonPass?: "batonpass" | "uturn";
   usedDefenseCurl = false;
   usedMinimize = false;
   usedIntimidate = false;

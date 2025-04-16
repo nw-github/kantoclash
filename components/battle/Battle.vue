@@ -411,7 +411,7 @@ const runEvent = async (e: BattleEvent) => {
       const poke = players.poke(e.src);
       let _img;
       if (poke) {
-        if (!poke.fainted && e.why !== "baton_pass") {
+        if (!poke.fainted && e.why !== "batonpass" && e.why !== "uturn") {
           if (e.why !== "phaze") {
             pushEvent({type: "retract", src: e.src, name: poke.name});
           }
@@ -447,7 +447,7 @@ const runEvent = async (e: BattleEvent) => {
       await playAnimation(e.src, {
         anim: "sendin",
         name: e.name,
-        batonPass: e.why === "baton_pass",
+        batonPass: e.why === "batonpass",
         cb() {
           const base = e.indexInTeam !== -1 ? team?.[e.indexInTeam] : undefined;
           players.setPoke(e.src, {...e, base, v: {stages: {}}, fainted: false});
@@ -532,6 +532,23 @@ const runEvent = async (e: BattleEvent) => {
         if (playerId(e.src) === myId.value && team) {
           team.forEach(poke => (poke.status = undefined));
         }
+      } else if (e.why === "batonpass") {
+        handleVolatiles(e);
+        await playAnimation(e.src, {
+          anim: "retract",
+          name: players.poke(e.src)!.name,
+          batonPass: true,
+        });
+        return;
+      } else if (e.why === "uturn") {
+        pushEvent(e);
+        handleVolatiles(e);
+        await playAnimation(e.src, {
+          anim: "retract",
+          name: players.poke(e.src)!.name,
+          batonPass: true,
+        });
+        return;
       }
     } else if (e.type === "transform") {
       const _img = preloadSprite(
@@ -628,14 +645,6 @@ const runEvent = async (e: BattleEvent) => {
         src.item = e.item;
         src.itemUnusable = false;
       }
-    } else if (e.type === "baton_pass") {
-      handleVolatiles(e);
-      await playAnimation(e.src, {
-        anim: "retract",
-        name: players.poke(e.src)!.name,
-        batonPass: true,
-      });
-      return;
     } else if (e.type === "sketch") {
       const src = players.poke(e.src)?.base;
       if (src) {

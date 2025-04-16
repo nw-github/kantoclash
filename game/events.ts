@@ -4,6 +4,7 @@ import type {FormId, Gender, Status} from "./pokemon";
 import type {AbilityId, SpeciesId} from "./species";
 import type {StageId, Type, VF, Weather, ScreenId, HazardId} from "./utils";
 import type {ItemId} from "./item";
+import type {SwitchReason} from "./active";
 
 type NullOrOptional<T> = {[P in keyof T]?: T[P] | null};
 
@@ -41,7 +42,6 @@ type AnyEvent =
   | ThiefEvent
   | TrickEvent
   | ForfeitEvent
-  | BatonPass
   | SpikesEvent
   | ProcAbilityEvent
   | AbilityEvent
@@ -70,7 +70,7 @@ type SwitchEvent = {
   gender?: Gender;
   shiny?: bool;
   form?: FormId;
-  why?: "phaze" | "baton_pass";
+  why?: SwitchReason;
 };
 
 type TransformEvent = {
@@ -236,6 +236,8 @@ export type InfoReason =
   | "uproar"
   | "uproar_continue"
   | "uproar_end"
+  | "batonpass"
+  | "uturn"
   | "endure_hit"
   | "endure_band"
   | "encore_end"
@@ -353,8 +355,6 @@ type ForfeitEvent = {
   user: PlayerId;
   timer: bool;
 };
-
-type BatonPass = {type: "baton_pass"; src: PokeId};
 
 type ProcAbilityEvent = {
   type: "proc_ability";

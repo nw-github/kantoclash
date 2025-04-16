@@ -1,10 +1,13 @@
 import {Range, type Move, type MoveFunctions, type MoveId} from "../moves";
 
 /**
+ * TODO:
  * Flags: bugbite, assurance
  * DamagingMove: ignoreType
  *
  * If Bide is called through another move, it will have +0 priority on its subsequent turns.
+ *
+ * Pursuit into u-turn
  */
 
 export const moveFunctionPatches: Partial<MoveFunctions> = {};

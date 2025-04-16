@@ -2112,12 +2112,12 @@ const internalMoveList = createMoveList({
     type: "normal",
     range: Range.Self,
     exec(battle, user) {
-      if (user.owner.team.every(p => !p.hp || user.owner.active.some(a => a.base === p))) {
+      if (!user.canBatonPass()) {
         return battle.info(user, "fail_generic");
       }
 
-      user.v.inBatonPass = true;
-      battle.event({type: "baton_pass", src: user.id});
+      user.v.inBatonPass = "batonpass";
+      battle.info(user, "batonpass");
     },
   },
   beatup: {
@@ -5699,12 +5699,17 @@ const internalMoveList = createMoveList({
     why: "fail_generic",
   },
   uturn: {
-    kind: "fail",
+    kind: "damage",
     name: "U-turn",
-    pp: 1,
-    type: "normal",
+    pp: 20,
+    type: "bug",
     range: Range.Adjacent,
-    why: "fail_generic",
+    category: MC.physical,
+    power: 70,
+    acc: 100,
+    contact: true,
+    kingsRock: true,
+    flag: "uturn",
   },
   vacuumwave: {
     kind: "damage",

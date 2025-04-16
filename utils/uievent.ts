@@ -141,6 +141,8 @@ export const infoMessage: Record<InfoReason, string> = {
   torment: "{} was subjected to torment!",
   snatch: "{} waits for a target to make a move!",
   magicCoat: "{} shrouded itself in Magic Coat!",
+  batonpass: "",
+  uturn: "{} went back to {p}!",
 };
 
 export const weatherMessage: Record<Weather, Record<WeatherEvent["kind"], string>> = {

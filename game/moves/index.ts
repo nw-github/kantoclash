@@ -87,7 +87,6 @@ export interface SwitchMove extends BaseMove {
   readonly kind: "switch";
   readonly poke: Pokemon;
   readonly priority: number;
-  readonly batonPass: bool;
 }
 
 export interface TrickMove extends BaseMove {
@@ -240,6 +239,7 @@ type Flag =
   | "rage"
   | "trap"
   | "ohko"
+  | "uturn"
   | "norand"
   | "magnitude"
   | "false_swipe"

@@ -131,7 +131,7 @@ export const moveFunctions: MoveFunctions = {
     target.status(this.status, battle, user, {override: false, loud: true});
   },
   switch(battle, user) {
-    user.switchTo(this.poke, battle, this.batonPass ? "baton_pass" : undefined);
+    user.switchTo(this.poke, battle, user.v.inBatonPass);
   },
   damage(battle, user, targets) {
     let power: number | undefined;
@@ -213,6 +213,12 @@ export const moveFunctions: MoveFunctions = {
 
     if (this.flag === "bide") {
       user.v.bide = undefined;
+    } else if (user.base.hp && this.flag === "uturn" && user.canBatonPass()) {
+      battle.checkFaint(user);
+      if (!battle.victor) {
+        user.v.inBatonPass = "uturn";
+        battle.info(user, "uturn");
+      }
     }
   },
   fail(battle, user) {

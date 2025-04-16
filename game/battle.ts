@@ -122,7 +122,6 @@ export class Player {
         pp: 0,
         priority: +7,
         poke,
-        batonPass: user.v.inBatonPass,
       },
       isReplacement: active.v.fainted,
       // This is only relevant for the order of weather abilities on the first turn, which are
