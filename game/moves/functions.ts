@@ -226,8 +226,17 @@ export const moveFunctions: MoveFunctions = {
       return battle.info(user, "fail_generic");
     }
 
-    user.owner.screens[this.screen] = 5;
-    battle.event({type: "screen", screen: this.screen, kind: "start", user: user.owner.id});
+    user.owner.screens[this.screen] = this.turns ?? 5;
+    battle.event({
+      type: "screen",
+      screen: this.screen,
+      kind: "start",
+      user: user.owner.id,
+      volatiles:
+        this.screen === "tailwind"
+          ? user.owner.active.map(p => ({id: p.id, v: {stats: p.clientStats(battle)}}))
+          : undefined,
+    });
   },
   phaze(battle, user, [target]) {
     const next = battle.rng.choice(target.owner.team.filter(p => p.hp && p !== target.base.real));

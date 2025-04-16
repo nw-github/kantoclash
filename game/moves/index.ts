@@ -108,6 +108,7 @@ export interface WeatherMove extends BaseMove {
 export interface ScreenMove extends BaseMove {
   readonly kind: "screen";
   readonly screen: ScreenId;
+  readonly turns?: number;
 }
 
 export interface PhazingMove extends BaseMove {
@@ -163,6 +164,7 @@ export interface DamagingMove extends BaseMove {
   readonly category: MC.physical | MC.special;
   readonly flag?: Flag;
   readonly effect?: [number, Effect] | [number, Effect, true];
+  readonly effect2?: DamagingMove["effect"];
   /** Recoil: max(1 / recoil, 1) */
   readonly recoil?: number;
   readonly punish?: bool;

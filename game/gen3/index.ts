@@ -108,6 +108,9 @@ const createGeneration = (): Generation => {
           value = Math.max(Math.floor(value / 2), 1);
         }
       }
+      if (stat === "spe" && poke.owner.screens.tailwind) {
+        value *= 2;
+      }
 
       value = poke.applyAbilityStatBoost(battle, stat, value);
       return applyItemStatBoost(poke.base, stat, value);

@@ -368,86 +368,88 @@ export const tryDamage = (
     battle.info(user, "uproar");
   }
 
-  if (!self.effect) {
-    return dealt;
-  }
-
-  // eslint-disable-next-line prefer-const
-  let [chance, effect, effectSelf] = self.effect;
-  if ((!effectSelf && !target.base.hp) || (effectSelf && !user.base.hp)) {
-    return dealt;
-  }
-
-  if (user.v.ability === "serenegrace") {
-    chance *= 2;
-  }
-  if (target.v.ability === "shielddust" && !effectSelf && effect !== "thief") {
-    return dealt;
-  }
-
-  if (effect === "tri_attack") {
-    effect = battle.rng.choice(["brn", "par", "frz"] as const)!;
-  }
-
-  // Fire-type hidden power does not thaw in Gen 3
-  if (self.type === "fire" && target.base.status === "frz") {
-    target.unstatus(battle, "thaw");
-    // TODO: can you thaw and then burn?
-    return dealt;
-  } else if (!battle.rand100(chance) || (hadSub && !effectSelf)) {
-    return dealt;
-  }
-
-  if (effect === "confusion") {
-    if (!target.v.confusion && !user.owner.screens.safeguard && target.v.ability !== "owntempo") {
-      target.confuse(battle);
-    }
-  } else if (Array.isArray(effect)) {
-    if (effectSelf || !target.owner.screens.mist) {
-      (effectSelf ? user : target).modStages(effect, battle, user, true);
-    }
-  } else if (effect === "flinch") {
-    if (target.base.status === "frz" || target.base.status === "slp") {
-      return dealt;
+  for (const eff of [self.effect, self.effect2]) {
+    if (!eff) {
+      continue;
     }
 
-    if (target.v.ability !== "innerfocus") {
-      target.v.flinch = true;
-    } else if (chance === 100) {
-      battle.ability(target);
-      battle.info(target, "wont_flinch");
-    }
-  } else if (effect === "thief") {
-    if (
-      user.base.item ||
-      !target.base.item ||
-      target.base.item.includes("mail") ||
-      target.v.ability === "stickyhold"
-    ) {
-      return dealt;
+    // eslint-disable-next-line prefer-const
+    let [chance, effect, effectSelf] = eff;
+    if ((!effectSelf && !target.base.hp) || (effectSelf && !user.base.hp)) {
+      continue;
     }
 
-    battle.event({
-      type: "thief",
-      src: user.id,
-      target: target.id,
-      item: target.base.item,
-    });
-    user.base.item = target.base.item;
-    target.base.item = undefined;
-  } else if (effect === "knockoff") {
-    if (target.base.item && target.v.ability !== "stickyhold") {
+    if (user.v.ability === "serenegrace") {
+      chance *= 2;
+    }
+    if (target.v.ability === "shielddust" && !effectSelf && effect !== "thief") {
+      continue;
+    }
+
+    if (effect === "tri_attack") {
+      effect = battle.rng.choice(["brn", "par", "frz"] as const)!;
+    }
+
+    // Fire-type hidden power does not thaw in Gen 3
+    if (self.type === "fire" && target.base.status === "frz") {
+      target.unstatus(battle, "thaw");
+      // TODO: can you thaw and then burn?
+      continue;
+    } else if (!battle.rand100(chance) || (hadSub && !effectSelf)) {
+      continue;
+    }
+
+    if (effect === "confusion") {
+      if (!target.v.confusion && !user.owner.screens.safeguard && target.v.ability !== "owntempo") {
+        target.confuse(battle);
+      }
+    } else if (Array.isArray(effect)) {
+      if (effectSelf || !target.owner.screens.mist) {
+        (effectSelf ? user : target).modStages(effect, battle, user, true);
+      }
+    } else if (effect === "flinch") {
+      if (target.base.status === "frz" || target.base.status === "slp") {
+        return dealt;
+      }
+
+      if (target.v.ability !== "innerfocus") {
+        target.v.flinch = true;
+      } else if (chance === 100) {
+        battle.ability(target);
+        battle.info(target, "wont_flinch");
+      }
+    } else if (effect === "thief") {
+      if (
+        user.base.item ||
+        !target.base.item ||
+        target.base.item.includes("mail") ||
+        target.v.ability === "stickyhold"
+      ) {
+        return dealt;
+      }
+
       battle.event({
-        type: "knockoff",
+        type: "thief",
         src: user.id,
         target: target.id,
         item: target.base.item,
       });
-      target.base.itemUnusable = true;
-    }
-  } else {
-    if (!target.owner.screens.safeguard && !isImmune(target, effect)) {
-      target.status(effect, battle, user, {});
+      user.base.item = target.base.item;
+      target.base.item = undefined;
+    } else if (effect === "knockoff") {
+      if (target.base.item && target.v.ability !== "stickyhold") {
+        battle.event({
+          type: "knockoff",
+          src: user.id,
+          target: target.id,
+          item: target.base.item,
+        });
+        target.base.itemUnusable = true;
+      }
+    } else {
+      if (!target.owner.screens.safeguard && !isImmune(target, effect)) {
+        target.status(effect, battle, user, {});
+      }
     }
   }
 

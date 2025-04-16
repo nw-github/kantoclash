@@ -93,7 +93,16 @@ const createGeneration = (): Generation => {
       for (const player of battle.players) {
         for (const screen of screens) {
           if (player.screens[screen] && --player.screens[screen] === 0) {
-            battle.event({type: "screen", user: player.id, screen, kind: "end"});
+            battle.event({
+              type: "screen",
+              user: player.id,
+              screen,
+              kind: "end",
+              volatiles:
+                screen === "tailwind"
+                  ? player.active.map(p => ({id: p.id, v: {stats: p.clientStats(battle)}}))
+                  : undefined,
+            });
           }
         }
       }

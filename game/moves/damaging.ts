@@ -80,6 +80,10 @@ export function getDamage(
     isCrit = false;
   }
 
+  if (target.owner.screens.luckychant) {
+    isCrit = false;
+  }
+
   if (self.getDamage) {
     dmg =
       typeof self.getDamage === "number" ? self.getDamage : self.getDamage(battle, user, target);

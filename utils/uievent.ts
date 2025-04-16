@@ -187,6 +187,16 @@ export const screenMessage: Record<ScreenId, Record<ScreenEvent["kind"], string>
     end: "{}'s Mist wore off...",
     shattered: "{}'s Mist wore off...",
   },
+  tailwind: {
+    start: "The tailwind blew from behind {l}!",
+    end: "{}'s tailwind petered out!",
+    shattered: "{}'s tailwind petered out!",
+  },
+  luckychant: {
+    start: "The Lucky Chant shielded {l} from critical hits!",
+    end: "{}'s Lucky Chant wore off!", // todo
+    shattered: "{}'s Lucky Chant wore off!", // todo
+  },
 };
 
 export const damageMessage: Partial<Record<DamageReason, string>> = {

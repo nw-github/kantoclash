@@ -136,6 +136,7 @@ export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
   lowkick: {
     acc: 100,
     effect: [0, "flinch"],
+    power: 0,
     getPower(_user, target) {
       if (!target) {
         return 0;
