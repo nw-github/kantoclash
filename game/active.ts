@@ -1238,7 +1238,7 @@ class Volatiles {
   lastHitBy?: {move: Move; poke: ActivePokemon; special: bool};
   lastMove?: Move;
   lastMoveIndex?: number;
-  charging?: {move: Move; target: ActivePokemon};
+  charging?: {move: DamagingMove; target: ActivePokemon};
   recharge?: Move;
   thrashing?: {move: DamagingMove; turns: number; max: bool; acc?: number};
   bide?: {move: Move; turns: number; dmg: number};

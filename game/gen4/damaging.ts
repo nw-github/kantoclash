@@ -129,7 +129,7 @@ export const tryDamage = (
 
   const protect = target.v.hasFlag(VF.protect);
   const special = battle.gen.isSpecial(self, type);
-  if (eff === 0 || fail || protect) {
+  if (eff === 0 || fail || protect || !battle.checkAccuracy(self, user, target, !special)) {
     user.v.furyCutter = 0;
     user.v.thrashing = undefined;
     if (self.flag === "spitup") {

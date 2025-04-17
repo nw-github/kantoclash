@@ -333,7 +333,7 @@ export class Battle {
       return;
     }
 
-    if (this.turnType === TurnType.Normal) {
+    if (this.turnType === TurnType.Normal && !this.allActive.some(p => p.v.inBatonPass)) {
       this._turn++;
       this.event({type: "next_turn", turn: this._turn});
     }

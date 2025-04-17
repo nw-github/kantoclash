@@ -15,7 +15,7 @@ import {
   randChoiceWeighted,
   MC,
 } from "../utils";
-import {itemList, type ItemId} from "../item";
+import {itemList} from "../item";
 import {UNOWN_FORM, type FormId, type Gender, type Nature} from "../pokemon";
 import type {DamageReason} from "../events";
 
