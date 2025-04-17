@@ -157,7 +157,6 @@ export enum TurnType {
   Lead,
   Switch,
   Normal,
-  BatonPass,
 }
 
 type BattleParams = {
@@ -322,7 +321,7 @@ export class Battle {
   }
 
   calcTurnOrder() {
-    if (this.gen.id <= 3 && this.turnType !== TurnType.Normal) {
+    if (this.gen.id <= 3 || this.turnType !== TurnType.Normal) {
       const switches = this.switchOrder().filter(p => p.choice?.move?.kind === "switch");
       return switches.concat(this.inTurnOrder().filter(p => p.choice?.move?.kind !== "switch"));
     } else {
@@ -365,8 +364,6 @@ export class Battle {
     this.runTurn();
 
     if (this.allActive.some(poke => poke.v.inBatonPass)) {
-      this.turnType = TurnType.BatonPass;
-
       for (const poke of this.allActive) {
         if (poke.v.inBatonPass) {
           poke.updateOptions(this);

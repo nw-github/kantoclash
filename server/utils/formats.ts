@@ -7,12 +7,12 @@ import {
   type SpeciesId,
   abilityList,
 } from "~/game/species";
-import {HP_TYPES, statKeys, type Stats} from "~/game/utils";
+import {HP_TYPES, MC, statKeys, type Stats} from "~/game/utils";
 import random from "random";
 import {z} from "zod";
 import {isValidSketchMove, type FormatId} from "~/utils/shared";
 import {type Generation, GENERATION1, GENERATION2, GENERATION3, GENERATION4} from "~/game/gen";
-import {statusBerry, type ItemId} from "~/game/item";
+import {choiceItem, statusBerry, type ItemId} from "~/game/item";
 import {profanityMatcher} from "~/utils/schema";
 import {HP_IVS} from "~/utils/pokemon";
 import {itemDesc} from "~/utils/describe";
@@ -76,6 +76,20 @@ const getRandomPokemon = (
         if (
           type &&
           !poke.moves.some(m => gen.moveList[m].kind === "damage" && gen.moveList[m].type === type)
+        ) {
+          return false;
+        }
+
+        if (
+          choiceItem[item] === "atk" &&
+          !poke.moves.some(m => gen.getCategory(gen.moveList[m]) === MC.physical)
+        ) {
+          return false;
+        }
+
+        if (
+          choiceItem[item] === "spa" &&
+          !poke.moves.some(m => gen.getCategory(gen.moveList[m]) === MC.special)
         ) {
           return false;
         }

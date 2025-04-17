@@ -128,6 +128,12 @@ const descriptions: Partial<Record<number, Partial<Record<MoveId, string>>>> = {
     imprison: "Prevents opponents from using any move known by the user until it switches out. ",
     torment: "Prevents the target from using the same move twice in a row. ",
     assist: "Calls a random eligible move known by one of the user's teammates. ",
+    stealthrock:
+      "Sets an entry hazard that damages any Pokémon switching in based on its weakness " +
+      "to the rock type. ",
+    toxicspikes:
+      "Sets an entry hazard that poisons or badly poisons any Pokémon switching in, " +
+      "depending on the number of uses (Max 2). ",
   },
   [2]: {
     conversion:
@@ -146,7 +152,7 @@ const descriptions: Partial<Record<number, Partial<Record<MoveId, string>>>> = {
   [3]: {
     spikes:
       "Sets an entry hazard that damages any Pokémon switching in for 1/8, 1/6, or 1/4 its " +
-      "HP, depending on the number of uses of this move (Max 3). ",
+      "HP, depending on the number of uses (Max 3). ",
     psychup: "Copies the stat stages of the target. ",
     focusenergy: "Raises the user's critical hit stages by 2. Does not stack. ",
     lowkick: "Power increases with the weight of the target. ",

@@ -1040,7 +1040,7 @@ export class ActivePokemon {
 
   getOptions(battle: Battle): Options | undefined {
     const switches = this.getSwitches(battle);
-    if (battle.turnType === TurnType.BatonPass) {
+    if (battle.allActive.some(poke => poke.v.inBatonPass)) {
       return this.v.inBatonPass ? {switches, moves: [], id: this.id} : undefined;
     } else if (this.v.fainted && !this.canBeReplaced(switches)) {
       return;
