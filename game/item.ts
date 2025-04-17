@@ -10,7 +10,7 @@ export type ItemData = {
   desc?: string;
   exists?: bool;
 
-  typeBoost?: {type: Type; percent: number};
+  typeBoost?: {type: Type; percent: number; plate?: bool};
   cureStatus?: Status | "any" | "confuse";
   healFixed?: number;
   healPinchNature?: StatStageId;

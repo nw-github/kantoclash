@@ -60,6 +60,7 @@ import type {Move, MoveId} from "~/game/moves";
 import {Pokemon, type PokemonDesc} from "~/game/pokemon";
 import type {Generation} from "~/game/gen";
 import {ivsToDvs} from "~/utils/pokemon";
+import type {ItemId} from "~/game/item";
 
 const query = defineModel<string>({default: ""});
 const {poke, gen, idx} = defineProps<{poke: PokemonDesc; gen: Generation; idx: number}>();
@@ -69,15 +70,17 @@ const items = computed(() => Object.entries(gen.moveList) as [MoveId, Move][]);
 const trailing = computed(() => {
   const q = normalizeName(query.value);
   const move = q && q in gen.moveList ? gen.moveList[q as MoveId] : undefined;
-  if (!move || move.kind !== "damage") {
+  if (move?.kind !== "damage") {
     return;
   }
 
+  const item = poke.item && (normalizeName(poke.item) as ItemId);
   const base = new Pokemon(gen, {
     species: "abra",
     moves: [],
     ivs: gen.id <= 2 ? ivsToDvs(gen, poke.ivs ?? {}) : poke.ivs,
     friendship: poke.friendship,
+    item: item && item in gen.items ? item : undefined,
   });
   const type = move.getType ? move.getType(base) : move.type;
   const pow = move.getPower ? move.getPower(base) : move.power;

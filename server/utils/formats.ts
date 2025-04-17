@@ -43,8 +43,8 @@ const getRandomPokemon = (
       const s = gen.speciesList[id];
       const poke = customize(s, id);
       const items = (Object.keys(gen.items) as ItemId[]).filter(item => {
-        const cures = gen.items[item]?.cureStatus;
-        if (!gen.items[item].desc) {
+        const itemData = gen.items[item];
+        if (!itemData.desc) {
           return false;
         } else if (
           (item === "metalpowder" && id !== "ditto") ||
@@ -58,10 +58,10 @@ const getRandomPokemon = (
         ) {
           return false;
         } else if (
-          (cures === "frz" && s.types.includes("ice")) ||
-          (cures === "psn" && s.types.includes("poison")) ||
-          (cures === "psn" && s.types.includes("steel")) ||
-          (cures === "brn" && s.types.includes("fire"))
+          (itemData.cureStatus === "frz" && s.types.includes("ice")) ||
+          (itemData.cureStatus === "psn" && s.types.includes("poison")) ||
+          (itemData.cureStatus === "psn" && s.types.includes("steel")) ||
+          (itemData.cureStatus === "brn" && s.types.includes("fire"))
         ) {
           return false;
         } else if (item === "mysteryberry" && !poke.moves.some(m => gen.moveList[m].pp === 5)) {
@@ -72,7 +72,7 @@ const getRandomPokemon = (
           return true;
         }
 
-        const type = gen.items[item]?.typeBoost?.type;
+        const type = itemData.typeBoost?.type;
         if (
           type &&
           !poke.moves.some(m => gen.moveList[m].kind === "damage" && gen.moveList[m].type === type)
@@ -81,14 +81,14 @@ const getRandomPokemon = (
         }
 
         if (
-          gen.items[item].choice === "atk" &&
+          itemData.choice === "atk" &&
           !poke.moves.some(m => gen.getCategory(gen.moveList[m]) === MC.physical)
         ) {
           return false;
         }
 
         if (
-          gen.items[item].choice === "spa" &&
+          itemData.choice === "spa" &&
           !poke.moves.some(m => gen.getCategory(gen.moveList[m]) === MC.special)
         ) {
           return false;

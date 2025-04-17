@@ -342,7 +342,7 @@ const sprite = ref<HTMLDivElement>();
 const ground = ref<HTMLDivElement>();
 const pbRow = ref(0);
 const pbCol = ref(3);
-const scrColor: Record<ScreenId, string> = {
+const scrColor = {
   safeguard: "bg-purple-500",
   light_screen: "bg-pink-500",
   reflect: "bg-blue-400",
@@ -365,7 +365,7 @@ const screens = computed(() => {
 
   for (const screen in scrColor) {
     if (player?.screens?.[screen as ScreenId]) {
-      screens.push({name: screen, clazz: scrColor[screen as ScreenId]});
+      screens.push({name: screen, clazz: scrColor[screen as keyof typeof scrColor]});
     }
   }
 

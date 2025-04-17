@@ -54,10 +54,10 @@ const filter = (items: [ItemId, ItemData][], query: string) => {
       id.includes(q) || data.name.includes(q) || data.desc?.toLowerCase()?.includes(q),
   );
 
-  // const subset = all.filter(([_, data]) => data.desc && data.exists);
-  // if (subset.length) {
-  //   return subset;
-  // }
+  const subset = all.filter(([_, data]) => data.desc && data.exists);
+  if (subset.length) {
+    return subset;
+  }
 
   return all;
 };

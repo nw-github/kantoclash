@@ -881,8 +881,8 @@ export class ActivePokemon {
     }
 
     if (pinch) {
-      const healPinch = battle.gen.items[this.base.item!].healPinchNature;
-      const statPinch = battle.gen.items[this.base.item!].statPinch;
+      const healPinch = battle.gen.items[this.base.item!]?.healPinchNature;
+      const statPinch = battle.gen.items[this.base.item!]?.statPinch;
       if (healPinch && this.base.belowHp(2)) {
         battle.event({type: "item", src: this.id, item: this.base.item!});
         this.recover(Math.max(1, Math.floor(this.base.stats.hp / 8)), this, battle, "item");

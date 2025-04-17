@@ -5213,12 +5213,19 @@ const internalMoveList = createMoveList({
     kingsRock: true,
   },
   judgment: {
-    kind: "fail",
+    kind: "damage",
     name: "Judgment",
-    pp: 1,
+    pp: 10,
     type: "normal",
     range: Range.Adjacent,
-    why: "fail_generic",
+    category: MC.special,
+    power: 100,
+    acc: 100,
+    kingsRock: true,
+    getType(user) {
+      const typeBoost = (user as any).gen.items[user.item!]?.typeBoost;
+      return typeBoost?.plate ? typeBoost.type : "normal";
+    },
   },
   lastresort: {
     kind: "fail",
