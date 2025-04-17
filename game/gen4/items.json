@@ -198,7 +198,11 @@
   "mentalherb": {"exists": true},
   "choiceband": {"exists": true},
   "kingsrock": {"exists": true},
-  "silverpowder": {"exists": true},
+  "silverpowder": {
+    "exists": true,
+    "typeBoost": {"percent": 20},
+    "desc": "Boosts Bug-type moves by 20%."
+  },
   "amuletcoin": {"exists": true},
   "cleansetag": {"exists": true},
   "souldew": {"exists": true},
@@ -209,28 +213,96 @@
   "focusband": {"exists": true},
   "luckyegg": {"exists": true},
   "scopelens": {"exists": true},
-  "metalcoat": {"exists": true},
+  "metalcoat": {
+    "exists": true,
+    "typeBoost": {"percent": 20},
+    "desc": "Boosts Steel-type moves by 20%."
+  },
   "leftovers": {"exists": true},
   "dragonscale": {"exists": true},
   "lightball": {"exists": true},
-  "softsand": {"exists": true},
-  "hardstone": {"exists": true},
-  "miracleseed": {"exists": true},
-  "blackglasses": {"exists": true},
-  "blackbelt": {"exists": true},
-  "magnet": {"exists": true},
-  "mysticwater": {"exists": true},
-  "sharpbeak": {"exists": true},
-  "poisonbarb": {"exists": true},
-  "nevermeltice": {"exists": true},
-  "spelltag": {"exists": true},
-  "twistedspoon": {"exists": true},
-  "charcoal": {"exists": true},
-  "dragonfang": {"exists": true},
-  "silkscarf": {"exists": true},
+  "softsand": {
+    "exists": true,
+    "typeBoost": {"percent": 20},
+    "desc": "Boosts Ground-type moves by 20%."
+  },
+  "hardstone": {
+    "exists": true,
+    "typeBoost": {"percent": 20},
+    "desc": "Boosts Rock-type moves by 20%."
+  },
+  "miracleseed": {
+    "exists": true,
+    "typeBoost": {"percent": 20},
+    "desc": "Boosts Grass-type moves by 20%."
+  },
+  "blackglasses": {
+    "exists": true,
+    "typeBoost": {"percent": 20},
+    "desc": "Boosts Dark-type moves by 20%."
+  },
+  "blackbelt": {
+    "exists": true,
+    "typeBoost": {"percent": 20},
+    "desc": "Boosts Fighting-type moves by 20%."
+  },
+  "magnet": {
+    "exists": true,
+    "typeBoost": {"percent": 20},
+    "desc": "Boosts Electric-type moves by 20%."
+  },
+  "mysticwater": {
+    "exists": true,
+    "typeBoost": {"percent": 20},
+    "desc": "Boosts Water-type moves by 20%."
+  },
+  "sharpbeak": {
+    "exists": true,
+    "typeBoost": {"percent": 20},
+    "desc": "Boosts Flying-type moves by 20%."
+  },
+  "poisonbarb": {
+    "exists": true,
+    "typeBoost": {"percent": 20},
+    "desc": "Boosts Poison-type moves by 20%."
+  },
+  "nevermeltice": {
+    "exists": true,
+    "typeBoost": {"percent": 20},
+    "desc": "Boosts Ice-type moves by 20%."
+  },
+  "spelltag": {
+    "exists": true,
+    "typeBoost": {"percent": 20},
+    "desc": "Boosts Ghost-type moves by 20%."
+  },
+  "twistedspoon": {
+    "exists": true,
+    "typeBoost": {"percent": 20},
+    "desc": "Boosts Psychic-type moves by 20%."
+  },
+  "charcoal": {
+    "exists": true,
+    "typeBoost": {"percent": 20},
+    "desc": "Boosts Fire-type moves by 20%."
+  },
+  "dragonfang": {
+    "exists": true,
+    "typeBoost": {"percent": 20},
+    "desc": "Boosts Dragon-type moves by 20%."
+  },
+  "silkscarf": {
+    "exists": true,
+    "typeBoost": {"percent": 20},
+    "desc": "Boosts Normal-type moves by 20%."
+  },
   "upgrade": {"exists": true},
   "shellbell": {"exists": true},
-  "seaincense": {"exists": true},
+  "seaincense": {
+    "exists": true,
+    "typeBoost": {"percent": 20},
+    "desc": "Boosts Water-type moves by 20%."
+  },
   "laxincense": {"exists": true},
   "luckypunch": {"exists": true},
   "metalpowder": {"exists": true},

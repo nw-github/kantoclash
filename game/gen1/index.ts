@@ -74,30 +74,6 @@ const typeChart: TypeChart = {
   "???": {},
 };
 
-const itemTypeBoost: Partial<Record<ItemId, {type: Type; percent: number} | null>> = {
-  softsand: {type: "ground", percent: 10},
-  hardstone: {type: "rock", percent: 10},
-  metalcoat: {type: "steel", percent: 10},
-  pinkbow: {type: "normal", percent: 10},
-  blackbelt: {type: "fight", percent: 10},
-  sharpbeak: {type: "flying", percent: 10},
-  poisonbarb: {type: "poison", percent: 10},
-  silverpowder: {type: "bug", percent: 10},
-  spelltag: {type: "ghost", percent: 10},
-  polkadotbow: {type: "normal", percent: 10},
-  charcoal: {type: "fire", percent: 10},
-  mysticwater: {type: "water", percent: 10},
-  miracleseed: {type: "grass", percent: 10},
-  magnet: {type: "electric", percent: 10},
-  twistedspoon: {type: "psychic", percent: 10},
-  nevermeltice: {type: "ice", percent: 10},
-  dragonscale: {type: "dragon", percent: 10},
-  dragonfang: null,
-  blackglasses: {type: "dark", percent: 10},
-  silkscarf: {type: "normal", percent: 10},
-  seaincense: {type: "water", percent: 5},
-};
-
 const stageMultipliers: Record<number, number> = {
   [-6]: 25 / 100,
   [-5]: 28 / 100,
@@ -460,7 +436,6 @@ const createGeneration = () => {
     typeChart,
     items: itemList,
     moveFunctions,
-    itemTypeBoost,
     statBoostItem,
     lastMoveIdx: moveList.whirlwind.idx!,
     invalidSketchMoves: [

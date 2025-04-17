@@ -65,48 +65,107 @@
   },
   "psncureberry": {"name": "PSN Cure Berry", "desc": "Cures poison once."},
   "goldleaf": {"name": "Gold Leaf"},
-  "softsand": {"name": "Soft Sand", "desc": "Boosts Ground-type moves by 10%.", "fling": 10},
-  "sharpbeak": {"name": "Sharp Beak", "desc": "Boosts Flying-type moves by 10%.", "fling": 50},
+  "softsand": {
+    "name": "Soft Sand",
+    "desc": "Boosts Ground-type moves by 10%.",
+    "fling": 10,
+    "typeBoost": {"type": "ground", "percent": 10}
+  },
+  "sharpbeak": {
+    "name": "Sharp Beak",
+    "desc": "Boosts Flying-type moves by 10%.",
+    "fling": 50,
+    "typeBoost": {"type": "flying", "percent": 10}
+  },
   "przcureberry": {"name": "PRZ Cure Berry", "desc": "Cures paralysis once."},
   "burntberry": {"name": "Burnt Berry", "desc": "Cures freeze once."},
   "iceberry": {"name": "Ice Berry", "desc": "Cures burn once."},
-  "poisonbarb": {"name": "Poison Barb", "desc": "Boosts Poison-type moves by 10%.", "fling": 70},
+  "poisonbarb": {
+    "name": "Poison Barb",
+    "desc": "Boosts Poison-type moves by 10%.",
+    "fling": 70,
+    "typeBoost": {"type": "poison", "percent": 10}
+  },
   "kingsrock": {"name": "King's Rock", "desc": "Small chance to flinch on most moves."},
   "bitterberry": {"name": "Bitter Berry", "desc": "Cures confusion once."},
   "mintberry": {"name": "Mint Berry", "desc": "Cures sleep once."},
   "redapricorn": {"name": "Red Apricorn"},
   "tinymushroom": {"name": "TinyMushroom", "fling": 30},
   "bigmushroom": {"name": "Big Mushroom", "fling": 30},
-  "silverpowder": {"name": "SilverPowder", "desc": "Boosts Bug-type moves by 10%.", "fling": 10},
+  "silverpowder": {
+    "name": "SilverPowder",
+    "desc": "Boosts Bug-type moves by 10%.",
+    "fling": 10,
+    "typeBoost": {"type": "bug", "percent": 10}
+  },
   "bluapricorn": {"name": "Blu Apricorn"},
   "amuletcoin": {"name": "Amulet Coin", "fling": 30},
   "ylwapricorn": {"name": "Ylw Apricorn"},
   "grnapricorn": {"name": "Grn Apricorn"},
   "cleansetag": {"name": "Cleanse Tag", "fling": 30},
-  "mysticwater": {"name": "Mystic Water", "desc": "Boosts Water-type moves by 10%.", "fling": 30},
+  "mysticwater": {
+    "name": "Mystic Water",
+    "desc": "Boosts Water-type moves by 10%.",
+    "fling": 30,
+    "typeBoost": {"type": "water", "percent": 10}
+  },
   "twistedspoon": {
     "name": "TwistedSpoon",
     "desc": "Boosts Psychic-type moves by 10%.",
-    "fling": 30
+    "fling": 30,
+    "typeBoost": {"type": "psychic", "percent": 10}
   },
   "whtapricorn": {"name": "Wht Apricorn"},
-  "blackbelt": {"name": "Black Belt", "desc": "Boosts Fighting-type moves by 10%.", "fling": 30},
+  "blackbelt": {
+    "name": "Black Belt",
+    "desc": "Boosts Fighting-type moves by 10%.",
+    "fling": 30,
+    "typeBoost": {"type": "fight", "percent": 10}
+  },
   "blkapricorn": {"name": "Blk Apricorn"},
   "pnkapricorn": {"name": "Pnk Apricorn"},
-  "blackglasses": {"name": "BlackGlasses", "desc": "Boosts Dark-type moves by 10%.", "fling": 30},
+  "blackglasses": {
+    "name": "BlackGlasses",
+    "desc": "Boosts Dark-type moves by 10%.",
+    "fling": 30,
+    "typeBoost": {"type": "dark", "percent": 10}
+  },
   "slowpoketail": {"name": "SlowpokeTail"},
-  "pinkbow": {"name": "Pink Bow", "desc": "Boosts Normal-type moves by 10%."},
+  "pinkbow": {
+    "name": "Pink Bow",
+    "desc": "Boosts Normal-type moves by 10%.",
+    "typeBoost": {"type": "normal", "percent": 10}
+  },
   "stick": {"name": "Stick", "desc": "Boosts Farfetch'd's critical hit ratio by 2."},
   "smokeball": {"name": "Smoke Ball", "fling": 30},
-  "nevermeltice": {"name": "NeverMeltIce", "desc": "Boosts Ice-type moves by 10%."},
-  "magnet": {"name": "Magnet", "desc": "Boosts Electric-type moves by 10%.", "fling": 30},
+  "nevermeltice": {
+    "name": "NeverMeltIce",
+    "desc": "Boosts Ice-type moves by 10%.",
+    "typeBoost": {"type": "ice", "percent": 10}
+  },
+  "magnet": {
+    "name": "Magnet",
+    "desc": "Boosts Electric-type moves by 10%.",
+    "fling": 30,
+    "typeBoost": {"type": "electric", "percent": 10}
+  },
   "miracleberry": {"name": "MiracleBerry", "desc": "Cures status or confusion once."},
   "pearl": {"name": "Pearl", "fling": 30},
   "bigpearl": {"name": "Big Pearl", "fling": 30},
   "everstone": {"name": "Everstone", "fling": 30},
-  "spelltag": {"name": "Spell Tag", "desc": "Boosts Ghost-type moves by 10%.", "fling": 30},
+  "spelltag": {
+    "name": "Spell Tag",
+    "desc": "Boosts Ghost-type moves by 10%.",
+    "fling": 30,
+    "typeBoost": {"type": "ghost", "percent": 10}
+  },
   "ragecandybar": {"name": "RageCandyBar"},
-  "miracleseed": {"name": "Miracle Seed", "desc": "Boosts Grass-type moves by 10%.", "fling": 30},
+  "miracleseed": {
+    "name": "Miracle Seed",
+    "desc": "Boosts Grass-type moves by 10%.",
+    "fling": 30,
+    "typeBoost": {"type": "grass", "percent": 10}
+  },
   "thickclub": {"name": "Thick Club", "desc": "Boosts Marowak's Atk by 50%.", "fling": 90},
   "focusband": {
     "name": "Focus Band",
@@ -117,18 +176,38 @@
   "energyroot": {"name": "Energy Root", "fling": 30},
   "healpowder": {"name": "Heal Powder", "fling": 30},
   "revivalherb": {"name": "Revival Herb", "fling": 30},
-  "hardstone": {"name": "Hard Stone", "desc": "Boosts Rock-type moves by 10%.", "fling": 100},
+  "hardstone": {
+    "name": "Hard Stone",
+    "desc": "Boosts Rock-type moves by 10%.",
+    "fling": 100,
+    "typeBoost": {"type": "rock", "percent": 10}
+  },
   "luckyegg": {"name": "Lucky Egg", "fling": 30},
   "stardust": {"name": "Stardust", "fling": 30},
   "starpiece": {"name": "Star Piece", "fling": 30},
-  "charcoal": {"name": "Charcoal", "desc": "Boosts Fire-type moves by 10%.", "fling": 30},
+  "charcoal": {
+    "name": "Charcoal",
+    "desc": "Boosts Fire-type moves by 10%.",
+    "fling": 30,
+    "typeBoost": {"type": "fire", "percent": 10}
+  },
   "berryjuice": {"name": "Berry Juice", "desc": "Restores 20 HP once below 50% HP.", "fling": 30},
   "scopelens": {"name": "Scope Lens", "desc": "Boosts critical hit ratio.", "fling": 30},
-  "metalcoat": {"name": "Metal Coat", "desc": "Boosts Steel-type moves by 10%.", "fling": 30},
+  "metalcoat": {
+    "name": "Metal Coat",
+    "desc": "Boosts Steel-type moves by 10%.",
+    "fling": 30,
+    "typeBoost": {"type": "steel", "percent": 10}
+  },
   "dragonfang": {"name": "Dragon Fang", "fling": 70},
   "leftovers": {"name": "Leftovers", "desc": "Heal 1/16 HP after each turn.", "fling": 10},
   "mysteryberry": {"name": "MysteryBerry", "desc": "Restores PP by 5 once."},
-  "dragonscale": {"name": "Dragon Scale", "desc": "Boosts Dragon-type moves by 10%.", "fling": 30},
+  "dragonscale": {
+    "name": "Dragon Scale",
+    "desc": "Boosts Dragon-type moves by 10%.",
+    "fling": 30,
+    "typeBoost": {"type": "dragon", "percent": 10}
+  },
   "berserkgene": {"name": "Berserk Gene", "desc": "Boosts Atk but permanently confuses."},
   "sacredash": {"name": "Sacred Ash", "fling": 30},
   "heavyball": {"name": "Heavy Ball"},
@@ -143,7 +222,11 @@
   "normalbox": {"name": "Normal Box"},
   "gorgeousbox": {"name": "Gorgeous Box"},
   "sunstone": {"name": "Sun Stone", "fling": 30},
-  "polkadotbow": {"name": "Polkadot Bow", "desc": "Boosts Normal-type moves by 10%."},
+  "polkadotbow": {
+    "name": "Polkadot Bow",
+    "desc": "Boosts Normal-type moves by 10%.",
+    "typeBoost": {"type": "normal", "percent": 10}
+  },
   "upgrade": {"name": "Up-Grade", "fling": 30},
   "berry": {"name": "Berry", "desc": "Restores 10 HP once below 50% HP."},
   "goldberry": {"name": "Gold Berry", "desc": "Restores 30 HP once below 50% HP."},
@@ -359,13 +442,22 @@
   },
   "deepseatooth": {"name": "DeepSeaTooth", "desc": "Boosts Clamperl's SpA by 50%.", "fling": 90},
   "deepseascale": {"name": "DeepSeaScale", "desc": "Boosts Clamperl's SpD by 50%.", "fling": 30},
-  "silkscarf": {"name": "Silk Scarf", "desc": "Boosts Normal-type moves by 10%.", "fling": 10},
+  "silkscarf": {
+    "name": "Silk Scarf",
+    "desc": "Boosts Normal-type moves by 10%.",
+    "fling": 10,
+    "typeBoost": {"type": "normal", "percent": 10}
+  },
   "shellbell": {
     "name": "Shell Bell",
     "desc": "Restores 1/8 damage dealt on each attack.",
     "fling": 30
   },
-  "seaincense": {"name": "Sea Incense", "desc": "Boosts Water-type moves by 5%."},
+  "seaincense": {
+    "name": "Sea Incense",
+    "desc": "Boosts Water-type moves by 5%.",
+    "typeBoost": {"type": "water", "percent": 5}
+  },
   "laxincense": {"name": "Lax Incense", "desc": "Makes foes 5% less accurate."},
   "redscarf": {"name": "Red Scarf", "fling": 10},
   "bluescarf": {"name": "Blue Scarf", "fling": 10},
@@ -526,22 +618,102 @@
     "desc": "Boosts SpA by 50% but prevents switching moves.",
     "fling": 10
   },
-  "flameplate": {"name": "Flame Plate", "fling": 90},
-  "splashplate": {"name": "Splash Plate", "fling": 90},
-  "zapplate": {"name": "Zap Plate", "fling": 90},
-  "meadowplate": {"name": "Meadow Plate", "fling": 90},
-  "icicleplate": {"name": "Icicle Plate", "fling": 90},
-  "fistplate": {"name": "Fist Plate", "fling": 90},
-  "toxicplate": {"name": "Toxic Plate", "fling": 90},
-  "earthplate": {"name": "Earth Plate", "fling": 90},
-  "skyplate": {"name": "Sky Plate", "fling": 90},
-  "mindplate": {"name": "Mind Plate", "fling": 90},
-  "insectplate": {"name": "Insect Plate", "fling": 90},
-  "stoneplate": {"name": "Stone Plate", "fling": 90},
-  "spookyplate": {"name": "Spooky Plate", "fling": 90},
-  "dracoplate": {"name": "Draco Plate", "fling": 90},
-  "dreadplate": {"name": "Dread Plate", "fling": 90},
-  "ironplate": {"name": "Iron Plate", "fling": 90},
+  "flameplate": {
+    "name": "Flame Plate",
+    "fling": 90,
+    "typeBoost": {"type": "fire", "percent": 20, "plate": true},
+    "desc": "Boosts Fire-type moves by 20% and changes Arceus type."
+  },
+  "splashplate": {
+    "name": "Splash Plate",
+    "fling": 90,
+    "typeBoost": {"type": "water", "percent": 20, "plate": true},
+    "desc": "Boosts Water-type moves by 20% and changes Arceus type."
+  },
+  "zapplate": {
+    "name": "Zap Plate",
+    "fling": 90,
+    "typeBoost": {"type": "electric", "percent": 20, "plate": true},
+    "desc": "Boosts Electric-type moves by 20% and changes Arceus type."
+  },
+  "meadowplate": {
+    "name": "Meadow Plate",
+    "fling": 90,
+    "typeBoost": {"type": "grass", "percent": 20, "plate": true},
+    "desc": "Boosts Grass-type moves by 20% and changes Arceus type."
+  },
+  "icicleplate": {
+    "name": "Icicle Plate",
+    "fling": 90,
+    "typeBoost": {"type": "ice", "percent": 20, "plate": true},
+    "desc": "Boosts Ice-type moves by 20% and changes Arceus type."
+  },
+  "fistplate": {
+    "name": "Fist Plate",
+    "fling": 90,
+    "typeBoost": {"type": "fight", "percent": 20, "plate": true},
+    "desc": "Boosts Fight-type moves by 20% and changes Arceus type."
+  },
+  "toxicplate": {
+    "name": "Toxic Plate",
+    "fling": 90,
+    "typeBoost": {"type": "poison", "percent": 20, "plate": true},
+    "desc": "Boosts Poison-type moves by 20% and changes Arceus type."
+  },
+  "earthplate": {
+    "name": "Earth Plate",
+    "fling": 90,
+    "typeBoost": {"type": "ground", "percent": 20, "plate": true},
+    "desc": "Boosts Ground-type moves by 20% and changes Arceus type."
+  },
+  "skyplate": {
+    "name": "Sky Plate",
+    "fling": 90,
+    "typeBoost": {"type": "flying", "percent": 20, "plate": true},
+    "desc": "Boosts Flying-type moves by 20% and changes Arceus type."
+  },
+  "mindplate": {
+    "name": "Mind Plate",
+    "fling": 90,
+    "typeBoost": {"type": "psychic", "percent": 20, "plate": true},
+    "desc": "Boosts Psychic-type moves by 20% and changes Arceus type."
+  },
+  "insectplate": {
+    "name": "Insect Plate",
+    "fling": 90,
+    "typeBoost": {"type": "bug", "percent": 20, "plate": true},
+    "desc": "Boosts Bug-type moves by 20% and changes Arceus type."
+  },
+  "stoneplate": {
+    "name": "Stone Plate",
+    "fling": 90,
+    "typeBoost": {"type": "rock", "percent": 20, "plate": true},
+    "desc": "Boosts Rock-type moves by 20% and changes Arceus type."
+  },
+  "spookyplate": {
+    "name": "Spooky Plate",
+    "fling": 90,
+    "typeBoost": {"type": "ghost", "percent": 20, "plate": true},
+    "desc": "Boosts Ghost-type moves by 20% and changes Arceus type."
+  },
+  "dracoplate": {
+    "name": "Draco Plate",
+    "fling": 90,
+    "typeBoost": {"type": "dragon", "percent": 20, "plate": true},
+    "desc": "Boosts Dragon-type moves by 20% and changes Arceus type."
+  },
+  "dreadplate": {
+    "name": "Dread Plate",
+    "fling": 90,
+    "typeBoost": {"type": "dark", "percent": 20, "plate": true},
+    "desc": "Boosts Dark-type moves by 20% and changes Arceus type."
+  },
+  "ironplate": {
+    "name": "Iron Plate",
+    "fling": 90,
+    "typeBoost": {"type": "steel", "percent": 20, "plate": true},
+    "desc": "Boosts Steel-type moves by 20% and changes Arceus type."
+  },
   "oddincense": {"name": "Odd Incense"},
   "rockincense": {"name": "Rock Incense"},
   "fullincense": {"name": "Full Incense"},

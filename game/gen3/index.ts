@@ -6,7 +6,7 @@ import {clamp, idiv, MC, screens, VF} from "../utils";
 import {moveFunctionPatches, movePatches} from "./moves";
 import speciesPatches from "./species.json";
 import items from "./items.json";
-import {itemList, reduceAccItem, type ItemData, type ItemId} from "../item";
+import {itemList, reduceAccItem, type ItemId} from "../item";
 import {tryDamage} from "./damaging";
 import type {ActivePokemon} from "../active";
 import {TurnType} from "../battle";
@@ -35,7 +35,7 @@ const stageMultipliers: Record<number, number> = {
   6: 8 / 2,
 };
 
-export const createItemMergeList = (items: Partial<Record<ItemId, Partial<ItemData>>>) => {
+export const createItemMergeList = (items: any) => {
   for (const item in itemList) {
     if (!(item in items)) {
       items[item as ItemId] = {exists: false};
@@ -57,10 +57,6 @@ const createGeneration = (): Generation => {
     maxIv: 31,
     maxEv: 255,
     maxTotalEv: 510,
-    itemTypeBoost: {
-      dragonscale: null,
-      dragonfang: {type: "dragon", percent: 10},
-    },
     statBoostItem: {metalpowder: {ditto: {stats: ["def", "spd"], transformed: false, amount: 0.5}}},
     stageMultipliers,
     rng: {

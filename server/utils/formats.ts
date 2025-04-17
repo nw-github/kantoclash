@@ -71,7 +71,7 @@ const getRandomPokemon = (
           return true;
         }
 
-        const type = gen.itemTypeBoost[item]?.type;
+        const type = gen.items[item]?.typeBoost?.type;
         if (
           type &&
           !poke.moves.some(m => gen.moveList[m].kind === "damage" && gen.moveList[m].type === type)

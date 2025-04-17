@@ -182,7 +182,7 @@ export function getDamage(
       battle.sv([user.setVolatile("stockpile", 0)]);
     }
 
-    const itemBonus = user.base.item && battle.gen.itemTypeBoost[user.base.item];
+    const itemBonus = user.base.item && battle.gen.items[user.base.item]?.typeBoost;
     if (import.meta.dev) {
       console.log(`\n\x1b[0;32m${user.base.name}\x1b[0m => \x1b[0;31m${target.base.name}\x1b[0m`);
     }

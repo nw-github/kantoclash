@@ -163,7 +163,7 @@
   "scopelens": {"exists": true},
   "metalcoat": {"exists": true},
   "leftovers": {"exists": true},
-  "dragonscale": {"exists": true},
+  "dragonscale": {"exists": true, "desc": "", "typeBoost": null},
   "lightball": {"exists": true},
   "softsand": {"exists": true},
   "hardstone": {"exists": true},
@@ -178,7 +178,11 @@
   "spelltag": {"exists": true},
   "twistedspoon": {"exists": true},
   "charcoal": {"exists": true},
-  "dragonfang": {"exists": true},
+  "dragonfang": {
+    "exists": true,
+    "desc": "Boosts Dragon-type moves by 10%.",
+    "typeBoost": {"type": "dragon", "percent": 10}
+  },
   "silkscarf": {"exists": true},
   "upgrade": {"exists": true},
   "shellbell": {"exists": true},

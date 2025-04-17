@@ -1,6 +1,6 @@
 import __items from "./items.json";
 import type {Status} from "./pokemon";
-import type {StatStageId} from "./utils";
+import type {StatStageId, Type} from "./utils";
 
 export type ItemId = keyof typeof __items;
 export type ItemData = {
@@ -9,6 +9,7 @@ export type ItemData = {
   fling?: number;
   desc?: string;
   exists?: bool;
+  typeBoost?: {type: Type; percent: number};
 };
 
 export const itemList = __items as Record<ItemId, ItemData>;
