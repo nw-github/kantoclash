@@ -295,7 +295,7 @@
   "townmap": {"exists": true},
   "vsseeker": {"exists": true},
   "famechecker": {"exists": true},
-  "tmcase": {"tm": "case", "exists": true},
+  "tmcase": {"exists": true},
   "berrypouch": {"exists": true},
   "teachytv": {"exists": true},
   "tripass": {"exists": true},

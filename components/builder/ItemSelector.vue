@@ -20,14 +20,14 @@
 
     <template #item="{item: [id, item]}">
       <div class="flex gap-1 items-center pr-5">
-        <ItemSprite :item="id" />
+        <ItemSprite :item="id" :gen />
         <span class="text-xs text-nowrap" :class="[isIllegal(id) && 'text-red-500']">
           {{ item.name }}
         </span>
       </div>
 
       <div class="text-[0.6rem] text-gray-600 dark:text-gray-400 text-nowrap">
-        {{ item.desc ?? "No competitive use." }}
+        {{ item.desc || "No competitive use." }}
       </div>
     </template>
 
@@ -54,10 +54,10 @@ const filter = (items: [ItemId, ItemData][], query: string) => {
       id.includes(q) || data.name.includes(q) || data.desc?.toLowerCase()?.includes(q),
   );
 
-  const subset = all.filter(([_, data]) => data.desc && data.exists);
-  if (subset.length) {
-    return subset;
-  }
+  // const subset = all.filter(([_, data]) => data.desc && data.exists);
+  // if (subset.length) {
+  //   return subset;
+  // }
 
   return all;
 };

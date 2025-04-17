@@ -6,7 +6,7 @@
         <GenderIcon class="size-4" :gender="gen1Gender[poke.speciesId] ?? poke.gender" />
 
         <template v-if="poke._item">
-          <ItemSprite :item="poke._item" />
+          <ItemSprite :item="poke._item" :gen="poke.gen" />
           <span class="text-xs" :class="poke.itemUnusable && 'line-through italic text-primary'">
             {{ poke.gen.items[poke._item].name }}
           </span>

@@ -1,6 +1,6 @@
 <template>
   <div class="flex items-center justify-center">
-    <span class="pokesprite item" :class="item && (itemMapping[item] ?? item)" />
+    <span class="pokesprite item" :class="item && getItemClass(item)" />
   </div>
 </template>
 
@@ -20,9 +20,10 @@ span {
 </style>
 
 <script setup lang="ts">
+import type {Generation} from "~/game/gen";
 import type {ItemId} from "~/game/item";
 
-defineProps<{item?: ItemId; scale?: number}>();
+const {gen} = defineProps<{gen: Generation; item?: ItemId; scale?: number}>();
 
 const itemMapping: Partial<Record<ItemId, string>> = {
   polkadotbow: "silkscarf",
@@ -41,5 +42,29 @@ const itemMapping: Partial<Record<ItemId, string>> = {
   xdefend: "xdefense",
   parlyzheal: "paralyzeheal",
   xspecial: "xspatk",
+  blkapricorn: "blackapricorn",
+  bluapricorn: "blueapricorn",
+  grnapricorn: "greenapricorn",
+  pnkapricorn: "pinkapricorn",
+  redapricorn: "redapricorn",
+  whtapricorn: "whiteapricorn",
+  ylwapricorn: "yellowapricorn",
+  itemfinder: "dowsingmachine",
+  dowsingmchn: "dowsingmachine",
+};
+
+const getItemClass = (item: ItemId) => {
+  if (itemMapping[item]) {
+    return itemMapping[item];
+  } else if (gen.items[item].tm) {
+    const name = gen.items[item].tm! === "fight" ? "fighting" : gen.items[item].tm!;
+    return name + (item.includes("tm") ? "tm" : "hm");
+  } else if (item.includes("datacard")) {
+    return "datacard";
+  } else if (item.includes("secretkey")) {
+    return "secretkeykanto";
+  }
+
+  return item;
 };
 </script>

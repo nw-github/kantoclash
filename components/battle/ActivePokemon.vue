@@ -173,7 +173,7 @@
                   </span>
 
                   <template v-if="poke?.base && poke.transformed && poke?.base._item">
-                    <ItemSprite :item="poke.base._item" />
+                    <ItemSprite :item="poke.base._item" :gen />
                     <span
                       class="text-xs"
                       :class="poke.base.itemUnusable && 'line-through italic text-primary'"
