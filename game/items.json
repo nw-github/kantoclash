@@ -63,7 +63,7 @@
     "desc": "Small chance to go first in priority bracket.",
     "fling": 80
   },
-  "psncureberry": {"name": "PSN Cure Berry", "desc": "Cures poison once."},
+  "psncureberry": {"name": "PSN Cure Berry", "desc": "Cures poison once.", "cureStatus": "psn"},
   "goldleaf": {"name": "Gold Leaf"},
   "softsand": {
     "name": "Soft Sand",
@@ -77,9 +77,9 @@
     "fling": 50,
     "typeBoost": {"type": "flying", "percent": 10}
   },
-  "przcureberry": {"name": "PRZ Cure Berry", "desc": "Cures paralysis once."},
-  "burntberry": {"name": "Burnt Berry", "desc": "Cures freeze once."},
-  "iceberry": {"name": "Ice Berry", "desc": "Cures burn once."},
+  "przcureberry": {"name": "PRZ Cure Berry", "desc": "Cures paralysis once.", "cureStatus": "par"},
+  "burntberry": {"name": "Burnt Berry", "desc": "Cures freeze once.", "cureStatus": "frz"},
+  "iceberry": {"name": "Ice Berry", "desc": "Cures burn once.", "cureStatus": "brn"},
   "poisonbarb": {
     "name": "Poison Barb",
     "desc": "Boosts Poison-type moves by 10%.",
@@ -87,8 +87,8 @@
     "typeBoost": {"type": "poison", "percent": 10}
   },
   "kingsrock": {"name": "King's Rock", "desc": "Small chance to flinch on most moves."},
-  "bitterberry": {"name": "Bitter Berry", "desc": "Cures confusion once."},
-  "mintberry": {"name": "Mint Berry", "desc": "Cures sleep once."},
+  "bitterberry": {"name": "Bitter Berry", "desc": "Cures confusion once.", "cureStatus": "confuse"},
+  "mintberry": {"name": "Mint Berry", "desc": "Cures sleep once.", "cureStatus": "slp"},
   "redapricorn": {"name": "Red Apricorn"},
   "tinymushroom": {"name": "TinyMushroom", "fling": 30},
   "bigmushroom": {"name": "Big Mushroom", "fling": 30},
@@ -149,7 +149,11 @@
     "fling": 30,
     "typeBoost": {"type": "electric", "percent": 10}
   },
-  "miracleberry": {"name": "MiracleBerry", "desc": "Cures status or confusion once."},
+  "miracleberry": {
+    "name": "MiracleBerry",
+    "desc": "Cures status or confusion once.",
+    "cureStatus": "any"
+  },
   "pearl": {"name": "Pearl", "fling": 30},
   "bigpearl": {"name": "Big Pearl", "fling": 30},
   "everstone": {"name": "Everstone", "fling": 30},
@@ -339,15 +343,50 @@
   "dreammail": {"name": "Dream Mail"},
   "fabmail": {"name": "Fab Mail"},
   "retromail": {"name": "Retro Mail"},
-  "cheriberry": {"name": "Cheri Berry", "desc": "Cures paralysis once.", "fling": 10},
-  "chestoberry": {"name": "Chesto Berry", "desc": "Cures sleep once.", "fling": 10},
-  "pechaberry": {"name": "Pecha Berry", "desc": "Cures poison once.", "fling": 10},
-  "rawstberry": {"name": "Rawst Berry", "desc": "Cures burn once.", "fling": 10},
-  "aspearberry": {"name": "Aspear Berry", "desc": "Cures freeze once.", "fling": 10},
+  "cheriberry": {
+    "name": "Cheri Berry",
+    "desc": "Cures paralysis once.",
+    "fling": 10,
+    "cureStatus": "par"
+  },
+  "chestoberry": {
+    "name": "Chesto Berry",
+    "desc": "Cures sleep once.",
+    "fling": 10,
+    "cureStatus": "slp"
+  },
+  "pechaberry": {
+    "name": "Pecha Berry",
+    "desc": "Cures poison once.",
+    "fling": 10,
+    "cureStatus": "psn"
+  },
+  "rawstberry": {
+    "name": "Rawst Berry",
+    "desc": "Cures burn once.",
+    "fling": 10,
+    "cureStatus": "brn"
+  },
+  "aspearberry": {
+    "name": "Aspear Berry",
+    "desc": "Cures freeze once.",
+    "fling": 10,
+    "cureStatus": "frz"
+  },
   "leppaberry": {"name": "Leppa Berry", "desc": "Restores PP by 10 once.", "fling": 10},
   "oranberry": {"name": "Oran Berry", "desc": "Restores 10 HP once below 50% HP.", "fling": 10},
-  "persimberry": {"name": "Persim Berry", "desc": "Cures confusion once.", "fling": 10},
-  "lumberry": {"name": "Lum Berry", "desc": "Cures status or confusion once.", "fling": 10},
+  "persimberry": {
+    "name": "Persim Berry",
+    "desc": "Cures confusion once.",
+    "fling": 10,
+    "cureStatus": "confuse"
+  },
+  "lumberry": {
+    "name": "Lum Berry",
+    "desc": "Cures status or confusion once.",
+    "fling": 10,
+    "cureStatus": "any"
+  },
   "sitrusberry": {"name": "Sitrus Berry", "desc": "Restores 30 HP once below 50% HP.", "fling": 10},
   "figyberry": {
     "name": "Figy Berry",

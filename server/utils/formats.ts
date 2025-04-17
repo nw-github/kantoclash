@@ -12,7 +12,7 @@ import random from "random";
 import {z} from "zod";
 import {isValidSketchMove, type FormatId} from "~/utils/shared";
 import {type Generation, GENERATION1, GENERATION2, GENERATION3, GENERATION4} from "~/game/gen";
-import {choiceItem, statusBerry, type ItemId} from "~/game/item";
+import {choiceItem, type ItemId} from "~/game/item";
 import {profanityMatcher} from "~/utils/schema";
 import {HP_IVS} from "~/utils/pokemon";
 
@@ -43,6 +43,7 @@ const getRandomPokemon = (
       const s = gen.speciesList[id];
       const poke = customize(s, id);
       const items = (Object.keys(gen.items) as ItemId[]).filter(item => {
+        const cures = gen.items[item]?.cureStatus;
         if (!gen.items[item].desc) {
           return false;
         } else if (
@@ -57,10 +58,10 @@ const getRandomPokemon = (
         ) {
           return false;
         } else if (
-          (statusBerry[item] === "frz" && s.types.includes("ice")) ||
-          (statusBerry[item] === "psn" && s.types.includes("poison")) ||
-          (statusBerry[item] === "psn" && s.types.includes("steel")) ||
-          (statusBerry[item] === "brn" && s.types.includes("fire"))
+          (cures === "frz" && s.types.includes("ice")) ||
+          (cures === "psn" && s.types.includes("poison")) ||
+          (cures === "psn" && s.types.includes("steel")) ||
+          (cures === "brn" && s.types.includes("fire"))
         ) {
           return false;
         } else if (item === "mysteryberry" && !poke.moves.some(m => gen.moveList[m].pp === 5)) {

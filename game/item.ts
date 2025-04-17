@@ -10,29 +10,10 @@ export type ItemData = {
   desc?: string;
   exists?: bool;
   typeBoost?: {type: Type; percent: number};
+  cureStatus?: Status | "any" | "confuse";
 };
 
 export const itemList = __items as Record<ItemId, ItemData>;
-
-export const statusBerry: Partial<Record<ItemId, Status | "any" | "confuse">> = {
-  mintberry: "slp",
-  psncureberry: "psn",
-  przcureberry: "par",
-  iceberry: "brn",
-  burntberry: "frz",
-
-  cheriberry: "par",
-  chestoberry: "slp",
-  pechaberry: "psn",
-  rawstberry: "brn",
-  aspearberry: "frz",
-
-  miracleberry: "any",
-  lumberry: "any",
-
-  bitterberry: "confuse",
-  persimberry: "confuse",
-};
 
 export const healBerry: Partial<Record<ItemId, number>> = {
   berry: 10,

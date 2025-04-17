@@ -33,7 +33,7 @@ import {
 } from "./utils";
 import {TurnType, type Battle, type MoveOption, type Options, type Player} from "./battle";
 import {abilityList, type AbilityId} from "./species";
-import {healBerry, healPinchBerry, ppBerry, statPinchBerry, statusBerry, type ItemId} from "./item";
+import {healBerry, healPinchBerry, ppBerry, statPinchBerry, type ItemId} from "./item";
 
 export type DamageParams = {
   dmg: number;
@@ -825,9 +825,10 @@ export class ActivePokemon {
         battle.info(this, "confused_end", [{id: this.id, v: {flags: this.v.cflags}}]);
       }
 
-      if (statusBerry[this.base.item!] && statusBerry[this.base.item!] === status) {
+      const cures = battle.gen.items[this.base.item!]?.cureStatus;
+      if (cures && cures === status) {
         cureStatus(this);
-      } else if (statusBerry[this.base.item!] === "any") {
+      } else if (cures === "any") {
         if (this.base.status) {
           cureStatus(this);
         }
@@ -838,7 +839,7 @@ export class ActivePokemon {
           }
           cureConfuse(this);
         }
-      } else if (statusBerry[this.base.item!] === "confuse" && this.v.confusion) {
+      } else if (cures === "confuse" && this.v.confusion) {
         battle.event({type: "item", src: this.id, item: this.base.item!});
         cureConfuse(this);
       } else if (this.v.attract && this.base.item === "mentalherb") {
