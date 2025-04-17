@@ -33,7 +33,7 @@ import {
 } from "./utils";
 import {TurnType, type Battle, type MoveOption, type Options, type Player} from "./battle";
 import {abilityList, type AbilityId} from "./species";
-import {healBerry, healPinchBerry, ppBerry, statPinchBerry, type ItemId} from "./item";
+import {ppBerry, type ItemId} from "./item";
 
 export type DamageParams = {
   dmg: number;
@@ -872,34 +872,35 @@ export class ActivePokemon {
     }
 
     if (heal) {
-      if (healBerry[this.base.item!] && this.base.belowHp(2)) {
+      if (battle.gen.items[this.base.item!]?.healFixed && this.base.belowHp(2)) {
         battle.event({type: "item", src: this.id, item: this.base.item!});
-        this.recover(healBerry[this.base.item!]!, this, battle, "item");
+        this.recover(battle.gen.items[this.base.item!].healFixed!, this, battle, "item");
         this.consumeItem();
       }
     }
 
     if (pinch) {
-      if (healPinchBerry[this.base.item!] && this.base.belowHp(2)) {
+      const healPinch = battle.gen.items[this.base.item!].healPinchNature;
+      const statPinch = battle.gen.items[this.base.item!].statPinch;
+      if (healPinch && this.base.belowHp(2)) {
         battle.event({type: "item", src: this.id, item: this.base.item!});
         this.recover(Math.max(1, Math.floor(this.base.stats.hp / 8)), this, battle, "item");
         if (this.base.nature !== undefined) {
           const [, minus] = Object.keys(natureTable[this.base.nature]);
-          if (minus === healPinchBerry[this.base.item!] && this.v.ability !== "owntempo") {
+          if (minus === healPinch && this.v.ability !== "owntempo") {
             this.confuse(battle, "cConfused");
           }
         }
         this.consumeItem();
-      } else if (statPinchBerry[this.base.item!] && this.base.belowHp(4)) {
+      } else if (statPinch && this.base.belowHp(4)) {
         battle.event({type: "item", src: this.id, item: this.base.item!});
-        const stage = statPinchBerry[this.base.item!]!;
-        if (stage === "crit") {
+        if (statPinch === "crit") {
           battle.info(this, "focusEnergy", [this.setFlag(VF.focusEnergy)]);
         } else {
-          if (stage === "random") {
+          if (statPinch === "random") {
             this.modStages([[battle.rng.choice([...stageStatKeys])!, +2]], battle);
           } else {
-            this.modStages([[stage, +1]], battle);
+            this.modStages([[statPinch, +1]], battle);
           }
         }
         this.consumeItem();

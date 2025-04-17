@@ -195,7 +195,12 @@
     "fling": 30,
     "typeBoost": {"type": "fire", "percent": 10}
   },
-  "berryjuice": {"name": "Berry Juice", "desc": "Restores 20 HP once below 50% HP.", "fling": 30},
+  "berryjuice": {
+    "name": "Berry Juice",
+    "desc": "Restores 20 HP once below 50% HP.",
+    "fling": 30,
+    "healFixed": 20
+  },
   "scopelens": {"name": "Scope Lens", "desc": "Boosts critical hit ratio.", "fling": 30},
   "metalcoat": {
     "name": "Metal Coat",
@@ -232,8 +237,8 @@
     "typeBoost": {"type": "normal", "percent": 10}
   },
   "upgrade": {"name": "Up-Grade", "fling": 30},
-  "berry": {"name": "Berry", "desc": "Restores 10 HP once below 50% HP."},
-  "goldberry": {"name": "Gold Berry", "desc": "Restores 30 HP once below 50% HP."},
+  "berry": {"name": "Berry", "desc": "Restores 10 HP once below 50% HP.", "healFixed": 10},
+  "goldberry": {"name": "Gold Berry", "desc": "Restores 30 HP once below 50% HP.", "healFixed": 30},
   "parkball": {"name": "Park Ball"},
   "brickpiece": {"name": "Brick Piece"},
   "surfmail": {"name": "Surf Mail"},
@@ -374,7 +379,12 @@
     "cureStatus": "frz"
   },
   "leppaberry": {"name": "Leppa Berry", "desc": "Restores PP by 10 once.", "fling": 10},
-  "oranberry": {"name": "Oran Berry", "desc": "Restores 10 HP once below 50% HP.", "fling": 10},
+  "oranberry": {
+    "name": "Oran Berry",
+    "desc": "Restores 10 HP once below 50% HP.",
+    "fling": 10,
+    "healFixed": 10
+  },
   "persimberry": {
     "name": "Persim Berry",
     "desc": "Cures confusion once.",
@@ -387,31 +397,41 @@
     "fling": 10,
     "cureStatus": "any"
   },
-  "sitrusberry": {"name": "Sitrus Berry", "desc": "Restores 30 HP once below 50% HP.", "fling": 10},
+  "sitrusberry": {
+    "name": "Sitrus Berry",
+    "desc": "Restores 30 HP once below 50% HP.",
+    "fling": 10,
+    "healFixed": 30
+  },
   "figyberry": {
     "name": "Figy Berry",
     "desc": "Heals 1/8 HP below 50% HP. Confuses if -Atk.",
-    "fling": 10
+    "fling": 10,
+    "healPinchNature": "atk"
   },
   "wikiberry": {
     "name": "Wiki Berry",
     "desc": "Heals 1/8 HP below 50% HP. Confuses if -SpA.",
-    "fling": 10
+    "fling": 10,
+    "healPinchNature": "spa"
   },
   "magoberry": {
     "name": "Mago Berry",
     "desc": "Heals 1/8 HP below 50% HP. Confuses if -Spe.",
-    "fling": 10
+    "fling": 10,
+    "healPinchNature": "spe"
   },
   "aguavberry": {
     "name": "Aguav Berry",
     "desc": "Heals 1/8 HP below 50% HP. Confuses if -SpD.",
-    "fling": 10
+    "fling": 10,
+    "healPinchNature": "spd"
   },
   "iapapaberry": {
     "name": "Iapapa Berry",
     "desc": "Heals 1/8 HP below 50% HP. Confuses if -Def.",
-    "fling": 10
+    "fling": 10,
+    "healPinchNature": "def"
   },
   "razzberry": {"name": "Razz Berry", "fling": 10},
   "blukberry": {"name": "Bluk Berry", "fling": 10},
@@ -436,33 +456,44 @@
   "liechiberry": {
     "name": "Liechi Berry",
     "desc": "Raises Atk by 1 when below 25% HP.",
-    "fling": 10
+    "fling": 10,
+    "statPinch": "atk"
   },
   "ganlonberry": {
     "name": "Ganlon Berry",
     "desc": "Raises Def by 1 when below 25% HP.",
-    "fling": 10
+    "fling": 10,
+    "statPinch": "def"
   },
-  "salacberry": {"name": "Salac Berry", "desc": "Raises Spe by 1 when below 25% HP.", "fling": 10},
+  "salacberry": {
+    "name": "Salac Berry",
+    "desc": "Raises Spe by 1 when below 25% HP.",
+    "fling": 10,
+    "statPinch": "spe"
+  },
   "petayaberry": {
     "name": "Petaya Berry",
     "desc": "Raises SpA by 1 when below 25% HP.",
-    "fling": 10
+    "fling": 10,
+    "statPinch": "spa"
   },
   "apicotberry": {
     "name": "Apicot Berry",
     "desc": "Raises SpD by 1 when below 25% HP.",
-    "fling": 10
+    "fling": 10,
+    "statPinch": "spd"
   },
   "lansatberry": {
     "name": "Lansat Berry",
     "desc": "Raises Crit by 2 when below 25% HP.",
-    "fling": 10
+    "fling": 10,
+    "statPinch": "crit"
   },
   "starfberry": {
     "name": "Starf Berry",
     "desc": "Raises a random stat by 2 when below 25% HP.",
-    "fling": 10
+    "fling": 10,
+    "statPinch": "random"
   },
   "enigmaberry": {"name": "Enigma Berry", "fling": 10},
   "whiteherb": {"name": "White Herb", "desc": "Resets negative stat stages once.", "fling": 10},
