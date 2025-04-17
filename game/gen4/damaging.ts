@@ -32,7 +32,7 @@ export const tryDamage = (
 
   const onHit = (type: Type, hadSub: bool) => {
     if (
-      user.base.item === "kingsrock" &&
+      battle.gen.items[user.base.item!]?.kingsRock &&
       self.kingsRock &&
       !hadSub &&
       target.v.ability !== "innerfocus" &&
@@ -183,11 +183,10 @@ export const tryDamage = (
     dead = false,
     event,
     endured = false,
-    band = false,
-    handledShellBell = true;
+    band = false;
 
   if (self.flag === "beatup") {
-    let dmg, isCrit;
+    let dmg, isCrit, tmpDealt;
     for (const poke of user.owner.team) {
       if (poke.status || !poke.hp) {
         continue;
@@ -197,10 +196,17 @@ export const tryDamage = (
 
       hadSub = target.v.substitute !== 0;
       ({dmg, isCrit, endured, band} = getDamage(self, battle, user, target, {band, beatUp: poke}));
-      ({dead, event, dealt} = target.damage2(battle, {dmg, src: user, why: "attacked", isCrit}));
-      user.handleShellBell(battle, dealt);
+      ({
+        dead,
+        event,
+        dealt: tmpDealt,
+      } = target.damage2(battle, {dmg, src: user, why: "attacked", isCrit}));
 
-      if (dmg !== 0) {
+      if (!hadSub) {
+        dealt += tmpDealt;
+      }
+
+      if (dealt !== 0) {
         onHit(type, hadSub);
       }
       if (dead || user.base.hp === 0) {
@@ -216,7 +222,7 @@ export const tryDamage = (
 
     const wasSleeping = user.base.status === "slp";
     const count = counts[self.flag];
-    let dmg, isCrit;
+    let dmg, isCrit, tmpDealt;
     for (let hits = 0; !dead && user.base.hp && !endured && hits < count; hits++) {
       if (
         self.flag === "triple" &&
@@ -238,11 +244,18 @@ export const tryDamage = (
       if (event) {
         event.hitCount = 0;
       }
-      ({dead, event, dealt} = target.damage(dmg, user, battle, isCrit, "attacked", false, eff));
+      ({
+        dead,
+        event,
+        dealt: tmpDealt,
+      } = target.damage(dmg, user, battle, isCrit, "attacked", false, eff));
       event.hitCount = hits + 1;
-      user.handleShellBell(battle, dealt);
 
-      if (dmg !== 0) {
+      if (!hadSub) {
+        dealt += tmpDealt;
+      }
+
+      if (dealt !== 0) {
         onHit(type, hadSub);
 
         if (user.base.status === "slp" && !wasSleeping) {
@@ -266,17 +279,11 @@ export const tryDamage = (
     if (dmg !== 0) {
       onHit(type, hadSub);
     }
-
-    handledShellBell = false;
   }
 
   // TODO: should bide include damage taken by a substitute?
   if (!hadSub && target.v.bide) {
     target.v.bide.dmg += dealt;
-  }
-
-  if (handledShellBell) {
-    dealt = 0;
   }
 
   target.v.lastHitBy = {move: self, poke: user, special: battle.gen.isSpecial(self, type, true)};

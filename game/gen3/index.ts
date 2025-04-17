@@ -57,7 +57,6 @@ const createGeneration = (): Generation => {
     maxIv: 31,
     maxEv: 255,
     maxTotalEv: 510,
-    statBoostItem: {metalpowder: {ditto: {stats: ["def", "spd"], transformed: false, amount: 0.5}}},
     stageMultipliers,
     rng: {
       tryDefrost: battle => battle.rand100(20),
@@ -66,9 +65,7 @@ const createGeneration = (): Generation => {
         if (user.v.hasFlag(VF.focusEnergy)) {
           stages += 2;
         }
-        if (user.base.item === "scopelens") {
-          stages++;
-        }
+        stages += battle.gen.items[user.base.item!]?.raiseCrit ?? 0;
         if (user.base.item === "stick" && user.base.real.speciesId === "farfetchd") {
           stages += 2;
         }

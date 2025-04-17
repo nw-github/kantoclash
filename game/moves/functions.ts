@@ -220,8 +220,11 @@ export const moveFunctions: MoveFunctions = {
   fail(battle, user) {
     battle.info(user, this.why);
   },
-  weather(battle) {
-    battle.setWeather(this.weather, 5);
+  weather(battle, user) {
+    battle.setWeather(
+      this.weather,
+      battle.gen.items[user.base.item!]?.extendWeather === this.weather ? 8 : 5,
+    );
   },
   screen(battle, user) {
     if (user.owner.screens[this.screen]) {

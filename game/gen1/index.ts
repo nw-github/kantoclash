@@ -90,23 +90,6 @@ const stageMultipliers: Record<number, number> = {
   6: 400 / 100,
 };
 
-type PRecord<K extends string | number | symbol, V> = Partial<Record<K, V>>;
-
-const statBoostItem: PRecord<
-  ItemId,
-  PRecord<SpeciesId, {stats: StatStageId[]; transformed: bool; amount: number}>
-> = {
-  metalpowder: {ditto: {stats: ["def", "spd"], transformed: true, amount: 0.5}},
-  lightball: {pikachu: {stats: ["spa"], transformed: false, amount: 1}},
-  thickclub: {marowak: {stats: ["atk"], transformed: false, amount: 1}},
-  souldew: {
-    latias: {stats: ["spa", "spd"], transformed: false, amount: 0.5},
-    latios: {stats: ["spa", "spd"], transformed: false, amount: 0.5},
-  },
-  deepseatooth: {clamperl: {stats: ["spa"], transformed: false, amount: 1}},
-  deepseascale: {clamperl: {stats: ["spd"], transformed: false, amount: 1}},
-};
-
 enum BetweenTurns {
   Begin,
   FutureSight,
@@ -436,7 +419,6 @@ const createGeneration = () => {
     typeChart,
     items: itemList,
     moveFunctions,
-    statBoostItem,
     lastMoveIdx: moveList.whirlwind.idx!,
     invalidSketchMoves: [
       "transform",

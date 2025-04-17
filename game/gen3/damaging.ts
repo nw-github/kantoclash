@@ -32,7 +32,7 @@ export const tryDamage = (
 
   const onHit = (type: Type, hadSub: bool) => {
     if (
-      user.base.item === "kingsrock" &&
+      battle.gen.items[user.base.item!]?.kingsRock &&
       self.kingsRock &&
       !hadSub &&
       target.v.ability !== "innerfocus" &&
@@ -200,7 +200,7 @@ export const tryDamage = (
       ({dead, event, dealt} = target.damage2(battle, {dmg, src: user, why: "attacked", isCrit}));
       user.handleShellBell(battle, dealt);
 
-      if (dmg !== 0) {
+      if (dealt !== 0) {
         onHit(type, hadSub);
       }
       if (dead || user.base.hp === 0) {
@@ -242,7 +242,7 @@ export const tryDamage = (
       event.hitCount = hits + 1;
       user.handleShellBell(battle, dealt);
 
-      if (dmg !== 0) {
+      if (dealt !== 0) {
         onHit(type, hadSub);
 
         if (user.base.status === "slp" && !wasSleeping) {
@@ -263,7 +263,7 @@ export const tryDamage = (
       eff,
     ));
 
-    if (dmg !== 0) {
+    if (dealt !== 0) {
       onHit(type, hadSub);
     }
 

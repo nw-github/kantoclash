@@ -44,10 +44,19 @@ const getRandomPokemon = (
       const poke = customize(s, id);
       const items = (Object.keys(gen.items) as ItemId[]).filter(item => {
         const itemData = gen.items[item];
-        if (!itemData.desc) {
+        if (
+          !itemData.desc ||
+          !itemData.exists ||
+          itemData.halveSpeed ||
+          itemData.laggingTail ||
+          itemData.extendWeather ||
+          itemData.reduceType ||
+          (itemData.statusOrb && poke.ability !== "guts")
+        ) {
           return false;
         } else if (
           (item === "metalpowder" && id !== "ditto") ||
+          (item === "quickpowder" && id !== "ditto") ||
           (item === "lightball" && id !== "pikachu") ||
           (item === "thickclub" && id !== "marowak") ||
           (item === "luckypunch" && id !== "chansey") ||

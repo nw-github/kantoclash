@@ -184,9 +184,7 @@ const createGeneration = (): Generation => {
         if (user.v.hasFlag(VF.focusEnergy)) {
           stages++;
         }
-        if (user.base.item === "scopelens") {
-          stages++;
-        }
+        stages += battle.gen.items[user.base.item!]?.raiseCrit ?? 0;
         if (user.base.item === "stick" && user.base.real.speciesId === "farfetchd") {
           stages += 2;
         }

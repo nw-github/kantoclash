@@ -238,19 +238,19 @@ export const transform = (user: Pokemon, transformed: Pokemon) => {
 };
 
 export const applyItemStatBoost = (poke: Pokemon, stat: StatStageId, value: number) => {
-  if (poke.item === "machobrace" && stat === "spe") {
+  if (poke.gen.items[poke.item!]?.halveSpeed && stat === "spe") {
     return Math.floor(value / 2);
   } else if (poke.gen.items[poke.item!]?.choice === stat) {
     return value + Math.floor(value / 2);
   }
 
-  const boostItem = poke.gen.statBoostItem[poke.item!]?.[poke.real.speciesId];
+  const boostItem = poke.gen.items[poke.item!]?.boostStats?.[poke.real.speciesId];
   if (boostItem && boostItem.stats.includes(stat) && (boostItem.transformed || !poke.transformed)) {
     value += Math.floor(value * boostItem.amount);
   }
 
   if (poke.transformed && poke.real.speciesId !== poke.speciesId) {
-    const boostItem = poke.gen.statBoostItem[poke.item!]?.[poke.speciesId];
+    const boostItem = poke.gen.items[poke.item!]?.boostStats?.[poke.speciesId];
     if (boostItem && boostItem.stats.includes(stat) && boostItem.transformed) {
       value += Math.floor(value * boostItem.amount);
     }

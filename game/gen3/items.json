@@ -189,7 +189,7 @@
   "seaincense": {"exists": true},
   "laxincense": {"exists": true},
   "luckypunch": {"exists": true},
-  "metalpowder": {"exists": true},
+  "metalpowder": {"exists": true, "boostStats": {"ditto": {"transformed": false}}},
   "thickclub": {"exists": true},
   "stick": {"exists": true},
   "redscarf": {"exists": true},

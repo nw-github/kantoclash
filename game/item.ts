@@ -1,6 +1,7 @@
 import __items from "./items.json";
 import type {Status} from "./pokemon";
-import type {StatStageId, Type} from "./utils";
+import type {SpeciesId} from "./species";
+import type {StatStageId, Type, Weather} from "./utils";
 
 export type ItemId = keyof typeof __items;
 export type ItemData = {
@@ -18,6 +19,16 @@ export type ItemData = {
   restorePP?: number;
   reduceAcc?: number;
   choice?: StatStageId;
+  raiseCrit?: number;
+  kingsRock?: bool;
+  halveSpeed?: bool;
+  laggingTail?: bool;
+  reduceType?: Type;
+  extendWeather?: Weather;
+  statusOrb?: Status;
+  boostStats?: Partial<
+    Record<SpeciesId, {stats: StatStageId[]; amount: number; transformed: bool}>
+  >;
 };
 
 export const itemList = __items as Record<ItemId, ItemData>;

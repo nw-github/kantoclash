@@ -77,7 +77,7 @@ const info = computed(() => {
     type = move.value.getType(poke.base!, weather);
   }
   if (pow && pow !== 1 && gen.items[poke.base!.item!]?.typeBoost?.type === type) {
-    pow += Math.floor(pow / gen.items[poke.base!.item!]!.typeBoost!.percent);
+    pow += Math.floor(pow * (gen.items[poke.base!.item!]!.typeBoost!.percent / 100));
   }
   if (pow && option.move === "facade" && poke.base!.status) {
     pow *= 2;

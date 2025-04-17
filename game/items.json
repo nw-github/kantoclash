@@ -38,7 +38,8 @@
   "metalpowder": {
     "name": "Metal Powder",
     "desc": "Boosts Ditto's Def and SpD by 50%.",
-    "fling": 10
+    "fling": 10,
+    "boostStats": {"ditto": {"stats": ["def", "spd"], "transformed": true, "amount": 0.5}}
   },
   "nugget": {"name": "Nugget", "fling": 30},
   "pokedoll": {"name": "Poke Doll"},
@@ -91,7 +92,11 @@
     "fling": 70,
     "typeBoost": {"type": "poison", "percent": 10}
   },
-  "kingsrock": {"name": "King's Rock", "desc": "Small chance to flinch on most moves."},
+  "kingsrock": {
+    "name": "King's Rock",
+    "desc": "Adds small chance to flinch to most moves.",
+    "kingsRock": true
+  },
   "bitterberry": {"name": "Bitter Berry", "desc": "Cures confusion once.", "cureStatus": "confuse"},
   "mintberry": {"name": "Mint Berry", "desc": "Cures sleep once.", "cureStatus": "slp"},
   "redapricorn": {"name": "Red Apricorn"},
@@ -175,7 +180,12 @@
     "fling": 30,
     "typeBoost": {"type": "grass", "percent": 10}
   },
-  "thickclub": {"name": "Thick Club", "desc": "Boosts Marowak's Atk by 50%.", "fling": 90},
+  "thickclub": {
+    "name": "Thick Club",
+    "desc": "Boosts Marowak's Atk by 50%.",
+    "fling": 90,
+    "boostStats": {"marowak": {"stats": ["atk"], "transformed": false, "amount": 1}}
+  },
   "focusband": {
     "name": "Focus Band",
     "desc": "Small chance to endure hits that would kill.",
@@ -206,7 +216,12 @@
     "fling": 30,
     "healFixed": 20
   },
-  "scopelens": {"name": "Scope Lens", "desc": "Boosts critical hit ratio.", "fling": 30},
+  "scopelens": {
+    "name": "Scope Lens",
+    "desc": "Boosts critical hit ratio.",
+    "fling": 30,
+    "raiseCrit": 1
+  },
   "metalcoat": {
     "name": "Metal Coat",
     "desc": "Boosts Steel-type moves by 10%.",
@@ -229,7 +244,12 @@
   "levelball": {"name": "Level Ball"},
   "lureball": {"name": "Lure Ball"},
   "fastball": {"name": "Fast Ball"},
-  "lightball": {"name": "Light Ball", "desc": "Boosts Pikachu's SpA by 50%.", "fling": 30},
+  "lightball": {
+    "name": "Light Ball",
+    "desc": "Boosts Pikachu's SpA by 50%.",
+    "fling": 30,
+    "boostStats": {"pikachu": {"stats": ["spa"], "transformed": false, "amount": 1}}
+  },
   "friendball": {"name": "Friend Ball"},
   "moonball": {"name": "Moon Ball"},
   "loveball": {"name": "Love Ball"},
@@ -507,7 +527,12 @@
   },
   "enigmaberry": {"name": "Enigma Berry", "fling": 10},
   "whiteherb": {"name": "White Herb", "desc": "Resets negative stat stages once.", "fling": 10},
-  "machobrace": {"name": "Macho Brace", "fling": 60},
+  "machobrace": {
+    "name": "Macho Brace",
+    "fling": 60,
+    "halveSpeed": true,
+    "desc": "Halves the holder's Spe."
+  },
   "soothebell": {"name": "Soothe Bell", "fling": 10},
   "mentalherb": {"name": "Mental Herb", "desc": "Prevents infatuation.", "fling": 10},
   "choiceband": {
@@ -519,10 +544,24 @@
   "souldew": {
     "name": "Soul Dew",
     "desc": "Boosts Latios/Latias's SpA and SpD by 50%.",
-    "fling": 30
+    "fling": 30,
+    "boostStats": {
+      "latias": {"stats": ["spa", "spd"], "transformed": false, "amount": 0.5},
+      "latios": {"stats": ["spa", "spd"], "transformed": false, "amount": 0.5}
+    }
   },
-  "deepseatooth": {"name": "DeepSeaTooth", "desc": "Boosts Clamperl's SpA by 50%.", "fling": 90},
-  "deepseascale": {"name": "DeepSeaScale", "desc": "Boosts Clamperl's SpD by 50%.", "fling": 30},
+  "deepseatooth": {
+    "name": "DeepSeaTooth",
+    "desc": "Boosts Clamperl's SpA by 50%.",
+    "fling": 90,
+    "boostStats": {"clamperl": {"stats": ["spa"], "transformed": false, "amount": 1}}
+  },
+  "deepseascale": {
+    "name": "DeepSeaScale",
+    "desc": "Boosts Clamperl's SpD by 50%.",
+    "fling": 30,
+    "boostStats": {"clamperl": {"stats": ["spd"], "transformed": false, "amount": 1}}
+  },
   "silkscarf": {
     "name": "Silk Scarf",
     "desc": "Boosts Normal-type moves by 10%.",
@@ -637,48 +676,173 @@
   "airmail": {"name": "Air Mail"},
   "mosaicmail": {"name": "Mosaic Mail"},
   "brickmail": {"name": "Brick Mail"},
-  "occaberry": {"name": "Occa Berry", "fling": 10},
-  "passhoberry": {"name": "Passho Berry", "fling": 10},
-  "wacanberry": {"name": "Wacan Berry", "fling": 10},
-  "rindoberry": {"name": "Rindo Berry", "fling": 10},
-  "yacheberry": {"name": "Yache Berry", "fling": 10},
-  "chopleberry": {"name": "Chople Berry", "fling": 10},
-  "kebiaberry": {"name": "Kebia Berry", "fling": 10},
-  "shucaberry": {"name": "Shuca Berry", "fling": 10},
-  "cobaberry": {"name": "Coba Berry", "fling": 10},
-  "payapaberry": {"name": "Payapa Berry", "fling": 10},
-  "tangaberry": {"name": "Tanga Berry", "fling": 10},
-  "chartiberry": {"name": "Charti Berry", "fling": 10},
-  "kasibberry": {"name": "Kasib Berry", "fling": 10},
-  "habanberry": {"name": "Haban Berry", "fling": 10},
-  "colburberry": {"name": "Colbur Berry", "fling": 10},
-  "babiriberry": {"name": "Babiri Berry", "fling": 10},
-  "chilanberry": {"name": "Chilan Berry", "fling": 10},
+  "occaberry": {
+    "name": "Occa Berry",
+    "fling": 10,
+    "reduceType": "fire",
+    "desc": "Halves dmg from a SE Fire-type move."
+  },
+  "passhoberry": {
+    "name": "Passho Berry",
+    "fling": 10,
+    "reduceType": "water",
+    "desc": "Halves dmg from a SE Water-type move."
+  },
+  "wacanberry": {
+    "name": "Wacan Berry",
+    "fling": 10,
+    "reduceType": "electric",
+    "desc": "Halves dmg from a SE Electric-type move."
+  },
+  "rindoberry": {
+    "name": "Rindo Berry",
+    "fling": 10,
+    "reduceType": "grass",
+    "desc": "Halves dmg from a SE Grass-type move."
+  },
+  "yacheberry": {
+    "name": "Yache Berry",
+    "fling": 10,
+    "reduceType": "ice",
+    "desc": "Halves dmg from a SE Ice-type move."
+  },
+  "chopleberry": {
+    "name": "Chople Berry",
+    "fling": 10,
+    "reduceType": "fight",
+    "desc": "Halves dmg from a SE Fighting-type move."
+  },
+  "kebiaberry": {
+    "name": "Kebia Berry",
+    "fling": 10,
+    "reduceType": "poison",
+    "desc": "Halves dmg from a SE Poison-type move."
+  },
+  "shucaberry": {
+    "name": "Shuca Berry",
+    "fling": 10,
+    "reduceType": "ground",
+    "desc": "Halves dmg from a SE Ground-type move."
+  },
+  "cobaberry": {
+    "name": "Coba Berry",
+    "fling": 10,
+    "reduceType": "flying",
+    "desc": "Halves dmg from a SE Flying-type move."
+  },
+  "payapaberry": {
+    "name": "Payapa Berry",
+    "fling": 10,
+    "reduceType": "psychic",
+    "desc": "Halves dmg from a SE Psychic-type move."
+  },
+  "tangaberry": {
+    "name": "Tanga Berry",
+    "fling": 10,
+    "reduceType": "bug",
+    "desc": "Halves dmg from a SE Bug-type move."
+  },
+  "chartiberry": {
+    "name": "Charti Berry",
+    "fling": 10,
+    "reduceType": "rock",
+    "desc": "Halves dmg from a SE Rock-type move."
+  },
+  "kasibberry": {
+    "name": "Kasib Berry",
+    "fling": 10,
+    "reduceType": "ghost",
+    "desc": "Halves dmg from a SE Ghost-type move."
+  },
+  "habanberry": {
+    "name": "Haban Berry",
+    "fling": 10,
+    "reduceType": "dragon",
+    "desc": "Halves dmg from a SE Dragon-type move."
+  },
+  "colburberry": {
+    "name": "Colbur Berry",
+    "fling": 10,
+    "reduceType": "dark",
+    "desc": "Halves dmg from a SE Dark-type move."
+  },
+  "babiriberry": {
+    "name": "Babiri Berry",
+    "fling": 10,
+    "reduceType": "steel",
+    "desc": "Halves dmg from a SE Steel-type move."
+  },
+  "chilanberry": {
+    "name": "Chilan Berry",
+    "fling": 10,
+    "reduceType": "normal",
+    "desc": "Halves dmg from a Normal-type move."
+  },
   "micleberry": {"name": "Micle Berry", "fling": 10},
   "custapberry": {"name": "Custap Berry", "fling": 10},
   "jabocaberry": {"name": "Jaboca Berry", "fling": 10},
   "rowapberry": {"name": "Rowap Berry", "fling": 10},
-  "widelens": {"name": "Wide Lens", "fling": 10},
+  "widelens": {"name": "Wide Lens", "fling": 10, "desc": "Boosts accuracy by 10%.", "boostAcc": 10},
   "muscleband": {"name": "Muscle Band", "fling": 10},
   "wiseglasses": {"name": "Wise Glasses", "fling": 10},
   "expertbelt": {"name": "Expert Belt", "fling": 10},
   "lightclay": {"name": "Light Clay", "fling": 30},
   "lifeorb": {"name": "Life Orb", "fling": 30},
   "powerherb": {"name": "Power Herb", "fling": 70},
-  "toxicorb": {"name": "Toxic Orb", "fling": 30},
-  "flameorb": {"name": "Flame Orb", "fling": 30},
-  "quickpowder": {"name": "Quick Powder", "fling": 10},
+  "toxicorb": {
+    "name": "Toxic Orb",
+    "fling": 30,
+    "desc": "Badly poisons holder at the end of the turn.",
+    "statusOrb": "tox"
+  },
+  "flameorb": {
+    "name": "Flame Orb",
+    "fling": 30,
+    "desc": "Burns holder at the end of the turn.",
+    "statusOrb": "brn"
+  },
+  "quickpowder": {
+    "name": "Quick Powder",
+    "fling": 10,
+    "desc": "Doubles Ditto's Spe.",
+    "boostStats": {"ditto": {"stats": ["spe"], "transformed": false, "amount": 1}}
+  },
   "focussash": {"name": "Focus Sash", "fling": 10},
-  "zoomlens": {"name": "Zoom Lens"},
+  "zoomlens": {"name": "Zoom Lens", "fling": 10, "desc": "Boosts accuracy by 20%.", "boostAcc": 20},
   "metronome": {"name": "Metronome", "fling": 30},
   "ironball": {"name": "Iron Ball", "fling": 130},
-  "laggingtail": {"name": "Lagging Tail", "fling": 10},
+  "laggingtail": {
+    "name": "Lagging Tail",
+    "fling": 10,
+    "desc": "Holder moves last in priority bracket.",
+    "laggingTail": true
+  },
   "destinyknot": {"name": "Destiny Knot", "fling": 10},
   "blacksludge": {"name": "Black Sludge", "fling": 30},
-  "icyrock": {"name": "Icy Rock", "fling": 40},
-  "smoothrock": {"name": "Smooth Rock", "fling": 10},
-  "heatrock": {"name": "Heat Rock", "fling": 60},
-  "damprock": {"name": "Damp Rock", "fling": 60},
+  "icyrock": {
+    "name": "Icy Rock",
+    "fling": 40,
+    "desc": "Extends Hail to 8 turns.",
+    "extendWeather": "hail"
+  },
+  "smoothrock": {
+    "name": "Smooth Rock",
+    "fling": 10,
+    "desc": "Extends Sandstorm to 8 turns.",
+    "extendWeather": "sand"
+  },
+  "heatrock": {
+    "name": "Heat Rock",
+    "fling": 60,
+    "desc": "Extends Sunny Day to 8 turns.",
+    "extendWeather": "sun"
+  },
+  "damprock": {
+    "name": "Damp Rock",
+    "fling": 60,
+    "desc": "Extends Rain Dance to 8 turns.",
+    "extendWeather": "rain"
+  },
   "gripclaw": {"name": "Grip Claw", "fling": 90},
   "choicescarf": {
     "name": "Choice Scarf",
@@ -687,12 +851,42 @@
     "choice": "spe"
   },
   "stickybarb": {"name": "Sticky Barb", "fling": 80},
-  "powerbracer": {"name": "Power Bracer", "fling": 70},
-  "powerbelt": {"name": "Power Belt", "fling": 70},
-  "powerlens": {"name": "Power Lens", "fling": 70},
-  "powerband": {"name": "Power Band", "fling": 70},
-  "poweranklet": {"name": "Power Anklet", "fling": 70},
-  "powerweight": {"name": "Power Weight", "fling": 70},
+  "powerbracer": {
+    "name": "Power Bracer",
+    "fling": 70,
+    "halveSpeed": true,
+    "desc": "Halves the holder's Spe."
+  },
+  "powerbelt": {
+    "name": "Power Belt",
+    "fling": 70,
+    "halveSpeed": true,
+    "desc": "Halves the holder's Spe."
+  },
+  "powerlens": {
+    "name": "Power Lens",
+    "fling": 70,
+    "halveSpeed": true,
+    "desc": "Halves the holder's Spe."
+  },
+  "powerband": {
+    "name": "Power Band",
+    "fling": 70,
+    "halveSpeed": true,
+    "desc": "Halves the holder's Spe."
+  },
+  "poweranklet": {
+    "name": "Power Anklet",
+    "fling": 70,
+    "halveSpeed": true,
+    "desc": "Halves the holder's Spe."
+  },
+  "powerweight": {
+    "name": "Power Weight",
+    "fling": 70,
+    "halveSpeed": true,
+    "desc": "Halves the holder's Spe."
+  },
   "shedshell": {"name": "Shed Shell", "fling": 10},
   "bigroot": {"name": "Big Root", "fling": 10},
   "choicespecs": {
@@ -797,11 +991,31 @@
     "typeBoost": {"type": "steel", "percent": 20, "plate": true},
     "desc": "Boosts Steel-type moves by 20%, Arceus=Steel."
   },
-  "oddincense": {"name": "Odd Incense"},
-  "rockincense": {"name": "Rock Incense"},
-  "fullincense": {"name": "Full Incense"},
-  "waveincense": {"name": "Wave Incense"},
-  "roseincense": {"name": "Rose Incense"},
+  "oddincense": {
+    "name": "Odd Incense",
+    "desc": "Boosts Psychic-type moves by 20%.",
+    "typeBoost": {"type": "psychic", "percent": 20}
+  },
+  "rockincense": {
+    "name": "Rock Incense",
+    "desc": "Boosts Rock-type moves by 20%.",
+    "typeBoost": {"type": "rock", "percent": 20}
+  },
+  "fullincense": {
+    "name": "Full Incense",
+    "desc": "Holder moves last in priority bracket.",
+    "laggingTail": true
+  },
+  "waveincense": {
+    "name": "Wave Incense",
+    "desc": "Boosts Water-type moves by 20%.",
+    "typeBoost": {"type": "water", "percent": 20}
+  },
+  "roseincense": {
+    "name": "Rose Incense",
+    "desc": "Boosts Grass-type moves by 20%.",
+    "typeBoost": {"type": "grass", "percent": 20}
+  },
   "luckincense": {"name": "Luck Incense"},
   "pureincense": {"name": "Pure Incense"},
   "protector": {"name": "Protector", "fling": 80},
@@ -809,8 +1023,18 @@
   "magmarizer": {"name": "Magmarizer", "fling": 80},
   "dubiousdisc": {"name": "Dubious Disc", "fling": 50},
   "reapercloth": {"name": "Reaper Cloth", "fling": 10},
-  "razorclaw": {"name": "Razor Claw", "fling": 80},
-  "razorfang": {"name": "Razor Fang", "fling": 30},
+  "razorclaw": {
+    "name": "Razor Claw",
+    "fling": 80,
+    "desc": "Boosts critical hit ratio.",
+    "raiseCrit": 1
+  },
+  "razorfang": {
+    "name": "Razor Fang",
+    "fling": 30,
+    "desc": "Adds small chance to flinch to most moves.",
+    "kingsRock": true
+  },
   "tm51": {"name": "TM51"},
   "tm52": {"name": "TM52"},
   "tm53": {"name": "TM53"},
@@ -873,18 +1097,18 @@
   "oaksletter": {"name": "Oak's Letter"},
   "lunarwing": {"name": "Lunar Wing"},
   "membercard": {"name": "Member Card"},
-  "azureflute": {"name": "Azure Flute", "fling": 30},
+  "azureflute": {"name": "Azure Flute"},
   "magmastone": {"name": "Magma Stone"},
   "parcel": {"name": "Parcel"},
   "coupon1": {"name": "Coupon 1"},
   "coupon2": {"name": "Coupon 2"},
   "coupon3": {"name": "Coupon 3"},
-  "secretpotion": {"name": "SecretPotion", "fling": 30},
+  "secretpotion": {"name": "SecretPotion"},
   "vsrecorder": {"name": "Vs. Recorder"},
   "gracidea": {"name": "Gracidea"},
   "apricornbox": {"name": "Apricorn Box"},
   "unownreport": {"name": "Unown Report"},
-  "berrypots": {"name": "Berry Pots", "fling": 10},
+  "berrypots": {"name": "Berry Pots"},
   "dowsingmchn": {"name": "Dowsing MCHN"},
   "bluecard": {"name": "Blue Card"},
   "clearbell": {"name": "Clear Bell"},

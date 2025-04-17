@@ -55,23 +55,24 @@ const createGeneration = (): Generation => {
       // out of battle speeed?
       const turnOrder = battle.turnOrder;
 
-      // TODO: dont execute this twice if someone dies to spikes after being switched in
-      for (const poke of turnOrder) {
-        poke.v.flinch = false;
-        poke.v.inPursuit = false;
-        poke.v.retaliateDamage = 0;
-        poke.v.hasFocus = true;
-        if (poke.v.justSwitched) {
-          poke.v.canSpeedBoost = true;
-          poke.v.justSwitched = false;
-        } else {
-          poke.v.canFakeOut = false;
-        }
+      if (!battle.allActive.some(p => p.v.fainted && p.canBeReplaced(battle))) {
+        for (const poke of turnOrder) {
+          poke.v.flinch = false;
+          poke.v.inPursuit = false;
+          poke.v.retaliateDamage = 0;
+          poke.v.hasFocus = true;
+          if (poke.v.justSwitched) {
+            poke.v.canSpeedBoost = true;
+            poke.v.justSwitched = false;
+          } else {
+            poke.v.canFakeOut = false;
+          }
 
-        const flags =
-          VF.protect | VF.endure | VF.helpingHand | VF.followMe | VF.snatch | VF.magicCoat;
-        if (poke.v.hasFlag(flags)) {
-          battle.event({type: "sv", volatiles: [poke.clearFlag(flags)]});
+          const flags =
+            VF.protect | VF.endure | VF.helpingHand | VF.followMe | VF.snatch | VF.magicCoat;
+          if (poke.v.hasFlag(flags)) {
+            battle.event({type: "sv", volatiles: [poke.clearFlag(flags)]});
+          }
         }
       }
 

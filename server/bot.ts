@@ -94,7 +94,11 @@ export async function startBot(format?: FormatId, botFunction: BotFunction = ran
     });
 
     $conn.on("challengeReceived", ({format, from}) => {
-      $conn.emit("respondToChallenge", from.id, true, createBotTeam(format), () => {});
+      $conn.emit("respondToChallenge", from.id, true, createBotTeam(format), (err, problems) => {
+        if (err) {
+          console.error(`matchmaking error '${err}':`, problems);
+        }
+      });
     });
 
     findMatch();
@@ -230,13 +234,6 @@ export async function startBot(format?: FormatId, botFunction: BotFunction = ran
         const src = players.poke(e.src)?.base;
         if (src) {
           src.moves[src.moves.indexOf("sketch")] = e.move;
-        }
-      } else if (e.type === "spikes") {
-        const player = players.get(e.player);
-        if (e.spin) {
-          player.spikes = 0;
-        } else {
-          player.spikes = (player.spikes || 0) + 1;
         }
       }
 
