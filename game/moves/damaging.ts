@@ -1,7 +1,7 @@
 import type {Random} from "random";
 import type {CalcDamageParams} from "../gen";
 import {abilityList} from "../species";
-import {VF} from "../utils";
+import {clamp, VF} from "../utils";
 import type {DamagingMove} from ".";
 import type {ActivePokemon, Battle} from "../battle";
 import type {Pokemon} from "../pokemon";
@@ -173,7 +173,7 @@ export function getDamage(
     } else if (self.flag === "rage") {
       moveMod = user.v.rage;
     } else if (self.flag === "fury_cutter") {
-      moveMod = 2 ** Math.min(user.v.furyCutter, 4);
+      moveMod = 2 ** clamp(user.v.furyCutter - 1, 0, 4);
     }
 
     let stockpile = 1;

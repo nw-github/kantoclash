@@ -128,7 +128,8 @@ export const tryDamage = (
   }
 
   const protect = target.v.hasFlag(VF.protect);
-  if (eff === 0 || fail || protect) {
+  const special = battle.gen.isSpecial(self, type);
+  if (eff === 0 || fail || protect || !battle.checkAccuracy(self, user, target, special)) {
     user.v.furyCutter = 0;
     user.v.thrashing = undefined;
     if (self.flag === "spitup") {
@@ -151,23 +152,14 @@ export const tryDamage = (
       }
     } else if (fail) {
       battle.info(user, "fail_generic");
-    } else if (protect) {
-      battle.info(target, "protect");
+    } else {
+      if (protect) {
+        battle.info(target, "protect");
+      }
       if (self.flag === "crash") {
         const {dmg} = getDamage(self, battle, user, target, {});
         battle.gen.handleCrashDamage(battle, user, target, dmg);
       }
-    }
-    return 0;
-  }
-
-  const special = battle.gen.isSpecial(self, type);
-  if (!battle.checkAccuracy(self, user, target, special)) {
-    user.v.furyCutter = 0;
-    user.v.thrashing = undefined;
-    if (self.flag === "crash") {
-      const {dmg} = getDamage(self, battle, user, target, {});
-      battle.gen.handleCrashDamage(battle, user, target, dmg);
     }
     return 0;
   }

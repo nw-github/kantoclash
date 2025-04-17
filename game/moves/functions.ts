@@ -171,7 +171,6 @@ export const moveFunctions: MoveFunctions = {
       } else {
         targets = battle.getTargets(user, Range.AdjacentFoe).slice(0, 1);
         if (!targets.length) {
-          user.v.furyCutter = 0;
           return battle.info(user, "fail_notarget");
         }
       }
@@ -213,12 +212,9 @@ export const moveFunctions: MoveFunctions = {
 
     if (this.flag === "bide") {
       user.v.bide = undefined;
-    } else if (user.base.hp && this.flag === "uturn" && user.canBatonPass()) {
+    } else if (user.v.inBatonPass) {
       battle.checkFaint(user);
-      if (!battle.victor) {
-        user.v.inBatonPass = "uturn";
-        battle.info(user, "uturn");
-      }
+      battle.info(user, "uturn");
     }
   },
   fail(battle, user) {

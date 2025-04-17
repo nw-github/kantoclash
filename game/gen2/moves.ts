@@ -23,27 +23,38 @@ export const moveFunctionPatches: Partial<MoveFunctions> = {
       user.recover(Math.max(1, amount), user, battle, this.why);
     }
   },
-  status(battle, user, [target]) {
-    if (battle.tryMagicBounce(this, user, target)) {
-      return;
-    } else if (target.v.substitute) {
-      return battle.info(target, "fail_generic");
-    } else if (battle.hasUproar(target)) {
-      return battle.info(user, "fail_generic");
-    } else if (
-      (this.checkType && battle.getEffectiveness(this.type, target) === 0) ||
-      ((this.status === "psn" || this.status === "tox") &&
-        target.v.hasAnyType("poison", "steel")) ||
-      (this.status === "brn" && target.v.types.includes("fire"))
-    ) {
-      return battle.info(target, "immune");
-    } else if (target.owner.screens.safeguard) {
-      return battle.info(target, "safeguard_protect");
-    } else if (!battle.checkAccuracy(this, user, target)) {
-      return;
+  status(battle, user, targets) {
+    let failed = true;
+    for (const target of targets) {
+      if (battle.tryMagicBounce(this, user, target)) {
+        return;
+      } else if (target.v.substitute || (battle.hasUproar(target) && this.status === "slp")) {
+        continue;
+      } else if (
+        (this.checkType && battle.getEffectiveness(this.type, target) === 0) ||
+        ((this.status === "psn" || this.status === "tox") &&
+          target.v.hasAnyType("poison", "steel")) ||
+        (this.status === "brn" && target.v.types.includes("fire"))
+      ) {
+        battle.info(target, "immune");
+        failed = false;
+        continue;
+      } else if (target.owner.screens.safeguard) {
+        battle.info(target, "safeguard_protect");
+        failed = false;
+        continue;
+      } else if (!battle.checkAccuracy(this, user, target)) {
+        failed = false;
+        continue;
+      }
+
+      target.status(this.status, battle, user, {override: false, loud: true});
+      failed = false;
     }
 
-    target.status(this.status, battle, user, {override: false, loud: true});
+    if (failed) {
+      battle.info(user, "fail_generic");
+    }
   },
 };
 

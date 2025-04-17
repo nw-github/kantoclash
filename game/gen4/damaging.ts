@@ -128,6 +128,7 @@ export const tryDamage = (
   }
 
   const protect = target.v.hasFlag(VF.protect);
+  const special = battle.gen.isSpecial(self, type);
   if (eff === 0 || fail || protect) {
     user.v.furyCutter = 0;
     user.v.thrashing = undefined;
@@ -151,23 +152,14 @@ export const tryDamage = (
       }
     } else if (fail) {
       battle.info(user, "fail_generic");
-    } else if (protect) {
-      battle.info(target, "protect");
+    } else {
+      if (protect) {
+        battle.info(target, "protect");
+      }
       if (self.flag === "crash") {
         const {dmg} = getDamage(self, battle, user, target, {});
         battle.gen.handleCrashDamage(battle, user, target, dmg);
       }
-    }
-    return 0;
-  }
-
-  const special = battle.gen.isSpecial(self, type);
-  if (!battle.checkAccuracy(self, user, target, special)) {
-    user.v.furyCutter = 0;
-    user.v.thrashing = undefined;
-    if (self.flag === "crash") {
-      const {dmg} = getDamage(self, battle, user, target, {});
-      battle.gen.handleCrashDamage(battle, user, target, dmg);
     }
     return 0;
   }
@@ -363,11 +355,11 @@ export const tryDamage = (
       move,
       volatiles: [{id: target.id, v: {trapped: move}}],
     });
-  }
-
-  if (self.flag === "uproar" && !user.v.thrashing) {
+  } else if (self.flag === "uproar" && !user.v.thrashing) {
     user.v.thrashing = {move: self, turns: battle.gen.rng.thrashDuration(battle), max: false};
     battle.info(user, "uproar");
+  } else if (self.flag === "uturn" && user.base.hp && user.canBatonPass()) {
+    user.v.inBatonPass = "uturn";
   }
 
   for (const eff of [self.effect, self.effect2]) {

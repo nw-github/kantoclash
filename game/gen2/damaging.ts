@@ -39,7 +39,7 @@ export const tryDamage = (
   const protect = target.v.hasFlag(VF.protect);
   if (eff === 0 || fail || protect) {
     user.v.furyCutter = 0;
-    if (user.v.thrashing && user.v.thrashing.move.flag === "rollout") {
+    if (user.v.thrashing?.move?.flag === "rollout") {
       user.v.thrashing = undefined;
     }
 
@@ -61,7 +61,7 @@ export const tryDamage = (
     checkThrashing();
     return 0;
   } else if (!battle.checkAccuracy(self, user, target, !battle.gen.isSpecial(self, type))) {
-    if (user.v.thrashing && user.v.thrashing.move.flag === "rollout") {
+    if (user.v.thrashing?.move?.flag === "rollout") {
       user.v.thrashing = undefined;
     }
 

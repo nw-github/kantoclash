@@ -4838,6 +4838,7 @@ const internalMoveList = createMoveList({
     pp: 10,
     type: "dark",
     range: Range.AllAdjacentFoe,
+    acc: 80,
     status: "slp",
     magicCoat: true,
   },
