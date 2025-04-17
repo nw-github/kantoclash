@@ -1,7 +1,12 @@
 {
   "masterball": {"name": "Master Ball"},
   "ultraball": {"name": "Ultra Ball"},
-  "brightpowder": {"name": "BrightPowder", "desc": "Makes foes less 10% accurate.", "fling": 10},
+  "brightpowder": {
+    "name": "BrightPowder",
+    "desc": "Makes foes 10% less accurate.",
+    "fling": 10,
+    "reduceAcc": 10
+  },
   "greatball": {"name": "Great Ball"},
   "pokeball": {"name": "Poke Ball"},
   "moonstone": {"name": "Moon Stone", "fling": 30},
@@ -210,7 +215,7 @@
   },
   "dragonfang": {"name": "Dragon Fang", "fling": 70},
   "leftovers": {"name": "Leftovers", "desc": "Heal 1/16 HP after each turn.", "fling": 10},
-  "mysteryberry": {"name": "MysteryBerry", "desc": "Restores PP by 5 once."},
+  "mysteryberry": {"name": "MysteryBerry", "desc": "Restores PP by 5 once.", "restorePP": 5},
   "dragonscale": {
     "name": "Dragon Scale",
     "desc": "Boosts Dragon-type moves by 10%.",
@@ -378,7 +383,12 @@
     "fling": 10,
     "cureStatus": "frz"
   },
-  "leppaberry": {"name": "Leppa Berry", "desc": "Restores PP by 10 once.", "fling": 10},
+  "leppaberry": {
+    "name": "Leppa Berry",
+    "desc": "Restores PP by 10 once.",
+    "fling": 10,
+    "restorePP": 10
+  },
   "oranberry": {
     "name": "Oran Berry",
     "desc": "Restores 10 HP once below 50% HP.",
@@ -503,7 +513,8 @@
   "choiceband": {
     "name": "Choice Band",
     "desc": "Boosts Atk by 50% but prevents switching moves.",
-    "fling": 10
+    "fling": 10,
+    "choice": "atk"
   },
   "souldew": {
     "name": "Soul Dew",
@@ -528,7 +539,7 @@
     "desc": "Boosts Water-type moves by 5%.",
     "typeBoost": {"type": "water", "percent": 5}
   },
-  "laxincense": {"name": "Lax Incense", "desc": "Makes foes 5% less accurate."},
+  "laxincense": {"name": "Lax Incense", "desc": "Makes foes 5% less accurate.", "reduceAcc": 5},
   "redscarf": {"name": "Red Scarf", "fling": 10},
   "bluescarf": {"name": "Blue Scarf", "fling": 10},
   "pinkscarf": {"name": "Pink Scarf", "fling": 10},
@@ -672,7 +683,8 @@
   "choicescarf": {
     "name": "Choice Scarf",
     "desc": "Boosts Spe by 50% but prevents switching moves.",
-    "fling": 10
+    "fling": 10,
+    "choice": "spe"
   },
   "stickybarb": {"name": "Sticky Barb", "fling": 80},
   "powerbracer": {"name": "Power Bracer", "fling": 70},
@@ -686,7 +698,8 @@
   "choicespecs": {
     "name": "Choice Specs",
     "desc": "Boosts SpA by 50% but prevents switching moves.",
-    "fling": 10
+    "fling": 10,
+    "choice": "spa"
   },
   "flameplate": {
     "name": "Flame Plate",

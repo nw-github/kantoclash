@@ -12,7 +12,7 @@ import random from "random";
 import {z} from "zod";
 import {isValidSketchMove, type FormatId} from "~/utils/shared";
 import {type Generation, GENERATION1, GENERATION2, GENERATION3, GENERATION4} from "~/game/gen";
-import {choiceItem, type ItemId} from "~/game/item";
+import type {ItemId} from "~/game/item";
 import {profanityMatcher} from "~/utils/schema";
 import {HP_IVS} from "~/utils/pokemon";
 
@@ -81,14 +81,14 @@ const getRandomPokemon = (
         }
 
         if (
-          choiceItem[item] === "atk" &&
+          gen.items[item].choice === "atk" &&
           !poke.moves.some(m => gen.getCategory(gen.moveList[m]) === MC.physical)
         ) {
           return false;
         }
 
         if (
-          choiceItem[item] === "spa" &&
+          gen.items[item].choice === "spa" &&
           !poke.moves.some(m => gen.getCategory(gen.moveList[m]) === MC.special)
         ) {
           return false;

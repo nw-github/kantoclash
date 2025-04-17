@@ -6,7 +6,7 @@ import {clamp, idiv, MC, screens, VF} from "../utils";
 import {moveFunctionPatches, movePatches} from "./moves";
 import speciesPatches from "./species.json";
 import items from "./items.json";
-import {itemList, reduceAccItem, type ItemId} from "../item";
+import {itemList, type ItemId} from "../item";
 import {tryDamage} from "./damaging";
 import type {ActivePokemon} from "../active";
 import {TurnType} from "../battle";
@@ -193,8 +193,9 @@ const createGeneration = (): Generation => {
       let acc = Math.floor(
         chance * this.accStageMultipliers![clamp(user.v.stages.acc - eva, -6, 6)]!,
       );
-      if (reduceAccItem[target.base.item!]) {
-        acc -= Math.floor(acc * (reduceAccItem[target.base.item!]! / 100));
+      const reduceAcc = battle.gen.items[user.base.item!]?.reduceAcc;
+      if (reduceAcc) {
+        acc -= Math.floor(acc * (reduceAcc / 100));
       }
 
       if (user.v.ability === "compoundeyes") {

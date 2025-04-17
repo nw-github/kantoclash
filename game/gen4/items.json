@@ -303,7 +303,7 @@
     "typeBoost": {"percent": 20},
     "desc": "Boosts Water-type moves by 20%."
   },
-  "laxincense": {"exists": true},
+  "laxincense": {"exists": true, "desc": "Makes foes 10% less accurate. ", "reduceAcc": 10},
   "luckypunch": {"exists": true},
   "metalpowder": {"exists": true},
   "thickclub": {"exists": true},

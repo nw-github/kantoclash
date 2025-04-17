@@ -5,7 +5,7 @@ import type {StatStageId, Type} from "./utils";
 export type ItemId = keyof typeof __items;
 export type ItemData = {
   name: string;
-  tm?: string;
+  tm?: Type;
   fling?: number;
   desc?: string;
   exists?: bool;
@@ -15,22 +15,9 @@ export type ItemData = {
   healFixed?: number;
   healPinchNature?: StatStageId;
   statPinch?: StatStageId | "random" | "crit";
+  restorePP?: number;
+  reduceAcc?: number;
+  choice?: StatStageId;
 };
 
 export const itemList = __items as Record<ItemId, ItemData>;
-
-export const ppBerry: Partial<Record<ItemId, number>> = {
-  mysteryberry: 5,
-  leppaberry: 10,
-};
-
-export const reduceAccItem: Partial<Record<ItemId, number>> = {
-  brightpowder: 10,
-  laxincense: 5,
-};
-
-export const choiceItem: Partial<Record<ItemId, StatStageId>> = {
-  choiceband: "atk",
-  choicespecs: "spa",
-  choicescarf: "spe",
-};

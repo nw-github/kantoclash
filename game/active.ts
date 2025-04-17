@@ -33,7 +33,7 @@ import {
 } from "./utils";
 import {TurnType, type Battle, type MoveOption, type Options, type Player} from "./battle";
 import {abilityList, type AbilityId} from "./species";
-import {ppBerry, type ItemId} from "./item";
+import type {ItemId} from "./item";
 
 export type DamageParams = {
   dmg: number;
@@ -793,11 +793,12 @@ export class ActivePokemon {
     }
 
     if (pp) {
-      if (ppBerry[this.base.item!]) {
+      const restorePP = battle.gen.items[this.base.item!]?.restorePP;
+      if (restorePP) {
         const slot = this.base.pp.findIndex(pp => pp === 0);
         if (slot !== -1) {
           const move = battle.gen.moveList[this.base.moves[slot]];
-          this.base.pp[slot] = Math.min(ppBerry[this.base.item!]!, battle.gen.getMaxPP(move));
+          this.base.pp[slot] = Math.min(restorePP, battle.gen.getMaxPP(move));
           battle.event({type: "item", src: this.id, item: this.base.item!});
           battle.event({type: "pp", src: this.id, move: this.base.moves[slot]});
           this.consumeItem();
