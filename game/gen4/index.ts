@@ -4,7 +4,7 @@ import {GENERATION1, type Generation} from "../gen1";
 import {abilityList, type Species, type SpeciesId} from "../species";
 import {merge, type GenPatches} from "../gen2";
 import {moveFunctionPatches, movePatches} from "./moves";
-import {GENERATION3} from "../gen3";
+import {GENERATION3, createItemMergeList} from "../gen3";
 import {idiv, MC, screens, VF} from "../utils";
 import {TurnType} from "../battle";
 import {tryDamage} from "./damaging";
@@ -18,6 +18,7 @@ const createGeneration = (): Generation => {
     moveList: movePatches as typeof GENERATION1.moveList,
     lastMoveIdx: GENERATION1.moveList.zenheadbutt.idx!,
     moveFunctions: moveFunctionPatches as typeof GENERATION1.moveFunctions,
+    items: createItemMergeList(items),
     rng: {
       disableTurns: battle => battle.rng.int(4, 7) + 1,
     },
@@ -270,9 +271,7 @@ const createGeneration = (): Generation => {
     },
   };
 
-  const r = merge(patches as any, GENERATION3);
-  r.items = items;
-  return r;
+  return merge(patches as any, GENERATION3);
 };
 
 export const GENERATION4 = createGeneration();

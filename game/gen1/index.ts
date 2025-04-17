@@ -15,7 +15,7 @@ import {
   randChoiceWeighted,
   MC,
 } from "../utils";
-import type {ItemData, ItemId} from "../item";
+import {itemList, type ItemId} from "../item";
 import {UNOWN_FORM, type FormId, type Gender, type Nature} from "../pokemon";
 import type {DamageReason} from "../events";
 
@@ -458,7 +458,7 @@ const createGeneration = () => {
     speciesList,
     moveList,
     typeChart,
-    items: {} as Record<ItemId, ItemData>,
+    items: itemList,
     moveFunctions,
     itemTypeBoost,
     statBoostItem,

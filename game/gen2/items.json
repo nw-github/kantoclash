@@ -1,675 +1,207 @@
 {
-  "masterball": {
-    "name": "Master Ball"
-  },
-  "ultraball": {
-    "name": "Ultra Ball"
-  },
-  "brightpowder": {
-    "name": "BrightPowder"
-  },
-  "greatball": {
-    "name": "Great Ball"
-  },
-  "pokeball": {
-    "name": "Poke Ball"
-  },
-  "moonstone": {
-    "name": "Moon Stone"
-  },
-  "antidote": {
-    "name": "Antidote"
-  },
-  "burnheal": {
-    "name": "Burn Heal"
-  },
-  "iceheal": {
-    "name": "Ice Heal"
-  },
-  "awakening": {
-    "name": "Awakening"
-  },
-  "parlyzheal": {
-    "name": "Parlyz Heal"
-  },
-  "fullrestore": {
-    "name": "Full Restore"
-  },
-  "maxpotion": {
-    "name": "Max Potion"
-  },
-  "hyperpotion": {
-    "name": "Hyper Potion"
-  },
-  "superpotion": {
-    "name": "Super Potion"
-  },
-  "potion": {
-    "name": "Potion"
-  },
-  "escaperope": {
-    "name": "Escape Rope"
-  },
-  "repel": {
-    "name": "Repel"
-  },
-  "maxelixir": {
-    "name": "Max Elixir"
-  },
-  "firestone": {
-    "name": "Fire Stone"
-  },
-  "thunderstone": {
-    "name": "Thunderstone"
-  },
-  "waterstone": {
-    "name": "Water Stone"
-  },
-  "hpup": {
-    "name": "HP Up"
-  },
-  "protein": {
-    "name": "Protein"
-  },
-  "iron": {
-    "name": "Iron"
-  },
-  "carbos": {
-    "name": "Carbos"
-  },
-  "luckypunch": {
-    "name": "Lucky Punch"
-  },
-  "calcium": {
-    "name": "Calcium"
-  },
-  "rarecandy": {
-    "name": "Rare Candy"
-  },
-  "xaccuracy": {
-    "name": "X Accuracy"
-  },
-  "leafstone": {
-    "name": "Leaf Stone"
-  },
-  "metalpowder": {
-    "name": "Metal Powder"
-  },
-  "nugget": {
-    "name": "Nugget"
-  },
-  "pokedoll": {
-    "name": "Poke Doll"
-  },
-  "fullheal": {
-    "name": "Full Heal"
-  },
-  "revive": {
-    "name": "Revive"
-  },
-  "maxrevive": {
-    "name": "Max Revive"
-  },
-  "guardspec": {
-    "name": "Guard Spec."
-  },
-  "superrepel": {
-    "name": "Super Repel"
-  },
-  "maxrepel": {
-    "name": "Max Repel"
-  },
-  "direhit": {
-    "name": "Dire Hit"
-  },
-  "freshwater": {
-    "name": "Fresh Water"
-  },
-  "sodapop": {
-    "name": "Soda Pop"
-  },
-  "lemonade": {
-    "name": "Lemonade"
-  },
-  "xattack": {
-    "name": "X Attack"
-  },
-  "xdefend": {
-    "name": "X Defend"
-  },
-  "xspeed": {
-    "name": "X Speed"
-  },
-  "xspecial": {
-    "name": "X Special"
-  },
-  "expshare": {
-    "name": "Exp. Share"
-  },
-  "silverleaf": {
-    "name": "Silver Leaf"
-  },
-  "ppup": {
-    "name": "PP Up"
-  },
-  "ether": {
-    "name": "Ether"
-  },
-  "maxether": {
-    "name": "Max Ether"
-  },
-  "elixir": {
-    "name": "Elixir"
-  },
-  "moomoomilk": {
-    "name": "Moomoo Milk"
-  },
-  "quickclaw": {
-    "name": "Quick Claw"
-  },
-  "psncureberry": {
-    "name": "PSN Cure Berry"
-  },
-  "goldleaf": {
-    "name": "Gold Leaf"
-  },
-  "softsand": {
-    "name": "Soft Sand"
-  },
-  "sharpbeak": {
-    "name": "Sharp Beak"
-  },
-  "przcureberry": {
-    "name": "PRZ Cure Berry"
-  },
-  "burntberry": {
-    "name": "Burnt Berry"
-  },
-  "iceberry": {
-    "name": "Ice Berry"
-  },
-  "poisonbarb": {
-    "name": "Poison Barb"
-  },
-  "kingsrock": {
-    "name": "King's Rock"
-  },
-  "bitterberry": {
-    "name": "Bitter Berry"
-  },
-  "mintberry": {
-    "name": "Mint Berry"
-  },
-  "redapricorn": {
-    "name": "Red Apricorn"
-  },
-  "tinymushroom": {
-    "name": "TinyMushroom"
-  },
-  "bigmushroom": {
-    "name": "Big Mushroom"
-  },
-  "silverpowder": {
-    "name": "SilverPowder"
-  },
-  "bluapricorn": {
-    "name": "Blu Apricorn"
-  },
-  "amuletcoin": {
-    "name": "Amulet Coin"
-  },
-  "ylwapricorn": {
-    "name": "Ylw Apricorn"
-  },
-  "grnapricorn": {
-    "name": "Grn Apricorn"
-  },
-  "cleansetag": {
-    "name": "Cleanse Tag"
-  },
-  "mysticwater": {
-    "name": "Mystic Water"
-  },
-  "twistedspoon": {
-    "name": "TwistedSpoon"
-  },
-  "whtapricorn": {
-    "name": "Wht Apricorn"
-  },
-  "blackbelt": {
-    "name": "Black Belt"
-  },
-  "blkapricorn": {
-    "name": "Blk Apricorn"
-  },
-  "pnkapricorn": {
-    "name": "Pnk Apricorn"
-  },
-  "blackglasses": {
-    "name": "BlackGlasses"
-  },
-  "slowpoketail": {
-    "name": "SlowpokeTail"
-  },
-  "pinkbow": {
-    "name": "Pink Bow"
-  },
-  "stick": {
-    "name": "Stick"
-  },
-  "smokeball": {
-    "name": "Smoke Ball"
-  },
-  "nevermeltice": {
-    "name": "NeverMeltIce"
-  },
-  "magnet": {
-    "name": "Magnet"
-  },
-  "miracleberry": {
-    "name": "MiracleBerry"
-  },
-  "pearl": {
-    "name": "Pearl"
-  },
-  "bigpearl": {
-    "name": "Big Pearl"
-  },
-  "everstone": {
-    "name": "Everstone"
-  },
-  "spelltag": {
-    "name": "Spell Tag"
-  },
-  "ragecandybar": {
-    "name": "RageCandyBar"
-  },
-  "miracleseed": {
-    "name": "Miracle Seed"
-  },
-  "thickclub": {
-    "name": "Thick Club"
-  },
-  "focusband": {
-    "name": "Focus Band"
-  },
-  "energypowder": {
-    "name": "EnergyPowder"
-  },
-  "energyroot": {
-    "name": "Energy Root"
-  },
-  "healpowder": {
-    "name": "Heal Powder"
-  },
-  "revivalherb": {
-    "name": "Revival Herb"
-  },
-  "hardstone": {
-    "name": "Hard Stone"
-  },
-  "luckyegg": {
-    "name": "Lucky Egg"
-  },
-  "stardust": {
-    "name": "Stardust"
-  },
-  "starpiece": {
-    "name": "Star Piece"
-  },
-  "charcoal": {
-    "name": "Charcoal"
-  },
-  "berryjuice": {
-    "name": "Berry Juice"
-  },
-  "scopelens": {
-    "name": "Scope Lens"
-  },
-  "metalcoat": {
-    "name": "Metal Coat"
-  },
-  "dragonfang": {
-    "name": "Dragon Fang"
-  },
-  "leftovers": {
-    "name": "Leftovers"
-  },
-  "mysteryberry": {
-    "name": "MysteryBerry"
-  },
-  "dragonscale": {
-    "name": "Dragon Scale"
-  },
-  "berserkgene": {
-    "name": "Berserk Gene"
-  },
-  "sacredash": {
-    "name": "Sacred Ash"
-  },
-  "heavyball": {
-    "name": "Heavy Ball"
-  },
-  "flowermail": {
-    "name": "Flower Mail"
-  },
-  "levelball": {
-    "name": "Level Ball"
-  },
-  "lureball": {
-    "name": "Lure Ball"
-  },
-  "fastball": {
-    "name": "Fast Ball"
-  },
-  "lightball": {
-    "name": "Light Ball"
-  },
-  "friendball": {
-    "name": "Friend Ball"
-  },
-  "moonball": {
-    "name": "Moon Ball"
-  },
-  "loveball": {
-    "name": "Love Ball"
-  },
-  "normalbox": {
-    "name": "Normal Box"
-  },
-  "gorgeousbox": {
-    "name": "Gorgeous Box"
-  },
-  "sunstone": {
-    "name": "Sun Stone"
-  },
-  "polkadotbow": {
-    "name": "Polkadot Bow"
-  },
-  "upgrade": {
-    "name": "Up-Grade"
-  },
-  "berry": {
-    "name": "Berry"
-  },
-  "goldberry": {
-    "name": "Gold Berry"
-  },
-  "parkball": {
-    "name": "Park Ball"
-  },
-  "brickpiece": {
-    "name": "Brick Piece"
-  },
-  "surfmail": {
-    "name": "Surf Mail"
-  },
-  "litebluemail": {
-    "name": "Litebluemail"
-  },
-  "portraitmail": {
-    "name": "Portraitmail"
-  },
-  "lovelymail": {
-    "name": "Lovely Mail"
-  },
-  "eonmail": {
-    "name": "Eon Mail"
-  },
-  "morphmail": {
-    "name": "Morph Mail"
-  },
-  "blueskymail": {
-    "name": "Bluesky Mail"
-  },
-  "musicmail": {
-    "name": "Music Mail"
-  },
-  "miragemail": {
-    "name": "Mirage Mail"
-  },
-  "tm01": {
-    "name": "TM01",
-    "tm": "fight"
-  },
-  "tm02": {
-    "name": "TM02",
-    "tm": "dragon"
-  },
-  "tm03": {
-    "name": "TM03",
-    "tm": "water"
-  },
-  "tm04": {
-    "name": "TM04",
-    "tm": "psychic"
-  },
-  "tm05": {
-    "name": "TM05",
-    "tm": "normal"
-  },
-  "tm06": {
-    "name": "TM06",
-    "tm": "poison"
-  },
-  "tm07": {
-    "name": "TM07",
-    "tm": "ice"
-  },
-  "tm08": {
-    "name": "TM08",
-    "tm": "fight"
-  },
-  "tm09": {
-    "name": "TM09",
-    "tm": "grass"
-  },
-  "tm10": {
-    "name": "TM10",
-    "tm": "normal"
-  },
-  "tm11": {
-    "name": "TM11",
-    "tm": "fire"
-  },
-  "tm12": {
-    "name": "TM12",
-    "tm": "dark"
-  },
-  "tm13": {
-    "name": "TM13",
-    "tm": "ice"
-  },
-  "tm14": {
-    "name": "TM14",
-    "tm": "ice"
-  },
-  "tm15": {
-    "name": "TM15",
-    "tm": "normal"
-  },
-  "tm16": {
-    "name": "TM16",
-    "tm": "psychic"
-  },
-  "tm17": {
-    "name": "TM17",
-    "tm": "normal"
-  },
-  "tm18": {
-    "name": "TM18",
-    "tm": "water"
-  },
-  "tm19": {
-    "name": "TM19",
-    "tm": "grass"
-  },
-  "tm20": {
-    "name": "TM20",
-    "tm": "normal"
-  },
-  "tm21": {
-    "name": "TM21",
-    "tm": "normal"
-  },
-  "tm22": {
-    "name": "TM22",
-    "tm": "grass"
-  },
-  "tm23": {
-    "name": "TM23",
-    "tm": "steel"
-  },
-  "tm24": {
-    "name": "TM24",
-    "tm": "electric"
-  },
-  "tm25": {
-    "name": "TM25",
-    "tm": "electric"
-  },
-  "tm26": {
-    "name": "TM26",
-    "tm": "ground"
-  },
-  "tm27": {
-    "name": "TM27",
-    "tm": "normal"
-  },
-  "tm28": {
-    "name": "TM28",
-    "tm": "ground"
-  },
-  "tm29": {
-    "name": "TM29",
-    "tm": "psychic"
-  },
-  "tm30": {
-    "name": "TM30",
-    "tm": "ghost"
-  },
-  "tm31": {
-    "name": "TM31",
-    "tm": "fight"
-  },
-  "tm32": {
-    "name": "TM32",
-    "tm": "normal"
-  },
-  "tm33": {
-    "name": "TM33",
-    "tm": "psychic"
-  },
-  "tm34": {
-    "name": "TM34",
-    "tm": "electric"
-  },
-  "tm35": {
-    "name": "TM35",
-    "tm": "fire"
-  },
-  "tm36": {
-    "name": "TM36",
-    "tm": "poison"
-  },
-  "tm37": {
-    "name": "TM37",
-    "tm": "rock"
-  },
-  "tm38": {
-    "name": "TM38",
-    "tm": "fire"
-  },
-  "tm39": {
-    "name": "TM39",
-    "tm": "rock"
-  },
-  "tm40": {
-    "name": "TM40",
-    "tm": "flying"
-  },
-  "tm41": {
-    "name": "TM41",
-    "tm": "dark"
-  },
-  "tm42": {
-    "name": "TM42",
-    "tm": "normal"
-  },
-  "tm43": {
-    "name": "TM43",
-    "tm": "normal"
-  },
-  "tm44": {
-    "name": "TM44",
-    "tm": "psychic"
-  },
-  "tm45": {
-    "name": "TM45",
-    "tm": "normal"
-  },
-  "tm46": {
-    "name": "TM46",
-    "tm": "dark"
-  },
-  "tm47": {
-    "name": "TM47",
-    "tm": "steel"
-  },
-  "tm48": {
-    "name": "TM48",
-    "tm": "psychic"
-  },
-  "tm49": {
-    "name": "TM49",
-    "tm": "dark"
-  },
-  "tm50": {
-    "name": "TM50",
-    "tm": "fire"
-  },
-  "hm01": {
-    "name": "HM01",
-    "tm": "normal"
-  },
-  "hm02": {
-    "name": "HM02",
-    "tm": "flying"
-  },
-  "hm03": {
-    "name": "HM03",
-    "tm": "water"
-  },
-  "hm04": {
-    "name": "HM04",
-    "tm": "normal"
-  },
-  "hm05": {
-    "name": "HM05",
-    "tm": "normal"
-  },
-  "hm06": {
-    "name": "HM06",
-    "tm": "fight"
-  },
-  "hm07": {
-    "name": "HM07",
-    "tm": "water"
-  },
-  "hm08": {
-    "name": "HM08",
-    "tm": "water"
-  },
-  "hm09": {
-    "name": "HM09"
-  },
-  "hm10": {
-    "name": "HM10"
-  },
-  "hm11": {
-    "name": "HM11"
-  },
-  "hm12": {
-    "name": "HM12"
-  }
+  "masterball": {"exists": true},
+  "ultraball": {"exists": true},
+  "brightpowder": {"exists": true},
+  "greatball": {"exists": true},
+  "pokeball": {"exists": true},
+  "moonstone": {"exists": true},
+  "antidote": {"exists": true},
+  "burnheal": {"exists": true},
+  "iceheal": {"exists": true},
+  "awakening": {"exists": true},
+  "parlyzheal": {"exists": true},
+  "fullrestore": {"exists": true},
+  "maxpotion": {"exists": true},
+  "hyperpotion": {"exists": true},
+  "superpotion": {"exists": true},
+  "potion": {"exists": true},
+  "escaperope": {"exists": true},
+  "repel": {"exists": true},
+  "maxelixir": {"exists": true},
+  "firestone": {"exists": true},
+  "thunderstone": {"exists": true},
+  "waterstone": {"exists": true},
+  "hpup": {"exists": true},
+  "protein": {"exists": true},
+  "iron": {"exists": true},
+  "carbos": {"exists": true},
+  "luckypunch": {"exists": true},
+  "calcium": {"exists": true},
+  "rarecandy": {"exists": true},
+  "xaccuracy": {"exists": true},
+  "leafstone": {"exists": true},
+  "metalpowder": {"exists": true},
+  "nugget": {"exists": true},
+  "pokedoll": {"exists": true},
+  "fullheal": {"exists": true},
+  "revive": {"exists": true},
+  "maxrevive": {"exists": true},
+  "guardspec": {"exists": true},
+  "superrepel": {"exists": true},
+  "maxrepel": {"exists": true},
+  "direhit": {"exists": true},
+  "freshwater": {"exists": true},
+  "sodapop": {"exists": true},
+  "lemonade": {"exists": true},
+  "xattack": {"exists": true},
+  "xdefend": {"exists": true},
+  "xspeed": {"exists": true},
+  "xspecial": {"exists": true},
+  "expshare": {"exists": true},
+  "silverleaf": {"exists": true},
+  "ppup": {"exists": true},
+  "ether": {"exists": true},
+  "maxether": {"exists": true},
+  "elixir": {"exists": true},
+  "moomoomilk": {"exists": true},
+  "quickclaw": {"exists": true},
+  "psncureberry": {"exists": true},
+  "goldleaf": {"exists": true},
+  "softsand": {"exists": true},
+  "sharpbeak": {"exists": true},
+  "przcureberry": {"exists": true},
+  "burntberry": {"exists": true},
+  "iceberry": {"exists": true},
+  "poisonbarb": {"exists": true},
+  "kingsrock": {"exists": true},
+  "bitterberry": {"exists": true},
+  "mintberry": {"exists": true},
+  "redapricorn": {"exists": true},
+  "tinymushroom": {"exists": true},
+  "bigmushroom": {"exists": true},
+  "silverpowder": {"exists": true},
+  "bluapricorn": {"exists": true},
+  "amuletcoin": {"exists": true},
+  "ylwapricorn": {"exists": true},
+  "grnapricorn": {"exists": true},
+  "cleansetag": {"exists": true},
+  "mysticwater": {"exists": true},
+  "twistedspoon": {"exists": true},
+  "whtapricorn": {"exists": true},
+  "blackbelt": {"exists": true},
+  "blkapricorn": {"exists": true},
+  "pnkapricorn": {"exists": true},
+  "blackglasses": {"exists": true},
+  "slowpoketail": {"exists": true},
+  "pinkbow": {"exists": true},
+  "stick": {"exists": true},
+  "smokeball": {"exists": true},
+  "nevermeltice": {"exists": true},
+  "magnet": {"exists": true},
+  "miracleberry": {"exists": true},
+  "pearl": {"exists": true},
+  "bigpearl": {"exists": true},
+  "everstone": {"exists": true},
+  "spelltag": {"exists": true},
+  "ragecandybar": {"exists": true},
+  "miracleseed": {"exists": true},
+  "thickclub": {"exists": true},
+  "focusband": {"exists": true},
+  "energypowder": {"exists": true},
+  "energyroot": {"exists": true},
+  "healpowder": {"exists": true},
+  "revivalherb": {"exists": true},
+  "hardstone": {"exists": true},
+  "luckyegg": {"exists": true},
+  "stardust": {"exists": true},
+  "starpiece": {"exists": true},
+  "charcoal": {"exists": true},
+  "berryjuice": {"exists": true},
+  "scopelens": {"exists": true},
+  "metalcoat": {"exists": true},
+  "dragonfang": {"exists": true},
+  "leftovers": {"exists": true},
+  "mysteryberry": {"exists": true},
+  "dragonscale": {"exists": true},
+  "berserkgene": {"exists": true},
+  "sacredash": {"exists": true},
+  "heavyball": {"exists": true},
+  "flowermail": {"exists": true},
+  "levelball": {"exists": true},
+  "lureball": {"exists": true},
+  "fastball": {"exists": true},
+  "lightball": {"exists": true},
+  "friendball": {"exists": true},
+  "moonball": {"exists": true},
+  "loveball": {"exists": true},
+  "normalbox": {"exists": true},
+  "gorgeousbox": {"exists": true},
+  "sunstone": {"exists": true},
+  "polkadotbow": {"exists": true},
+  "upgrade": {"exists": true},
+  "berry": {"exists": true},
+  "goldberry": {"exists": true},
+  "parkball": {"exists": true},
+  "brickpiece": {"exists": true},
+  "surfmail": {"exists": true},
+  "litebluemail": {"exists": true},
+  "portraitmail": {"exists": true},
+  "lovelymail": {"exists": true},
+  "eonmail": {"exists": true},
+  "morphmail": {"exists": true},
+  "blueskymail": {"exists": true},
+  "musicmail": {"exists": true},
+  "miragemail": {"exists": true},
+  "tm01": {"tm": "fight", "exists": true},
+  "tm02": {"tm": "dragon", "exists": true},
+  "tm03": {"tm": "water", "exists": true},
+  "tm04": {"tm": "psychic", "exists": true},
+  "tm05": {"tm": "normal", "exists": true},
+  "tm06": {"tm": "poison", "exists": true},
+  "tm07": {"tm": "ice", "exists": true},
+  "tm08": {"tm": "fight", "exists": true},
+  "tm09": {"tm": "grass", "exists": true},
+  "tm10": {"tm": "normal", "exists": true},
+  "tm11": {"tm": "fire", "exists": true},
+  "tm12": {"tm": "dark", "exists": true},
+  "tm13": {"tm": "ice", "exists": true},
+  "tm14": {"tm": "ice", "exists": true},
+  "tm15": {"tm": "normal", "exists": true},
+  "tm16": {"tm": "psychic", "exists": true},
+  "tm17": {"tm": "normal", "exists": true},
+  "tm18": {"tm": "water", "exists": true},
+  "tm19": {"tm": "grass", "exists": true},
+  "tm20": {"tm": "normal", "exists": true},
+  "tm21": {"tm": "normal", "exists": true},
+  "tm22": {"tm": "grass", "exists": true},
+  "tm23": {"tm": "steel", "exists": true},
+  "tm24": {"tm": "electric", "exists": true},
+  "tm25": {"tm": "electric", "exists": true},
+  "tm26": {"tm": "ground", "exists": true},
+  "tm27": {"tm": "normal", "exists": true},
+  "tm28": {"tm": "ground", "exists": true},
+  "tm29": {"tm": "psychic", "exists": true},
+  "tm30": {"tm": "ghost", "exists": true},
+  "tm31": {"tm": "fight", "exists": true},
+  "tm32": {"tm": "normal", "exists": true},
+  "tm33": {"tm": "psychic", "exists": true},
+  "tm34": {"tm": "electric", "exists": true},
+  "tm35": {"tm": "fire", "exists": true},
+  "tm36": {"tm": "poison", "exists": true},
+  "tm37": {"tm": "rock", "exists": true},
+  "tm38": {"tm": "fire", "exists": true},
+  "tm39": {"tm": "rock", "exists": true},
+  "tm40": {"tm": "flying", "exists": true},
+  "tm41": {"tm": "dark", "exists": true},
+  "tm42": {"tm": "normal", "exists": true},
+  "tm43": {"tm": "normal", "exists": true},
+  "tm44": {"tm": "psychic", "exists": true},
+  "tm45": {"tm": "normal", "exists": true},
+  "tm46": {"tm": "dark", "exists": true},
+  "tm47": {"tm": "steel", "exists": true},
+  "tm48": {"tm": "psychic", "exists": true},
+  "tm49": {"tm": "dark", "exists": true},
+  "tm50": {"tm": "fire", "exists": true},
+  "hm01": {"tm": "normal", "exists": true},
+  "hm02": {"tm": "flying", "exists": true},
+  "hm03": {"tm": "water", "exists": true},
+  "hm04": {"tm": "normal", "exists": true},
+  "hm05": {"tm": "normal", "exists": true},
+  "hm06": {"tm": "fight", "exists": true},
+  "hm07": {"tm": "water", "exists": true},
+  "hm08": {"tm": "water", "exists": true},
+  "hm09": {"exists": true},
+  "hm10": {"exists": true},
+  "hm11": {"exists": true},
+  "hm12": {"exists": true}
 }

@@ -159,20 +159,20 @@
   </div>
   <div v-else-if="e.type === 'beatup'">{{ e.name }}'s attack!</div>
   <div v-else-if="e.type === 'item'">
-    <p v-if="e.item.includes('berry')" class="muted move">({{ pn(e.src) }} ate its {{ itemList[e.item].name }}!)</p>
-    <p v-else-if="e.item === 'berserkgene' || e.item === 'mentalherb'" class="muted move">{{ pn(e.src) }} used its {{ itemList[e.item].name }}!</p>
-    <p v-else-if="e.item === 'whiteherb'">{{ pn(e.src) }} restored its stats using its {{ itemList[e.item].name }}!</p>
+    <p v-if="e.item.includes('berry')" class="muted move">({{ pn(e.src) }} ate its {{ gen.items[e.item].name }}!)</p>
+    <p v-else-if="e.item === 'berserkgene' || e.item === 'mentalherb'" class="muted move">{{ pn(e.src) }} used its {{ gen.items[e.item].name }}!</p>
+    <p v-else-if="e.item === 'whiteherb'">{{ pn(e.src) }} restored its stats using its {{ gen.items[e.item].name }}!</p>
     <p v-else>Unknown event: <code>{{ e }}</code></p>
   </div>
   <div v-else-if="e.type === 'pp'">{{ pn(e.src) }}'s <b>{{ gen.moveList[e.move].name }}</b> was restored!</div>
-  <div v-else-if="e.type === 'thief'">{{ pn(e.src) }} stole {{ pn(e.target, false) }}'s {{ itemList[e.item].name }}!</div>
+  <div v-else-if="e.type === 'thief'">{{ pn(e.src) }} stole {{ pn(e.target, false) }}'s {{ gen.items[e.item].name }}!</div>
   <div v-else-if="e.type === 'trick'">
     <p>{{ pn(e.src) }} switched items with its target!</p>
-    <p v-if="e.srcItem">{{ pn(e.src) }} obtained one {{ itemList[e.srcItem].name }}!</p>
-    <p v-if="e.targetItem">{{ pn(e.target) }} obtained one {{ itemList[e.targetItem].name }}!</p>
+    <p v-if="e.srcItem">{{ pn(e.src) }} obtained one {{ gen.items[e.srcItem].name }}!</p>
+    <p v-if="e.targetItem">{{ pn(e.target) }} obtained one {{ gen.items[e.targetItem].name }}!</p>
   </div>
-  <div v-else-if="e.type === 'knockoff'">{{ pn(e.src) }} knocked off {{ pn(e.target, false) }}'s {{ itemList[e.item].name }}!</div>
-  <div v-else-if="e.type === 'recycle'">{{ pn(e.src) }} found one {{ itemList[e.item].name }}!</div>
+  <div v-else-if="e.type === 'knockoff'">{{ pn(e.src) }} knocked off {{ pn(e.target, false) }}'s {{ gen.items[e.item].name }}!</div>
+  <div v-else-if="e.type === 'recycle'">{{ pn(e.src) }} found one {{ gen.items[e.item].name }}!</div>
   <div v-else-if="e.type === 'forfeit'">
     <template v-if="e.timer">{{ players.get(e.user).name }} ran out of time.</template>
     <template v-else><b>{{ players.get(e.user).name }}</b> forfeit the match.</template>
@@ -209,8 +209,6 @@ div {
 import {hpPercentExact, playerId} from "~/game/utils";
 import type {Generation} from "~/game/gen";
 import {damageMessage} from "~/utils/uievent";
-// Use itemList since gen.items doesn't include every item.
-import {itemList} from "~/game/item";
 import type {PlayerId, PokeId} from "~/game/events";
 import {abilityList} from "~/game/species";
 

@@ -9,6 +9,7 @@ import type {Move} from "../moves";
 import items from "./items.json";
 import {applyItemStatBoost} from "../pokemon";
 import {tryDamage} from "./damaging";
+import type {ItemData, ItemId} from "../item";
 
 const speciesPatches = __speciesPatches as Partial<Record<SpeciesId, Partial<Species>>>;
 
@@ -174,7 +175,7 @@ const createGeneration = (): Generation => {
     typeChart: typeChartPatch as typeof GENERATION1.typeChart,
     lastMoveIdx: GENERATION1.moveList.zapcannon.idx!,
     moveFunctions: moveFunctionPatches as typeof GENERATION1.moveFunctions,
-    items,
+    items: items as Record<ItemId, ItemData>,
     accStageMultipliers,
     rng: {
       tryDefrost: battle => battle.rand255(25),

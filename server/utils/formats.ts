@@ -15,7 +15,6 @@ import {type Generation, GENERATION1, GENERATION2, GENERATION3, GENERATION4} fro
 import {choiceItem, statusBerry, type ItemId} from "~/game/item";
 import {profanityMatcher} from "~/utils/schema";
 import {HP_IVS} from "~/utils/pokemon";
-import {itemDesc} from "~/utils/describe";
 
 export type TeamProblems = {path: (string | number)[]; message: string}[];
 
@@ -44,7 +43,7 @@ const getRandomPokemon = (
       const s = gen.speciesList[id];
       const poke = customize(s, id);
       const items = (Object.keys(gen.items) as ItemId[]).filter(item => {
-        if (!(item in itemDesc)) {
+        if (!gen.items[item].desc) {
           return false;
         } else if (
           (item === "metalpowder" && id !== "ditto") ||
@@ -242,9 +241,8 @@ const createValidator = (gen: Generation) => {
       friendship: z.number().min(0).max(255).optional(),
       item: z
         .string()
-        .refine(i => i in gen.items, "Item does not exist")
-        .optional()
-        .refine(i => gen.id !== 1 || !i, "Cannot have item in Gen 1"),
+        .refine(i => gen.items[i as ItemId]?.exists, "Item is invalid or does not exist")
+        .optional(),
       gender: z.enum(["M", "F", "N"]).optional(),
       nature: z.nativeEnum(Nature).optional(),
       shiny: z.boolean().optional(),

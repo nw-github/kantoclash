@@ -6,6 +6,9 @@ export type ItemId = keyof typeof __items;
 export type ItemData = {
   name: string;
   tm?: string;
+  fling?: number;
+  desc?: string;
+  exists?: bool;
 };
 
 export const itemList = __items as Record<ItemId, ItemData>;

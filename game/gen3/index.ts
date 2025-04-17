@@ -6,7 +6,7 @@ import {clamp, idiv, MC, screens, VF} from "../utils";
 import {moveFunctionPatches, movePatches} from "./moves";
 import speciesPatches from "./species.json";
 import items from "./items.json";
-import {reduceAccItem} from "../item";
+import {itemList, reduceAccItem, type ItemData, type ItemId} from "../item";
 import {tryDamage} from "./damaging";
 import type {ActivePokemon} from "../active";
 import {TurnType} from "../battle";
@@ -35,6 +35,15 @@ const stageMultipliers: Record<number, number> = {
   6: 8 / 2,
 };
 
+export const createItemMergeList = (items: Partial<Record<ItemId, Partial<ItemData>>>) => {
+  for (const item in itemList) {
+    if (!(item in items)) {
+      items[item as ItemId] = {exists: false};
+    }
+  }
+  return items as typeof itemList;
+};
+
 const createGeneration = (): Generation => {
   const patches: Partial<GenPatches> = {
     id: 3,
@@ -44,6 +53,7 @@ const createGeneration = (): Generation => {
     moveList: movePatches as typeof GENERATION1.moveList,
     lastMoveIdx: GENERATION1.moveList.yawn.idx!,
     moveFunctions: moveFunctionPatches as typeof GENERATION1.moveFunctions,
+    items: createItemMergeList(items),
     maxIv: 31,
     maxEv: 255,
     maxTotalEv: 510,
@@ -634,9 +644,7 @@ const createGeneration = (): Generation => {
     },
   };
 
-  const r = merge(patches as any, GENERATION2);
-  r.items = items;
-  return r;
+  return merge(patches as any, GENERATION2);
 };
 
 enum BetweenTurns {

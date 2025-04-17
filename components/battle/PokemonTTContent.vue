@@ -8,7 +8,7 @@
         <template v-if="poke._item">
           <ItemSprite :item="poke._item" />
           <span class="text-xs" :class="poke.itemUnusable && 'line-through italic text-primary'">
-            {{ itemList[poke._item].name }}
+            {{ poke.gen.items[poke._item].name }}
           </span>
         </template>
       </div>
@@ -62,7 +62,6 @@
 import type {Pokemon} from "~/game/pokemon";
 import {hpPercentExact, type StatStageId, type Weather} from "~/game/utils";
 import "assets/colors.css";
-import {itemList} from "~/game/item";
 import {abilityList} from "~/game/species";
 import type {MoveId} from "~/game/moves";
 
