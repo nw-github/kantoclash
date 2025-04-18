@@ -190,7 +190,7 @@ const createGeneration = (): Generation => {
       let acc = Math.floor(
         chance * this.accStageMultipliers![clamp(user.v.stages.acc - eva, -6, 6)]!,
       );
-      const reduceAcc = battle.gen.items[user.base.item!]?.reduceAcc;
+      const reduceAcc = battle.gen.items[target.base.item!]?.reduceAcc;
       if (reduceAcc) {
         acc -= Math.floor(acc * (reduceAcc / 100));
       }

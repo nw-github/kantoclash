@@ -2,7 +2,6 @@ import type {ScreenId, StageId} from "~/game/utils";
 import type {Status} from "../game/pokemon";
 import type {DamagingMove, MoveId} from "~/game/moves";
 import type {Generation} from "~/game/gen";
-import type {ItemId} from "~/game/item";
 
 const dmgStatusTable: Record<Status, string> = {
   brn: "burn the target. ",

@@ -5071,12 +5071,17 @@ const internalMoveList = createMoveList({
     kingsRock: true,
   },
   grassknot: {
-    kind: "fail",
+    kind: "damage",
     name: "Grass Knot",
-    pp: 1,
-    type: "normal",
+    pp: 20,
+    type: "grass",
     range: Range.Adjacent,
-    why: "fail_generic",
+    category: MC.special,
+    power: 0,
+    acc: 100,
+    contact: true,
+    kingsRock: true,
+    getPower: (_user, target) => getLowKickPower((target as any)?.species?.weight ?? 0),
   },
   gravity: {
     kind: "fail",
@@ -5811,5 +5816,21 @@ function getFlailPower(this: DamagingMove, user: Pokemon) {
     return 150;
   } else {
     return 200;
+  }
+}
+
+export function getLowKickPower(weight: number): number {
+  if (weight <= 9.9) {
+    return 20;
+  } else if (weight <= 24.9) {
+    return 40;
+  } else if (weight <= 49.9) {
+    return 60;
+  } else if (weight <= 99.9) {
+    return 80;
+  } else if (weight <= 199.9) {
+    return 100;
+  } else {
+    return 120;
   }
 }

@@ -14,6 +14,7 @@ export const moveFunctionPatches: Partial<MoveFunctions> = {};
 
 export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
   acid: {effect: [10, [["spd", -1]]]},
+  ancientpower: {contact: false},
   astonish: {flag: "none"},
   bide: {ignoreType: true, acc: 0, priority: +1},
   covet: {contact: true},

@@ -124,7 +124,7 @@ export const infoMessage: Record<InfoReason, string> = {
   wont_flinch: "{} wont flinch!",
   ingrain: "{} planted its roots!",
   cTaunt: "{} fell for the taunt!",
-  taunt_end: "{}'s taunt wore off...",
+  taunt_end: "{} shook off the taunt...",
   begin_focuspunch: "{} is tightening its focus!",
   wish: "{} made a wish!",
   cDrowsy: "{} grew drowsy!",

@@ -214,7 +214,11 @@ export const moveFunctions: MoveFunctions = {
       user.v.bide = undefined;
     } else if (user.v.inBatonPass) {
       battle.checkFaint(user);
-      battle.info(user, "uturn");
+      if (battle.victor) {
+        user.v.inBatonPass = undefined;
+      } else {
+        battle.info(user, "uturn");
+      }
     }
   },
   fail(battle, user) {

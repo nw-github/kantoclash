@@ -1,4 +1,4 @@
-import {Range, type Move, type MoveFunctions, type MoveId} from "../moves";
+import {getLowKickPower, Range, type Move, type MoveFunctions, type MoveId} from "../moves";
 import {abilityList} from "../species";
 import {HP_TYPES, idiv, VF} from "../utils";
 
@@ -137,23 +137,7 @@ export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
     acc: 100,
     effect: [0, "flinch"],
     power: 0,
-    getPower(_user, target) {
-      if (!target) {
-        return 0;
-      } else if (target.species.weight <= 9.9) {
-        return 20;
-      } else if (target.species.weight <= 24.9) {
-        return 40;
-      } else if (target.species.weight <= 49.9) {
-        return 60;
-      } else if (target.species.weight <= 99.9) {
-        return 80;
-      } else if (target.species.weight <= 199.9) {
-        return 100;
-      } else {
-        return 120;
-      }
-    },
+    getPower: (_user, target) => getLowKickPower(target?.species?.weight ?? 0),
   },
   meanlook: {protect: true},
   megadrain: {kingsRock: false},
