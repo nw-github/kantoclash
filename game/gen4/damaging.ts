@@ -95,7 +95,7 @@ export const tryDamage = (
     } else if (target.v.ability === "roughskin") {
       battle.ability(target);
       user.damage2(battle, {
-        dmg: Math.max(1, Math.floor(user.base.stats.hp / 16)),
+        dmg: Math.max(1, Math.floor(user.base.stats.hp / 8)),
         src: target,
         why: "roughskin",
       });

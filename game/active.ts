@@ -7,7 +7,7 @@ import type {
   ChangedVolatiles,
   PokeId,
 } from "./events";
-import {type MoveId, type Move, type DamagingMove, Range, type FutureSightMove} from "./moves";
+import {type MoveId, type Move, type DamagingMove, Range} from "./moves";
 import {
   natureTable,
   transform,
@@ -60,7 +60,7 @@ export type SwitchReason = "phaze" | "uturn" | "batonpass";
 export class ActivePokemon {
   v: Volatiles;
   lastChosenMove?: Move;
-  futureSight?: {move: FutureSightMove; damage: number; turns: number};
+  futureSight?: {move: DamagingMove; damage: number; turns: number};
   wish?: {user: Pokemon; turns: number};
   choice?: ChosenMove;
   options?: {switches: number[]; moves: MoveOption[]; id: PokeId};
@@ -760,7 +760,7 @@ export class ActivePokemon {
   }
 
   handleShellBell(battle: Battle, dmg: number) {
-    if (dmg !== 0 && !this.v.fainted && this.base.item === "shellbell") {
+    if (this.base.hp && dmg !== 0 && !this.v.fainted && this.base.item === "shellbell") {
       this.recover(Math.max(1, Math.floor(dmg / 8)), this, battle, "shellbell", false);
     }
   }
@@ -967,7 +967,12 @@ export class ActivePokemon {
   handleFutureSight(battle: Battle) {
     if (this.futureSight && --this.futureSight.turns === 0) {
       if (!this.v.fainted) {
-        battle.info(this, this.futureSight.move.release);
+        battle.event({
+          type: "futuresight",
+          src: this.id,
+          move: battle.moveIdOf(this.futureSight.move)!,
+          release: true,
+        });
         if (!battle.checkAccuracy(battle.gen.moveList.futuresight, this, this)) {
           // FIXME: this is lazy
           battle.events.splice(-1, 1);

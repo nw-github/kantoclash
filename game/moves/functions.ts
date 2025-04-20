@@ -163,6 +163,31 @@ export const moveFunctions: MoveFunctions = {
       const magnitude = battle.rng.int(4, 10);
       power = [10, 30, 50, 70, 90, 110, 150][magnitude - 4];
       battle.event({type: "magnitude", magnitude});
+    } else if (this.flag === "futuresight") {
+      const [target] = targets;
+      if (target.futureSight) {
+        return battle.info(user, "fail_generic");
+      }
+
+      const spc = battle.gen.isSpecial(this);
+      const [atk, def] = battle.gen.getDamageVariables(spc, battle, user, target, false);
+      const damage = battle.gen.calcDamage({
+        atk,
+        def,
+        pow: this.power,
+        lvl: user.base.level,
+        eff: 1,
+        isCrit: false,
+        hasStab: false,
+        rand: battle.rng,
+      });
+      target.futureSight = {damage, turns: 3, move: this};
+      return battle.event({
+        type: "futuresight",
+        src: user.id,
+        move: battle.moveIdOf(this)!,
+        release: false,
+      });
     }
 
     if (this.range === Range.Self) {
@@ -327,26 +352,6 @@ export const moveFunctions: MoveFunctions = {
         opp.sleepClausePoke = undefined;
       }
     }
-  },
-  futuresight(battle, user, [target]) {
-    if (target.futureSight) {
-      return battle.info(user, "fail_generic");
-    }
-
-    const spc = battle.gen.isSpecial(this);
-    const [atk, def] = battle.gen.getDamageVariables(spc, battle, user, target, false);
-    const dmg = battle.gen.calcDamage({
-      atk,
-      def,
-      pow: this.power,
-      lvl: user.base.level,
-      eff: 1,
-      isCrit: false,
-      hasStab: false,
-      rand: battle.rng,
-    });
-    target.futureSight = {damage: dmg, turns: 3, move: this};
-    battle.info(user, this.msg);
   },
   swagger(battle, user, [target]) {
     if (target.v.substitute) {

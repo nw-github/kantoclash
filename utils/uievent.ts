@@ -114,10 +114,6 @@ export const infoMessage: Record<InfoReason, string> = {
   aromatherapy: "A soothing aroma wafted through the area!",
   pain_split: "The battlers shared their pain!",
   perish_song: "All affected pokemon will faint in three turns!",
-  future_sight: "{} foresaw an attack!",
-  future_sight_release: "{} took the Future Sight attack!",
-  doom_desire: "{} chose Doom Desire as its destiny!",
-  doom_desire_release: "{} took the Doom Desire attack!",
   withdraw: "({} is trying to switch out...)",
   fail_present: "{} couldn't receive the gift!",
   endure_band: "{} held on using its Focus Band!",
@@ -245,6 +241,17 @@ export const trapStart: Partial<Record<MoveId, string>> = {
   firespin: "{t} was trapped in the vortex!",
   sandtomb: "{t} was trapped by Sand Tomb!",
   magmastorm: "{t} became trapped by swirling magma!",
+};
+
+export const futureSightMessage: Partial<Record<MoveId, {set: string; release: string}>> = {
+  futuresight: {
+    set: "{} foresaw an attack!",
+    release: "{} took the Future Sight attack!",
+  },
+  doomdesire: {
+    set: "{} chose Doom Desire as its destiny!",
+    release: "{} took the Doom Desire attack!",
+  },
 };
 
 export const bugMessage: Record<BugType, string> = {

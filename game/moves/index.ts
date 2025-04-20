@@ -143,15 +143,6 @@ export interface HealBellMove extends BaseMove {
   readonly why: InfoReason;
 }
 
-export interface FutureSightMove extends BaseMove {
-  readonly kind: "futuresight";
-  readonly range: Range.Adjacent;
-  readonly power: number;
-  readonly category: MC.physical | MC.special;
-  readonly msg: InfoReason;
-  readonly release: InfoReason;
-}
-
 export interface SwaggerMove extends BaseMove {
   readonly kind: "swagger";
   readonly range: Range.Adjacent;
@@ -209,7 +200,6 @@ export type Move =
   | PreventEscapeMove
   | LockOnMove
   | HealBellMove
-  | FutureSightMove
   | SwaggerMove
   | ForesightMove;
 
@@ -256,4 +246,5 @@ type Flag =
   | "uproar"
   | "revenge"
   | "bugbite"
+  | "futuresight"
   | "assurance";

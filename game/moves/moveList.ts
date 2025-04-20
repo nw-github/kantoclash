@@ -2478,7 +2478,7 @@ const internalMoveList = createMoveList({
     contact: true,
   },
   futuresight: {
-    kind: "futuresight",
+    kind: "damage",
     name: "Future Sight",
     pp: 15,
     power: 80,
@@ -2486,8 +2486,7 @@ const internalMoveList = createMoveList({
     type: "psychic",
     range: Range.Adjacent,
     category: MC.special,
-    msg: "future_sight",
-    release: "future_sight_release",
+    flag: "futuresight",
   },
   gigadrain: {
     kind: "damage",
@@ -3513,7 +3512,7 @@ const internalMoveList = createMoveList({
     contact: true,
   },
   doomdesire: {
-    kind: "futuresight",
+    kind: "damage",
     name: "Doom Desire",
     pp: 5,
     power: 120,
@@ -3521,8 +3520,7 @@ const internalMoveList = createMoveList({
     type: "steel",
     range: Range.Adjacent,
     category: MC.special,
-    msg: "doom_desire",
-    release: "doom_desire_release",
+    flag: "futuresight",
   },
   dragonclaw: {
     kind: "damage",
@@ -5363,7 +5361,7 @@ const internalMoveList = createMoveList({
     kind: "stage",
     name: "Nasty Plot",
     pp: 20,
-    type: "normal",
+    type: "dark",
     range: Range.Self,
     stages: [["spa", 2]],
     snatch: true,
@@ -5648,12 +5646,24 @@ const internalMoveList = createMoveList({
     kingsRock: true,
   },
   suckerpunch: {
-    kind: "fail",
+    kind: "damage",
     name: "Sucker Punch",
-    pp: 1,
-    type: "normal",
+    pp: 5,
+    type: "dark",
     range: Range.Adjacent,
-    why: "fail_generic",
+    category: MC.physical,
+    priority: +1,
+    power: 80,
+    acc: 100,
+    kingsRock: true,
+    contact: true,
+    checkSuccess(battle, user, [target]) {
+      if (target?.choice?.move?.kind !== "damage") {
+        battle.info(user, "fail_generic");
+        return false;
+      }
+      return true;
+    },
   },
   switcheroo: {
     kind: "trick",

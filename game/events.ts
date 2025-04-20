@@ -47,7 +47,8 @@ type AnyEvent =
   | AbilityEvent
   | StockPileEvent
   | TransformEvent
-  | BounceEvent;
+  | BounceEvent
+  | FutureSightEvent;
 
 export type ChangedVolatiles = {id: PokeId; v: NullOrOptional<ClientVolatiles>}[];
 
@@ -245,10 +246,6 @@ export type InfoReason =
   | "aromatherapy"
   | "pain_split"
   | "perish_song"
-  | "future_sight"
-  | "future_sight_release"
-  | "doom_desire"
-  | "doom_desire_release"
   | "withdraw"
   | "wont_flinch"
   | "miss"
@@ -299,6 +296,7 @@ type TauntEvent = {type: "cantusetaunt"; src: PokeId; move: MoveId};
 type GrudgeEvent = {type: "grudge"; src: PokeId; move: MoveId};
 type RestorePPEvent = {type: "pp"; src: PokeId; move: MoveId};
 type BounceEvent = {type: "bounce"; src: PokeId; move: MoveId};
+type FutureSightEvent = {type: "futuresight"; src: PokeId; move: MoveId; release: bool};
 
 type TrapEvent = {
   type: "trap";

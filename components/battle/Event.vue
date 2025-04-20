@@ -185,6 +185,9 @@
   <div v-else-if="e.type === 'hazard'">
     {{ hazardMessage[e.hazard][e.spin ? 'spin' : 'set'].replace("{}", tn(e.player, true)).replace("{l}", tn(e.player, false)) }}
   </div>
+  <div v-else-if="e.type === 'futuresight'">
+    {{ futureSightMessage[e.move]![e.release ? 'release' : 'set'].replace("{}", pn(e.src)) }}
+  </div>
   <div v-else-if="e.type === 'proc_ability'" class="move ability">[{{ pn(e.src) }}'s {{ abilityList[e.ability].name }}]</div>
   <div v-else-if="e.type === 'copy_ability'">{{ pn(e.src) }} copied {{ pn(e.target, false) }}'s {{ abilityList[e.ability].name }}!</div>
   <div v-else-if="e.type === 'trace'">{{ pn(e.src) }} traced {{ pn(e.target, false) }}'s {{ abilityList[e.ability].name }}!</div>
