@@ -36,7 +36,7 @@
     "desc": "Removes effects of weather.",
     "negatesWeather": true
   },
-  "colorchange": {"name": "Color Change", "desc": ""},
+  "colorchange": {"name": "Color Change", "desc": "Changes type when hit."},
   "compoundeyes": {"name": "Compound Eyes", "desc": "Increases accuracy."},
   "insomnia": {"name": "Insomnia", "desc": "Prevents sleep.", "preventsStatus": "slp"},
   "liquidooze": {"name": "Liquid Ooze", "desc": "Opposing draining moves cause damage."},

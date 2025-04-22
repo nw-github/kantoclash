@@ -693,7 +693,12 @@ const runEvent = async (e: BattleEvent) => {
   smoothScroll.value = isLive();
 
   await handleEvent(e);
-  if (isLive() && e.type !== "sv" && e.type !== "beatup") {
+  if (
+    isLive() &&
+    e.type !== "sv" &&
+    e.type !== "beatup" &&
+    !(e.type === "info" && e.why === "uturn")
+  ) {
     await delay(e.type === "weather" && e.kind === "continue" ? 450 : 250);
   }
 

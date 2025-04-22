@@ -123,8 +123,7 @@ const createGeneration = (): Generation => {
       // Weather
       weather: if (battle.weather) {
         if (battle.weather.turns !== -1 && --battle.weather.turns === 0) {
-          battle.event({type: "weather", kind: "end", weather: battle.weather.kind});
-          delete battle.weather;
+          battle.endWeather();
           break weather;
         }
 

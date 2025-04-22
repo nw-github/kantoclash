@@ -1244,7 +1244,7 @@ class Volatiles {
   lastMove?: Move;
   lastMoveIndex?: number;
   charging?: {move: DamagingMove; target: ActivePokemon};
-  recharge?: Move;
+  recharge?: {move: DamagingMove; target: ActivePokemon};
   thrashing?: {move: DamagingMove; turns: number; max: bool; acc?: number};
   bide?: {move: Move; turns: number; dmg: number};
   disabled?: {turns: number; indexInMoves: number};
@@ -1274,7 +1274,7 @@ class Volatiles {
 
   lockedIn() {
     return (
-      this.recharge ||
+      this.recharge?.move ||
       this.charging?.move ||
       this.thrashing?.move ||
       this.bide?.move ||
@@ -1330,6 +1330,8 @@ const getValidTargets = (battle: Battle, move: Move, user: ActivePokemon) => {
     return [user.id];
   } else if (move === user.v.charging?.move) {
     return [user.v.charging.target.id];
+  } else if (move === user.v.recharge?.move) {
+    return [user.v.recharge.target.id];
   }
 
   let range = move.range;

@@ -341,7 +341,7 @@ export const tryDamage = (
   }
 
   if (self.flag === "recharge") {
-    user.v.recharge = self;
+    user.v.recharge = {move: self, target};
   }
 
   if (!event) {

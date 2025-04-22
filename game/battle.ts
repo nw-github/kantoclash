@@ -597,6 +597,17 @@ export class Battle {
     }
   }
 
+  endWeather() {
+    if (this.weather) {
+      this.event({type: "weather", kind: "end", weather: this.weather.kind});
+      delete this.weather;
+      // TODO: order?
+      for (const poke of this.inTurnOrder()) {
+        poke.handleForecast(this);
+      }
+    }
+  }
+
   // --
 
   private runTurn() {

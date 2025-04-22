@@ -138,7 +138,7 @@ export function tryDamage(
   }
 
   if (self.flag === "recharge") {
-    user.v.recharge = self;
+    user.v.recharge = {move: self, target};
   } else if (self.flag === "trap") {
     trapTarget(self, battle, user, target);
   }

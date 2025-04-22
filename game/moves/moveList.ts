@@ -5658,7 +5658,7 @@ const internalMoveList = createMoveList({
     kingsRock: true,
     contact: true,
     checkSuccess(battle, user, [target]) {
-      if (target?.choice?.move?.kind !== "damage") {
+      if (target?.choice?.move?.kind !== "damage" || target?.choice?.executed) {
         battle.info(user, "fail_generic");
         return false;
       }
