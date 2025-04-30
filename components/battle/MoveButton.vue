@@ -52,7 +52,6 @@
 <script setup lang="ts">
 import type {MoveOption} from "~/game/battle";
 import type {Generation} from "~/game/gen";
-import TouchPopover from "../TouchPopover.vue";
 import {abilityList} from "~/game/species";
 import {Range} from "~/game/moves";
 import type {Weather} from "~/game/utils";

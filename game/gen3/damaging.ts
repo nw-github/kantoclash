@@ -146,7 +146,7 @@ export const tryDamage = (
       battle.info(target, "immune");
 
       if (abilityImmunity) {
-        if (target.v.ability === "waterabsorb" || target.v.ability === "flashfire") {
+        if (target.v.ability === "waterabsorb" || target.v.ability === "voltabsorb") {
           target.recover(Math.max(1, Math.floor(target.base.stats.hp / 4)), user, battle, "none");
         }
       }

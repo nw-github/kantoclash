@@ -140,7 +140,7 @@ const createGeneration = (): Generation => {
 
       // Abilities
       for (const poke of turnOrder) {
-        if (battle.hasWeather("rain") && poke.v.ability === "raindish") {
+        if (!poke.v.fainted && battle.hasWeather("rain") && poke.v.ability === "raindish") {
           battle.ability(poke);
           poke.recover(Math.max(1, idiv(poke.base.stats.hp, 16)), poke, battle, "none");
         }
