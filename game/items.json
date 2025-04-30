@@ -188,7 +188,7 @@
   },
   "focusband": {
     "name": "Focus Band",
-    "desc": "Small chance to endure hits that would kill.",
+    "desc": "Small chance to endure fatal hits.",
     "fling": 10
   },
   "energypowder": {"name": "EnergyPowder", "fling": 30},
@@ -807,7 +807,7 @@
     "desc": "Doubles Ditto's Spe.",
     "boostStats": {"ditto": {"stats": ["spe"], "transformed": false, "amount": 1}}
   },
-  "focussash": {"name": "Focus Sash", "fling": 10},
+  "focussash": {"name": "Focus Sash", "fling": 10, "desc": "Endures fatal hits from full HP."},
   "zoomlens": {"name": "Zoom Lens", "fling": 10, "desc": "Boosts accuracy by 20%.", "boostAcc": 20},
   "metronome": {"name": "Metronome", "fling": 30},
   "ironball": {"name": "Iron Ball", "fling": 130},

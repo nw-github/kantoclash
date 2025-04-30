@@ -216,7 +216,14 @@ export function getDamage(
   const endured = deadly && target.v.hasFlag(VF.endure);
   const band =
     extras.band ||
-    (deadly && !endured && target.base.item === "focusband" && battle.gen.rng.tryFocusBand(battle));
+    (deadly &&
+      !endured &&
+      target.base.item === "focusband" &&
+      battle.gen.rng.tryFocusBand(battle)) ||
+    (deadly &&
+      !endured &&
+      target.base.hp === target.base.stats.hp &&
+      target.base.item === "focussash");
 
   if (endured || band) {
     dmg = Math.max(target.base.hp - 1, 0);

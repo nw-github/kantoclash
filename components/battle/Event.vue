@@ -162,6 +162,7 @@
     <p v-if="e.item.includes('berry')" class="muted move">({{ pn(e.src) }} ate its {{ gen.items[e.item].name }}!)</p>
     <p v-else-if="e.item === 'berserkgene' || e.item === 'mentalherb'" class="muted move">{{ pn(e.src) }} used its {{ gen.items[e.item].name }}!</p>
     <p v-else-if="e.item === 'whiteherb'">{{ pn(e.src) }} restored its stats using its {{ gen.items[e.item].name }}!</p>
+    <p v-else-if="e.item === 'focussash'">{{ pn(e.src) }} held on using its {{ gen.items[e.item].name }}!</p>
     <p v-else>Unknown event: <code>{{ e }}</code></p>
   </div>
   <div v-else-if="e.type === 'pp'">{{ pn(e.src) }}'s <b>{{ gen.moveList[e.move].name }}</b> was restored!</div>

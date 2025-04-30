@@ -337,7 +337,11 @@ export const tryDamage = (
   if (endured) {
     battle.info(target, "endure_hit");
   } else if (band) {
-    battle.info(target, "endure_band");
+    if (target.base.item === "focussash") {
+      target.consumeItem(battle);
+    } else {
+      battle.info(target, "endure_band");
+    }
   }
 
   if (self.flag === "recharge") {

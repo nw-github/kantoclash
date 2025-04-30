@@ -143,12 +143,11 @@ export class ActivePokemon {
     this.freeOpponents(battle);
 
     if (this.base.item === "berserkgene") {
-      battle.event({type: "item", item: "berserkgene", src: this.id});
+      this.consumeItem(battle);
       this.modStages([["atk", +2]], battle);
       // BUG GEN2: If you baton pass into a pokemon with a berserk gene, the confusion value
       // is not updated.
       this.confuse(battle, undefined, 256);
-      this.consumeItem();
     }
 
     if (this.isGrounded()) {
@@ -199,7 +198,19 @@ export class ActivePokemon {
     }
   }
 
-  consumeItem() {
+  consumeItem(battle: Battle) {
+    battle.event({
+      type: "item",
+      src: this.id,
+      item: this.base.item!,
+      volatiles:
+        this.base.item === "mentalherb"
+          ? [{id: this.id, v: {flags: this.v.cflags}}]
+          : this.base.item === "whiteherb"
+          ? [{id: this.id, v: {stages: {...this.v.stages}, stats: this.clientStats(battle)}}]
+          : undefined,
+    });
+
     this.consumed = this.base.item;
     this.base.item = undefined;
   }
@@ -778,16 +789,16 @@ export class ActivePokemon {
     {pp, pinch, status, heal}: {pp?: bool; pinch?: bool; status?: bool; heal?: bool},
   ) {
     const cureStatus = (poke: ActivePokemon) => {
-      battle.event({type: "item", src: poke.id, item: poke.base.item!});
+      this.consumeItem(battle);
       poke.unstatus(battle);
-      this.consumeItem();
     };
 
     const cureConfuse = (poke: ActivePokemon) => {
       poke.v.confusion = 0;
-      const v = [{id: poke.id, v: {flags: poke.v.cflags}}];
-      battle.info(poke, "confused_end", v);
-      this.consumeItem();
+      if (this.base.item) {
+        this.consumeItem(battle);
+      }
+      battle.info(poke, "confused_end", [{id: poke.id, v: {flags: poke.v.cflags}}]);
     };
 
     if (this.v.fainted) {
@@ -801,9 +812,8 @@ export class ActivePokemon {
         if (slot !== -1) {
           const move = battle.gen.moveList[this.base.moves[slot]];
           this.base.pp[slot] = Math.min(restorePP, battle.gen.getMaxPP(move));
-          battle.event({type: "item", src: this.id, item: this.base.item!});
+          this.consumeItem(battle);
           battle.event({type: "pp", src: this.id, move: this.base.moves[slot]});
-          this.consumeItem();
         }
       }
     }
@@ -837,48 +847,30 @@ export class ActivePokemon {
         }
 
         if (this.v.confusion) {
-          if (this.base.item) {
-            battle.event({type: "item", src: this.id, item: this.base.item!});
-          }
           cureConfuse(this);
         }
       } else if (cures === "confuse" && this.v.confusion) {
-        battle.event({type: "item", src: this.id, item: this.base.item!});
         cureConfuse(this);
       } else if (this.v.attract && this.base.item === "mentalherb") {
         this.v.attract = undefined;
-        battle.event({
-          type: "item",
-          src: this.id,
-          item: this.base.item,
-          volatiles: [{id: this.id, v: {flags: this.v.cflags}}],
-        });
+        this.consumeItem(battle);
         battle.info(this, "cure_attract");
-        this.consumeItem();
-      } else if (Object.values(this.v.stages).some(v => v < 0) && this.base.item === "whiteherb") {
+      } else if (this.base.item === "whiteherb" && Object.values(this.v.stages).some(v => v < 0)) {
         for (const stage in this.v.stages) {
           if (this.v.stages[stage as StageId] < 0) {
             this.setStage(stage as StageId, 0, battle, false);
           }
         }
 
-        battle.event({
-          type: "item",
-          src: this.id,
-          item: this.base.item,
-          volatiles: [
-            {id: this.id, v: {stages: {...this.v.stages}, stats: this.clientStats(battle)}},
-          ],
-        });
-        this.consumeItem();
+        this.consumeItem(battle);
       }
     }
 
     if (heal) {
-      if (battle.gen.items[this.base.item!]?.healFixed && this.base.belowHp(2)) {
-        battle.event({type: "item", src: this.id, item: this.base.item!});
-        this.recover(battle.gen.items[this.base.item!].healFixed!, this, battle, "item");
-        this.consumeItem();
+      const healFixed = battle.gen.items[this.base.item!]?.healFixed;
+      if (healFixed && this.base.belowHp(2)) {
+        this.consumeItem(battle);
+        this.recover(healFixed, this, battle, "item");
       }
     }
 
@@ -886,7 +878,7 @@ export class ActivePokemon {
       const healPinch = battle.gen.items[this.base.item!]?.healPinchNature;
       const statPinch = battle.gen.items[this.base.item!]?.statPinch;
       if (healPinch && this.base.belowHp(2)) {
-        battle.event({type: "item", src: this.id, item: this.base.item!});
+        this.consumeItem(battle);
         this.recover(Math.max(1, Math.floor(this.base.stats.hp / 8)), this, battle, "item");
         if (this.base.nature !== undefined) {
           const [, minus] = Object.keys(natureTable[this.base.nature]);
@@ -894,9 +886,8 @@ export class ActivePokemon {
             this.confuse(battle, "cConfused");
           }
         }
-        this.consumeItem();
       } else if (statPinch && this.base.belowHp(4)) {
-        battle.event({type: "item", src: this.id, item: this.base.item!});
+        this.consumeItem(battle);
         if (statPinch === "crit") {
           battle.info(this, "focusEnergy", [this.setFlag(VF.focusEnergy)]);
         } else {
@@ -906,7 +897,6 @@ export class ActivePokemon {
             this.modStages([[statPinch, +1]], battle);
           }
         }
-        this.consumeItem();
       }
     }
   }

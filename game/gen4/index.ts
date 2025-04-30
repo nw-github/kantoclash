@@ -139,13 +139,24 @@ const createGeneration = (): Generation => {
       }
 
       // Abilities
+      const weather = battle.getWeather();
       for (const poke of turnOrder) {
-        if (!poke.v.fainted && battle.hasWeather("rain") && poke.v.ability === "raindish") {
-          battle.ability(poke);
-          poke.recover(Math.max(1, idiv(poke.base.stats.hp, 16)), poke, battle, "none");
+        if (poke.v.fainted) {
+          continue;
         }
 
-        // TODO: Dry Skin/Hydration/Ice Body
+        if (
+          (weather === "rain" && poke.v.ability === "raindish") ||
+          (weather === "hail" && poke.v.ability === "icebody")
+        ) {
+          battle.ability(poke);
+          poke.recover(Math.max(1, idiv(poke.base.stats.hp, 16)), poke, battle, "none");
+        } else if (weather === "rain" && poke.v.ability === "hydration" && poke.base.status) {
+          battle.ability(poke);
+          poke.unstatus(battle);
+        }
+
+        // TODO: Dry Skin
       }
 
       // TODO: Gravity
