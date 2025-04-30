@@ -40,7 +40,8 @@ export const CASTFORM_FORM = ["rainy", "snowy", "sunny"] as const;
 
 export type UnownForm = (typeof UNOWN_FORM)[number];
 export type CastformForm = (typeof CASTFORM_FORM)[number];
-export type FormId = UnownForm | CastformForm;
+export type CherrimForm = "sunshine" | "overcast";
+export type FormId = UnownForm | CastformForm | CherrimForm;
 
 export type ValidatedPokemonDesc = PokemonDesc<SpeciesId, MoveId, ItemId, AbilityId, FormId>;
 

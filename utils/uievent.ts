@@ -62,7 +62,7 @@ export const chargeMessage: Partial<Record<MoveId, string>> = {
 
 export const infoMessage: Record<InfoReason, string> = {
   immune: "It doesn't affect {l}...",
-  miss: "{} missed!",
+  miss: "{}'s attack missed!",
   cant_substitute: "{} doesn't have enough HP to create a substitute!",
   has_substitute: "{} already has a substitute!",
   fail_generic: "But it failed!",

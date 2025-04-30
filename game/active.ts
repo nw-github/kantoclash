@@ -273,6 +273,7 @@ export class ActivePokemon {
 
     this.v.types = [...target.v.types];
     this.v.form = target.v.form;
+    this.v.ability = target.v.ability;
     battle.event({
       type: "transform",
       src: this.id,
@@ -583,12 +584,17 @@ export class ActivePokemon {
       value *= 2;
     }
 
-    if (
-      battle.getWeather() &&
-      abilityList[this.v.ability!]?.weatherSpeedBoost === battle.getWeather() &&
-      stat === "spe"
-    ) {
+    const weather = battle.getWeather();
+    if (weather && abilityList[this.v.ability!]?.weatherSpeedBoost === weather && stat === "spe") {
       value *= 2;
+    }
+
+    if (
+      weather === "sun" &&
+      this.owner.active.some(p => p.v.ability === "flowergift") &&
+      (stat === "atk" || stat === "spd")
+    ) {
+      value += Math.floor(value / 2);
     }
 
     // TODO: the attack boost from guts should activate if the pokemon uses a move that thaws it
@@ -674,35 +680,46 @@ export class ActivePokemon {
   }
 
   handleForecast(battle: Battle) {
-    if (this.v.ability !== "forecast" || this.base.speciesId !== "castform") {
-      return;
-    }
+    if (this.base.speciesId === "cherrim") {
+      const form: FormId | undefined = battle.getWeather() === "sun" ? "sunshine" : undefined;
+      if (form !== this.v.form) {
+        this.v.form = form;
+        battle.event({
+          type: "transform",
+          src: this.id,
+          speciesId: this.base.speciesId,
+          shiny: this.base.shiny,
+          gender: this.base.gender,
+          form: this.v.form,
+        });
+      }
+    } else if (this.v.ability === "forecast" && this.base.speciesId === "castform") {
+      const types: Record<Weather, Type> = {
+        sand: "normal",
+        hail: "ice",
+        sun: "fire",
+        rain: "water",
+      };
+      const forms: Partial<Record<Weather, CastformForm>> = {
+        sun: "sunny",
+        rain: "rainy",
+        hail: "snowy",
+      };
 
-    const types: Record<Weather, Type> = {
-      sand: "normal",
-      hail: "ice",
-      sun: "fire",
-      rain: "water",
-    };
-    const forms: Partial<Record<Weather, CastformForm>> = {
-      sun: "sunny",
-      rain: "rainy",
-      hail: "snowy",
-    };
-
-    const type = types[battle.getWeather() ?? "sand"];
-    if (!arraysEqual([type], this.v.types)) {
-      this.v.form = forms[battle.getWeather() ?? "sand"];
-      battle.ability(this);
-      battle.event({
-        type: "transform",
-        src: this.id,
-        speciesId: this.base.speciesId,
-        shiny: this.base.shiny,
-        gender: this.base.gender,
-        form: this.v.form,
-        volatiles: [this.setVolatile("types", [type])],
-      });
+      const type = types[battle.getWeather() ?? "sand"];
+      if (!arraysEqual([type], this.v.types)) {
+        this.v.form = forms[battle.getWeather() ?? "sand"];
+        battle.ability(this);
+        battle.event({
+          type: "transform",
+          src: this.id,
+          speciesId: this.base.speciesId,
+          shiny: this.base.shiny,
+          gender: this.base.gender,
+          form: this.v.form,
+          volatiles: [this.setVolatile("types", [type])],
+        });
+      }
     }
   }
 
@@ -741,22 +758,7 @@ export class ActivePokemon {
       return;
     }
 
-    if (battle.gen.id === 1) {
-      if (this.v.thrashing?.move === battle.gen.moveList.rage && this.v.stages.atk < 6) {
-        battle.info(this, "rage");
-        this.modStages([["atk", +1]], battle);
-      }
-    } else if (battle.gen.id === 2) {
-      if (this.v.lastMove?.kind === "damage" && this.v.lastMove.flag === "rage") {
-        battle.info(this, "rage");
-        this.v.rage++;
-      }
-    } else if (battle.gen.id === 3) {
-      if (this.v.lastMove?.kind === "damage" && this.v.lastMove.flag === "rage") {
-        battle.info(this, "rage");
-        this.modStages([["atk", +1]], battle);
-      }
-    }
+    return battle.gen.handleRage(battle, this);
   }
 
   handleShellBell(battle: Battle, dmg: number) {

@@ -727,6 +727,12 @@ const createGeneration = () => {
           return true;
       }
     },
+    handleRage(battle: Battle, poke: ActivePokemon) {
+      if (poke.v.thrashing?.move === battle.gen.moveList.rage && poke.v.stages.atk < 6) {
+        battle.info(poke, "rage");
+        poke.modStages([["atk", +1]], battle);
+      }
+    },
   };
 };
 

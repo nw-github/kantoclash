@@ -334,6 +334,12 @@ const createGeneration = (): Generation => {
     },
     accumulateBide() {},
     tryDamage,
+    handleRage(battle, poke) {
+      if (poke.v.lastMove?.kind === "damage" && poke.v.lastMove.flag === "rage") {
+        battle.info(poke, "rage");
+        poke.v.rage++;
+      }
+    },
   };
 
   return merge(patches as any, GENERATION1);

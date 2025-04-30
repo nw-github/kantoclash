@@ -591,7 +591,7 @@ export class Battle {
       volatiles: this.allActive.map(a => ({id: a.id, v: {stats: a.clientStats(this)}})),
     });
 
-    // not sure if this is the right order but doesn't really matter
+    // TODO: not sure if this is the right order
     for (const poke of this.switchOrder()) {
       poke.handleForecast(this);
     }

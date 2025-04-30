@@ -635,6 +635,12 @@ const createGeneration = (): Generation => {
       }
       return dmg;
     },
+    handleRage(battle, poke) {
+      if (poke.v.lastMove?.kind === "damage" && poke.v.lastMove.flag === "rage") {
+        battle.info(poke, "rage");
+        poke.modStages([["atk", +1]], battle);
+      }
+    },
   };
 
   return merge(patches as any, GENERATION2);
