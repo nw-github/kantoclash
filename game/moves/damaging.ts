@@ -205,6 +205,7 @@ export function getDamage(
       screen: !!target.owner.screens[spc ? "light_screen" : "reflect"],
       flashFire: user.v.hasFlag(VF.flashFire) && type === "fire",
       stockpile,
+      technician: user.v.ability === "technician" && battle.moveIdOf(self) !== "struggle",
     });
 
     if (self.flag === "false_swipe" && dmg >= target.base.hp && !target.v.substitute) {

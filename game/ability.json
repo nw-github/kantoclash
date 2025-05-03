@@ -121,6 +121,7 @@
     "startsWeather": "hail"
   },
   "superluck": {"name": "Super Luck", "desc": "Raises critical-hit ratio."},
+  "technician": {"name": "Technician", "desc": "+50% power to moves below 60 BP."},
 
   "angerpoint": {"name": "Anger Point", "desc": ""},
   "download": {"name": "Download", "desc": ""},
@@ -138,7 +139,6 @@
   "aftermath": {"name": "Aftermath", "desc": ""},
   "scrappy": {"name": "Scrappy", "desc": ""},
   "slowstart": {"name": "Slow Start", "desc": ""},
-  "technician": {"name": "Technician", "desc": ""},
   "adaptability": {"name": "Adaptability", "desc": ""},
   "dryskin": {"name": "Dry Skin", "desc": ""},
   "filter": {"name": "Filter", "desc": ""},

@@ -179,6 +179,7 @@ export type CalcDamageParams = {
   screen?: bool;
   spread?: bool;
   flashFire?: bool;
+  technician?: bool;
 };
 
 const calcDamage = ({lvl, pow, atk, def, eff, isCrit, hasStab, rand}: CalcDamageParams) => {

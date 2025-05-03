@@ -50,7 +50,6 @@ const createGeneration = (): Generation => {
       battle.checkFaint(user);
       return !!user.v.inBatonPass;
     },
-
     betweenTurns(battle) {
       // TODO: should this turn order take into account priority/pursuit/etc. or should it use
       // out of battle speeed?
@@ -277,6 +276,92 @@ const createGeneration = (): Generation => {
       }
 
       // TODO: items?
+    },
+    calcDamage({
+      lvl,
+      pow,
+      atk,
+      def,
+      eff,
+      isCrit,
+      hasStab,
+      rand,
+      itemBonus,
+      weather,
+      tripleKick,
+      flashFire,
+      moveMod,
+      doubleDmg,
+      stockpile,
+      helpingHand,
+      screen,
+      spread,
+      technician,
+    }) {
+      pow = Math.floor(pow * (moveMod || 1));
+      pow = Math.floor(pow * (itemBonus || 1));
+      pow = Math.floor(pow * (tripleKick || 1));
+      pow = Math.floor(pow * (flashFire ? 1.5 : 1));
+      pow = Math.floor(pow * (stockpile || 1));
+      pow = Math.floor(pow * (helpingHand ? 1.5 : 1));
+      pow = Math.floor(pow * (doubleDmg ? 2 : 1));
+      // TODO: should this be floored?
+      pow = Math.floor(pow * (technician && pow <= 60 ? 1.5 : 1));
+
+      let dmg = idiv(idiv((idiv(2 * lvl, 5) + 2) * pow * atk, def), 50);
+      // TODO: brn should be applied here
+      if (screen && !isCrit) {
+        if (spread) {
+          dmg = idiv(dmg, 3) * 2;
+        } else {
+          dmg = idiv(dmg, 2);
+        }
+      }
+
+      if (spread) {
+        dmg = idiv(dmg, 2);
+      }
+
+      if (weather === "penalty") {
+        dmg = idiv(dmg, 2);
+      } else if (weather === "bonus") {
+        dmg += idiv(dmg, 2);
+      }
+
+      // TODO: for physical attacks only???
+      dmg = Math.max(dmg, 1);
+      dmg += 2;
+
+      if (isCrit) {
+        dmg *= 2;
+      }
+      if (hasStab) {
+        dmg += idiv(dmg, 2);
+      }
+      dmg = Math.floor(dmg * eff);
+      const r = typeof rand === "number" ? rand : rand ? rand.int(85, 100) : 100;
+      dmg = Math.max(1, idiv(dmg * r, 100));
+
+      if (import.meta.dev) {
+        let extra = "";
+        const c = (n: string, b?: bool) => b && (extra += n + " ");
+        c("crit", isCrit);
+        c("stab", hasStab);
+        c("ff", flashFire);
+        c("double", doubleDmg);
+        c("hh", helpingHand);
+        c("screen", screen);
+        c("spread", spread);
+        c(`tech`, technician);
+        c(`item:${itemBonus}`, (itemBonus || 1) > 1);
+        c(`weather:${weather}`, !!weather);
+        c(`TK:${tripleKick}`, (tripleKick || 1) > 1);
+        c(`MM:${moveMod}`, (moveMod || 1) > 1);
+        c(`SP:${stockpile}`, (stockpile || 1) > 1);
+        console.log(`flag: ${extra}`);
+        console.log("vars:", {dmg, lvl, pow, atk, def, eff, r});
+      }
+      return dmg;
     },
   };
 

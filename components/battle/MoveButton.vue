@@ -96,6 +96,9 @@ const info = computed(() => {
   ) {
     pow += Math.floor(pow / 2);
   }
+  if (pow && pow <= 60 && poke.v.ability === "technician") {
+    pow += Math.floor(pow / 2);
+  }
 
   if (acc && item?.boostAcc) {
     acc += Math.floor(acc * (item.boostAcc / 100));
