@@ -109,7 +109,8 @@ export type DamageReason =
   | "spikes"
   | "rocks"
   | "trap_eot"
-  | "roughskin";
+  | "roughskin"
+  | "baddreams";
 
 export type RecoveryReason =
   | "drain"

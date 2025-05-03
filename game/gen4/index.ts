@@ -8,6 +8,7 @@ import {GENERATION3, createItemMergeList} from "../gen3";
 import {idiv, MC, screens, VF} from "../utils";
 import {TurnType} from "../battle";
 import {tryDamage} from "./damaging";
+import {Range} from "../moves";
 
 const createGeneration = (): Generation => {
   const patches: Partial<GenPatches> = {
@@ -197,7 +198,20 @@ const createGeneration = (): Generation => {
         if (poke.base.hp) {
           poke.handlePartialTrapping(battle);
         }
-        // TODO: Bad Dreams
+        if (poke.base.hp && poke.base.status === "slp") {
+          const opp = battle
+            .getTargets(poke, Range.AdjacentFoe)
+            .find(opp => opp.v.ability === "baddreams");
+          if (opp) {
+            battle.ability(opp);
+            poke.damage2(battle, {
+              dmg: Math.max(1, idiv(poke.base.stats.hp, 8)),
+              src: opp,
+              why: "baddreams",
+              direct: true,
+            });
+          }
+        }
 
         if (poke.base.hp) {
           if (poke.v.thrashing) {

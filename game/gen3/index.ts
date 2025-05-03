@@ -72,6 +72,9 @@ const createGeneration = (): Generation => {
         if (user.base.item === "luckypunch" && user.base.real.speciesId === "chansey") {
           stages += 2;
         }
+        if (user.v.ability === "superluck") {
+          stages++;
+        }
         return battle.rand100(critStages[Math.min(stages, 4)] * 100);
       },
       sleepTurns: battle => battle.rng.int(1, 4),
@@ -147,6 +150,10 @@ const createGeneration = (): Generation => {
     },
     getMaxPP: move => (move.pp === 1 ? 1 : Math.floor((move.pp * 8) / 5)),
     checkAccuracy(move, battle, user, target, phys) {
+      if (user.v.ability === "noguard" || target.v.ability === "noguard") {
+        return true;
+      }
+
       if (
         target.v.charging &&
         target.v.charging.move.charge === "invuln" &&

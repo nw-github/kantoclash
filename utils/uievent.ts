@@ -231,6 +231,7 @@ export const damageMessage: Partial<Record<DamageReason, string>> = {
   curse: "{} is afflicted by the Curse!",
   destiny_bond: "{} took {tl} with it!",
   roughskin: "{t} was hurt!",
+  baddreams: "{t} is tormented!",
 };
 
 export const trapStart: Partial<Record<MoveId, string>> = {

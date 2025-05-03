@@ -602,7 +602,7 @@ export class ActivePokemon {
 
     if (
       weather === "sun" &&
-      this.owner.active.some(p => p.v.ability === "flowergift") &&
+      this.owner.active.some(p => !p.v.fainted && p.v.ability === "flowergift") &&
       (stat === "atk" || stat === "spd")
     ) {
       value += Math.floor(value / 2);
