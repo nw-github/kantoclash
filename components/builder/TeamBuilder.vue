@@ -184,6 +184,7 @@
                   undefined,
                   selectedPoke.data.species as SpeciesId,
                   ivsToDvs(selectedPoke.data),
+                  (selectedPoke.data.item && normalizeName(selectedPoke.data.item)) as ItemId,
                 )"
                 @chose="onSpeciesChange"
               />
@@ -394,6 +395,7 @@ import {abilityList, type Species, type SpeciesId} from "~/game/species";
 import type {Stats, StatId} from "~/game/utils";
 import {GENERATIONS} from "~/game/gen";
 import {Nature, natureTable, type FormId} from "~/game/pokemon";
+import type {ItemId} from "~/game/item";
 
 defineEmits<{(e: "delete" | "close"): void}>();
 
@@ -403,7 +405,12 @@ const items = computed(() => {
   return team.pokemon.map(poke => ({
     label: poke.name ?? "",
     species: poke.species,
-    form: gen.value.getForm(poke.form as FormId, poke.species as SpeciesId, ivsToDvsRaw(poke.ivs)),
+    form: gen.value.getForm(
+      poke.form as FormId,
+      poke.species as SpeciesId,
+      ivsToDvsRaw(poke.ivs),
+      (poke.item && normalizeName(poke.item)) as ItemId,
+    ),
   }));
 });
 const teamText = ref("");

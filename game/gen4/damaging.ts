@@ -428,7 +428,8 @@ export const tryDamage = (
         user.base.item ||
         !target.base.item ||
         target.base.item.includes("mail") ||
-        target.v.ability === "stickyhold"
+        target.v.ability === "stickyhold" ||
+        target.v.ability === "multitype"
       ) {
         return dealt;
       }
@@ -442,7 +443,11 @@ export const tryDamage = (
       user.base.item = target.base.item;
       target.base.item = undefined;
     } else if (effect === "knockoff") {
-      if (target.base.item && target.v.ability !== "stickyhold") {
+      if (
+        target.base.item &&
+        target.v.ability !== "stickyhold" &&
+        target.v.ability !== "multitype"
+      ) {
         battle.event({
           type: "knockoff",
           src: user.id,

@@ -11,13 +11,14 @@ export type ItemData = {
   desc?: string;
   exists?: bool;
 
-  typeBoost?: {type: Type; percent: number; plate?: bool};
+  typeBoost?: {type: Exclude<Type, "???">; percent: number; plate?: bool};
   cureStatus?: Status | "any" | "confuse";
   healFixed?: number;
   healPinchNature?: StatStageId;
   statPinch?: StatStageId | "random" | "crit";
   restorePP?: number;
   reduceAcc?: number;
+  boostAcc?: number;
   choice?: StatStageId;
   raiseCrit?: number;
   kingsRock?: bool;

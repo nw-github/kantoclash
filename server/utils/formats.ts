@@ -89,6 +89,10 @@ const getRandomPokemon = (
           return false;
         }
 
+        if (id === "arceus" && !itemData.typeBoost?.plate) {
+          return false;
+        }
+
         if (
           itemData.choice === "atk" &&
           !poke.moves.some(m => gen.getCategory(gen.moveList[m]) === MC.physical)
@@ -345,10 +349,10 @@ export const formatDescs: Record<FormatId, FormatFunctions> = {
   },
 
   g4_randoms: {
-    generate: () => randoms(GENERATION4, (s, _) => !s.evolvesTo && s.dexId >= 252),
+    generate: () => randoms(GENERATION4, (s, _) => !s.evolvesTo),
   },
   g4_randoms_doubles: {
-    generate: () => randoms(GENERATION4, (s, _) => !s.evolvesTo && s.dexId >= 252),
+    generate: () => randoms(GENERATION4, (s, _) => !s.evolvesTo),
   },
   g3_randoms: {
     generate: () => randoms(GENERATION3, (s, _) => !s.evolvesTo),

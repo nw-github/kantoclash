@@ -388,7 +388,7 @@ export const moveFunctions: MoveFunctions = {
   trick(battle, user, [target]) {
     if (target.v.substitute) {
       return battle.info(user, "fail_generic");
-    } else if (target.v.ability === "stickyhold") {
+    } else if (target.v.ability === "stickyhold" || target.v.ability === "multitype") {
       battle.ability(target);
       return battle.info(target, "immune");
     } else if (

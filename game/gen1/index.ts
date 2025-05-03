@@ -15,7 +15,7 @@ import {
   randChoiceWeighted,
   MC,
 } from "../utils";
-import {itemList} from "../item";
+import {itemList, type ItemId} from "../item";
 import {UNOWN_FORM, type FormId, type Gender, type Nature} from "../pokemon";
 import type {DamageReason} from "../events";
 
@@ -483,11 +483,21 @@ const createGeneration = () => {
       _species: Species,
       _atk: number,
     ): Gender | undefined => "N",
-    getForm(_desired: FormId | undefined, id: SpeciesId, dvs: Partial<Stats>): FormId | undefined {
+    getForm(
+      _desired: FormId | undefined,
+      id: SpeciesId,
+      dvs: Partial<Stats>,
+      item?: ItemId,
+    ): FormId | undefined {
       if (id === "unown") {
         const c2 = (iv?: number) => ((iv ?? 15) >> 1) & 0b11;
         const letter = (c2(dvs.atk) << 6) | (c2(dvs.def) << 4) | (c2(dvs.spe) << 2) | c2(dvs.spa);
         return UNOWN_FORM[idiv(letter, 10)];
+      }
+
+      const itemData = this.items[item!];
+      if (id === "arceus" && itemData?.typeBoost?.plate) {
+        return itemData.typeBoost.type;
       }
 
       return;

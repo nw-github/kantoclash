@@ -1,7 +1,7 @@
 import type {Generation} from "./gen";
 import type {AbilityId, SpeciesId} from "./species";
 import type {MoveId} from "./moves";
-import type {StageStats, Stats, StatStageId} from "./utils";
+import type {StageStats, Stats, StatStageId, Type} from "./utils";
 import type {ItemId} from "./item";
 
 export type Status = "psn" | "par" | "slp" | "frz" | "tox" | "brn";
@@ -41,7 +41,8 @@ export const CASTFORM_FORM = ["rainy", "snowy", "sunny"] as const;
 export type UnownForm = (typeof UNOWN_FORM)[number];
 export type CastformForm = (typeof CASTFORM_FORM)[number];
 export type CherrimForm = "sunshine" | "overcast";
-export type FormId = UnownForm | CastformForm | CherrimForm;
+export type ArceusForm = Exclude<Type, "???">;
+export type FormId = UnownForm | CastformForm | CherrimForm | ArceusForm;
 
 export type ValidatedPokemonDesc = PokemonDesc<SpeciesId, MoveId, ItemId, AbilityId, FormId>;
 
@@ -174,7 +175,7 @@ export class Pokemon {
     this.gender =
       gen.getGender(gender, this.species, this.ivs.atk) ??
       (Math.random() * 100 < this.species.genderRatio! ? "M" : "F");
-    this.form = gen.getForm(form, this.speciesId, this.ivs);
+    this.form = gen.getForm(form, this.speciesId, this.ivs, this.item);
   }
 
   belowHp(amt: number) {

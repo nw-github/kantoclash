@@ -20,6 +20,7 @@ import {
   arraysEqual,
   clamp,
   getEffectiveness,
+  HP_TYPES,
   hpPercent,
   idiv,
   stageKeys,
@@ -285,6 +286,14 @@ export class ActivePokemon {
     this.v.types = [...target.v.types];
     this.v.form = target.v.form;
     this.v.ability = target.v.ability;
+
+    if (target.v.ability === "multitype" && target.base.speciesId === "arceus") {
+      // TODO: should it still work if the plate was knocked off?
+      const boost = battle.gen.items[this.base.item!]?.typeBoost;
+      this.v.form = boost?.plate ? boost.type : "normal";
+      this.v.types = [boost?.plate ? boost.type : "normal"];
+    }
+
     battle.event({
       type: "transform",
       src: this.id,
@@ -670,7 +679,11 @@ export class ActivePokemon {
     }
 
     if (this.v.ability === "trace" && !this.v.usedTrace) {
-      const target = battle.rng.choice(battle.getTargets(this, Range.AllAdjacentFoe));
+      const target = battle.rng.choice(
+        battle
+          .getTargets(this, Range.AllAdjacentFoe)
+          .filter(target => target.v.ability !== "multitype"),
+      );
       if (target) {
         battle.ability(this);
         this.v.ability = target.v.ability;
@@ -788,19 +801,6 @@ export class ActivePokemon {
     battle: Battle,
     {pp, pinch, status, heal}: {pp?: bool; pinch?: bool; status?: bool; heal?: bool},
   ) {
-    const cureStatus = (poke: ActivePokemon) => {
-      this.consumeItem(battle);
-      poke.unstatus(battle);
-    };
-
-    const cureConfuse = (poke: ActivePokemon) => {
-      poke.v.confusion = 0;
-      if (this.base.item) {
-        this.consumeItem(battle);
-      }
-      battle.info(poke, "confused_end", [{id: poke.id, v: {flags: poke.v.cflags}}]);
-    };
-
     if (this.v.fainted) {
       return;
     }
@@ -840,17 +840,21 @@ export class ActivePokemon {
 
       const cures = battle.gen.items[this.base.item!]?.cureStatus;
       if (cures && cures === status) {
-        cureStatus(this);
+        this.consumeItem(battle);
+        this.unstatus(battle);
       } else if (cures === "any") {
         if (this.base.status) {
-          cureStatus(this);
-        }
-
-        if (this.v.confusion) {
-          cureConfuse(this);
+          this.consumeItem(battle);
+          this.unstatus(battle);
+        } else if (this.v.confusion) {
+          this.v.confusion = 0;
+          this.consumeItem(battle);
+          battle.info(this, "confused_end", [{id: this.id, v: {flags: this.v.cflags}}]);
         }
       } else if (cures === "confuse" && this.v.confusion) {
-        cureConfuse(this);
+        this.v.confusion = 0;
+        this.consumeItem(battle);
+        battle.info(this, "confused_end", [{id: this.id, v: {flags: this.v.cflags}}]);
       } else if (this.v.attract && this.base.item === "mentalherb") {
         this.v.attract = undefined;
         this.consumeItem(battle);
@@ -1258,6 +1262,10 @@ class Volatiles {
     this.ability = base.ability;
     this.counter = base.status === "tox" ? 1 : 0;
     this.form = base.form;
+
+    if (base.ability === "multitype" && HP_TYPES.includes(this.form)) {
+      this.types = [this.form];
+    }
   }
 
   hasAnyType(...types: Type[]) {

@@ -4148,7 +4148,9 @@ const internalMoveList = createMoveList({
     type: "psychic",
     range: Range.Adjacent,
     exec(battle, user, [target]) {
-      if (!battle.checkAccuracy(this, user, target)) {
+      if (target.v.ability === "multitype" || user.v.ability === "multitype") {
+        return battle.info(user, "fail_generic");
+      } else if (!battle.checkAccuracy(this, user, target)) {
         return;
       }
 
@@ -4251,7 +4253,9 @@ const internalMoveList = createMoveList({
     type: "psychic",
     range: Range.Adjacent,
     exec(battle, user, [target]) {
-      if (!battle.checkAccuracy(this, user, target)) {
+      if (target.v.ability === "multitype" || user.v.ability === "multitype") {
+        return battle.info(user, "fail_generic");
+      } else if (!battle.checkAccuracy(this, user, target)) {
         return;
       }
 

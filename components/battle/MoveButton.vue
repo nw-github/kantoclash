@@ -54,7 +54,7 @@ import type {MoveOption} from "~/game/battle";
 import type {Generation} from "~/game/gen";
 import {abilityList} from "~/game/species";
 import {Range} from "~/game/moves";
-import type {Weather} from "~/game/utils";
+import {MC, type Weather} from "~/game/utils";
 
 defineEmits<{(e: "click"): void}>();
 
@@ -68,15 +68,16 @@ const move = computed(() => gen.moveList[option.move]);
 const info = computed(() => {
   let type = move.value.type;
   let pow = move.value.power;
-  const acc = move.value.acc;
+  let acc = move.value.acc;
+  const item = gen.items[poke.base!.item!];
   if (move.value.kind === "damage" && poke && move.value.getPower) {
     pow = move.value.getPower(poke.base!);
   }
   if (move.value.kind === "damage" && poke && move.value.getType) {
     type = move.value.getType(poke.base!, weather);
   }
-  if (pow && pow !== 1 && gen.items[poke.base!.item!]?.typeBoost?.type === type) {
-    pow += Math.floor(pow * (gen.items[poke.base!.item!]!.typeBoost!.percent / 100));
+  if (pow && pow !== 1 && item?.typeBoost?.type === type) {
+    pow += Math.floor(pow * (item.typeBoost.percent / 100));
   }
   if (pow && option.move === "facade" && poke.base!.status) {
     pow *= 2;
@@ -87,7 +88,6 @@ const info = computed(() => {
   if (pow && option.move === "weatherball" && weather) {
     pow *= 2;
   }
-
   if (
     pow &&
     poke.base!.belowHp(3) &&
@@ -95,6 +95,16 @@ const info = computed(() => {
     abilityList[poke.v.ability].pinchBoostType === type
   ) {
     pow += Math.floor(pow / 2);
+  }
+
+  if (acc && item?.boostAcc) {
+    acc += Math.floor(acc * (item.boostAcc / 100));
+  }
+  if (acc && poke.v.ability === "hustle" && gen.getCategory(move.value) === MC.physical) {
+    acc -= Math.floor(acc * 0.2);
+  }
+  if (poke.v.ability === "noguard") {
+    acc = undefined;
   }
 
   return [type, pow, acc] as const;

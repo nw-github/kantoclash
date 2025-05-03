@@ -197,9 +197,14 @@ const createGeneration = (): Generation => {
       let acc = Math.floor(
         chance * this.accStageMultipliers![clamp(user.v.stages.acc - eva, -6, 6)]!,
       );
-      const reduceAcc = battle.gen.items[target.base.item!]?.reduceAcc;
-      if (reduceAcc) {
-        acc -= Math.floor(acc * (reduceAcc / 100));
+      const targetItem = battle.gen.items[target.base.item!];
+      if (targetItem?.reduceAcc) {
+        acc -= Math.floor(acc * (targetItem.reduceAcc / 100));
+      }
+
+      const userItem = battle.gen.items[user.base.item!];
+      if (userItem?.boostAcc) {
+        acc += Math.floor(acc * (userItem.boostAcc / 100));
       }
 
       if (user.v.ability === "compoundeyes") {
