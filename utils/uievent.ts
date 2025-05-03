@@ -139,6 +139,7 @@ export const infoMessage: Record<InfoReason, string> = {
   magicCoat: "{} shrouded itself in Magic Coat!",
   batonpass: "",
   uturn: "{} went back to {p}!",
+  pressure: "{} is exerting its Pressure!",
 };
 
 export const weatherMessage: Record<Weather, Record<WeatherEvent["kind"], string>> = {

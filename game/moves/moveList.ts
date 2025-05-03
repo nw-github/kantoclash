@@ -398,7 +398,6 @@ const internalMoveList = createMoveList({
     noSleepTalk: true,
     kingsRock: true,
     contact: true,
-    snatch: true,
   },
   disable: {
     name: "Disable",

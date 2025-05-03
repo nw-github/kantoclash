@@ -698,6 +698,11 @@ export class ActivePokemon {
       }
     }
 
+    if (this.v.ability === "pressure" && battle.gen.id >= 4) {
+      battle.ability(this);
+      battle.info(this, "pressure");
+    }
+
     this.handleForecast(battle);
 
     battle.sv(battle.allActive.map(p => ({id: p.id, v: {stats: p.clientStats(battle)}})));
