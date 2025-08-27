@@ -802,10 +802,7 @@ export class ActivePokemon {
     }
   }
 
-  handleBerry(
-    battle: Battle,
-    {pp, pinch, status, heal}: {pp?: bool; pinch?: bool; status?: bool; heal?: bool},
-  ) {
+  handleBerry(battle: Battle, {pp, pinch, status}: {pp?: bool; pinch?: bool; status?: bool}) {
     if (this.v.fainted) {
       return;
     }
@@ -875,27 +872,31 @@ export class ActivePokemon {
       }
     }
 
-    if (heal) {
-      const healFixed = battle.gen.items[this.base.item!]?.healFixed;
-      if (healFixed && this.base.belowHp(2)) {
-        this.consumeItem(battle);
-        this.recover(healFixed, this, battle, "item");
-      }
-    }
-
     if (pinch) {
-      const healPinch = battle.gen.items[this.base.item!]?.healPinchNature;
-      const statPinch = battle.gen.items[this.base.item!]?.statPinch;
-      if (healPinch && this.base.belowHp(2)) {
-        this.consumeItem(battle);
-        this.recover(Math.max(1, Math.floor(this.base.stats.hp / 8)), this, battle, "item");
-        if (this.base.nature !== undefined) {
-          const [, minus] = Object.keys(natureTable[this.base.nature]);
-          if (minus === healPinch && this.v.ability !== "owntempo") {
-            this.confuse(battle, "cConfused");
+      if (this.base.belowHp(2)) {
+        const healPinch = battle.gen.items[this.base.item!]?.healPinchNature;
+        const healFixed = battle.gen.items[this.base.item!]?.healFixed;
+        const healSitrus = battle.gen.items[this.base.item!]?.healSitrus;
+        if (healFixed) {
+          this.consumeItem(battle);
+          this.recover(healFixed, this, battle, "item");
+        } else if (healPinch) {
+          this.consumeItem(battle);
+          this.recover(Math.max(1, Math.floor(this.base.stats.hp / 8)), this, battle, "item");
+          if (this.base.nature !== undefined) {
+            const [, minus] = Object.keys(natureTable[this.base.nature]);
+            if (minus === healPinch && this.v.ability !== "owntempo") {
+              this.confuse(battle, "cConfused");
+            }
           }
+        } else if (healSitrus) {
+          this.consumeItem(battle);
+          this.recover(Math.max(1, Math.floor(this.base.stats.hp / 4)), this, battle, "item");
         }
-      } else if (statPinch && this.base.belowHp(4)) {
+      }
+
+      const statPinch = battle.gen.items[this.base.item!]?.statPinch;
+      if (statPinch && this.base.belowHp(4)) {
         this.consumeItem(battle);
         if (statPinch === "crit") {
           battle.info(this, "focusEnergy", [this.setFlag(VF.focusEnergy)]);

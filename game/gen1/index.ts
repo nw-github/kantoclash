@@ -699,7 +699,7 @@ const createGeneration = () => {
 
       // Berries
       for (const poke of battle.allActive) {
-        poke.handleBerry(battle, {pinch: true, status: true, heal: true});
+        poke.handleBerry(battle, {pinch: true, status: true});
       }
 
       // Encore

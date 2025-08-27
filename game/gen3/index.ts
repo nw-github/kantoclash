@@ -444,7 +444,7 @@ const createGeneration = (): Generation => {
           }
 
           poke.handleLeftovers(battle);
-          poke.handleBerry(battle, {pinch: true, status: true, heal: true, pp: true});
+          poke.handleBerry(battle, {pinch: true, status: true, pp: true});
           battle.gen.handleResidualDamage(battle, poke);
           if (poke.base.hp) {
             poke.handlePartialTrapping(battle);

@@ -37,13 +37,13 @@ const createGeneration = (): Generation => {
           user.faint(battle);
           return true;
         }
-        user.handleBerry(battle, {pp: true, pinch: true, status: true, heal: true});
+        user.handleBerry(battle, {pp: true, pinch: true, status: true});
         return false;
       }
 
       for (const poke of battle.allActive) {
         if (poke.base.hp) {
-          poke.handleBerry(battle, {pp: true, pinch: true, status: true, heal: true});
+          poke.handleBerry(battle, {pp: true, pinch: true, status: true});
         }
       }
 
@@ -81,7 +81,7 @@ const createGeneration = (): Generation => {
           if (poke.choice?.isReplacement || battle.turnType === TurnType.Lead) {
             poke.handleWeatherAbility(battle);
             poke.handleSwitchInAbility(battle);
-            poke.handleBerry(battle, {pp: true, pinch: true, status: true, heal: true});
+            poke.handleBerry(battle, {pp: true, pinch: true, status: true});
           }
         }
         return;

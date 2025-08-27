@@ -75,9 +75,6 @@ const descriptions: Partial<Record<number, Partial<Record<MoveId, string>>>> = {
     sketch: "Permanently replaces this move with the last move used by the target. ",
     perishsong:
       "Sets a 3-turn timer for all Pokémon on the field, after which they will faint. Switching removes the timer. ",
-    futuresight:
-      "After two turns, the target is hit with an attack. Damage is calculated upon use " +
-      "of the move. ",
     psychup: "Copies the stat stages of the target. Fails if they are all 0. ",
     pursuit: "Doubles damage and goes first if the target is switching out. ",
     spikes: "Sets an entry hazard that damages any Pokémon switching in for 1/8 its max HP. ",
@@ -209,6 +206,9 @@ const flagDesc: Record<NonNullable<DamagingMove["flag"]>, string> = {
   bugbite: "Consumes the target's berry and gains its effect if it has one. ",
   assurance: "Doubles damage if the target has already taken damage this turn. ",
   uturn: "Switches the user out. ",
+  futuresight:
+    "After two turns, the target is hit with an attack. Damage is calculated upon use " +
+    "of the move. ",
 };
 
 const formatStages = (gen: Generation, stages: [StageId, number][]) => {

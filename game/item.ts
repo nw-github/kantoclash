@@ -14,6 +14,7 @@ export type ItemData = {
   typeBoost?: {type: Exclude<Type, "???">; percent: number; plate?: bool};
   cureStatus?: Status | "any" | "confuse";
   healFixed?: number;
+  healSitrus?: bool;
   healPinchNature?: StatStageId;
   statPinch?: StatStageId | "random" | "crit";
   restorePP?: number;

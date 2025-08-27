@@ -134,7 +134,12 @@
   "oranberry": {"exists": true},
   "persimberry": {"exists": true},
   "lumberry": {"exists": true},
-  "sitrusberry": {"exists": true},
+  "sitrusberry": {
+    "exists": true,
+    "healFixed": 0,
+    "healSitrus": true,
+    "desc": "Heals 25% HP below 50% HP."
+  },
   "figyberry": {"exists": true},
   "wikiberry": {"exists": true},
   "magoberry": {"exists": true},

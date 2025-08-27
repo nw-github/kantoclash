@@ -2282,10 +2282,10 @@ const internalMoveList = createMoveList({
           }
         }
 
-        if (!battle.checkAccuracy(this, user, target)) {
-          return;
-        } else if (target.v.substitute) {
+        if (target.v.substitute || target.v.hasFlag(VF.curse)) {
           return battle.info(user, "fail_generic");
+        } else if (!battle.checkAccuracy(this, user, target)) {
+          return;
         }
 
         user.damage(
