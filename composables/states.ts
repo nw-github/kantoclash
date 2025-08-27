@@ -8,7 +8,7 @@ export const useMyId = () => {
 
 export const useMyTeams = () => useLocalStorage<Team[]>("myTeams", () => []);
 
-export const allMusicTracks = Object.keys(import.meta.glob("/public/music/**/*.{mp3,wav}"));
+export const allMusicTracks = Object.keys(import.meta.glob("/public/music/**/*.{mp3,wav,ogg}"));
 
 export const femaleIds = new Set(
   Object.keys(import.meta.glob("/public/sprites/battle/female/*.gif")).map(spr =>

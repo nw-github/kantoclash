@@ -31,7 +31,6 @@
 </template>
 
 <script setup lang="ts">
-import loops from "@/public/music/loops.json";
 import criesSpritesheet from "~/public/effects/cries.json";
 
 const cry = ref(1);
@@ -150,8 +149,6 @@ const toTime = (seconds: number) => {
   return `${mm}:${ss}.${ms}`;
 };
 
-const trackToPath = (tr: string) => "/" + tr.split("/").slice(2).map(encodeURIComponent).join("/");
-
 const addStartTime = (start: number, end: number, confidence?: number) => {
   let label = `${startTimes.value.length}: ${toTime(start)} - ${toTime(end)}`;
   if (confidence) {
@@ -194,17 +191,14 @@ watch(track, async track => {
   }
 
   audioBuffer.value = undefined;
-
-  type Loops = Record<string, {start: string; end: string}>;
-
-  const loop = (loops as Loops)[track.slice(track.lastIndexOf("/") + 1)];
   startTimes.value.length = 0;
-  startTime.value = addStartTime(toSeconds(loop.start), toSeconds(loop.end));
 
   audioBuffer.value = (async () => {
     const blob = await $fetch<Blob>(trackToPath(track));
+    const info = await getMusicInfo(blob, track);
     const buffer = await context!.decodeAudioData(await blob.arrayBuffer());
 
+    startTime.value = addStartTime(info.loopStart, info.loopEnd);
     currentTime.value = 0;
     duration.value = buffer.duration;
 

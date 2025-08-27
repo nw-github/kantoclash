@@ -1,26 +1,72 @@
 import type {Mods} from "~/game/battle";
 import type {StageId} from "../game/utils";
-import type {Generation} from "~/game/gen1";
+import type {Generation} from "../game/gen1";
+import {parseBlob} from "music-metadata";
 
 export const randChoice = <T>(arr: T[]) => arr[Math.floor(Math.random() * arr.length)];
+
+export type MusicInfo = {
+  loopStart: number;
+  loopEnd: number;
+  offset: number;
+  title?: string;
+  artist?: string;
+  album?: string;
+};
+
+const MUSIC_FILE_REGEX = /(.*)\((.*)\)(\..*)?/;
+
+export const trackToPath = (tr: string) =>
+  "/" + tr.split("/").slice(2).map(encodeURIComponent).join("/");
 
 export const musicTrackName = (track: string) => {
   return track.slice(track.lastIndexOf("/") + 1, track.lastIndexOf("."));
 };
 
-export const toSeconds = (pos: string) => {
-  const [m, sms] = pos.split(":");
-  if (!sms) {
-    return +m;
+export const getMusicInfo = async (blob: Blob, path: string) => {
+  const result: MusicInfo = {loopStart: 0, loopEnd: 0, offset: 0};
+  const data = await parseBlob(blob);
+  result.title = data.common.title;
+  result.artist = data.common.artist;
+  result.album = data.common.album;
+
+  const sampleRate = data.format.sampleRate;
+  for (const format in data.native) {
+    for (const tag of data.native[format]) {
+      const name = tag.id.startsWith("TXXX") ? tag.id.slice(5) : tag.id;
+      if (typeof tag.value !== "string") {
+        continue;
+      }
+
+      if (name === "LOOP_START" && sampleRate) {
+        result.loopStart = Number(tag.value) / sampleRate;
+      } else if (name === "LOOP_END" && sampleRate) {
+        result.loopEnd = Number(tag.value) / sampleRate;
+      } else if (name === "START_OFFSET") {
+        result.offset = Number(tag.value);
+      } else if (name === "S_LOOP_START") {
+        result.loopStart = Number(tag.value);
+      } else if (name === "S_LOOP_END") {
+        result.loopEnd = Number(tag.value);
+      }
+    }
   }
 
-  const [s, ms] = sms.split(".").map(Number);
-  return +m * 60 + s + ms / 1000;
+  if (!result.title) {
+    const name = path.slice(path.lastIndexOf("/") + 1);
+    const match = name.match(MUSIC_FILE_REGEX);
+    if (match) {
+      result.title = match[1].trim();
+      result.album = match[2].trim();
+    } else {
+      result.title = name.slice(0, name.lastIndexOf("."));
+    }
+  }
+
+  return result;
 };
 
-export const toTitleCase = (s: string) => {
-  return s.slice(0, 1).toUpperCase() + s.slice(1);
-};
+export const toTitleCase = (s: string) => s.slice(0, 1).toUpperCase() + s.slice(1);
 
 export const roundTo = (num: number, places: number = 1) => {
   const pow = 10 ** places;

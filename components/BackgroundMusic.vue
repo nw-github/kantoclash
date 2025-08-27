@@ -3,8 +3,6 @@
 </template>
 
 <script setup lang="ts">
-// Loops auto-generated with: https://github.com/arkrow/PyMusicLooper
-import loops from "@/public/music/loops.json";
 import {animate} from "motion-v";
 
 const toast = useToast();
@@ -12,10 +10,10 @@ const {volume, track, fadeOutRequested} = useBGMusic();
 const musicController = ref<HTMLAudioElement>();
 
 let playWasBlocked = false;
-let offset = 0;
+let currentInfo: MusicInfo = {loopStart: 0, loopEnd: 0, offset: 0};
 const context = useAudioContext(() => {
   if (playWasBlocked && source) {
-    source.start(0, offset);
+    source.start(0, currentInfo.offset);
     showToast();
   }
 });
@@ -71,17 +69,14 @@ const stop = async (fade: bool) => {
 };
 
 const play = async (next: string) => {
-  type Loops = Record<string, {start: string; end: string}>;
-
   if (!context) {
     return;
   }
 
   stopping = stopping ?? stop(true);
 
-  const path = "/" + next.split("/").slice(2).map(encodeURIComponent).join("/");
-  const blob = await $fetch<Blob>(path);
-  const loop = (loops as Loops)[next.slice(next.lastIndexOf("/") + 1)];
+  const blob = await $fetch<Blob>(trackToPath(next));
+  const info = await getMusicInfo(blob, next);
   const buffer = await context.decodeAudioData(await blob.arrayBuffer());
 
   await stopping;
@@ -92,44 +87,41 @@ const play = async (next: string) => {
   }
 
   notified = false;
+  currentInfo = info;
   gain = context.createGain();
   gain.gain.value = volume.value;
   gain.connect(context.destination);
 
   source = context.createBufferSource();
-  // TODO: just remove the leading silence
-  offset = next.includes("Cipher Peon Battle (Pokémon Colosseum)") ? 1.95 : 0;
   source.buffer = buffer;
-  if (loop) {
-    source.loopStart = toSeconds(loop.start);
-    source.loopEnd = toSeconds(loop.end);
-  }
+  source.loopStart = info.loopStart;
+  source.loopEnd = info.loopEnd;
   source.loop = true;
   source.connect(gain);
 
   if (!context.unlocked) {
     playWasBlocked = true;
   } else {
-    source.start(0, offset);
+    source.start(0, currentInfo.offset);
     showToast();
   }
 };
 
 const showToast = () => {
+  const {title, album, artist} = currentInfo;
   if (track.value && !notified) {
-    const name = musicTrackName(track.value);
-    toast.add({title: `Now Playing: ${name}`, icon: "heroicons-outline:speaker-wave"});
+    toast.add({
+      title: `Now Playing: ${title}${album ? ` (${album})` : ""}`,
+      icon: "heroicons-outline:speaker-wave",
+    });
+
     notified = true;
 
-    if (!navigator.mediaSession) {
-      return;
+    if (navigator.mediaSession) {
+      navigator.mediaSession.metadata = new MediaMetadata({title, artist, album});
+      navigator.mediaSession.playbackState = "playing";
+      navigator.mediaSession.setPositionState({duration: 0, playbackRate: 1, position: 0});
     }
-
-    const [title, game] = name.split("(").map(s => s.trim());
-    const artist = game.split(")")[0];
-    navigator.mediaSession.metadata = new MediaMetadata({title, artist});
-    navigator.mediaSession.playbackState = "playing";
-    navigator.mediaSession.setPositionState({duration: 0, playbackRate: 1, position: 0});
   }
 };
 </script>
