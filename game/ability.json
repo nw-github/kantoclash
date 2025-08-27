@@ -110,6 +110,7 @@
   "waterabsorb": {"name": "Water Absorb", "desc": "Heals from damaging Water type moves."},
   "waterveil": {"name": "Water Veil", "desc": "Prevents burn.", "preventsStatus": "brn"},
   "whitesmoke": {"name": "White Smoke", "desc": "Prevents stat drops.", "preventsStatDrop": "all"},
+
   "baddreams": {"name": "Bad Dreams", "desc": "-1/8 HP every turn for sleeping opponents."},
   "flowergift": {"name": "Flower Gift", "desc": "+50% Atk and SpD for user and allies in sun."},
   "hydration": {"name": "Hydration", "desc": "Cures status at the end of a turn in rain."},
@@ -122,6 +123,7 @@
   },
   "superluck": {"name": "Super Luck", "desc": "Raises critical-hit ratio."},
   "technician": {"name": "Technician", "desc": "+50% power to moves below 60 BP."},
+  "poisonheal": {"name": "Poison Heal", "desc": "+1/8 HP at the end of each turn when PSNd."},
 
   "angerpoint": {"name": "Anger Point", "desc": ""},
   "download": {"name": "Download", "desc": ""},
@@ -150,7 +152,6 @@
   "moldbreaker": {"name": "Mold Breaker", "desc": ""},
   "motordrive": {"name": "Motor Drive", "desc": ""},
   "multitype": {"name": "Multitype", "desc": ""},
-  "poisonheal": {"name": "Poison Heal", "desc": ""},
   "quickfeet": {"name": "Quick Feet", "desc": ""},
   "reckless": {"name": "Reckless", "desc": ""},
   "rivalry": {"name": "Rivalry", "desc": ""},

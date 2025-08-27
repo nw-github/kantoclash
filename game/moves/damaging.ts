@@ -145,6 +145,7 @@ export function getDamage(
     if (self.flag === "smellingsalt" && !target.v.substitute && target.base.status === "par") {
       doubleDmg = true;
     }
+
     if (battle.moveIdOf(self) === "weatherball" && battle.getWeather()) {
       doubleDmg = true;
     }
@@ -205,7 +206,7 @@ export function getDamage(
       screen: !!target.owner.screens[spc ? "light_screen" : "reflect"],
       flashFire: user.v.hasFlag(VF.flashFire) && type === "fire",
       stockpile,
-      technician: user.v.ability === "technician" && battle.moveIdOf(self) !== "struggle",
+      technician: user.v.ability === "technician" && !self.noTechnician,
     });
 
     if (self.flag === "false_swipe" && dmg >= target.base.hp && !target.v.substitute) {

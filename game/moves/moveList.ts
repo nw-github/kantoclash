@@ -1697,6 +1697,7 @@ const internalMoveList = createMoveList({
     noMimic: true,
     kingsRock: true,
     contact: true,
+    noTechnician: true,
   },
   stringshot: {
     kind: "stage",
@@ -2129,6 +2130,7 @@ const internalMoveList = createMoveList({
     power: 10,
     acc: 100,
     kingsRock: true,
+    noTechnician: true,
     flag: "beatup",
   },
   bellydrum: {

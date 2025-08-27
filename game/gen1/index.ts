@@ -541,10 +541,18 @@ const createGeneration = () => {
           d = why === "seeded" ? 8 : 16;
         }
 
-        const dmg = Math.max(Math.floor((m * poke.base.stats.hp) / d), 1);
-        const {dead} = poke.damage(dmg, poke, battle, false, why, true);
-        if (why === "seeded" && poke.v.seededBy) {
-          poke.v.seededBy.recover(dmg, poke, battle, "seeder");
+        let dead = false;
+        if (why === "psn" && poke.v.ability === "poisonheal") {
+          if (poke.base.hp < poke.base.stats.hp) {
+            battle.ability(poke);
+            poke.recover(Math.max(Math.floor(poke.base.stats.hp / 8), 1), poke, battle, "recover");
+          }
+        } else {
+          const dmg = Math.max(Math.floor((m * poke.base.stats.hp) / d), 1);
+          dead = poke.damage(dmg, poke, battle, false, why, true).dead;
+          if (why === "seeded" && poke.v.seededBy) {
+            poke.v.seededBy.recover(dmg, poke, battle, "seeder");
+          }
         }
 
         if (poke.v.counter) {
