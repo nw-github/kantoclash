@@ -23,17 +23,17 @@ span {
 import type {FormId} from "~/game/pokemon";
 import type {SpeciesId} from "~/game/species";
 
-const {form, species} = defineProps<{
-  species?: SpeciesId;
+const {form, speciesId} = defineProps<{
+  speciesId?: SpeciesId;
   scale?: number;
   shiny?: boolean;
   form?: FormId;
 }>();
 
 const clazz = computed(() => {
-  if (species === "unown" && form && form !== "a") {
-    return `${species}${form}`;
+  if (speciesId === "unown" && form && form !== "a") {
+    return `${speciesId}${form}`;
   }
-  return species;
+  return speciesId;
 });
 </script>

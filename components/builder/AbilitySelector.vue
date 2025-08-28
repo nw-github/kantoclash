@@ -48,7 +48,7 @@ const {poke, gen} = defineProps<{poke: PokemonDesc; gen: Generation}>();
 
 const open = ref(false);
 const items = computed(() => Object.entries(abilityList) as [AbilityId, AbilityData][]);
-const species = computed<Species | undefined>(() => gen.speciesList[poke?.species as SpeciesId]);
+const species = computed<Species | undefined>(() => gen.speciesList[poke?.speciesId as SpeciesId]);
 
 const filter = (abilities: [AbilityId, AbilityData][], query: string) => {
   const q = normalizeName(query);

@@ -118,7 +118,7 @@
             <BoxSprite
               v-for="(poke, j) in team.pokemon"
               :key="j"
-              :species="(poke.species as SpeciesId)"
+              :species-id="(poke.speciesId as SpeciesId)"
               :scale="isXS ? 1.2 : !isMdOrGreater ? 1.5 : 2"
               :form="(poke.form as FormId)"
             />

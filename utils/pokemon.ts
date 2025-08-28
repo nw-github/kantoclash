@@ -29,7 +29,7 @@ export const descToString = (format: FormatId, poke: PokemonDesc) => {
 
   const gen = GENERATIONS[formatInfo[format].generation]!;
   const species =
-    poke.species in gen.speciesList ? gen.speciesList[poke.species as SpeciesId] : undefined;
+    poke.speciesId in gen.speciesList ? gen.speciesList[poke.speciesId as SpeciesId] : undefined;
 
   const item = poke.item ? ` @ ${poke.item}` : "";
   const g = species && gen.id >= 3 && gen.getGender(poke.gender, species, poke.ivs?.atk ?? 15);
@@ -70,7 +70,7 @@ export const descToString = (format: FormatId, poke: PokemonDesc) => {
     const id = normalizeName(move);
     if (id === "hiddenpower") {
       const type = (gen.moveList.hiddenpower as DamagingMove).getType!(
-        new Pokemon(gen, {species: "abra", ivs: poke.ivs ?? {}, moves: []}),
+        new Pokemon(gen, {speciesId: "abra", ivs: poke.ivs ?? {}, moves: []}),
       );
       result += ` - Hidden Power [${toTitleCase(type)}]\n`;
     } else if ((gen.moveList as Record<string, Move>)[id]) {
@@ -139,7 +139,7 @@ export const parsePokemon = (format: FormatId, src: string): TeamPokemonDesc => 
     }
   };
 
-  const desc: TeamPokemonDesc = {species: "", evs: {}, ivs: {}, moves: [], name: ""};
+  const desc: TeamPokemonDesc = {speciesId: "", evs: {}, ivs: {}, moves: [], name: ""};
 
   // prettier-ignore
   const lines = src.split("\n").map(line => line.trim()).filter(line => line);
@@ -155,21 +155,21 @@ export const parsePokemon = (format: FormatId, src: string): TeamPokemonDesc => 
 
       // Custom Name (Misdreavus) (F)
       desc.name = nameOrSpecies;
-      desc.species = speciesOrGender;
+      desc.speciesId = speciesOrGender;
       desc.gender = gender.toLowerCase() === "f" ? "F" : "M";
     } else if (speciesOrGender) {
       if (speciesOrGender.toLowerCase() === "f" || speciesOrGender.toLowerCase() === "m") {
         // Misdreavus (F)
-        desc.species = nameOrSpecies;
+        desc.speciesId = nameOrSpecies;
         desc.gender = speciesOrGender.toLowerCase() === "f" ? "F" : "M";
       } else {
         // Custom Name (Misdreavus)
         desc.name = nameOrSpecies;
-        desc.species = speciesOrGender;
+        desc.speciesId = speciesOrGender;
       }
     } else {
       // Misdreavus
-      desc.species = nameOrSpecies;
+      desc.speciesId = nameOrSpecies;
     }
 
     if (item && normalizeName(item) !== "noitem") {
@@ -177,7 +177,7 @@ export const parsePokemon = (format: FormatId, src: string): TeamPokemonDesc => 
     }
   }
 
-  desc.species = normalizeName(desc.species);
+  desc.speciesId = normalizeName(desc.speciesId);
 
   let gotIvs = false;
   for (const line of lines.slice(1)) {
@@ -222,7 +222,7 @@ export const parsePokemon = (format: FormatId, src: string): TeamPokemonDesc => 
   }
 
   if (!desc.ability && gen.id >= 3) {
-    const species = (gen.speciesList as Record<string, Species>)[desc.species];
+    const species = (gen.speciesList as Record<string, Species>)[desc.speciesId];
     if (species && species.abilities.length === 1) {
       desc.ability = abilityList[species.abilities[0]].name;
     }
@@ -270,7 +270,7 @@ export const parseTeams = (src: string) => {
 };
 
 export const convertDesc = (gen: Generation, desc: PokemonDesc): PokemonDesc => {
-  const species = normalizeName(desc.species);
+  const speciesId = normalizeName(desc.speciesId);
   const moves = desc.moves
     .map(move => normalizeName(move))
     .filter(m => !!m)
@@ -296,7 +296,7 @@ export const convertDesc = (gen: Generation, desc: PokemonDesc): PokemonDesc => 
       ivs[stat] = gen.id <= 2 ? ivToDv(desc.ivs[stat]) : desc.ivs[stat];
     }
   }
-  return {...desc, evs, ivs, moves, species, item, ability};
+  return {...desc, evs, ivs, moves, speciesId, item, ability};
 };
 
 export const convertTeam = (team: Team) => {

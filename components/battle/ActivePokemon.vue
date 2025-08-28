@@ -120,7 +120,7 @@
             >
               <Sprite
                 v-show="poke?.transformed ?? poke?.speciesId"
-                :species="poke?.transformed ?? poke?.speciesId"
+                :species-id="poke?.transformed ?? poke?.speciesId"
                 :scale="lessThanSm ? 1 : 2"
                 :shiny="poke?.shiny"
                 :form="poke?.form"

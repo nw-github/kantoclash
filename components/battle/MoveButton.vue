@@ -25,7 +25,7 @@
             <BoxSprite
               v-for="{speciesId, form} in pokes"
               :key="speciesId + form"
-              :species="speciesId"
+              :species-id
               :form
             />
           </li>
@@ -89,15 +89,15 @@ const info = computed(() => {
 
   const powers: {pokes: {speciesId: SpeciesId; form?: FormId}[]; pow?: number; acc?: number}[] = [];
   const item = gen.items[poke.base!.item!];
-  for (const opp of opponent?.active ?? []) {
+  for (const opp of opponent?.active?.toReversed() ?? []) {
     let pow = move.value.power;
     if (!opp) {
       continue;
     }
 
-    const species = opp.transformed || opp.speciesId;
+    const speciesId = opp.transformed || opp.speciesId;
     const opponentPoke = new Pokemon(gen, {
-      species,
+      speciesId,
       level: opp.level,
       name: opp.name,
       shiny: opp.shiny,
@@ -120,11 +120,11 @@ const info = computed(() => {
     const acc = applyAccuracyModifiers(move.value.acc, item);
     const other = powers.find(r => r.pow == pow && r.acc == acc);
     if (other) {
-      other.pokes.push({speciesId: species, form: opp.form});
+      other.pokes.push({speciesId, form: opp.form});
       continue;
     }
 
-    powers.push({pokes: [{speciesId: species, form: opp.form}], pow, acc});
+    powers.push({pokes: [{speciesId, form: opp.form}], pow, acc});
   }
 
   return {type, powers} as const;

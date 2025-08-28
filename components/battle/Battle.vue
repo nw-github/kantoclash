@@ -395,14 +395,14 @@ const runEvent = async (e: BattleEvent) => {
   };
 
   const preloadSprite = (
-    species: string,
+    speciesId: string,
     female?: bool,
     shiny?: bool,
     back?: bool,
     form?: FormId,
   ) => {
     const img = new Image();
-    img.src = getSpritePath(species, female, shiny, back, form);
+    img.src = getSpritePath(speciesId, female, shiny, back, form);
     return img;
   };
 

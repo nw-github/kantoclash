@@ -186,7 +186,7 @@ export const randoms = (
   validSpecies: (s: Species, id: SpeciesId) => bool,
   level = 100,
 ) => {
-  return getRandomPokemon(gen, 6, validSpecies, (s, id) => {
+  return getRandomPokemon(gen, 6, validSpecies, (s, speciesId) => {
     let valid = s.moves;
     if (valid.includes("sketch")) {
       valid = Object.keys(gen.moveList).filter(id => isValidSketchMove(gen, id)) as MoveId[];
@@ -217,7 +217,7 @@ export const randoms = (
 
     let nature: Nature | undefined;
     let ability: AbilityId | undefined;
-    return {species: id, level, moves, ivs, evs: {}, nature, ability};
+    return {speciesId, level, moves, ivs, evs: {}, nature, ability};
   });
 };
 
@@ -231,11 +231,11 @@ const createValidator = (gen: Generation) => {
         .refine(text => !profanityMatcher.hasMatch(text), "Name must not contain obscenities")
         .optional(),
       level: z.number().min(1).max(100).optional(),
-      species: z
+      speciesId: z
         .string()
-        .refine(s => s in gen.speciesList, "Species is invalid")
+        .refine(id => id in gen.speciesList, "Species is invalid")
         .refine(
-          s => gen.validSpecies(gen.speciesList[s as SpeciesId]),
+          id => gen.validSpecies(gen.speciesList[id as SpeciesId]),
           "Species does not exist in this generation",
         ),
       moves: z
@@ -267,7 +267,7 @@ const createValidator = (gen: Generation) => {
         .refine(s => gen.id <= 2 || s, "Must choose an ability"),
     })
     .superRefine((desc, ctx) => {
-      const species = gen.speciesList[desc.species as SpeciesId];
+      const species = gen.speciesList[desc.speciesId as SpeciesId];
       if (!species) {
         return;
       }
@@ -296,7 +296,8 @@ const createValidator = (gen: Generation) => {
     .nonempty("Team must have between 1 and 6 pokemon")
     .refine(
       team =>
-        new Set(team.map(p => gen.speciesList[p.species as SpeciesId].dexId)).size === team.length,
+        new Set(team.map(p => gen.speciesList[p.speciesId as SpeciesId].dexId)).size ===
+        team.length,
       "Cannot contain two pokemon with the same national dex number",
     );
 };
@@ -340,7 +341,7 @@ export const formatDescs: Record<FormatId, FormatFunctions> = {
   g1_nfe: {
     validate(team) {
       return validateTeam(VALIDATOR_GEN1, team, (poke, addProblem) => {
-        const species = GENERATION1.speciesList[poke.species];
+        const species = GENERATION1.speciesList[poke.speciesId];
         if (!species.evolvesTo) {
           addProblem(`'${species.name}' cannot be used in NFE format (it does not evolve)`);
         }
@@ -369,8 +370,8 @@ export const formatDescs: Record<FormatId, FormatFunctions> = {
         GENERATION1,
         6,
         s => !s.evolvesTo,
-        (s, species) => ({
-          species,
+        (s, speciesId) => ({
+          speciesId,
           moves: getRandomMoves(
             4,
             Object.keys(moveList) as MoveId[],
@@ -397,7 +398,7 @@ export const formatDescs: Record<FormatId, FormatFunctions> = {
         GENERATION1,
         6,
         s => !s.evolvesTo,
-        (_, species) => ({species, moves: ["metronome"]}),
+        (_, speciesId) => ({speciesId, moves: ["metronome"]}),
       );
     },
   },
@@ -407,7 +408,7 @@ export const formatDescs: Record<FormatId, FormatFunctions> = {
         GENERATION2,
         6,
         s => !s.evolvesTo,
-        (_, species) => ({species, moves: ["metronome"]}),
+        (_, speciesId) => ({speciesId, moves: ["metronome"]}),
       );
     },
   },
@@ -417,7 +418,7 @@ export const formatDescs: Record<FormatId, FormatFunctions> = {
         GENERATION3,
         6,
         s => !s.evolvesTo,
-        (_, species) => ({species, moves: ["metronome"]}),
+        (_, speciesId) => ({speciesId, moves: ["metronome"]}),
       );
     },
   },

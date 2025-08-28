@@ -17,10 +17,10 @@
 
           <div class="flex justify-center">
             <BoxSprite
-              v-for="(poke, i) in team.pokemon"
+              v-for="({speciesId, form}, i) in team.pokemon"
               :key="i"
-              :species="poke.species"
-              :form="poke.form"
+              :species-id
+              :form
               :scale="lessThanSm ? 1 : 1.2"
             />
           </div>

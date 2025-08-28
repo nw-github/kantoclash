@@ -3,7 +3,7 @@
     <UButton class="w-full" :disabled :color="active ? 'blue' : 'primary'" @click="$emit('click')">
       <div class="w-full space-y-0.5">
         <div class="flex items-center gap-1 w-full justify-start">
-          <BoxSprite :species="poke.speciesId" :form="poke.form" />
+          <BoxSprite :species-id="poke.speciesId" :form="poke.form" />
           <span class="truncate">{{ poke.name }}</span>
           <StatusOrFaint :poke size="xs" class="ml-auto" />
         </div>

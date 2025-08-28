@@ -18,7 +18,7 @@ export type PokemonDesc<
   ivs?: Partial<Stats>;
   level?: number;
   name?: string;
-  species: Species;
+  speciesId: Species;
   moves: Move[];
   friendship?: number;
   item?: Item;
@@ -130,7 +130,7 @@ export class Pokemon {
   constructor(
     readonly gen: Generation,
     {
-      species,
+      speciesId,
       ivs,
       evs,
       level,
@@ -153,7 +153,7 @@ export class Pokemon {
       spd: ivs?.spd ?? gen.maxIv,
       spe: ivs?.spe ?? gen.maxIv,
     };
-    this.speciesId = species;
+    this.speciesId = speciesId;
     this.name = name || this.species.name;
     this.moves = moves;
     this.pp = moves.map(move => gen.getMaxPP(gen.moveList[move]));

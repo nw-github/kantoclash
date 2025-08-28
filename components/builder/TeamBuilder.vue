@@ -48,7 +48,7 @@
         <UTabs
           v-model="selectedPokeIdx"
           orientation="vertical"
-          :items="items"
+          :items
           :ui="{
             wrapper: 'h-full flex',
             container: 'hidden',
@@ -61,22 +61,17 @@
         >
           <template #default="{item}">
             <div class="size-[64px] m-1">
-              <BoxSprite :species="item.species" :scale="2" :form="item.form" />
+              <BoxSprite :species-id="item.speciesId" :scale="2" :form="item.form" />
             </div>
           </template>
         </UTabs>
       </div>
 
       <div class="block sm:hidden">
-        <UTabs
-          v-model="selectedPokeIdx"
-          class="px-2 pt-2"
-          :items="items"
-          :ui="{container: 'hidden'}"
-        >
+        <UTabs v-model="selectedPokeIdx" class="px-2 pt-2" :items :ui="{container: 'hidden'}">
           <template #default="{item}">
             <div class="size-[32px] m-1 flex items-center">
-              <BoxSprite :species="item.species" :form="item.form" />
+              <BoxSprite :species-id="item.speciesId" :form="item.form" />
             </div>
           </template>
         </UTabs>
@@ -174,7 +169,7 @@
               </div>
 
               <SpeciesSelector
-                v-model="selectedPoke.data.species"
+                v-model="selectedPoke.data.speciesId"
                 :class="gen.id >= 2 && 'pl-10'"
                 :team
                 :gen
@@ -182,7 +177,7 @@
                 :shiny="gen.getShiny(selectedPoke.data.shiny, ivsToDvs(selectedPoke.data))"
                 :form="gen.getForm(
                   undefined,
-                  selectedPoke.data.species as SpeciesId,
+                  selectedPoke.data.speciesId as SpeciesId,
                   ivsToDvs(selectedPoke.data),
                   (selectedPoke.data.item && normalizeName(selectedPoke.data.item)) as ItemId,
                 )"
@@ -404,10 +399,10 @@ const toast = useToast();
 const items = computed(() => {
   return team.pokemon.map(poke => ({
     label: poke.name ?? "",
-    species: poke.species,
+    speciesId: poke.speciesId,
     form: gen.value.getForm(
       poke.form as FormId,
-      poke.species as SpeciesId,
+      poke.speciesId as SpeciesId,
       ivsToDvsRaw(poke.ivs),
       (poke.item && normalizeName(poke.item)) as ItemId,
     ),
@@ -420,7 +415,7 @@ const gen = computed(() => GENERATIONS[formatInfo[team.format].generation]!);
 const statKeys = computed(() => getStatKeys(gen.value));
 const selectedPoke = computed(() => ({
   data: team.pokemon[selectedPokeIdx.value],
-  species: gen.value.speciesList[team.pokemon[selectedPokeIdx.value].species as SpeciesId] as
+  species: gen.value.speciesList[team.pokemon[selectedPokeIdx.value].speciesId as SpeciesId] as
     | Species
     | undefined,
   evProxy: reactive(
@@ -488,7 +483,7 @@ const onRangeInput = (e: Event & {target: HTMLInputElement}, stat: StatId) => {
 const selectedTab = ref(0);
 const teamPokepaste = ref(false);
 const currGender = computed(() => {
-  const species = gen.value.speciesList[selectedPoke.value.data.species as SpeciesId];
+  const species = gen.value.speciesList[selectedPoke.value.data.speciesId as SpeciesId];
   if (!species) {
     return {gender: "N", icon: "material-symbols:question-mark", clazz: "", forced: true} as const;
   }
@@ -584,7 +579,7 @@ const calcPokeStat = (stat: StatId, poke: TeamPokemonDesc) => {
   if (gen.value.id <= 2) {
     return gen.value.calcStat(
       stat,
-      gen.value.speciesList[poke.species as SpeciesId].stats,
+      gen.value.speciesList[poke.speciesId as SpeciesId].stats,
       poke.level ?? 100,
       ivsToDvs(poke),
       {[stat]: evToStatexp(poke.evs[stat])},
@@ -592,7 +587,7 @@ const calcPokeStat = (stat: StatId, poke: TeamPokemonDesc) => {
   } else {
     return gen.value.calcStat(
       stat,
-      gen.value.speciesList[poke.species as SpeciesId].stats,
+      gen.value.speciesList[poke.speciesId as SpeciesId].stats,
       poke.level ?? 100,
       poke.ivs,
       poke.evs,
@@ -612,7 +607,7 @@ const deletePokemon = (i: number) => {
   }
 
   const name =
-    poke.name || gen.value.speciesList[poke.species as SpeciesId]?.name || `Pokemon ${i + 1}`;
+    poke.name || gen.value.speciesList[poke.speciesId as SpeciesId]?.name || `Pokemon ${i + 1}`;
   toast.add({
     title: `${name} deleted!`,
     actions: [{label: "Undo", click: () => team.pokemon.splice(i, 0, poke)}],

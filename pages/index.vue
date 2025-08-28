@@ -341,7 +341,7 @@ const enterMMCallback = (team?: PokemonDesc[], err?: MMError, problems?: TeamPro
     // We're just getting name, fine to use generic speciesList here
     const name =
       team![pokemon]?.name ||
-      speciesList[team![pokemon]?.species as SpeciesId]?.name ||
+      speciesList[team![pokemon]?.speciesId as SpeciesId]?.name ||
       (pokemon !== undefined && `Pokemon ${pokemon + 1}`) ||
       "General";
     const arr = (issues[pokemon] ??= [name, []]);

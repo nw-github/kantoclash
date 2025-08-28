@@ -16,7 +16,7 @@
         @focus="open = true"
       >
         <Sprite
-          :species="(model as SpeciesId)"
+          :species-id="(model as SpeciesId)"
           :scale="1.5"
           :shiny
           :form
@@ -26,10 +26,10 @@
       </div>
     </div>
 
-    <template #item="{item: [id, species]}">
+    <template #item="{item: [speciesId, species]}">
       <div class="flex justify-between gap-8 sm:gap-16 w-full">
         <div class="flex items-center gap-1">
-          <BoxSprite :species="id" :form />
+          <BoxSprite :species-id :form />
           <span class="text-xs sm:text-sm truncate" :class="[isIllegal(species) && 'text-red-500']">
             {{ species.name }}
           </span>
@@ -78,7 +78,7 @@ const statKeys = computed(() => getStatKeys(gen));
 const filter = (species: [SpeciesId, Species][], query: string) => {
   const q = normalizeName(query);
   const all = species.filter(([id, _]) => normalizeName(id).includes(q));
-  const currentSpecies = team.pokemon.map(p => normalizeName(p.species));
+  const currentSpecies = team.pokemon.map(p => normalizeName(p.speciesId));
   let subset = all
     .filter(([id, _]) => !currentSpecies.includes(id))
     .filter(([_, species]) => gen.validSpecies(species));

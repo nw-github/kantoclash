@@ -1,5 +1,5 @@
 <template>
-  <NuxtImg :srcset="sprite" :alt="species ?? 'unknown'" />
+  <NuxtImg :srcset="sprite" :alt="speciesId ?? 'unknown'" />
 </template>
 
 <style scoped>
@@ -13,8 +13,8 @@ img {
 <script setup lang="ts">
 import type {FormId, Gender} from "~/game/pokemon";
 
-const {scale, species, shiny, back, form, gender} = defineProps<{
-  species?: string;
+const {scale, speciesId, shiny, back, form, gender} = defineProps<{
+  speciesId?: string;
   back?: bool;
   scale?: number;
   shiny?: bool;
@@ -23,6 +23,6 @@ const {scale, species, shiny, back, form, gender} = defineProps<{
 }>();
 const sprite = computed(() => {
   const sc = 1 / (scale ?? 1);
-  return getSpritePath(species, gender === "F", shiny, back, form) + ` ${sc}x`;
+  return getSpritePath(speciesId, gender === "F", shiny, back, form) + ` ${sc}x`;
 });
 </script>

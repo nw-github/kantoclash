@@ -65,17 +65,17 @@ export const gen1Gender: Partial<Record<SpeciesId, Gender>> = {
 };
 
 export const getSpritePath = (
-  species: string | undefined,
+  speciesId: string | undefined,
   female?: bool,
   shiny?: bool,
   back?: bool,
   form?: FormId,
 ) => {
-  if (!species || !(species in speciesList)) {
+  if (!speciesId || !(speciesId in speciesList)) {
     return `/sprites/battle/unknown.png`;
   }
 
-  const sp = speciesList[species as SpeciesId];
+  const sp = speciesList[speciesId as SpeciesId];
   let id = sp.sprite ?? String(sp.dexId);
   if (form) {
     id += `-${form}`;

@@ -6,7 +6,19 @@ export const useMyId = () => {
   return computed(() => user.value?.id ?? "");
 };
 
-export const useMyTeams = () => useLocalStorage<Team[]>("myTeams", () => []);
+export const useMyTeams = () => {
+  const teams = useLocalStorage<Team[]>("myTeams", () => []);
+  for (const team of teams.value) {
+    for (const poke of team.pokemon) {
+      // Legacy: all SpeciesId/string fields named 'species' were renamed to 'speciesId'
+      if ("species" in poke) {
+        poke.speciesId = poke.species as any;
+        delete poke.species;
+      }
+    }
+  }
+  return teams;
+};
 
 export const allMusicTracks = Object.keys(import.meta.glob("/public/music/**/*.{mp3,wav,ogg}"));
 
