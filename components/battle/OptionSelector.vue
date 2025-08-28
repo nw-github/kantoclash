@@ -75,6 +75,7 @@
             :gen
             :weather
             :poke="players.poke(currOption.id)!"
+            :opponent="players.get(opponent)!"
             @click="selectMove(currOption, i)"
           />
         </template>

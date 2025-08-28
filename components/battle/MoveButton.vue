@@ -8,7 +8,7 @@
     >
       <div class="flex items-center">
         <div class="pl-0.5 pr-1">
-          <TypeBadge :type="info[0]" :alt="info[0]" image />
+          <TypeBadge :type="info.type" :alt="info.type" image />
         </div>
         <span class="text-sm sm:text-base truncate">{{ move.name }}</span>
       </div>
@@ -19,18 +19,30 @@
 
     <template #panel>
       <ul class="list-none p-2 m-0 w-max max-w-[300px]">
-        <li>
-          <h4 class="inline-block w-8 text-center" :class="[move.power !== info[1] && 'font-bold']">
-            {{ info[1] || "--" }}
-          </h4>
-          Power
-        </li>
-        <li>
-          <h4 class="inline-block w-8 text-center" :class="[move.acc !== info[2] && 'font-bold']">
-            {{ info[2] || "--" }}
-          </h4>
-          Accuracy
-        </li>
+        <template v-for="{pow, acc, pokes} in info.powers" :key="pokes">
+          <li class="flex gap-1 items-center">
+            Against
+            <BoxSprite
+              v-for="{speciesId, form} in pokes"
+              :key="speciesId + form"
+              :species="speciesId"
+              :form
+            />
+          </li>
+          <li>
+            <h4 class="inline-block w-8 text-center" :class="[move.power !== pow && 'font-bold']">
+              {{ pow || "--" }}
+            </h4>
+            Power
+          </li>
+          <li>
+            <h4 class="inline-block w-8 text-center" :class="[move.acc !== acc && 'font-bold']">
+              {{ acc || "--" }}
+            </h4>
+            Accuracy
+          </li>
+        </template>
+
         <li v-if="move.priority">
           <h4 class="inline-block w-8 text-center">
             {{ move.priority > 0 ? `+${move.priority}` : move.priority }}
@@ -40,8 +52,8 @@
         <li class="pt-3">{{ describeMove(gen, option.move) }}</li>
         <li class="pt-3 -mb-1.5 italic text-sm">{{ targeting }}</li>
         <li class="pt-3 space-x-1 flex">
-          <TypeBadge :type="info[0]" />
-          <MoveCategory :category="gen.getCategory(move, info[0])" />
+          <TypeBadge :type="info.type" />
+          <MoveCategory :category="gen.getCategory(move, info.type)" />
           <UBadge v-if="move.kind === 'damage' && move.contact" label="Contact" />
         </li>
       </ul>
@@ -52,65 +64,70 @@
 <script setup lang="ts">
 import type {MoveOption} from "~/game/battle";
 import type {Generation} from "~/game/gen";
-import {abilityList} from "~/game/species";
+import {abilityList, type SpeciesId} from "~/game/species";
 import {Range} from "~/game/moves";
-import {MC, type Weather} from "~/game/utils";
+import {MC, type Type, type Weather} from "~/game/utils";
+import type {ItemData} from "~/game/item";
+import {Nature, Pokemon, type FormId} from "~/game/pokemon";
 
 defineEmits<{(e: "click"): void}>();
 
-const {gen, option, poke, weather} = defineProps<{
+const {gen, option, poke, weather, opponent} = defineProps<{
   option: MoveOption;
   gen: Generation;
   poke: ClientActivePokemon;
   weather?: Weather;
+  opponent?: ClientPlayer;
 }>();
 const move = computed(() => gen.moveList[option.move]);
 const info = computed(() => {
   let type = move.value.type;
-  let pow = move.value.power;
-  let acc = move.value.acc;
-  const item = gen.items[poke.base!.item!];
-  if (move.value.kind === "damage" && poke && move.value.getPower) {
-    pow = move.value.getPower(poke.base!);
-  }
+
   if (move.value.kind === "damage" && poke && move.value.getType) {
     type = move.value.getType(poke.base!, weather);
   }
-  if (pow && pow !== 1 && item?.typeBoost?.type === type) {
-    pow += Math.floor(pow * (item.typeBoost.percent / 100));
-  }
-  if (pow && option.move === "facade" && poke.base!.status) {
-    pow *= 2;
-  }
-  if (pow && option.move === "spitup" && poke.v.stockpile) {
-    pow *= poke.v.stockpile;
-  }
-  if (pow && option.move === "weatherball" && weather) {
-    pow *= 2;
-  }
-  if (
-    pow &&
-    poke.base!.belowHp(3) &&
-    poke.v.ability &&
-    abilityList[poke.v.ability].pinchBoostType === type
-  ) {
-    pow += Math.floor(pow / 2);
-  }
-  if (pow && pow <= 60 && poke.v.ability === "technician") {
-    pow += Math.floor(pow / 2);
+
+  const powers: {pokes: {speciesId: SpeciesId; form?: FormId}[]; pow?: number; acc?: number}[] = [];
+  const item = gen.items[poke.base!.item!];
+  for (const opp of opponent?.active ?? []) {
+    let pow = move.value.power;
+    if (!opp) {
+      continue;
+    }
+
+    const species = opp.transformed || opp.speciesId;
+    const opponentPoke = new Pokemon(gen, {
+      species,
+      level: opp.level,
+      name: opp.name,
+      shiny: opp.shiny,
+      gender: opp.gender,
+      form: opp.form,
+      ivs: {},
+      evs: {},
+      moves: [],
+      friendship: 0,
+      nature: Nature.quiet,
+    });
+    opponentPoke.stats.hp = 100;
+    opponentPoke.hp = opp.hpPercent;
+
+    if (move.value.kind === "damage" && poke && move.value.getPower) {
+      pow = move.value.getPower(poke.base!, opponentPoke);
+    }
+
+    pow = pow ? applyPowerModifiers(pow, type, item) : undefined;
+    const acc = applyAccuracyModifiers(move.value.acc, item);
+    const other = powers.find(r => r.pow == pow && r.acc == acc);
+    if (other) {
+      other.pokes.push({speciesId: species, form: opp.form});
+      continue;
+    }
+
+    powers.push({pokes: [{speciesId: species, form: opp.form}], pow, acc});
   }
 
-  if (acc && item?.boostAcc) {
-    acc += Math.floor(acc * (item.boostAcc / 100));
-  }
-  if (acc && poke.v.ability === "hustle" && gen.getCategory(move.value) === MC.physical) {
-    acc -= Math.floor(acc * 0.2);
-  }
-  if (poke.v.ability === "noguard") {
-    acc = undefined;
-  }
-
-  return [type, pow, acc] as const;
+  return {type, powers} as const;
 });
 const targeting = computed(() => {
   // prettier-ignore
@@ -130,4 +147,43 @@ const targeting = computed(() => {
   default: return "";
   }
 });
+
+const applyPowerModifiers = (pow: number, type: Type, item?: ItemData) => {
+  if (pow !== 1 && item?.typeBoost?.type === type) {
+    pow += Math.floor(pow * (item.typeBoost.percent / 100));
+  }
+  if (option.move === "facade" && poke.base!.status) {
+    pow *= 2;
+  }
+  if (option.move === "spitup" && poke.v.stockpile) {
+    pow *= poke.v.stockpile;
+  }
+  if (option.move === "weatherball" && weather) {
+    pow *= 2;
+  }
+  if (
+    poke.base!.belowHp(3) &&
+    poke.v.ability &&
+    abilityList[poke.v.ability].pinchBoostType === type
+  ) {
+    pow += Math.floor(pow / 2);
+  }
+  if (pow <= 60 && poke.v.ability === "technician") {
+    pow += Math.floor(pow / 2);
+  }
+  return pow;
+};
+
+const applyAccuracyModifiers = (acc: number | undefined, item?: ItemData) => {
+  if (acc && item?.boostAcc) {
+    acc += Math.floor(acc * (item.boostAcc / 100));
+  }
+  if (acc && poke.v.ability === "hustle" && gen.getCategory(move.value) === MC.physical) {
+    acc -= Math.floor(acc * 0.2);
+  }
+  if (poke.v.ability === "noguard") {
+    acc = undefined;
+  }
+  return acc;
+};
 </script>
