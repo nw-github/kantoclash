@@ -62,14 +62,27 @@ const emit = defineEmits<{(e: "chose", item: T): void}>();
 const container = ref<HTMLUListElement>();
 const hovered = ref(0);
 const query = useDebounce(modelQuery, 100);
+const queryUnmodified = ref(true);
 
-watch(open, async value => {
-  if (value && filteredItems.value.length) {
+watch(open, isOpen => {
+  if (isOpen && filteredItems.value.length) {
     hovered.value = 0;
+  }
+
+  if (!isOpen) {
+    queryUnmodified.value = true;
   }
 });
 
-watch(query, () => hovered.value === -1 && trySetHovered(1));
+watch(query, () => {
+  if (hovered.value === -1) {
+    trySetHovered(1);
+  }
+
+  if (open.value) {
+    queryUnmodified.value = false;
+  }
+});
 
 onKeyStroke("ArrowDown", () => trySetHovered(1));
 onKeyStroke("ArrowUp", () => trySetHovered(-1));
@@ -78,7 +91,7 @@ onKeyStroke("End", () => trySetHovered(items.length));
 onKeyStroke("Enter", () => select(hovered.value));
 onClickOutside(container, () => (open.value = false));
 
-const filteredItems = computed(() => filter(items, query.value));
+const filteredItems = computed(() => filter(items, queryUnmodified.value ? "" : query.value));
 
 const trySetHovered = (offset: number) => {
   if (!open.value) {
