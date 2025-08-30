@@ -1,5 +1,5 @@
 import {eq} from "drizzle-orm";
-import {users} from "~/server/db/schema";
+import {users} from "~~/server/db/schema";
 
 export default defineEventHandler(async event => {
   const db = useDrizzle();

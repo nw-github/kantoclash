@@ -1,6 +1,10 @@
 import {type ServerOptions, Server, type Socket as SocketIoClient} from "socket.io";
-import type {PokemonDesc, ValidatedPokemonDesc} from "../game/pokemon";
-import {Battle, type PlayerParams, type Options} from "../game/battle";
+
+import type {PokemonDesc, ValidatedPokemonDesc} from "~~/game/pokemon";
+import {Battle, type PlayerParams, type Options} from "~~/game/battle";
+import {GENERATIONS} from "~~/game/gen";
+import type {BattleEvent, PokeId} from "~~/game/events";
+
 import {type TeamProblems, formatDescs} from "./utils/formats";
 import type {User} from "#auth-utils";
 import type {InfoMessage} from "./utils/info";
@@ -8,8 +12,6 @@ import {formatInfo} from "~/utils/shared";
 import type {FormatId} from "~/utils/shared";
 import {activeBots, createBotTeam} from "./bot";
 import random from "random";
-import {GENERATIONS} from "~/game/gen";
-import type {BattleEvent, PokeId} from "~/game/events";
 
 export type JoinRoomResponse = {
   team?: ValidatedPokemonDesc[];

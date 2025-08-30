@@ -1,18 +1,19 @@
-import {Nature, natureTable, type ValidatedPokemonDesc} from "~/game/pokemon";
-import {moveList, type MoveId, type Move} from "~/game/moves";
+import {Nature, natureTable, type ValidatedPokemonDesc} from "~~/game/pokemon";
+import {moveList, type MoveId, type Move} from "~~/game/moves";
 import {
   type AbilityId,
   speciesList,
   type Species,
   type SpeciesId,
   abilityList,
-} from "~/game/species";
-import {HP_TYPES, MC, statKeys, type Stats} from "~/game/utils";
+} from "~~/game/species";
+import {HP_TYPES, MC, statKeys, type Stats} from "~~/game/utils";
+import {type Generation, GENERATION1, GENERATION2, GENERATION3, GENERATION4} from "~~/game/gen";
+import type {ItemId} from "~~/game/item";
+
 import random from "random";
 import {z} from "zod";
 import {isValidSketchMove, type FormatId} from "~/utils/shared";
-import {type Generation, GENERATION1, GENERATION2, GENERATION3, GENERATION4} from "~/game/gen";
-import type {ItemId} from "~/game/item";
 import {profanityMatcher} from "~/utils/schema";
 import {HP_IVS} from "~/utils/pokemon";
 

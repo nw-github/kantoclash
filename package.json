@@ -9,7 +9,8 @@
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
     "migrate": "drizzle-kit migrate --config drizzle-prod.config.ts",
-    "migrate-dbg": "drizzle-kit generate && drizzle-kit migrate"
+    "migrate-dbg": "drizzle-kit generate && drizzle-kit migrate",
+    "typecheck": "nuxt prepare && vue-tsc -b --noEmit"
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.2.17",
@@ -24,14 +25,14 @@
     "@iconify-json/mdi": "^1.2.3",
     "@iconify-json/mi": "^1.2.2",
     "@iconify-json/tabler": "^1.2.17",
-    "@nuxt/devtools": "^2.3.2",
+    "@nuxt/devtools": "^2.6.3",
     "@nuxt/eslint": "1.1.0",
     "@nuxt/image": "1.9.0",
     "@nuxt/ui": "2.21.0",
     "@vueuse/nuxt": "^13.0.0",
     "drizzle-kit": "0.30.4",
     "eslint": "^9.23.0",
-    "nuxt": "^3.16.1",
+    "nuxt": "^4.0.3",
     "nuxt-auth-utils": "0.5.15",
     "vue": "^3.5.13",
     "vue-router": "^4.5.0"
@@ -40,7 +41,7 @@
     "@vueuse/core": "^13.0.0",
     "defu": "^6.1.4",
     "drizzle-orm": "^0.39.3",
-    "motion-v": "^0.13.1",
+    "motion-v": "^1.7.0",
     "music-metadata": "^11.8.3",
     "obscenity": "^0.4.3",
     "postgres": "^3.4.5",

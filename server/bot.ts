@@ -1,15 +1,17 @@
 import {io, type Socket} from "socket.io-client";
 import type {Choice, ClientMessage, JoinRoomResponse, ServerMessage} from "./gameServer";
-import type {BattleEvent} from "~/game/events";
-import type {Options} from "~/game/battle";
-import {randoms} from "~/server/utils/formats";
+
+import type {BattleEvent} from "~~/game/events";
+import type {Options} from "~~/game/battle";
+import {Pokemon} from "~~/game/pokemon";
+import {getEffectiveness, playerId, VF} from "~~/game/utils";
+import type {DamagingMove, MoveId} from "~~/game/moves";
+import {type Generation, GENERATIONS} from "~~/game/gen";
+
+import {randoms} from "./utils/formats";
 import {type ClientVolatiles, type FormatId, formatInfo, mergeVolatiles} from "~/utils/shared";
-import {Pokemon} from "~/game/pokemon";
-import {getEffectiveness, playerId, VF} from "~/game/utils";
 import random from "random";
 import {convertTeam, parseTeams, type Team} from "~/utils/pokemon";
-import type {DamagingMove, MoveId} from "~/game/moves";
-import {type Generation, GENERATIONS} from "~/game/gen";
 import {Players} from "~/utils/client";
 import type {InfoMessage} from "./utils/info";
 
