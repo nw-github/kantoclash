@@ -130,6 +130,9 @@ const descriptions: Partial<Record<number, Partial<Record<MoveId, string>>>> = {
     toxicspikes:
       "Sets an entry hazard that poisons or badly poisons any Pokémon switching in, " +
       "depending on the number of uses (Max 2). ",
+    brine: "Power doubles if the target has less than 50% HP. ",
+    sleeptalk:
+      "Randomly chooses and executes a move from the user's moveset. Can only be used while asleep. ",
   },
   [2]: {
     conversion:

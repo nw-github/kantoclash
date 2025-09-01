@@ -20,7 +20,7 @@
     <template #panel>
       <ul class="list-none p-2 m-0 w-max max-w-[300px]">
         <template v-for="{pow, acc, pokes} in info.powers" :key="pokes">
-          <li class="flex gap-1 items-center">
+          <li v-if="displayAgainst && info.powers.length > 1" class="flex gap-1 items-center">
             Against
             <BoxSprite
               v-for="{speciesId, form} in pokes"
@@ -129,6 +129,27 @@ const info = computed(() => {
 
   return {type, powers} as const;
 });
+const displayAgainst = computed(() => {
+  switch (move.value.range) {
+    case Range.Random:
+      return true;
+    case Range.Adjacent:
+      return true;
+    case Range.AdjacentFoe:
+      return true;
+    case Range.Any:
+      return true;
+    case Range.All:
+      return true;
+    case Range.AllAdjacent:
+      return true;
+    case Range.AllAdjacentFoe:
+      return true;
+    default:
+      return false;
+  }
+});
+
 const targeting = computed(() => {
   // prettier-ignore
   switch (move.value.range) {

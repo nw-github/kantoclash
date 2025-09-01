@@ -3,7 +3,7 @@
     <div v-if="players.get(myId).active.every(a => !a)" class="pb-2">Choose your lead</div>
     <div v-else-if="currOption && options!.length > 1" class="pb-2 flex gap-1 items-center">
       <BoxSprite
-        :speciesiid="players.poke(currOption.id)!.speciesId"
+        :species-id="players.poke(currOption.id)!.speciesId"
         :form="players.poke(currOption.id)!.form"
       />
 
