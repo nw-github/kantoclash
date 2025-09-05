@@ -134,7 +134,7 @@ export class ActivePokemon {
       name: next.name,
       level: next.level,
       gender: next.gender,
-      shiny: next.shiny || undefined,
+      shiny: next.shiny,
       form: next.form,
       indexInTeam: this.owner.team.indexOf(next),
       why,

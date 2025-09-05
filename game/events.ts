@@ -59,7 +59,7 @@ export type PokeId = `${PlayerId}:${number}`;
 
 type NextTurnEvent = {type: "next_turn"; turn: number};
 
-type SwitchEvent = {
+export type SwitchEvent = {
   type: "switch";
   src: PokeId;
   speciesId: SpeciesId;
@@ -68,8 +68,8 @@ type SwitchEvent = {
   hp?: number;
   name: string;
   indexInTeam: number;
-  gender?: Gender;
-  shiny?: bool;
+  gender: Gender;
+  shiny: bool;
   form?: FormId;
   why?: SwitchReason;
 };
@@ -80,7 +80,7 @@ type TransformEvent = {
   target?: PokeId;
   speciesId: SpeciesId;
   shiny: bool;
-  gender?: Gender;
+  gender: Gender;
   form?: FormId;
 };
 

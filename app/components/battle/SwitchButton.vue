@@ -18,7 +18,7 @@
 </template>
 
 <script setup lang="ts">
-import type {Pokemon} from "@/game/pokemon";
+import type {Pokemon} from "~~/game/pokemon";
 import type {Weather} from "~~/game/utils";
 
 defineEmits<{(e: "click"): void}>();

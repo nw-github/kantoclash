@@ -59,17 +59,15 @@
 </template>
 
 <script setup lang="ts">
-import type {Pokemon} from "~~/game/pokemon";
+import {Pokemon} from "~~/game/pokemon";
 import {hpPercentExact, type StatStageId, type Weather} from "~~/game/utils";
-import "assets/colors.css";
 import {abilityList} from "~~/game/species";
 import type {MoveId} from "~~/game/moves";
+import "assets/colors.css";
 
-const {active, poke, weather} = defineProps<{
-  active?: ClientActivePokemon;
-  poke: Pokemon;
-  weather?: Weather;
-}>();
+const {poke: p, weather} = defineProps<{poke: ClientActivePokemon | Pokemon; weather?: Weather}>();
+const poke = p instanceof Pokemon ? p : p.base;
+const active = p instanceof Pokemon ? undefined : p;
 const statKeys = computed(() => getStatKeys(poke.gen));
 
 const statClass = (stat: StatStageId) => {

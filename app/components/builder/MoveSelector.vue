@@ -75,7 +75,7 @@ const trailing = computed(() => {
   }
 
   const item = poke.item && (normalizeName(poke.item) as ItemId);
-  const base = new Pokemon(gen, {
+  const base = Pokemon.fromDescriptor(gen, {
     speciesId: "abra",
     moves: [],
     ivs: gen.id <= 2 ? ivsToDvs(gen, poke.ivs ?? {}) : poke.ivs,

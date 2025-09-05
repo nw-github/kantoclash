@@ -5,17 +5,11 @@ import type {HazardId, ScreenId} from "~~/game/utils";
 
 export type ClientActivePokemon = {
   hidden?: bool;
-  gender?: Gender;
-  speciesId: SpeciesId;
-  name: string;
   fainted: bool;
-  hpPercent: number;
-  level: number;
-  transformed?: SpeciesId;
-  shiny?: bool;
-  form?: FormId;
+  owned: bool;
   v: ClientVolatiles;
-  base?: Pokemon;
+  hpPercent: number;
+  base: Pokemon;
   indexInTeam: number;
   abilityUnknown?: bool;
 };
@@ -25,6 +19,7 @@ export type ClientPlayer = {
   isSpectator: bool;
   connected: bool;
 
+  team: Pokemon[];
   active: (ClientActivePokemon | undefined)[];
   nPokemon: number;
   nFainted: number;
@@ -39,7 +34,7 @@ export class Players {
     return this.items[id];
   }
 
-  byPokeId(id: PlayerId) {
+  ownerOf(id: PokeId) {
     const [player] = id.split(":");
     return this.items[player];
   }
@@ -49,9 +44,9 @@ export class Players {
     return this.items[player]?.active[Number(pos)];
   }
 
-  setPoke(id: PokeId, active: ClientActivePokemon | undefined) {
+  setPoke(id: PokeId, active: ClientActivePokemon) {
     const [player, pos] = id.split(":");
-    this.items[player].active[Number(pos)] = active;
+    return (this.items[player].active[Number(pos)] = active);
   }
 
   add(id: PlayerId, player: ClientPlayer) {

@@ -6,16 +6,16 @@
     >
       <div class="flex justify-between flex-col sm:flex-row">
         <div class="font-bold flex items-center grow overflow-hidden">
-          <span class="truncate text-xs">{{ poke?.name || "--" }}</span>
+          <span class="truncate text-xs">{{ poke?.base?.name || "--" }}</span>
           <!-- @vue-expect-error -->
           <GenderIcon
             class="size-4 hidden sm:block"
-            :gender="gen1Gender[poke?.speciesId] ?? poke?.gender"
+            :gender="gen1Gender[poke?.speciesId] ?? poke?.base?.gender"
           />
         </div>
         <div class="flex items-center">
           <span class="text-[0.65rem] sm:text-xs whitespace-nowrap">
-            Lv. {{ poke?.level ?? 100 }}
+            Lv. {{ poke?.base?.level ?? 100 }}
           </span>
           <!-- @vue-expect-error -->
           <GenderIcon
@@ -29,7 +29,7 @@
         <div
           class="w-full text-center text-gray-100 text-[0.65rem] leading-4 sm:text-xs font-medium z-30"
         >
-          {{ hp }}%
+          {{ hpPercent }}%
         </div>
       </div>
       <div class="relative">
@@ -37,7 +37,7 @@
           v-if="poke"
           class="flex gap-1 flex-wrap absolute *:px-[0.2rem] *:py-[0.1rem] *:text-[0.6rem] *:leading-3 sm:*:text-xs"
         >
-          <UBadge v-if="poke.transformed" color="black" label="Transformed" variant="subtle" />
+          <UBadge v-if="poke.base.transformed" color="black" label="Transformed" variant="subtle" />
 
           <UBadge
             v-if="poke.v.status"
@@ -45,21 +45,21 @@
             :label="poke.v.status.toUpperCase()"
           />
 
-          <template v-if="!species!.types.every((ty, i) => ty === poke.v.types?.[i])">
+          <template v-if="!poke.base.species.types.every((ty, i) => ty === poke.v.types?.[i])">
             <TypeBadge v-for="type in poke.v.types" :key="type" :type />
           </template>
 
           <TypeBadge
             v-if="poke.v.charging"
-            :type="gen.moveList[poke.v.charging].type"
-            :label="gen.moveList[poke.v.charging].name"
+            :type="poke.base.gen.moveList[poke.v.charging].type"
+            :label="poke.base.gen.moveList[poke.v.charging].name"
           />
 
           <UBadge
             v-if="poke.v.trapped"
             color="red"
             icon="tabler:prison"
-            :label="gen.moveList[poke.v.trapped].name"
+            :label="poke.base.gen.moveList[poke.v.trapped].name"
             variant="subtle"
           />
 
@@ -88,11 +88,11 @@
               {{
                 roundTo(
                   stage === "acc" || stage === "eva"
-                    ? gen.accStageMultipliers[val]
-                    : gen.stageMultipliers[val],
+                    ? poke.base.gen.accStageMultipliers[val]
+                    : poke.base.gen.stageMultipliers[val],
                   2,
                 )
-              }}x {{ statShortName[stage] }}
+              }}x {{ statShortName![stage] }}
             </UBadge>
           </template>
 
@@ -119,12 +119,12 @@
               class="absolute w-[128px] h-[117px] sm:w-[256px] sm:h-[234px] flex justify-center items-center select-none"
             >
               <Sprite
-                v-show="poke?.transformed ?? poke?.speciesId"
-                :species-id="poke?.transformed ?? poke?.speciesId"
+                v-show="poke?.base?.speciesId"
+                :species-id="poke?.base?.speciesId"
                 :scale="lessThanSm ? 1 : 2"
-                :shiny="poke?.shiny"
-                :form="poke?.form"
-                :gender="poke?.gender"
+                :shiny="poke?.base?.shiny"
+                :form="poke?.base?.form"
+                :gender="poke?.base?.gender"
                 :back
               />
 
@@ -158,53 +158,42 @@
           </div>
 
           <template v-if="poke && !poke.hidden" #panel>
-            <PokemonTTContent
-              v-if="poke?.base && !poke.transformed"
-              :poke="poke?.base"
-              :active="poke"
-              :weather
-            />
+            <PokemonTTContent v-if="poke.owned && !poke.base.transformed" :poke :weather />
             <div v-else class="p-2 flex flex-col items-center">
               <div class="flex gap-10">
                 <div class="flex gap-0.5 items-center justify-center">
-                  {{ species!.name }}
-                  <span v-if="poke.transformed">
-                    (Was: {{ gen.speciesList[poke.speciesId].name }})
-                  </span>
+                  {{ poke.base.species.name }}
+                  <span v-if="poke.base.transformed">(Was: {{ poke.base.real.species.name }})</span>
 
-                  <template v-if="poke?.base && poke.transformed && poke?.base._item">
-                    <ItemSprite :item="poke.base._item" :gen />
+                  <template v-if="poke.owned && poke.base.transformed && poke?.base._item">
+                    <ItemSprite :item="poke.base._item" :gen="poke.base.gen" />
                     <span
                       class="text-xs"
                       :class="poke.base.itemUnusable && 'line-through italic text-primary'"
                     >
-                      {{ poke?.base.gen.items[poke.base._item].name }}
+                      {{ poke.base.gen.items[poke.base._item].name }}
                     </span>
                   </template>
                 </div>
                 <div class="flex gap-1 items-center">
-                  <TypeBadge v-for="type in species!.types" :key="type" :type image />
+                  <TypeBadge v-for="type in poke.base.species.types" :key="type" :type image />
                 </div>
               </div>
-              <div v-if="poke?.base && poke.transformed" class="pt-1.5 space-y-1.5 w-full">
-                <UProgress :max="poke?.base.stats.hp" :value="poke?.base.hp" />
+              <div v-if="poke.owned && poke.base.transformed" class="pt-1.5 space-y-1.5 w-full">
+                <UProgress :max="poke.base.stats.hp" :value="poke?.base.hp" />
                 <div class="flex justify-between gap-4">
                   <span>
-                    {{ poke?.base.hp }}/{{ poke?.base.stats.hp }} HP ({{
-                      roundTo(hpPercentExact(poke?.base.hp, poke?.base.stats.hp), 2)
+                    {{ poke.base.hp }}/{{ poke.base.stats.hp }} HP ({{
+                      roundTo(hpPercentExact(poke.base.hp, poke.base.stats.hp), 2)
                     }}%)
                   </span>
 
-                  <StatusOrFaint :poke="poke?.base" :faint="!poke || poke.fainted" />
+                  <StatusOrFaint :poke="poke.base" :faint="!poke || poke.fainted" />
                 </div>
               </div>
               <div class="pt-1.5">
-                <span v-if="gen.id >= 3">
-                  {{
-                    gen.speciesList[poke.transformed ?? poke.speciesId].abilities
-                      .map(a => abilityList[a].name)
-                      .join(", ")
-                  }}
+                <span v-if="poke.base.gen.id >= 3">
+                  {{ poke.base.species.abilities.map(a => abilityList[a].name).join(", ") }}
                 </span>
               </div>
               <span class="pt-5 italic text-center">{{ minSpe }} to {{ maxSpe }} Spe</span>
@@ -266,8 +255,8 @@
 @import "@/assets/colors.css";
 
 .hp-fill {
-  width: v-bind("hp + '%'");
-  background-color: v-bind("hpColor(hp)");
+  width: v-bind("hpPercent + '%'");
+  background-color: v-bind("hpColor(hpPercent)");
   transition: width 0.5s, background-color 0.5s;
 }
 
@@ -291,9 +280,12 @@ img {
 </style>
 
 <script setup lang="ts">
+import type {PokeId} from "~~/game/events";
+import {Nature} from "~~/game/pokemon";
+import {abilityList} from "~~/game/species";
 import {VF, hpPercentExact, type ScreenId, type Weather} from "~~/game/utils";
+
 import {breakpointsTailwind} from "@vueuse/core";
-import type {Generation} from "~~/game/gen";
 import {UPopover, type UBadge} from "#components";
 import {
   steps,
@@ -303,37 +295,36 @@ import {
   type SequenceOptions,
   type SequenceTime,
 } from "motion-v";
-import type {PokeId} from "~~/game/events";
-import {Nature} from "~~/game/pokemon";
-import {abilityList} from "~~/game/species";
 
-const {poke, back, gen, player, pokeId} = defineProps<{
+const {poke, back, player, pokeId} = defineProps<{
   player?: ClientPlayer;
   poke?: ClientActivePokemon;
   back?: bool;
-  gen: Generation;
   pokeId: PokeId;
   isSingles: bool;
   weather?: Weather;
 }>();
-const species = computed(() => poke && gen.speciesList[poke.transformed ?? poke.speciesId]);
 const minSpe = computed(
-  () => poke && gen.calcStat("spe", species.value!.stats, poke.level, {spe: 0}, {spe: 0}),
+  () =>
+    poke &&
+    poke.base.gen.calcStat("spe", poke.base.species.stats, poke.base.level, {spe: 0}, {spe: 0}),
 );
 const maxSpe = computed(
   () =>
     poke &&
-    gen.calcStat(
+    poke.base.gen.calcStat(
       "spe",
-      species.value!.stats,
-      poke.level,
-      {spe: gen.maxIv},
-      {spe: gen.maxEv},
+      poke.base.species.stats,
+      poke.base.level,
+      {spe: poke.base.gen.maxIv},
+      {spe: poke.base.gen.maxEv},
       Nature.timid,
     ),
 );
-const hp = computed(() => poke?.hpPercent ?? 0);
-const statShortName = computed(() => ({...getStatKeys(gen), spd: "SpD", acc: "Acc", eva: "Eva"}));
+const hpPercent = computed(() => poke?.hpPercent ?? 0);
+const statShortName = computed(
+  () => poke && {...getStatKeys(poke.base.gen), spd: "SpD", acc: "Acc", eva: "Eva"},
+);
 
 const breakpoint = useBreakpoints(breakpointsTailwind);
 const lessThanSm = breakpoint.smaller("sm");

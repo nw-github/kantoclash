@@ -71,7 +71,7 @@ export const descToString = (format: FormatId, poke: PokemonDesc) => {
     const id = normalizeName(move);
     if (id === "hiddenpower") {
       const type = (gen.moveList.hiddenpower as DamagingMove).getType!(
-        new Pokemon(gen, {speciesId: "abra", ivs: poke.ivs ?? {}, moves: []}),
+        Pokemon.fromDescriptor(gen, {speciesId: "abra", ivs: poke.ivs ?? {}, moves: []}),
       );
       result += ` - Hidden Power [${toTitleCase(type)}]\n`;
     } else if ((gen.moveList as Record<string, Move>)[id]) {

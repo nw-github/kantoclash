@@ -3,7 +3,7 @@ import type {Choice, ClientMessage, JoinRoomResponse, ServerMessage} from "./gam
 
 import type {BattleEvent} from "~~/game/events";
 import type {Options} from "~~/game/battle";
-import {Pokemon} from "~~/game/pokemon";
+import {Pokemon, transform} from "~~/game/pokemon";
 import {getEffectiveness, playerId, VF} from "~~/game/utils";
 import type {DamagingMove, MoveId} from "~~/game/moves";
 import {type Generation, GENERATIONS} from "~~/game/gen";
@@ -162,7 +162,21 @@ export async function startBot(format?: FormatId, botFunction: BotFunction = ran
     const gen = GENERATIONS[formatInfo[format].generation]!;
     let eventNo = 0;
     let opponent = "";
-    const team = teamDesc!.map(poke => new Pokemon(gen, poke));
+    const team = teamDesc!.map(poke => Pokemon.fromDescriptor(gen, poke));
+    const dummyPoke = new Pokemon({
+      gen,
+      speciesId: "abra",
+      ivs: {hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0},
+      stats: {hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0},
+      level: 0,
+      name: "",
+      moves: [],
+      pp: [],
+      hp: 0,
+      friendship: 0,
+      shiny: false,
+      gender: "N",
+    });
 
     const handleVolatiles = (e: BattleEvent) => {
       if (e.volatiles) {
@@ -178,10 +192,15 @@ export async function startBot(format?: FormatId, botFunction: BotFunction = ran
 
     const handleEvent = async (e: BattleEvent) => {
       if (e.type === "switch") {
-        const base = e.indexInTeam !== -1 ? team[e.indexInTeam] : undefined;
-        players.setPoke(e.src, {...e, base, v: {stages: {}}, fainted: false});
-        if (base) {
-          base!.hp = e.hp!;
+        const poke = players.setPoke(e.src, {
+          ...e,
+          base: e.indexInTeam !== -1 ? team[e.indexInTeam] : dummyPoke,
+          owned: e.indexInTeam !== -1,
+          v: {stages: {}},
+          fainted: false,
+        });
+        if (e.hp !== undefined) {
+          poke.base.hp = e.hp!;
         }
       } else if (e.type === "damage" || e.type === "recover") {
         const target = players.poke(e.target)!;
@@ -192,7 +211,7 @@ export async function startBot(format?: FormatId, botFunction: BotFunction = ran
       } else if (e.type === "info") {
         if (e.why === "faint") {
           players.poke(e.src)!.fainted = true;
-          players.byPokeId(e.src).nFainted++;
+          players.ownerOf(e.src).nFainted++;
         } else if (e.why === "heal_bell") {
           if (playerId(e.src) === myId && team) {
             team.forEach(poke => (poke.status = undefined));
@@ -202,13 +221,11 @@ export async function startBot(format?: FormatId, botFunction: BotFunction = ran
         const src = players.poke(e.src)!;
         if (e.target) {
           const target = players.poke(e.target)!;
-          src.transformed = target.transformed ?? target.speciesId;
-        } else {
-          src.speciesId = e.speciesId;
+          target.base = transform(src.base.real, target.base);
         }
-        src.form = e.form;
-        src.gender = e.gender;
-        src.shiny = e.shiny;
+        src.base.form = e.form;
+        src.base.gender = e.gender;
+        src.base.shiny = e.shiny;
       } else if (e.type === "weather") {
         // if (e.kind === "start") {
         //   weather.value = e.weather;
@@ -282,6 +299,7 @@ export async function startBot(format?: FormatId, botFunction: BotFunction = ran
           nPokemon,
           nFainted: players.get(id)?.nFainted ?? 0,
           active: [],
+          team: [],
         });
       } else if (message.type === "userLeave") {
         players.get(message.id).connected = false;
@@ -296,6 +314,7 @@ export async function startBot(format?: FormatId, botFunction: BotFunction = ran
         nPokemon,
         nFainted: 0,
         active: [],
+        team: [],
       });
       if (id !== myId) {
         opponent = id;
@@ -425,7 +444,7 @@ export function randomBot({options, me}: BotParams) {
 //       return -1;
 //     }
 //
-//     const opponentPoke = new Pokemon(gen, {
+//     const opponentPoke = Pokemon.fromDescriptor(gen, {
 //       species: opponentActive.speciesId,
 //       level: opponentActive.level,
 //       moves: [],

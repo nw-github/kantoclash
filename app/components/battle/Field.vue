@@ -4,16 +4,15 @@
       <div v-if="!player.isSpectator" :class="[id !== perspective ? 'order-2' : 'pt-10 sm:pt-14']">
         <div class="flex gap-2 sm:gap-4" :class="id !== perspective && 'flex-row-reverse'">
           <ActivePokemon
-            v-for="(active, i) in player.active"
+            v-for="(poke, i) in player.active"
             :key="i"
             :ref="(c) => activePokemon.push(c as any)"
             :class="(id !== perspective ? i === 0 : i !== 0) && 'pt-2 sm:pt-4'"
-            :poke="active"
+            :poke
             :back="id === perspective"
             :poke-id="`${id}:${i}`"
             :player
             :is-singles
-            :gen
             :weather
           />
         </div>
@@ -49,26 +48,16 @@
 <script setup lang="ts">
 import type {ActivePokemon} from "#components";
 import type {PlayerId, PokeId} from "~~/game/events";
-import type {Generation} from "~~/game/gen";
 import type {AnimationParams} from "./ActivePokemon.vue";
 import type {Weather} from "~~/game/utils";
 
-defineProps<{
-  players: Players;
-  perspective: PlayerId;
-  isSingles: boolean;
-  gen: Generation;
-  weather?: Weather;
-}>();
+defineProps<{players: Players; perspective: PlayerId; isSingles: boolean; weather?: Weather}>();
 
 const activePokemon = ref<InstanceType<typeof ActivePokemon>[]>([]);
 
 const playAnimation = (id: PokeId, params: AnimationParams) => {
   const component = activePokemon.value.find(a => a.getId() === id);
-  if (!component) {
-    return;
-  }
-  return component.playAnimation(params);
+  return component && component.playAnimation(params);
 };
 
 defineExpose({playAnimation});

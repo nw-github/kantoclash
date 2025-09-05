@@ -52,7 +52,7 @@ export class Player {
   constructor(gen: Generation, {id, team}: PlayerParams, doubles: bool) {
     this.id = id;
     this.team = team.map(p => {
-      const poke = new Pokemon(gen, p);
+      const poke = Pokemon.fromDescriptor(gen, p);
       p.gender = poke.gender;
       p.form = poke.form;
       p.shiny = poke.shiny;

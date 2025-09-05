@@ -107,7 +107,28 @@ export const natureTable: Record<Nature, Partial<Record<keyof StageStats, number
   [Nature.quirky]: {},
 };
 
+type RawPokemonInit = {
+  gen: Generation;
+  stats: Stats;
+  speciesId: SpeciesId;
+  level: number;
+  name: string;
+  moves: MoveId[];
+  pp: number[];
+  hp: number;
+  status?: Status;
+  friendship: number;
+  ivs: Stats;
+  shiny: bool;
+  gender: Gender;
+  ability?: AbilityId;
+  nature?: Nature;
+  form?: FormId;
+  item?: ItemId;
+};
+
 export class Pokemon {
+  readonly gen: Generation;
   readonly stats: Stats;
   readonly speciesId: SpeciesId;
   readonly level: number;
@@ -127,13 +148,51 @@ export class Pokemon {
   nature?: Nature;
   form?: FormId;
 
-  constructor(
-    readonly gen: Generation,
+  constructor({
+    gen,
+    stats,
+    speciesId,
+    level,
+    name,
+    moves,
+    pp,
+    hp,
+    status,
+    friendship,
+    ivs,
+    shiny,
+    gender,
+    ability,
+    nature,
+    form,
+    item,
+  }: RawPokemonInit) {
+    this.gen = gen;
+    this.stats = stats;
+    this.speciesId = speciesId;
+    this.level = level;
+    this.name = name;
+    this.moves = moves;
+    this.pp = pp;
+    this.hp = hp;
+    this.status = status;
+    this.friendship = friendship;
+    this.ivs = ivs;
+    this.shiny = shiny;
+    this.gender = gender;
+    this.ability = ability;
+    this.nature = nature;
+    this.form = form;
+    this.item = item;
+  }
+
+  static fromDescriptor(
+    gen: Generation,
     {
       speciesId,
-      ivs,
+      ivs: rawIvs,
       evs,
-      level,
+      level: lvl,
       moves,
       name,
       friendship,
@@ -145,37 +204,45 @@ export class Pokemon {
       form,
     }: ValidatedPokemonDesc,
   ) {
-    this.ivs = {
-      hp: gen.getHpIv(ivs),
-      atk: ivs?.atk ?? gen.maxIv,
-      def: ivs?.def ?? gen.maxIv,
-      spa: ivs?.spa ?? gen.maxIv,
-      spd: ivs?.spd ?? gen.maxIv,
-      spe: ivs?.spe ?? gen.maxIv,
+    const species = gen.speciesList[speciesId];
+    const level = lvl ?? 100;
+    const ivs = {
+      hp: gen.getHpIv(rawIvs),
+      atk: rawIvs?.atk ?? gen.maxIv,
+      def: rawIvs?.def ?? gen.maxIv,
+      spa: rawIvs?.spa ?? gen.maxIv,
+      spd: rawIvs?.spd ?? gen.maxIv,
+      spe: rawIvs?.spe ?? gen.maxIv,
     };
-    this.speciesId = speciesId;
-    this.name = name || this.species.name;
-    this.moves = moves;
-    this.pp = moves.map(move => gen.getMaxPP(gen.moveList[move]));
-    this.level = level ?? 100;
-    this.item = item;
-    this.ability = ability;
-    this.stats = {
-      hp: gen.calcStat("hp", this.species.stats, this.level, this.ivs, evs, nature),
-      atk: gen.calcStat("atk", this.species.stats, this.level, this.ivs, evs, nature),
-      def: gen.calcStat("def", this.species.stats, this.level, this.ivs, evs, nature),
-      spa: gen.calcStat("spa", this.species.stats, this.level, this.ivs, evs, nature),
-      spd: gen.calcStat("spd", this.species.stats, this.level, this.ivs, evs, nature),
-      spe: gen.calcStat("spe", this.species.stats, this.level, this.ivs, evs, nature),
+    const stats = {
+      hp: gen.calcStat("hp", species.stats, level, ivs, evs, nature),
+      atk: gen.calcStat("atk", species.stats, level, ivs, evs, nature),
+      def: gen.calcStat("def", species.stats, level, ivs, evs, nature),
+      spa: gen.calcStat("spa", species.stats, level, ivs, evs, nature),
+      spd: gen.calcStat("spd", species.stats, level, ivs, evs, nature),
+      spe: gen.calcStat("spe", species.stats, level, ivs, evs, nature),
     };
-    this.hp = this.stats.hp;
-    this.friendship = friendship ?? 255;
-    this.shiny = gen.getShiny(shiny ?? false, this.ivs);
-    this.nature = nature;
-    this.gender =
-      gen.getGender(gender, this.species, this.ivs.atk) ??
-      (Math.random() * 100 < this.species.genderRatio! ? "M" : "F");
-    this.form = gen.getForm(form, this.speciesId, this.ivs, this.item);
+
+    return new Pokemon({
+      gen,
+      ivs,
+      speciesId,
+      level,
+      item,
+      ability,
+      stats,
+      nature,
+      moves,
+      pp: moves.map(move => gen.getMaxPP(gen.moveList[move])),
+      name: name || species.name,
+      hp: stats.hp,
+      friendship: friendship ?? 255,
+      shiny: gen.getShiny(shiny ?? false, ivs),
+      gender:
+        gen.getGender(gender, species, ivs.atk) ??
+        (Math.random() * 100 < species.genderRatio! ? "M" : "F"),
+      form: gen.getForm(form, speciesId, ivs, item),
+    });
   }
 
   belowHp(amt: number) {

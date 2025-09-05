@@ -1,16 +1,13 @@
 <template>
   <div>
     <div v-if="players.get(myId).active.every(a => !a)" class="pb-2">Choose your lead</div>
-    <div v-else-if="currOption && options!.length > 1" class="pb-2 flex gap-1 items-center">
-      <BoxSprite
-        :species-id="players.poke(currOption.id)!.speciesId"
-        :form="players.poke(currOption.id)!.form"
-      />
+    <div v-else-if="currOptionPoke && options!.length > 1" class="pb-2 flex gap-1 items-center">
+      <BoxSprite :species-id="currOptionPoke.base.speciesId" :form="currOptionPoke.base.form" />
 
-      <span v-if="players.poke(currOption.id)!.fainted">
-        Choose a Pokémon to replace {{ players.poke(currOption.id)!.name }}
+      <span v-if="currOptionPoke.fainted">
+        Choose a Pokémon to replace {{ currOptionPoke.base.name }}
       </span>
-      <span v-else> What will {{ players.poke(currOption.id)!.name }} do?</span>
+      <span v-else>What will {{ currOptionPoke.base.name }} do?</span>
     </div>
 
     <div v-if="!options || !options.length" class="italic">Waiting for opponent...</div>
@@ -69,12 +66,12 @@
       <div class="flex flex-col gap-1 sm:gap-2">
         <template v-for="(option, i) in currOption.moves">
           <MoveButton
-            v-if="option.display && players.poke(currOption.id)?.base"
+            v-if="option.display && currOptionPoke?.owned"
             :key="i"
             :option
             :gen
             :weather
-            :poke="players.poke(currOption.id)!"
+            :user="currOptionPoke"
             :opponent="players.get(opponent)!"
             @click="selectMove(currOption, i)"
           />
@@ -98,7 +95,6 @@
 
 <script setup lang="ts">
 import type {Options} from "~~/game/battle";
-import type {Pokemon} from "~~/game/pokemon";
 import type {Choice, MoveChoice} from "~~/server/gameServer";
 import type {Generation} from "~~/game/gen";
 import type {PokeId} from "~~/game/events";
@@ -106,13 +102,12 @@ import {playerId, type Weather} from "~~/game/utils";
 import {isSpreadMove} from "~~/game/moves";
 
 const emit = defineEmits<{(e: "choice", choice: Choice): void; (e: "cancel"): void}>();
-const {players, myId, options, team, opponent, gen} = defineProps<{
+const {players, myId, options, opponent, gen} = defineProps<{
   players: Players;
   myId: string;
   opponent: string;
   gen: Generation;
   options?: Options[];
-  team: Pokemon[];
   weather?: Weather;
 }>();
 
@@ -123,6 +118,8 @@ const currMoveChoice = ref<MoveChoice>();
 const currTargets = computed(
   () => currOption.value?.moves[currMoveChoice.value?.moveIndex ?? -1]?.targets,
 );
+const currOptionPoke = computed(() => currOption.value?.id && players.poke(currOption.value.id));
+const team = computed(() => players.get(myId).team);
 
 watch(
   () => options,
@@ -179,10 +176,12 @@ const choiceMessage = (i: number, choice: Choice, options: Options) => {
   const self = players.get(myId);
   if (choice.type === "switch") {
     const active = self.active[choice.who];
-    if (active?.base) {
-      return `${active.base.name} will be replaced by ${team![choice.pokeIndex].name}`;
+    if (active) {
+      return `${active.base.name} will be replaced by ${team.value[choice.pokeIndex].name}`;
     } else {
-      return `${team![choice.pokeIndex].name} will be sent out ${i === 0 ? "first" : "second"}`;
+      return `${team.value[choice.pokeIndex].name} will be sent out ${
+        i === 0 ? "first" : "second"
+      }`;
     }
   } else if (choice.type === "move") {
     const opt = options.moves[choice.moveIndex];
@@ -191,11 +190,11 @@ const choiceMessage = (i: number, choice: Choice, options: Options) => {
 
     if (opt.targets.length > 1 && choice.target && !isSpreadMove(gen.moveList[move].range)) {
       const ally = playerId(choice.target) === myId ? " ally " : " ";
-      return `${active!.name} will use ${gen.moveList[move].name} on${ally}${
-        players.poke(choice.target)!.name
+      return `${active!.base.name} will use ${gen.moveList[move].name} on${ally}${
+        players.poke(choice.target)!.base.name
       }`;
     } else {
-      return `${active!.name} will use ${gen.moveList[move].name}`;
+      return `${active!.base.name} will use ${gen.moveList[move].name}`;
     }
   }
 };

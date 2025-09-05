@@ -9,7 +9,6 @@
 
     <Battle
       ref="battle"
-      :team
       :options
       :players
       :events
@@ -52,6 +51,7 @@ const toast = useToast();
 const route = useRoute();
 const router = useRouter();
 const mounted = useMounted();
+const myId = useMyId();
 const {track: currentTrack} = useBGMusic();
 const battle = ref<InstanceType<typeof Battle>>();
 const loading = ref(true);
@@ -59,7 +59,6 @@ const players = ref<Players>(new Players());
 const events = ref<BattleEvent[]>([]);
 const options = reactive<Partial<Record<number, Options[]>>>({});
 const chats = reactive<InfoRecord>({});
-const team = ref<Pokemon[]>();
 const timer = ref<BattleTimer>();
 const modalOpen = ref(false);
 const room = `${route.params.id}`;
@@ -171,6 +170,7 @@ const processMessage = (message: InfoMessage) => {
         nFainted: 0,
         connected: true,
         active: [],
+        team: [],
       });
     }
   } else if (message.type === "userLeave") {
@@ -215,6 +215,7 @@ const onJoinRoom = (resp: JoinRoomResponse | "bad_room") => {
       nPokemon,
       nFainted: 0,
       active: Array(fmt.doubles ? 2 : 1).fill(undefined),
+      team: [],
     });
   }
 
@@ -223,7 +224,11 @@ const onJoinRoom = (resp: JoinRoomResponse | "bad_room") => {
 
     sequenceNo = resp.events.length;
     events.value = resp.events;
-    team.value = resp.team?.map(poke => new Pokemon(gen, poke));
+    if (resp.team) {
+      players.value.get(myId.value).team = resp.team?.map(poke =>
+        Pokemon.fromDescriptor(gen, poke),
+      );
+    }
   } else {
     sequenceNo += resp.events.length;
     events.value.push(...resp.events);
