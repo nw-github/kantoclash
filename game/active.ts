@@ -1201,7 +1201,6 @@ export class ActivePokemon {
       types: !arraysEqual(this.v.types, base.species.types) ? [...this.v.types] : undefined,
       flags: this.v.cflags,
       perishCount: this.v.perishCount,
-      ability: this.v.ability,
     };
   }
 }
