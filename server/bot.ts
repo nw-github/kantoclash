@@ -219,8 +219,6 @@ export async function startBot(format?: FormatId, botFunction: BotFunction = ran
           target.base = transform(src.base.real, target.base);
         }
         src.base.form = e.form;
-        src.base.gender = e.gender;
-        src.base.shiny = e.shiny;
       } else if (e.type === "weather") {
         // if (e.kind === "start") {
         //   weather.value = e.weather;

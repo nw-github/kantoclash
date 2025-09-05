@@ -13,7 +13,7 @@
         <span class="text-sm sm:text-base truncate">{{ move.name }}</span>
       </div>
       <span class="text-xs">
-        {{ option.pp !== undefined ? option.pp : "--" }}/{{ gen.getMaxPP(move) }}
+        {{ option.pp !== undefined ? option.pp : "--" }}/{{ user.base.gen.getMaxPP(move) }}
       </span>
     </UButton>
 
@@ -49,11 +49,11 @@
           </h4>
           Priority
         </li>
-        <li class="pt-3">{{ describeMove(gen, option.move) }}</li>
+        <li class="pt-3">{{ describeMove(user.base.gen, option.move) }}</li>
         <li class="pt-3 -mb-1.5 italic text-sm">{{ targeting }}</li>
         <li class="pt-3 space-x-1 flex">
           <TypeBadge :type="info.type" />
-          <MoveCategory :category="gen.getCategory(move, info.type)" />
+          <MoveCategory :category="user.base.gen.getCategory(move, info.type)" />
           <UBadge v-if="move.kind === 'damage' && move.contact" label="Contact" />
         </li>
       </ul>
@@ -63,7 +63,6 @@
 
 <script setup lang="ts">
 import type {MoveOption} from "~~/game/battle";
-import type {Generation} from "~~/game/gen";
 import {abilityList} from "~~/game/species";
 import {Range} from "~~/game/moves";
 import {MC, type Type, type Weather} from "~~/game/utils";
@@ -72,14 +71,13 @@ import type {Pokemon} from "~~/game/pokemon";
 
 defineEmits<{(e: "click"): void}>();
 
-const {gen, option, user, weather, opponent} = defineProps<{
+const {option, user, weather, opponent} = defineProps<{
   option: MoveOption;
-  gen: Generation;
   user: ClientActivePokemon;
   weather?: Weather;
   opponent?: ClientPlayer;
 }>();
-const move = computed(() => gen.moveList[option.move]);
+const move = computed(() => user.base.gen.moveList[option.move]);
 const info = computed(() => {
   let type = move.value.type;
 
@@ -88,7 +86,7 @@ const info = computed(() => {
   }
 
   const powers: {pokes: Pokemon[]; pow?: number; acc?: number}[] = [];
-  const item = gen.items[user.base.item!];
+  const item = user.base.gen.items[user.base.item!];
   for (const opp of opponent?.active?.toReversed() ?? []) {
     let pow = move.value.power;
     if (!opp || opp.fainted) {
@@ -145,7 +143,7 @@ const applyAccuracyModifiers = (acc: number | undefined, item?: ItemData) => {
   if (acc && item?.boostAcc) {
     acc += Math.floor(acc * (item.boostAcc / 100));
   }
-  if (acc && user.v.ability === "hustle" && gen.getCategory(move.value) === MC.physical) {
+  if (acc && user.v.ability === "hustle" && user.base.gen.getCategory(move.value) === MC.physical) {
     acc -= Math.floor(acc * 0.2);
   }
   if (user.v.ability === "noguard") {

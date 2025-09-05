@@ -57,7 +57,7 @@
 </template>
 
 <script setup lang="ts">
-import type {Species, SpeciesId} from "@/game/species";
+import type {Species, SpeciesId} from "~~/game/species";
 import type {Generation} from "~~/game/gen1";
 import type {FormId, Gender} from "~~/game/pokemon";
 

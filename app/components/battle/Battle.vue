@@ -107,7 +107,6 @@
             :options="currOptions"
             :players
             :my-id
-            :gen
             :opponent
             :weather
             @cancel="$emit('cancel')"
@@ -607,17 +606,8 @@ const runEvent = async (e: BattleEvent) => {
 
           const src = players.poke(e.src)!;
           if (e.target) {
-            const newSrc = transform(src.base.real, players.poke(e.target)!.base);
-            // TODO: vue is breaking the transform proxy here
-            src.base = newSrc;
-
-            console.log("Src is now ", src.base.speciesId, src.base.species.name);
-            console.log("Transformed is now ", newSrc.speciesId, newSrc.species.name);
-            console.log(newSrc.real);
-            console.log(src.base.real);
+            src.base = transform(src.base.real, players.poke(e.target)!.base);
           }
-          src.base.gender = e.gender;
-          src.base.shiny = e.shiny;
           src.base.form = e.form;
         },
       });
@@ -696,7 +686,26 @@ const runEvent = async (e: BattleEvent) => {
       if (target) {
         target.abilityUnknown = true;
       }
+      // TODO: set ability
+    } else if (e.type === "move") {
+      const src = players.poke(e.src)!;
+      if (!src.owned) {
+        const idx = src.base.moves.findIndex(id => id === e.move);
+        // TODO: pressure
+        if (idx === -1) {
+          src.base.moves.push(e.move);
+          src.base.pp.push(src.base.gen.getMaxPP(src.base.gen.moveList[e.move]) - 1);
+        } else {
+          src.base.pp[idx] -= 1;
+        }
+      }
+    } else if (e.type === "proc_ability") {
+      const src = players.poke(e.src)!;
+      if (!src.owned && !src.base.ability) {
+        src.base.ability = e.ability;
+      }
     }
+    // TODO: PP restoring berries
 
     handleVolatiles(e);
     if (e.type !== "sv") {
@@ -791,6 +800,9 @@ onMounted(async () => {
           players.items[k].active = Array(players.items[k].active.length);
           players.items[k].screens = undefined;
           players.items[k].hazards = undefined;
+          if (k !== myId.value || !isBattler.value) {
+            players.items[k].team = [];
+          }
         }
       }
 

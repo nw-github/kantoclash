@@ -71,7 +71,6 @@
             v-if="option.display && currOptionPoke?.owned"
             :key="i"
             :option
-            :gen
             :weather
             :user="currOptionPoke"
             :opponent="players.get(opponent)!"
@@ -98,17 +97,15 @@
 <script setup lang="ts">
 import type {Options} from "~~/game/battle";
 import type {Choice, MoveChoice} from "~~/server/gameServer";
-import type {Generation} from "~~/game/gen";
 import type {PokeId} from "~~/game/events";
 import {playerId, type Weather} from "~~/game/utils";
 import {isSpreadMove} from "~~/game/moves";
 
 const emit = defineEmits<{(e: "choice", choice: Choice): void; (e: "cancel"): void}>();
-const {players, myId, options, opponent, gen} = defineProps<{
+const {players, myId, options, opponent} = defineProps<{
   players: Players;
   myId: string;
   opponent: string;
-  gen: Generation;
   options?: Options[];
   weather?: Weather;
 }>();
@@ -187,16 +184,17 @@ const choiceMessage = (i: number, choice: Choice, options: Options) => {
     }
   } else if (choice.type === "move") {
     const opt = options.moves[choice.moveIndex];
-    const active = self.active[choice.who];
+    const active = self.active[choice.who]!;
     const move = opt.move;
+    const gen = active.base.gen;
 
     if (opt.targets.length > 1 && choice.target && !isSpreadMove(gen.moveList[move].range)) {
       const ally = playerId(choice.target) === myId ? " ally " : " ";
-      return `${active!.base.name} will use ${gen.moveList[move].name} on${ally}${
+      return `${active.base.name} will use ${gen.moveList[move].name} on${ally}${
         players.poke(choice.target)!.base.name
       }`;
     } else {
-      return `${active!.base.name} will use ${gen.moveList[move].name}`;
+      return `${active.base.name} will use ${gen.moveList[move].name}`;
     }
   }
 };

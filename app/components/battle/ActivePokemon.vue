@@ -157,45 +157,7 @@
 
           <template v-if="poke && !poke.hidden" #panel>
             <PokemonTTContent v-if="poke.owned && !poke.base.transformed" :poke :weather />
-            <div v-else class="p-2 flex flex-col items-center">
-              <div class="flex gap-10">
-                <div class="flex gap-0.5 items-center justify-center">
-                  {{ poke.base.species.name }}
-                  <span v-if="poke.base.transformed">(Was: {{ poke.base.real.species.name }})</span>
-
-                  <template v-if="poke.owned && poke.base.transformed && poke?.base._item">
-                    <ItemSprite :item="poke.base._item" :gen="poke.base.gen" />
-                    <span
-                      class="text-xs"
-                      :class="poke.base.itemUnusable && 'line-through italic text-primary'"
-                    >
-                      {{ poke.base.gen.items[poke.base._item].name }}
-                    </span>
-                  </template>
-                </div>
-                <div class="flex gap-1 items-center">
-                  <TypeBadge v-for="type in poke.base.species.types" :key="type" :type image />
-                </div>
-              </div>
-              <div v-if="poke.owned && poke.base.transformed" class="pt-1.5 space-y-1.5 w-full">
-                <UProgress :max="poke.base.stats.hp" :value="poke?.base.hp" />
-                <div class="flex justify-between gap-4">
-                  <span>
-                    {{ poke.base.hp }}/{{ poke.base.stats.hp }} HP ({{
-                      roundTo(poke.base.hpPercent, 2)
-                    }}%)
-                  </span>
-
-                  <StatusOrFaint :poke="poke.base" :faint="!poke || poke.fainted" />
-                </div>
-              </div>
-              <div class="pt-1.5">
-                <span v-if="poke.base.gen.id >= 3">
-                  {{ poke.base.species.abilities.map(a => abilityList[a].name).join(", ") }}
-                </span>
-              </div>
-              <span class="pt-5 italic text-center">{{ minSpe }} to {{ maxSpe }} Spe</span>
-            </div>
+            <UnknownPokeTTContent v-else :poke />
           </template>
         </UPopover>
 
@@ -279,8 +241,6 @@ img {
 
 <script setup lang="ts">
 import type {PokeId} from "~~/game/events";
-import {Nature} from "~~/game/pokemon";
-import {abilityList} from "~~/game/species";
 import {VF, type ScreenId, type Weather} from "~~/game/utils";
 
 import {breakpointsTailwind} from "@vueuse/core";
@@ -302,23 +262,7 @@ const {poke, back, player, pokeId} = defineProps<{
   isSingles: bool;
   weather?: Weather;
 }>();
-const minSpe = computed(
-  () =>
-    poke &&
-    poke.base.gen.calcStat("spe", poke.base.species.stats, poke.base.level, {spe: 0}, {spe: 0}),
-);
-const maxSpe = computed(
-  () =>
-    poke &&
-    poke.base.gen.calcStat(
-      "spe",
-      poke.base.species.stats,
-      poke.base.level,
-      {spe: poke.base.gen.maxIv},
-      {spe: poke.base.gen.maxEv},
-      Nature.timid,
-    ),
-);
+
 const hpPercent = computed(() => Math.round(poke?.base?.hpPercent ?? 0));
 const statShortName = computed(
   () => poke && {...getStatKeys(poke.base.gen), spd: "SpD", acc: "Acc", eva: "Eva"},
