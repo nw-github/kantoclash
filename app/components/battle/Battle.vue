@@ -417,11 +417,10 @@ const runEvent = async (e: BattleEvent) => {
         speciesId: e.speciesId,
         level: e.level,
         name: e.name,
-        hp: e.hpPercent,
+        hp: e.hp,
         shiny: e.shiny,
         gender: e.gender,
         stats: {hp: 100, atk: 0, def: 0, spa: 0, spd: 0, spe: 0},
-
         ivs: {hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0},
         moves: [],
         pp: [],
@@ -459,14 +458,13 @@ const runEvent = async (e: BattleEvent) => {
           hidden: true,
           v: {stages: {}},
           fainted: true,
-          hpPercent: 0,
           indexInTeam: -1,
           owned: false,
           base: new Pokemon({
             gen: gen.value,
             speciesId: e.speciesId,
             ivs: {hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0},
-            stats: {hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0},
+            stats: {hp: 100, atk: 0, def: 0, spa: 0, spd: 0, spe: 0},
             level: 0,
             name: "",
             moves: [],
@@ -496,7 +494,7 @@ const runEvent = async (e: BattleEvent) => {
             v: {stages: {}},
             fainted: false,
           });
-          poke.base.hp = e.hp !== undefined ? e.hp : e.hpPercent;
+          poke.base.hp = e.hp;
           handleVolatiles(e);
           playCry(e.speciesId)?.then(() => {
             if (e.shiny) {
@@ -509,10 +507,8 @@ const runEvent = async (e: BattleEvent) => {
     } else if (e.type === "damage" || e.type === "recover") {
       const update = () => {
         const target = players.poke(e.target)!;
-        target.hpPercent = e.hpPercentAfter;
-
         const ev = e as UIDamageEvent | UIRecoverEvent;
-        target.base.hp = e.hpAfter !== undefined ? e.hpAfter : e.hpPercentAfter;
+        target.base.hp = e.hpAfter;
         if (target.owned) {
           ev.maxHp = target.base.stats.hp;
         }

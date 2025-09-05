@@ -65,7 +65,7 @@ export type SwitchEvent = {
   speciesId: SpeciesId;
   level: number;
   hpPercent: number;
-  hp?: number;
+  hp: number;
   name: string;
   indexInTeam: number;
   gender: Gender;
@@ -132,8 +132,8 @@ export type DamageEvent = {
   target: PokeId;
   hpPercentBefore: number;
   hpPercentAfter: number;
-  hpBefore?: number;
-  hpAfter?: number;
+  hpBefore: number;
+  hpAfter: number;
   isCrit?: bool;
   why: DamageReason;
   /* when why === "trap", this is a moveId */
@@ -153,8 +153,8 @@ export type RecoverEvent = {
   target: PokeId;
   hpPercentBefore: number;
   hpPercentAfter: number;
-  hpBefore?: number;
-  hpAfter?: number;
+  hpBefore: number;
+  hpAfter: number;
   why: RecoveryReason;
 };
 

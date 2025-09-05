@@ -1,15 +1,6 @@
 import type {DamagingMove, Move} from "./index";
 import type {Pokemon} from "../pokemon";
-import {
-  HP_TYPES,
-  hpPercentExact,
-  idiv,
-  stageKeys,
-  stageStatKeys,
-  VF,
-  MC,
-  type Type,
-} from "../utils";
+import {HP_TYPES, idiv, stageKeys, stageStatKeys, VF, MC, type Type} from "../utils";
 import {abilityList} from "../species";
 
 export type MoveId = keyof typeof internalMoveList;
@@ -5818,7 +5809,7 @@ const internalMoveList = createMoveList({
 export const moveList = internalMoveList as Record<MoveId, Move>;
 
 function getFlailPower(this: DamagingMove, user: Pokemon) {
-  const percent = hpPercentExact(user.hp, user.stats.hp);
+  const percent = user.hpPercent;
   if (percent >= 68.8) {
     return 20;
   } else if (percent >= 35.4) {

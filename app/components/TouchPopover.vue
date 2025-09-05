@@ -3,11 +3,11 @@
     <div
       ref="element"
       class="w-full h-full"
-      :class="open && 'touch-none select-none'"
+      :class="isHovered && 'touch-none select-none'"
       @touchstart="startTouch"
       @touchend="endTouch"
-      @mouseover="open = true"
-      @mouseleave="open = false"
+      @mouseover="isHovered = true"
+      @mouseleave="isHovered = false"
     >
       <slot></slot>
     </div>
@@ -21,26 +21,30 @@
 <script setup lang="ts">
 import type {UPopover} from "#components";
 
-const open = ref(false);
-const {delay = 100} = defineProps<{delay?: number}>();
+const isHovered = ref(false);
+const {delay = 100, disabled} = defineProps<{delay?: number; disabled?: bool}>();
+const open = computed({
+  get: () => !disabled && isHovered.value,
+  set: val => (isHovered.value = val),
+});
 
 const element = ref<HTMLDivElement>();
 const touchedEl = useTouchedElement();
 
 watch(touchedEl, el => {
   if (el !== element.value) {
-    open.value = false;
+    isHovered.value = false;
   }
 });
 
 let timeout: NodeJS.Timeout | undefined;
 const startTouch = () => {
-  if (open.value) {
+  if (isHovered.value) {
     return;
   }
 
   timeout = setTimeout(() => {
-    open.value = true;
+    isHovered.value = true;
     touchedEl.value = element.value;
   }, delay);
 };
@@ -48,8 +52,8 @@ const startTouch = () => {
 const endTouch = (e: TouchEvent) => {
   clearTimeout(timeout);
   timeout = undefined;
-  if (open.value) {
-    open.value = false;
+  if (isHovered.value) {
+    isHovered.value = false;
     e.preventDefault();
   }
 };

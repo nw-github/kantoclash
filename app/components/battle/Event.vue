@@ -254,16 +254,13 @@ const eff = (id: PokeId, v?: number) => {
 
 const percent = (e: UIDamageEvent | UIRecoverEvent) => {
   let pv = Math.abs(e.hpPercentBefore - e.hpPercentAfter);
-  if (e.hpBefore !== undefined && e.hpAfter !== undefined && e.maxHp !== undefined) {
-    pv = roundTo(Math.abs(hpPercentExact(e.hpBefore! - e.hpAfter!, e.maxHp)), 1);
+  if (e.maxHp !== undefined) {
+    pv = roundTo(Math.abs(hpPercentExact(e.hpBefore - e.hpAfter, e.maxHp)), 1);
   }
   return pv === 0 ? "<1" : `${pv}`;
 };
 
 const tooltip = (e: UIDamageEvent | UIRecoverEvent) => {
-  if (e.hpBefore !== undefined && e.hpAfter !== undefined) {
-    return `${roundTo(Math.abs(e.hpBefore! - e.hpAfter!), 1)} HP`;
-  }
-  return "";
+  return e.maxHp !== undefined ? `${roundTo(Math.abs(e.hpBefore - e.hpAfter), 1)} HP` : "";
 };
 </script>

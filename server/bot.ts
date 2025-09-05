@@ -167,7 +167,7 @@ export async function startBot(format?: FormatId, botFunction: BotFunction = ran
       gen,
       speciesId: "abra",
       ivs: {hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0},
-      stats: {hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0},
+      stats: {hp: 100, atk: 0, def: 0, spa: 0, spd: 0, spe: 0},
       level: 0,
       name: "",
       moves: [],
@@ -199,15 +199,10 @@ export async function startBot(format?: FormatId, botFunction: BotFunction = ran
           v: {stages: {}},
           fainted: false,
         });
-        if (e.hp !== undefined) {
-          poke.base.hp = e.hp!;
-        }
+        poke.base.hp = e.hp;
       } else if (e.type === "damage" || e.type === "recover") {
         const target = players.poke(e.target)!;
-        target.hpPercent = e.hpPercentAfter;
-        if (target.base) {
-          target.base.hp = e.hpAfter!;
-        }
+        target.base.hp = e.hpAfter;
       } else if (e.type === "info") {
         if (e.why === "faint") {
           players.poke(e.src)!.fainted = true;

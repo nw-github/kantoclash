@@ -25,12 +25,7 @@
 
     <UProgress :max="poke.stats.hp" :value="poke.hp" />
     <div class="flex justify-between gap-4">
-      <span>
-        {{ poke.hp }}/{{ poke.stats.hp }} HP ({{
-          roundTo(hpPercentExact(poke.hp, poke.stats.hp), 2)
-        }}%)
-      </span>
-
+      <span>{{ poke.hp }}/{{ poke.stats.hp }} HP ({{ roundTo(poke.hpPercent, 2) }}%)</span>
       <StatusOrFaint :poke="poke" :faint="!active || active.fainted" />
     </div>
 
@@ -60,7 +55,7 @@
 
 <script setup lang="ts">
 import {Pokemon} from "~~/game/pokemon";
-import {hpPercentExact, type StatStageId, type Weather} from "~~/game/utils";
+import type {StatStageId, Weather} from "~~/game/utils";
 import {abilityList} from "~~/game/species";
 import type {MoveId} from "~~/game/moves";
 import "assets/colors.css";

@@ -1,5 +1,5 @@
 <template>
-  <TouchPopover :popper="{placement: 'auto'}">
+  <TouchPopover :popper="{placement: 'auto'}" :disabled="noPopover">
     <UButton class="w-full" :disabled :color="active ? 'blue' : 'primary'" @click="$emit('click')">
       <div class="w-full space-y-0.5">
         <div class="flex items-center gap-1 w-full justify-start">
@@ -22,17 +22,18 @@ import type {Pokemon} from "~~/game/pokemon";
 import type {Weather} from "~~/game/utils";
 
 defineEmits<{(e: "click"): void}>();
-const {poke} = defineProps<{
+const {poke, noPopover, active} = defineProps<{
   poke: Pokemon;
   disabled: boolean;
   active: boolean;
   weather?: Weather;
+  noPopover?: bool;
 }>();
 
 const colorForHp = computed(() => {
-  if (poke.stats.hp / poke.hp < 0.1) {
+  if (poke.hpPercent < 10) {
     return "red";
-  } else if (poke.stats.hp / poke.hp < 0.3) {
+  } else if (poke.hpPercent < 30) {
     return "amber";
   } else {
     return "green";

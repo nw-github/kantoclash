@@ -40,23 +40,25 @@
 
       <div class="grid gap-2 grid-cols-2 h-min sm:w-1/2">
         <template v-for="(poke, i) in players.get(opponent).active.toReversed()" :key="i">
-          <TargetButton
+          <SwitchButton
             v-if="poke"
-            :poke
+            :poke="poke.base"
             :disabled="
               poke.fainted ||
               !currTargets.includes(`${opponent}:${players.get(opponent).active.length - i - 1}`)
             "
             :active="false"
+            :no-popover="true"
             @click="selectTarget(`${opponent}:${players.get(opponent).active.length - i - 1}`)"
           />
         </template>
         <template v-for="(poke, i) in players.get(myId).active" :key="i">
-          <TargetButton
+          <SwitchButton
             v-if="poke"
-            :poke
+            :poke="poke.base"
             :disabled="poke.fainted || !currTargets.includes(`${myId}:${i}`)"
             :active="true"
+            :no-popover="true"
             @click="selectTarget(`${myId}:${i}`)"
           />
         </template>

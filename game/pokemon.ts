@@ -129,6 +129,7 @@ type RawPokemonInit = {
 
 export class Pokemon {
   readonly gen: Generation;
+  readonly ivs: Stats;
   readonly stats: Stats;
   readonly speciesId: SpeciesId;
   readonly level: number;
@@ -141,7 +142,6 @@ export class Pokemon {
   status?: Status;
   sleepTurns: number = 0;
   friendship: number;
-  ivs: Stats;
   shiny: bool;
   gender: Gender;
   ability?: AbilityId;
@@ -247,6 +247,10 @@ export class Pokemon {
 
   belowHp(amt: number) {
     return this.hp <= Math.floor(this.stats.hp / amt);
+  }
+
+  get hpPercent() {
+    return (this.hp / this.stats.hp) * 100;
   }
 
   get item() {

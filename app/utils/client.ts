@@ -8,7 +8,6 @@ export type ClientActivePokemon = {
   fainted: bool;
   owned: bool;
   v: ClientVolatiles;
-  hpPercent: number;
   base: Pokemon;
   indexInTeam: number;
   abilityUnknown?: bool;

@@ -7,20 +7,18 @@
       <div class="flex justify-between flex-col sm:flex-row">
         <div class="font-bold flex items-center grow overflow-hidden">
           <span class="truncate text-xs">{{ poke?.base?.name || "--" }}</span>
-          <!-- @vue-expect-error -->
           <GenderIcon
             class="size-4 hidden sm:block"
-            :gender="gen1Gender[poke?.speciesId] ?? poke?.base?.gender"
+            :gender="gen1Gender[poke?.base?.speciesId!] ?? poke?.base?.gender"
           />
         </div>
         <div class="flex items-center">
           <span class="text-[0.65rem] sm:text-xs whitespace-nowrap">
             Lv. {{ poke?.base?.level ?? 100 }}
           </span>
-          <!-- @vue-expect-error -->
           <GenderIcon
             class="size-4 sm:hidden"
-            :gender="gen1Gender[poke?.speciesId] ?? poke?.gender"
+            :gender="gen1Gender[poke?.base?.speciesId!] ?? poke?.base?.gender"
           />
         </div>
       </div>
@@ -184,7 +182,7 @@
                 <div class="flex justify-between gap-4">
                   <span>
                     {{ poke.base.hp }}/{{ poke.base.stats.hp }} HP ({{
-                      roundTo(hpPercentExact(poke.base.hp, poke.base.stats.hp), 2)
+                      roundTo(poke.base.hpPercent, 2)
                     }}%)
                   </span>
 
@@ -283,7 +281,7 @@ img {
 import type {PokeId} from "~~/game/events";
 import {Nature} from "~~/game/pokemon";
 import {abilityList} from "~~/game/species";
-import {VF, hpPercentExact, type ScreenId, type Weather} from "~~/game/utils";
+import {VF, type ScreenId, type Weather} from "~~/game/utils";
 
 import {breakpointsTailwind} from "@vueuse/core";
 import {UPopover, type UBadge} from "#components";
@@ -321,7 +319,7 @@ const maxSpe = computed(
       Nature.timid,
     ),
 );
-const hpPercent = computed(() => poke?.hpPercent ?? 0);
+const hpPercent = computed(() => Math.round(poke?.base?.hpPercent ?? 0));
 const statShortName = computed(
   () => poke && {...getStatKeys(poke.base.gen), spd: "SpD", acc: "Acc", eva: "Eva"},
 );

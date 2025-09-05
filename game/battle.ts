@@ -542,9 +542,9 @@ export class Battle {
     for (let i = 0; i < result.length; i++) {
       const e = result[i];
       if ((e.type === "damage" || e.type === "recover") && playerId(e.target) !== player?.id) {
-        result[i] = {...e, hpBefore: undefined, hpAfter: undefined};
+        result[i] = {...e, hpBefore: e.hpPercentBefore, hpAfter: e.hpPercentAfter};
       } else if (e.type === "switch" && playerId(e.src) !== player?.id) {
-        result[i] = {...e, hp: undefined, indexInTeam: -1};
+        result[i] = {...e, hp: e.hpPercent, indexInTeam: -1};
       } else if (
         e.type === "info" &&
         e.why === "cConfusedFatigue" &&
