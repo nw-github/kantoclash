@@ -8,7 +8,7 @@
     >
       <div class="flex items-center">
         <div class="pl-0.5 pr-1">
-          <TypeBadge :type="info.type" :alt="info.type" image />
+          <TypeBadge :type="info.type" image />
         </div>
         <span class="text-sm sm:text-base truncate">{{ move.name }}</span>
       </div>
@@ -55,6 +55,7 @@
           <TypeBadge :type="info.type" />
           <MoveCategory :category="user.base.gen.getCategory(move, info.type)" />
           <UBadge v-if="move.kind === 'damage' && move.contact" label="Contact" />
+          <UBadge v-if="move.sound" label="Sound" />
         </li>
       </ul>
     </template>

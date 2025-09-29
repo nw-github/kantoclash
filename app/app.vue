@@ -85,7 +85,7 @@
                     <span>Sound Effects</span>
                     <URange v-model="sfxVol" :max="0.8" :step="0.005" />
                   </div>
-                  <div v-if="currentTrack">
+                  <div v-if="currentTrack || debug">
                     <span>Current Track</span>
                     <USelectMenu
                       v-model="currentTrack"
@@ -138,6 +138,8 @@ import type {WatchStopHandle} from "vue";
 import AlertModal from "./components/AlertModal.vue";
 
 provideSSRWidth(768);
+
+const debug = import.meta.dev;
 
 const {$conn} = useNuxtApp();
 const {user, fetch} = useUserSession();

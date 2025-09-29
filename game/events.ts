@@ -1,10 +1,23 @@
-import type {ClientVolatiles} from "~/utils/shared";
 import type {MoveId} from "./moves";
 import type {FormId, Gender, Status} from "./pokemon";
 import type {AbilityId, SpeciesId} from "./species";
-import type {StageId, Type, VF, Weather, ScreenId, HazardId} from "./utils";
+import type {StageId, Type, VF, Weather, ScreenId, HazardId, StageStats} from "./utils";
 import type {ItemId} from "./item";
 import type {SwitchReason} from "./active";
+
+export type ClientVolatiles = {
+  stages: Partial<Record<StageId, number>>;
+  // Status isnt really a volatile, but multiple things can inflict/remove it, so let server handle it
+  status?: Status;
+  stats?: StageStats;
+  charging?: MoveId;
+  trapped?: MoveId;
+  types?: Type[];
+  flags?: VF;
+  perishCount?: number;
+  ability?: AbilityId;
+  stockpile?: number;
+};
 
 type NullOrOptional<T> = {[P in keyof T]?: T[P] | null};
 

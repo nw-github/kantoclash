@@ -1,18 +1,20 @@
 import {io, type Socket} from "socket.io-client";
+import random from "random";
+
 import type {Choice, ClientMessage, JoinRoomResponse, ServerMessage} from "./gameServer";
 
-import type {BattleEvent} from "~~/game/events";
+import type {BattleEvent, ClientVolatiles} from "~~/game/events";
 import type {Options} from "~~/game/battle";
 import {Pokemon, transform} from "~~/game/pokemon";
 import {getEffectiveness, playerId, VF} from "~~/game/utils";
 import type {DamagingMove, MoveId} from "~~/game/moves";
 import {type Generation, GENERATIONS} from "~~/game/gen";
 
-import {randoms} from "./utils/formats";
-import {type ClientVolatiles, type FormatId, formatInfo, mergeVolatiles} from "~/utils/shared";
-import random from "random";
+import {type FormatId, formatInfo, mergeVolatiles} from "~/utils/shared";
 import {convertTeam, parseTeams, type Team} from "~/utils/pokemon";
 import {Players} from "~/utils/client";
+
+import {randoms} from "./utils/formats";
 import type {InfoMessage} from "./utils/info";
 
 export type BotParams = {
@@ -518,12 +520,11 @@ export function randomBot({options, me}: BotParams) {
 //   return [bestSwitch, "switch"] as const;
 // }
 
-/// From: https://gist.github.com/scheibo/7c9172f3379bbf795a5e61a802caf2f0
-
 export function rankBot(params: BotParams) {
   return randomBot(params);
 }
 
+/// From: https://gist.github.com/scheibo/7c9172f3379bbf795a5e61a802caf2f0
 const gen1ou = `
 === [gen1ou] marcoasd 2014 ===
 

@@ -135,17 +135,17 @@ export class Pokemon {
   readonly level: number;
   readonly name: string;
   readonly moves: MoveId[];
+  readonly pp: number[];
+  readonly shiny: bool;
+  readonly gender: Gender;
+  readonly friendship: number;
+  readonly nature?: Nature;
   _item?: ItemId;
   itemUnusable = false;
-  pp: number[];
   hp: number;
   status?: Status;
   sleepTurns: number = 0;
-  friendship: number;
-  shiny: bool;
-  gender: Gender;
   ability?: AbilityId;
-  nature?: Nature;
   form?: FormId;
 
   constructor({
@@ -270,44 +270,111 @@ export class Pokemon {
     return false;
   }
 
-  get real() {
+  get real(): Pokemon {
     return this;
   }
 }
 
-export const transform = (user: Pokemon, transformed: Pokemon) => {
-  const moves = [...transformed.moves];
-  const pp = transformed.moves.map(move => Math.min(user.gen.getMaxPP(user.gen.moveList[move]), 5));
-  const stats = {...transformed.stats, hp: user.stats.hp};
-  const speciesId = transformed.speciesId;
-  const shiny = transformed.shiny;
-  let form = transformed.form;
+// prettier-ignore
+class TransformedPokemon extends Pokemon {
+  constructor(readonly base: Pokemon, target: Pokemon) {
+    super({
+      stats: {...target.stats, hp: base.stats.hp},
+      speciesId: target.speciesId,
+      moves: [...target.moves],
+      pp: target.moves.map(move => Math.min(base.gen.getMaxPP(base.gen.moveList[move]), 5)),
+      shiny: target.shiny,
+      form: target.form,
 
-  return new Proxy(user, {
-    get(target, prop: keyof Pokemon) {
-      // prettier-ignore
-      switch (prop) {
-      case "real": return user;
-      case "transformed": return true;
-      case "moves": return moves;
-      case "pp": return pp;
-      case "stats": return stats;
-      case "speciesId": return speciesId;
-      case "shiny": return shiny;
-      case "form": return form;
-      case "species": return target.gen.speciesList[speciesId];
-      default: return target[prop];
-      }
-    },
-    set(target, prop: keyof Pokemon, val) {
-      if (prop === "form") {
-        form = val;
-      } else {
-        (target as any)[prop] = val;
-      }
-      return true;
-    },
-  });
+      gen: base.gen,
+      level: base.level,
+      name: base.name,
+      hp: base.hp,
+      status: base.status,
+      friendship: base.friendship,
+      ivs: base.ivs,
+      gender: base.gender,
+      ability: base.ability,
+      nature: base.nature,
+      item: base.item,
+    });
+
+    delete this._item;
+    // @ts-expect-error operand of delete must be optional
+    delete this.itemUnusable;
+    // @ts-expect-error operand of delete must be optional
+    delete this.hp;
+    delete this.status;
+    // @ts-expect-error operand of delete must be optional
+    delete this.sleepTurns;
+    delete this.ability;
+    delete this.form;
+  }
+
+  // @ts-expect-error defined as property, overriden as getter
+  override get _item() { return this.base._item; }
+  // @ts-expect-error defined as property, overriden as getter
+  override get itemUnusable() { return this.base.itemUnusable; }
+  // @ts-expect-error defined as property, overriden as getter
+  override get hp() { return this.base.hp; }
+  // @ts-expect-error defined as property, overriden as getter
+  override get status() { return this.base.status; }
+  // @ts-expect-error defined as property, overriden as getter
+  override get sleepTurns() { return this.base.sleepTurns; }
+  // @ts-expect-error defined as property, overriden as getter
+  override get ability() { return this.base.ability; }
+  // @ts-expect-error defined as property, overriden as getter
+  override get form() { return this.base.form; }
+
+  override set _item(v) {  if (this.base) { this.base._item = v; } }
+  override set itemUnusable(v) {  if (this.base) { this.base.itemUnusable = v; } }
+  override set hp(v) {  if (this.base) { this.base.hp = v; } }
+  override set status(v) {  if (this.base) { this.base.status = v; } }
+  override set sleepTurns(v) {  if (this.base) { this.base.sleepTurns = v; } }
+  override set ability(v) {  if (this.base) { this.base.ability = v; } }
+  override set form(v) {  if (this.base) { this.base.form = v; } }
+
+  override get transformed() { return true; }
+  override get real() { return this.base; }
+}
+
+// export const transform = (user: Pokemon, transformed: Pokemon) => {
+//   const moves = [...transformed.moves];
+//   const pp = transformed.moves.map(move => Math.min(user.gen.getMaxPP(user.gen.moveList[move]), 5));
+//   const stats = {...transformed.stats, hp: user.stats.hp};
+//   const speciesId = transformed.speciesId;
+//   const shiny = transformed.shiny;
+//   let form = transformed.form;
+//
+//   return new Proxy(user, {
+//     get(target, prop: keyof Pokemon) {
+//       // prettier-ignore
+//       switch (prop) {
+//       case "real": return user;
+//       case "transformed": return true;
+//       case "moves": return moves;
+//       case "pp": return pp;
+//       case "stats": return stats;
+//       case "speciesId": return speciesId;
+//       case "shiny": return shiny;
+//       case "form": return form;
+//       case "species": return target.gen.speciesList[speciesId];
+//       default: return target[prop];
+//       }
+//     },
+//     set(target, prop: keyof Pokemon, val) {
+//       if (prop === "form") {
+//         form = val;
+//       } else {
+//         (target as any)[prop] = val;
+//       }
+//       return true;
+//     },
+//   });
+// };
+
+export const transform = (user: Pokemon, target: Pokemon) => {
+  return new TransformedPokemon(user, target) as Pokemon;
 };
 
 export const applyItemStatBoost = (poke: Pokemon, stat: StatStageId, value: number) => {

@@ -43,8 +43,8 @@
       </span>
     </div>
     <span class="pt-5 italic text-center">{{ minSpe }} to {{ maxSpe }} Spe</span>
-    <h3 v-if="poke.base.moves.length" class="pt-5 font-medium">Known Moves</h3>
-    <ul v-if="poke.base.moves.length" class="text-sm flex flex-col gap-1">
+    <h3 v-if="!poke.owned && poke.base.moves.length" class="pt-5 font-medium">Known Moves</h3>
+    <ul v-if="!poke.owned && poke.base.moves.length" class="text-sm flex flex-col gap-1">
       <li
         v-for="(id, i) in poke.base.moves"
         :key="id"
@@ -54,7 +54,7 @@
           <TypeBadge :type="poke.base.gen.moveList[id].type" image />
           <span>{{ poke.base.gen.moveList[id].name }}</span>
         </div>
-        <span>
+        <span v-if="id !== 'struggle'">
           ({{ poke.base.pp[i] }}/{{ poke.base.gen.getMaxPP(poke.base.gen.moveList[id]) }})
         </span>
       </li>

@@ -208,7 +208,7 @@
 
 <script setup lang="ts">
 import {type FormId, Pokemon, transform} from "~~/game/pokemon";
-import type {BattleEvent, PokeId, SwitchEvent} from "~~/game/events";
+import type {BattleEvent, PokeId, SwitchEvent, ClientVolatiles} from "~~/game/events";
 import type {SpeciesId} from "~~/game/species";
 import type {BattleTimer, Choice, InfoRecord} from "~~/server/gameServer";
 import criesSpritesheet from "~~/public/effects/cries.json";
@@ -691,13 +691,20 @@ const runEvent = async (e: BattleEvent) => {
       const src = players.poke(e.src)!;
       if (!src.owned) {
         const idx = src.base.moves.findIndex(id => id === e.move);
-        // TODO: pressure
+        // TODO: pressure, ignore 'called' moves (from assist, metronome, etc)
+        const ppcost = e.disabled || e.thrashing ? 0 : 1;
         if (idx === -1) {
           src.base.moves.push(e.move);
-          src.base.pp.push(src.base.gen.getMaxPP(src.base.gen.moveList[e.move]) - 1);
+          src.base.pp.push(src.base.gen.getMaxPP(src.base.gen.moveList[e.move]) - ppcost);
         } else {
-          src.base.pp[idx] -= 1;
+          src.base.pp[idx] -= ppcost;
         }
+      }
+    } else if (e.type === "charge") {
+      const src = players.poke(e.src)!;
+      if (!src.owned && !src.base.moves.includes(e.move)) {
+        src.base.moves.push(e.move);
+        src.base.pp.push(src.base.gen.getMaxPP(src.base.gen.moveList[e.move]));
       }
     } else if (e.type === "proc_ability") {
       const src = players.poke(e.src)!;
@@ -705,7 +712,7 @@ const runEvent = async (e: BattleEvent) => {
         src.base.ability = e.ability;
       }
     }
-    // TODO: PP restoring berries
+    // TODO: PP restoring berries, mimic
 
     handleVolatiles(e);
     if (e.type !== "sv") {

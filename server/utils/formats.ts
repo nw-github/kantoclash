@@ -206,6 +206,10 @@ export const randoms = (
     if (stab.length) {
       moves[0] = random.choice(stab)!;
     }
+    if (speciesId === "arceus" && !moves.includes("judgement")) {
+      moves[0] = "judgment";
+    }
+
     let ivs: Partial<Stats> = {};
     if (moves.includes("hiddenpower")) {
       if (gen.id <= 2) {

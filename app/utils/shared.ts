@@ -1,23 +1,6 @@
-import type {Status} from "~~/game/pokemon";
 import type {Mods} from "~~/game/battle";
-import type {StageId, StageStats, Type, VF} from "~~/game/utils";
 import type {MoveId} from "~~/game/moves";
 import type {Generation} from "~~/game/gen";
-import type {AbilityId} from "~~/game/species";
-
-export type ClientVolatiles = {
-  stages: Partial<Record<StageId, number>>;
-  // Status isnt really a volatile, but multiple things can inflict/remove it, so let server handle it
-  status?: Status;
-  stats?: StageStats;
-  charging?: MoveId;
-  trapped?: MoveId;
-  types?: Type[];
-  flags?: VF;
-  perishCount?: number;
-  ability?: AbilityId;
-  stockpile?: number;
-};
 
 type FormatInfo = {
   name: string;

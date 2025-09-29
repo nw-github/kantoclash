@@ -133,6 +133,9 @@ const descriptions: Partial<Record<number, Partial<Record<MoveId, string>>>> = {
     brine: "Power doubles if the target has less than 50% HP. ",
     sleeptalk:
       "Randomly chooses and executes a move from the user's moveset. Can only be used while asleep. ",
+    waterspout: "Power ranges between 1 and 150, decreasing with the user's HP. ",
+    eruption: "Power ranges between 1 and 150, decreasing with the user's HP. ",
+    roleplay: "Copies the target's ability. ",
   },
   [2]: {
     conversion:

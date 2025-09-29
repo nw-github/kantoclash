@@ -1072,7 +1072,7 @@ export class ActivePokemon {
         valid: battle.gen.isValidMove(battle, this, move, i),
         indexInMoves: i,
         display: true,
-        targets: getValidTargets(battle, battle.gen.moveList[move], this),
+        targets: this.getValidTargets(battle, battle.gen.moveList[move]),
       } as MoveOption;
     });
 
@@ -1088,7 +1088,7 @@ export class ActivePokemon {
         move,
         valid: true,
         display: true,
-        targets: getValidTargets(battle, battle.gen.moveList[move], this),
+        targets: this.getValidTargets(battle, battle.gen.moveList[move]),
       });
     }
 
@@ -1202,6 +1202,23 @@ export class ActivePokemon {
       flags: this.v.cflags,
       perishCount: this.v.perishCount,
     };
+  }
+
+  private getValidTargets(battle: Battle, move: Move) {
+    // TODO: retarget if dead && hyper beam
+    if (this.v.encore) {
+      return [this.id];
+    } else if (move === this.v.charging?.move) {
+      return [this.v.charging.target.id];
+    } else if (move === this.v.recharge?.move) {
+      return [this.v.recharge.target.id];
+    }
+
+    let range = move.range;
+    if (move === battle.gen.moveList.curse && !this.v.types.includes("ghost")) {
+      range = Range.Self;
+    }
+    return battle.getTargets(this, range, true).map(u => u.id);
   }
 }
 
@@ -1328,20 +1345,3 @@ class Volatiles {
     return flags;
   }
 }
-
-const getValidTargets = (battle: Battle, move: Move, user: ActivePokemon) => {
-  // TODO: retarget if dead && hyper beam
-  if (user.v.encore) {
-    return [user.id];
-  } else if (move === user.v.charging?.move) {
-    return [user.v.charging.target.id];
-  } else if (move === user.v.recharge?.move) {
-    return [user.v.recharge.target.id];
-  }
-
-  let range = move.range;
-  if (move === battle.gen.moveList.curse && !user.v.types.includes("ghost")) {
-    range = Range.Self;
-  }
-  return battle.getTargets(user, range, true).map(u => u.id);
-};
