@@ -25,7 +25,7 @@ export const musicTrackName = (track: string) => {
 
 export const getMusicInfo = async (blob: Blob, path: string) => {
   const result: MusicInfo = {loopStart: 0, loopEnd: 0, offset: 0};
-  const data = await parseBlob(blob);
+  const data = await parseBlob(blob, {skipCovers: true});
   result.title = data.common.title;
   result.artist = data.common.artist;
   result.album = data.common.album;

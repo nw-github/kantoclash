@@ -20,7 +20,7 @@ export const useMyTeams = () => {
   return teams;
 };
 
-export const allMusicTracks = Object.keys(import.meta.glob("~~/public/music/**/*.{mp3,wav,ogg}"));
+export const allMusicTracks = Object.keys(import.meta.glob("~~/public/music/**/*.{mp3,wav,ogg,opus}"));
 
 export const femaleIds = new Set(
   Object.keys(import.meta.glob("~~/public/sprites/battle/female/*.gif")).map(spr =>
