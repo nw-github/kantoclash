@@ -1,13 +1,28 @@
 <template>
   <div>
     <div v-if="players.get(myId).active.every(a => !a)" class="pb-2">Choose your lead</div>
-    <div v-else-if="currOptionPoke && options!.length > 1" class="pb-2 flex gap-1 items-center">
+    <div
+      v-else-if="currOptionPoke && (options!.length > 1 || localMode)"
+      class="pb-2 flex gap-1 items-center"
+    >
       <BoxSprite :species-id="currOptionPoke.base.speciesId" :form="currOptionPoke.base.form" />
 
       <span v-if="currOptionPoke.fainted">
-        Choose a Pokémon to replace {{ currOptionPoke.base.name }}
+        Choose a Pokémon to replace
+        <span v-if="localMode">
+          <b>{{ players.get(myId).name }}</b
+          >'s
+        </span>
+        {{ currOptionPoke.base.name }}
       </span>
-      <span v-else>What will {{ currOptionPoke.base.name }} do?</span>
+      <span v-else>
+        What will
+        <span v-if="localMode">
+          <b>{{ players.get(myId).name }}</b
+          >'s
+        </span>
+        {{ currOptionPoke.base.name }} do?
+      </span>
     </div>
 
     <div v-if="!options || !options.length" class="italic">Waiting for opponent...</div>
@@ -108,6 +123,7 @@ const {players, myId, options, opponent} = defineProps<{
   opponent: string;
   options?: Options[];
   weather?: Weather;
+  localMode?: bool;
 }>();
 
 const choices = ref<[Options, Choice][]>([]);

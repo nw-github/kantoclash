@@ -92,7 +92,7 @@
     </div>
 
     <div v-if="viewingBattle" class="h-full w-full p-1">
-      <LocalBattle :battle="viewingBattle" />
+      <LocalBattle :recipe="viewingBattle" />
     </div>
   </div>
 </template>

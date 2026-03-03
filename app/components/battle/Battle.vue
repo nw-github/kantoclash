@@ -59,29 +59,32 @@
             class="self-end p-2 invisible sm:visible"
           />
 
-          <div class="flex flex-row">
-            <UTooltip
+          <div class="flex flex-row my-1 gap-2 px-2">
+            <div v-if="localMode" class="flex items-center gap-2">
+              <NumericInput v-model="rewindToTurn" :min="0" class="w-12" />
+              <TooltipButton
+                text="Rewind to Turn"
+                :popper="{placement: 'top'}"
+                leading-icon="material-symbols:fast-rewind"
+                variant="ghost"
+                color="gray"
+                @click="$emit('rewind', rewindToTurn)"
+              />
+            </div>
+
+            <TooltipButton
+              :key="updateMarker"
               :text="timer === undefined ? 'Start Timer' : 'Timer is on'"
               :popper="{placement: 'top'}"
-            >
-              <UButton
-                :key="updateMarker"
-                class="my-1"
-                leading-icon="material-symbols:alarm-outline"
-                variant="ghost"
-                :color="currOptions && timeLeft() <= 10 ? 'red' : 'gray'"
-                :disabled="!isBattler || isBattleOver || !!timer"
-                :label="timer && !currOptions ? '--' : timer ? `${Math.max(timeLeft(), 0)}` : ''"
-                @click="$emit('timer')"
-              />
-            </UTooltip>
+              leading-icon="material-symbols:alarm-outline"
+              variant="ghost"
+              :color="currOptions && timeLeft() <= 10 ? 'red' : 'gray'"
+              :disabled="!isBattler || isBattleOver || !!timer || localMode"
+              :label="timer && !currOptions ? '--' : timer ? `${Math.max(timeLeft(), 0)}` : ''"
+              @click="$emit('timer')"
+            />
 
-            <UTooltip
-              v-if="textBoxHidden"
-              text="Open Chat"
-              :popper="{placement: 'top'}"
-              class="px-2"
-            >
+            <UTooltip v-if="textBoxHidden" text="Open Chat" :popper="{placement: 'top'}">
               <UChip :show="unseenChats !== 0" :text="unseenChats" size="xl" inset>
                 <UButton
                   ref="menuButton"
@@ -107,6 +110,7 @@
             :my-id
             :opponent
             :weather
+            :local-mode
             @cancel="$emit('cancel')"
             @choice="$emit('choice', $event)"
           />
@@ -126,6 +130,13 @@
               color="gray"
               text="Switch Sides"
               @click="perspective = opponent"
+            />
+            <TooltipButton
+              icon="material-symbols:search"
+              text="Go to Turn"
+              variant="ghost"
+              color="gray"
+              @click="goToTurnModalOpen = !goToTurnModalOpen"
             />
             <TooltipButton
               icon="material-symbols:fast-rewind"
@@ -168,6 +179,10 @@
               @click="skipToTurn(-1)"
             />
           </template>
+        </div>
+        <div v-if="(!isBattler || isBattleOver) && goToTurnModalOpen" class="p-1 flex gap-2 w-40">
+          <div class="whitespace-nowrap">Go to turn</div>
+          <NumericInput v-model="goToTurn" :min="0" class="w-full" @keydown="goToTurnEnter" />
         </div>
       </div>
     </div>
@@ -231,6 +246,7 @@ defineEmits<{
   (e: "chat" | "report", message: string): void;
   (e: "timer" | "cancel"): void;
   (e: "choice", choice: Choice): void;
+  (e: "rewind", turn: number): void;
 }>();
 const {options, players, events, chats, timer, finished, format, ready, myId} = defineProps<{
   options: Partial<Record<number, Options[]>>;
@@ -242,6 +258,7 @@ const {options, players, events, chats, timer, finished, format, ready, myId} = 
   format: FormatId;
   ready: bool;
   myId: string;
+  localMode?: bool;
 }>();
 const sfxVol = useSfxVolume();
 const {fadeOut} = useBGMusic();
@@ -257,6 +274,10 @@ const updateMarker = ref(0);
 const currentTurnNo = ref(0);
 const weather = ref<Weather>();
 const field = useTemplateRef("field");
+
+const goToTurnModalOpen = ref(false);
+const goToTurn = ref(0);
+const rewindToTurn = ref(0);
 
 const nextEvent = ref(0);
 const playToIndex = ref(0);
@@ -306,6 +327,15 @@ watchDeep(chats, () => {
   }
 });
 
+const goToTurnEnter = (e: KeyboardEvent) => {
+  // TODO: Don't do this
+  if (e.code === "Enter") {
+    skipToTurn(goToTurn.value);
+    goToTurnModalOpen.value = false;
+    paused.value = true;
+  }
+};
+
 const timeLeft = () => {
   return timer ? Math.floor((timer.startedAt + timer.duration - Date.now()) / 1000) : 1000;
 };
@@ -319,7 +349,7 @@ const updatePerspective = () => {
 };
 
 const runEvent = async (e: BattleEvent) => {
-  const isLive = () => skipToEvent.value <= nextEvent.value && isMounted.value;
+  const isLive = () => skipToEvent.value < nextEvent.value && isMounted.value;
 
   const playCry = (speciesId: SpeciesId, pitchDown = false) => {
     if (isLive()) {
@@ -766,7 +796,7 @@ const skipToTurn = (turn: number) => {
   }
 
   liveEvents.value.length = 0;
-  skipToEvent.value = index + 1;
+  skipToEvent.value = index;
   if (paused.value) {
     playToIndex.value = index;
   }
@@ -807,7 +837,10 @@ onMounted(async () => {
   updatePerspective();
 
   while (isMounted.value) {
-    while (nextEvent.value < playToIndex.value && nextEvent.value < events.length) {
+    while (
+      (nextEvent.value < playToIndex.value || (nextEvent.value === 0 && playToIndex.value === 0)) &&
+      nextEvent.value < events.length
+    ) {
       if (!isMounted.value) {
         return;
       }

@@ -7,7 +7,11 @@ export default defineEventHandler(async event => {
   if (id) {
     const [user] = await db.select().from(users).where(eq(users.id, +id));
     if (user) {
-      return {name: user.username};
+      return {
+        name: user.username,
+        admin: user.admin,
+        createdAt: user.createdAt.getTime(),
+      };
     }
   }
 
