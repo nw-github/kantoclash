@@ -159,13 +159,13 @@ export enum TurnType {
 }
 
 type BattleParams = {
-  gen: Generation;
-  player1: PlayerParams;
-  player2: PlayerParams;
+  readonly gen: Generation;
+  readonly player1: PlayerParams;
+  readonly player2: PlayerParams;
   doubles?: bool;
   chooseLead?: bool;
   mods?: Mods;
-  seed?: string;
+  seed: string;
 };
 
 export class Battle {
@@ -185,8 +185,8 @@ export class Battle {
 
   private constructor(
     readonly gen: Generation,
-    p1: PlayerParams,
-    p2: PlayerParams,
+    readonly p1: PlayerParams,
+    readonly p2: PlayerParams,
     private readonly doubles: bool,
     readonly mods: Mods,
     readonly rng: Random,
@@ -199,9 +199,6 @@ export class Battle {
   }
 
   static start({gen, player1, player2, doubles, chooseLead, mods, seed}: BattleParams) {
-    seed ??= crypto.randomUUID();
-    console.log("new battle, seed: " + seed);
-
     const self = new Battle(gen, player1, player2, doubles ?? false, mods ?? {}, new Random(seed));
     self.players[0].updateOptions(self);
     self.players[1].updateOptions(self);

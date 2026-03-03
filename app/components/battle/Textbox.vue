@@ -29,6 +29,15 @@
             :disabled="!players.get(myId) || players.get(myId).isSpectator || !!victor"
             @click="forfeitModalOpen = true"
           />
+          <TooltipButton
+            text="Report Bug"
+            :popper="{placement: 'top'}"
+            icon="material-symbols:bug-report"
+            variant="link"
+            color="gray"
+            size="lg"
+            @click="reportModalOpen = true"
+          />
           <!-- <TooltipButton
             text="Open Calculator"
             :popper="{ placement: 'top' }"
@@ -106,6 +115,7 @@
           v-model="message"
           placeholder="Send a message..."
           :disabled="!myId"
+          :maxlength="CHAT_MAX_MESSAGE"
           @keyup.enter="sendMessage"
         >
           <template #trailing>
@@ -147,6 +157,8 @@
       ]"
     />
   </UModal>
+
+  <ReportModal v-model="reportModalOpen" @submit="$emit('report', $event)" />
 </template>
 
 <style>
@@ -191,12 +203,16 @@ const props = defineProps<{
   smoothScroll?: boolean;
   format: FormatId;
 }>();
-const emit = defineEmits<{(e: "chat", message: string): void; (e: "forfeit" | "close"): void}>();
+const emit = defineEmits<{
+  (e: "chat" | "report", message: string): void;
+  (e: "forfeit" | "close"): void;
+}>();
 const myId = useMyId();
 const mutedPlayers = useMutedPlayerIds();
 const message = ref("");
 const scrollPoint = ref<HTMLDivElement>();
 const forfeitModalOpen = ref(false);
+const reportModalOpen = ref(false);
 const gen = computed(() => GENERATIONS[formatInfo[props.format].generation]!);
 
 let lastScroll = 0;

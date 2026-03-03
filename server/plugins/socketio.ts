@@ -2,7 +2,7 @@ import {Server as Engine} from "engine.io";
 import {defineEventHandler} from "h3";
 import {GameServer} from "../gameServer";
 import {rankBot, startBot} from "../bot";
-import {battles} from "../db/schema";
+import {battles, bugReports} from "../db/schema";
 
 export default defineNitroPlugin(nitro => {
   const engine = new Engine({pingInterval: 5000, pingTimeout: 5000});
@@ -17,6 +17,12 @@ export default defineNitroPlugin(nitro => {
           player2: +battlers[1],
           winner: battle.victor ? +battle.victor.id : null,
         });
+    },
+    async reportBugs(id, battle, reports) {
+      await useDrizzle()
+        .insert(bugReports)
+        .values({id, battle, reports})
+        .onConflictDoUpdate({target: bugReports.id, set: {battle, reports}});
     },
   });
   io.bind(engine);

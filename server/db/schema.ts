@@ -1,4 +1,5 @@
-import {pgTable, integer, varchar, boolean, timestamp} from "drizzle-orm/pg-core";
+import {pgTable, integer, varchar, boolean, timestamp, uuid, jsonb} from "drizzle-orm/pg-core";
+import type {BattleRecipe, BugReports} from "../gameServer";
 
 export const users = pgTable("users", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
@@ -18,5 +19,12 @@ export const battles = pgTable("battles", {
     .references(() => users.id),
   winner: integer().references(() => users.id),
   format: varchar({length: 32}).notNull(),
+  createdAt: timestamp().notNull().defaultNow(),
+});
+
+export const bugReports = pgTable("bugReports", {
+  id: uuid().primaryKey(),
+  battle: jsonb().$type<BattleRecipe>().notNull(),
+  reports: jsonb().$type<BugReports>().notNull(),
   createdAt: timestamp().notNull().defaultNow(),
 });

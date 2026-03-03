@@ -1,5 +1,5 @@
 import type {ClientVolatiles, PlayerId, PokeId} from "~~/game/events";
-import type {FormId, Gender, Pokemon} from "~~/game/pokemon";
+import type {FormId, Gender, Pokemon, ValidatedPokemonDesc} from "~~/game/pokemon";
 import {speciesList, type SpeciesId} from "~~/game/species";
 import type {HazardId, ScreenId} from "~~/game/utils";
 
@@ -19,6 +19,7 @@ export type ClientPlayer = {
   connected: bool;
 
   team: Pokemon[];
+  teamDesc: ValidatedPokemonDesc[];
   active: (ClientActivePokemon | undefined)[];
   nPokemon: number;
   nFainted: number;

@@ -18,6 +18,7 @@
       :format
       :ready
       @chat="sendChat"
+      @report="sendBugReport"
       @choice="makeChoice"
       @cancel="cancelMove"
       @timer="startTimer"
@@ -39,8 +40,6 @@ import type {Battle} from "#components";
 import type {Socket} from "socket.io-client";
 import type {Options} from "~~/game/battle";
 import type {BattleEvent} from "~~/game/events";
-import {GENERATIONS} from "~~/game/gen";
-import {Pokemon} from "~~/game/pokemon";
 import type {BattleTimer, Choice, InfoRecord, JoinRoomResponse} from "~~/server/gameServer";
 import type {InfoMessage} from "~~/server/utils/info";
 
@@ -98,6 +97,23 @@ onUnmounted(() => {
 });
 
 const sendChat = (message: string) => $conn.emit("chat", room, message, displayErrorToast);
+const sendBugReport = (report: string) => {
+  $conn.emit("reportBug", room, report, resp => {
+    if (!resp) {
+      toast.add({
+        title: "Report received, Thank you!",
+        icon: "material-symbols:bug-report",
+      });
+    } else if (resp === "bad_message") {
+      toast.add({
+        title: `Report message was invalid! (Must be 0 - ${CHAT_MAX_MESSAGE} characters long)`,
+        icon: "material-symbols:error-circle-rounded-outline-sharp",
+      });
+    } else {
+      displayErrorToast(resp);
+    }
+  });
+};
 const makeChoice = (choice: Choice) => {
   $conn.emit("choose", room, sequenceNo, choice, displayErrorToast);
 };
@@ -171,6 +187,7 @@ const processMessage = (message: InfoMessage) => {
         connected: true,
         active: [],
         team: [],
+        teamDesc: [],
       });
     }
   } else if (message.type === "userLeave") {
@@ -216,19 +233,14 @@ const onJoinRoom = (resp: JoinRoomResponse | "bad_room") => {
       nFainted: 0,
       active: Array(fmt.doubles ? 2 : 1).fill(undefined),
       team: [],
+      teamDesc: [],
     });
   }
 
   if (needsFreshStart) {
-    const gen = GENERATIONS[fmt.generation]!;
-
     sequenceNo = resp.events.length;
     events.value = resp.events;
-    if (resp.team) {
-      players.value.get(myId.value).team = resp.team?.map(poke =>
-        Pokemon.fromDescriptor(gen, poke),
-      );
-    }
+    players.value.get(myId.value).teamDesc = resp.team ?? [];
   } else {
     sequenceNo += resp.events.length;
     events.value.push(...resp.events);

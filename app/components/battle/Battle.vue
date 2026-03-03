@@ -184,6 +184,7 @@
         :smooth-scroll
         :turns="htmlTurns"
         @chat="$emit('chat', $event)"
+        @report="$emit('report', $event)"
         @forfeit="$emit('choice', {type: 'forfeit'})"
       />
     </div>
@@ -199,6 +200,7 @@
         :turns="htmlTurns"
         closable
         @chat="$emit('chat', $event)"
+        @report="$emit('report', $event)"
         @forfeit="$emit('choice', {type: 'forfeit'})"
         @close="slideoverOpen = false"
       />
@@ -226,7 +228,7 @@ const weatherData = {
 } satisfies Record<Weather, any>;
 
 defineEmits<{
-  (e: "chat", message: string): void;
+  (e: "chat" | "report", message: string): void;
   (e: "timer" | "cancel"): void;
   (e: "choice", choice: Choice): void;
 }>();
@@ -477,7 +479,6 @@ const runEvent = async (e: BattleEvent) => {
       }
 
       pushEvent(e);
-
       await playAnimation(e.src, {
         anim: "sendin",
         name: e.name,
@@ -567,9 +568,7 @@ const runEvent = async (e: BattleEvent) => {
         handleVolatiles(e);
         return;
       } else if (e.why === "heal_bell") {
-        if (playerId(e.src) === myId.value) {
-          players.ownerOf(e.src).team.forEach(poke => (poke.status = undefined));
-        }
+        players.ownerOf(e.src).team.forEach(poke => (poke.status = undefined));
       } else if (e.why === "batonpass") {
         handleVolatiles(e);
         await playAnimation(e.src, {
@@ -787,8 +786,24 @@ watchImmediate([paused, () => events.length], ([paused, nEvents]) => {
 });
 
 onMounted(async () => {
+  const reset = () => {
+    htmlTurns.value = [[]];
+    currentTurnNo.value = 0;
+    weather.value = undefined;
+
+    for (const k in players.items) {
+      const player = players.items[k];
+      player.nFainted = 0;
+      player.active = Array(player.active.length);
+      player.screens = undefined;
+      player.hazards = undefined;
+      player.team = player.teamDesc.map(poke => Pokemon.fromDescriptor(gen.value, poke));
+    }
+  };
+
   await until(() => ready).toBe(true);
 
+  reset();
   updatePerspective();
 
   while (isMounted.value) {
@@ -798,19 +813,7 @@ onMounted(async () => {
       }
 
       if (nextEvent.value === 0) {
-        htmlTurns.value = [[]];
-        currentTurnNo.value = 0;
-        weather.value = undefined;
-
-        for (const k in players.items) {
-          players.items[k].nFainted = 0;
-          players.items[k].active = Array(players.items[k].active.length);
-          players.items[k].screens = undefined;
-          players.items[k].hazards = undefined;
-          if (k !== myId.value || !isBattler.value) {
-            players.items[k].team = [];
-          }
-        }
+        reset();
       }
 
       playingEvents.value = true;

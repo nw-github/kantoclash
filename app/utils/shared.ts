@@ -211,3 +211,5 @@ export const isValidSketchMove = (gen: Generation, id: string) => {
   }
   return !gen.invalidSketchMoves.includes(id) && move.idx! <= gen.lastMoveIdx;
 };
+
+export const CHAT_MAX_MESSAGE = 500;
