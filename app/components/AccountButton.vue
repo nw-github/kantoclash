@@ -31,8 +31,6 @@
 </template>
 
 <script setup lang="ts">
-import {UButton} from "#components";
-
 const {$conn} = useNuxtApp();
 const {clear} = useUserSession();
 const filter = useChatCensorEnabled();

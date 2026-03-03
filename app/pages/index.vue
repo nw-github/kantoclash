@@ -22,11 +22,10 @@
           placeholder="Challenge a user..."
           :searchable="searchUsers"
           option-attribute="name"
-          :loading="loading"
+          :loading
           by="name"
           :disabled="findingMatch || cancelling"
-        >
-        </USelectMenu>
+        />
         <UButton
           class="absolute top-0 right-8"
           icon="material-symbols:close"

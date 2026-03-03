@@ -203,7 +203,7 @@ watch(
   path => {
     fetchMyRooms();
 
-    if (!path.startsWith("/room")) {
+    if (!path.startsWith("/room") && !import.meta.dev) {
       currentTrack.value = undefined;
     }
   },

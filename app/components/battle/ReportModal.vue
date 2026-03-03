@@ -25,14 +25,9 @@
             label="Submit"
             size="xs"
             :disabled="text.length > maxLength"
-            @click="(open = false), $emit('submit', text), (text = '')"
+            @click="(open = false), $emit('submit', text)"
           />
-          <UButton
-            label="Cancel"
-            size="xs"
-            variant="outline"
-            @click="(open = false), (text = '')"
-          />
+          <UButton label="Cancel" size="xs" variant="outline" @click="open = false" />
         </div>
 
         <span
@@ -52,4 +47,10 @@ const text = ref("");
 const maxLength = CHAT_MAX_MESSAGE;
 
 defineEmits<{(e: "submit", message: string): void; (e: "close"): void}>();
+
+watch(open, open => {
+  if (!open) {
+    text.value = "";
+  }
+});
 </script>

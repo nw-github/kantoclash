@@ -51,7 +51,7 @@
               </template>
             </UPopover>
             <TooltipButton
-              text="Watch/Debug"
+              text="Debug"
               icon="material-symbols:play-arrow"
               color="gray"
               variant="ghost"
