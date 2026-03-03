@@ -202,12 +202,12 @@ const props = defineProps<{
   closable?: boolean;
   smoothScroll?: boolean;
   format: FormatId;
+  myId: string;
 }>();
 const emit = defineEmits<{
   (e: "chat" | "report", message: string): void;
   (e: "forfeit" | "close"): void;
 }>();
-const myId = useMyId();
 const mutedPlayers = useMutedPlayerIds();
 const message = ref("");
 const scrollPoint = ref<HTMLDivElement>();
@@ -236,7 +236,7 @@ const sendMessage = () => {
 
 const playerInfo = (player: ClientPlayer, id: string) => {
   let label = player.name;
-  if (id === myId.value) {
+  if (id === props.myId) {
     label += " (Me)";
   }
   if (player.isSpectator) {

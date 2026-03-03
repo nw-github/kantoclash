@@ -1,5 +1,5 @@
 <template>
-  <Battle ref="battle" :options :players :events :chats :finished :format :ready />
+  <Battle ref="battle" :options :my-id :players :events :chats :finished :format :ready />
 </template>
 
 <script setup lang="ts">
@@ -17,6 +17,7 @@ const chats = reactive<InfoRecord>({});
 const finished = ref(true);
 const format = ref(battleParams.format);
 const ready = ref(false);
+const myId = "";
 const {track: currentTrack} = useBGMusic();
 
 onMounted(() => {

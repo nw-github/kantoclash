@@ -17,6 +17,7 @@
       :finished
       :format
       :ready
+      :my-id
       @chat="sendChat"
       @report="sendBugReport"
       @choice="makeChoice"

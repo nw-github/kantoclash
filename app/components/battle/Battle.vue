@@ -70,9 +70,7 @@
                 leading-icon="material-symbols:alarm-outline"
                 variant="ghost"
                 :color="currOptions && timeLeft() <= 10 ? 'red' : 'gray'"
-                :disabled="
-                  !players.get(myId) || players.get(myId).isSpectator || !!victor || !!timer
-                "
+                :disabled="!isBattler || isBattleOver || !!timer"
                 :label="timer && !currOptions ? '--' : timer ? `${Math.max(timeLeft(), 0)}` : ''"
                 @click="$emit('timer')"
               />
@@ -182,6 +180,7 @@
         :perspective
         :format
         :smooth-scroll
+        :my-id
         :turns="htmlTurns"
         @chat="$emit('chat', $event)"
         @report="$emit('report', $event)"
@@ -197,6 +196,7 @@
         :perspective
         :format
         :smooth-scroll
+        :my-id
         :turns="htmlTurns"
         closable
         @chat="$emit('chat', $event)"
@@ -232,7 +232,7 @@ defineEmits<{
   (e: "timer" | "cancel"): void;
   (e: "choice", choice: Choice): void;
 }>();
-const {options, players, events, chats, timer, finished, format, ready} = defineProps<{
+const {options, players, events, chats, timer, finished, format, ready, myId} = defineProps<{
   options: Partial<Record<number, Options[]>>;
   players: Players;
   events: BattleEvent[];
@@ -241,8 +241,8 @@ const {options, players, events, chats, timer, finished, format, ready} = define
   finished: bool;
   format: FormatId;
   ready: bool;
+  myId: string;
 }>();
-const myId = useMyId();
 const sfxVol = useSfxVolume();
 const {fadeOut} = useBGMusic();
 const isMounted = useMounted();
@@ -265,7 +265,7 @@ const playingEvents = ref(true);
 
 const victor = ref<string>();
 const isBattleOver = computed(() => finished || !!victor.value);
-const isBattler = computed(() => players.get(myId.value) && !players.get(myId.value).isSpectator);
+const isBattler = computed(() => players.get(myId) && !players.get(myId).isSpectator);
 const perspective = ref("");
 const isSingles = computed(() => players.get(perspective.value)?.active?.length === 1);
 
@@ -314,7 +314,7 @@ const animations: AnimationPlaybackControls[] = [];
 
 const updatePerspective = () => {
   perspective.value = isBattler.value
-    ? myId.value
+    ? myId
     : randChoice(Object.keys(players.items).filter(id => !players.get(id).isSpectator)) ?? "";
 };
 
@@ -775,7 +775,7 @@ const skipToTurn = (turn: number) => {
   animations.length = 0;
 };
 
-watchImmediate([isBattler, () => players.items, myId], updatePerspective);
+watchImmediate([isBattler, () => players.items, () => myId], updatePerspective);
 
 watchImmediate([paused, () => events.length], ([paused, nEvents]) => {
   if (!paused) {
