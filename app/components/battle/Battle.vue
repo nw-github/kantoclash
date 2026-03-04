@@ -31,6 +31,13 @@
 
       <Field ref="field" :players :perspective :is-singles :weather />
 
+      <div v-if="!ready" class="relative">
+        <div class="flex gap-2 top-[50%] left-[50%]">
+          <UIcon name="line-md:loading-loop" class="size-6" />
+          <span class="text-xl">Loading...</span>
+        </div>
+      </div>
+
       <!-- Events & Bottom Bar -->
       <div class="relative w-full">
         <div class="absolute w-full flex flex-col bottom-1 gap-1 z-30 pointer-events-none">

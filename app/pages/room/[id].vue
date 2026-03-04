@@ -1,12 +1,5 @@
 <template>
   <div class="w-full h-full">
-    <template v-if="loading">
-      <div class="flex gap-2">
-        <UIcon name="line-md:loading-loop" class="size-6" />
-        <span class="text-xl">Loading...</span>
-      </div>
-    </template>
-
     <Battle
       ref="battle"
       :options
@@ -243,7 +236,10 @@ const onJoinRoom = (resp: JoinRoomResponse | "bad_room") => {
   if (needsFreshStart) {
     sequenceNo = resp.events.length;
     events.value = resp.events;
-    players.value.get(myId.value).teamDesc = resp.team ?? [];
+    const self = players.value.get(myId.value);
+    if (self) {
+      self.teamDesc = resp.team ?? [];
+    }
   } else {
     sequenceNo += resp.events.length;
     events.value.push(...resp.events);
@@ -285,6 +281,7 @@ const onJoinRoom = (resp: JoinRoomResponse | "bad_room") => {
 
 const onConnect = () => {
   loading.value = true;
+  ready.value = false;
   timer.value = undefined;
 
   for (const k in options) {
