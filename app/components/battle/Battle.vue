@@ -224,14 +224,11 @@
 </template>
 
 <script setup lang="ts">
-import {type FormId, Pokemon, transform} from "~~/game/pokemon";
-import type {BattleEvent, PokeId, SwitchEvent, ClientVolatiles} from "~~/game/events";
-import type {SpeciesId} from "~~/game/species";
+import type {BattleEvent, PokeId} from "~~/game/events";
 import type {BattleTimer, Choice, InfoRecord} from "~~/server/gameServer";
 import criesSpritesheet from "~~/public/effects/cries.json";
 import {GENERATIONS} from "~~/game/gen";
 import {playerId, type Weather} from "~~/game/utils";
-import type {AnimationParams} from "./ActivePokemon.vue";
 import {AnimatePresence, motion, type AnimationPlaybackControls} from "motion-v";
 import type {Options} from "~~/game/battle";
 
@@ -327,31 +324,10 @@ watchDeep(chats, () => {
   }
 });
 
-const goToTurnEnter = (e: KeyboardEvent) => {
-  // TODO: Don't do this
-  if (e.code === "Enter") {
-    skipToTurn(goToTurn.value);
-    goToTurnModalOpen.value = false;
-    paused.value = true;
-  }
-};
+const isLive = () => skipToEvent.value < nextEvent.value && isMounted.value;
 
-const timeLeft = () => {
-  return timer ? Math.floor((timer.startedAt + timer.duration - Date.now()) / 1000) : 1000;
-};
-
-const animations: AnimationPlaybackControls[] = [];
-
-const updatePerspective = () => {
-  perspective.value = isBattler.value
-    ? myId
-    : randChoice(Object.keys(players.items).filter(id => !players.get(id).isSpectator)) ?? "";
-};
-
-const runEvent = async (e: BattleEvent) => {
-  const isLive = () => skipToEvent.value < nextEvent.value && isMounted.value;
-
-  const playCry = (speciesId: SpeciesId, pitchDown = false) => {
+const clientMgr = new ClientManager({
+  playCry(speciesId, pitchDown) {
     if (isLive()) {
       let sprite = gen.value.speciesList[speciesId].dexId.toString();
       if (speciesId === "shayminsky") {
@@ -359,16 +335,15 @@ const runEvent = async (e: BattleEvent) => {
       }
       return sound.play("cries", {sprite, volume: sfxVol.value, detune: pitchDown ? -350 : 0});
     }
-  };
-
-  const playDmg = (eff: number) => {
+  },
+  playShiny: _id => sound.play("shiny", {volume: sfxVol.value}),
+  playDmg(eff) {
     if (isLive()) {
       const name = eff > 1 ? "supereffective" : eff < 1 ? "ineffective" : "neutral";
       return sound.play(name, {volume: sfxVol.value});
     }
-  };
-
-  const playAnimation = async (id: PokeId, params: AnimationParams) => {
+  },
+  async playAnimation(id, params) {
     if (!isLive()) {
       params.cb?.();
       params.cb = undefined;
@@ -389,24 +364,13 @@ const runEvent = async (e: BattleEvent) => {
       if (idx !== -1) {
         animations.splice(idx, 1);
       }
-    }
-  };
 
-  const handleVolatiles = (e: BattleEvent) => {
-    if (e.volatiles) {
-      for (const {v, id} of e.volatiles) {
-        const poke = players.poke(id);
-        if (!poke) {
-          continue;
-        }
-
-        poke.v = mergeVolatiles(v, poke.v) as ClientVolatiles;
-        poke.base.status = poke.v.status;
+      if (isLive() && params.anim === "faint") {
+        await delay(400);
       }
     }
-  };
-
-  const pushEvent = (e: RawUIBattleEvent) => {
+  },
+  displayEvent(e) {
     const ev = {...e, time: Date.now()} as UIBattleEvent;
     if ("src" in ev) {
       ev[ev.src] = players.poke(ev.src as PokeId)!.base.name;
@@ -419,361 +383,34 @@ const runEvent = async (e: BattleEvent) => {
     if (isLive()) {
       liveEvents.value.push(ev);
     }
-  };
-
-  const preloadSprite = (
-    speciesId: string,
-    female?: bool,
-    shiny?: bool,
-    back?: bool,
-    form?: FormId,
-  ) => {
+  },
+  preloadSprite(poke, speciesId, female, shiny, form) {
+    const back = playerId(poke) === perspective.value;
     const img = new Image();
     img.src = getSpritePath(speciesId, female, shiny, back, form);
     return img;
-  };
+  },
+});
 
-  const findOrCreateEnemyBasePokemon = (e: SwitchEvent) => {
-    const owner = players.ownerOf(e.src);
-    // TODO: better heuristics based on for example, HP, if the opponent has multiple of the same
-    // Pokemon
-    const poke = owner.team.find(poke => poke.speciesId === e.speciesId);
-    if (poke) {
-      return poke;
-    }
-
-    const idx = owner.team.push(
-      new Pokemon({
-        gen: gen.value,
-        speciesId: e.speciesId,
-        level: e.level,
-        name: e.name,
-        hp: e.hp,
-        shiny: e.shiny,
-        gender: e.gender,
-        stats: {hp: 100, atk: 0, def: 0, spa: 0, spd: 0, spe: 0},
-        ivs: {hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0},
-        moves: [],
-        pp: [],
-        friendship: 0,
-      }),
-    );
-    return owner.team[idx - 1];
-  };
-
-  const handleEvent = async (e: BattleEvent) => {
-    if (e.type === "switch") {
-      const poke = players.poke(e.src);
-      let _img;
-      if (poke) {
-        if (!poke.fainted && e.why !== "batonpass" && e.why !== "uturn") {
-          if (e.why !== "phaze") {
-            pushEvent({type: "retract", src: e.src, name: poke.base.name});
-          }
-          await playAnimation(e.src, {
-            anim: e.why === "phaze" ? "phaze" : "retract",
-            batonPass: false,
-            name: poke.base.name,
-          });
-        }
-
-        _img = preloadSprite(
-          e.speciesId,
-          e.gender === "F",
-          e.shiny,
-          playerId(e.src) === perspective.value,
-          e.form,
-        );
-      } else {
-        players.setPoke(e.src, {
-          hidden: true,
-          v: {stages: {}},
-          fainted: true,
-          indexInTeam: -1,
-          owned: false,
-          base: new Pokemon({
-            gen: gen.value,
-            speciesId: e.speciesId,
-            ivs: {hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0},
-            stats: {hp: 100, atk: 0, def: 0, spa: 0, spd: 0, spe: 0},
-            level: 0,
-            name: "",
-            moves: [],
-            pp: [],
-            hp: 0,
-            friendship: 0,
-            shiny: false,
-            gender: "N",
-          }),
-        });
-      }
-
-      pushEvent(e);
-      await playAnimation(e.src, {
-        anim: "sendin",
-        name: e.name,
-        batonPass: e.why === "batonpass",
-        cb() {
-          const poke = players.setPoke(e.src, {
-            ...e,
-            owned: e.indexInTeam !== -1,
-            base:
-              e.indexInTeam !== -1
-                ? players.ownerOf(e.src).team[e.indexInTeam]
-                : findOrCreateEnemyBasePokemon(e),
-            v: {stages: {}},
-            fainted: false,
-          });
-          poke.base.hp = e.hp;
-          handleVolatiles(e);
-          playCry(e.speciesId)?.then(() => {
-            if (e.shiny) {
-              return sound.play("shiny", {volume: sfxVol.value});
-            }
-          });
-        },
-      });
-      return;
-    } else if (e.type === "damage" || e.type === "recover") {
-      const update = () => {
-        const target = players.poke(e.target)!;
-        const ev = e as UIDamageEvent | UIRecoverEvent;
-        target.base.hp = e.hpAfter;
-        if (target.owned) {
-          ev.maxHp = target.base.stats.hp;
-        }
-
-        if (e.why !== "substitute") {
-          handleVolatiles(ev);
-        }
-        if (e.why !== "explosion" || (e.eff ?? 1) !== 1) {
-          pushEvent(ev);
-        }
-      };
-
-      if (e.type === "damage" && (e.why === "attacked" || e.why === "ohko" || e.why === "trap")) {
-        const eff = e.why === "ohko" || !e.eff ? 1 : e.eff;
-        await playAnimation(e.src, {
-          anim: "attack",
-          target: e.target,
-          cb() {
-            update();
-            playDmg(eff);
-            playAnimation(e.target, {anim: "hurt", direct: true});
-          },
-        });
-      } else {
-        update();
-        if (
-          e.why === "confusion" ||
-          e.why === "sand" ||
-          e.why === "hail" ||
-          e.why === "future_sight"
-        ) {
-          await Promise.allSettled([
-            playDmg(e.eff ?? 1),
-            playAnimation(e.src, {anim: "hurt", direct: true}),
-          ]);
-        }
-      }
-
-      if (e.why === "substitute") {
-        pushEvent({type: "get_sub", src: e.target});
-        await playAnimation(e.target, {anim: "get_sub", cb: () => handleVolatiles(e)});
-      }
-      return;
-    } else if (e.type === "info") {
-      if (e.why === "faint") {
-        const poke = players.poke(e.src)!;
-        playCry(poke.base.speciesId, true);
-        pushEvent(e);
-        await playAnimation(e.src, {anim: "faint"});
-        if (isLive()) {
-          await delay(400);
-        }
-
-        poke.fainted = true;
-        poke.hidden = true;
-        players.ownerOf(e.src).nFainted++;
-        handleVolatiles(e);
-        return;
-      } else if (e.why === "heal_bell") {
-        players.ownerOf(e.src).team.forEach(poke => (poke.status = undefined));
-      } else if (e.why === "batonpass") {
-        handleVolatiles(e);
-        await playAnimation(e.src, {
-          anim: "retract",
-          name: players.poke(e.src)!.base.name,
-          batonPass: true,
-        });
-        return;
-      } else if (e.why === "uturn") {
-        pushEvent(e);
-        handleVolatiles(e);
-        await playAnimation(e.src, {
-          anim: "retract",
-          name: players.poke(e.src)!.base.name,
-          batonPass: true,
-        });
-        return;
-      }
-    } else if (e.type === "transform") {
-      const _img = preloadSprite(
-        e.speciesId,
-        e.gender === "F",
-        e.shiny,
-        playerId(e.src) === perspective.value,
-        e.form,
-      );
-
-      pushEvent(e);
-
-      await playAnimation(e.src, {
-        anim: "transform",
-        cb() {
-          handleVolatiles(e);
-
-          const src = players.poke(e.src)!;
-          if (e.target) {
-            src.base = transform(src.base.real, players.poke(e.target)!.base);
-          }
-          src.base.form = e.form;
-        },
-      });
-      return;
-    } else if (e.type === "hit_sub") {
-      if (e.confusion) {
-        await Promise.allSettled([
-          playDmg(e.eff ?? 1),
-          playAnimation(e.src, {anim: "hurt", direct: false}),
-        ]);
-      } else {
-        await playAnimation(e.src, {
-          anim: "attack",
-          target: e.target,
-          cb() {
-            pushEvent(e);
-            playDmg(e.eff ?? 1);
-            playAnimation(e.target, {anim: "hurt", direct: false});
-          },
-        });
-      }
-      if (e.broken) {
-        pushEvent({type: "sub_break", target: e.target});
-        await playAnimation(e.target, {anim: "lose_sub", cb: () => handleVolatiles(e)});
-      }
-      return;
-    } else if (e.type === "end") {
-      victor.value = e.victor ?? "draw";
-    } else if (e.type === "weather") {
-      if (e.kind === "start") {
-        weather.value = e.weather;
-      } else if (e.kind === "end") {
-        weather.value = undefined;
-      }
-    } else if (e.type === "item") {
-      players.poke(e.src)!.base.item = undefined;
-    } else if (e.type === "screen") {
-      players.get(e.user).screens ??= {};
-      players.get(e.user).screens![e.screen] = e.kind === "start";
-    } else if (e.type === "thief") {
-      players.poke(e.src)!.base.item = e.item;
-      players.poke(e.target)!.base.item = undefined;
-    } else if (e.type === "trick") {
-      players.poke(e.src)!.base.item = e.srcItem;
-      players.poke(e.target)!.base.item = e.targetItem;
-    } else if (e.type === "knockoff") {
-      players.poke(e.target)!.base.itemUnusable = true;
-    } else if (e.type === "recycle") {
-      const src = players.poke(e.src)!.base;
-      src.item = e.item;
-      src.itemUnusable = false;
-    } else if (e.type === "sketch") {
-      const src = players.poke(e.src)!;
-      if (src.owned) {
-        src.base.moves[src.base.moves.indexOf("sketch")] = e.move;
-      }
-    } else if (e.type === "hazard") {
-      const player = players.get(e.player);
-      player.hazards ??= {};
-      if (e.spin) {
-        player.hazards[e.hazard] = 0;
-      } else {
-        await playAnimation(e.src, {
-          anim: "spikes",
-          cb() {
-            player.hazards![e.hazard] = (player.hazards![e.hazard] || 0) + 1;
-          },
-        });
-      }
-    } else if (e.type === "skill_swap") {
-      const src = players.poke(e.src);
-      const target = players.poke(e.target);
-      if (src) {
-        src.abilityUnknown = true;
-      }
-      if (target) {
-        target.abilityUnknown = true;
-      }
-      // TODO: set ability
-    } else if (e.type === "move") {
-      const src = players.poke(e.src)!;
-      if (!src.owned) {
-        const idx = src.base.moves.findIndex(id => id === e.move);
-        // TODO: pressure, ignore 'called' moves (from assist, metronome, etc)
-        const ppcost = e.disabled || e.thrashing ? 0 : 1;
-        if (idx === -1) {
-          src.base.moves.push(e.move);
-          src.base.pp.push(src.base.gen.getMaxPP(src.base.gen.moveList[e.move]) - ppcost);
-        } else {
-          src.base.pp[idx] -= ppcost;
-        }
-      }
-    } else if (e.type === "charge") {
-      const src = players.poke(e.src)!;
-      if (!src.owned && !src.base.moves.includes(e.move)) {
-        src.base.moves.push(e.move);
-        src.base.pp.push(src.base.gen.getMaxPP(src.base.gen.moveList[e.move]));
-      }
-    } else if (e.type === "proc_ability") {
-      const src = players.poke(e.src)!;
-      if (!src.owned && !src.base.ability) {
-        src.base.ability = e.ability;
-      }
-    }
-    // TODO: PP restoring berries, mimic
-
-    handleVolatiles(e);
-    if (e.type !== "sv") {
-      pushEvent(e);
-    }
-  };
-
-  if (e.type === "next_turn") {
-    currentTurnNo.value = e.turn;
-    htmlTurns.value.push([]);
-    liveEvents.value.length = 0;
-    if (isLive() && isBattleOver.value) {
-      await delay(450);
-    }
-    return;
+const goToTurnEnter = (e: KeyboardEvent) => {
+  // TODO: Don't do this
+  if (e.code === "Enter") {
+    skipToTurn(goToTurn.value);
+    goToTurnModalOpen.value = false;
+    paused.value = true;
   }
+};
 
-  smoothScroll.value = isLive();
+const timeLeft = () => {
+  return timer ? Math.floor((timer.startedAt + timer.duration - Date.now()) / 1000) : 1000;
+};
 
-  await handleEvent(e);
-  if (
-    isLive() &&
-    e.type !== "sv" &&
-    e.type !== "beatup" &&
-    !(e.type === "info" && e.why === "uturn")
-  ) {
-    await delay(e.type === "weather" && e.kind === "continue" ? 450 : 250);
-  }
+const animations: AnimationPlaybackControls[] = [];
 
-  if ((e.type === "end" || e.type === "forfeit") && useAutoMuteMusic().value) {
-    fadeOut();
-  }
+const updatePerspective = () => {
+  perspective.value = isBattler.value
+    ? myId
+    : randChoice(Object.keys(players.items).filter(id => !players.get(id).isSpectator)) ?? "";
 };
 
 const skipToTurn = (turn: number) => {
@@ -816,19 +453,48 @@ watchImmediate([paused, () => events.length], ([paused, nEvents]) => {
 });
 
 onMounted(async () => {
+  const runEvent = async (e: BattleEvent) => {
+    if (e.type === "next_turn") {
+      currentTurnNo.value = e.turn;
+      htmlTurns.value.push([]);
+      liveEvents.value.length = 0;
+      if (isLive() && isBattleOver.value) {
+        await delay(450);
+      }
+      return;
+    }
+
+    smoothScroll.value = isLive();
+
+    await clientMgr.handleEvent(e, players, gen.value);
+
+    if (victor.value !== clientMgr.victor) {
+      victor.value = clientMgr.victor;
+    }
+
+    if (weather.value !== clientMgr.weather) {
+      weather.value = clientMgr.weather;
+    }
+
+    if (
+      isLive() &&
+      e.type !== "sv" &&
+      e.type !== "beatup" &&
+      !(e.type === "info" && e.why === "uturn")
+    ) {
+      await delay(e.type === "weather" && e.kind === "continue" ? 450 : 250);
+    }
+
+    if ((e.type === "end" || e.type === "forfeit") && useAutoMuteMusic().value) {
+      fadeOut();
+    }
+  };
+
   const reset = () => {
     htmlTurns.value = [[]];
     currentTurnNo.value = 0;
     weather.value = undefined;
-
-    for (const k in players.items) {
-      const player = players.items[k];
-      player.nFainted = 0;
-      player.active = Array(player.active.length);
-      player.screens = undefined;
-      player.hazards = undefined;
-      player.team = player.teamDesc.map(poke => Pokemon.fromDescriptor(gen.value, poke));
-    }
+    clientMgr.resetPlayers(players, gen.value);
   };
 
   await until(() => ready).toBe(true);

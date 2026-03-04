@@ -3,27 +3,27 @@ import random from "random";
 
 import type {Choice, ClientMessage, JoinRoomResponse, ServerMessage} from "./gameServer";
 
-import type {BattleEvent, ClientVolatiles} from "~~/game/events";
+import type {BattleEvent} from "~~/game/events";
 import type {Options} from "~~/game/battle";
-import {Pokemon, transform} from "~~/game/pokemon";
+import type {Pokemon} from "~~/game/pokemon";
 import {getEffectiveness, playerId, VF} from "~~/game/utils";
 import type {DamagingMove, MoveId} from "~~/game/moves";
 import {type Generation, GENERATIONS} from "~~/game/gen";
 
-import {type FormatId, formatInfo, mergeVolatiles} from "~/utils/shared";
+import {type FormatId, formatInfo} from "~/utils/shared";
 import {convertTeam, parseTeams, type Team} from "~/utils/pokemon";
-import {Players} from "~/utils/client";
+import {ClientManager, Players} from "~/utils/client";
 
 import {randoms} from "./utils/formats";
 import type {InfoMessage} from "./utils/info";
 
 export type BotParams = {
-  team: Pokemon[];
   options: Options[];
   players: Players;
   me: string;
   opponent: string;
   gen: Generation;
+  mgr: ClientManager;
 };
 
 export type BotFunction = (params: BotParams) => Choice[];
@@ -161,115 +161,35 @@ export async function startBot(format?: FormatId, botFunction: BotFunction = ran
     gameOver: () => void,
   ) {
     const players = new Players();
-    const gen = GENERATIONS[formatInfo[format].generation]!;
+    const fmt = formatInfo[format];
+    const gen = GENERATIONS[fmt.generation]!;
+    const mgr = new ClientManager({
+      playCry() {},
+      playShiny() {},
+      playDmg() {},
+      preloadSprite() {},
+      playAnimation: (_, params) => params.cb?.(),
+      displayEvent() {},
+    });
     let eventNo = 0;
     let opponent = "";
-    const team = teamDesc!.map(poke => Pokemon.fromDescriptor(gen, poke));
-    const dummyPoke = new Pokemon({
-      gen,
-      speciesId: "abra",
-      ivs: {hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0},
-      stats: {hp: 100, atk: 0, def: 0, spa: 0, spd: 0, spe: 0},
-      level: 0,
-      name: "",
-      moves: [],
-      pp: [],
-      hp: 0,
-      friendship: 0,
-      shiny: false,
-      gender: "N",
-    });
-
-    const handleVolatiles = (e: BattleEvent) => {
-      if (e.volatiles) {
-        for (const {v, id} of e.volatiles) {
-          const poke = players.poke(id)!;
-          poke.v = mergeVolatiles(v, poke.v) as ClientVolatiles;
-          if (poke.base) {
-            poke.base.status = poke.v.status;
-          }
-        }
-      }
-    };
-
-    const handleEvent = async (e: BattleEvent) => {
-      if (e.type === "switch") {
-        const poke = players.setPoke(e.src, {
-          ...e,
-          base: e.indexInTeam !== -1 ? team[e.indexInTeam] : dummyPoke,
-          owned: e.indexInTeam !== -1,
-          v: {stages: {}},
-          fainted: false,
-        });
-        poke.base.hp = e.hp;
-      } else if (e.type === "damage" || e.type === "recover") {
-        const target = players.poke(e.target)!;
-        target.base.hp = e.hpAfter;
-      } else if (e.type === "info") {
-        if (e.why === "faint") {
-          players.poke(e.src)!.fainted = true;
-          players.ownerOf(e.src).nFainted++;
-        } else if (e.why === "heal_bell") {
-          if (playerId(e.src) === myId && team) {
-            team.forEach(poke => (poke.status = undefined));
-          }
-        }
-      } else if (e.type === "transform") {
-        const src = players.poke(e.src)!;
-        if (e.target) {
-          const target = players.poke(e.target)!;
-          target.base = transform(src.base.real, target.base);
-        }
-        src.base.form = e.form;
-      } else if (e.type === "weather") {
-        // if (e.kind === "start") {
-        //   weather.value = e.weather;
-        // } else if (e.kind === "end") {
-        //   weather.value = undefined;
-        // }
-      } else if (e.type === "item") {
-        const src = players.poke(e.src)?.base;
-        if (src) {
-          src.item = undefined;
-        }
-      } else if (e.type === "screen") {
-        players.get(e.user).screens ??= {};
-        players.get(e.user).screens![e.screen] = e.kind === "start";
-      } else if (e.type === "thief") {
-        const src = players.poke(e.src)?.base;
-        const target = players.poke(e.target)?.base;
-        if (src) {
-          src.item = e.item;
-        }
-        if (target) {
-          target.item = undefined;
-        }
-      } else if (e.type === "sketch") {
-        const src = players.poke(e.src)?.base;
-        if (src) {
-          src.moves[src.moves.indexOf("sketch")] = e.move;
-        }
-      }
-
-      handleVolatiles(e);
-    };
 
     const makeDecision = (options: Options[], tries = 3) => {
       if (tries === 0) {
         console.error(`[${name}] Couldn't make a valid move after 3 tries, abandoning ${room}.`);
-        // $conn.emit("chat", room, "Sorry, I couldn't figure out a move and must forfeit!", () => {});
+        $conn.emit("chat", room, "I couldn't figure out a move and must forfeit!", () => {});
         $conn.emit("choose", room, eventNo, {type: "forfeit"}, () => {});
 
         gameOver();
         return;
       }
 
-      const choices = ai({team, options, players, me: myId, opponent, gen});
+      const choices = ai({options, players, me: myId, opponent, gen, mgr});
       for (const choice of choices) {
         $conn.emit("choose", room, eventNo, choice, err => {
           if (err) {
             if (choice.type === "switch") {
-              const poke = {...team[choice.pokeIndex], gen: undefined};
+              const poke = {...players.get(myId).team[choice.pokeIndex], gen: undefined};
               console.error(`[${name}] bad switch '${err}' (to: ${choice.pokeIndex}|`, poke, ")");
             } else if (choice.type === "move") {
               console.error(
@@ -287,6 +207,10 @@ export async function startBot(format?: FormatId, botFunction: BotFunction = ran
     const processMessage = (message: InfoMessage) => {
       if (message.type === "userJoin") {
         const {name, isSpectator, nPokemon, id} = message;
+        if (players.get(id)) {
+          return;
+        }
+
         players.add(id, {
           name,
           isSpectator,
@@ -295,6 +219,7 @@ export async function startBot(format?: FormatId, botFunction: BotFunction = ran
           nFainted: players.get(id)?.nFainted ?? 0,
           active: [],
           team: [],
+          teamDesc: [],
         });
       } else if (message.type === "userLeave") {
         players.get(message.id).connected = false;
@@ -308,21 +233,22 @@ export async function startBot(format?: FormatId, botFunction: BotFunction = ran
         connected: false,
         nPokemon,
         nFainted: 0,
-        active: [],
+        active: Array(fmt.doubles ? 2 : 1),
         team: [],
+        teamDesc: id === myId ? teamDesc! : [],
       });
       if (id !== myId) {
         opponent = id;
       }
     }
 
+    mgr.resetPlayers(players, gen);
     games[room] = {
-      nextTurn(turn, options) {
+      async nextTurn(turn, options) {
         let done = false;
         for (const event of turn) {
           eventNo++;
-          handleEvent(event);
-
+          await mgr.handleEvent(event, players, gen);
           if (event.type === "end") {
             done = true;
           }
@@ -333,7 +259,7 @@ export async function startBot(format?: FormatId, botFunction: BotFunction = ran
           return;
         }
 
-        if (options) {
+        if (options && options.length) {
           makeDecision(options);
         }
       },
@@ -353,7 +279,7 @@ export async function startBot(format?: FormatId, botFunction: BotFunction = ran
 
         if (message.id !== myId && message.type === "chat" && message.message.startsWith("/dox")) {
           if (message.message.includes("team")) {
-            team.forEach(dox);
+            players.get(myId).team.forEach(dox);
           } else {
             for (const poke of players.get(myId).active) {
               if (poke?.base) {
@@ -425,103 +351,113 @@ export function randomBot({options, me}: BotParams) {
   return choices;
 }
 
-// export function rankBot({team, options, players, activePokemon, opponent: id, me, gen}: BotParams) {
-//   const rank = <T>(arr: T[], sort: (t: T, i: number) => number) => {
-//     const result = arr
-//       .map((item, i) => ({score: sort(item, i), i}))
-//       .sort((a, b) => b.score - a.score)
-//       .filter((move, _, arr) => move.score >= 0 && move.score === arr[0].score);
-//     return result.length ? random.choice(result)! : {score: -1, i: -1};
-//   };
-//
-//   const rankMove = ({move: id, valid}: {move: MoveId; valid: bool}) => {
-//     if (!valid) {
-//       return -1;
-//     }
-//
-//     const opponentPoke = Pokemon.fromDescriptor(gen, {
-//       species: opponentActive.speciesId,
-//       level: opponentActive.level,
-//       moves: [],
-//     });
-//     opponentPoke.hp *= opponentActive.hpPercent / 100;
-//
-//     const move = gen.moveList[id];
-//     if ((move.power ?? 0) > 1) {
-//       const eff = getEffectiveness(
-//         gen.typeChart,
-//         move.type,
-//         opponentActive.v.types ?? opponentPoke.species.types,
-//       );
-//       if (eff > 1) {
-//         return 15;
-//       } else if (eff < 1) {
-//         return 5;
-//       } else if (eff === 0) {
-//         return 0;
-//       }
-//       return 10;
-//     } else if (move.kind === "recover") {
-//       if (self.hpPercent === 100) {
-//         return 0;
-//       } else if (self.hpPercent <= 25) {
-//         return 15;
-//       } else {
-//         return 5;
-//       }
-//     } else {
-//       const confused = (opponentActive.v.flags || 0) & VF.cConfused;
-//       const seeded = (opponentActive.v.flags || 0) & VF.cSeeded;
-//       const cursed = (opponentActive.v.flags || 0) & VF.curse;
-//       const dbond = (self.v.flags || 0) & VF.destinyBond;
-//       const selfSub = (self.v.flags || 0) & VF.cSubstitute;
-//       const sub = (opponentActive.v.flags || 0) & VF.cSubstitute;
-//
-//       // prettier-ignore
-//       const useless = (move.kind === "confuse" && confused) ||
-//         (move.kind === "status" && (opponentActive.v.status || (gen.id === 2 && sub))) ||
-//         (id === "leechseed" && (seeded || opponentPoke.species.types.includes("grass"))) ||
-//         (id === "curse" && cursed) ||
-//         (id === "destinybond" && dbond) ||
-//         (id === "substitute" && selfSub) ||
-//         (move.kind === "stage" && move.acc && sub);
-//       if (useless) {
-//         return 0;
-//       }
-//     }
-//
-//     return 10;
-//   };
-//
-//   const self = players[me].active!;
-//   const opponentActive = players[id].active!;
-//   // const selfPoke = team[activePokemon];
-//
-//   const {score, i: bestMove} = rank(options.moves, rankMove);
-//   if ((bestMove !== -1 && score > 5) || !options.canSwitch) {
-//     return [bestMove, "move"] as const;
-//   }
-//
-//   const {i: bestSwitch} = rank(team, (poke, i) => {
-//     if (poke.hp === 0 || i === activePokemon) {
-//       return -1;
-//     } else if (!opponentActive) {
-//       return 10;
-//     } else if (poke.status === "frz" || poke.status === "slp") {
-//       return 0;
-//     }
-//
-//     return Math.max(...poke.moves.map(move => rankMove({move, valid: true})));
-//   });
-//   if (bestSwitch === -1) {
-//     return [bestMove, "move"] as const;
-//   }
-//
-//   return [bestSwitch, "switch"] as const;
-// }
+export function rankBot(params: BotParams): Choice[] {
+  const {options, players, opponent, me, gen} = params;
+  if (params.players.get(me).active.length !== 1) {
+    return randomBot(params);
+  }
 
-export function rankBot(params: BotParams) {
-  return randomBot(params);
+  const selfP = players.get(me);
+  const active = selfP.active![0]!;
+  const opponentActive = players.get(opponent).active![0]!;
+  const opts = options[0];
+
+  const rank = <T>(arr: T[], getScore: (t: T) => number) => {
+    const result = arr
+      .map((item, i) => ({score: getScore(item), i}))
+      .sort((a, b) => b.score - a.score)
+      .filter((item, _, arr) => item.score >= 0 && item.score === arr[0].score);
+    return result.length ? random.choice(result)! : {score: -1, i: -1};
+  };
+
+  const rankMove = ({move: id, valid}: {move: MoveId; valid: bool}) => {
+    if (!valid) {
+      return -1;
+    }
+
+    const opponentPoke = opponentActive.base;
+    const move = gen.moveList[id];
+    if ((move.power ?? 0) > 1) {
+      const eff = getEffectiveness(
+        gen.typeChart,
+        move.type,
+        opponentActive.v.types ?? opponentPoke.species.types,
+      );
+      let score = 10;
+      if (eff > 1) {
+        score = 15;
+      } else if (eff < 1) {
+        score = 5;
+      } else if (eff === 0) {
+        score = 0;
+      }
+      if (move.kind === "damage" && move.charge) {
+        score = Math.max(score - 2, 0);
+      }
+      return score;
+    } else if (move.kind === "recover") {
+      if (active.base.hpPercent === 100) {
+        return 0;
+      } else if (active.base.hpPercent <= 25) {
+        return 15;
+      } else {
+        return 5;
+      }
+    }
+
+    const confused = (opponentActive.v.flags || 0) & VF.cConfused;
+    const seeded = (opponentActive.v.flags || 0) & VF.cSeeded;
+    const cursed = (opponentActive.v.flags || 0) & VF.curse;
+    const dbond = (active.v.flags || 0) & VF.destinyBond;
+    const sub = opponentActive.substitute;
+
+    // prettier-ignore
+    const useless = (move.kind === "confuse" && confused) ||
+        (move.kind === "status" && (opponentActive.v.status || (gen.id > 1 && sub))) ||
+        (id === "leechseed" && (seeded || opponentPoke.species.types.includes("grass"))) ||
+        (id === "curse" && cursed) ||
+        (id === "destinybond" && dbond) ||
+        (id === "substitute" && active.substitute) ||
+        (move.kind === "stage" && move.acc && sub);
+    if (useless) {
+      return 0;
+    }
+
+    return 10;
+  };
+
+  try {
+    const {score, i: bestMove} = rank(opts.moves, rankMove);
+    const target = opts.moves[bestMove]?.targets?.[0];
+    if ((bestMove !== -1 && score > 5) || !opts.switches.length) {
+      return [{type: "move", moveIndex: bestMove, who: 0, target}] as const;
+    }
+
+    const {i: bestSwitch} = rank(opts.switches, index => {
+      const poke = selfP.team[index];
+      if (poke.hp === 0) {
+        return -1;
+      } else if (!opponentActive || opponentActive.base.hp === 0) {
+        return 10;
+      } else if (poke.status === "frz" || poke.status === "slp") {
+        return 0;
+      }
+      return Math.max(...poke.moves.map(move => rankMove({move, valid: true})));
+    });
+    if (bestSwitch === -1) {
+      return [{type: "move", moveIndex: bestMove, who: 0, target}] as const;
+    }
+
+    return [{type: "switch", who: 0, pokeIndex: opts.switches[bestSwitch]}] as const;
+  } catch (ex) {
+    console.error(
+      "rankBot() Exception: Choices were: ",
+      JSON.stringify(options, null, 2),
+      "\n",
+      ex,
+    );
+    return randomBot(params);
+  }
 }
 
 /// From: https://gist.github.com/scheibo/7c9172f3379bbf795a5e61a802caf2f0

@@ -184,26 +184,6 @@ export const formatInfo: Record<FormatId, FormatInfo> = {
   },
 };
 
-export const mergeVolatiles = <T extends object>(ext: any, obj: T) => {
-  const isObject = (foo: any): foo is object => {
-    return !Array.isArray(foo) && typeof foo === "object";
-  };
-
-  const result: any = {};
-  for (const kk of new Set([...Object.keys(obj), ...Object.keys(ext)])) {
-    const k = kk as keyof T;
-    if (ext[k] === null) {
-      continue;
-    } else if (isObject(obj[k]) || isObject(ext[k])) {
-      result[k] = mergeVolatiles(ext[k] ?? {}, obj[k] ?? {});
-    } else {
-      result[k] = ext[k] ?? obj[k];
-    }
-  }
-
-  return result as T;
-};
-
 export const isValidSketchMove = (gen: Generation, id: string) => {
   const move = gen.moveList[id as MoveId];
   if (!move) {
