@@ -12,7 +12,7 @@
       </div>
 
       <UTextarea
-        v-model.trim="text"
+        v-model="text"
         class="h-48"
         placeholder="Add a bug description here..."
         variant="none"
@@ -25,7 +25,7 @@
             label="Submit"
             size="xs"
             :disabled="text.length > maxLength"
-            @click="(open = false), $emit('submit', text)"
+            @click="(open = false), $emit('submit', text.trim())"
           />
           <UButton label="Cancel" size="xs" variant="outline" @click="open = false" />
         </div>
