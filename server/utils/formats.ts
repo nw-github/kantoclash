@@ -206,7 +206,7 @@ export const randoms = (
     if (stab.length) {
       moves[0] = random.choice(stab)!;
     }
-    if (speciesId === "arceus" && !moves.includes("judgement")) {
+    if (speciesId === "arceus" && !moves.includes("judgment")) {
       moves[0] = "judgment";
     }
 

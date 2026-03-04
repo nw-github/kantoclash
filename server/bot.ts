@@ -7,7 +7,7 @@ import type {BattleEvent} from "~~/game/events";
 import type {Options} from "~~/game/battle";
 import type {Pokemon} from "~~/game/pokemon";
 import {getEffectiveness, playerId, VF} from "~~/game/utils";
-import type {DamagingMove, MoveId} from "~~/game/moves";
+import type {MoveId} from "~~/game/moves";
 import {type Generation, GENERATIONS} from "~~/game/gen";
 
 import {type FormatId, formatInfo} from "~/utils/shared";
@@ -295,24 +295,29 @@ export async function startBot(botType: BotType, format?: FormatId) {
       },
       chat(message) {
         const dox = (a: Pokemon) => {
-          const name = (m: string) => {
-            if (m === "hiddenpower") {
-              return "hiddenpower" + (gen.moveList.hiddenpower as DamagingMove).getType!(a);
-            } else {
-              return m;
+          const name = (m: MoveId) => {
+            const move = gen.moveList[m];
+            const typ = "getType" in move && move.getType!(a, mgr.weather);
+            if (typ) {
+              return m + typ;
             }
+            return m;
           };
 
           sendChatMessage(`${a.species.name} @ ${a.item}`);
-          sendChatMessage(`- ${a.moves.map(name).join("/")}`);
+          if (a.ability) {
+            sendChatMessage(`Ability: ${a.ability}`);
+          }
+          sendChatMessage(`- ${a.moves.map(name).join(", ")}`);
         };
 
         if (message.id === myId || message.type !== "chat" || !players.get(message.id)?.admin) {
           return;
         }
 
-        if (message.message.startsWith("/dox")) {
-          if (message.message.includes("team")) {
+        const msg = message.message.toLowerCase();
+        if (msg.startsWith("/dox")) {
+          if (msg.includes("team")) {
             players.get(myId).team.forEach(dox);
           } else {
             for (const poke of players.get(myId).active) {
@@ -321,11 +326,11 @@ export async function startBot(botType: BotType, format?: FormatId) {
               }
             }
           }
-        } else if (message.message.startsWith("/debug")) {
+        } else if (msg.startsWith("/debug")) {
           debugMode = !debugMode;
           sendChatMessage("Debug mode " + (debugMode ? "enabled" : "disabled"));
-        } else if (message.message.startsWith("/ai")) {
-          const other = message.message.split(" ")[1]?.trim();
+        } else if (msg.startsWith("/ai")) {
+          const other = msg.split(" ")[1]?.trim();
           if (!other) {
             sendChatMessage(`Current AI Mode: ${aiMode}`);
           } else if (other in botFunctions) {
@@ -401,7 +406,7 @@ const botFunctions = {
     return choices;
   },
   rank(params: BotParams): Choice[] {
-    const {options, players, opponent, me, gen} = params;
+    const {options, players, opponent, me, gen, mgr} = params;
     if (params.players.get(me).active.length !== 1) {
       return this.random(params);
     }
@@ -433,7 +438,7 @@ const botFunctions = {
       if ((move.power ?? 0) > 1) {
         const eff = getEffectiveness(
           gen.typeChart,
-          move.type,
+          ("getType" in move && move.getType?.(active.base, mgr.weather)) || move.type,
           opponentActive.v.types ?? opponentPoke.species.types,
         );
         let score = 10;
@@ -465,7 +470,7 @@ const botFunctions = {
       const sub = opponentActive.substitute;
 
       // prettier-ignore
-      const useless = (move.kind === "confuse" && confused) ||
+      const useless = ((move.kind === "confuse" || move.kind === "swagger") && confused) ||
           (move.kind === "status" && (opponentActive.v.status || (gen.id > 1 && sub))) ||
           (id === "leechseed" && (seeded || opponentPoke.species.types.includes("grass"))) ||
           (id === "curse" && cursed) ||
