@@ -11,6 +11,7 @@ type FormatInfo = {
   chooseLead?: bool;
   generation: number;
   doubles?: bool;
+  beta?: bool;
 };
 
 export const battleFormats = [
@@ -46,6 +47,7 @@ export const formatInfo: Record<FormatId, FormatInfo> = {
     chooseLead: true,
     mods: {sleepClause: true, endlessBattle: true},
     generation: 4,
+    beta: true,
   },
   g4_randoms: {
     name: "[DPP] Random Battle",
@@ -53,6 +55,7 @@ export const formatInfo: Record<FormatId, FormatInfo> = {
     desc: "A standard Pokémon battle, but your team and sets are randomly generated.",
     mods: {sleepClause: true, endlessBattle: true},
     generation: 4,
+    beta: true,
   },
   g4_randoms_doubles: {
     name: "[DPP] Random Doubles",
@@ -61,6 +64,7 @@ export const formatInfo: Record<FormatId, FormatInfo> = {
     mods: {endlessBattle: true},
     generation: 4,
     doubles: true,
+    beta: true,
   },
   g4_doubles: {
     name: "[DPP] Doubles",
@@ -71,6 +75,7 @@ export const formatInfo: Record<FormatId, FormatInfo> = {
     mods: {endlessBattle: true},
     generation: 4,
     doubles: true,
+    beta: true,
   },
   g3_standard: {
     name: "[ADV] Standard Battle",

@@ -327,6 +327,12 @@ const enterMMCallback = (team?: PokemonDesc[], err?: MMError, problems?: TeamPro
       description: "User is offline or does not exist.",
       icon: "material-symbols:error-circle-rounded-outline-sharp",
     });
+  } else if (err === "bad_format") {
+    return toast.add({
+      title: "Matchmaking failed!",
+      description: "Invalid format.",
+      icon: "material-symbols:error-circle-rounded-outline-sharp",
+    });
   } else if (!problems) {
     return toast.add({
       title: "Matchmaking failed for an unknown reason.",

@@ -33,7 +33,13 @@ export type Battler = {name: string; id: string; admin?: bool};
 export type Challenge = {from: Battler; format: FormatId};
 
 export type RoomDescriptor = {id: string; battlers: Battler[]; format: FormatId; finished: bool};
-export type MMError = "must_login" | "invalid_team" | "too_many" | "maintenance" | "bad_user";
+export type MMError =
+  | "must_login"
+  | "invalid_team"
+  | "too_many"
+  | "maintenance"
+  | "bad_user"
+  | "bad_format";
 
 export type MoveChoice = {
   type: "move";
@@ -421,6 +427,10 @@ export class GameServer extends Server<ClientMessage, ServerMessage> {
       const account = socket.account;
       if (!account) {
         return ack("must_login");
+      }
+
+      if (!(format in formatInfo) || (formatInfo[format].beta && !account.admin)) {
+        return ack("bad_format");
       }
 
       if (account.matchmaking) {

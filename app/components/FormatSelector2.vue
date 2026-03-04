@@ -2,8 +2,8 @@
   <div class="flex gap-1 w-full">
     <USelectMenu
       v-model="generation"
-      :options="Object.keys(formats[category])"
-      :disabled="Object.keys(formats[category]).length <= 1"
+      :options="getGenerations()"
+      :disabled="getGenerations().length <= 1"
     />
     <USelectMenu v-model="category" class="w-full" :options="Object.keys(formats)" searchable />
   </div>
@@ -58,6 +58,18 @@ const formats: Record<string, Record<string, FormatId>> = {
   },
 };
 
+const showBetaFormats = ref(false);
+
+const getGenerations = () => {
+  if (showBetaFormats.value) {
+    return Object.keys(formats[category.value]);
+  } else {
+    return Object.keys(formats[category.value]).filter(
+      key => !formatInfo[formats[category.value][key]].beta,
+    );
+  }
+};
+
 const category = useLocalStorage("lastCategory", "Random Battle");
 watchImmediate(category, () => {
   if (!(category.value in formats)) {
@@ -74,5 +86,18 @@ watchImmediate(category, category => {
 
 watchImmediate([category, generation], ([category, generation]) => {
   model.value = formats[category as keyof typeof formats]?.[generation] ?? "g1_randoms";
+});
+
+watchImmediate(useMyId(), async id => {
+  try {
+    if (id) {
+      const user = await $fetch(`/api/users/${id}`);
+      showBetaFormats.value = user.admin;
+      return;
+    }
+  } catch {
+    /* */
+  }
+  showBetaFormats.value = false;
 });
 </script>
