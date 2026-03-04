@@ -698,7 +698,7 @@ export class Battle {
         const damp = this.allActive.find(p => p.v.ability === "damp");
         if (damp && move.damp) {
           this.ability(damp);
-          this.event({type: "cantuse", src: damp.id, move: moveId});
+          return this.event({type: "cantuse", src: user.id, move: moveId});
         }
 
         if (user.v.trapping && targets[0].v.trapped) {
