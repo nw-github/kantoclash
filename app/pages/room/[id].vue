@@ -184,6 +184,7 @@ const processMessage = (message: InfoMessage) => {
         name: message.name,
         isSpectator: message.isSpectator,
         nPokemon: message.nPokemon,
+        admin: message.admin,
         nFainted: 0,
         connected: true,
         active: [],
@@ -220,7 +221,7 @@ const onJoinRoom = (resp: JoinRoomResponse | "bad_room") => {
   }
 
   const fmt = formatInfo[resp.format];
-  for (const {id, name, nPokemon} of resp.battlers) {
+  for (const {id, name, nPokemon, admin} of resp.battlers) {
     const player = players.value.get(id);
     if (player) {
       continue;
@@ -228,6 +229,7 @@ const onJoinRoom = (resp: JoinRoomResponse | "bad_room") => {
 
     players.value.add(id, {
       name,
+      admin,
       isSpectator: false,
       connected: false,
       nPokemon,

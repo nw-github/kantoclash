@@ -4,7 +4,7 @@
       v-if="chat.type === 'chat' && !mutedPlayers.includes(chat.id)"
       class="text-wrap break-words break-all"
     >
-      <b>{{ players.get(chat.id)?.name ?? "???" }}</b
+      <b :class="player?.admin && 'text-amber-200'">{{ player?.name ?? "???" }}</b
       >:
       {{
         censorEnabled
@@ -16,16 +16,17 @@
       v-else-if="chat.type === 'userJoin' && !mutedPlayers.includes(chat.id)"
       class="text-sm text-gray-600 dark:text-gray-400"
     >
-      <b>{{ players.get(chat.id)?.name ?? "???" }}</b> joined the room.
+      <b :class="player?.admin && 'text-amber-200'">{{ player?.name ?? "???" }}</b> joined the room.
     </span>
     <span
       v-else-if="chat.type === 'userLeave' && !mutedPlayers.includes(chat.id)"
       class="text-sm text-gray-600 dark:text-gray-400"
     >
-      <b>{{ players.get(chat.id)?.name ?? "???" }}</b> left the room.
+      <b :class="player?.admin && 'text-amber-200'">{{ player?.name ?? "???" }}</b> left the room.
     </span>
     <span v-else-if="chat.type === 'timerStart'">
-      The timer was started by <b>{{ players.get(chat.id)?.name ?? "???" }}</b
+      The timer was started by
+      <b :class="player?.admin && 'text-amber-200'">{{ player?.name ?? "???" }}</b
       >.
     </span>
   </p>
@@ -35,11 +36,12 @@
 import {TextCensor} from "obscenity";
 import type {InfoMessage} from "~~/server/utils/info";
 
-defineProps<{chat: InfoMessage; players: Players}>();
+const {chat, players} = defineProps<{chat: InfoMessage; players: Players}>();
 
 const mutedPlayers = useMutedPlayerIds();
 const censorEnabled = useChatCensorEnabled();
 
 const censor = new TextCensor();
+const player = computed(() => players.get(chat.id));
 censor.setStrategy(ctx => "*".repeat(ctx.matchLength));
 </script>

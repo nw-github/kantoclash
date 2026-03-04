@@ -65,6 +65,7 @@ onMounted(() => {
       active: Array(formatInfo[battleParams.format].doubles ? 2 : 1).fill(undefined),
       teamDesc: player.team,
       team: [],
+      admin: false,
     });
   }
 

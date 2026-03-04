@@ -26,6 +26,7 @@ export type ClientPlayer = {
   name: string;
   isSpectator: bool;
   connected: bool;
+  admin: bool | undefined;
 
   team: Pokemon[];
   teamDesc: ValidatedPokemonDesc[];

@@ -6,6 +6,7 @@ type InfoUserJoin = {
   name: string;
   isSpectator: bool;
   nPokemon: number;
+  admin: bool | undefined;
 };
 
 type InfoUserLeave = {type: "userLeave"; id: string};

@@ -21,14 +21,14 @@ export type JoinRoomResponse = {
   format: FormatId;
   timer?: BattleTimer;
   finished: bool;
-  battlers: {id: string; name: string; nPokemon: number}[];
+  battlers: {id: string; name: string; admin?: bool; nPokemon: number}[];
 };
 
 export type BattleTimer = {startedAt: number; duration: number};
 
 export type ChoiceError = "invalid_choice" | "bad_room" | "not_in_battle" | "too_late" | "finished";
 
-export type Battler = {name: string; id: string};
+export type Battler = {name: string; id: string; admin?: bool};
 
 export type Challenge = {from: Battler; format: FormatId};
 
@@ -288,6 +288,7 @@ class Room {
         type: "userJoin",
         id: socket.account.id,
         name: socket.account.name,
+        admin: socket.account.admin,
         isSpectator: !player,
         nPokemon: player?.team.length ?? 0,
       });
@@ -834,7 +835,7 @@ export class GameServer extends Server<ClientMessage, ServerMessage> {
   getBattlers(room: Room) {
     return room.battle.players.map(pl => {
       const acc = this.accounts.get(pl.id)!;
-      return {name: acc.name, id: acc.id, nPokemon: pl.teamDesc.length};
+      return {name: acc.name, id: acc.id, admin: acc.admin, nPokemon: pl.teamDesc.length};
     });
   }
 
