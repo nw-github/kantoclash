@@ -24,13 +24,15 @@ export type BotParams = {
   opponent: string;
   gen: Generation;
   mgr: ClientManager;
+  debugMode: bool;
+  sendChatMessage: (msg: string) => void;
 };
 
 export type BotFunction = (params: BotParams) => Choice[];
 
 type S = Socket<ServerMessage, ClientMessage>;
 
-let nBots = 0;
+const usedNames: string[] = [];
 
 export const activeBots: string[] = [];
 
@@ -68,7 +70,7 @@ export async function startBot(format?: FormatId, botFunction: BotFunction = ran
         }
 
         console.log(`[${name}] found a match for '${resp.format}': ${roomId}`);
-        playGame(roomId, resp, botFunction, () => {
+        playGame(roomId, resp, () => {
           console.log(`[${name}] finished game ${roomId} (${resp.format})`);
           $conn.emit("leaveRoom", roomId, () => {});
 
@@ -108,10 +110,21 @@ export async function startBot(format?: FormatId, botFunction: BotFunction = ran
     findMatch();
   });
 
+  function generateName() {
+    const regex = botFunction === rankBot ? /[a-mA-M]/ : /[n-zN-Z]/;
+    return random.choice(
+      namedTrainers
+        .split("\n")
+        .map(n => n.trim())
+        .filter(n => n && !usedNames.includes(n) && (n as string)[0].match(regex)),
+    )!;
+  }
+
   async function login() {
-    let attempts = 3;
+    let attempts = 4;
     while (attempts--) {
-      const name = "BOT " + ++nBots;
+      const name = attempts > 1 ? generateName() : "BOT " + (usedNames.length + 1);
+
       await $fetch("/api/_auth/session", {method: "DELETE"}).catch(() => {});
       let resp;
       try {
@@ -134,6 +147,7 @@ export async function startBot(format?: FormatId, botFunction: BotFunction = ran
       const cookie = resp.headers.getSetCookie().at(-1)!.split(";")[0];
       const {user} = await $fetch("/api/_auth/session", {method: "GET", headers: {cookie}});
       if (user) {
+        usedNames.push(name);
         return {cookie, myId: user.id, name};
       }
 
@@ -157,7 +171,6 @@ export async function startBot(format?: FormatId, botFunction: BotFunction = ran
   function playGame(
     room: string,
     {team: teamDesc, options, chats, events, battlers, format}: JoinRoomResponse,
-    ai: BotFunction,
     gameOver: () => void,
   ) {
     const players = new Players();
@@ -173,18 +186,32 @@ export async function startBot(format?: FormatId, botFunction: BotFunction = ran
     });
     let eventNo = 0;
     let opponent = "";
+    let debugMode = false;
+
+    const sendChatMessage = (msg: string) => {
+      return $conn.emit("chat", room, msg, () => {});
+    };
 
     const makeDecision = (options: Options[], tries = 3) => {
       if (tries === 0) {
         console.error(`[${name}] Couldn't make a valid move after 3 tries, abandoning ${room}.`);
-        $conn.emit("chat", room, "I couldn't figure out a move and must forfeit!", () => {});
+        sendChatMessage("I couldn't figure out a move and must forfeit!");
         $conn.emit("choose", room, eventNo, {type: "forfeit"}, () => {});
 
         gameOver();
         return;
       }
 
-      const choices = ai({options, players, me: myId, opponent, gen, mgr});
+      const choices = botFunction({
+        options,
+        players,
+        me: myId,
+        opponent,
+        gen,
+        mgr,
+        debugMode,
+        sendChatMessage,
+      });
       for (const choice of choices) {
         $conn.emit("choose", room, eventNo, choice, err => {
           if (err) {
@@ -273,11 +300,12 @@ export async function startBot(format?: FormatId, botFunction: BotFunction = ran
             }
           };
 
-          $conn.emit("chat", room, `${a.species.name} @ ${a.item}`, () => {});
-          $conn.emit("chat", room, `- ${a.moves.map(name).join("/")}`, () => {});
+          sendChatMessage(`${a.species.name} @ ${a.item}`);
+          sendChatMessage(`- ${a.moves.map(name).join("/")}`);
         };
 
         if (message.id !== myId && message.type === "chat" && message.message.startsWith("/dox")) {
+          sendChatMessage("AI Mode: " + (botFunction === rankBot ? "Rank" : "Random"));
           if (message.message.includes("team")) {
             players.get(myId).team.forEach(dox);
           } else {
@@ -287,6 +315,11 @@ export async function startBot(format?: FormatId, botFunction: BotFunction = ran
               }
             }
           }
+        }
+
+        if (message.type === "chat" && message.message.startsWith("/debug")) {
+          debugMode = !debugMode;
+          sendChatMessage("Debug mode " + (debugMode ? "enabled" : "disabled"));
         }
       },
     };
@@ -362,11 +395,15 @@ export function rankBot(params: BotParams): Choice[] {
   const opponentActive = players.get(opponent).active![0]!;
   const opts = options[0];
 
-  const rank = <T>(arr: T[], getScore: (t: T) => number) => {
-    const result = arr
+  const rank = <T>(arr: T[], getScore: (t: T) => number, name: (t: T) => string) => {
+    const res = arr
       .map((item, i) => ({score: getScore(item), i}))
-      .sort((a, b) => b.score - a.score)
-      .filter((item, _, arr) => item.score >= 0 && item.score === arr[0].score);
+      .sort((a, b) => b.score - a.score);
+    if (params.debugMode) {
+      params.sendChatMessage(res.map(p => `${name(arr[p.i])}:${p.score}`).join(", "));
+    }
+
+    const result = res.filter((item, _, arr) => item.score >= 0 && item.score === arr[0].score);
     return result.length ? random.choice(result)! : {score: -1, i: -1};
   };
 
@@ -427,23 +464,27 @@ export function rankBot(params: BotParams): Choice[] {
   };
 
   try {
-    const {score, i: bestMove} = rank(opts.moves, rankMove);
+    const {score, i: bestMove} = rank(opts.moves, rankMove, m => m.move);
     const target = opts.moves[bestMove]?.targets?.[0];
     if ((bestMove !== -1 && score > 5) || !opts.switches.length) {
       return [{type: "move", moveIndex: bestMove, who: 0, target}] as const;
     }
 
-    const {i: bestSwitch} = rank(opts.switches, index => {
-      const poke = selfP.team[index];
-      if (poke.hp === 0) {
-        return -1;
-      } else if (!opponentActive || opponentActive.base.hp === 0) {
-        return 10;
-      } else if (poke.status === "frz" || poke.status === "slp") {
-        return 0;
-      }
-      return Math.max(...poke.moves.map(move => rankMove({move, valid: true})));
-    });
+    const {i: bestSwitch} = rank(
+      opts.switches,
+      index => {
+        const poke = selfP.team[index];
+        if (poke.hp === 0) {
+          return -1;
+        } else if (!opponentActive || opponentActive.base.hp === 0) {
+          return 10;
+        } else if (poke.status === "frz" || poke.status === "slp") {
+          return 0;
+        }
+        return Math.max(...poke.moves.map(move => rankMove({move, valid: true})));
+      },
+      index => selfP.team[index].name,
+    );
     if (bestSwitch === -1) {
       return [{type: "move", moveIndex: bestMove, who: 0, target}] as const;
     }
@@ -2075,4 +2116,160 @@ Adamant Nature
  - Silver Wind
  - Hidden Power [Rock]
  - Agility
+`;
+
+const namedTrainers = `
+Alder
+Benga
+Bianca
+Blaine
+Blue
+Brawly
+Brock
+Brycen-Man
+Brycen
+Bugsy
+Burgh
+Byron
+Caitlin
+Candice
+Cheren
+Chili
+Chuck
+Cilan
+Clair
+Clay
+Colress
+Crasher_Wake
+Cress
+Cynthia
+Drayden
+Elesa
+Emmet
+Erika
+Falkner
+Fantina
+Flannery
+Gardenia
+Ghetsis
+Giovanni
+Grimsley
+Hilbert
+Hilbert_2
+Hilda
+Hilda_2
+Hugh
+Ingo
+Iris
+Janine
+Jasmine
+Juan
+Lenora
+Liza
+Lt_Surge
+Marlon
+Marshal
+Maylene
+Misty
+Morty
+N
+Nate
+Nate_2
+Norman
+Pryce
+Red
+Roark
+Rood
+Rosa
+Rosa_2
+Roxanne
+Roxie
+Sabrina
+Shauntal
+Skyla
+Steven
+Tate
+Volkner
+Wallace
+Wattson
+Whitney
+Winona
+Zinzolin
+`;
+
+const _trainerClasses = `
+Ace_Trainer_F
+Ace_Trainer_M
+Artist
+Backers_F
+Backers_M
+Backpacker_F
+Backpacker_M
+Baker
+Battle_Girl
+Beauty
+Biker
+Black_Belt
+Clerk_F
+Clerk_M
+Clerk_M_B
+Cyclist_F
+Cyclist_M
+Dancer
+Depot_Agent
+Doctor
+Fisherman
+Gentleman
+Guitarist
+Harlequin
+Hiker
+Hooligans
+Hoopster
+Infielder
+Janitor
+Lady
+Lance
+Lass
+Linebacker
+Maid
+Mecha_Cop
+Musician
+Nurse
+Nursery_Aide
+Parasol_Lady
+Pilot
+Plasma_Grunt_F
+Plasma_Grunt_M
+Pokéfan_F
+Pokéfan_M
+Pokémon_Breeder_F
+Pokémon_Breeder_M
+Pokémon_Ranger_F
+Pokémon_Ranger_M
+Policeman
+Preschooler_F
+Preschooler_M
+Psychic_F
+Psychic_M
+Rich_Boy
+Roughneck
+School_Kid_F
+School_Kid_M
+Scientist_F
+Scientist_M
+Shadow_Triad
+Smasher
+Socialite
+Striker
+Swimmer_F
+Swimmer_M
+Twins
+Veteran_F
+Veteran_M
+Waiter
+Waitress
+Weird_Light
+Worker
+WorkerIce
+Youngster
 `;
