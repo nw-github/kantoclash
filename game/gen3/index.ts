@@ -415,7 +415,11 @@ const createGeneration = (): Generation => {
               poke.recover(Math.max(1, idiv(poke.base.stats.hp, 16)), poke, battle, "ingrain");
             }
 
-            if (battle.hasWeather("rain") && poke.v.ability === "raindish") {
+            if (
+              battle.hasWeather("rain") &&
+              poke.v.ability === "raindish" &&
+              !poke.base.isMaxHp()
+            ) {
               battle.ability(poke);
               poke.recover(Math.max(1, idiv(poke.base.stats.hp, 16)), poke, battle, "none");
             }

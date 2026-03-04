@@ -222,10 +222,7 @@ export function getDamage(
       !endured &&
       target.base.item === "focusband" &&
       battle.gen.rng.tryFocusBand(battle)) ||
-    (deadly &&
-      !endured &&
-      target.base.hp === target.base.stats.hp &&
-      target.base.item === "focussash");
+    (deadly && !endured && target.base.isMaxHp() && target.base.item === "focussash");
 
   if (endured || band) {
     dmg = Math.max(target.base.hp - 1, 0);

@@ -146,8 +146,9 @@ const createGeneration = (): Generation => {
         }
 
         if (
-          (weather === "rain" && poke.v.ability === "raindish") ||
-          (weather === "hail" && poke.v.ability === "icebody")
+          !poke.base.isMaxHp() &&
+          ((weather === "rain" && poke.v.ability === "raindish") ||
+            (weather === "hail" && poke.v.ability === "icebody"))
         ) {
           battle.ability(poke);
           poke.recover(Math.max(1, idiv(poke.base.stats.hp, 16)), poke, battle, "none");

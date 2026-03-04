@@ -249,6 +249,10 @@ export class Pokemon {
     return this.hp <= Math.floor(this.stats.hp / amt);
   }
 
+  isMaxHp() {
+    return this.stats.hp === this.hp;
+  }
+
   get hpPercent() {
     return (this.hp / this.stats.hp) * 100;
   }

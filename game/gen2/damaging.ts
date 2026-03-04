@@ -80,7 +80,7 @@ export const tryDamage = (
   if (self.flag === "present") {
     const result = randChoiceWeighted(battle.rng, [40, 80, 120, -4], [40, 30, 10, 20]);
     if (result < 0) {
-      if (target.base.hp === target.base.stats.hp) {
+      if (target.base.isMaxHp()) {
         battle.info(target, "fail_present");
         return 0;
       }
