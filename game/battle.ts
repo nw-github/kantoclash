@@ -13,6 +13,7 @@ import {
   getEffectiveness,
   playerId,
   VF,
+  debugLog,
   type Type,
   type Weather,
   type ScreenId,
@@ -229,7 +230,7 @@ export class Battle {
 
   getSpe(poke: ActivePokemon) {
     if (poke.base.item === "quickclaw" && this.gen.rng.tryQuickClaw(this)) {
-      console.log("proc quick claw: ", poke.base.name);
+      debugLog("proc quick claw: ", poke.base.name);
       return 65535;
     }
     return this.gen.getStat(this, poke, "spe");
@@ -350,7 +351,7 @@ export class Battle {
 
       if (move === this.gen.moveList.pursuit) {
         if (target?.choice?.move?.kind === "switch" && target.owner !== user.owner) {
-          console.log(user.base.name + " is pursuing ", target.base.name);
+          debugLog(user.base.name + " is pursuing ", target.base.name);
           this.turnOrder.splice(this.turnOrder.indexOf(target), 0, ...this.turnOrder.splice(i, 1));
           user.v.inPursuit = true;
         }

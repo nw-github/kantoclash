@@ -2,7 +2,7 @@ import {shouldReturn, type Generation, GENERATION1} from "../gen1";
 import {GENERATION2, merge, type GenPatches} from "../gen2";
 import {applyItemStatBoost, Nature, natureTable} from "../pokemon";
 import {abilityList, type Species, type SpeciesId} from "../species";
-import {clamp, idiv, MC, screens, VF} from "../utils";
+import {clamp, dmgFlags, debugLog, idiv, MC, screens, VF} from "../utils";
 import {moveFunctionPatches, movePatches} from "./moves";
 import speciesPatches from "./species.json";
 import items from "./items.json";
@@ -223,7 +223,7 @@ const createGeneration = (): Generation => {
         acc = Math.floor((acc * 4) / 5);
       }
 
-      // console.log(`[${user.base.name}] ${move.name} (Acc ${acc}/255)`);
+      // debugLog(`[${user.base.name}] ${move.name} (Acc ${acc}/255)`);
       if (!battle.rand100(acc)) {
         battle.miss(user, target);
         return false;
@@ -350,12 +350,10 @@ const createGeneration = (): Generation => {
       // out of battle speeed?
       const turnOrder = battle.turnOrder;
 
-      if (import.meta.dev) {
-        console.log(
-          `\nbetweenTurns(${BetweenTurns[battle.betweenTurns]}):`,
-          battle.turnOrder.map(t => t.base.name),
-        );
-      }
+      debugLog(
+        `\nbetweenTurns(${BetweenTurns[battle.betweenTurns]}):`,
+        battle.turnOrder.map(t => t.base.name),
+      );
 
       // Screens Wish & Weather
       if (battle.betweenTurns < BetweenTurns.Weather) {
@@ -632,22 +630,23 @@ const createGeneration = (): Generation => {
       dmg = Math.max(1, idiv(dmg * r, 100));
 
       if (import.meta.dev) {
-        let extra = "";
-        const c = (n: string, b?: bool) => b && (extra += n + " ");
-        c("crit", isCrit);
-        c("stab", hasStab);
-        c("ff", flashFire);
-        c("double", doubleDmg);
-        c("hh", helpingHand);
-        c("screen", screen);
-        c("spread", spread);
-        c(`item:${itemBonus}`, (itemBonus || 1) > 1);
-        c(`weather:${weather}`, !!weather);
-        c(`TK:${tripleKick}`, (tripleKick || 1) > 1);
-        c(`MM:${moveMod}`, (moveMod || 1) > 1);
-        c(`SP:${stockpile}`, (stockpile || 1) > 1);
-        console.log(`flag: ${extra}`);
-        console.log("vars:", {dmg, lvl, pow, atk, def, eff, r});
+        debugLog(
+          `flag: ${dmgFlags({
+            crit: isCrit,
+            stab: hasStab,
+            ff: flashFire,
+            double: doubleDmg,
+            hh: helpingHand,
+            screen: screen,
+            spread: spread,
+            [`item:${itemBonus}`]: (itemBonus || 1) > 1,
+            [`weather:${weather}`]: !!weather,
+            [`TK:${tripleKick}`]: (tripleKick || 1) > 1,
+            [`MM:${moveMod}`]: (moveMod || 1) > 1,
+            [`SP:${stockpile}`]: (stockpile || 1) > 1,
+          })}`,
+        );
+        debugLog("vars:", {dmg, lvl, pow, atk, def, eff, r});
       }
       return dmg;
     },

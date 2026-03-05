@@ -152,6 +152,17 @@ export const randChoiceWeighted = <T>(rng: Random, arr: readonly T[], weights: n
 
 export const playerId = (poke: PokeId): PlayerId => poke.split(":")[0];
 
+export const debugLog = import.meta.dev ? console.debug : (..._args: any[]) => {};
+
+export const dmgFlags = (flags: Record<string, any>) => {
+  let extra = "";
+  const c = (n: string, b?: bool) => b && (extra += n + " ");
+  for (const k in flags) {
+    c(k, flags[k]);
+  }
+  return extra;
+};
+
 // from ts-reset
 type WidenLiteral<T> = T extends string
   ? string

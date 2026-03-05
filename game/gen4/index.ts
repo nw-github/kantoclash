@@ -5,7 +5,7 @@ import {abilityList, type Species, type SpeciesId} from "../species";
 import {merge, type GenPatches} from "../gen2";
 import {moveFunctionPatches, movePatches} from "./moves";
 import {GENERATION3, createItemMergeList} from "../gen3";
-import {idiv, MC, screens, VF} from "../utils";
+import {dmgFlags, debugLog, idiv, MC, screens, VF} from "../utils";
 import {TurnType} from "../battle";
 import {tryDamage} from "./damaging";
 import {Range} from "../moves";
@@ -344,23 +344,24 @@ const createGeneration = (): Generation => {
       dmg = Math.max(1, idiv(dmg * r, 100));
 
       if (import.meta.dev) {
-        let extra = "";
-        const c = (n: string, b?: bool) => b && (extra += n + " ");
-        c("crit", isCrit);
-        c("stab", hasStab);
-        c("ff", flashFire);
-        c("double", doubleDmg);
-        c("hh", helpingHand);
-        c("screen", screen);
-        c("spread", spread);
-        c(`tech`, technician);
-        c(`item:${itemBonus}`, (itemBonus || 1) > 1);
-        c(`weather:${weather}`, !!weather);
-        c(`TK:${tripleKick}`, (tripleKick || 1) > 1);
-        c(`MM:${moveMod}`, (moveMod || 1) > 1);
-        c(`SP:${stockpile}`, (stockpile || 1) > 1);
-        console.log(`flag: ${extra}`);
-        console.log("vars:", {dmg, lvl, pow, atk, def, eff, r});
+        debugLog(
+          `flag: ${dmgFlags({
+            crit: isCrit,
+            stab: hasStab,
+            ff: flashFire,
+            double: doubleDmg,
+            hh: helpingHand,
+            screen: screen,
+            spread: spread,
+            tech: technician,
+            [`item:${itemBonus}`]: (itemBonus || 1) > 1,
+            [`weather:${weather}`]: !!weather,
+            [`TK:${tripleKick}`]: (tripleKick || 1) > 1,
+            [`MM:${moveMod}`]: (moveMod || 1) > 1,
+            [`SP:${stockpile}`]: (stockpile || 1) > 1,
+          })}`,
+        );
+        debugLog("vars:", {dmg, lvl, pow, atk, def, eff, r});
       }
       return dmg;
     },

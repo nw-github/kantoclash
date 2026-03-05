@@ -14,6 +14,8 @@ import {
   type Type,
   randChoiceWeighted,
   MC,
+  debugLog,
+  dmgFlags,
 } from "../utils";
 import {itemList, type ItemId} from "../item";
 import {UNOWN_FORM, type FormId, type Gender, type Nature} from "../pokemon";
@@ -204,6 +206,11 @@ const calcDamage = ({lvl, pow, atk, def, eff, isCrit, hasStab, rand}: CalcDamage
   let r = typeof rand === "number" ? rand : 255;
   if (rand && typeof rand !== "number" && dmg > 1) {
     r = rand.int(217, 255);
+  }
+
+  if (import.meta.dev) {
+    debugLog(`flag: ${dmgFlags({crit: isCrit, stab: hasStab})}`);
+    debugLog("vars:", {dmg, lvl, pow, atk, def, eff, r});
   }
   return idiv(dmg * r, 255);
 };

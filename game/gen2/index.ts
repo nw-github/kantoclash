@@ -1,7 +1,7 @@
 import {createDefu} from "defu";
 import {GENERATION1, scaleAccuracy255, type CalcDamageParams, type Generation} from "../gen1";
 import type {Species, SpeciesId} from "../species";
-import {floatTo255, idiv, imul, VF} from "../utils";
+import {debugLog, dmgFlags, floatTo255, idiv, imul, VF} from "../utils";
 import {moveFunctionPatches, movePatches} from "./moves";
 import __speciesPatches from "./species.json";
 import type {ActivePokemon, Battle} from "../battle";
@@ -79,7 +79,20 @@ const calcDamage = ({
     r = rand.int(217, 255);
   }
 
-  // console.log({item, crit, tk, stab, w, double, r, moveMod: moveMod ?? 1});
+  if (import.meta.dev) {
+    debugLog(
+      `flag: ${dmgFlags({
+        crit: isCrit,
+        stab: hasStab,
+        double: doubleDmg,
+        [`item:${itemBonus}`]: (itemBonus || 1) > 1,
+        [`weather:${weather}`]: !!weather,
+        [`TK:${tripleKick}`]: (tripleKick || 1) > 1,
+        [`MM:${moveMod}`]: (moveMod || 1) > 1,
+      })}`,
+    );
+    debugLog("vars:", {dmg, lvl, pow, atk, def, eff, r});
+  }
   return idiv(dmg * r, 255) * double;
 };
 
@@ -258,7 +271,7 @@ const createGeneration = (): Generation => {
         acc -= 20;
       }
 
-      // console.log(`[${user.base.name}] ${move.name} (Acc ${acc}/255)`);
+      debugLog(`[${user.base.name}] ${move.name} (Acc ${acc}/255)`);
       if (!battle.rand255Good(acc)) {
         battle.miss(user, target);
         return false;

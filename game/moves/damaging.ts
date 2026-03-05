@@ -1,7 +1,7 @@
 import type {Random} from "random";
 import type {CalcDamageParams} from "../gen";
 import {abilityList} from "../species";
-import {clamp, VF} from "../utils";
+import {clamp, debugLog, VF} from "../utils";
 import type {DamagingMove} from ".";
 import type {ActivePokemon, Battle} from "../battle";
 import type {Pokemon} from "../pokemon";
@@ -184,9 +184,7 @@ export function getDamage(
     }
 
     const itemBonus = user.base.item && battle.gen.items[user.base.item]?.typeBoost;
-    if (import.meta.dev) {
-      console.log(`\n\x1b[0;32m${user.base.name}\x1b[0m => \x1b[0;31m${target.base.name}\x1b[0m`);
-    }
+    debugLog(`\n\x1b[0;32m${user.base.name}\x1b[0m => \x1b[0;31m${target.base.name}\x1b[0m`);
     dmg = battle.gen.calcDamage({
       lvl: extras.beatUp ? extras.beatUp.level : user.base.level,
       pow,
