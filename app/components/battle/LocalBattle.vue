@@ -113,7 +113,7 @@ const chosen = (choice: Choice) => {
   const player = engine.findPlayer(myId.value)!;
   if (player.hasChosen()) {
     if (engine.players.every(p => p.hasChosen())) {
-      const turn = noLog(() => engine.nextTurn());
+      const turn = engine.nextTurn();
       if (turn) {
         events.value.push(...turn);
       }
@@ -152,7 +152,7 @@ const init = (turnNo: number) => {
       }
     }
 
-    const turn = noLog(() => engine.nextTurn());
+    const turn = engine.nextTurn();
     if (turn) {
       events.value.push(...turn);
     }
@@ -180,14 +180,4 @@ const init = (turnNo: number) => {
     }
   });
 };
-
-function noLog<T>(func: (...args: any[]) => T) {
-  const old = console.log;
-  console.log = () => {};
-  try {
-    return func();
-  } finally {
-    console.log = old;
-  }
-}
 </script>
