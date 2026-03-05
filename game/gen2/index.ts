@@ -1,7 +1,7 @@
 import {createDefu} from "defu";
 import {GENERATION1, scaleAccuracy255, type CalcDamageParams, type Generation} from "../gen1";
 import type {Species, SpeciesId} from "../species";
-import {debugLog, dmgFlags, floatTo255, idiv, imul, VF} from "../utils";
+import {clamp, debugLog, dmgFlags, floatTo255, idiv, imul, VF} from "../utils";
 import {moveFunctionPatches, movePatches} from "./moves";
 import __speciesPatches from "./species.json";
 import type {ActivePokemon, Battle} from "../battle";
@@ -316,14 +316,17 @@ const createGeneration = (): Generation => {
       // crit ignores brn in gen 2
       if (isCrit) {
         value = poke.base.stats[stat];
-      } else if (screen) {
+      }
+
+      value = clamp(value, 1, 999);
+      if (!isCrit && screen) {
         value *= 2;
       }
 
       value = poke.applyAbilityStatBoost(battle, stat, value);
       value = applyItemStatBoost(poke.base, stat, value);
 
-      // Screens & the species boosting moves all fail to cap the stat at 999, meaning they will
+      // Screens & the species boosting items all fail to cap the stat at 999, meaning they will
       // cause it to wrap around if the base stat is >= 512
       value %= 1024;
       return value;
