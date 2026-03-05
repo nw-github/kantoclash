@@ -113,7 +113,7 @@ export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
       battle.info(
         user,
         "haze",
-        targets.map(user => ({id: user.id, v: {stages: null, stats: user.clientStats(battle)}})),
+        targets.map(t => ({id: t.id, v: {stages: null, stats: t.clientStats(battle)}})),
       );
     },
   },

@@ -774,7 +774,7 @@ const internalMoveList = createMoveList({
       battle.info(
         user,
         "haze",
-        targets.map(t => ({id: user.id, v: t.getClientVolatiles(user.base, battle)})),
+        targets.map(t => ({id: t.id, v: t.getClientVolatiles(user.base, battle)})),
       );
       return false;
     },
