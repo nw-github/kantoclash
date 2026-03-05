@@ -194,10 +194,10 @@ export const moveFunctions: MoveFunctions = {
       if (user.v.lastHitBy && !user.v.lastHitBy.poke.v.fainted) {
         targets = [user.v.lastHitBy.poke];
       } else {
-        targets = battle.getTargets(user, Range.AdjacentFoe).slice(0, 1);
-        if (!targets.length) {
-          return battle.info(user, "fail_notarget");
-        }
+        // Counter/Mirror Coat/Bide will not retarget into another slot, but in a Gen 3 double
+        // battle they can still hit a pokemon that didn't target it if the original pokemon dies
+        // and is replaced by a teammate.
+        return battle.info(user, "fail_notarget");
       }
     }
 
