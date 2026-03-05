@@ -1,6 +1,11 @@
 <template>
   <TouchPopover>
-    <UButton :icon="formatInfo[format].icon" color="gray" variant="ghost" />
+    <div class="relative">
+      <UButton :icon="formatInfo[format].icon" color="gray" variant="ghost" />
+      <div class="absolute -bottom-0.5 right-1 text-xs font-medium text-gray-400">
+        {{ formatInfo[format].generation }}
+      </div>
+    </div>
     <template #panel>
       <div class="flex flex-col gap-2 p-1 max-w-96">
         <h1 class="text-xl">{{ formatInfo[format].name }}</h1>
