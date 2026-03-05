@@ -5,6 +5,7 @@
         <div class="flex items-center gap-1 w-full justify-start">
           <BoxSprite :species-id="poke.speciesId" :form="poke.form" />
           <span class="truncate">{{ poke.name }}</span>
+          <GenderIcon class="size-4" :gender="gen1Gender[poke.speciesId] ?? poke.gender" />
           <StatusOrFaint :poke size="xs" class="ml-auto" />
         </div>
         <UProgress :max="poke.stats.hp" :value="poke.hp" :color="colorForHp" class="w-full h-1" />
