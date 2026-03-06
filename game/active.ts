@@ -1204,6 +1204,13 @@ export class ActivePokemon {
     };
   }
 
+  manipulateItem(cb: (_: Pokemon) => void) {
+    cb(this.base);
+    if (!this.base.gen.items[this.base.item!]?.choice) {
+      this.v.choiceLock = undefined;
+    }
+  }
+
   private getValidTargets(battle: Battle, move: Move) {
     // TODO: retarget if dead && hyper beam
     if (this.v.encore) {

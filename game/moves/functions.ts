@@ -402,8 +402,8 @@ export const moveFunctions: MoveFunctions = {
     }
 
     const userItem = user.base.item;
-    user.base.item = target.base.item;
-    target.base.item = userItem;
+    user.manipulateItem(poke => (poke.item = target.base.item));
+    target.manipulateItem(poke => (poke.item = userItem));
     battle.event({
       type: "trick",
       src: user.id,

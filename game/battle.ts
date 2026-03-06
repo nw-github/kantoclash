@@ -674,6 +674,21 @@ export class Battle {
     moveIndex?: number,
     quiet?: bool,
   ) {
+    const result = this.doUseMove(move, user, targets, moveIndex, quiet);
+    // TODO: does choice band lock you in if your move was disabled?
+    if (moveIndex !== undefined && this.gen.items[user.base.item!]?.choice) {
+      user.v.choiceLock = moveIndex;
+    }
+    return result;
+  }
+
+  doUseMove(
+    move: Move,
+    user: ActivePokemon,
+    targets: ActivePokemon[],
+    moveIndex?: number,
+    quiet?: bool,
+  ) {
     if (move.kind !== "switch") {
       targets = targets.filter(t => !t.v.fainted);
       const availableTargets = this.getTargets(user, move.range);
@@ -735,11 +750,6 @@ export class Battle {
         }
       } else {
         this.sv([user.clearFlag(VF.charge)]);
-      }
-
-      // TODO: does choice band lock you in if your move was disabled?
-      if (moveIndex !== undefined && this.gen.items[user.base.item!]?.choice) {
-        user.v.choiceLock = moveIndex;
       }
 
       if (moveId === user.base.moves[user.v.disabled?.indexInMoves ?? -1]) {

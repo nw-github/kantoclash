@@ -292,8 +292,8 @@ export const tryDamage = (
       target: target.id,
       item: target.base.item,
     });
-    user.base.item = target.base.item;
-    target.base.item = undefined;
+    user.manipulateItem(poke => (poke.item = target.base.item));
+    target.manipulateItem(poke => (poke.item = undefined));
   } else if (effect === "knockoff") {
     if (target.base.item) {
       battle.event({
@@ -302,7 +302,7 @@ export const tryDamage = (
         target: target.id,
         item: target.base.item,
       });
-      target.base.itemUnusable = true;
+      target.manipulateItem(poke => (poke.itemUnusable = true));
     }
   } else {
     if (target.owner.screens.safeguard || target.base.status) {
