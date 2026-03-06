@@ -75,7 +75,7 @@ const minSpe = computed(() =>
     poke.base.level,
     {spe: 0},
     {spe: 0},
-    Nature.rash,
+    Nature.quiet,
   ),
 );
 const maxSpe = computed(() =>

@@ -87,8 +87,8 @@ export const natureTable: Record<Nature, Partial<Record<keyof StageStats, number
 
   [Nature.modest]: {spa: 1.1, atk: 0.9},
   [Nature.mild]: {spa: 1.1, def: 0.9},
-  [Nature.quiet]: {spa: 1.1, spd: 0.9},
-  [Nature.rash]: {spa: 1.1, spe: 0.9},
+  [Nature.rash]: {spa: 1.1, spd: 0.9},
+  [Nature.quiet]: {spa: 1.1, spe: 0.9},
 
   [Nature.calm]: {spd: 1.1, atk: 0.9},
   [Nature.gentle]: {spd: 1.1, def: 0.9},
