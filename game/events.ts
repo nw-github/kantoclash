@@ -181,7 +181,14 @@ export type HitSubstituteEvent = {
   eff?: number;
 };
 
-type UseMoveEvent = {type: "move"; src: PokeId; move: MoveId; disabled?: true; thrashing?: true};
+type UseMoveEvent = {
+  type: "move";
+  src: PokeId;
+  move: MoveId;
+  disabled?: true;
+  thrashing?: true;
+  called?: bool;
+};
 
 export type VictoryEvent = {
   type: "end";
@@ -216,7 +223,8 @@ export type FailReason =
   | "mist_protect"
   | "safeguard_protect"
   | "splash"
-  | "whirlwind";
+  | "whirlwind"
+  | "fail_unimplemented";
 
 export type BugType = "bug_gen2_bellydrum" | "bug_gen2_spikes";
 

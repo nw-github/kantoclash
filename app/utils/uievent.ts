@@ -66,6 +66,7 @@ export const infoMessage: Record<InfoReason, string> = {
   cant_substitute: "{} doesn't have enough HP to create a substitute!",
   has_substitute: "{} already has a substitute!",
   fail_generic: "But it failed!",
+  fail_unimplemented: "But it failed! (Unimplemented move)",
   fail_notarget: "But there was no target...",
   fail_sleep_clause: "But it failed!",
   whirlwind: "But it failed!",

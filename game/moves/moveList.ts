@@ -4574,7 +4574,7 @@ const internalMoveList = createMoveList({
     pp: 1,
     type: "normal",
     range: Range.Self,
-    why: "fail_generic",
+    why: "fail_unimplemented",
   },
   airslash: {
     kind: "damage",
@@ -4607,7 +4607,7 @@ const internalMoveList = createMoveList({
     pp: 1,
     type: "normal",
     range: Range.Self,
-    why: "fail_generic",
+    why: "fail_unimplemented",
   },
   aquatail: {
     kind: "damage",
@@ -4742,7 +4742,7 @@ const internalMoveList = createMoveList({
     pp: 1,
     type: "normal",
     range: Range.Self,
-    why: "fail_generic",
+    why: "fail_unimplemented",
   },
   chargebeam: {
     kind: "damage",
@@ -4762,7 +4762,7 @@ const internalMoveList = createMoveList({
     pp: 1,
     type: "normal",
     range: Range.Self,
-    why: "fail_generic",
+    why: "fail_unimplemented",
     noMimic: true,
   },
   closecombat: {
@@ -4785,7 +4785,7 @@ const internalMoveList = createMoveList({
     pp: 1,
     type: "normal",
     range: Range.Self,
-    why: "fail_generic",
+    why: "fail_unimplemented",
   },
   crosspoison: {
     kind: "damage",
@@ -4852,7 +4852,7 @@ const internalMoveList = createMoveList({
     pp: 1,
     type: "normal",
     range: Range.Adjacent,
-    why: "fail_generic",
+    why: "fail_unimplemented",
   },
   discharge: {
     kind: "damage",
@@ -4946,7 +4946,7 @@ const internalMoveList = createMoveList({
     pp: 1,
     type: "normal",
     range: Range.Adjacent,
-    why: "fail_generic",
+    why: "fail_unimplemented",
   },
   energyball: {
     kind: "damage",
@@ -4966,7 +4966,7 @@ const internalMoveList = createMoveList({
     pp: 1,
     type: "normal",
     range: Range.Adjacent,
-    why: "fail_generic",
+    why: "fail_unimplemented",
   },
   firefang: {
     kind: "damage",
@@ -5016,7 +5016,7 @@ const internalMoveList = createMoveList({
     pp: 1,
     type: "normal",
     range: Range.Adjacent,
-    why: "fail_generic",
+    why: "fail_unimplemented",
   },
   focusblast: {
     kind: "damage",
@@ -5049,7 +5049,7 @@ const internalMoveList = createMoveList({
     pp: 1,
     type: "normal",
     range: Range.Adjacent,
-    why: "fail_generic",
+    why: "fail_unimplemented",
   },
   gigaimpact: {
     kind: "damage",
@@ -5083,7 +5083,7 @@ const internalMoveList = createMoveList({
     pp: 1,
     type: "normal",
     range: Range.Adjacent,
-    why: "fail_generic",
+    why: "fail_unimplemented",
   },
   guardswap: {
     kind: "fail",
@@ -5091,7 +5091,7 @@ const internalMoveList = createMoveList({
     pp: 1,
     type: "normal",
     range: Range.Adjacent,
-    why: "fail_generic",
+    why: "fail_unimplemented",
   },
   gunkshot: {
     kind: "damage",
@@ -5111,7 +5111,7 @@ const internalMoveList = createMoveList({
     pp: 1,
     type: "normal",
     range: Range.Adjacent,
-    why: "fail_generic",
+    why: "fail_unimplemented",
   },
   hammerarm: {
     kind: "damage",
@@ -5145,7 +5145,7 @@ const internalMoveList = createMoveList({
     pp: 1,
     type: "normal",
     range: Range.Adjacent,
-    why: "fail_generic",
+    why: "fail_unimplemented",
   },
   healorder: {
     kind: "recover",
@@ -5162,7 +5162,7 @@ const internalMoveList = createMoveList({
     pp: 1,
     type: "normal",
     range: Range.Adjacent,
-    why: "fail_generic",
+    why: "fail_unimplemented",
   },
   heartswap: {
     kind: "fail",
@@ -5170,7 +5170,7 @@ const internalMoveList = createMoveList({
     pp: 1,
     type: "normal",
     range: Range.Adjacent,
-    why: "fail_generic",
+    why: "fail_unimplemented",
   },
   icefang: {
     kind: "damage",
@@ -5232,7 +5232,7 @@ const internalMoveList = createMoveList({
     pp: 1,
     type: "normal",
     range: Range.Adjacent,
-    why: "fail_generic",
+    why: "fail_unimplemented",
   },
   lavaplume: {
     kind: "damage",
@@ -5272,7 +5272,7 @@ const internalMoveList = createMoveList({
     pp: 1,
     type: "normal",
     range: Range.Adjacent,
-    why: "fail_generic",
+    why: "fail_unimplemented",
   },
   magmastorm: {
     kind: "damage",
@@ -5302,7 +5302,7 @@ const internalMoveList = createMoveList({
     pp: 1,
     type: "normal",
     range: Range.Adjacent,
-    why: "fail_generic",
+    why: "fail_unimplemented",
   },
   mefirst: {
     kind: "fail",
@@ -5310,7 +5310,7 @@ const internalMoveList = createMoveList({
     pp: 1,
     type: "normal",
     range: Range.Adjacent,
-    why: "fail_generic",
+    why: "fail_unimplemented",
   },
   metalburst: {
     kind: "fail",
@@ -5318,7 +5318,7 @@ const internalMoveList = createMoveList({
     pp: 1,
     type: "normal",
     range: Range.Adjacent,
-    why: "fail_generic",
+    why: "fail_unimplemented",
   },
   miracleeye: {
     kind: "foresight",
@@ -5368,7 +5368,7 @@ const internalMoveList = createMoveList({
     pp: 1,
     type: "normal",
     range: Range.Adjacent,
-    why: "fail_generic",
+    why: "fail_unimplemented",
   },
   nightslash: {
     kind: "damage",
@@ -5402,7 +5402,7 @@ const internalMoveList = createMoveList({
     pp: 1,
     type: "normal",
     range: Range.Adjacent,
-    why: "fail_generic",
+    why: "fail_unimplemented",
   },
   pluck: {
     kind: "damage",
@@ -5447,7 +5447,7 @@ const internalMoveList = createMoveList({
     pp: 1,
     type: "normal",
     range: Range.Adjacent,
-    why: "fail_generic",
+    why: "fail_unimplemented",
   },
   powertrick: {
     kind: "fail",
@@ -5455,7 +5455,7 @@ const internalMoveList = createMoveList({
     pp: 1,
     type: "normal",
     range: Range.Adjacent,
-    why: "fail_generic",
+    why: "fail_unimplemented",
   },
   powerwhip: {
     kind: "damage",
@@ -5487,7 +5487,7 @@ const internalMoveList = createMoveList({
     pp: 1,
     type: "normal",
     range: Range.Adjacent,
-    why: "fail_generic",
+    why: "fail_unimplemented",
   },
   punishment: {
     kind: "fail",
@@ -5495,7 +5495,7 @@ const internalMoveList = createMoveList({
     pp: 1,
     type: "normal",
     range: Range.Adjacent,
-    why: "fail_generic",
+    why: "fail_unimplemented",
   },
   roaroftime: {
     kind: "damage",
@@ -5549,7 +5549,7 @@ const internalMoveList = createMoveList({
     pp: 1,
     type: "normal",
     range: Range.Adjacent,
-    why: "fail_generic",
+    why: "fail_unimplemented",
   },
   seedbomb: {
     kind: "damage",
@@ -5593,7 +5593,7 @@ const internalMoveList = createMoveList({
     pp: 1,
     type: "normal",
     range: Range.Adjacent,
-    why: "fail_generic",
+    why: "fail_unimplemented",
   },
   shadowsneak: {
     kind: "damage",
@@ -5655,7 +5655,7 @@ const internalMoveList = createMoveList({
     contact: true,
     checkSuccess(battle, user, [target]) {
       if (target?.choice?.move?.kind !== "damage" || target?.choice?.executed) {
-        battle.info(user, "fail_generic");
+        battle.info(user, "fail_unimplemented");
         return false;
       }
       return true;
@@ -5707,7 +5707,7 @@ const internalMoveList = createMoveList({
     pp: 1,
     type: "normal",
     range: Range.Adjacent,
-    why: "fail_generic",
+    why: "fail_unimplemented",
   },
   trumpcard: {
     kind: "fail",
@@ -5715,7 +5715,7 @@ const internalMoveList = createMoveList({
     pp: 1,
     type: "normal",
     range: Range.Adjacent,
-    why: "fail_generic",
+    why: "fail_unimplemented",
   },
   uturn: {
     kind: "damage",
@@ -5748,7 +5748,7 @@ const internalMoveList = createMoveList({
     pp: 1,
     type: "normal",
     range: Range.Adjacent,
-    why: "fail_generic",
+    why: "fail_unimplemented",
   },
   woodhammer: {
     kind: "damage",
@@ -5769,7 +5769,7 @@ const internalMoveList = createMoveList({
     pp: 1,
     type: "normal",
     range: Range.Adjacent,
-    why: "fail_generic",
+    why: "fail_unimplemented",
   },
   wringout: {
     kind: "fail",
@@ -5777,7 +5777,7 @@ const internalMoveList = createMoveList({
     pp: 1,
     type: "normal",
     range: Range.Adjacent,
-    why: "fail_generic",
+    why: "fail_unimplemented",
   },
   xscissor: {
     kind: "damage",
