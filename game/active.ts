@@ -220,7 +220,11 @@ export class ActivePokemon {
     return this.owner.team.some(p => p.hp && !this.owner.active.some(a => a.base.real === p));
   }
 
-  faint(battle: Battle) {
+  faintIfNeeded(battle: Battle) {
+    if (this.base.hp || this.v.fainted) {
+      return false;
+    }
+
     this.v.fainted = true;
     this.v.clearFlag(VF.protect | VF.mist | VF.lightScreen | VF.reflect);
     battle.info(
@@ -233,6 +237,10 @@ export class ActivePokemon {
     );
 
     this.freeOpponents(battle);
+    if (!battle.victor && this.owner.areAllDead()) {
+      battle.victor = battle.opponentOf(this.owner);
+    }
+    return true;
   }
 
   freeOpponents(battle: Battle) {

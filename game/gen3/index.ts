@@ -317,8 +317,7 @@ const createGeneration = (): Generation => {
     afterBeforeUseMove: (battle, user) => battle.checkFaint(user) && shouldReturn(battle, false),
     afterUseMove(battle, user, isReplacement) {
       if (isReplacement) {
-        if (user.base.hp === 0 && !user.v.fainted) {
-          user.faint(battle);
+        if (user.faintIfNeeded(battle)) {
           return true;
         }
         user.handleBerry(battle, {status: true});

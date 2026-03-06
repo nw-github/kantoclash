@@ -33,8 +33,7 @@ const createGeneration = (): Generation => {
     },
     afterUseMove(battle, user, isReplacement) {
       if (isReplacement) {
-        if (!user.base.hp && !user.v.fainted) {
-          user.faint(battle);
+        if (user.faintIfNeeded(battle)) {
           return true;
         }
         user.handleBerry(battle, {pp: true, pinch: true, status: true});

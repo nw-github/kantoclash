@@ -223,7 +223,8 @@ export class Battle {
     return this._turn;
   }
 
-  private set victor(value: Player) {
+  /** Should only be set by ActivePokemon::faintIfNeeded */
+  set victor(value: Player) {
     this._victor = value;
     this.finished = true;
   }
@@ -883,21 +884,13 @@ export class Battle {
     const targets = this.opponentOf(user.owner).active;
     let fainted = false;
     for (const poke of targets) {
-      if (poke.base.hp === 0 && !poke.v.fainted) {
-        poke.faint(this);
-        if (!this.victor && poke.owner.areAllDead()) {
-          this.victor = user.owner;
-        }
+      if (poke.faintIfNeeded(this)) {
         fainted = true;
       }
     }
 
     for (const poke of user.owner.active) {
-      if (poke.base.hp === 0 && !poke.v.fainted) {
-        poke.faint(this);
-        if (!this.victor && poke.owner.areAllDead()) {
-          this.victor = this.opponentOf(poke.owner);
-        }
+      if (poke.faintIfNeeded(this)) {
         fainted = true;
       }
     }
