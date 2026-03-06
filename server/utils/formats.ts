@@ -30,7 +30,7 @@ const badMoves = new Set<MoveId>(["struggle", "focusenergy", "payday", "absorb",
 
 const uselessNfe = new Set<SpeciesId>(["weedle", "metapod", "kakuna", "magikarp", "caterpie"]);
 
-const getRandomPokemon = (
+export const getRandomPokemon = (
   gen: Generation,
   count: number,
   validSpecies: (s: Species, id: SpeciesId) => bool,
@@ -182,48 +182,55 @@ const isBadMove = (s: Species, move: Move, id: MoveId) => {
   return badMoves.has(id) || move.kind === "fail";
 };
 
+export const defaultCustomize = (
+  gen: Generation,
+  level: number,
+  s: Species,
+  speciesId: SpeciesId,
+) => {
+  let valid = s.moves;
+  if (valid.includes("sketch")) {
+    valid = Object.keys(gen.moveList).filter(id => isValidSketchMove(gen, id)) as MoveId[];
+  }
+
+  const moves = getRandomMoves(4, valid, (move, id) => !isBadMove(s, move, id));
+  const stab = s.moves.filter(m => {
+    const move = moveList[m];
+    return (
+      (move.power ?? 0) > 40 &&
+      s.types.includes(move.type) &&
+      !moves.includes(m) &&
+      !isBadMove(s, move, m)
+    );
+  });
+  if (stab.length) {
+    moves[0] = random.choice(stab)!;
+  }
+  if (speciesId === "arceus" && !moves.includes("judgement")) {
+    moves[0] = "judgment";
+  }
+
+  let ivs: Partial<Stats> = {};
+  if (moves.includes("hiddenpower")) {
+    if (gen.id <= 2) {
+      ivs.atk = 0b1100 | Math.floor(Math.random() * 4);
+      ivs.def = 0b1100 | Math.floor(Math.random() * 4);
+    } else {
+      ivs = {...HP_IVS[random.choice(HP_TYPES)!]!};
+    }
+  }
+
+  let nature: Nature | undefined;
+  let ability: AbilityId | undefined;
+  return {speciesId, level, moves, ivs, evs: {}, nature, ability};
+};
+
 export const randoms = (
   gen: Generation,
   validSpecies: (s: Species, id: SpeciesId) => bool,
   level = 100,
 ) => {
-  return getRandomPokemon(gen, 6, validSpecies, (s, speciesId) => {
-    let valid = s.moves;
-    if (valid.includes("sketch")) {
-      valid = Object.keys(gen.moveList).filter(id => isValidSketchMove(gen, id)) as MoveId[];
-    }
-
-    const moves = getRandomMoves(4, valid, (move, id) => !isBadMove(s, move, id));
-    const stab = s.moves.filter(m => {
-      const move = moveList[m];
-      return (
-        (move.power ?? 0) > 40 &&
-        s.types.includes(move.type) &&
-        !moves.includes(m) &&
-        !isBadMove(s, move, m)
-      );
-    });
-    if (stab.length) {
-      moves[0] = random.choice(stab)!;
-    }
-    if (speciesId === "arceus" && !moves.includes("judgment")) {
-      moves[0] = "judgment";
-    }
-
-    let ivs: Partial<Stats> = {};
-    if (moves.includes("hiddenpower")) {
-      if (gen.id <= 2) {
-        ivs.atk = 0b1100 | Math.floor(Math.random() * 4);
-        ivs.def = 0b1100 | Math.floor(Math.random() * 4);
-      } else {
-        ivs = {...HP_IVS[random.choice(HP_TYPES)!]!};
-      }
-    }
-
-    let nature: Nature | undefined;
-    let ability: AbilityId | undefined;
-    return {speciesId, level, moves, ivs, evs: {}, nature, ability};
-  });
+  return getRandomPokemon(gen, 6, validSpecies, (s, id) => defaultCustomize(gen, level, s, id));
 };
 
 const createValidator = (gen: Generation) => {

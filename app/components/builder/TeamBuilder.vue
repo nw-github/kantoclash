@@ -108,6 +108,14 @@
 
           <div class="flex items-center">
             <TooltipButton
+              text="Add Random Pokemon"
+              icon="mdi:dice-6-outline"
+              variant="ghost"
+              color="gray"
+              :disabled="team.pokemon.length >= 6"
+              @click="newRandom"
+            />
+            <TooltipButton
               text="Add Pokemon"
               icon="material-symbols:add-2"
               variant="ghost"
@@ -152,20 +160,27 @@
                   />
                 </div>
 
-                <div>
-                  <TooltipButton
-                    text="Shiny"
-                    :icon="
-                      gen.getShiny(selectedPoke.data.shiny, ivsToDvs(selectedPoke.data))
-                        ? 'ion:sparkles'
-                        : 'ion:sparkles-outline'
-                    "
-                    variant="ghost"
-                    color="gray"
-                    :disabled="gen.id <= 2"
-                    @click="selectedPoke.data.shiny = !selectedPoke.data.shiny"
-                  />
-                </div>
+                <TooltipButton
+                  text="Shiny"
+                  :icon="
+                    gen.getShiny(selectedPoke.data.shiny, ivsToDvs(selectedPoke.data))
+                      ? 'ion:sparkles'
+                      : 'ion:sparkles-outline'
+                  "
+                  variant="ghost"
+                  color="gray"
+                  :disabled="gen.id <= 2"
+                  @click="selectedPoke.data.shiny = !selectedPoke.data.shiny"
+                />
+
+                <TooltipButton
+                  text="Randomize Set"
+                  icon="mdi:dice-3-outline"
+                  variant="ghost"
+                  color="gray"
+                  :disabled="!selectedPoke?.species"
+                  @click="randomizeCurrent(true)"
+                />
               </div>
 
               <SpeciesSelector
@@ -391,6 +406,7 @@ import type {Stats, StatId} from "~~/game/utils";
 import {GENERATIONS} from "~~/game/gen";
 import {Nature, natureTable, type FormId} from "~~/game/pokemon";
 import type {ItemId} from "~~/game/item";
+import {defaultCustomize, getRandomPokemon} from "~~/server/utils/formats";
 
 defineEmits<{(e: "delete" | "close"): void}>();
 
@@ -622,6 +638,35 @@ const addPokemon = async () => {
   const length = team.pokemon.push(parsePokemon(team.format, ""));
   await nextTick();
   selectedPokeIdx.value = length - 1;
+};
+
+const newRandom = async () => {
+  await addPokemon();
+  randomizeCurrent(false);
+};
+
+const randomizeCurrent = (keepSpecies: bool) => {
+  const current = selectedPoke.value.data;
+  const [pokemon] = getRandomPokemon(
+    gen.value,
+    1,
+    (_, id) => !keepSpecies || id === current.speciesId,
+    (s, id) => defaultCustomize(gen.value, 100, s, id),
+  );
+
+  current.evs = pokemon.evs ?? {};
+  current.ivs = pokemon.ivs ?? {};
+  current.level = pokemon.level;
+  current.name = pokemon.name;
+  current.speciesId = pokemon.speciesId;
+  current.moves = pokemon.moves.map(move => gen.value.moveList[move].name);
+  current.friendship = pokemon.friendship;
+  current.item = pokemon.item && gen.value.items[pokemon.item].name;
+  current.shiny = pokemon.shiny;
+  current.gender = pokemon.gender;
+  current.nature = pokemon.nature;
+  current.ability = pokemon.ability && abilityList[pokemon.ability].name;
+  current.form = pokemon.form;
 };
 
 const teamTextChange = () => {
