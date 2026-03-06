@@ -271,6 +271,10 @@ export class Battle {
   }
 
   forfeit(player: Player, timer: bool) {
+    if (this.finished) {
+      return [];
+    }
+
     this.victor = this.opponentOf(player);
     this.event({type: "forfeit", user: player.id, timer});
     this.event({type: "end", victor: this.victor.id});
@@ -328,7 +332,7 @@ export class Battle {
   }
 
   nextTurn() {
-    if (!this.allActive.every(poke => !poke.options || poke.choice)) {
+    if (!this.allActive.every(poke => !poke.options || poke.choice) || this.finished) {
       return;
     }
 
@@ -691,6 +695,7 @@ export class Battle {
     quiet?: bool,
   ) {
     if (move.kind !== "switch") {
+      const originalTargets = targets;
       targets = targets.filter(t => !t.v.fainted);
       const availableTargets = this.getTargets(user, move.range);
 
@@ -733,7 +738,7 @@ export class Battle {
           }
 
           if (move.charge !== "sun" || !this.hasWeather("sun")) {
-            user.v.charging = {move: move, target: targets[0]};
+            user.v.charging = {move: move, target: originalTargets[0]};
             user.v.invuln = move.charge === "invuln" || user.v.invuln;
             this.sv([user.clearFlag(VF.charge)]);
             return;
