@@ -4569,12 +4569,23 @@ const internalMoveList = createMoveList({
   },
   // >== GENERATION 4
   acupressure: {
-    kind: "fail",
     name: "Acupressure",
-    pp: 1,
+    pp: 30,
     type: "normal",
-    range: Range.Self,
-    why: "fail_unimplemented",
+    range: Range.SelfOrAdjacentAlly,
+    snatch: true,
+    exec(battle, user, [target]) {
+      if (target.v.substitute) {
+        return battle.info(user, "fail_generic");
+      }
+
+      const key = battle.rng.choice(stageKeys.filter(key => target.v.stages[key] !== 6));
+      if (!key) {
+        return battle.info(user, "fail_generic");
+      }
+
+      target.modStages([[key, +2]], battle, user);
+    },
   },
   airslash: {
     kind: "damage",

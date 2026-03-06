@@ -804,17 +804,18 @@ export class Battle {
       user.v.lastMove = move;
 
       if (move.snatch) {
-        for (const poke of this.turnOrder) {
-          if (!poke.v.fainted && poke.v.hasFlag(VF.snatch)) {
+        for (const snatcher of this.turnOrder) {
+          if (!snatcher.v.fainted && snatcher.v.hasFlag(VF.snatch)) {
             this.event({
               type: "snatch",
-              src: poke.id,
+              src: snatcher.id,
               target: user.id,
-              volatiles: [poke.clearFlag(VF.snatch)],
+              volatiles: [snatcher.clearFlag(VF.snatch)],
             });
-            // psych up targets the pokémon snatch was stolen from, even if its another snatch user
-            user = poke;
-            targets = move.range === Range.Adjacent ? [user] : [poke];
+            // psych up targets the pokémon snatch stole from, even if its another snatch user
+            // a snatched acupressure (only possible in gen 4) always targets the snatcher
+            targets = move.range === Range.Adjacent ? [user] : [snatcher];
+            user = snatcher;
             moveIndex = undefined;
           }
         }
