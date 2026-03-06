@@ -678,8 +678,9 @@ export class Battle {
     targets: ActivePokemon[],
     moveIndex?: number,
     quiet?: bool,
+    called?: bool,
   ) {
-    const result = this.doUseMove(move, user, targets, moveIndex, quiet);
+    const result = this.doUseMove(move, user, targets, moveIndex, quiet, called);
     // TODO: does choice band lock you in if your move was disabled?
     if (moveIndex !== undefined && this.gen.items[user.base.item!]?.choice) {
       user.v.choiceLock = moveIndex;
@@ -693,6 +694,7 @@ export class Battle {
     targets: ActivePokemon[],
     moveIndex?: number,
     quiet?: bool,
+    called?: bool,
   ) {
     if (move.kind !== "switch") {
       const originalTargets = targets;
@@ -796,6 +798,7 @@ export class Battle {
           move: moveId,
           src: user.id,
           thrashing: user.v.thrashing && this.gen.id === 1 ? true : undefined,
+          called,
         });
       }
       user.v.lastMove = move;
@@ -855,7 +858,7 @@ export class Battle {
           ? this.getTargets(leftmost, move.range)
           : [user];
         this.event({type: "bounce", src: leftmost.id, move: moveId});
-        this.useMove(move, leftmost, newTargets, undefined, true);
+        this.useMove(move, leftmost, newTargets, undefined, true, true);
         return;
       }
     }
@@ -873,13 +876,13 @@ export class Battle {
     if (!isSpreadMove(move.range) && targets.length) {
       targets = [this.rng.choice(targets)!];
     }
-    return this.useMove(move, user, targets, moveIndex);
+    return this.useMove(move, user, targets, moveIndex, false, true);
   }
 
   tryMagicBounce(move: Move, user: ActivePokemon, target: ActivePokemon) {
     if (target.v.hasFlag(VF.magicCoat) && move.magicCoat) {
       this.event({type: "bounce", src: target.id, move: this.moveIdOf(move)!});
-      this.useMove(move, target, [user], undefined, true);
+      this.useMove(move, target, [user], undefined, true, true);
       return true;
     }
     return false;

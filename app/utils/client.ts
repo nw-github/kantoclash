@@ -363,7 +363,7 @@ export class ClientManager {
       // TODO: set ability
     } else if (e.type === "move") {
       const src = players.poke(e.src)!;
-      if (!src.owned) {
+      if (!src.owned && !e.called) {
         const idx = src.base.moves.findIndex(id => id === e.move);
         // TODO: pressure, ignore 'called' moves (from assist, metronome, etc)
         const ppcost = e.disabled || e.thrashing ? 0 : 1;
