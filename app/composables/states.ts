@@ -20,7 +20,9 @@ export const useMyTeams = () => {
   return teams;
 };
 
-export const allMusicTracks = Object.keys(import.meta.glob("~~/public/music/**/*.{mp3,wav,ogg,opus}"));
+export const allMusicTracks = Object.keys(
+  import.meta.glob("~~/public/music/**/*.{mp3,wav,ogg,opus}"),
+);
 
 export const femaleIds = new Set(
   Object.keys(import.meta.glob("~~/public/sprites/battle/female/*.gif")).map(spr =>
@@ -28,13 +30,13 @@ export const femaleIds = new Set(
   ),
 );
 
-export const useSfxVolume = () => useLocalStorage("sfxVolume", 0.4);
+export const useSfxVolume = () => useLocalStorage("sfxVolume", 0.2);
 
 const fadeOutRequested = ref(false);
 
 export const useBGMusic = () => {
   return {
-    volume: useLocalStorage("musicVolume", 0.4),
+    volume: useLocalStorage("musicVolume", 0.2),
     track: useState<string | undefined>("currentTrack", () => undefined),
     fadeOutRequested,
     fadeOut: () => void (fadeOutRequested.value = true),
