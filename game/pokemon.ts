@@ -44,7 +44,9 @@ export type CherrimForm = "sunshine" | "overcast";
 export type ArceusForm = Exclude<Type, "???">;
 export type FormId = UnownForm | CastformForm | CherrimForm | ArceusForm;
 
-export type ValidatedPokemonDesc = PokemonDesc<SpeciesId, MoveId, ItemId, AbilityId, FormId>;
+export type ValidatedPokemonDesc = PokemonDesc<SpeciesId, MoveId, ItemId, AbilityId, FormId> & {
+  level: number;
+};
 
 export enum Nature {
   hardy,
@@ -192,7 +194,7 @@ export class Pokemon {
       speciesId,
       ivs: rawIvs,
       evs,
-      level: lvl,
+      level,
       moves,
       name,
       friendship,
@@ -205,7 +207,6 @@ export class Pokemon {
     }: ValidatedPokemonDesc,
   ) {
     const species = gen.speciesList[speciesId];
-    const level = lvl ?? 100;
     const ivs = {
       hp: gen.getHpIv(rawIvs),
       atk: rawIvs?.atk ?? gen.maxIv,

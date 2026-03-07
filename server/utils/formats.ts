@@ -227,13 +227,13 @@ export const defaultCustomize = (
 
 export const randoms = (
   gen: Generation,
+  level: number,
   validSpecies: (s: Species, id: SpeciesId) => bool,
-  level = 100,
 ) => {
   return getRandomPokemon(gen, 6, validSpecies, (s, id) => defaultCustomize(gen, level, s, id));
 };
 
-const createValidator = (gen: Generation) => {
+const createValidator = (gen: Generation, maxLevel: number, nfe = false) => {
   return z
     .object({
       name: z
@@ -242,14 +242,26 @@ const createValidator = (gen: Generation) => {
         .max(24, "Name must be at most 24 characters")
         .refine(text => !profanityMatcher.hasMatch(text), "Name must not contain obscenities")
         .optional(),
-      level: z.number().min(1).max(100).optional(),
-      speciesId: z
-        .string()
-        .refine(id => id in gen.speciesList, "Species is invalid")
-        .refine(
-          id => gen.validSpecies(gen.speciesList[id as SpeciesId]),
-          "Species does not exist in this generation",
-        ),
+      level: z.number().min(1).max(maxLevel).default(maxLevel),
+      speciesId: nfe
+        ? z
+            .string()
+            .refine(id => id in gen.speciesList, "Species is invalid")
+            .refine(
+              id => gen.validSpecies(gen.speciesList[id as SpeciesId]),
+              "Species does not exist in this generation",
+            )
+            .refine(
+              id => !gen.speciesList[id as SpeciesId].evolvesTo,
+              "Species cannot be used in NFE format (it does not evolve)",
+            )
+        : z
+            .string()
+            .refine(id => id in gen.speciesList, "Species is invalid")
+            .refine(
+              id => gen.validSpecies(gen.speciesList[id as SpeciesId]),
+              "Species does not exist in this generation",
+            ),
       moves: z
         .string()
         .refine(m => m in gen.moveList, "Move does not exist")
@@ -314,10 +326,15 @@ const createValidator = (gen: Generation) => {
     );
 };
 
-const VALIDATOR_GEN1 = createValidator(GENERATION1);
-const VALIDATOR_GEN2 = createValidator(GENERATION2);
-const VALIDATOR_GEN3 = createValidator(GENERATION3);
-const VALIDATOR_GEN4 = createValidator(GENERATION4);
+const VALIDATOR_GEN1 = createValidator(GENERATION1, 100);
+const VALIDATOR_GEN2 = createValidator(GENERATION2, 100);
+const VALIDATOR_GEN3 = createValidator(GENERATION3, 100);
+const VALIDATOR_GEN4 = createValidator(GENERATION4, 100);
+
+const VALIDATOR_GEN3_DBLS = createValidator(GENERATION3, 50);
+const VALIDATOR_GEN4_DBLS = createValidator(GENERATION4, 50);
+
+const VALIDATOR_GEN1_NFE = createValidator(GENERATION1, 5, true);
 
 const validateTeam = (
   validator: typeof VALIDATOR_GEN1,
@@ -345,36 +362,28 @@ const validateTeam = (
 
 export const formatDescs: Record<FormatId, FormatFunctions> = {
   g4_standard: {validate: team => validateTeam(VALIDATOR_GEN4, team)},
-  g4_doubles: {validate: team => validateTeam(VALIDATOR_GEN4, team)},
+  g4_doubles: {validate: team => validateTeam(VALIDATOR_GEN4_DBLS, team)},
   g3_standard: {validate: team => validateTeam(VALIDATOR_GEN3, team)},
-  g3_doubles: {validate: team => validateTeam(VALIDATOR_GEN3, team)},
+  g3_doubles: {validate: team => validateTeam(VALIDATOR_GEN3_DBLS, team)},
   g2_standard: {validate: team => validateTeam(VALIDATOR_GEN2, team)},
   g1_standard: {validate: team => validateTeam(VALIDATOR_GEN1, team)},
-  g1_nfe: {
-    validate(team) {
-      return validateTeam(VALIDATOR_GEN1, team, (poke, addProblem) => {
-        const species = GENERATION1.speciesList[poke.speciesId];
-        if (!species.evolvesTo) {
-          addProblem(`'${species.name}' cannot be used in NFE format (it does not evolve)`);
-        }
-      });
-    },
-  },
+
+  g1_nfe: {validate: team => validateTeam(VALIDATOR_GEN1_NFE, team)},
 
   g4_randoms: {
-    generate: () => randoms(GENERATION4, (s, _) => !s.evolvesTo),
+    generate: () => randoms(GENERATION4, 100, (s, _) => !s.evolvesTo),
   },
   g4_randoms_doubles: {
-    generate: () => randoms(GENERATION4, (s, _) => !s.evolvesTo),
+    generate: () => randoms(GENERATION4, 50, (s, _) => !s.evolvesTo),
   },
   g3_randoms: {
-    generate: () => randoms(GENERATION3, (s, _) => !s.evolvesTo),
+    generate: () => randoms(GENERATION3, 100, (s, _) => !s.evolvesTo),
   },
   g3_randoms_doubles: {
-    generate: () => randoms(GENERATION3, s => !s.evolvesTo),
+    generate: () => randoms(GENERATION3, 50, s => !s.evolvesTo),
   },
   g2_randoms: {
-    generate: () => randoms(GENERATION2, (s, id) => !s.evolvesTo && id !== "mewtwo"),
+    generate: () => randoms(GENERATION2, 100, (s, id) => !s.evolvesTo && id !== "mewtwo"),
   },
   g1_truly_randoms: {
     generate() {
@@ -384,6 +393,7 @@ export const formatDescs: Record<FormatId, FormatFunctions> = {
         s => !s.evolvesTo,
         (s, speciesId) => ({
           speciesId,
+          level: 100,
           moves: getRandomMoves(
             4,
             Object.keys(moveList) as MoveId[],
@@ -395,12 +405,12 @@ export const formatDescs: Record<FormatId, FormatFunctions> = {
   },
   g1_randoms: {
     generate() {
-      return randoms(GENERATION1, (s, id) => !s.evolvesTo && id !== "mewtwo");
+      return randoms(GENERATION1, 100, (s, id) => !s.evolvesTo && id !== "mewtwo");
     },
   },
   g1_randoms_nfe: {
     generate() {
-      return randoms(GENERATION1, (s, id) => !!s.evolvesTo && !uselessNfe.has(id));
+      return randoms(GENERATION1, 5, (s, id) => !!s.evolvesTo && !uselessNfe.has(id));
     },
   },
 
@@ -410,7 +420,7 @@ export const formatDescs: Record<FormatId, FormatFunctions> = {
         GENERATION1,
         6,
         s => !s.evolvesTo,
-        (_, speciesId) => ({speciesId, moves: ["metronome"]}),
+        (_, speciesId) => ({speciesId, moves: ["metronome"], level: 100}),
       );
     },
   },
@@ -420,7 +430,7 @@ export const formatDescs: Record<FormatId, FormatFunctions> = {
         GENERATION2,
         6,
         s => !s.evolvesTo,
-        (_, speciesId) => ({speciesId, moves: ["metronome"]}),
+        (_, speciesId) => ({speciesId, moves: ["metronome"], level: 100}),
       );
     },
   },
@@ -430,7 +440,7 @@ export const formatDescs: Record<FormatId, FormatFunctions> = {
         GENERATION3,
         6,
         s => !s.evolvesTo,
-        (_, speciesId) => ({speciesId, moves: ["metronome"]}),
+        (_, speciesId) => ({speciesId, moves: ["metronome"], level: 100}),
       );
     },
   },

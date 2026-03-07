@@ -10,6 +10,7 @@ type FormatInfo = {
   mods: Mods;
   chooseLead?: bool;
   generation: number;
+  maxLevel: number;
   doubles?: bool;
   beta?: bool;
 };
@@ -48,6 +49,7 @@ export const formatInfo: Record<FormatId, FormatInfo> = {
     mods: {sleepClause: true, endlessBattle: true},
     generation: 4,
     beta: true,
+    maxLevel: 100,
   },
   g4_randoms: {
     name: "[DPP] Random Battle",
@@ -56,6 +58,7 @@ export const formatInfo: Record<FormatId, FormatInfo> = {
     mods: {sleepClause: true, endlessBattle: true},
     generation: 4,
     beta: true,
+    maxLevel: 100,
   },
   g4_randoms_doubles: {
     name: "[DPP] Random Doubles",
@@ -65,6 +68,7 @@ export const formatInfo: Record<FormatId, FormatInfo> = {
     generation: 4,
     doubles: true,
     beta: true,
+    maxLevel: 50,
   },
   g4_doubles: {
     name: "[DPP] Doubles",
@@ -76,6 +80,7 @@ export const formatInfo: Record<FormatId, FormatInfo> = {
     generation: 4,
     doubles: true,
     beta: true,
+    maxLevel: 50,
   },
   g3_standard: {
     name: "[ADV] Standard Battle",
@@ -85,6 +90,7 @@ export const formatInfo: Record<FormatId, FormatInfo> = {
     chooseLead: true,
     mods: {sleepClause: true, endlessBattle: true},
     generation: 3,
+    maxLevel: 100,
   },
   g3_randoms: {
     name: "[ADV] Random Battle",
@@ -92,6 +98,7 @@ export const formatInfo: Record<FormatId, FormatInfo> = {
     desc: "A standard Pokémon battle, but your team and sets are randomly generated.",
     mods: {sleepClause: true, endlessBattle: true},
     generation: 3,
+    maxLevel: 100,
   },
   g3_randoms_doubles: {
     name: "[ADV] Random Doubles",
@@ -100,6 +107,7 @@ export const formatInfo: Record<FormatId, FormatInfo> = {
     mods: {endlessBattle: true},
     generation: 3,
     doubles: true,
+    maxLevel: 50,
   },
   g3_doubles: {
     name: "[ADV] Doubles",
@@ -110,6 +118,7 @@ export const formatInfo: Record<FormatId, FormatInfo> = {
     mods: {endlessBattle: true},
     generation: 3,
     doubles: true,
+    maxLevel: 50,
   },
   g3_metronome: {
     name: "[ADV] Random Metronome Battle",
@@ -117,6 +126,7 @@ export const formatInfo: Record<FormatId, FormatInfo> = {
     desc: "A random battle where all Pokémon only know the move Metronome.",
     mods: {},
     generation: 3,
+    maxLevel: 100,
   },
   g2_standard: {
     name: "[GSC] Standard Battle",
@@ -126,6 +136,7 @@ export const formatInfo: Record<FormatId, FormatInfo> = {
     chooseLead: true,
     mods: {sleepClause: true, freezeClause: true, endlessBattle: true},
     generation: 2,
+    maxLevel: 100,
   },
   g2_randoms: {
     name: "[GSC] Random Battle",
@@ -133,6 +144,7 @@ export const formatInfo: Record<FormatId, FormatInfo> = {
     desc: "A standard Pokémon battle, but your team and sets are randomly generated.",
     mods: {sleepClause: true, freezeClause: true, endlessBattle: true},
     generation: 2,
+    maxLevel: 100,
   },
   g2_metronome: {
     name: "[GSC] Random Metronome Battle",
@@ -140,6 +152,7 @@ export const formatInfo: Record<FormatId, FormatInfo> = {
     desc: "A random battle where all Pokémon only know the move Metronome.",
     mods: {},
     generation: 2,
+    maxLevel: 100,
   },
   g1_standard: {
     name: "[RBY] Standard Battle",
@@ -149,6 +162,7 @@ export const formatInfo: Record<FormatId, FormatInfo> = {
     chooseLead: true,
     mods: {sleepClause: true, freezeClause: true, endlessBattle: true},
     generation: 1,
+    maxLevel: 100,
   },
   g1_nfe: {
     name: "[RBY] Standard Battle (NFE)",
@@ -158,6 +172,7 @@ export const formatInfo: Record<FormatId, FormatInfo> = {
     chooseLead: true,
     mods: {sleepClause: true, freezeClause: true, endlessBattle: true},
     generation: 1,
+    maxLevel: 5,
   },
   g1_randoms: {
     name: "[RBY] Random Battle",
@@ -165,6 +180,7 @@ export const formatInfo: Record<FormatId, FormatInfo> = {
     desc: "A standard Pokémon battle, but your team and sets are randomly generated.",
     mods: {sleepClause: true, freezeClause: true, endlessBattle: true},
     generation: 1,
+    maxLevel: 100,
   },
   g1_metronome: {
     name: "[RBY] Random Metronome Battle",
@@ -172,6 +188,7 @@ export const formatInfo: Record<FormatId, FormatInfo> = {
     desc: "A random battle where all Pokémon only know the move Metronome.",
     mods: {},
     generation: 1,
+    maxLevel: 100,
   },
   g1_truly_randoms: {
     name: "[RBY] Truly Random Battle",
@@ -179,6 +196,7 @@ export const formatInfo: Record<FormatId, FormatInfo> = {
     desc: "A random battle with no limits on the generated move sets.",
     mods: {sleepClause: true, freezeClause: true, endlessBattle: true},
     generation: 1,
+    maxLevel: 100,
   },
   g1_randoms_nfe: {
     name: "[RBY] Random Battle (NFE)",
@@ -186,6 +204,7 @@ export const formatInfo: Record<FormatId, FormatInfo> = {
     desc: "A random battle where only Pokémon that are not fully evolved are included.",
     mods: {sleepClause: true, freezeClause: true, endlessBattle: true},
     generation: 1,
+    maxLevel: 5,
   },
 };
 

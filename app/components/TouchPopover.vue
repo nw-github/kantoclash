@@ -19,8 +19,6 @@
 </template>
 
 <script setup lang="ts">
-import type {UPopover} from "#components";
-
 const isHovered = ref(false);
 const {delay = 100, disabled} = defineProps<{delay?: number; disabled?: bool}>();
 const open = computed({

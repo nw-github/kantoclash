@@ -141,8 +141,8 @@
         >
           <div class="flex gap-2">
             <div class="flex flex-col relative grow">
-              <div v-if="gen.id >= 2" class="absolute p-1 flex flex-col gap-1 z-10">
-                <div class="relative">
+              <div class="absolute p-1 flex flex-col gap-1 z-10">
+                <div v-if="gen.id >= 2" class="relative">
                   <TooltipButton
                     text="Gender"
                     variant="ghost"
@@ -161,6 +161,7 @@
                 </div>
 
                 <TooltipButton
+                  v-if="gen.id >= 2"
                   text="Shiny"
                   :icon="
                     gen.getShiny(selectedPoke.data.shiny, ivsToDvs(selectedPoke.data))
@@ -213,6 +214,16 @@
               />
             </div>
             <div class="flex flex-col justify-between gap-1">
+              <div class="flex justify-between items-center">
+                <span class="text-sm">Level</span>
+                <NumericInput
+                  v-model="selectedPoke.data.level"
+                  class="w-12"
+                  :placeholder="String(format.maxLevel)"
+                  :min="1"
+                  :max="format.maxLevel"
+                />
+              </div>
               <div v-if="gen.id > 1" class="flex justify-between items-center">
                 <span class="text-sm">Friendship</span>
                 <NumericInput
@@ -221,16 +232,6 @@
                   placeholder="255"
                   :min="0"
                   :max="255"
-                />
-              </div>
-              <div class="flex justify-between items-center">
-                <span class="text-sm">Level</span>
-                <NumericInput
-                  v-model="selectedPoke.data.level"
-                  class="w-12"
-                  placeholder="100"
-                  :min="1"
-                  :max="100"
                 />
               </div>
               <div v-if="gen.id >= 3" class="flex justify-between items-center">
@@ -264,6 +265,7 @@
                 v-model="selectedPoke.data.moves[i]"
                 :poke="selectedPoke.data"
                 :idx="i"
+                :format="team.format"
                 :gen
               />
             </div>
@@ -427,7 +429,8 @@ const items = computed(() => {
 const teamText = ref("");
 const currentPokeText = ref("");
 const selectedPokeIdx = ref(0);
-const gen = computed(() => GENERATIONS[formatInfo[team.format].generation]!);
+const format = computed(() => formatInfo[team.format]);
+const gen = computed(() => GENERATIONS[format.value.generation]!);
 const statKeys = computed(() => getStatKeys(gen.value));
 const selectedPoke = computed(() => ({
   data: team.pokemon[selectedPokeIdx.value],
@@ -596,7 +599,7 @@ const calcPokeStat = (stat: StatId, poke: TeamPokemonDesc) => {
     return gen.value.calcStat(
       stat,
       gen.value.speciesList[poke.speciesId as SpeciesId].stats,
-      poke.level ?? 100,
+      poke.level ?? format.value.maxLevel,
       ivsToDvs(poke),
       {[stat]: evToStatexp(poke.evs[stat])},
     );
@@ -604,7 +607,7 @@ const calcPokeStat = (stat: StatId, poke: TeamPokemonDesc) => {
     return gen.value.calcStat(
       stat,
       gen.value.speciesList[poke.speciesId as SpeciesId].stats,
-      poke.level ?? 100,
+      poke.level ?? format.value.maxLevel,
       poke.ivs,
       poke.evs,
       poke.nature,
@@ -651,12 +654,12 @@ const randomizeCurrent = (keepSpecies: bool) => {
     gen.value,
     1,
     (_, id) => !keepSpecies || id === current.speciesId,
-    (s, id) => defaultCustomize(gen.value, 100, s, id),
+    (s, id) => defaultCustomize(gen.value, format.value.maxLevel, s, id),
   );
 
   current.evs = pokemon.evs ?? {};
   current.ivs = pokemon.ivs ?? {};
-  current.level = pokemon.level;
+  current.level = undefined;
   current.name = pokemon.name;
   current.speciesId = pokemon.speciesId;
   current.moves = pokemon.moves.map(move => gen.value.moveList[move].name);

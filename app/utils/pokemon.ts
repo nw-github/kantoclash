@@ -43,7 +43,7 @@ export const descToString = (format: FormatId, poke: PokemonDesc) => {
     result += `${species?.name ?? poke.name}${gender}${item}\n`;
   }
 
-  if (poke.level !== 100 && poke.level !== undefined) {
+  if (poke.level !== formatInfo[format].maxLevel && poke.level !== undefined) {
     result += `Level: ${poke.level}\n`;
   }
 
@@ -71,7 +71,12 @@ export const descToString = (format: FormatId, poke: PokemonDesc) => {
     const id = normalizeName(move);
     if (id === "hiddenpower") {
       const type = (gen.moveList.hiddenpower as DamagingMove).getType!(
-        Pokemon.fromDescriptor(gen, {speciesId: "abra", ivs: poke.ivs ?? {}, moves: []}),
+        Pokemon.fromDescriptor(gen, {
+          speciesId: "abra",
+          ivs: poke.ivs ?? {},
+          moves: [],
+          level: 100,
+        }),
       );
       result += ` - Hidden Power [${toTitleCase(type)}]\n`;
     } else if ((gen.moveList as Record<string, Move>)[id]) {

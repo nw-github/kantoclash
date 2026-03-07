@@ -14,7 +14,7 @@
         </div>
         <div class="flex items-center">
           <span class="text-[0.65rem] sm:text-xs whitespace-nowrap">
-            Lv. {{ poke?.base?.level ?? 100 }}
+            Lv. {{ poke?.base?.level ?? 0 }}
           </span>
           <GenderIcon
             class="size-4 sm:hidden"

@@ -63,7 +63,12 @@ import {ivsToDvs} from "~/utils/pokemon";
 import type {ItemId} from "~~/game/item";
 
 const query = defineModel<string>({default: ""});
-const {poke, gen, idx} = defineProps<{poke: PokemonDesc; gen: Generation; idx: number}>();
+const {poke, gen, idx, format} = defineProps<{
+  poke: PokemonDesc;
+  gen: Generation;
+  idx: number;
+  format: FormatId;
+}>();
 const open = ref(false);
 const species = computed<Species | undefined>(() => gen.speciesList[poke?.speciesId as SpeciesId]);
 const items = computed(() => Object.entries(gen.moveList) as [MoveId, Move][]);
@@ -81,6 +86,7 @@ const trailing = computed(() => {
     ivs: gen.id <= 2 ? ivsToDvs(gen, poke.ivs ?? {}) : poke.ivs,
     friendship: poke.friendship,
     item: item && item in gen.items ? item : undefined,
+    level: poke.level ?? formatInfo[format].maxLevel,
   });
   const type = move.getType ? move.getType(base) : move.type;
   const pow = move.getPower ? move.getPower(base) : move.power;

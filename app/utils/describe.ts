@@ -136,6 +136,7 @@ const descriptions: Partial<Record<number, Partial<Record<MoveId, string>>>> = {
     waterspout: "Power ranges between 1 and 150, decreasing with the user's HP. ",
     eruption: "Power ranges between 1 and 150, decreasing with the user's HP. ",
     roleplay: "Copies the target's ability. ",
+    acupressure: "Randomly raises a stat of the target by 2. ",
   },
   [2]: {
     conversion:
@@ -158,6 +159,7 @@ const descriptions: Partial<Record<number, Partial<Record<MoveId, string>>>> = {
     psychup: "Copies the stat stages of the target. ",
     focusenergy: "Raises the user's critical hit stages by 2. Does not stack. ",
     lowkick: "Power increases with the weight of the target. ",
+    grassknot: "Power increases with the weight of the target. ",
   },
 };
 

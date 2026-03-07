@@ -369,7 +369,11 @@ export function createBotTeam(format: FormatId) {
       return convertTeam(team);
     } else {
       const gen = GENERATIONS[formatInfo[format].generation]!;
-      return randoms(gen, s => format.includes("nfe") === !!s.evolvesTo);
+      return randoms(
+        gen,
+        formatInfo[format].maxLevel,
+        s => format.includes("nfe") === !!s.evolvesTo,
+      );
     }
   }
 }
