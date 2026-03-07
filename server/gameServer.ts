@@ -448,7 +448,7 @@ export class GameServer extends Server<ClientMessage, ServerMessage> {
 
       if (challenge) {
         const challenged = this.accounts.get(challenge);
-        if (!challenged || challenged.offline) {
+        if (!challenged || challenged.offline || challenged.id === account.id) {
           return ack("bad_user");
         }
 
