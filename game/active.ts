@@ -1228,7 +1228,7 @@ export class ActivePokemon {
     if (this.v.encore) {
       return [this.id];
     } else if (move === this.v.charging?.move) {
-      return [this.v.charging.target.id];
+      return this.v.charging.targets.map(o => o.id);
     } else if (move === this.v.recharge?.move) {
       return [this.v.recharge.target.id];
     }
@@ -1280,7 +1280,7 @@ class Volatiles {
   lastHitBy?: {move: Move; poke: ActivePokemon; special: bool};
   lastMove?: Move;
   lastMoveIndex?: number;
-  charging?: {move: DamagingMove; target: ActivePokemon};
+  charging?: {move: DamagingMove; targets: ActivePokemon[]};
   recharge?: {move: DamagingMove; target: ActivePokemon};
   thrashing?: {move: DamagingMove; turns: number; max: bool; acc?: number};
   bide?: {move: Move; turns: number; dmg: number};

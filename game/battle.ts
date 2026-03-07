@@ -740,7 +740,7 @@ export class Battle {
           }
 
           if (move.charge !== "sun" || !this.hasWeather("sun")) {
-            user.v.charging = {move: move, target: originalTargets[0]};
+            user.v.charging = {move, targets: originalTargets};
             user.v.invuln = move.charge === "invuln" || user.v.invuln;
             this.sv([user.clearFlag(VF.charge)]);
             return;
