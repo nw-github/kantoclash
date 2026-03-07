@@ -75,21 +75,25 @@ onMounted(() => {
 });
 
 const makeChoice = (playerId: string, choice: Choice) => {
-  const player = engine.findPlayer(playerId)!;
-  switch (choice.type) {
-    case "forfeit":
-      events.value.push(...engine.forfeit(player, false));
-      return false;
-    case "move":
-      if (!player.chooseMove(choice.who, engine, choice.moveIndex, choice.target)) {
-        console.log(`Player ${player}: Choice failed: `, choice);
-      }
-      break;
-    case "switch":
-      if (!player.chooseSwitch(choice.who, engine, choice.pokeIndex)) {
-        console.log(`Player ${player}: Choice failed: `, choice);
-      }
-      break;
+  try {
+    const player = engine.findPlayer(playerId)!;
+    switch (choice.type) {
+      case "forfeit":
+        events.value.push(...engine.forfeit(player, false));
+        return false;
+      case "move":
+        if (!player.chooseMove(choice.who, engine, choice.moveIndex, choice.target)) {
+          console.log(`Player ${player}: Choice failed: `, choice);
+        }
+        break;
+      case "switch":
+        if (!player.chooseSwitch(choice.who, engine, choice.pokeIndex)) {
+          console.log(`Player ${player}: Choice failed: `, choice);
+        }
+        break;
+    }
+  } catch (ex) {
+    console.error("Failure making choice", choice, ":", ex);
   }
 
   return true;
@@ -100,8 +104,10 @@ const updateOptions = () => {
     const players = engine.players.filter(pl => !pl.hasChosen());
     // Avoid switching the view if possible
     const next = players.find(pl => pl.id === myId.value) || players[0];
-    myId.value = next.id;
-    options[events.value.length] = next.active.map(poke => poke.options).filter(p => !!p);
+    if (next) {
+      myId.value = next.id;
+      options[events.value.length] = next.active.map(poke => poke.options).filter(p => !!p);
+    }
   }
 };
 
@@ -113,14 +119,22 @@ const chosen = (choice: Choice) => {
   const player = engine.findPlayer(myId.value)!;
   if (player.hasChosen()) {
     if (engine.players.every(p => p.hasChosen())) {
-      const turn = engine.nextTurn();
-      if (turn) {
-        events.value.push(...turn);
-      }
+      nextTurn();
     }
 
     finished.value = engine.finished;
     updateOptions();
+  }
+};
+
+const nextTurn = () => {
+  try {
+    const turn = engine.nextTurn();
+    if (turn) {
+      events.value.push(...turn);
+    }
+  } catch (ex) {
+    console.error("Error on nextTurn():", ex);
   }
 };
 
@@ -152,10 +166,7 @@ const init = (turnNo: number) => {
       }
     }
 
-    const turn = engine.nextTurn();
-    if (turn) {
-      events.value.push(...turn);
-    }
+    nextTurn();
   }
 
   if (turnNo === -1 && battleParams.terminated) {

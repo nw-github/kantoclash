@@ -31,7 +31,7 @@
 </template>
 
 <script setup lang="ts">
-import criesSpritesheet from "~/public/effects/cries.json";
+import criesSpritesheet from "~~/public/effects/cries.json";
 
 const cry = ref(1);
 

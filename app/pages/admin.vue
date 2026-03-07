@@ -75,6 +75,7 @@
               :species-id="poke.speciesId"
               :scale="1.5"
               :form="poke.form"
+              @click="copyTeam(battle.player1.team, battle.format)"
             />
           </div>
           <span class="text-lg">vs.</span>
@@ -85,6 +86,7 @@
               :species-id="poke.speciesId"
               :scale="1.5"
               :form="poke.form"
+              @click="copyTeam(battle.player2.team, battle.format)"
             />
           </div>
         </div>
@@ -98,6 +100,7 @@
 </template>
 
 <script setup lang="ts">
+import type {ValidatedPokemonDesc} from "~~/game/pokemon";
 import type {BugReports, BattleRecipe, ServerConfig} from "~~/server/gameServer";
 export type BugReportEntry = {
   id: string;
@@ -122,6 +125,8 @@ onMounted(() => {
   } else {
     getConfig();
   }
+
+  loadBattles();
 });
 
 const toggle = (key: keyof ServerConfig) => {
@@ -146,8 +151,6 @@ const getConfig = () => {
       toast.add({title: "Getting config failed!"});
     }
   });
-
-  loadBattles();
 };
 
 const loadBattles = async () => {
@@ -166,7 +169,10 @@ const deleteBugReport = async (entry: BugReportEntry) => {
   try {
     const result = await $fetch(`/api/bugs/${entry.id}`, {method: "DELETE"});
     toast.add({title: `'Deleted '${result.id}'!`});
-    reportedBattles.value.splice(reportedBattles.value.indexOf(entry));
+    const idx = reportedBattles.value.findIndex(e => e.id === entry.id);
+    if (idx !== -1) {
+      reportedBattles.value.splice(idx);
+    }
   } catch (ex) {
     toast.add({title: "Deletion failed", description: `Reason: ${ex}`});
     entry.deleting = false;
@@ -180,5 +186,15 @@ const loadFromClipboard = async () => {
   } catch (ex) {
     console.error("Loading from clipboard failed: ", ex);
   }
+};
+
+const copyTeam = async (team: ValidatedPokemonDesc[], format: FormatId) => {
+  let text = "";
+  for (const poke of team) {
+    text += descToString(format, poke) + "\n";
+  }
+
+  await navigator.clipboard.writeText(text.trim());
+  toast.add({title: `Copied team to clipboard!`});
 };
 </script>
