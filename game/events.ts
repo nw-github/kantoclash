@@ -27,7 +27,7 @@ type AnyEvent =
   | DamageEvent
   | RecoverEvent
   | UseMoveEvent
-  | VictoryEvent
+  | EndBattleEvent
   | HitSubstituteEvent
   | StatusEvent
   | StagesEvent
@@ -190,11 +190,11 @@ type UseMoveEvent = {
   called?: bool;
 };
 
-export type VictoryEvent = {
+export type EndBattleEvent = {
   type: "end";
   /// If victor is undefined, the battle is a draw
   victor?: PlayerId;
-  why?: "endless" | "too_long" | "timer";
+  why?: "endless" | "too_long" | "timer" | "error";
 };
 
 type StatusEvent = {type: "status" | "cure"; src: PokeId; status: Status};

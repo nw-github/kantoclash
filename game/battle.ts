@@ -3,7 +3,7 @@ import type {
   BattleEvent,
   PlayerId,
   InfoReason,
-  VictoryEvent,
+  EndBattleEvent,
   ChangedVolatiles,
   PokeId,
 } from "./events";
@@ -284,7 +284,7 @@ export class Battle {
     return this.events.splice(0);
   }
 
-  draw(why: VictoryEvent["why"]) {
+  forceEnd(why: EndBattleEvent["why"]) {
     this.finished = true;
     for (const player of this.players) {
       if (why === "timer") {
@@ -377,7 +377,7 @@ export class Battle {
       if (this.victor) {
         this.event({type: "end", victor: this.victor.id});
       } else if (this._turn >= 1000 && this.mods.endlessBattle) {
-        return this.draw("too_long");
+        return this.forceEnd("too_long");
       }
 
       if (this.allActive.some(p => p.v.fainted && p.canBeReplaced(this))) {

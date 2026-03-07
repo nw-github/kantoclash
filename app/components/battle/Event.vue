@@ -73,6 +73,7 @@
     <template v-else-if="e.victor"><b>{{ players.get(e.victor).name }}</b> wins!</template>
     <template v-else-if="e.why === 'too_long'">It's a draw! (Turn limit reached!)</template>
     <template v-else-if="e.why === 'endless'">It's a draw! (Endless battle detected!)</template>
+    <template v-else-if="e.why === 'error'">It's a draw! (Internal error occurred)</template>
     <template v-else>It's a draw!</template>
   </div>
   <div v-else-if="e.type === 'hit_sub'">

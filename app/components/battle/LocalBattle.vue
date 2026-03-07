@@ -160,7 +160,7 @@ const init = (turnNo: number) => {
 
   if (turnNo === -1 && battleParams.terminated) {
     const loser = battleParams.terminated.timer && engine.findPlayer(battleParams.terminated.timer);
-    events.value.push(...(loser ? engine.forfeit(loser, true) : engine.draw("timer")));
+    events.value.push(...(loser ? engine.forfeit(loser, true) : engine.forceEnd("timer")));
   }
 
   finished.value = engine.finished;

@@ -216,7 +216,7 @@ class Room {
         this.broadcastTurn(this.battle.forfeit(loser, true));
       } else {
         this.battleRecipe.terminated = {timer: null};
-        this.broadcastTurn(this.battle.draw("timer"));
+        this.broadcastTurn(this.battle.forceEnd("timer"));
       }
     }, 1000);
 
@@ -555,26 +555,40 @@ export class GameServer extends Server<ClientMessage, ServerMessage> {
       }
 
       const [player, room] = info;
-      if (choice.type === "move") {
-        if (!player.chooseMove(choice.who, room.battle, choice.moveIndex, choice.target)) {
-          return ack("invalid_choice");
-        }
-      } else if (choice.type === "switch") {
-        if (!player.chooseSwitch(choice.who, room.battle, choice.pokeIndex)) {
-          return ack("invalid_choice");
-        }
-      } else if (choice.type !== "forfeit") {
-        return ack("invalid_choice");
-      } else if (room.battle.finished) {
+      if (room.battle.finished) {
         return ack("finished");
+      }
+
+      let ok = false;
+      try {
+        if (choice.type === "move") {
+          ok = player.chooseMove(choice.who, room.battle, choice.moveIndex, choice.target);
+        } else if (choice.type === "switch") {
+          ok = player.chooseSwitch(choice.who, room.battle, choice.pokeIndex);
+        } else if (choice.type === "forfeit") {
+          ok = true;
+        }
+      } catch {
+        room.saveChoice(player.id, choice);
+        room.broadcastTurn(room.battle.forceEnd("error"));
+        return ack();
+      }
+
+      if (!ok) {
+        return ack("invalid_choice");
       }
 
       ack();
       room.saveChoice(player.id, choice);
-      const turn =
-        choice.type === "forfeit" ? room.battle.forfeit(player, false) : room.battle.nextTurn();
-      if (turn) {
-        room.broadcastTurn(turn);
+      try {
+        const turn =
+          choice.type === "forfeit" ? room.battle.forfeit(player, false) : room.battle.nextTurn();
+        if (turn) {
+          room.broadcastTurn(turn);
+        }
+      } catch {
+        room.reportBug("", "The game was automatically terminated due to an exception.");
+        room.broadcastTurn(room.battle.forceEnd("error"));
       }
     });
     socket.on("cancel", (roomId, sequenceNo, ack) => {

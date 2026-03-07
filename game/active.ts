@@ -1057,6 +1057,10 @@ export class ActivePokemon {
   }
 
   getOptions(battle: Battle): Options | undefined {
+    if (battle.finished) {
+      return undefined;
+    }
+
     const switches = this.getSwitches(battle);
     if (battle.allActive.some(poke => poke.v.inBatonPass)) {
       return this.v.inBatonPass ? {switches, moves: [], id: this.id} : undefined;
