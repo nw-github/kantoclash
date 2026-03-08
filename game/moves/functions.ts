@@ -80,6 +80,8 @@ export const moveFunctions: MoveFunctions = {
   stage(battle, user, targets) {
     battle.gen1LastDamage = 0;
     let failed = true;
+
+    const id = battle.moveIdOf(this)!;
     for (const target of targets) {
       if (this.range !== Range.Self) {
         if (battle.tryMagicBounce(this, user, target)) {
@@ -90,6 +92,21 @@ export const moveFunctions: MoveFunctions = {
           continue;
         } else if (target.v.substitute && !this.ignoreSub) {
           continue;
+        } else if (id === "captivate") {
+          // Is this the correct ordering? IE would we reveal the target ability if the move would
+          // fail for some other reason?
+          if (target.base.ability === "oblivious") {
+            failed = false;
+            battle.ability(target);
+            battle.info(target, "immune");
+            continue;
+          } else if (
+            user.base.gender === target.base.gender ||
+            user.base.gender === "N" ||
+            target.base.gender === "N"
+          ) {
+            continue;
+          }
         }
 
         if (!battle.checkAccuracy(this, user, target)) {
@@ -106,7 +123,6 @@ export const moveFunctions: MoveFunctions = {
       return battle.info(user, "fail_generic");
     }
 
-    const id = battle.moveIdOf(this)!;
     user.v.usedMinimize = user.v.usedMinimize || id === "minimize";
     user.v.usedDefenseCurl = user.v.usedDefenseCurl || id === "defensecurl";
   },

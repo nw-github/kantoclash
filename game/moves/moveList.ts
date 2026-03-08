@@ -4748,12 +4748,14 @@ const internalMoveList = createMoveList({
     contact: true,
   },
   captivate: {
-    kind: "fail",
+    kind: "stage",
     name: "Captivate",
-    pp: 1,
+    pp: 20,
     type: "normal",
-    range: Range.Self,
-    why: "fail_unimplemented",
+    range: Range.AllAdjacentFoe,
+    acc: 100,
+    stages: [["spa", -2]],
+    magicCoat: true,
   },
   chargebeam: {
     kind: "damage",
@@ -5666,7 +5668,7 @@ const internalMoveList = createMoveList({
     contact: true,
     checkSuccess(battle, user, [target]) {
       if (target?.choice?.move?.kind !== "damage" || target?.choice?.executed) {
-        battle.info(user, "fail_unimplemented");
+        battle.info(user, "fail_generic");
         return false;
       }
       return true;
