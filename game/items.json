@@ -661,9 +661,21 @@
   "dawnstone": {"name": "Dawn Stone", "fling": 80},
   "ovalstone": {"name": "Oval Stone", "fling": 80},
   "oddkeystone": {"name": "Odd Keystone", "fling": 80},
-  "griseousorb": {"name": "Griseous Orb", "fling": 60},
-  "adamantorb": {"name": "Adamant Orb", "fling": 60},
-  "lustrousorb": {"name": "Lustrous Orb", "fling": 60},
+  "griseousorb": {
+    "name": "Griseous Orb",
+    "fling": 60,
+    "desc": "Boosts Giratina's Dragon- and Ghost-type moves by 20%."
+  },
+  "adamantorb": {
+    "name": "Adamant Orb",
+    "fling": 60,
+    "desc": "Boosts Dialga's Dragon- and Steel-type moves by 20%."
+  },
+  "lustrousorb": {
+    "name": "Lustrous Orb",
+    "fling": 60,
+    "desc": "Boosts Palkias's Dragon- and Water-type moves by 20%."
+  },
   "grassmail": {"name": "Grass Mail"},
   "flamemail": {"name": "Flame Mail"},
   "bubblemail": {"name": "Bubble Mail"},

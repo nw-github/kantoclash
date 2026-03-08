@@ -9,7 +9,7 @@ import {
 } from "~~/game/species";
 import {HP_TYPES, MC, statKeys, type Stats} from "~~/game/utils";
 import {type Generation, GENERATION1, GENERATION2, GENERATION3, GENERATION4} from "~~/game/gen";
-import type {ItemId} from "~~/game/item";
+import {itemList, type ItemId} from "~~/game/item";
 
 import random from "random";
 import {z} from "zod";
@@ -142,7 +142,7 @@ export const getRandomPokemon = (
         // evs[plusStat as keyof Stats] = 252;
       }
 
-      poke.item = random.choice(items);
+      poke.item = s.requiresItem ?? random.choice(items);
       poke.friendship = poke.moves.includes("frustration") ? 0 : 255;
       return poke;
     });
@@ -299,6 +299,16 @@ const createValidator = (gen: Generation, maxLevel: number, nfe = false) => {
         ctx.addIssue({
           path: ["ability"],
           message: `Does not have ability '${desc.ability}'`,
+          code: "custom",
+        });
+      }
+
+      if (species.requiresItem && species.requiresItem !== desc.item) {
+        ctx.addIssue({
+          path: ["item"],
+          message: `Pokémon of species '${species.name}' must hold item '${
+            itemList[species.requiresItem].name
+          }'`,
           code: "custom",
         });
       }

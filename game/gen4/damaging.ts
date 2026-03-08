@@ -429,6 +429,7 @@ export const tryDamage = (
         user.base.item ||
         !target.base.item ||
         target.base.item.includes("mail") ||
+        target.base.item === "griseousorb" ||
         target.v.ability === "stickyhold" ||
         target.v.ability === "multitype"
       ) {
@@ -446,6 +447,7 @@ export const tryDamage = (
     } else if (effect === "knockoff") {
       if (
         target.base.item &&
+        target.base.item !== "griseousorb" &&
         target.v.ability !== "stickyhold" &&
         target.v.ability !== "multitype"
       ) {

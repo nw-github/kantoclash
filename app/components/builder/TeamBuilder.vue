@@ -204,13 +204,19 @@
                 :maxlength="24"
                 :placeholder="selectedPoke.species?.name ?? 'No Name'"
               />
-              <ItemSelector v-if="gen.id >= 2" v-model="selectedPoke.data.item" class="pt-1" :gen />
+              <ItemSelector
+                v-if="gen.id >= 2"
+                v-model="selectedPoke.data.item"
+                class="pt-1"
+                :poke="selectedPoke.data"
+                :gen
+              />
               <AbilitySelector
                 v-if="gen.id >= 3"
                 v-model="selectedPoke.data.ability"
+                class="pt-1"
                 :poke="selectedPoke.data"
                 :gen
-                class="pt-1"
               />
             </div>
             <div class="flex flex-col justify-between gap-1">
@@ -569,6 +575,10 @@ const onSpeciesChange = (s: Species) => {
   if (s.abilities.length) {
     selectedPoke.value.data.ability = abilityList[s.abilities[0]].name;
   }
+
+  if (s.requiresItem) {
+    selectedPoke.value.data.item = gen.value.items[s.requiresItem].name;
+  }
 };
 
 for (const poke of team.pokemon) {
@@ -663,7 +673,7 @@ const randomizeCurrent = (keepSpecies: bool) => {
   current.name = pokemon.name;
   current.speciesId = pokemon.speciesId;
   current.moves = pokemon.moves.map(move => gen.value.moveList[move].name);
-  current.friendship = pokemon.friendship;
+  current.friendship = pokemon.friendship === 255 ? undefined : pokemon.friendship;
   current.item = pokemon.item && gen.value.items[pokemon.item].name;
   current.shiny = pokemon.shiny;
   current.gender = pokemon.gender;

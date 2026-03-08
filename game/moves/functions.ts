@@ -412,6 +412,7 @@ export const moveFunctions: MoveFunctions = {
       target.base.itemUnusable ||
       user.base.itemUnusable ||
       target.base.item === "enigmaberry" ||
+      target.base.item === "griseousorb" ||
       target.base.item?.includes("mail")
     ) {
       return battle.info(user, "fail_generic");

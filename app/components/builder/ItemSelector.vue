@@ -40,9 +40,11 @@
 <script setup lang="ts">
 import type {Generation} from "~~/game/gen";
 import type {ItemData, ItemId} from "~~/game/item";
+import type {PokemonDesc} from "~~/game/pokemon";
+import type {SpeciesId} from "~~/game/species";
 
 const query = defineModel<string>({default: ""});
-const {gen} = defineProps<{gen: Generation}>();
+const {gen, poke} = defineProps<{gen: Generation; poke: PokemonDesc}>();
 
 const open = ref(false);
 const items = computed(() => Object.entries(gen.items) as [ItemId, ItemData][]);
@@ -64,5 +66,11 @@ const filter = (items: [ItemId, ItemData][], query: string) => {
 
 const onChoose = ([_, item]: [ItemId, ItemData]) => (query.value = item.name);
 
-const isIllegal = (id: string) => id && !gen.items[normalizeName(id) as ItemId]?.exists;
+const isIllegal = (id: string) => {
+  const species = gen.speciesList[poke.speciesId as SpeciesId];
+  if (species && species.requiresItem && species.requiresItem !== id) {
+    return true;
+  }
+  return id && !gen.items[normalizeName(id) as ItemId]?.exists;
+};
 </script>
