@@ -297,9 +297,9 @@ export class ActivePokemon {
 
     if (target.v.ability === "multitype" && target.base.speciesId === "arceus") {
       // TODO: should it still work if the plate was knocked off?
-      const boost = battle.gen.items[this.base.item!]?.typeBoost;
-      this.v.form = boost?.plate ? boost.type : "normal";
-      this.v.types = [boost?.plate ? boost.type : "normal"];
+      const type = battle.gen.items[this.base.item!]?.plate ?? "normal";
+      this.v.form = type;
+      this.v.types = [type];
     }
 
     battle.event({

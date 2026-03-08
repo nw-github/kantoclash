@@ -664,16 +664,24 @@
   "griseousorb": {
     "name": "Griseous Orb",
     "fling": 60,
+    "typeBoost": {
+      "type": "dragon",
+      "type2": "ghost",
+      "percent": 20,
+      "species": ["giratina", "giratinaorigin"]
+    },
     "desc": "Boosts Giratina's Dragon- and Ghost-type moves by 20%."
   },
   "adamantorb": {
     "name": "Adamant Orb",
     "fling": 60,
+    "typeBoost": {"type": "dragon", "type2": "steel", "percent": 20, "species": ["dialga"]},
     "desc": "Boosts Dialga's Dragon- and Steel-type moves by 20%."
   },
   "lustrousorb": {
     "name": "Lustrous Orb",
     "fling": 60,
+    "typeBoost": {"type": "dragon", "type2": "water", "percent": 20, "species": ["palkia"]},
     "desc": "Boosts Palkias's Dragon- and Water-type moves by 20%."
   },
   "grassmail": {"name": "Grass Mail"},
@@ -910,97 +918,113 @@
   "flameplate": {
     "name": "Flame Plate",
     "fling": 90,
-    "typeBoost": {"type": "fire", "percent": 20, "plate": true},
+    "plate": "fire",
+    "typeBoost": {"type": "fire", "percent": 20},
     "desc": "Boosts Fire-type moves by 20%, Arceus=Fire."
   },
   "splashplate": {
     "name": "Splash Plate",
     "fling": 90,
-    "typeBoost": {"type": "water", "percent": 20, "plate": true},
+    "plate": "water",
+    "typeBoost": {"type": "water", "percent": 20},
     "desc": "Boosts Water-type moves by 20%, Arceus=Water."
   },
   "zapplate": {
     "name": "Zap Plate",
     "fling": 90,
-    "typeBoost": {"type": "electric", "percent": 20, "plate": true},
+    "plate": "electric",
+    "typeBoost": {"type": "electric", "percent": 20},
     "desc": "Boosts Electric-type moves by 20%, Arceus=Electric."
   },
   "meadowplate": {
     "name": "Meadow Plate",
     "fling": 90,
-    "typeBoost": {"type": "grass", "percent": 20, "plate": true},
+    "plate": "grass",
+    "typeBoost": {"type": "grass", "percent": 20},
     "desc": "Boosts Grass-type moves by 20%, Arceus=Grass."
   },
   "icicleplate": {
     "name": "Icicle Plate",
     "fling": 90,
-    "typeBoost": {"type": "ice", "percent": 20, "plate": true},
+    "plate": "ice",
+    "typeBoost": {"type": "ice", "percent": 20},
     "desc": "Boosts Ice-type moves by 20%, Arceus=Ice."
   },
   "fistplate": {
     "name": "Fist Plate",
     "fling": 90,
-    "typeBoost": {"type": "fight", "percent": 20, "plate": true},
+    "plate": "fight",
+    "typeBoost": {"type": "fight", "percent": 20},
     "desc": "Boosts Fight-type moves by 20%, Arceus=Fight."
   },
   "toxicplate": {
     "name": "Toxic Plate",
     "fling": 90,
-    "typeBoost": {"type": "poison", "percent": 20, "plate": true},
+    "plate": "poison",
+    "typeBoost": {"type": "poison", "percent": 20},
     "desc": "Boosts Poison-type moves by 20%, Arceus=Poison."
   },
   "earthplate": {
     "name": "Earth Plate",
     "fling": 90,
-    "typeBoost": {"type": "ground", "percent": 20, "plate": true},
+    "plate": "ground",
+    "typeBoost": {"type": "ground", "percent": 20},
     "desc": "Boosts Ground-type moves by 20%, Arceus=Ground."
   },
   "skyplate": {
     "name": "Sky Plate",
     "fling": 90,
-    "typeBoost": {"type": "flying", "percent": 20, "plate": true},
+    "plate": "flying",
+    "typeBoost": {"type": "flying", "percent": 20},
     "desc": "Boosts Flying-type moves by 20%, Arceus=Flying."
   },
   "mindplate": {
     "name": "Mind Plate",
     "fling": 90,
-    "typeBoost": {"type": "psychic", "percent": 20, "plate": true},
+    "plate": "psychic",
+    "typeBoost": {"type": "psychic", "percent": 20},
     "desc": "Boosts Psychic-type moves by 20%, Arceus=Psychic."
   },
   "insectplate": {
     "name": "Insect Plate",
     "fling": 90,
-    "typeBoost": {"type": "bug", "percent": 20, "plate": true},
+    "plate": "bug",
+    "typeBoost": {"type": "bug", "percent": 20},
     "desc": "Boosts Bug-type moves by 20%, Arceus=Bug."
   },
   "stoneplate": {
     "name": "Stone Plate",
     "fling": 90,
-    "typeBoost": {"type": "rock", "percent": 20, "plate": true},
+    "plate": "rock",
+    "typeBoost": {"type": "rock", "percent": 20},
     "desc": "Boosts Rock-type moves by 20%, Arceus=Rock."
   },
   "spookyplate": {
     "name": "Spooky Plate",
     "fling": 90,
-    "typeBoost": {"type": "ghost", "percent": 20, "plate": true},
+    "plate": "ghost",
+    "typeBoost": {"type": "ghost", "percent": 20},
     "desc": "Boosts Ghost-type moves by 20%, Arceus=Ghost."
   },
   "dracoplate": {
     "name": "Draco Plate",
     "fling": 90,
-    "typeBoost": {"type": "dragon", "percent": 20, "plate": true},
+    "plate": "dragon",
+    "typeBoost": {"type": "dragon", "percent": 20},
     "desc": "Boosts Dragon-type moves by 20%, Arceus=Dragon."
   },
   "dreadplate": {
     "name": "Dread Plate",
     "fling": 90,
-    "typeBoost": {"type": "dark", "percent": 20, "plate": true},
+    "plate": "dark",
+    "typeBoost": {"type": "dark", "percent": 20},
     "desc": "Boosts Dark-type moves by 20%, Arceus=Dark."
   },
   "ironplate": {
     "name": "Iron Plate",
     "fling": 90,
-    "typeBoost": {"type": "steel", "percent": 20, "plate": true},
+    "plate": "steel",
+    "typeBoost": {"type": "steel", "percent": 20},
     "desc": "Boosts Steel-type moves by 20%, Arceus=Steel."
   },
   "oddincense": {

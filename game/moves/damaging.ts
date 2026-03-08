@@ -183,7 +183,16 @@ export function getDamage(
       battle.sv([user.setVolatile("stockpile", 0)]);
     }
 
-    const itemBonus = user.base.item && battle.gen.items[user.base.item]?.typeBoost;
+    let itemBonus = 1;
+    const boost = battle.gen.items[user.base.item!]?.typeBoost;
+    if (
+      boost &&
+      (!boost.species || boost.species.includes(user.base.speciesId)) &&
+      (boost.type === type || boost.type2 === type)
+    ) {
+      itemBonus = 1 + boost.percent / 100;
+    }
+
     debugLog(`\n\x1b[0;32m${user.base.name}\x1b[0m => \x1b[0;31m${target.base.name}\x1b[0m`);
     dmg = battle.gen.calcDamage({
       lvl: extras.beatUp ? extras.beatUp.level : user.base.level,
@@ -198,7 +207,7 @@ export function getDamage(
       moveMod,
       doubleDmg,
       tripleKick: extras.tripleKick,
-      itemBonus: itemBonus?.type === type ? 1 + itemBonus.percent / 100 : 1,
+      itemBonus,
       helpingHand: user.v.hasFlag(VF.helpingHand),
       spread: extras.spread,
       screen: !!target.owner.screens[spc ? "light_screen" : "reflect"],

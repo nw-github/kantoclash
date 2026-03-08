@@ -11,7 +11,8 @@ export type ItemData = {
   desc?: string;
   exists?: bool;
 
-  typeBoost?: {type: Exclude<Type, "???">; percent: number; plate?: bool};
+  plate?: Exclude<Type, "???">;
+  typeBoost?: {type: Type; type2?: Type; percent: number; species?: SpeciesId[]};
   cureStatus?: Status | "any" | "confuse";
   healFixed?: number;
   healSitrus?: bool;

@@ -85,12 +85,13 @@ export const getRandomPokemon = (
         const type = itemData.typeBoost?.type;
         if (
           type &&
+          (!itemData?.typeBoost?.species || itemData.typeBoost.species.includes(id)) &&
           !poke.moves.some(m => gen.moveList[m].kind === "damage" && gen.moveList[m].type === type)
         ) {
           return false;
         }
 
-        if (id === "arceus" && !itemData.typeBoost?.plate) {
+        if (id === "arceus" && !itemData.plate) {
           return false;
         }
 

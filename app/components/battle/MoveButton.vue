@@ -115,7 +115,11 @@ const displayAgainst = computed(() => displayAgainstList.includes(move.value.ran
 const targeting = computed(() => targetingMap[move.value.range]);
 
 const applyPowerModifiers = (pow: number, type: Type, item?: ItemData) => {
-  if (pow !== 1 && item?.typeBoost?.type === type) {
+  if (
+    pow !== 1 &&
+    item?.typeBoost?.type === type &&
+    (!item.typeBoost.species || item.typeBoost.species.includes(user.base.speciesId))
+  ) {
     pow += Math.floor(pow * (item.typeBoost.percent / 100));
   }
   if (option.move === "facade" && user.base.status) {

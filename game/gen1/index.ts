@@ -504,11 +504,9 @@ const createGeneration = () => {
       }
 
       const itemData = this.items[item!];
-      if (id === "arceus" && itemData?.typeBoost?.plate) {
-        return itemData.typeBoost.type;
+      if (id === "arceus" && itemData?.plate) {
+        return itemData.plate;
       }
-
-      return;
     },
     getShiny: (_desired: bool | undefined, _dvs: Partial<Stats>) => false,
     accumulateBide,

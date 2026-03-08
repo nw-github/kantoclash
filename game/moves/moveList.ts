@@ -5234,10 +5234,7 @@ const internalMoveList = createMoveList({
     power: 100,
     acc: 100,
     kingsRock: true,
-    getType(user) {
-      const typeBoost = (user as any).gen.items[user.item!]?.typeBoost;
-      return typeBoost?.plate ? typeBoost.type : "normal";
-    },
+    getType: user => (user as any).gen.items[user.item!]?.plate ?? "normal",
   },
   lastresort: {
     kind: "fail",
