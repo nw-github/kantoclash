@@ -4079,7 +4079,7 @@ const internalMoveList = createMoveList({
       }
 
       battle.event({type: "recycle", src: user.id, item: user.consumed});
-      user.base.item = user.consumed;
+      user.base.itemId = user.consumed;
       user.consumed = undefined;
     },
   },
@@ -5234,7 +5234,7 @@ const internalMoveList = createMoveList({
     power: 100,
     acc: 100,
     kingsRock: true,
-    getType: user => (user as any).gen.items[user.item!]?.plate ?? "normal",
+    getType: user => user.item?.plate ?? "normal",
   },
   lastresort: {
     kind: "fail",

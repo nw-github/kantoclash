@@ -32,7 +32,7 @@ export const tryDamage = (
 
   const onHit = (type: Type, hadSub: bool) => {
     if (
-      battle.gen.items[user.base.item!]?.kingsRock &&
+      user.base.item?.kingsRock &&
       self.kingsRock &&
       !hadSub &&
       target.v.ability !== "innerfocus" &&
@@ -338,7 +338,7 @@ export const tryDamage = (
   if (endured) {
     battle.info(target, "endure_hit");
   } else if (band) {
-    if (target.base.item === "focussash") {
+    if (target.base.itemId === "focussash") {
       target.consumeItem(battle);
     } else {
       battle.info(target, "endure_band");
@@ -426,10 +426,10 @@ export const tryDamage = (
       }
     } else if (effect === "thief") {
       if (
-        user.base.item ||
-        !target.base.item ||
-        target.base.item.includes("mail") ||
-        target.base.item === "griseousorb" ||
+        user.base.itemId ||
+        !target.base.itemId ||
+        target.base.itemId.includes("mail") ||
+        target.base.itemId === "griseousorb" ||
         target.v.ability === "stickyhold" ||
         target.v.ability === "multitype"
       ) {
@@ -440,14 +440,14 @@ export const tryDamage = (
         type: "thief",
         src: user.id,
         target: target.id,
-        item: target.base.item,
+        item: target.base.itemId,
       });
-      user.manipulateItem(poke => (poke.item = target.base.item));
-      target.manipulateItem(poke => (poke.item = undefined));
+      user.manipulateItem(poke => (poke.itemId = target.base.itemId));
+      target.manipulateItem(poke => (poke.itemId = undefined));
     } else if (effect === "knockoff") {
       if (
-        target.base.item &&
-        target.base.item !== "griseousorb" &&
+        target.base.itemId &&
+        target.base.itemId !== "griseousorb" &&
         target.v.ability !== "stickyhold" &&
         target.v.ability !== "multitype"
       ) {
@@ -455,7 +455,7 @@ export const tryDamage = (
           type: "knockoff",
           src: user.id,
           target: target.id,
-          item: target.base.item,
+          item: target.base.itemId,
         });
         target.manipulateItem(poke => (poke.itemUnusable = true));
       }

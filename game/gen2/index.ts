@@ -197,11 +197,11 @@ const createGeneration = (): Generation => {
         if (user.v.hasFlag(VF.focusEnergy)) {
           stages++;
         }
-        stages += battle.gen.items[user.base.item!]?.raiseCrit ?? 0;
-        if (user.base.item === "stick" && user.base.real.speciesId === "farfetchd") {
+        stages += user.base.item?.raiseCrit ?? 0;
+        if (user.base.itemId === "stick" && user.base.real.speciesId === "farfetchd") {
           stages += 2;
         }
-        if (user.base.item === "luckypunch" && user.base.real.speciesId === "chansey") {
+        if (user.base.itemId === "luckypunch" && user.base.real.speciesId === "chansey") {
           stages += 2;
         }
         return battle.rand255Good(floatTo255(critStages[Math.min(stages, 4)] * 100));
@@ -267,7 +267,7 @@ const createGeneration = (): Generation => {
       }
 
       let acc = scaleAccuracy255(chance, user, target);
-      if (target.base.item === "brightpowder") {
+      if (target.base.itemId === "brightpowder") {
         acc -= 20;
       }
 

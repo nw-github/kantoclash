@@ -5,13 +5,13 @@
         {{ poke.base.species.name }}
         <span v-if="poke.base.transformed">(Was: {{ poke.base.real.species.name }})</span>
 
-        <template v-if="poke.owned && poke.base.transformed && poke.base._item">
-          <ItemSprite :item="poke.base._item" :gen="poke.base.gen" />
+        <template v-if="poke.owned && poke.base.transformed && poke.base._itemId">
+          <ItemSprite :item="poke.base._itemId" :gen="poke.base.gen" />
           <span
             class="text-xs"
             :class="poke.base.itemUnusable && 'line-through italic text-primary'"
           >
-            {{ poke.base.gen.items[poke.base._item].name }}
+            {{ poke.base.gen.items[poke.base._itemId].name }}
           </span>
         </template>
       </div>

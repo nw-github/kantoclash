@@ -87,7 +87,7 @@ const info = computed(() => {
   }
 
   const powers: {pokes: Pokemon[]; pow?: number; acc?: number}[] = [];
-  const item = user.base.gen.items[user.base.item!];
+  const item = user.base.item;
   for (const opp of opponent?.active?.toReversed() ?? []) {
     let pow = move.value.power;
     if (!opp || opp.fainted) {

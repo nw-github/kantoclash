@@ -317,21 +317,21 @@ export class ClientManager {
         this.weather = undefined;
       }
     } else if (e.type === "item") {
-      players.poke(e.src)!.base.item = undefined;
+      players.poke(e.src)!.base.itemId = undefined;
     } else if (e.type === "screen") {
       players.get(e.user).screens ??= {};
       players.get(e.user).screens![e.screen] = e.kind === "start";
     } else if (e.type === "thief") {
-      players.poke(e.src)!.base.item = e.item;
-      players.poke(e.target)!.base.item = undefined;
+      players.poke(e.src)!.base.itemId = e.item;
+      players.poke(e.target)!.base.itemId = undefined;
     } else if (e.type === "trick") {
-      players.poke(e.src)!.base.item = e.srcItem;
-      players.poke(e.target)!.base.item = e.targetItem;
+      players.poke(e.src)!.base.itemId = e.srcItem;
+      players.poke(e.target)!.base.itemId = e.targetItem;
     } else if (e.type === "knockoff") {
       players.poke(e.target)!.base.itemUnusable = true;
     } else if (e.type === "recycle") {
       const src = players.poke(e.src)!.base;
-      src.item = e.item;
+      src.itemId = e.item;
       src.itemUnusable = false;
     } else if (e.type === "sketch") {
       const src = players.poke(e.src)!;

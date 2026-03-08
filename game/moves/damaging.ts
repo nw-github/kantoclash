@@ -184,7 +184,7 @@ export function getDamage(
     }
 
     let itemBonus = 1;
-    const boost = battle.gen.items[user.base.item!]?.typeBoost;
+    const boost = user.base.item?.typeBoost;
     if (
       boost &&
       (!boost.species || boost.species.includes(user.base.speciesId)) &&
@@ -227,9 +227,9 @@ export function getDamage(
     extras.band ||
     (deadly &&
       !endured &&
-      target.base.item === "focusband" &&
+      target.base.itemId === "focusband" &&
       battle.gen.rng.tryFocusBand(battle)) ||
-    (deadly && !endured && target.base.isMaxHp() && target.base.item === "focussash");
+    (deadly && !endured && target.base.isMaxHp() && target.base.itemId === "focussash");
 
   if (endured || band) {
     dmg = Math.max(target.base.hp - 1, 0);

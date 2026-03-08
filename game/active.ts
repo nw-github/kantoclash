@@ -143,7 +143,7 @@ export class ActivePokemon {
 
     this.freeOpponents(battle);
 
-    if (this.base.item === "berserkgene") {
+    if (this.base.itemId === "berserkgene") {
       this.consumeItem(battle);
       this.modStages([["atk", +2]], battle);
       // BUG GEN2: If you baton pass into a pokemon with a berserk gene, the confusion value
@@ -200,20 +200,21 @@ export class ActivePokemon {
   }
 
   consumeItem(battle: Battle) {
+    const item = this.base.itemId!;
     battle.event({
       type: "item",
       src: this.id,
-      item: this.base.item!,
+      item,
       volatiles:
-        this.base.item === "mentalherb"
+        item === "mentalherb"
           ? [{id: this.id, v: {flags: this.v.cflags}}]
-          : this.base.item === "whiteherb"
+          : item === "whiteherb"
           ? [{id: this.id, v: {stages: {...this.v.stages}, stats: this.clientStats(battle)}}]
           : undefined,
     });
 
-    this.consumed = this.base.item;
-    this.base.item = undefined;
+    this.consumed = item;
+    this.base.itemId = undefined;
   }
 
   canBatonPass() {
@@ -297,7 +298,7 @@ export class ActivePokemon {
 
     if (target.v.ability === "multitype" && target.base.speciesId === "arceus") {
       // TODO: should it still work if the plate was knocked off?
-      const type = battle.gen.items[this.base.item!]?.plate ?? "normal";
+      const type = this.base.item?.plate ?? "normal";
       this.v.form = type;
       this.v.types = [type];
     }
@@ -799,24 +800,25 @@ export class ActivePokemon {
   }
 
   handleShellBell(battle: Battle, dmg: number) {
-    if (this.base.hp && dmg !== 0 && !this.v.fainted && this.base.item === "shellbell") {
+    if (this.base.hp && dmg !== 0 && !this.v.fainted && this.base.itemId === "shellbell") {
       this.recover(Math.max(1, Math.floor(dmg / 8)), this, battle, "shellbell", false);
     }
   }
 
   handleLeftovers(battle: Battle) {
-    if (!this.v.fainted && this.base.item === "leftovers") {
+    if (!this.v.fainted && this.base.itemId === "leftovers") {
       this.recover(Math.max(1, idiv(this.base.stats.hp, 16)), this, battle, "leftovers");
     }
   }
 
   handleBerry(battle: Battle, {pp, pinch, status}: {pp?: bool; pinch?: bool; status?: bool}) {
-    if (this.v.fainted) {
+    const item = this.base.item;
+    if (this.v.fainted || !item) {
       return;
     }
 
     if (pp) {
-      const restorePP = battle.gen.items[this.base.item!]?.restorePP;
+      const restorePP = item.restorePP;
       if (restorePP) {
         const slot = this.base.pp.findIndex(pp => pp === 0);
         if (slot !== -1) {
@@ -848,7 +850,7 @@ export class ActivePokemon {
         battle.info(this, "confused_end", [{id: this.id, v: {flags: this.v.cflags}}]);
       }
 
-      const cures = battle.gen.items[this.base.item!]?.cureStatus;
+      const cures = item.cureStatus;
       if (cures && cures === status) {
         this.consumeItem(battle);
         this.unstatus(battle);
@@ -865,11 +867,14 @@ export class ActivePokemon {
         this.v.confusion = 0;
         this.consumeItem(battle);
         battle.info(this, "confused_end", [{id: this.id, v: {flags: this.v.cflags}}]);
-      } else if (this.v.attract && this.base.item === "mentalherb") {
+      } else if (this.v.attract && this.base.itemId === "mentalherb") {
         this.v.attract = undefined;
         this.consumeItem(battle);
         battle.info(this, "cure_attract");
-      } else if (this.base.item === "whiteherb" && Object.values(this.v.stages).some(v => v < 0)) {
+      } else if (
+        this.base.itemId === "whiteherb" &&
+        Object.values(this.v.stages).some(v => v < 0)
+      ) {
         for (const stage in this.v.stages) {
           if (this.v.stages[stage as StageId] < 0) {
             this.setStage(stage as StageId, 0, battle, false);
@@ -882,9 +887,9 @@ export class ActivePokemon {
 
     if (pinch) {
       if (this.base.belowHp(2)) {
-        const healPinch = battle.gen.items[this.base.item!]?.healPinchNature;
-        const healFixed = battle.gen.items[this.base.item!]?.healFixed;
-        const healSitrus = battle.gen.items[this.base.item!]?.healSitrus;
+        const healPinch = item.healPinchNature;
+        const healFixed = item.healFixed;
+        const healSitrus = item.healSitrus;
         if (healFixed) {
           this.consumeItem(battle);
           this.recover(healFixed, this, battle, "item");
@@ -903,7 +908,7 @@ export class ActivePokemon {
         }
       }
 
-      const statPinch = battle.gen.items[this.base.item!]?.statPinch;
+      const statPinch = item.statPinch;
       if (statPinch && this.base.belowHp(4)) {
         this.consumeItem(battle);
         if (statPinch === "crit") {
@@ -1218,7 +1223,7 @@ export class ActivePokemon {
 
   manipulateItem(cb: (_: Pokemon) => void) {
     cb(this.base);
-    if (!this.base.gen.items[this.base.item!]?.choice) {
+    if (!this.base.item?.choice) {
       this.v.choiceLock = undefined;
     }
   }

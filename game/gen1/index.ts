@@ -679,7 +679,7 @@ const createGeneration = () => {
           continue;
         }
 
-        if (poke.base.item === "leftovers") {
+        if (poke.base.itemId === "leftovers") {
           poke.recover(Math.max(1, idiv(poke.base.stats.hp, 16)), poke, battle, "leftovers");
         }
         poke.handleBerry(battle, {pp: true});

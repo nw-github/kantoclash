@@ -65,11 +65,11 @@ const createGeneration = (): Generation => {
         if (user.v.hasFlag(VF.focusEnergy)) {
           stages += 2;
         }
-        stages += battle.gen.items[user.base.item!]?.raiseCrit ?? 0;
-        if (user.base.item === "stick" && user.base.real.speciesId === "farfetchd") {
+        stages += user.base.item?.raiseCrit ?? 0;
+        if (user.base.itemId === "stick" && user.base.real.speciesId === "farfetchd") {
           stages += 2;
         }
-        if (user.base.item === "luckypunch" && user.base.real.speciesId === "chansey") {
+        if (user.base.itemId === "luckypunch" && user.base.real.speciesId === "chansey") {
           stages += 2;
         }
         if (user.v.ability === "superluck") {
@@ -197,12 +197,12 @@ const createGeneration = (): Generation => {
       let acc = Math.floor(
         chance * this.accStageMultipliers![clamp(user.v.stages.acc - eva, -6, 6)]!,
       );
-      const targetItem = battle.gen.items[target.base.item!];
+      const targetItem = target.base.item;
       if (targetItem?.reduceAcc) {
         acc -= Math.floor(acc * (targetItem.reduceAcc / 100));
       }
 
-      const userItem = battle.gen.items[user.base.item!];
+      const userItem = user.base.item;
       if (userItem?.boostAcc) {
         acc += Math.floor(acc * (userItem.boostAcc / 100));
       }

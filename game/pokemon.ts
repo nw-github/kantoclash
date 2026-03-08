@@ -2,7 +2,7 @@ import type {Generation} from "./gen";
 import type {AbilityId, SpeciesId} from "./species";
 import type {MoveId} from "./moves";
 import type {StageStats, Stats, StatStageId, Type} from "./utils";
-import type {ItemId} from "./item";
+import type {ItemData, ItemId} from "./item";
 
 export type Status = "psn" | "par" | "slp" | "frz" | "tox" | "brn";
 export type Gender = "M" | "F" | "N";
@@ -142,7 +142,7 @@ export class Pokemon {
   readonly gender: Gender;
   readonly friendship: number;
   readonly nature?: Nature;
-  _item?: ItemId;
+  _itemId?: ItemId;
   itemUnusable = false;
   hp: number;
   status?: Status;
@@ -185,7 +185,7 @@ export class Pokemon {
     this.ability = ability;
     this.nature = nature;
     this.form = form;
-    this.item = item;
+    this.itemId = item;
   }
 
   static fromDescriptor(
@@ -258,13 +258,17 @@ export class Pokemon {
     return (this.hp / this.stats.hp) * 100;
   }
 
-  get item() {
-    return this.itemUnusable ? undefined : this._item;
+  get itemId() {
+    return this.itemUnusable ? undefined : this._itemId;
   }
 
-  set item(value) {
-    this._item = value;
+  set itemId(value) {
+    this._itemId = value;
     this.itemUnusable = false;
+  }
+
+  get item(): ItemData | undefined {
+    return this.itemId && this.gen.items[this.itemId];
   }
 
   get species() {
@@ -301,10 +305,10 @@ class TransformedPokemon extends Pokemon {
       gender: base.gender,
       ability: base.ability,
       nature: base.nature,
-      item: base.item,
+      item: base.itemId,
     });
 
-    delete this._item;
+    delete this._itemId;
     // @ts-expect-error operand of delete must be optional
     delete this.itemUnusable;
     // @ts-expect-error operand of delete must be optional
@@ -317,7 +321,7 @@ class TransformedPokemon extends Pokemon {
   }
 
   // @ts-expect-error defined as property, overriden as getter
-  override get _item() { return this.base._item; }
+  override get _itemId() { return this.base._itemId; }
   // @ts-expect-error defined as property, overriden as getter
   override get itemUnusable() { return this.base.itemUnusable; }
   // @ts-expect-error defined as property, overriden as getter
@@ -331,7 +335,7 @@ class TransformedPokemon extends Pokemon {
   // @ts-expect-error defined as property, overriden as getter
   override get form() { return this.base.form; }
 
-  override set _item(v) {  if (this.base) { this.base._item = v; } }
+  override set _itemId(v) {  if (this.base) { this.base._itemId = v; } }
   override set itemUnusable(v) {  if (this.base) { this.base.itemUnusable = v; } }
   override set hp(v) {  if (this.base) { this.base.hp = v; } }
   override set status(v) {  if (this.base) { this.base.status = v; } }
@@ -383,19 +387,24 @@ export const transform = (user: Pokemon, target: Pokemon) => {
 };
 
 export const applyItemStatBoost = (poke: Pokemon, stat: StatStageId, value: number) => {
-  if (poke.gen.items[poke.item!]?.halveSpeed && stat === "spe") {
+  const item = poke.item;
+  if (!item) {
+    return value;
+  }
+
+  if (item?.halveSpeed && stat === "spe") {
     return Math.floor(value / 2);
-  } else if (poke.gen.items[poke.item!]?.choice === stat) {
+  } else if (item?.choice === stat) {
     return value + Math.floor(value / 2);
   }
 
-  const boostItem = poke.gen.items[poke.item!]?.boostStats?.[poke.real.speciesId];
+  const boostItem = item?.boostStats?.[poke.real.speciesId];
   if (boostItem && boostItem.stats.includes(stat) && (boostItem.transformed || !poke.transformed)) {
     value += Math.floor(value * boostItem.amount);
   }
 
   if (poke.transformed && poke.real.speciesId !== poke.speciesId) {
-    const boostItem = poke.gen.items[poke.item!]?.boostStats?.[poke.speciesId];
+    const boostItem = item?.boostStats?.[poke.speciesId];
     if (boostItem && boostItem.stats.includes(stat) && boostItem.transformed) {
       value += Math.floor(value * boostItem.amount);
     }

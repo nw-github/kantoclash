@@ -304,7 +304,7 @@ export async function startBot(botType: BotType, format?: FormatId) {
             return m;
           };
 
-          sendChatMessage(`${a.species.name} @ ${a.item}`);
+          sendChatMessage(`${a.species.name} @ ${a.itemId}`);
           if (a.ability) {
             sendChatMessage(`Ability: ${a.ability}`);
           }

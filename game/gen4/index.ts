@@ -257,7 +257,7 @@ const createGeneration = (): Generation => {
         // TODO: sticky barb
 
         // TODO: this might not be the right place
-        const statusOrb = battle.gen.items[poke.base.item!]?.statusOrb;
+        const statusOrb = poke.base.item?.statusOrb;
         if (statusOrb && !poke.base.status) {
           poke.status(statusOrb, battle, poke, {});
         }

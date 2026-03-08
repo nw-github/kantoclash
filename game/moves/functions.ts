@@ -266,10 +266,7 @@ export const moveFunctions: MoveFunctions = {
     battle.info(user, this.why);
   },
   weather(battle, user) {
-    battle.setWeather(
-      this.weather,
-      battle.gen.items[user.base.item!]?.extendWeather === this.weather ? 8 : 5,
-    );
+    battle.setWeather(this.weather, user.base.item?.extendWeather === this.weather ? 8 : 5);
   },
   screen(battle, user) {
     if (user.owner.screens[this.screen]) {
@@ -408,25 +405,25 @@ export const moveFunctions: MoveFunctions = {
       battle.ability(target);
       return battle.info(target, "immune");
     } else if (
-      (!target.base.item && !user.base.item) ||
+      (!target.base.itemId && !user.base.itemId) ||
       target.base.itemUnusable ||
       user.base.itemUnusable ||
-      target.base.item === "enigmaberry" ||
-      target.base.item === "griseousorb" ||
-      target.base.item?.includes("mail")
+      target.base.itemId === "enigmaberry" ||
+      target.base.itemId === "griseousorb" ||
+      target.base.itemId?.includes("mail")
     ) {
       return battle.info(user, "fail_generic");
     }
 
-    const userItem = user.base.item;
-    user.manipulateItem(poke => (poke.item = target.base.item));
-    target.manipulateItem(poke => (poke.item = userItem));
+    const userItem = user.base.itemId;
+    user.manipulateItem(poke => (poke.itemId = target.base.itemId));
+    target.manipulateItem(poke => (poke.itemId = userItem));
     battle.event({
       type: "trick",
       src: user.id,
       target: target.id,
-      srcItem: user.base.item,
-      targetItem: target.base.item,
+      srcItem: user.base.itemId,
+      targetItem: target.base.itemId,
     });
   },
   hazard(battle, user) {

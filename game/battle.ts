@@ -230,7 +230,7 @@ export class Battle {
   }
 
   getSpe(poke: ActivePokemon) {
-    if (poke.base.item === "quickclaw" && this.gen.rng.tryQuickClaw(this)) {
+    if (poke.base.itemId === "quickclaw" && this.gen.rng.tryQuickClaw(this)) {
       debugLog("proc quick claw: ", poke.base.name);
       return 65535;
     }
@@ -682,7 +682,7 @@ export class Battle {
   ) {
     const result = this.doUseMove(move, user, targets, moveIndex, quiet, called);
     // TODO: does choice band lock you in if your move was disabled?
-    if (moveIndex !== undefined && this.gen.items[user.base.item!]?.choice) {
+    if (moveIndex !== undefined && user.base.item?.choice) {
       user.v.choiceLock = moveIndex;
     }
     return result;

@@ -215,7 +215,7 @@ export const tryDamage = (
   // BUG GEN2:
   // https://pret.github.io/pokecrystal/bugs_and_glitches.html#beat-up-may-trigger-kings-rock-even-if-it-failed
   if (
-    battle.gen.items[user.base.item!]?.kingsRock &&
+    user.base.item?.kingsRock &&
     self.kingsRock &&
     !hadSub &&
     battle.gen.rng.tryKingsRock(battle)
@@ -282,7 +282,7 @@ export const tryDamage = (
       target.v.flinch = true;
     }
   } else if (effect === "thief") {
-    if (user.base.item || !target.base.item || target.base.item.includes("mail")) {
+    if (user.base.itemId || !target.base.itemId || target.base.itemId.includes("mail")) {
       return dealt;
     }
 
@@ -290,17 +290,17 @@ export const tryDamage = (
       type: "thief",
       src: user.id,
       target: target.id,
-      item: target.base.item,
+      item: target.base.itemId,
     });
-    user.manipulateItem(poke => (poke.item = target.base.item));
-    target.manipulateItem(poke => (poke.item = undefined));
+    user.manipulateItem(poke => (poke.itemId = target.base.itemId));
+    target.manipulateItem(poke => (poke.itemId = undefined));
   } else if (effect === "knockoff") {
-    if (target.base.item) {
+    if (target.base.itemId) {
       battle.event({
         type: "knockoff",
         src: user.id,
         target: target.id,
-        item: target.base.item,
+        item: target.base.itemId,
       });
       target.manipulateItem(poke => (poke.itemUnusable = true));
     }

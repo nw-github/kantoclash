@@ -32,7 +32,7 @@ export const tryDamage = (
 
   const onHit = (type: Type, hadSub: bool) => {
     if (
-      battle.gen.items[user.base.item!]?.kingsRock &&
+      user.base.item?.kingsRock &&
       self.kingsRock &&
       !hadSub &&
       target.v.ability !== "innerfocus" &&
@@ -413,9 +413,9 @@ export const tryDamage = (
     }
   } else if (effect === "thief") {
     if (
-      user.base.item ||
-      !target.base.item ||
-      target.base.item.includes("mail") ||
+      user.base.itemId ||
+      !target.base.itemId ||
+      target.base.itemId.includes("mail") ||
       target.v.ability === "stickyhold"
     ) {
       return dealt;
@@ -425,17 +425,17 @@ export const tryDamage = (
       type: "thief",
       src: user.id,
       target: target.id,
-      item: target.base.item,
+      item: target.base.itemId,
     });
-    user.manipulateItem(poke => (poke.item = target.base.item));
-    target.manipulateItem(poke => (poke.item = undefined));
+    user.manipulateItem(poke => (poke.itemId = target.base.itemId));
+    target.manipulateItem(poke => (poke.itemId = undefined));
   } else if (effect === "knockoff") {
-    if (target.base.item && target.v.ability !== "stickyhold") {
+    if (target.base.itemId && target.v.ability !== "stickyhold") {
       battle.event({
         type: "knockoff",
         src: user.id,
         target: target.id,
-        item: target.base.item,
+        item: target.base.itemId,
       });
       target.manipulateItem(poke => (poke.itemUnusable = true));
     }
