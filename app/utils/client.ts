@@ -394,7 +394,7 @@ export class ClientManager {
     }
   }
 
-  resetPlayers(players: Players, gen: Generation) {
+  reset(players: Players, gen: Generation) {
     for (const k in players.items) {
       const player = players.items[k];
       player.nFainted = 0;
@@ -403,6 +403,8 @@ export class ClientManager {
       player.hazards = undefined;
       player.team = player.teamDesc.map(poke => Pokemon.fromDescriptor(gen, poke));
     }
+
+    this.weather = undefined;
   }
 
   private findOrCreateEnemyBasePokemon(e: SwitchEvent, players: Players, gen: Generation) {

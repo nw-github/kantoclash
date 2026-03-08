@@ -501,7 +501,7 @@ onMounted(async () => {
     htmlTurns.value = [[]];
     currentTurnNo.value = 0;
     weather.value = undefined;
-    clientMgr.resetPlayers(players, gen.value);
+    clientMgr.reset(players, gen.value);
   };
 
   await until(() => ready).toBe(true);

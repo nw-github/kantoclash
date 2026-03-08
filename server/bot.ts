@@ -272,7 +272,7 @@ export async function startBot(botType: BotType, format?: FormatId) {
       }
     }
 
-    mgr.resetPlayers(players, gen);
+    mgr.reset(players, gen);
     games[room] = {
       async nextTurn(turn, options) {
         let done = false;
