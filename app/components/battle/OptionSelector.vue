@@ -66,6 +66,7 @@
             :no-popover="true"
             @click="selectTarget(`${opponent}:${players.get(opponent).active.length - i - 1}`)"
           />
+          <div v-else></div>
         </template>
         <template v-for="(poke, i) in players.get(myId).active" :key="i">
           <SwitchButton
@@ -76,6 +77,7 @@
             :no-popover="true"
             @click="selectTarget(`${myId}:${i}`)"
           />
+          <div v-else></div>
         </template>
       </div>
     </div>
