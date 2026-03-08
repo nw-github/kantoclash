@@ -112,13 +112,10 @@ export const tryDamage = (
     // Explosion into destiny bond, who dies first?
     user.damage(user.base.hp, user, battle, false, "explosion", true);
   } else if (self.flag === "remove_screens") {
-    // In Gen 3, light screen removes from the opponent even if you target an ally, or the target is
-    // immune
-    const opp = battle.opponentOf(user.owner);
     for (const screen of ["light_screen", "reflect"] as const) {
-      if (opp.screens[screen]) {
-        opp.screens[screen] = 0;
-        battle.event({type: "screen", user: opp.id, screen, kind: "shattered"});
+      if (target.owner.screens[screen]) {
+        target.owner.screens[screen] = 0;
+        battle.event({type: "screen", user: target.owner.id, screen, kind: "shattered"});
       }
     }
   }
@@ -127,7 +124,7 @@ export const tryDamage = (
     fail = true;
   }
 
-  const protect = target.v.hasFlag(VF.protect);
+  const protect = target.v.hasFlag(VF.protect) && self.protect !== false;
   const special = battle.gen.isSpecial(self, type);
   if (eff === 0 || fail || protect || !battle.checkAccuracy(self, user, target, !special)) {
     user.v.furyCutter = 0;
@@ -279,6 +276,10 @@ export const tryDamage = (
     if (dmg !== 0) {
       onHit(type, hadSub);
     }
+  }
+
+  if (self.flag === "remove_protect") {
+    battle.sv([target.clearFlag(VF.protect)]);
   }
 
   // TODO: should bide include damage taken by a substitute?

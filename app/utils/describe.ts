@@ -187,26 +187,22 @@ const flagDesc: Record<NonNullable<DamagingMove["flag"]>, string> = {
   false_swipe: "Always leaves the target with at least 1 HP. ",
   rapid_spin: "Removes the entry hazards and the effects of trapping moves and Leech Seed. ",
   rollout:
-    "Locks the user in for 5 turns, doubling in power for each consecutive hit. Boosted if " +
-    "Defense Curl was previously used by the user. ",
+    "Locks the user in for 5 turns, doubling in power for each consecutive hit. Boosted if Defense Curl was previously used by the user. ",
   triple:
-    "Hits up to 3 times. The second hit has a damage multiplier of 2, and the third hit has " +
-    "a damage multiplier of 3. ",
+    "Hits up to 3 times. The second hit has a damage multiplier of 2, and the third hit has a damage multiplier of 3. ",
   fury_cutter: "Base power doubles for each consecutive use, up to a maximum of 160. ",
   minimize: "Doubles damage against a target that has previously used minimize. ",
   present:
     "Deals damage with a base power of 40, 80, or 120, or heals the target for 1/4 its max HP. ",
-  bide:
-    "The user sits dormant for 2-3 turns, then damages the opponent for 2x the damage received " +
-    "during the idling period.",
+  bide: "The user sits dormant for 2-3 turns, then damages the opponent for 2x the damage received during the idling period.",
   beatup:
     "Hits with a typeless 10 power attack for each Pokémon in the user's party without a non-volatile status condition. ",
   facade: "Doubles damage when poisoned, paralyzed or burned.",
   remove_screens: "Removes the effects of Light Screen and Reflect. ",
+  remove_protect: "Removes the effects of protection moves. ",
   smellingsalt: "Doubles power against paralyzed a paralyzed target, but cures its paralysis. ",
   spitup:
-    "Damage multiplied by number of stockpiles, which is reset after use of this move. Fails if " +
-    "the user has not used stockpile yet.",
+    "Damage multiplied by number of stockpiles, which is reset after use of this move. Fails if the user has not used stockpile yet.",
   uproar:
     "Locks the user in for 2-5 turns and starts an uproar, waking sleeping Pokémon up and " +
     "preventing Pokémon from falling asleep. ",
@@ -215,8 +211,7 @@ const flagDesc: Record<NonNullable<DamagingMove["flag"]>, string> = {
   assurance: "Doubles damage if the target has already taken damage this turn. ",
   uturn: "Switches the user out. ",
   futuresight:
-    "After two turns, the target is hit with an attack. Damage is calculated upon use " +
-    "of the move. ",
+    "After two turns, the target is hit with an attack. Damage is calculated upon use of the move. ",
 };
 
 const formatStages = (gen: Generation, stages: [StageId, number][]) => {

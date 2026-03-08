@@ -242,6 +242,7 @@ type Flag =
   | "beatup"
   | "facade"
   | "remove_screens"
+  | "remove_protect"
   | "smellingsalt"
   | "spitup"
   | "uproar"
