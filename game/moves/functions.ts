@@ -213,7 +213,7 @@ export const moveFunctions: MoveFunctions = {
         // Counter/Mirror Coat/Bide will not retarget into another slot, but in a Gen 3 double
         // battle they can still hit a pokemon that didn't target it if the original pokemon dies
         // and is replaced by a teammate.
-        return battle.info(user, "fail_notarget");
+        return battle.info(user, "fail_generic");
       }
     }
 

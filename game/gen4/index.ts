@@ -150,7 +150,7 @@ const createGeneration = (): Generation => {
             (weather === "hail" && poke.v.ability === "icebody"))
         ) {
           battle.ability(poke);
-          poke.recover(Math.max(1, idiv(poke.base.stats.hp, 16)), poke, battle, "none");
+          poke.recover(Math.max(1, idiv(poke.base.stats.hp, 16)), poke, battle, "recover");
         } else if (weather === "rain" && poke.v.ability === "hydration" && poke.base.status) {
           battle.ability(poke);
           poke.unstatus(battle);
