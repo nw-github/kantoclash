@@ -133,7 +133,6 @@ export class Pokemon {
   readonly gen: Generation;
   readonly ivs: Stats;
   readonly stats: Stats;
-  readonly speciesId: SpeciesId;
   readonly level: number;
   readonly name: string;
   readonly moves: MoveId[];
@@ -142,6 +141,7 @@ export class Pokemon {
   readonly gender: Gender;
   readonly friendship: number;
   readonly nature?: Nature;
+  speciesId: SpeciesId;
   _itemId?: ItemId;
   itemUnusable = false;
   hp: number;

@@ -95,6 +95,7 @@ type TransformEvent = {
   shiny: bool;
   gender: Gender;
   form?: FormId;
+  permanent?: bool;
 };
 
 export type DamageReason =

@@ -509,6 +509,29 @@ export class ActivePokemon {
         src.status(statusNoTox, battle, this, {override: false, loud: true});
       }
     }
+
+    if (status === "frz" && this.base.speciesId === "shayminsky" && !this.base.transformed) {
+      // Getting frozen transforms shaymin for the rest of the battle. Freezing a pokémon
+      // transformed into shaymin-sky does nothing
+      this.base.speciesId = "shaymin";
+      this.base.ability = "naturalcure";
+      this.v.ability = "naturalcure";
+      battle.event({
+        type: "transform",
+        src: this.id,
+        speciesId: this.base.speciesId,
+        shiny: this.base.shiny,
+        gender: this.base.gender,
+        form: this.v.form,
+        volatiles: [
+          {
+            id: this.id,
+            v: {...this.getClientVolatiles(this.base, battle), ability: this.v.ability},
+          },
+        ],
+        permanent: true,
+      });
+    }
   }
 
   unstatus(battle: Battle, why?: InfoReason) {

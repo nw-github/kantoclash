@@ -275,6 +275,15 @@ export class ClientManager {
           this.handleVolatiles(e, players);
 
           const src = players.poke(e.src)!;
+          if (e.permanent) {
+            src.base.speciesId = e.speciesId;
+
+            const ability = e.volatiles?.find(v => v.id === e.src)?.v.ability;
+            if (ability) {
+              src.base.ability = ability;
+            }
+          }
+
           if (e.target) {
             src.base = transform(src.base.real, players.poke(e.target)!.base);
           }
