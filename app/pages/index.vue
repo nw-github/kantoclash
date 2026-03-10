@@ -6,7 +6,7 @@
       </h1>
       <ClientOnly>
         <div class="flex items-center gap-1.5">
-          <FormatSelector2 v-model="selectedFormat" />
+          <FormatSelector v-model="selectedFormat" />
           <FormatInfoButton :format="selectedFormat" />
         </div>
         <TeamSelector

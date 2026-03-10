@@ -82,7 +82,7 @@ const filter = (species: [SpeciesId, Species][], query: string) => {
   let subset = all
     .filter(([id, _]) => !currentSpecies.includes(id))
     .filter(([_, species]) => gen.validSpecies(species));
-  if (team.format === "g1_nfe") {
+  if (team.format.includes("nfe")) {
     subset = subset.filter(([_, species]) => species.evolvesTo);
   }
   return subset.length ? subset : all;
@@ -93,7 +93,7 @@ const onChoose = ([id, s]: [SpeciesId, Species]) => ((model.value = id), emit("c
 const isIllegal = (species: Species) => {
   if (!gen.validSpecies(species)) {
     return true;
-  } else if (team.format === "g1_nfe") {
+  } else if (team.format.includes("nfe")) {
     return !species.evolvesTo;
   }
   return false;

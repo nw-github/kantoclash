@@ -346,6 +346,8 @@ const VALIDATOR_GEN3_DBLS = createValidator(GENERATION3, 50);
 const VALIDATOR_GEN4_DBLS = createValidator(GENERATION4, 50);
 
 const VALIDATOR_GEN1_NFE = createValidator(GENERATION1, 5, true);
+const VALIDATOR_GEN3_NFE = createValidator(GENERATION3, 5, true);
+const VALIDATOR_GEN4_NFE = createValidator(GENERATION4, 5, true);
 
 const validateTeam = (
   validator: typeof VALIDATOR_GEN1,
@@ -380,6 +382,8 @@ export const formatDescs: Record<FormatId, FormatFunctions> = {
   g1_standard: {validate: team => validateTeam(VALIDATOR_GEN1, team)},
 
   g1_nfe: {validate: team => validateTeam(VALIDATOR_GEN1_NFE, team)},
+  g3_nfe: {validate: team => validateTeam(VALIDATOR_GEN3_NFE, team)},
+  g4_nfe: {validate: team => validateTeam(VALIDATOR_GEN4_NFE, team)},
 
   g4_randoms: {
     generate: () => randoms(GENERATION4, 100, (s, _) => !s.evolvesTo),
@@ -396,32 +400,25 @@ export const formatDescs: Record<FormatId, FormatFunctions> = {
   g2_randoms: {
     generate: () => randoms(GENERATION2, 100, (s, id) => !s.evolvesTo && id !== "mewtwo"),
   },
-  g1_truly_randoms: {
-    generate() {
-      return getRandomPokemon(
-        GENERATION1,
-        6,
-        s => !s.evolvesTo,
-        (s, speciesId) => ({
-          speciesId,
-          level: 100,
-          moves: getRandomMoves(
-            4,
-            Object.keys(moveList) as MoveId[],
-            (move, id) => !isBadMove(s, move, id),
-          ),
-        }),
-      );
-    },
-  },
   g1_randoms: {
     generate() {
       return randoms(GENERATION1, 100, (s, id) => !s.evolvesTo && id !== "mewtwo");
     },
   },
+
   g1_randoms_nfe: {
     generate() {
       return randoms(GENERATION1, 5, (s, id) => !!s.evolvesTo && !uselessNfe.has(id));
+    },
+  },
+  g3_randoms_nfe: {
+    generate() {
+      return randoms(GENERATION3, 5, (s, id) => !!s.evolvesTo && !uselessNfe.has(id));
+    },
+  },
+  g4_randoms_nfe: {
+    generate() {
+      return randoms(GENERATION4, 5, (s, id) => !!s.evolvesTo && !uselessNfe.has(id));
     },
   },
 
@@ -449,6 +446,16 @@ export const formatDescs: Record<FormatId, FormatFunctions> = {
     generate() {
       return getRandomPokemon(
         GENERATION3,
+        6,
+        s => !s.evolvesTo,
+        (_, speciesId) => ({speciesId, moves: ["metronome"], level: 100}),
+      );
+    },
+  },
+  g4_metronome: {
+    generate() {
+      return getRandomPokemon(
+        GENERATION4,
         6,
         s => !s.evolvesTo,
         (_, speciesId) => ({speciesId, moves: ["metronome"], level: 100}),
