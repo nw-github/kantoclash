@@ -1,7 +1,7 @@
 import speciesPatches from "./species.json";
 import items from "./items.json";
 import {GENERATION1, type Generation} from "../gen1";
-import {abilityList, type Species, type SpeciesId} from "../species";
+import type {Species, SpeciesId} from "../species";
 import {merge, type GenPatches} from "../gen2";
 import {moveFunctionPatches, movePatches} from "./moves";
 import {GENERATION3, createItemMergeList} from "../gen3";
@@ -247,7 +247,7 @@ const createGeneration = (): Generation => {
 
         if (poke.v.drowsy && --poke.v.drowsy === 0) {
           battle.event({type: "sv", volatiles: [{id: poke.id, v: {flags: poke.v.cflags}}]});
-          if (!poke.base.status && abilityList[poke.v.ability!]?.preventsStatus !== "slp") {
+          if (!poke.base.status && poke.getAbility()?.preventsStatus !== "slp") {
             poke.status("slp", battle, poke, {ignoreSafeguard: true});
           }
         }

@@ -21,7 +21,7 @@ export const tryDamage = (
       return true;
     } else if ((status === "psn" || status === "tox") && poke.v.hasAnyType("poison", "steel")) {
       return true;
-    } else if (abilityList[poke.v.ability!]?.preventsStatus === status) {
+    } else if (poke.getAbility()?.preventsStatus === status) {
       return true;
     } else if (status === "slp" && battle.hasUproar(poke)) {
       return true;
@@ -31,11 +31,12 @@ export const tryDamage = (
   };
 
   const onHit = (type: Type, hadSub: bool) => {
+    const targetAbility = target.getAbilityId();
     if (
       user.base.item?.kingsRock &&
       self.kingsRock &&
       !hadSub &&
-      !target.hasAbility("innerfocus") &&
+      targetAbility !== "innerfocus" &&
       target.base.status !== "frz" &&
       target.base.status !== "slp" &&
       battle.gen.rng.tryKingsRock(battle)
@@ -47,7 +48,7 @@ export const tryDamage = (
     if (
       !hadSub &&
       target.base.hp &&
-      target.hasAbility("colorchange") &&
+      targetAbility === "colorchange" &&
       type !== "???" &&
       !target.v.types.includes(type)
     ) {
@@ -65,8 +66,8 @@ export const tryDamage = (
       return;
     }
 
-    let status: Status | "attract" | undefined = abilityList[target.v.ability!]?.contactStatus;
-    if (target.hasAbility("effectspore")) {
+    let status: Status | "attract" | undefined = abilityList[targetAbility!]?.contactStatus;
+    if (targetAbility === "effectspore") {
       status = battle.rand100(10) ? battle.rng.choice(["psn", "par", "slp"])! : undefined;
     } else if (!battle.gen.rng.tryContactStatus(battle)) {
       status = undefined;
@@ -92,7 +93,7 @@ export const tryDamage = (
           user.status(status, battle, target, {ignoreSafeguard: true});
         }
       }
-    } else if (target.hasAbility("roughskin")) {
+    } else if (targetAbility === "roughskin") {
       battle.ability(target);
       user.damage2(battle, {
         dmg: Math.max(1, Math.floor(user.base.stats.hp / 16)),

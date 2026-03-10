@@ -1,5 +1,4 @@
 import {getLowKickPower, Range, type Move, type MoveFunctions, type MoveId} from "../moves";
-import {abilityList} from "../species";
 import {HP_TYPES, idiv, VF} from "../utils";
 
 export const moveFunctionPatches: Partial<MoveFunctions> = {
@@ -16,7 +15,7 @@ export const moveFunctionPatches: Partial<MoveFunctions> = {
     }
 
     if (this.why === "rest") {
-      if (abilityList[user.v.ability!]?.preventsStatus === "slp" || user.base.status === "slp") {
+      if (user.getAbility()?.preventsStatus === "slp" || user.base.status === "slp") {
         return battle.info(user, "fail_generic");
       } else if (battle.hasUproar(user)) {
         return battle.info(user, "fail_generic");

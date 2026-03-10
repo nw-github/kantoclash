@@ -1,6 +1,5 @@
 import {Range, type CustomMove, type Move} from ".";
 import type {InfoReason} from "../events";
-import {abilityList} from "../species";
 import {VF} from "../utils";
 
 type ExecMoveFn = CustomMove["exec"];
@@ -62,7 +61,7 @@ export const moveFunctions: MoveFunctions = {
     }
 
     if (this.why === "rest") {
-      if (abilityList[user.v.ability!]?.preventsStatus === "slp") {
+      if (user.getAbility()?.preventsStatus === "slp") {
         return battle.info(user, "fail_generic");
       }
 

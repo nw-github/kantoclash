@@ -21,7 +21,7 @@ export const tryDamage = (
       return true;
     } else if ((status === "psn" || status === "tox") && poke.v.hasAnyType("poison", "steel")) {
       return true;
-    } else if (abilityList[poke.v.ability!]?.preventsStatus === status) {
+    } else if (poke.getAbility()?.preventsStatus === status) {
       return true;
     } else if (status === "slp" && battle.hasUproar(poke)) {
       return true;

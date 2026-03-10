@@ -1,7 +1,6 @@
 import type {DamagingMove, Move} from "./index";
 import type {Pokemon} from "../pokemon";
 import {HP_TYPES, idiv, stageKeys, stageStatKeys, VF, MC, type Type} from "../utils";
-import {abilityList} from "../species";
 
 export type MoveId = keyof typeof internalMoveList;
 
@@ -4554,7 +4553,7 @@ const internalMoveList = createMoveList({
         battle.hasUproar(target)
       ) {
         return battle.info(user, "fail_generic");
-      } else if (abilityList[target.v.ability!]?.preventsStatus === "slp") {
+      } else if (target.getAbility()?.preventsStatus === "slp") {
         battle.ability(target);
         return battle.info(target, "immune");
       } else if (target.owner.screens.safeguard) {

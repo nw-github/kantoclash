@@ -1,6 +1,5 @@
 import type {Random} from "random";
 import type {CalcDamageParams} from "../gen";
-import {abilityList} from "../species";
 import {clamp, debugLog, VF} from "../utils";
 import type {DamagingMove} from ".";
 import type {ActivePokemon, Battle} from "../battle";
@@ -77,7 +76,7 @@ export function getDamage(
   const {type, eff, fail} = checkUsefulness(self, battle, user, target);
   let dmg = 0;
   let isCrit = battle.gen.rng.tryCrit(battle, user, self.flag === "high_crit");
-  if (target.v.ability && abilityList[target.v.ability].preventsCrit) {
+  if (target.getAbility()?.preventsCrit) {
     isCrit = false;
   }
 
@@ -97,11 +96,7 @@ export function getDamage(
       rand = false;
     }
 
-    if (
-      user.base.belowHp(3) &&
-      user.v.ability &&
-      abilityList[user.v.ability].pinchBoostType === type
-    ) {
+    if (user.base.belowHp(3) && user.getAbility()?.pinchBoostType === type) {
       pow += Math.floor(pow / 2);
     }
     if (

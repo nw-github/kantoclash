@@ -216,10 +216,8 @@ const createGeneration = (): Generation => {
         acc -= Math.floor(acc * 0.2);
       }
 
-      if (
-        abilityList[target.v.ability!]?.weatherEva &&
-        battle.getWeather() === abilityList[target.v.ability!]?.weatherEva
-      ) {
+      const weatherEva = target.getAbility()?.weatherEva;
+      if (weatherEva && battle.getWeather() === weatherEva) {
         acc = Math.floor((acc * 4) / 5);
       }
 

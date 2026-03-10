@@ -450,7 +450,7 @@ export class ActivePokemon {
     }
 
     const statusNoTox = status === "tox" ? "psn" : status;
-    if (abilityList[this.v.ability!]?.preventsStatus === statusNoTox) {
+    if (this.getAbility()?.preventsStatus === statusNoTox) {
       if (loud) {
         battle.ability(this);
         battle.info(this, "immune");
@@ -583,8 +583,8 @@ export class ActivePokemon {
 
   modStages(mods: [StageId, number][], battle: Battle, src?: ActivePokemon, quiet?: bool) {
     let failed = true;
+    const prevented = this.getAbility()?.preventsStatDrop;
     for (const [stat, count] of mods) {
-      const prevented = abilityList[this.v.ability!]?.preventsStatDrop;
       if (src && src !== this && count < 0 && (prevented === stat || prevented === "all")) {
         failed = false;
         if (!quiet) {
@@ -859,7 +859,7 @@ export class ActivePokemon {
 
     if (status) {
       const status = this.base.status === "tox" ? "psn" : this.base.status;
-      if (status && abilityList[this.v.ability!]?.preventsStatus === status) {
+      if (status && this.getAbility()?.preventsStatus === status) {
         battle.ability(this);
         this.unstatus(battle);
       }

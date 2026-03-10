@@ -21,7 +21,6 @@ import {
 } from "./utils";
 import type {Generation} from "./gen";
 import {ActivePokemon} from "./active";
-import {abilityList} from "./species";
 
 export {ActivePokemon};
 
@@ -579,7 +578,7 @@ export class Battle {
   }
 
   getWeather() {
-    if (this.allActive.some(p => p.v.ability && abilityList[p.v.ability].negatesWeather)) {
+    if (this.allActive.some(p => p.getAbility()?.negatesWeather)) {
       return;
     }
     return this.weather?.kind;
