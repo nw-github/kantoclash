@@ -964,7 +964,7 @@ const internalMoveList = createMoveList({
       }
 
       target.v.seededBy = user;
-      battle.info(target, "cSeeded", [{id: target.id, v: {flags: target.v.cflags}}]);
+      battle.info(target, "seeded", [{id: target.id, v: {flags: target.v.cflags}}]);
     },
   },
   leer: {
@@ -2094,7 +2094,7 @@ const internalMoveList = createMoveList({
       }
 
       target.v.attract = user;
-      battle.info(target, "cAttract", [{id: target.id, v: {flags: target.v.cflags}}]);
+      battle.info(target, "attract", [{id: target.id, v: {flags: target.v.cflags}}]);
     },
   },
   batonpass: {
@@ -2356,7 +2356,7 @@ const internalMoveList = createMoveList({
       }
 
       target.v.encore = {indexInMoves: target.v.lastMoveIndex, turns: battle.rng.int(2, 6) + 1};
-      battle.info(target, "cEncore", [{id: target.id, v: {flags: target.v.cflags}}]);
+      battle.info(target, "encore", [{id: target.id, v: {flags: target.v.cflags}}]);
     },
   },
   endure: {
@@ -4395,7 +4395,7 @@ const internalMoveList = createMoveList({
       }
 
       target.v.tauntTurns = 2 + 1;
-      battle.info(target, "cTaunt", [{id: target.id, v: {flags: target.v.cflags}}]);
+      battle.info(target, "taunt", [{id: target.id, v: {flags: target.v.cflags}}]);
     },
   },
   teeterdance: {
@@ -4564,7 +4564,7 @@ const internalMoveList = createMoveList({
       }
 
       target.v.drowsy = 2;
-      battle.info(target, "cDrowsy", [{id: target.id, v: {flags: target.v.cflags}}]);
+      battle.info(target, "drowsy", [{id: target.id, v: {flags: target.v.cflags}}]);
     },
   },
   // >== GENERATION 4
@@ -5057,12 +5057,22 @@ const internalMoveList = createMoveList({
     kingsRock: true,
   },
   gastroacid: {
-    kind: "fail",
     name: "Gastro Acid",
-    pp: 1,
-    type: "normal",
+    pp: 10,
+    type: "poison",
     range: Range.Adjacent,
-    why: "fail_unimplemented",
+    exec(battle, user, [target]) {
+      if (battle.tryMagicBounce(this, user, target)) {
+        return;
+      } else if (target.v.hasFlag(VF.gastroAcid)) {
+        return battle.info(user, "fail_generic");
+      } else if (target.hasAbility("multitype")) {
+        battle.ability(target);
+        return battle.info(target, "immune");
+      }
+
+      return battle.info(target, "gastroAcid", [target.setFlag(VF.gastroAcid)]);
+    },
   },
   gigaimpact: {
     kind: "damage",

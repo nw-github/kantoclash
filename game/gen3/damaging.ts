@@ -85,7 +85,7 @@ export const tryDamage = (
 
         battle.ability(target);
         user.v.attract = target;
-        battle.info(user, "cAttract", [{id: user.id, v: {flags: user.v.cflags}}]);
+        battle.info(user, "attract", [{id: user.id, v: {flags: user.v.cflags}}]);
       } else if (!user.base.status) {
         if (!isImmune(user, status)) {
           battle.ability(target);

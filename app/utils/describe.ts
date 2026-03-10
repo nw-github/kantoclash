@@ -137,6 +137,8 @@ const descriptions: Partial<Record<number, Partial<Record<MoveId, string>>>> = {
     eruption: "Power ranges between 1 and 150, decreasing with the user's HP. ",
     roleplay: "Copies the target's ability. ",
     acupressure: "Randomly raises a stat of the target by 2. ",
+    gastroacid:
+      "Suppresses the target's ability until it switches out. Fails on Pokémon with Multitype. ",
   },
   [2]: {
     conversion:

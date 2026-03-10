@@ -19,6 +19,7 @@ import {
 import {
   arraysEqual,
   clamp,
+  CVF,
   getEffectiveness,
   HP_TYPES,
   hpPercent,
@@ -114,7 +115,7 @@ export class ActivePokemon {
         passedFlags &= ~VF.identified;
       }
 
-      this.v.setFlag(old.cflags & passedFlags);
+      this.v.setFlag(old.flags & passedFlags);
 
       // Is trapping passed? Encore? Nightmare?
 
@@ -621,12 +622,12 @@ export class ActivePokemon {
   }
 
   confuse(battle: Battle, reason?: InfoReason, turns?: number) {
-    if (reason !== "cConfusedFatigue" && reason !== "cConfusedFatigueMax" && this.v.confusion) {
+    if (reason !== "fatigue_confuse" && reason !== "fatigue_confuse_max" && this.v.confusion) {
       return false;
     }
 
     this.v.confusion = turns ?? battle.rng.int(2, 5) + 1;
-    battle.info(this, reason ?? "cConfused", [{id: this.id, v: {flags: this.v.cflags}}]);
+    battle.info(this, reason ?? "become_confused", [{id: this.id, v: {flags: this.v.cflags}}]);
     return true;
   }
 
@@ -794,8 +795,7 @@ export class ActivePokemon {
     }
 
     const done = --this.v.confusion === 0;
-    const v = [{id: this.id, v: {flags: this.v.cflags}}];
-    battle.info(this, done ? "confused_end" : "confused", v);
+    battle.info(this, done ? "confused_end" : "confused");
     if (!done && battle.rng.bool()) {
       const move = this.choice?.move;
       const explosion = move?.kind === "damage" && move.flag === "explosion" ? 2 : 1;
@@ -874,7 +874,7 @@ export class ActivePokemon {
       if (this.v.confusion && this.hasAbility("owntempo")) {
         this.v.confusion = 0;
         battle.ability(this);
-        battle.info(this, "confused_end", [{id: this.id, v: {flags: this.v.cflags}}]);
+        battle.info(this, "confused_end");
       }
 
       const cures = item.cureStatus;
@@ -888,12 +888,12 @@ export class ActivePokemon {
         } else if (this.v.confusion) {
           this.v.confusion = 0;
           this.consumeItem(battle);
-          battle.info(this, "confused_end", [{id: this.id, v: {flags: this.v.cflags}}]);
+          battle.info(this, "confused_end");
         }
       } else if (cures === "confuse" && this.v.confusion) {
         this.v.confusion = 0;
         this.consumeItem(battle);
-        battle.info(this, "confused_end", [{id: this.id, v: {flags: this.v.cflags}}]);
+        battle.info(this, "confused_end");
       } else if (this.v.attract && this.base.itemId === "mentalherb") {
         this.v.attract = undefined;
         this.consumeItem(battle);
@@ -926,7 +926,7 @@ export class ActivePokemon {
           if (this.base.nature !== undefined) {
             const [, minus] = Object.keys(natureTable[this.base.nature]);
             if (minus === healPinch && !this.hasAbility("owntempo")) {
-              this.confuse(battle, "cConfused");
+              this.confuse(battle);
             }
           }
         } else if (healSitrus) {
@@ -1190,7 +1190,7 @@ export class ActivePokemon {
   }
 
   getAbilityId() {
-    return this.v.ability;
+    return !this.v.hasFlag(VF.gastroAcid) ? this.v.ability : undefined;
   }
 
   getAbility() {
@@ -1382,35 +1382,22 @@ class Volatiles {
   }
 
   hasFlag(flag: VF) {
-    return (this.cflags & flag) !== 0;
+    return (this._flags & flag) !== 0;
+  }
+
+  get flags() {
+    return this._flags;
   }
 
   get cflags() {
-    let flags = this._flags;
-    if (this.disabled) {
-      flags |= VF.cDisabled;
-    }
-    if (this.attract) {
-      flags |= VF.cAttract;
-    }
-    if (this.confusion) {
-      flags |= VF.cConfused;
-    }
-    if (this.encore) {
-      flags |= VF.cEncore;
-    }
-    if (this.meanLook) {
-      flags |= VF.cMeanLook;
-    }
-    if (this.seededBy) {
-      flags |= VF.cSeeded;
-    }
-    if (this.tauntTurns) {
-      flags |= VF.cTaunt;
-    }
-    if (this.drowsy) {
-      flags |= VF.cDrowsy;
-    }
-    return flags;
+    let hi = CVF.none;
+    hi |= this.disabled ? CVF.disabled : 0;
+    hi |= this.attract ? CVF.attract : 0;
+    hi |= this.encore ? CVF.encore : 0;
+    hi |= this.meanLook ? CVF.meanLook : 0;
+    hi |= this.seededBy ? CVF.seeded : 0;
+    hi |= this.tauntTurns ? CVF.taunt : 0;
+    hi |= this.drowsy ? CVF.drowsy : 0;
+    return {lo: this._flags, hi};
   }
 }

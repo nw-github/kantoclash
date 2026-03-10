@@ -327,7 +327,7 @@ export const moveFunctions: MoveFunctions = {
     }
 
     target.v.meanLook = user;
-    battle.info(target, "cMeanLook", [{id: target.id, v: {flags: target.v.cflags}}]);
+    battle.info(target, "meanlook", [{id: target.id, v: {flags: target.v.cflags}}]);
   },
   lockOn(battle, user, [target]) {
     if (target.v.substitute) {

@@ -76,23 +76,21 @@ export enum VF {
   torment      = 0x0020_0000,
   snatch       = 0x0040_0000,
   magicCoat    = 0x0080_0000,
+  gastroAcid   = 0x0100_0000,
+}
 
-  /** Client only */
-  cConfused    = 0x8000_0000,
-  /** Client only */
-  cDisabled    = 0x4000_0000,
-  /** Client only */
-  cAttract     = 0x2000_0000,
-  /** Client only */
-  cEncore      = 0x1000_0000,
-  /** Client only */
-  cMeanLook    = 0x0800_0000,
-  /** Client only */
-  cSeeded      = 0x0400_0000,
-  /** Client only */
-  cTaunt       = 0x0200_0000,
-  /** Client only */
-  cDrowsy      = 0x0100_0000,
+/** Client only */
+// prettier-ignore
+export enum CVF {
+  none     = 0,
+  confused = 0x0000_0001,
+  disabled = 0x0000_0002,
+  attract  = 0x0000_0004,
+  encore   = 0x0000_0008,
+  meanLook = 0x0000_0010,
+  seeded   = 0x0000_0020,
+  taunt    = 0x0000_0040,
+  drowsy   = 0x0000_0080,
 }
 
 // prettier-ignore

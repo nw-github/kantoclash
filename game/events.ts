@@ -1,7 +1,7 @@
 import type {MoveId} from "./moves";
 import type {FormId, Gender, Status} from "./pokemon";
 import type {AbilityId, SpeciesId} from "./species";
-import type {StageId, Type, VF, Weather, ScreenId, HazardId, StageStats} from "./utils";
+import type {StageId, Type, VF, Weather, ScreenId, HazardId, StageStats, CVF} from "./utils";
 import type {ItemId} from "./item";
 import type {SwitchReason} from "./active";
 
@@ -13,7 +13,7 @@ export type ClientVolatiles = {
   charging?: MoveId;
   trapped?: MoveId;
   types?: Type[];
-  flags?: VF;
+  flags?: {lo: VF; hi: CVF};
   perishCount?: number;
   ability?: AbilityId;
   stockpile?: number;
@@ -231,15 +231,22 @@ export type BugType = "bug_gen2_bellydrum" | "bug_gen2_spikes";
 
 type VFReason = Exclude<
   keyof typeof VF,
-  "curse" | "none" | "cDisabled" | "identified" | "lockon" | "helpingHand" | "flashFire"
+  "curse" | "none" | "disabled" | "identified" | "lockon" | "helpingHand" | "flashFire"
 >;
 
 export type InfoReason =
   | FailReason
   | VFReason
   | "payday"
-  | "cConfusedFatigue"
-  | "cConfusedFatigueMax"
+  | "become_confused"
+  | "fatigue_confuse"
+  | "fatigue_confuse_max"
+  | "seeded"
+  | "encore"
+  | "taunt"
+  | "drowsy"
+  | "meanlook"
+  | "attract"
   | "confused"
   | "confused_end"
   | "recharge"

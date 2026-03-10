@@ -550,7 +550,7 @@ export class Battle {
         result[i] = {...e, hp: e.hpPercent, indexInTeam: -1};
       } else if (
         e.type === "info" &&
-        e.why === "cConfusedFatigue" &&
+        e.why === "fatigue_confuse" &&
         playerId(e.src) !== player?.id
       ) {
         // don't leak short outrage/petal dance/thrash/etc. to the opponent

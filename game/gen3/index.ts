@@ -457,7 +457,7 @@ const createGeneration = (): Generation => {
 
               if (done) {
                 if (poke.v.thrashing.move.flag === "multi_turn" && ability !== "owntempo") {
-                  poke.confuse(battle, "cConfusedFatigueMax");
+                  poke.confuse(battle, "fatigue_confuse_max");
                 }
                 poke.v.thrashing = undefined;
               }

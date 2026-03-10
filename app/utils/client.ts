@@ -20,6 +20,7 @@ export type ClientActivePokemon = {
   indexInTeam: number;
   abilityUnknown?: bool;
   substitute?: bool;
+  confused?: bool;
 };
 
 export type ClientPlayer = {
@@ -233,6 +234,13 @@ export class ClientManager {
       }
       return;
     } else if (e.type === "info") {
+      const confusionMessages = [
+        "become_confused",
+        "fatigue_confuse",
+        "fatigue_confuse_max",
+        "confused",
+      ];
+
       if (e.why === "faint") {
         const poke = players.poke(e.src)!;
         this.cb.playCry(poke.base.speciesId, true);
@@ -263,6 +271,10 @@ export class ClientManager {
           batonPass: true,
         });
         return;
+      } else if (e.why === "confused_end") {
+        players.poke(e.src)!.confused = false;
+      } else if (confusionMessages.includes(e.why)) {
+        players.poke(e.src)!.confused = true;
       }
     } else if (e.type === "transform") {
       const _img = this.cb.preloadSprite(e.src, e.speciesId, e.gender === "F", e.shiny, e.form);

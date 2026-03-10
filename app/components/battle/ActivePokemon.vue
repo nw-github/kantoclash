@@ -77,8 +77,9 @@
             variant="subtle"
           />
 
-          <template v-for="{flag, props} in badges">
-            <UBadge v-if="((poke.v.flags ?? 0) & flag) !== 0" :key="flag" v-bind="props" />
+          <template v-for="{cond, props} in badges">
+            <!-- eslint-disable-next-line vue/valid-v-for -->
+            <UBadge v-if="cond()" v-bind="props" />
           </template>
 
           <template v-for="(val, stage) in poke.v.stages">
@@ -127,14 +128,14 @@
               />
 
               <img
-                v-if="poke && !poke.fainted && ((poke.v.flags ?? 0) & VF.cConfused) !== 0"
+                v-if="poke && !poke.fainted && poke.confused"
                 class="absolute size-10 sm:size-20 -top-3 sm:-top-0 z-30 dark:invisible"
                 src="/dizzy-light.gif"
                 alt="confused"
               />
 
               <img
-                v-if="poke && !poke.fainted && ((poke.v.flags ?? 0) & VF.cConfused) !== 0"
+                v-if="poke && !poke.fainted && poke.confused"
                 class="absolute size-10 sm:size-20 -top-3 sm:-top-0 z-30 invisible dark:visible"
                 src="/dizzy.gif"
                 alt="confused"
@@ -241,7 +242,7 @@ img {
 
 <script setup lang="ts">
 import type {PokeId} from "~~/game/events";
-import {VF, type ScreenId, type Weather} from "~~/game/utils";
+import {CVF, VF, type ScreenId, type Weather} from "~~/game/utils";
 
 import {breakpointsTailwind} from "@vueuse/core";
 import {UPopover, type UBadge} from "#components";
@@ -285,17 +286,20 @@ const scrColor = {
   mist: "bg-sky-400",
 };
 
+const flags = computed(() => poke?.v.flags?.lo ?? 0);
+const cflags = computed(() => poke?.v.flags?.hi ?? 0);
+
 const screens = computed(() => {
   const screens: {name: string; clazz: string}[] = [];
-  if ((poke?.v.flags ?? 0) & VF.protect) {
+  if (flags.value & VF.protect) {
     screens.push({name: "protect", clazz: "bg-slate-200"});
   }
 
-  if ((poke?.v.flags ?? 0) & VF.lightScreen) {
+  if (flags.value & VF.lightScreen) {
     screens.push({name: "light_screen", clazz: scrColor.light_screen});
   }
 
-  if ((poke?.v.flags ?? 0) & VF.reflect) {
+  if (flags.value & VF.reflect) {
     screens.push({name: "reflect", clazz: scrColor.reflect});
   }
 
@@ -319,28 +323,50 @@ const relativePos = (src: DOMRect, x: number, y: number) => [x - src.left, y - s
 "orange" | "amber" | "yellow" | "cyan" | "blue" | "indigo" | "violet" | "purple" | "fuchsia" |
 "rose" | "primary"
 */
-const badges: {flag: VF; props: InstanceType<typeof UBadge>["$props"]}[] = [
-  {flag: VF.followMe, props: {color: "lime", icon: "tabler:hand-finger", variant: "subtle"}},
-  {flag: VF.snatch, props: {color: "lime", icon: "tabler:hand-grab", variant: "subtle"}},
-  {flag: VF.cAttract, props: {color: "pink", icon: "material-symbols:favorite", variant: "subtle"}},
-  {flag: VF.lockon, props: {color: "red", icon: "ri:crosshair-2-line", variant: "subtle"}},
-  {flag: VF.cMeanLook, props: {color: "red", icon: "tabler:prison", variant: "subtle"}},
-  {flag: VF.cSeeded, props: {color: "lime", icon: "tabler:seedling-filled", variant: "subtle"}},
-  {flag: VF.flashFire, props: {color: "red", icon: "mdi:fire", variant: "subtle"}},
-  {flag: VF.helpingHand, props: {color: "lime", icon: "mdi:hand-clap", variant: "subtle"}},
-  {flag: VF.charge, props: {color: "yellow", icon: "material-symbols:bolt", variant: "subtle"}},
-  {flag: VF.magicCoat, props: {color: "pink", icon: "mdi:mirror", variant: "subtle"}},
+const fc = (flag: VF) => {
+  return () => (flags.value & flag) !== 0;
+};
+
+const cfc = (flag: CVF) => {
+  return () => (cflags.value & flag) !== 0;
+};
+
+const badges: {cond: () => bool; props: InstanceType<typeof UBadge>["$props"]}[] = [
+  {cond: fc(VF.followMe), props: {color: "lime", icon: "tabler:hand-finger", variant: "subtle"}},
+  {cond: fc(VF.snatch), props: {color: "lime", icon: "tabler:hand-grab", variant: "subtle"}},
   {
-    flag: VF.cEncore,
+    cond: cfc(CVF.attract),
+    props: {color: "pink", icon: "material-symbols:favorite", variant: "subtle"},
+  },
+  {cond: fc(VF.lockon), props: {color: "red", icon: "ri:crosshair-2-line", variant: "subtle"}},
+  {cond: cfc(CVF.meanLook), props: {color: "red", icon: "tabler:prison", variant: "subtle"}},
+  {
+    cond: cfc(CVF.seeded),
+    props: {color: "lime", icon: "tabler:seedling-filled", variant: "subtle"},
+  },
+  {cond: fc(VF.flashFire), props: {color: "red", icon: "mdi:fire", variant: "subtle"}},
+  {cond: fc(VF.helpingHand), props: {color: "lime", icon: "mdi:hand-clap", variant: "subtle"}},
+  {cond: fc(VF.charge), props: {color: "yellow", icon: "material-symbols:bolt", variant: "subtle"}},
+  {cond: fc(VF.magicCoat), props: {color: "pink", icon: "mdi:mirror", variant: "subtle"}},
+  {
+    cond: fc(VF.gastroAcid),
+    props: {
+      color: "purple",
+      icon: "material-symbols:skull",
+      label: "Suppressed",
+    },
+  },
+  {
+    cond: cfc(CVF.encore),
     props: {color: "sky", icon: "material-symbols:celebration", variant: "subtle"},
   },
-  {flag: VF.cDisabled, props: {color: "red", icon: "fe:disabled", variant: "subtle"}},
+  {cond: cfc(CVF.disabled), props: {color: "red", icon: "fe:disabled", variant: "subtle"}},
   {
-    flag: VF.cTaunt,
+    cond: cfc(CVF.taunt),
     props: {color: "red", icon: "fluent-emoji-high-contrast:anger-symbol", variant: "subtle"},
   },
   {
-    flag: VF.torment,
+    cond: fc(VF.torment),
     props: {
       color: "red",
       icon: "fluent-emoji-high-contrast:anger-symbol",
@@ -349,28 +375,28 @@ const badges: {flag: VF; props: InstanceType<typeof UBadge>["$props"]}[] = [
     },
   },
   {
-    flag: VF.identified,
+    cond: fc(VF.identified),
     props: {color: "violet", icon: "material-symbols:search-rounded", variant: "subtle"},
   },
   {
-    flag: VF.imprisoning,
+    cond: fc(VF.imprisoning),
     props: {color: "red", icon: "material-symbols:lock", variant: "subtle", label: "Imprisoning"},
   },
-  {flag: VF.curse, props: {color: "red", icon: "mdi:nail", label: "Cursed", variant: "subtle"}},
+  {cond: fc(VF.curse), props: {color: "red", icon: "mdi:nail", label: "Cursed", variant: "subtle"}},
   {
-    flag: VF.ingrain,
+    cond: fc(VF.ingrain),
     props: {color: "lime", icon: "tabler:prison", variant: "subtle", label: "Ingrain"},
   },
-  {flag: VF.focusEnergy, props: {color: "emerald", label: "Focus Energy"}},
-  {flag: VF.mist, props: {color: "teal", label: "Mist"}},
-  {flag: VF.destinyBond, props: {color: "gray", label: "Destiny Bond"}},
-  {flag: VF.grudge, props: {color: "gray", label: "Grudge"}},
-  {flag: VF.protect, props: {color: "black", label: "Protect"}},
-  {flag: VF.endure, props: {color: "black", label: "Endure"}},
-  {flag: VF.nightmare, props: {color: "black", label: "Nightmare"}},
-  {flag: VF.cDrowsy, props: {color: "black", label: "Drowsy"}},
-  {flag: VF.waterSport, props: {color: "sky", label: "Water Sport"}},
-  {flag: VF.mudSport, props: {color: "orange", label: "Mud Sport"}},
+  {cond: fc(VF.focusEnergy), props: {color: "emerald", label: "Focus Energy"}},
+  {cond: fc(VF.mist), props: {color: "teal", label: "Mist"}},
+  {cond: fc(VF.destinyBond), props: {color: "gray", label: "Destiny Bond"}},
+  {cond: fc(VF.grudge), props: {color: "gray", label: "Grudge"}},
+  {cond: fc(VF.protect), props: {color: "black", label: "Protect"}},
+  {cond: fc(VF.endure), props: {color: "black", label: "Endure"}},
+  {cond: fc(VF.nightmare), props: {color: "black", label: "Nightmare"}},
+  {cond: cfc(CVF.drowsy), props: {color: "black", label: "Drowsy"}},
+  {cond: fc(VF.waterSport), props: {color: "sky", label: "Water Sport"}},
+  {cond: fc(VF.mudSport), props: {color: "orange", label: "Mud Sport"}},
 ];
 
 const rem = (rem: number) => parseFloat(getComputedStyle(document.documentElement).fontSize) * rem;

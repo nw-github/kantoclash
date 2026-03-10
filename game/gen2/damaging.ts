@@ -14,7 +14,7 @@ export const tryDamage = (
     if (user.v.thrashing && --user.v.thrashing.turns === 0) {
       user.v.furyCutter = 0;
       if (!user.owner.screens.safeguard && self.flag === "multi_turn") {
-        user.confuse(battle, user.v.thrashing.max ? "cConfusedFatigueMax" : "cConfusedFatigue");
+        user.confuse(battle, user.v.thrashing.max ? "fatigue_confuse_max" : "fatigue_confuse");
       }
       user.v.thrashing = undefined;
     }
