@@ -31,11 +31,12 @@ export const tryDamage = (
   };
 
   const onHit = (type: Type, hadSub: bool) => {
+    const targetAbility = target.getAbilityId();
     if (
       user.base.item?.kingsRock &&
       self.kingsRock &&
       !hadSub &&
-      !target.hasAbility("innerfocus") &&
+      targetAbility !== "innerfocus" &&
       target.base.status !== "frz" &&
       target.base.status !== "slp" &&
       battle.gen.rng.tryKingsRock(battle)
@@ -43,11 +44,18 @@ export const tryDamage = (
       target.v.flinch = true;
     }
 
+    // In Gen IV, Anger Point works even if the crit hits a substitute
+    if (target.base.hp && targetAbility === "angerpoint" && target.v.stages.atk < 6) {
+      battle.ability(target);
+      battle.info(target, "atk_maximize", target.setStage("atk", +6, battle, false));
+      return;
+    }
+
     // TODO: test if color change activates before move secondary effect
     if (
       !hadSub &&
       target.base.hp &&
-      target.hasAbility("colorchange") &&
+      targetAbility === "colorchange" &&
       type !== "???" &&
       !target.v.types.includes(type)
     ) {
@@ -65,8 +73,8 @@ export const tryDamage = (
       return;
     }
 
-    let status: Status | "attract" | undefined = abilityList[target.v.ability!]?.contactStatus;
-    if (target.hasAbility("effectspore")) {
+    let status = abilityList[targetAbility!]?.contactStatus;
+    if (targetAbility === "effectspore") {
       status = battle.rand100(10) ? battle.rng.choice(["psn", "par", "slp"])! : undefined;
     } else if (!battle.gen.rng.tryContactStatus(battle)) {
       status = undefined;
@@ -92,7 +100,7 @@ export const tryDamage = (
           user.status(status, battle, target, {ignoreSafeguard: true});
         }
       }
-    } else if (target.hasAbility("roughskin")) {
+    } else if (targetAbility === "roughskin") {
       battle.ability(target);
       user.damage2(battle, {
         dmg: Math.max(1, Math.floor(user.base.stats.hp / 8)),

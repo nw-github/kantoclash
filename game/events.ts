@@ -283,7 +283,8 @@ export type InfoReason =
   | "not_confused"
   | "wish"
   | "cure_attract"
-  | "pressure";
+  | "pressure"
+  | "atk_maximize";
 
 type InfoEvent = {type: "info"; src: PokeId; why: InfoReason};
 

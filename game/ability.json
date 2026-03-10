@@ -130,8 +130,8 @@
     "desc": "Increased evasiveness in hail.",
     "weatherEva": "hail"
   },
+  "angerpoint": {"name": "Anger Point", "desc": "Maximizes attack if crit."},
 
-  "angerpoint": {"name": "Anger Point", "desc": "Unimplemented"},
   "download": {"name": "Download", "desc": "Unimplemented"},
   "forewarn": {"name": "Forewarn", "desc": "Unimplemented"},
   "frisk": {"name": "Frisk", "desc": "Unimplemented"},
