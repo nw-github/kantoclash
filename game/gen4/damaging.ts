@@ -211,10 +211,11 @@ export const tryDamage = (
       }
     }
   } else if (self.flag === "double" || self.flag === "triple" || self.flag === "multi") {
+    // Skill link doesn't affect Triple Kick until Gen V
     const counts = {
       double: 2,
       triple: 3,
-      multi: battle.gen.rng.multiHitCount(battle),
+      multi: user.v.ability === "skilllink" ? 5 : battle.gen.rng.multiHitCount(battle),
     };
 
     const wasSleeping = user.base.status === "slp";

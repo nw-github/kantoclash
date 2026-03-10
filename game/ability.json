@@ -124,6 +124,7 @@
   "superluck": {"name": "Super Luck", "desc": "Raises critical-hit ratio."},
   "technician": {"name": "Technician", "desc": "+50% power to moves below 60 BP."},
   "poisonheal": {"name": "Poison Heal", "desc": "+1/8 HP at the end of each turn when PSNd."},
+  "skilllink": {"name": "Skill Link", "desc": "Multi-hit moves hit maximum times."},
 
   "angerpoint": {"name": "Anger Point", "desc": "Unimplemented"},
   "download": {"name": "Download", "desc": "Unimplemented"},
@@ -155,7 +156,6 @@
   "quickfeet": {"name": "Quick Feet", "desc": "Unimplemented"},
   "reckless": {"name": "Reckless", "desc": "Unimplemented"},
   "rivalry": {"name": "Rivalry", "desc": "Unimplemented"},
-  "skilllink": {"name": "Skill Link", "desc": "Unimplemented"},
   "sniper": {"name": "Sniper", "desc": "Unimplemented"},
   "solarpower": {"name": "Solar Power", "desc": "Unimplemented"},
   "solidrock": {"name": "Solid Rock", "desc": "Unimplemented"},
