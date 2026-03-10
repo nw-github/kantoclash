@@ -35,7 +35,7 @@ export const tryDamage = (
       user.base.item?.kingsRock &&
       self.kingsRock &&
       !hadSub &&
-      target.v.ability !== "innerfocus" &&
+      !target.hasAbility("innerfocus") &&
       target.base.status !== "frz" &&
       target.base.status !== "slp" &&
       battle.gen.rng.tryKingsRock(battle)
@@ -47,7 +47,7 @@ export const tryDamage = (
     if (
       !hadSub &&
       target.base.hp &&
-      target.v.ability === "colorchange" &&
+      target.hasAbility("colorchange") &&
       type !== "???" &&
       !target.v.types.includes(type)
     ) {
@@ -66,7 +66,7 @@ export const tryDamage = (
     }
 
     let status: Status | "attract" | undefined = abilityList[target.v.ability!]?.contactStatus;
-    if (target.v.ability === "effectspore") {
+    if (target.hasAbility("effectspore")) {
       status = battle.rand100(10) ? battle.rng.choice(["psn", "par", "slp"])! : undefined;
     } else if (!battle.gen.rng.tryContactStatus(battle)) {
       status = undefined;
@@ -92,7 +92,7 @@ export const tryDamage = (
           user.status(status, battle, target, {ignoreSafeguard: true});
         }
       }
-    } else if (target.v.ability === "roughskin") {
+    } else if (target.hasAbility("roughskin")) {
       battle.ability(target);
       user.damage2(battle, {
         dmg: Math.max(1, Math.floor(user.base.stats.hp / 16)),
@@ -139,16 +139,14 @@ export const tryDamage = (
       if (abilityImmunity) {
         battle.ability(
           target,
-          target.v.ability === "flashfire" ? [target.setFlag(VF.flashFire)] : undefined,
+          target.hasAbility("flashfire") ? [target.setFlag(VF.flashFire)] : undefined,
         );
       }
 
       battle.info(target, "immune");
 
-      if (abilityImmunity) {
-        if (target.v.ability === "waterabsorb" || target.v.ability === "voltabsorb") {
-          target.recover(Math.max(1, Math.floor(target.base.stats.hp / 4)), user, battle, "none");
-        }
+      if (abilityImmunity && target.hasAnyAbility("waterabsorb", "voltabsorb")) {
+        target.recover(Math.max(1, Math.floor(target.base.stats.hp / 4)), user, battle, "none");
       }
     } else if (fail) {
       battle.info(user, "fail_generic");
@@ -284,7 +282,7 @@ export const tryDamage = (
   if (
     user.base.hp &&
     self.recoil &&
-    (self === battle.gen.moveList.struggle || user.v.ability !== "rockhead")
+    (self === battle.gen.moveList.struggle || !user.hasAbility("rockhead"))
   ) {
     user.damage(Math.max(Math.floor(dealt / self.recoil), 1), user, battle, false, "recoil", true);
   }
@@ -372,10 +370,10 @@ export const tryDamage = (
     return dealt;
   }
 
-  if (user.v.ability === "serenegrace") {
+  if (user.hasAbility("serenegrace")) {
     chance *= 2;
   }
-  if (target.v.ability === "shielddust" && !effectSelf && effect !== "thief") {
+  if (target.hasAbility("shielddust") && !effectSelf && effect !== "thief") {
     return dealt;
   }
 
@@ -393,7 +391,7 @@ export const tryDamage = (
   }
 
   if (effect === "confusion") {
-    if (!target.v.confusion && !user.owner.screens.safeguard && target.v.ability !== "owntempo") {
+    if (!target.v.confusion && !user.owner.screens.safeguard && !target.hasAbility("owntempo")) {
       target.confuse(battle);
     }
   } else if (Array.isArray(effect)) {
@@ -405,7 +403,7 @@ export const tryDamage = (
       return dealt;
     }
 
-    if (target.v.ability !== "innerfocus") {
+    if (!target.hasAbility("innerfocus")) {
       target.v.flinch = true;
     } else if (chance === 100) {
       battle.ability(target);
@@ -416,7 +414,7 @@ export const tryDamage = (
       user.base.itemId ||
       !target.base.itemId ||
       target.base.itemId.includes("mail") ||
-      target.v.ability === "stickyhold"
+      target.hasAbility("stickyhold")
     ) {
       return dealt;
     }
@@ -430,7 +428,7 @@ export const tryDamage = (
     user.manipulateItem(poke => (poke.itemId = target.base.itemId));
     target.manipulateItem(poke => (poke.itemId = undefined));
   } else if (effect === "knockoff") {
-    if (target.base.itemId && target.v.ability !== "stickyhold") {
+    if (target.base.itemId && !target.hasAbility("stickyhold")) {
       battle.event({
         type: "knockoff",
         src: user.id,

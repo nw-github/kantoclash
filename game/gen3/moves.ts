@@ -24,7 +24,7 @@ export const moveFunctionPatches: Partial<MoveFunctions> = {
 
       user.base.status = "slp";
       user.base.sleepTurns = 3;
-      if (user.v.ability === "earlybird") {
+      if (user.hasAbility("earlybird")) {
         user.base.sleepTurns--;
       }
       user.v.counter = 0;
@@ -46,7 +46,7 @@ export const moveFunctionPatches: Partial<MoveFunctions> = {
     const next = battle.rng.choice(target.owner.team.filter(p => p.hp && p != target.base.real));
     if (!next) {
       return battle.info(user, "fail_generic");
-    } else if (target.v.ability === "suctioncups") {
+    } else if (target.hasAbility("suctioncups")) {
       battle.ability(target);
       return battle.info(target, "immune");
     } else if (target.v.hasFlag(VF.ingrain)) {

@@ -20,15 +20,16 @@ export function checkUsefulness(
 
   let eff = battle.getEffectiveness(type, target);
   let abilityImmunity = false;
-  if (self.sound && target.v.ability === "soundproof") {
+  const targetAbility = target.getAbilityId();
+  if (self.sound && targetAbility === "soundproof") {
     eff = 0;
     abilityImmunity = true;
   } else if (
-    (type !== "???" && eff <= 1 && target.v.ability === "wonderguard") ||
-    (type === "ground" && eff !== 0 && target.v.ability === "levitate") ||
-    (type === "electric" && target.v.ability === "voltabsorb") ||
-    (type === "water" && target.v.ability === "waterabsorb") ||
-    (type === "fire" && target.v.ability === "flashfire" && target.base.status !== "frz")
+    (type !== "???" && eff <= 1 && targetAbility === "wonderguard") ||
+    (type === "ground" && eff !== 0 && targetAbility === "levitate") ||
+    (type === "electric" && targetAbility === "voltabsorb") ||
+    (type === "water" && targetAbility === "waterabsorb") ||
+    (type === "fire" && targetAbility === "flashfire" && target.base.status !== "frz")
   ) {
     eff = 0;
     abilityImmunity = true;
@@ -164,7 +165,7 @@ export function getDamage(
     let [atk, def] = extras.beatUp
       ? ([extras.beatUp.stats.atk, target.base.stats.def] as const)
       : battle.gen.getDamageVariables(spc, battle, user, target, isCrit);
-    if ((type === "ice" || type === "fire") && target.v.ability === "thickfat") {
+    if ((type === "ice" || type === "fire") && target.hasAbility("thickfat")) {
       atk -= Math.floor(atk / 2);
     }
 
@@ -213,7 +214,7 @@ export function getDamage(
       screen: !!target.owner.screens[spc ? "light_screen" : "reflect"],
       flashFire: user.v.hasFlag(VF.flashFire) && type === "fire",
       stockpile,
-      technician: user.v.ability === "technician" && !self.noTechnician,
+      technician: user.hasAbility("technician") && !self.noTechnician,
     });
 
     if (self.flag === "false_swipe" && dmg >= target.base.hp && !target.v.substitute) {

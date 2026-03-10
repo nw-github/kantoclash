@@ -2078,7 +2078,7 @@ const internalMoveList = createMoveList({
     protect: true,
     magicCoat: true,
     exec(battle, user, [target]) {
-      if (target.v.ability === "oblivious") {
+      if (target.hasAbility("oblivious")) {
         battle.ability(target);
         return battle.info(target, "immune");
       } else if (
@@ -2758,7 +2758,7 @@ const internalMoveList = createMoveList({
     sound: true,
     exec(battle, user, targets) {
       for (const poke of targets) {
-        if (poke.v.ability === "soundproof") {
+        if (poke.hasAbility("soundproof")) {
           battle.ability(poke);
           battle.info(poke, "immune");
           continue;
@@ -4140,7 +4140,7 @@ const internalMoveList = createMoveList({
     type: "psychic",
     range: Range.Adjacent,
     exec(battle, user, [target]) {
-      if (target.v.ability === "multitype" || user.v.ability === "multitype") {
+      if (target.hasAbility("multitype") || user.hasAbility("multitype")) {
         return battle.info(user, "fail_generic");
       } else if (!battle.checkAccuracy(this, user, target)) {
         return;
@@ -4245,7 +4245,7 @@ const internalMoveList = createMoveList({
     type: "psychic",
     range: Range.Adjacent,
     exec(battle, user, [target]) {
-      if (target.v.ability === "multitype" || user.v.ability === "multitype") {
+      if (target.hasAbility("multitype") || user.hasAbility("multitype")) {
         return battle.info(user, "fail_generic");
       } else if (!battle.checkAccuracy(this, user, target)) {
         return;

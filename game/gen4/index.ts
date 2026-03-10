@@ -144,14 +144,15 @@ const createGeneration = (): Generation => {
           continue;
         }
 
+        const ability = poke.getAbilityId();
         if (
           !poke.base.isMaxHp() &&
-          ((weather === "rain" && poke.v.ability === "raindish") ||
-            (weather === "hail" && poke.v.ability === "icebody"))
+          ((weather === "rain" && ability === "raindish") ||
+            (weather === "hail" && ability === "icebody"))
         ) {
           battle.ability(poke);
           poke.recover(Math.max(1, idiv(poke.base.stats.hp, 16)), poke, battle, "recover");
-        } else if (weather === "rain" && poke.v.ability === "hydration" && poke.base.status) {
+        } else if (weather === "rain" && ability === "hydration" && poke.base.status) {
           battle.ability(poke);
           poke.unstatus(battle);
         }
@@ -164,12 +165,13 @@ const createGeneration = (): Generation => {
       // A bunch of stuff
       const hasUproar = battle.allActive.some(p => p.v.thrashing?.move?.flag === "uproar");
       for (const poke of turnOrder) {
+        const ability = poke.getAbilityId();
         if (!poke.v.fainted) {
           if (poke.v.hasFlag(VF.ingrain)) {
             poke.recover(Math.max(1, idiv(poke.base.stats.hp, 16)), poke, battle, "ingrain");
           }
 
-          if (poke.v.ability === "speedboost" && poke.v.canSpeedBoost && poke.v.stages.spe < 6) {
+          if (ability === "speedboost" && poke.v.canSpeedBoost && poke.v.stages.spe < 6) {
             battle.ability(poke);
             poke.modStages([["spe", +1]], battle);
           }
@@ -177,16 +179,12 @@ const createGeneration = (): Generation => {
           if (poke.v.canSpeedBoost) {
             if (poke.v.hasFlag(VF.loafing)) {
               poke.v.clearFlag(VF.loafing);
-            } else if (poke.v.ability === "truant") {
+            } else if (ability === "truant") {
               poke.v.setFlag(VF.loafing);
             }
           }
 
-          if (
-            poke.base.status &&
-            poke.v.ability === "shedskin" &&
-            battle.gen.rng.tryShedSkin(battle)
-          ) {
+          if (poke.base.status && ability === "shedskin" && battle.gen.rng.tryShedSkin(battle)) {
             battle.ability(poke);
             poke.unstatus(battle);
           }
@@ -200,7 +198,7 @@ const createGeneration = (): Generation => {
         if (poke.base.hp && poke.base.status === "slp") {
           const opp = battle
             .getTargets(poke, Range.AdjacentFoe)
-            .find(opp => opp.v.ability === "baddreams");
+            .find(opp => opp.hasAbility("baddreams"));
           if (opp) {
             battle.ability(opp);
             poke.damage2(battle, {
@@ -220,14 +218,14 @@ const createGeneration = (): Generation => {
             }
 
             if (done) {
-              if (poke.v.thrashing.move.flag === "multi_turn" && poke.v.ability !== "owntempo") {
+              if (poke.v.thrashing.move.flag === "multi_turn" && ability !== "owntempo") {
                 poke.confuse(battle, "cConfusedFatigueMax");
               }
               poke.v.thrashing = undefined;
             }
           }
 
-          if (hasUproar && poke.base.status === "slp" && poke.v.ability !== "soundproof") {
+          if (hasUproar && poke.base.status === "slp" && ability !== "soundproof") {
             poke.unstatus(battle, "wake");
           }
 

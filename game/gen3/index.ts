@@ -72,7 +72,7 @@ const createGeneration = (): Generation => {
         if (user.base.itemId === "luckypunch" && user.base.real.speciesId === "chansey") {
           stages += 2;
         }
-        if (user.v.ability === "superluck") {
+        if (user.hasAbility("superluck")) {
           stages++;
         }
         return battle.rand100(critStages[Math.min(stages, 4)] * 100);
@@ -99,7 +99,7 @@ const createGeneration = (): Generation => {
         poke.base.stats[stat] * poke.base.gen.stageMultipliers[poke.v.stages[stat]],
       );
 
-      if (poke.base.status === "brn" && stat === "atk" && poke.v.ability !== "guts") {
+      if (poke.base.status === "brn" && stat === "atk" && !poke.hasAbility("guts")) {
         value = Math.max(Math.floor(value / 2), 1);
       } else if (poke.base.status === "par" && stat === "spe") {
         value = Math.max(Math.floor(value / 4), 1);
@@ -150,7 +150,7 @@ const createGeneration = (): Generation => {
     },
     getMaxPP: move => (move.pp === 1 ? 1 : Math.floor((move.pp * 8) / 5)),
     checkAccuracy(move, battle, user, target, phys) {
-      if (user.v.ability === "noguard" || target.v.ability === "noguard") {
+      if (user.hasAbility("noguard") || target.hasAbility("noguard")) {
         return true;
       }
 
@@ -171,7 +171,7 @@ const createGeneration = (): Generation => {
       }
 
       if (move.kind === "damage" && move.flag === "ohko") {
-        if (target.v.ability === "sturdy") {
+        if (target.hasAbility("sturdy")) {
           battle.ability(target);
           battle.info(target, "immune");
           return false;
@@ -207,12 +207,12 @@ const createGeneration = (): Generation => {
         acc += Math.floor(acc * (userItem.boostAcc / 100));
       }
 
-      if (user.v.ability === "compoundeyes") {
+      if (user.hasAbility("compoundeyes")) {
         acc += Math.floor(acc * 0.3);
       }
 
       phys ??= battle.gen.getCategory(move) === MC.physical;
-      if (user.v.ability === "hustle" && phys) {
+      if (user.hasAbility("hustle") && phys) {
         acc -= Math.floor(acc * 0.2);
       }
 
@@ -271,7 +271,7 @@ const createGeneration = (): Generation => {
         return false;
       }
 
-      if (user.v.ability === "truant" && user.v.hasFlag(VF.loafing)) {
+      if (user.hasAbility("truant") && user.v.hasFlag(VF.loafing)) {
         battle.info(user, "loafing");
         resetVolatiles();
         return false;
@@ -407,21 +407,18 @@ const createGeneration = (): Generation => {
         let someoneDied = false;
         const hasUproar = battle.allActive.some(p => p.v.thrashing?.move?.flag === "uproar");
         for (const poke of turnOrder) {
+          const ability = poke.getAbilityId();
           if (!poke.v.fainted) {
             if (poke.v.hasFlag(VF.ingrain)) {
               poke.recover(Math.max(1, idiv(poke.base.stats.hp, 16)), poke, battle, "ingrain");
             }
 
-            if (
-              battle.hasWeather("rain") &&
-              poke.v.ability === "raindish" &&
-              !poke.base.isMaxHp()
-            ) {
+            if (battle.hasWeather("rain") && ability === "raindish" && !poke.base.isMaxHp()) {
               battle.ability(poke);
               poke.recover(Math.max(1, idiv(poke.base.stats.hp, 16)), poke, battle, "recover");
             }
 
-            if (poke.v.ability === "speedboost" && poke.v.canSpeedBoost && poke.v.stages.spe < 6) {
+            if (ability === "speedboost" && poke.v.canSpeedBoost && poke.v.stages.spe < 6) {
               battle.ability(poke);
               poke.modStages([["spe", +1]], battle);
             }
@@ -429,16 +426,12 @@ const createGeneration = (): Generation => {
             if (poke.v.canSpeedBoost) {
               if (poke.v.hasFlag(VF.loafing)) {
                 poke.v.clearFlag(VF.loafing);
-              } else if (poke.v.ability === "truant") {
+              } else if (ability === "truant") {
                 poke.v.setFlag(VF.loafing);
               }
             }
 
-            if (
-              poke.base.status &&
-              poke.v.ability === "shedskin" &&
-              battle.gen.rng.tryShedSkin(battle)
-            ) {
+            if (poke.base.status && ability === "shedskin" && battle.gen.rng.tryShedSkin(battle)) {
               battle.ability(poke);
               poke.unstatus(battle);
             }
@@ -452,7 +445,7 @@ const createGeneration = (): Generation => {
           }
 
           if (poke.base.hp) {
-            if (hasUproar && poke.base.status === "slp" && poke.v.ability !== "soundproof") {
+            if (hasUproar && poke.base.status === "slp" && ability !== "soundproof") {
               poke.unstatus(battle, "wake");
             }
 
@@ -463,7 +456,7 @@ const createGeneration = (): Generation => {
               }
 
               if (done) {
-                if (poke.v.thrashing.move.flag === "multi_turn" && poke.v.ability !== "owntempo") {
+                if (poke.v.thrashing.move.flag === "multi_turn" && ability !== "owntempo") {
                   poke.confuse(battle, "cConfusedFatigueMax");
                 }
                 poke.v.thrashing = undefined;
@@ -486,7 +479,7 @@ const createGeneration = (): Generation => {
 
           if (poke.v.drowsy && --poke.v.drowsy === 0) {
             battle.event({type: "sv", volatiles: [{id: poke.id, v: {flags: poke.v.cflags}}]});
-            if (!poke.base.status && abilityList[poke.v.ability!]?.preventsStatus !== "slp") {
+            if (!poke.base.status && abilityList[ability!]?.preventsStatus !== "slp") {
               poke.status("slp", battle, poke, {ignoreSafeguard: true});
             }
           }

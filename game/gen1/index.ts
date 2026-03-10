@@ -547,7 +547,7 @@ const createGeneration = () => {
         }
 
         let dead = false;
-        if (why === "psn" && poke.v.ability === "poisonheal") {
+        if (why === "psn" && poke.hasAbility("poisonheal")) {
           if (poke.base.hp < poke.base.stats.hp) {
             battle.ability(poke);
             poke.recover(Math.max(Math.floor(poke.base.stats.hp / 8), 1), poke, battle, "recover");

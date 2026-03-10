@@ -83,7 +83,7 @@ export class ActivePokemon {
       battle.event({type: "sv", volatiles: [{id: this.id, v: {status: "psn"}}]});
     }
 
-    if (this.base.status && this.v.ability === "naturalcure" && !this.v.fainted) {
+    if (this.base.status && this.hasAbility("naturalcure") && !this.v.fainted) {
       battle.ability(this);
       this.unstatus(battle);
     }
@@ -296,8 +296,7 @@ export class ActivePokemon {
     this.v.form = target.v.form;
     this.v.ability = target.v.ability;
 
-    if (target.v.ability === "multitype" && target.base.speciesId === "arceus") {
-      // TODO: should it still work if the plate was knocked off?
+    if (target.base.speciesId === "arceus" && target.hasAbility("multitype")) {
       const type = this.base.item?.plate ?? "normal";
       this.v.form = type;
       this.v.types = [type];
@@ -397,7 +396,7 @@ export class ActivePokemon {
   }
 
   recover(amount: number, src: ActivePokemon, battle: Battle, why: RecoveryReason, v = false) {
-    if ((why === "seeder" || why === "drain") && src !== this && src.v.ability === "liquidooze") {
+    if ((why === "seeder" || why === "drain") && src !== this && src.hasAbility("liquidooze")) {
       battle.ability(src);
       return this.damage2(battle, {dmg: amount, src, why: "roughskin"});
     }
@@ -468,7 +467,7 @@ export class ActivePokemon {
         this.v.recharge = undefined;
       }
       this.base.sleepTurns = battle.gen.rng.sleepTurns(battle);
-      if (this.v.ability === "earlybird") {
+      if (this.hasAbility("earlybird")) {
         this.base.sleepTurns = Math.floor(this.base.sleepTurns / 2);
       }
 
@@ -493,7 +492,7 @@ export class ActivePokemon {
     });
 
     if (
-      this.v.ability === "synchronize" &&
+      this.hasAbility("synchronize") &&
       src !== this &&
       (statusNoTox === "psn" || statusNoTox === "par" || statusNoTox === "brn")
     ) {
@@ -632,18 +631,23 @@ export class ActivePokemon {
   }
 
   applyAbilityStatBoost(battle: Battle, stat: StatStageId, value: number) {
-    if ((this.v.ability === "hugepower" || this.v.ability === "purepower") && stat === "atk") {
+    const ability = this.getAbilityId();
+    if (!ability) {
+      return value;
+    }
+
+    if ((ability === "hugepower" || ability === "purepower") && stat === "atk") {
       value *= 2;
     }
 
     const weather = battle.getWeather();
-    if (weather && abilityList[this.v.ability!]?.weatherSpeedBoost === weather && stat === "spe") {
+    if (weather && abilityList[ability]?.weatherSpeedBoost === weather && stat === "spe") {
       value *= 2;
     }
 
     if (
       weather === "sun" &&
-      this.owner.active.some(p => !p.v.fainted && p.v.ability === "flowergift") &&
+      this.owner.active.some(p => !p.v.fainted && p.hasAbility("flowergift")) &&
       (stat === "atk" || stat === "spd")
     ) {
       value += Math.floor(value / 2);
@@ -651,30 +655,30 @@ export class ActivePokemon {
 
     // TODO: the attack boost from guts should activate if the pokemon uses a move that thaws it
     // out
-    if (this.v.ability === "guts" && stat === "atk" && this.base.status) {
+    if (ability === "guts" && stat === "atk" && this.base.status) {
       value += Math.floor(value / 2);
     }
 
-    if (this.v.ability === "hustle" && stat === "atk") {
+    if (ability === "hustle" && stat === "atk") {
       value += Math.floor(value / 2);
     }
 
-    if (this.v.ability === "marvelscale" && stat === "def" && this.base.status) {
+    if (ability === "marvelscale" && stat === "def" && this.base.status) {
       value += Math.floor(value / 2);
     }
 
-    if (stat === "spa" && (this.v.ability === "plus" || this.v.ability === "minus")) {
+    if (stat === "spa" && (ability === "plus" || ability === "minus")) {
       let minus = false,
         plus = false;
       for (const poke of battle.allActive) {
         // pre Gen V, plus and minus activate for opponents
         if (!poke.v.fainted) {
-          minus = minus || poke.v.ability === "minus";
-          plus = plus || poke.v.ability === "plus";
+          minus = minus || poke.hasAbility("minus");
+          plus = plus || poke.hasAbility("plus");
         }
       }
 
-      if ((minus && this.v.ability === "plus") || (plus && this.v.ability === "minus")) {
+      if ((minus && ability === "plus") || (plus && ability === "minus")) {
         value += Math.floor(value / 2);
       }
     }
@@ -683,7 +687,7 @@ export class ActivePokemon {
   }
 
   handleWeatherAbility(battle: Battle) {
-    const weather = abilityList[this.v.ability!]?.startsWeather;
+    const weather = this.getAbility()?.startsWeather;
     if (weather) {
       battle.ability(this);
       battle.setWeather(weather, -1);
@@ -691,7 +695,7 @@ export class ActivePokemon {
   }
 
   handleSwitchInAbility(battle: Battle) {
-    if (this.v.ability === "intimidate" && !this.v.usedIntimidate) {
+    if (this.hasAbility("intimidate") && !this.v.usedIntimidate) {
       this.v.usedIntimidate = true;
       let procd = false;
       for (const poke of battle.getTargets(this, Range.AllAdjacentFoe)) {
@@ -710,7 +714,7 @@ export class ActivePokemon {
       }
     }
 
-    if (this.v.ability === "trace" && !this.v.usedTrace) {
+    if (this.hasAbility("trace") && !this.v.usedTrace) {
       const target = battle.rng.choice(
         battle
           .getTargets(this, Range.AllAdjacentFoe)
@@ -730,7 +734,7 @@ export class ActivePokemon {
       }
     }
 
-    if (this.v.ability === "pressure" && battle.gen.id >= 4) {
+    if (this.hasAbility("pressure") && battle.gen.id >= 4) {
       battle.ability(this);
       battle.info(this, "pressure");
     }
@@ -754,7 +758,7 @@ export class ActivePokemon {
           form: this.v.form,
         });
       }
-    } else if (this.v.ability === "forecast" && this.base.speciesId === "castform") {
+    } else if (this.hasAbility("forecast") && this.base.speciesId === "castform") {
       const types: Record<Weather, Type> = {
         sand: "normal",
         hail: "ice",
@@ -860,14 +864,14 @@ export class ActivePokemon {
         this.unstatus(battle);
       }
 
-      if (this.v.attract && this.v.ability === "oblivious") {
+      if (this.v.attract && this.hasAbility("oblivious")) {
         this.v.attract = undefined;
         // is this silent?
         battle.ability(this);
         battle.info(this, "cure_attract", [{id: this.id, v: {flags: this.v.cflags}}]);
       }
 
-      if (this.v.confusion && this.v.ability === "owntempo") {
+      if (this.v.confusion && this.hasAbility("owntempo")) {
         this.v.confusion = 0;
         battle.ability(this);
         battle.info(this, "confused_end", [{id: this.id, v: {flags: this.v.cflags}}]);
@@ -921,7 +925,7 @@ export class ActivePokemon {
           this.recover(Math.max(1, Math.floor(this.base.stats.hp / 8)), this, battle, "item");
           if (this.base.nature !== undefined) {
             const [, minus] = Object.keys(natureTable[this.base.nature]);
-            if (minus === healPinch && this.v.ability !== "owntempo") {
+            if (minus === healPinch && !this.hasAbility("owntempo")) {
               this.confuse(battle, "cConfused");
             }
           }
@@ -957,7 +961,7 @@ export class ActivePokemon {
     } else if (
       weather === "sand" &&
       (this.v.types.some(t => t === "steel" || t === "ground" || t === "rock") ||
-        this.v.ability === "sandveil")
+        this.hasAbility("sandveil"))
     ) {
       return;
     } else if (weather === "hail" && this.v.types.includes("ice")) {
@@ -1174,7 +1178,24 @@ export class ActivePokemon {
   }
 
   isGrounded() {
-    return !this.v.types.includes("flying") && this.v.ability !== "levitate";
+    return !this.v.types.includes("flying") && !this.hasAbility("levitate");
+  }
+
+  hasAbility(ability: AbilityId) {
+    return this.getAbilityId() === ability;
+  }
+
+  hasAnyAbility(...ability: AbilityId[]) {
+    return ability.includes(this.getAbilityId());
+  }
+
+  getAbilityId() {
+    return this.v.ability;
+  }
+
+  getAbility() {
+    const ability = this.getAbilityId();
+    return ability && abilityList[ability];
   }
 
   cantEscape(battle: Battle) {
@@ -1188,11 +1209,12 @@ export class ActivePokemon {
 
     // FIXME: sending this to the client leaks the pokemon's ability
     for (const poke of battle.getTargets(this, Range.AllAdjacent)) {
-      if (poke.v.ability === "magnetpull" && this.v.types.includes("steel")) {
+      const ability = poke.getAbilityId();
+      if (ability === "magnetpull" && this.v.types.includes("steel")) {
         return true;
-      } else if (poke.v.ability === "arenatrap" && poke.owner !== this.owner && this.isGrounded()) {
+      } else if (ability === "arenatrap" && poke.owner !== this.owner && this.isGrounded()) {
         return true;
-      } else if (poke.v.ability === "shadowtag" && poke.owner !== this.owner) {
+      } else if (ability === "shadowtag" && poke.owner !== this.owner) {
         return true;
       }
     }

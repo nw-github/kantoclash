@@ -307,7 +307,7 @@ const createGeneration = (): Generation => {
         poke.base.stats[stat] * poke.base.gen.stageMultipliers[poke.v.stages[stat]],
       );
 
-      if (poke.base.status === "brn" && stat === "atk" && poke.v.ability !== "guts") {
+      if (poke.base.status === "brn" && stat === "atk" && !poke.hasAbility("guts")) {
         value = Math.max(Math.floor(value / 2), 1);
       } else if (poke.base.status === "par" && stat === "spe") {
         value = Math.max(Math.floor(value / 4), 1);

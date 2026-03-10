@@ -32,7 +32,7 @@ export const moveFunctions: MoveFunctions = {
         return;
       } else if (target.v.substitute) {
         continue;
-      } else if (target.v.ability === "owntempo") {
+      } else if (target.hasAbility("owntempo")) {
         battle.ability(target);
         battle.info(target, "immune");
         failed = false;
@@ -68,7 +68,7 @@ export const moveFunctions: MoveFunctions = {
 
       user.base.status = "slp";
       user.base.sleepTurns = 2;
-      if (user.v.ability === "earlybird") {
+      if (user.hasAbility("earlybird")) {
         user.base.sleepTurns--;
       }
       user.recover(diff, user, battle, this.why, true);
@@ -95,7 +95,7 @@ export const moveFunctions: MoveFunctions = {
         } else if (id === "captivate") {
           // Is this the correct ordering? IE would we reveal the target ability if the move would
           // fail for some other reason?
-          if (target.base.ability === "oblivious") {
+          if (target.hasAbility("oblivious")) {
             failed = false;
             battle.ability(target);
             battle.info(target, "immune");
@@ -289,7 +289,7 @@ export const moveFunctions: MoveFunctions = {
     const next = battle.rng.choice(target.owner.team.filter(p => p.hp && p !== target.base.real));
     if (!next || !target.choice?.executed) {
       return battle.info(user, "fail_generic");
-    } else if (target.v.ability === "suctioncups") {
+    } else if (target.hasAbility("suctioncups")) {
       battle.ability(target);
       return battle.info(target, "immune");
     } else if (target.v.hasFlag(VF.ingrain)) {
@@ -346,7 +346,7 @@ export const moveFunctions: MoveFunctions = {
   healbell(battle, user) {
     battle.info(user, this.why);
     for (const poke of user.owner.active) {
-      if (poke.base.status && poke.v.ability === "soundproof" && this.sound) {
+      if (this.sound && poke.base.status && poke.hasAbility("soundproof")) {
         battle.ability(poke);
         battle.info(poke, "immune");
         continue;
@@ -356,7 +356,9 @@ export const moveFunctions: MoveFunctions = {
     }
     const opp = battle.opponentOf(user.owner);
     for (const poke of user.owner.team) {
-      if (poke.ability === "soundproof" && this.sound) {
+      if (this.sound && poke.ability === "soundproof") {
+        continue;
+      } else if (user.owner.active.some(p => p.base.real === poke)) {
         continue;
       }
 
@@ -372,7 +374,7 @@ export const moveFunctions: MoveFunctions = {
     } else if (target.owner.screens.safeguard) {
       target.modStages(this.stages, battle, user);
       return battle.info(target, "safeguard_protect");
-    } else if (target.v.ability === "owntempo") {
+    } else if (target.hasAbility("owntempo")) {
       target.modStages(this.stages, battle, user);
       battle.ability(target);
       return battle.info(target, "not_confused");
@@ -401,7 +403,7 @@ export const moveFunctions: MoveFunctions = {
   trick(battle, user, [target]) {
     if (target.v.substitute) {
       return battle.info(user, "fail_generic");
-    } else if (target.v.ability === "stickyhold" || target.v.ability === "multitype") {
+    } else if (target.hasAnyAbility("stickyhold", "multitype")) {
       battle.ability(target);
       return battle.info(target, "immune");
     } else if (

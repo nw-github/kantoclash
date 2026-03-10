@@ -535,7 +535,7 @@ export class Battle {
 
   hasUproar(user: ActivePokemon) {
     return (
-      user.v.ability !== "soundproof" &&
+      !user.hasAbility("soundproof") &&
       this.allActive.some(p => p.v.thrashing?.move?.flag === "uproar")
     );
   }
@@ -710,7 +710,7 @@ export class Battle {
         targets = [target];
       } else if (
         move.type === "electric" &&
-        (target = availableTargets.find(t => t.v.ability === "lightningrod"))
+        (target = availableTargets.find(t => t.hasAbility("lightningrod")))
       ) {
         targets = [target];
       } else if (!targets.length) {
@@ -719,7 +719,7 @@ export class Battle {
 
       const moveId = this.moveIdOf(move)!;
       if (move.kind === "damage") {
-        const damp = this.allActive.find(p => p.v.ability === "damp");
+        const damp = this.allActive.find(p => p.hasAbility("damp"));
         if (damp && move.damp) {
           this.ability(damp);
           return this.event({type: "cantuse", src: user.id, move: moveId});
@@ -775,7 +775,7 @@ export class Battle {
 
         const tr = move.range === Range.Field ? this.allActive : targets;
         for (const poke of tr) {
-          if (poke.v.ability === "pressure" && poke !== user) {
+          if (poke.hasAbility("pressure") && poke !== user) {
             user.base.pp[moveIndex] = Math.max(0, user.base.pp[moveIndex] - 1);
           }
         }
@@ -842,7 +842,7 @@ export class Battle {
           if (targets[i].v.hasFlag(VF.protect)) {
             this.info(targets[i], "protect");
             targets.splice(i--, 1);
-          } else if (targets[i].v.ability === "soundproof" && move.sound) {
+          } else if (targets[i].hasAbility("soundproof") && move.sound) {
             this.ability(targets[i]);
             this.info(targets[i], "immune");
             targets.splice(i--, 1);
