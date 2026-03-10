@@ -125,6 +125,11 @@
   "technician": {"name": "Technician", "desc": "+50% power to moves below 60 BP."},
   "poisonheal": {"name": "Poison Heal", "desc": "+1/8 HP at the end of each turn when PSNd."},
   "skilllink": {"name": "Skill Link", "desc": "Multi-hit moves hit maximum times."},
+  "snowcloak": {
+    "name": "Snow Cloak",
+    "desc": "Increased evasiveness in hail.",
+    "weatherEva": "hail"
+  },
 
   "angerpoint": {"name": "Anger Point", "desc": "Unimplemented"},
   "download": {"name": "Download", "desc": "Unimplemented"},
@@ -134,7 +139,6 @@
   "magicguard": {"name": "Magic Guard", "desc": "Unimplemented"},
   "normalize": {"name": "Normalize", "desc": "Unimplemented"},
   "simple": {"name": "Simple", "desc": "Unimplemented"},
-  "snowcloak": {"name": "Snow Cloak", "desc": "Unimplemented"},
   "stormdrain": {"name": "Storm Drain", "desc": "Unimplemented"},
   "tangledfeet": {"name": "Tangled Feet", "desc": "Unimplemented"},
   "unburden": {"name": "Unburden", "desc": "Unimplemented"},

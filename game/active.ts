@@ -960,11 +960,12 @@ export class ActivePokemon {
       return;
     } else if (
       weather === "sand" &&
-      (this.v.types.some(t => t === "steel" || t === "ground" || t === "rock") ||
-        this.hasAbility("sandveil"))
+      this.v.types.some(t => t === "steel" || t === "ground" || t === "rock")
     ) {
       return;
     } else if (weather === "hail" && this.v.types.includes("ice")) {
+      return;
+    } else if (this.getAbility()?.weatherEva === weather) {
       return;
     }
 
