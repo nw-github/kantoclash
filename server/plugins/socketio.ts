@@ -9,20 +9,28 @@ export default defineNitroPlugin(nitro => {
   const io = new GameServer(undefined, {
     async onBattleComplete(format, battle) {
       const battlers = battle.players.map(pl => pl.id);
-      await useDrizzle()
-        .insert(battles)
-        .values({
-          format,
-          player1: +battlers[0],
-          player2: +battlers[1],
-          winner: battle.victor ? +battle.victor.id : null,
-        });
+      try {
+        await useDrizzle()
+          .insert(battles)
+          .values({
+            format,
+            player1: +battlers[0],
+            player2: +battlers[1],
+            winner: battle.victor ? +battle.victor.id : null,
+          });
+      } catch {
+        console.error("Cannot save battle due to database error");
+      }
     },
     async reportBugs(id, battle, reports) {
-      await useDrizzle()
-        .insert(bugReports)
-        .values({id, battle, reports})
-        .onConflictDoUpdate({target: bugReports.id, set: {battle, reports}});
+      try {
+        await useDrizzle()
+          .insert(bugReports)
+          .values({id, battle, reports})
+          .onConflictDoUpdate({target: bugReports.id, set: {battle, reports}});
+      } catch {
+        console.error("Cannot save bug report due to database error");
+      }
     },
   });
   io.bind(engine);

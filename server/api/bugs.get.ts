@@ -6,5 +6,7 @@ export default defineEventHandler(async event => {
     throw createError({statusCode: 401, message: "Unauthorized"});
   }
 
-  return await useDrizzle().select().from(bugReports).orderBy(bugReports.createdAt);
+  return await translateDbError(
+    useDrizzle().select().from(bugReports).orderBy(bugReports.createdAt),
+  );
 });

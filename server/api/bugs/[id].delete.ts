@@ -9,8 +9,10 @@ export default defineEventHandler(async event => {
 
   const id = getRouterParam(event, "id");
   if (id) {
-    const [report] = await useDrizzle().delete(bugReports).where(eq(bugReports.id, id)).returning();
-    if (user) {
+    const [report] = await translateDbError(
+      useDrizzle().delete(bugReports).where(eq(bugReports.id, id)).returning(),
+    );
+    if (report) {
       return {id: report.id};
     }
   }

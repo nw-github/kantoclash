@@ -11,12 +11,13 @@ declare module "#auth-utils" {
 }
 
 export default defineEventHandler(async event => {
-  const db = useDrizzle();
   const {username, password} = await readValidatedBody(event, userSchema.parse);
-  const [user] = await db
-    .select()
-    .from(users)
-    .where(eq(lower(users.username), username.toLowerCase()));
+  const [user] = await translateDbError(
+    useDrizzle()
+      .select()
+      .from(users)
+      .where(eq(lower(users.username), username.toLowerCase())),
+  );
 
   if (!(await verifyPassword(user?.password, password))) {
     throw createError({statusCode: 401, message: "Bad credentials"});

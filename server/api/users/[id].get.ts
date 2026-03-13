@@ -2,10 +2,11 @@ import {eq} from "drizzle-orm";
 import {users} from "~~/server/db/schema";
 
 export default defineEventHandler(async event => {
-  const db = useDrizzle();
   const id = getRouterParam(event, "id");
   if (id) {
-    const [user] = await db.select().from(users).where(eq(users.id, +id));
+    const [user] = await translateDbError(
+      useDrizzle().select().from(users).where(eq(users.id, +id)),
+    );
     if (user) {
       return {
         name: user.username,

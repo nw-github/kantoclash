@@ -86,12 +86,8 @@ const submit = async (event: FormSubmitEvent<Schema>) => {
 
     $conn.disconnect();
   } catch (err: any) {
-    form.value!.setErrors([
-      {
-        path: "username",
-        message: err.data.statusCode === 409 ? "Username already taken" : "Invalid credentials",
-      },
-    ]);
+    const message = err.data.statusCode === 500 ? "Internal server error" : err.data.message;
+    form.value!.setErrors([{path: "username", message}]);
   } finally {
     loading.value = false;
   }
