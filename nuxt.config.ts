@@ -10,7 +10,17 @@ export default defineNuxtConfig({
     "@nuxt/eslint",
     "motion-v/nuxt",
   ],
-  nitro: {experimental: {websocket: true}, esbuild: {options: {target: "es2022"}}},
+  nitro: {
+    experimental: {websocket: true},
+    esbuild: {options: {target: "es2022"}},
+    typescript: {
+      tsConfig: {
+        compilerOptions: {
+          noUncheckedIndexedAccess: false,
+        },
+      },
+    },
+  },
   components: [{path: "~/components", pathPrefix: false}],
   runtimeConfig: {
     session: {
