@@ -1,7 +1,6 @@
 import {Range, type CustomMove, type Move} from ".";
 import type {InfoReason} from "../events";
-import {abilityList} from "../species";
-import {isSpecial, VF} from "../utils";
+import {VF} from "../utils";
 
 type ExecMoveFn = CustomMove["exec"];
 
@@ -32,7 +31,7 @@ export const moveFunctions: MoveFunctions = {
         return;
       } else if (target.v.substitute) {
         continue;
-      } else if (target.v.ability === "owntempo") {
+      } else if (target.hasAbility("owntempo")) {
         battle.ability(target);
         battle.info(target, "immune");
         failed = false;
@@ -62,13 +61,13 @@ export const moveFunctions: MoveFunctions = {
     }
 
     if (this.why === "rest") {
-      if (abilityList[user.v.ability!]?.preventsStatus === "slp") {
+      if (user.getAbility()?.preventsStatus === "slp") {
         return battle.info(user, "fail_generic");
       }
 
       user.base.status = "slp";
       user.base.sleepTurns = 2;
-      if (user.v.ability === "earlybird") {
+      if (user.hasAbility("earlybird")) {
         user.base.sleepTurns--;
       }
       user.recover(diff, user, battle, this.why, true);
@@ -80,6 +79,8 @@ export const moveFunctions: MoveFunctions = {
   stage(battle, user, targets) {
     battle.gen1LastDamage = 0;
     let failed = true;
+
+    const id = battle.moveIdOf(this)!;
     for (const target of targets) {
       if (this.range !== Range.Self) {
         if (battle.tryMagicBounce(this, user, target)) {
@@ -90,6 +91,21 @@ export const moveFunctions: MoveFunctions = {
           continue;
         } else if (target.v.substitute && !this.ignoreSub) {
           continue;
+        } else if (id === "captivate") {
+          // Is this the correct ordering? IE would we reveal the target ability if the move would
+          // fail for some other reason?
+          if (target.hasAbility("oblivious")) {
+            failed = false;
+            battle.ability(target);
+            battle.info(target, "immune");
+            continue;
+          } else if (
+            user.base.gender === target.base.gender ||
+            user.base.gender === "N" ||
+            target.base.gender === "N"
+          ) {
+            continue;
+          }
         }
 
         if (!battle.checkAccuracy(this, user, target)) {
@@ -106,7 +122,6 @@ export const moveFunctions: MoveFunctions = {
       return battle.info(user, "fail_generic");
     }
 
-    const id = battle.moveIdOf(this)!;
     user.v.usedMinimize = user.v.usedMinimize || id === "minimize";
     user.v.usedDefenseCurl = user.v.usedDefenseCurl || id === "defensecurl";
   },
@@ -131,7 +146,7 @@ export const moveFunctions: MoveFunctions = {
     target.status(this.status, battle, user, {override: false, loud: true});
   },
   switch(battle, user) {
-    user.switchTo(this.poke, battle, this.batonPass ? "baton_pass" : undefined);
+    user.switchTo(this.poke, battle, user.v.inBatonPass);
   },
   damage(battle, user, targets) {
     let power: number | undefined;
@@ -163,17 +178,41 @@ export const moveFunctions: MoveFunctions = {
       const magnitude = battle.rng.int(4, 10);
       power = [10, 30, 50, 70, 90, 110, 150][magnitude - 4];
       battle.event({type: "magnitude", magnitude});
+    } else if (this.flag === "futuresight") {
+      const [target] = targets;
+      if (target.futureSight) {
+        return battle.info(user, "fail_generic");
+      }
+
+      const spc = battle.gen.isSpecial(this);
+      const [atk, def] = battle.gen.getDamageVariables(spc, battle, user, target, false);
+      const damage = battle.gen.calcDamage({
+        atk,
+        def,
+        pow: this.power,
+        lvl: user.base.level,
+        eff: 1,
+        isCrit: false,
+        hasStab: false,
+        rand: battle.rng,
+      });
+      target.futureSight = {damage, turns: 3, move: this};
+      return battle.event({
+        type: "futuresight",
+        src: user.id,
+        move: battle.moveIdOf(this)!,
+        release: false,
+      });
     }
 
     if (this.range === Range.Self) {
       if (user.v.lastHitBy && !user.v.lastHitBy.poke.v.fainted) {
         targets = [user.v.lastHitBy.poke];
       } else {
-        targets = battle.getTargets(user, Range.AdjacentFoe).slice(0, 1);
-        if (!targets.length) {
-          user.v.furyCutter = 0;
-          return battle.info(user, "fail_notarget");
-        }
+        // Counter/Mirror Coat/Bide will not retarget into another slot, but in a Gen 3 double
+        // battle they can still hit a pokemon that didn't target it if the original pokemon dies
+        // and is replaced by a teammate.
+        return battle.info(user, "fail_generic");
       }
     }
 
@@ -213,27 +252,43 @@ export const moveFunctions: MoveFunctions = {
 
     if (this.flag === "bide") {
       user.v.bide = undefined;
+    } else if (user.v.inBatonPass) {
+      battle.checkFaint(user);
+      if (battle.victor) {
+        user.v.inBatonPass = undefined;
+      } else {
+        battle.info(user, "uturn");
+      }
     }
   },
   fail(battle, user) {
     battle.info(user, this.why);
   },
-  weather(battle) {
-    battle.setWeather(this.weather, 5);
+  weather(battle, user) {
+    battle.setWeather(this.weather, user.base.item?.extendWeather === this.weather ? 8 : 5);
   },
   screen(battle, user) {
     if (user.owner.screens[this.screen]) {
       return battle.info(user, "fail_generic");
     }
 
-    user.owner.screens[this.screen] = 5;
-    battle.event({type: "screen", screen: this.screen, kind: "start", user: user.owner.id});
+    user.owner.screens[this.screen] = this.turns ?? 5;
+    battle.event({
+      type: "screen",
+      screen: this.screen,
+      kind: "start",
+      user: user.owner.id,
+      volatiles:
+        this.screen === "tailwind"
+          ? user.owner.active.map(p => ({id: p.id, v: {stats: p.clientStats(battle)}}))
+          : undefined,
+    });
   },
   phaze(battle, user, [target]) {
     const next = battle.rng.choice(target.owner.team.filter(p => p.hp && p !== target.base.real));
     if (!next || !target.choice?.executed) {
       return battle.info(user, "fail_generic");
-    } else if (target.v.ability === "suctioncups") {
+    } else if (target.hasAbility("suctioncups")) {
       battle.ability(target);
       return battle.info(target, "immune");
     } else if (target.v.hasFlag(VF.ingrain)) {
@@ -242,7 +297,7 @@ export const moveFunctions: MoveFunctions = {
       return;
     }
 
-    target.switchTo(next, battle, "phaze");
+    target.switchTo(next, battle, "phaze", user);
   },
   protect(battle, user) {
     if (user.v.substitute || (battle.turnOrder.at(-1) === user && !this.endure)) {
@@ -271,7 +326,7 @@ export const moveFunctions: MoveFunctions = {
     }
 
     target.v.meanLook = user;
-    battle.info(target, "cMeanLook", [{id: target.id, v: {flags: target.v.cflags}}]);
+    battle.info(target, "meanlook", [{id: target.id, v: {flags: target.v.cflags}}]);
   },
   lockOn(battle, user, [target]) {
     if (target.v.substitute) {
@@ -290,7 +345,7 @@ export const moveFunctions: MoveFunctions = {
   healbell(battle, user) {
     battle.info(user, this.why);
     for (const poke of user.owner.active) {
-      if (poke.base.status && poke.v.ability === "soundproof" && this.sound) {
+      if (this.sound && poke.base.status && poke.hasAbility("soundproof")) {
         battle.ability(poke);
         battle.info(poke, "immune");
         continue;
@@ -300,7 +355,9 @@ export const moveFunctions: MoveFunctions = {
     }
     const opp = battle.opponentOf(user.owner);
     for (const poke of user.owner.team) {
-      if (poke.ability === "soundproof" && this.sound) {
+      if (this.sound && poke.ability === "soundproof") {
+        continue;
+      } else if (user.owner.active.some(p => p.base.real === poke)) {
         continue;
       }
 
@@ -310,33 +367,13 @@ export const moveFunctions: MoveFunctions = {
       }
     }
   },
-  futuresight(battle, user, [target]) {
-    if (target.futureSight) {
-      return battle.info(user, "fail_generic");
-    }
-
-    const spc = isSpecial(this.type);
-    const [atk, def] = battle.gen.getDamageVariables(spc, battle, user, target, false);
-    const dmg = battle.gen.calcDamage({
-      atk,
-      def,
-      pow: this.power,
-      lvl: user.base.level,
-      eff: 1,
-      isCrit: false,
-      hasStab: false,
-      rand: battle.rng,
-    });
-    target.futureSight = {damage: dmg, turns: 3, move: this};
-    battle.info(user, this.msg);
-  },
   swagger(battle, user, [target]) {
     if (target.v.substitute) {
       return battle.info(user, "fail_generic");
     } else if (target.owner.screens.safeguard) {
       target.modStages(this.stages, battle, user);
       return battle.info(target, "safeguard_protect");
-    } else if (target.v.ability === "owntempo") {
+    } else if (target.hasAbility("owntempo")) {
       target.modStages(this.stages, battle, user);
       battle.ability(target);
       return battle.info(target, "not_confused");
@@ -361,5 +398,48 @@ export const moveFunctions: MoveFunctions = {
       target: target.id,
       volatiles: [target.setFlag(VF.identified)],
     });
+  },
+  trick(battle, user, [target]) {
+    if (target.v.substitute) {
+      return battle.info(user, "fail_generic");
+    } else if (target.hasAnyAbility("stickyhold", "multitype")) {
+      battle.ability(target);
+      return battle.info(target, "immune");
+    } else if (
+      (!target.base.itemId && !user.base.itemId) ||
+      target.base.itemUnusable ||
+      user.base.itemUnusable ||
+      target.base.itemId === "enigmaberry" ||
+      target.base.itemId === "griseousorb" ||
+      target.base.itemId?.includes("mail")
+    ) {
+      return battle.info(user, "fail_generic");
+    }
+
+    const userItem = user.base.itemId;
+    user.manipulateItem(poke => (poke.itemId = target.base.itemId));
+    target.manipulateItem(poke => (poke.itemId = userItem));
+    battle.event({
+      type: "trick",
+      src: user.id,
+      target: target.id,
+      srcItem: user.base.itemId,
+      targetItem: target.base.itemId,
+    });
+  },
+  hazard(battle, user) {
+    const target = battle.opponentOf(user.owner);
+    if ((target.hazards[this.hazard] ?? 0) >= this.max) {
+      return battle.info(user, "fail_generic");
+    }
+
+    battle.event({
+      type: "hazard",
+      src: user.id,
+      player: target.id,
+      hazard: this.hazard,
+      spin: false,
+    });
+    target.hazards[this.hazard] = (target.hazards[this.hazard] ?? 0) + 1;
   },
 };

@@ -1,5 +1,5 @@
 import type {ActivePokemon, Battle} from "../battle";
-import {isSpecial, VF} from "../utils";
+import {VF} from "../utils";
 import type {DamagingMove} from "../moves";
 import {getDamage} from "../moves";
 
@@ -22,9 +22,8 @@ export function tryDamage(
 ): number {
   const checkThrashing = () => {
     if (user.v.thrashing && user.v.thrashing.turns !== -1 && --user.v.thrashing.turns === 0) {
-      user.v.furyCutter = 0;
       if (!user.owner.screens.safeguard && self.flag === "multi_turn") {
-        user.confuse(battle, user.v.thrashing.max ? "cConfusedFatigueMax" : "cConfusedFatigue");
+        user.confuse(battle, user.v.thrashing.max ? "fatigue_confuse_max" : "fatigue_confuse");
       }
       user.v.thrashing = undefined;
     }
@@ -36,7 +35,7 @@ export function tryDamage(
 
   // eslint-disable-next-line prefer-const
   let {dmg, isCrit, eff, endured, type} = getDamage(self, battle, user, target, {});
-  if (dmg === 0 || !battle.checkAccuracy(self, user, target, !isSpecial(type))) {
+  if (dmg === 0 || !battle.checkAccuracy(self, user, target, !battle.gen.isSpecial(self, type))) {
     battle.gen1LastDamage = 0;
     if (dmg === 0) {
       if (eff === 0) {
@@ -65,7 +64,7 @@ export function tryDamage(
     return 0;
   }
 
-  target.v.lastHitBy = {move: self, poke: user, special: isSpecial(self.type)};
+  target.v.lastHitBy = {move: self, poke: user, special: battle.gen.isSpecial(self, type)};
 
   checkThrashing();
   if (self.flag === "rage") {
@@ -139,7 +138,7 @@ export function tryDamage(
   }
 
   if (self.flag === "recharge") {
-    user.v.recharge = self;
+    user.v.recharge = {move: self, target};
   } else if (self.flag === "trap") {
     trapTarget(self, battle, user, target);
   }

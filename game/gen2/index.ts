@@ -1,7 +1,7 @@
 import {createDefu} from "defu";
 import {GENERATION1, scaleAccuracy255, type CalcDamageParams, type Generation} from "../gen1";
 import type {Species, SpeciesId} from "../species";
-import {floatTo255, idiv, imul, VF} from "../utils";
+import {clamp, debugLog, dmgFlags, floatTo255, idiv, imul, VF} from "../utils";
 import {moveFunctionPatches, movePatches} from "./moves";
 import __speciesPatches from "./species.json";
 import type {ActivePokemon, Battle} from "../battle";
@@ -9,6 +9,7 @@ import type {Move} from "../moves";
 import items from "./items.json";
 import {applyItemStatBoost} from "../pokemon";
 import {tryDamage} from "./damaging";
+import type {ItemData, ItemId} from "../item";
 
 const speciesPatches = __speciesPatches as Partial<Record<SpeciesId, Partial<Species>>>;
 
@@ -78,7 +79,20 @@ const calcDamage = ({
     r = rand.int(217, 255);
   }
 
-  // console.log({item, crit, tk, stab, w, double, r, moveMod: moveMod ?? 1});
+  if (import.meta.dev) {
+    debugLog(
+      `flag: ${dmgFlags({
+        crit: isCrit,
+        stab: hasStab,
+        double: doubleDmg,
+        [`item:${itemBonus}`]: (itemBonus || 1) > 1,
+        [`weather:${weather}`]: !!weather,
+        [`TK:${tripleKick}`]: (tripleKick || 1) > 1,
+        [`MM:${moveMod}`]: (moveMod || 1) > 1,
+      })}`,
+    );
+    debugLog("vars:", {dmg, lvl, pow, atk, def, eff, r});
+  }
   return idiv(dmg * r, 255) * double;
 };
 
@@ -174,7 +188,7 @@ const createGeneration = (): Generation => {
     typeChart: typeChartPatch as typeof GENERATION1.typeChart,
     lastMoveIdx: GENERATION1.moveList.zapcannon.idx!,
     moveFunctions: moveFunctionPatches as typeof GENERATION1.moveFunctions,
-    items,
+    items: items as Record<ItemId, ItemData>,
     accStageMultipliers,
     rng: {
       tryDefrost: battle => battle.rand255(25),
@@ -183,13 +197,11 @@ const createGeneration = (): Generation => {
         if (user.v.hasFlag(VF.focusEnergy)) {
           stages++;
         }
-        if (user.base.item === "scopelens") {
-          stages++;
-        }
-        if (user.base.item === "stick" && user.base.real.speciesId === "farfetchd") {
+        stages += user.base.item?.raiseCrit ?? 0;
+        if (user.base.itemId === "stick" && user.base.real.speciesId === "farfetchd") {
           stages += 2;
         }
-        if (user.base.item === "luckypunch" && user.base.real.speciesId === "chansey") {
+        if (user.base.itemId === "luckypunch" && user.base.real.speciesId === "chansey") {
           stages += 2;
         }
         return battle.rand255Good(floatTo255(critStages[Math.min(stages, 4)] * 100));
@@ -255,11 +267,11 @@ const createGeneration = (): Generation => {
       }
 
       let acc = scaleAccuracy255(chance, user, target);
-      if (target.base.item === "brightpowder") {
+      if (target.base.itemId === "brightpowder") {
         acc -= 20;
       }
 
-      // console.log(`[${user.base.name}] ${move.name} (Acc ${acc}/255)`);
+      debugLog(`[${user.base.name}] ${move.name} (Acc ${acc}/255)`);
       if (!battle.rand255Good(acc)) {
         battle.miss(user, target);
         return false;
@@ -295,7 +307,7 @@ const createGeneration = (): Generation => {
         poke.base.stats[stat] * poke.base.gen.stageMultipliers[poke.v.stages[stat]],
       );
 
-      if (poke.base.status === "brn" && stat === "atk" && poke.v.ability !== "guts") {
+      if (poke.base.status === "brn" && stat === "atk" && !poke.hasAbility("guts")) {
         value = Math.max(Math.floor(value / 2), 1);
       } else if (poke.base.status === "par" && stat === "spe") {
         value = Math.max(Math.floor(value / 4), 1);
@@ -304,14 +316,17 @@ const createGeneration = (): Generation => {
       // crit ignores brn in gen 2
       if (isCrit) {
         value = poke.base.stats[stat];
-      } else if (screen) {
+      }
+
+      value = clamp(value, 1, 999);
+      if (!isCrit && screen) {
         value *= 2;
       }
 
       value = poke.applyAbilityStatBoost(battle, stat, value);
       value = applyItemStatBoost(poke.base, stat, value);
 
-      // Screens & the species boosting moves all fail to cap the stat at 999, meaning they will
+      // Screens & the species boosting items all fail to cap the stat at 999, meaning they will
       // cause it to wrap around if the base stat is >= 512
       value %= 1024;
       return value;
@@ -335,6 +350,12 @@ const createGeneration = (): Generation => {
     },
     accumulateBide() {},
     tryDamage,
+    handleRage(battle, poke) {
+      if (poke.v.lastMove?.kind === "damage" && poke.v.lastMove.flag === "rage") {
+        battle.info(poke, "rage");
+        poke.v.rage++;
+      }
+    },
   };
 
   return merge(patches as any, GENERATION1);

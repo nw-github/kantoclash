@@ -18,4 +18,17 @@ export default defineNuxtConfig({
       password: process.env.NUXT_SESSION_PASSWORD || "",
     },
   },
+  typescript: {
+    tsConfig: {
+      compilerOptions: {
+        noUncheckedIndexedAccess: false,
+        strict: true,
+      },
+    },
+    nodeTsConfig: {
+      compilerOptions: {
+        strict: true,
+      },
+    },
+  },
 });

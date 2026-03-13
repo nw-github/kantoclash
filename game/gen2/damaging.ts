@@ -1,6 +1,6 @@
 import type {ActivePokemon, Battle} from "../battle";
 import {checkUsefulness, getDamage, Range, type DamagingMove} from "../moves";
-import {idiv, isSpecial, randChoiceWeighted, VF} from "../utils";
+import {hazards, idiv, randChoiceWeighted, VF} from "../utils";
 
 export const tryDamage = (
   self: DamagingMove,
@@ -14,7 +14,7 @@ export const tryDamage = (
     if (user.v.thrashing && --user.v.thrashing.turns === 0) {
       user.v.furyCutter = 0;
       if (!user.owner.screens.safeguard && self.flag === "multi_turn") {
-        user.confuse(battle, user.v.thrashing.max ? "cConfusedFatigueMax" : "cConfusedFatigue");
+        user.confuse(battle, user.v.thrashing.max ? "fatigue_confuse_max" : "fatigue_confuse");
       }
       user.v.thrashing = undefined;
     }
@@ -39,7 +39,7 @@ export const tryDamage = (
   const protect = target.v.hasFlag(VF.protect);
   if (eff === 0 || fail || protect) {
     user.v.furyCutter = 0;
-    if (user.v.thrashing && user.v.thrashing.move.flag === "rollout") {
+    if (user.v.thrashing?.move?.flag === "rollout") {
       user.v.thrashing = undefined;
     }
 
@@ -60,8 +60,8 @@ export const tryDamage = (
     }
     checkThrashing();
     return 0;
-  } else if (!battle.checkAccuracy(self, user, target, !isSpecial(type))) {
-    if (user.v.thrashing && user.v.thrashing.move.flag === "rollout") {
+  } else if (!battle.checkAccuracy(self, user, target, !battle.gen.isSpecial(self, type))) {
+    if (user.v.thrashing?.move?.flag === "rollout") {
       user.v.thrashing = undefined;
     }
 
@@ -80,7 +80,7 @@ export const tryDamage = (
   if (self.flag === "present") {
     const result = randChoiceWeighted(battle.rng, [40, 80, 120, -4], [40, 30, 10, 20]);
     if (result < 0) {
-      if (target.base.hp === target.base.stats.hp) {
+      if (target.base.isMaxHp()) {
         battle.info(target, "fail_present");
         return 0;
       }
@@ -165,11 +165,7 @@ export const tryDamage = (
     }
   }
 
-  target.v.lastHitBy = {
-    move: self,
-    poke: user,
-    special: battle.moveIdOf(self) === "hiddenpower" ? false : isSpecial(type),
-  };
+  target.v.lastHitBy = {move: self, poke: user, special: battle.gen.isSpecial(self, type, true)};
 
   checkThrashing();
   if (user.base.hp && self.recoil) {
@@ -181,9 +177,11 @@ export const tryDamage = (
   } else if (self.flag === "payday") {
     battle.info(user, "payday");
   } else if (self.flag === "rapid_spin") {
-    if (user.owner.spikes) {
-      user.owner.spikes = 0;
-      battle.event({type: "spikes", src: user.id, player: user.owner.id, spin: true});
+    for (const hazard of hazards) {
+      if (user.owner.hazards[hazard]) {
+        user.owner.hazards[hazard] = 0;
+        battle.event({type: "hazard", src: user.id, player: user.owner.id, hazard, spin: true});
+      }
     }
 
     if (user.v.seededBy) {
@@ -211,13 +209,13 @@ export const tryDamage = (
   }
 
   if (self.flag === "recharge") {
-    user.v.recharge = self;
+    user.v.recharge = {move: self, target};
   }
 
   // BUG GEN2:
   // https://pret.github.io/pokecrystal/bugs_and_glitches.html#beat-up-may-trigger-kings-rock-even-if-it-failed
   if (
-    user.base.item === "kingsrock" &&
+    user.base.item?.kingsRock &&
     self.kingsRock &&
     !hadSub &&
     battle.gen.rng.tryKingsRock(battle)
@@ -284,7 +282,7 @@ export const tryDamage = (
       target.v.flinch = true;
     }
   } else if (effect === "thief") {
-    if (user.base.item || !target.base.item || target.base.item.includes("mail")) {
+    if (user.base.itemId || !target.base.itemId || target.base.itemId.includes("mail")) {
       return dealt;
     }
 
@@ -292,19 +290,19 @@ export const tryDamage = (
       type: "thief",
       src: user.id,
       target: target.id,
-      item: target.base.item,
+      item: target.base.itemId,
     });
-    user.base.item = target.base.item;
-    target.base.item = undefined;
+    user.manipulateItem(poke => (poke.itemId = target.base.itemId));
+    target.manipulateItem(poke => (poke.itemId = undefined));
   } else if (effect === "knockoff") {
-    if (target.base.item) {
+    if (target.base.itemId) {
       battle.event({
         type: "knockoff",
         src: user.id,
         target: target.id,
-        item: target.base.item,
+        item: target.base.itemId,
       });
-      target.base.itemUnusable = true;
+      target.manipulateItem(poke => (poke.itemUnusable = true));
     }
   } else {
     if (target.owner.screens.safeguard || target.base.status) {

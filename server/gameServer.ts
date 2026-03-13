@@ -1,15 +1,17 @@
 import {type ServerOptions, Server, type Socket as SocketIoClient} from "socket.io";
-import type {PokemonDesc, ValidatedPokemonDesc} from "../game/pokemon";
-import {Battle, type PlayerParams, type Options} from "../game/battle";
+
+import type {PokemonDesc, ValidatedPokemonDesc} from "~~/game/pokemon";
+import {Battle, type PlayerParams, type Options} from "~~/game/battle";
+import {GENERATIONS} from "~~/game/gen";
+import type {BattleEvent, PokeId} from "~~/game/events";
+
 import {type TeamProblems, formatDescs} from "./utils/formats";
 import type {User} from "#auth-utils";
 import type {InfoMessage} from "./utils/info";
-import {formatInfo} from "~/utils/shared";
+import {CHAT_MAX_MESSAGE, formatInfo} from "~/utils/shared";
 import type {FormatId} from "~/utils/shared";
 import {activeBots, createBotTeam} from "./bot";
 import random from "random";
-import {GENERATIONS} from "~/game/gen";
-import type {BattleEvent, PokeId} from "~/game/events";
 
 export type JoinRoomResponse = {
   team?: ValidatedPokemonDesc[];
@@ -19,19 +21,25 @@ export type JoinRoomResponse = {
   format: FormatId;
   timer?: BattleTimer;
   finished: bool;
-  battlers: {id: string; name: string; nPokemon: number}[];
+  battlers: {id: string; name: string; admin?: bool; nPokemon: number}[];
 };
 
 export type BattleTimer = {startedAt: number; duration: number};
 
 export type ChoiceError = "invalid_choice" | "bad_room" | "not_in_battle" | "too_late" | "finished";
 
-export type Battler = {name: string; id: string};
+export type Battler = {name: string; id: string; admin?: bool};
 
 export type Challenge = {from: Battler; format: FormatId};
 
 export type RoomDescriptor = {id: string; battlers: Battler[]; format: FormatId; finished: bool};
-export type MMError = "must_login" | "invalid_team" | "too_many" | "maintenance" | "bad_user";
+export type MMError =
+  | "must_login"
+  | "invalid_team"
+  | "too_many"
+  | "maintenance"
+  | "bad_user"
+  | "bad_format";
 
 export type MoveChoice = {
   type: "move";
@@ -86,6 +94,11 @@ export interface ClientMessage {
     message: string,
     ack: (resp?: "bad_room" | "not_in_room" | "bad_message") => void,
   ) => void;
+  reportBug: (
+    room: string,
+    message: string,
+    ack: (resp?: "bad_room" | "not_in_room" | "bad_message" | "too_many_reports") => void,
+  ) => void;
   startTimer: (
     room: string,
     ack: (resp?: "bad_room" | "not_in_room" | "not_in_battle" | "already_on") => void,
@@ -133,20 +146,42 @@ type Account = {
 };
 
 class Room {
-  accounts = new Set<Account>();
-  chats: InfoRecord = {};
+  readonly accounts = new Set<Account>();
+  readonly chats: InfoRecord = {};
   timer?: NodeJS.Timeout;
   lastTurn: number = Date.now();
-  spectatorRoom: string;
+  readonly spectatorRoom: string;
+  readonly battle: Battle;
+  readonly events: BattleEvent[];
+  readonly battleRecipe: BattleRecipe;
+  readonly reports: BugReports = {};
 
   constructor(
     public id: string,
-    public battle: Battle,
-    public events: BattleEvent[],
-    public format: FormatId,
     public server: GameServer,
+    format: FormatId,
+    player1: PlayerParams,
+    player2: PlayerParams,
+    seed = crypto.randomUUID(),
   ) {
+    const fmt = formatInfo[format];
+    const [battle, turn0] = Battle.start({
+      gen: GENERATIONS[fmt.generation]!,
+      player1,
+      player2,
+      doubles: fmt.doubles,
+      chooseLead: fmt.chooseLead,
+      mods: fmt.mods,
+      seed,
+    });
+
+    this.battle = battle;
+    this.events = turn0;
     this.spectatorRoom = `spectator:${this.id}`;
+    this.battleRecipe = {seed, player1, player2, choices: {}, format};
+    console.log(
+      `New room '${this.id}' hosting battle with seed '${seed}' [players ${player1.id}, ${player2.id}]`,
+    );
   }
 
   resetTimerState() {
@@ -176,7 +211,13 @@ class Room {
           loser = loser ? undefined : player;
         }
       }
-      this.broadcastTurn(loser ? this.battle.forfeit(loser, true) : this.battle.draw("timer"));
+      if (loser) {
+        this.battleRecipe.terminated = {timer: loser.id};
+        this.broadcastTurn(this.battle.forfeit(loser, true));
+      } else {
+        this.battleRecipe.terminated = {timer: null};
+        this.broadcastTurn(this.battle.forceEnd("timer"));
+      }
     }, 1000);
 
     this.resetTimerState();
@@ -219,7 +260,10 @@ class Room {
         this.server.onBattleEnded(player.id, this);
       }
 
-      this.server.telemetry?.onBattleComplete(this.format, this.battle);
+      this.server.telemetry?.onBattleComplete(this.battleRecipe.format, this.battle);
+      if (Object.keys(this.reports).length) {
+        this.server.telemetry?.reportBugs(this.id, this.battleRecipe, this.reports);
+      }
     }
   }
 
@@ -250,6 +294,7 @@ class Room {
         type: "userJoin",
         id: socket.account.id,
         name: socket.account.name,
+        admin: socket.account.admin,
         isSpectator: !player,
         nPokemon: player?.team.length ?? 0,
       });
@@ -264,9 +309,39 @@ class Room {
     return {
       id: this.id,
       battlers: this.server.getBattlers(this),
-      format: this.format,
+      format: this.battleRecipe.format,
       finished: this.battle.finished,
     } satisfies RoomDescriptor;
+  }
+
+  saveChoice(accountId: string, choice: Choice) {
+    const choices = (this.battleRecipe.choices[this.sequenceNo()] ??= []);
+    if (choice.type !== "forfeit") {
+      const other = choices.findIndex(
+        ([acc, rhs]) => accountId == acc && rhs.type !== "forfeit" && rhs.who === choice.who,
+      );
+      if (other !== -1) {
+        choices[other][1] = choice;
+        return;
+      }
+    }
+
+    choices.push([accountId, choice]);
+  }
+
+  reportBug(accountId: string, message: string) {
+    const reports = (this.reports[accountId] ??= []);
+    if (reports.length >= 5) {
+      return false;
+    }
+
+    reports.push({turn: this.battle.turn, message});
+    this.server.telemetry?.reportBugs(this.id, this.battleRecipe, this.reports);
+    return true;
+  }
+
+  sequenceNo() {
+    return this.events.length;
   }
 
   async onSocketLeave(socket: Socket, server: GameServer, sockets?: Socket[]) {
@@ -284,7 +359,26 @@ class Room {
   }
 }
 
-export type Telemetry = {onBattleComplete(format: FormatId, battle: Battle): void};
+export type BattleBugReport = {
+  turn: number;
+  message: string;
+};
+
+export type BattleRecipe = {
+  format: FormatId;
+  choices: Record<number, [string, Choice][]>;
+  player1: PlayerParams;
+  player2: PlayerParams;
+  seed: string;
+  terminated?: {timer: string | null};
+};
+
+export type BugReports = Record<string, BattleBugReport[]>;
+
+export type Telemetry = {
+  onBattleComplete(format: FormatId, battle: Battle): void;
+  reportBugs(roomId: string, battle: BattleRecipe, reports: BugReports): void;
+};
 
 export type ServerConfig = {maintenance?: bool; botMatchmaking?: bool};
 
@@ -335,6 +429,10 @@ export class GameServer extends Server<ClientMessage, ServerMessage> {
         return ack("must_login");
       }
 
+      if (!(format in formatInfo) || (formatInfo[format].beta && !account.admin)) {
+        return ack("bad_format");
+      }
+
       if (account.matchmaking) {
         this.leaveMatchmaking(account);
       }
@@ -350,7 +448,7 @@ export class GameServer extends Server<ClientMessage, ServerMessage> {
 
       if (challenge) {
         const challenged = this.accounts.get(challenge);
-        if (!challenged || challenged.offline) {
+        if (!challenged || challenged.offline || challenged.id === account.id) {
           return ack("bad_user");
         }
 
@@ -435,7 +533,7 @@ export class GameServer extends Server<ClientMessage, ServerMessage> {
         options: player?.active?.map(a => a.options)?.filter(a => !!a),
         events: Battle.censorEvents(room.events.slice(eventStartIndex), player),
         chats: room.chats,
-        format: room.format,
+        format: room.battleRecipe.format,
         timer: socket.account && room.timerInfo(socket.account),
         finished: room.battle.finished,
         battlers: this.getBattlers(room),
@@ -457,25 +555,40 @@ export class GameServer extends Server<ClientMessage, ServerMessage> {
       }
 
       const [player, room] = info;
-      if (choice.type === "move") {
-        if (!player.chooseMove(choice.who, room.battle, choice.moveIndex, choice.target)) {
-          return ack("invalid_choice");
-        }
-      } else if (choice.type === "switch") {
-        if (!player.chooseSwitch(choice.who, room.battle, choice.pokeIndex)) {
-          return ack("invalid_choice");
-        }
-      } else if (choice.type !== "forfeit") {
-        return ack("invalid_choice");
-      } else if (room.battle.finished) {
+      if (room.battle.finished) {
         return ack("finished");
       }
 
+      let ok = false;
+      try {
+        if (choice.type === "move") {
+          ok = player.chooseMove(choice.who, room.battle, choice.moveIndex, choice.target);
+        } else if (choice.type === "switch") {
+          ok = player.chooseSwitch(choice.who, room.battle, choice.pokeIndex);
+        } else if (choice.type === "forfeit") {
+          ok = true;
+        }
+      } catch {
+        room.saveChoice(player.id, choice);
+        room.broadcastTurn(room.battle.forceEnd("error"));
+        return ack();
+      }
+
+      if (!ok) {
+        return ack("invalid_choice");
+      }
+
       ack();
-      const turn =
-        choice.type === "forfeit" ? room.battle.forfeit(player, false) : room.battle.nextTurn();
-      if (turn) {
-        room.broadcastTurn(turn);
+      room.saveChoice(player.id, choice);
+      try {
+        const turn =
+          choice.type === "forfeit" ? room.battle.forfeit(player, false) : room.battle.nextTurn();
+        if (turn) {
+          room.broadcastTurn(turn);
+        }
+      } catch {
+        room.reportBug("", "The game was automatically terminated due to an exception.");
+        room.broadcastTurn(room.battle.forceEnd("error"));
       }
     });
     socket.on("cancel", (roomId, sequenceNo, ack) => {
@@ -500,12 +613,16 @@ export class GameServer extends Server<ClientMessage, ServerMessage> {
       ack(!room.startTimer(socket.account) ? "already_on" : undefined);
     });
     socket.on("chat", (roomId, message, ack) => {
+      if (typeof message !== "string") {
+        return ack("bad_message");
+      }
+
       message = message.trim();
 
       const room = this.rooms.get(roomId);
       if (!room) {
         return ack("bad_room");
-      } else if (!message.length) {
+      } else if (!message.length || message.length > CHAT_MAX_MESSAGE) {
         return ack("bad_message");
       } else if (!socket.account || !room.accounts.has(socket.account)) {
         return ack("not_in_room");
@@ -513,6 +630,28 @@ export class GameServer extends Server<ClientMessage, ServerMessage> {
 
       ack();
       room.sendMessage({type: "chat", message, id: socket.account.id});
+    });
+    socket.on("reportBug", (roomId, message, ack) => {
+      if (typeof message !== "string") {
+        return ack("bad_message");
+      }
+
+      message = message.trim();
+
+      const room = this.rooms.get(roomId);
+      if (!room) {
+        return ack("bad_room");
+      } else if (!message.length || message.length > CHAT_MAX_MESSAGE) {
+        return ack("bad_message");
+      } else if (!socket.account || !room.accounts.has(socket.account)) {
+        return ack("not_in_room");
+      }
+
+      if (!room.reportBug(socket.account.id, message)) {
+        return ack("too_many_reports");
+      } else {
+        ack();
+      }
     });
     socket.on("getRoom", (id, ack) => {
       const room = this.rooms.get(id);
@@ -679,16 +818,7 @@ export class GameServer extends Server<ClientMessage, ServerMessage> {
       this.leaveMatchmaking(account);
     };
 
-    const fmt = formatInfo[format];
-    const [battle, turn0] = Battle.start({
-      gen: GENERATIONS[fmt.generation]!,
-      player1: player,
-      player2: opponent,
-      doubles: fmt.doubles,
-      chooseLead: fmt.chooseLead,
-      mods: fmt.mods,
-    });
-    const room = new Room(crypto.randomUUID(), battle, turn0, format, this);
+    const room = new Room(crypto.randomUUID(), this, format, player, opponent);
     this.rooms.set(room.id, room);
 
     onFoundMatch(room, this.accounts.get(player.id)!);
@@ -706,7 +836,7 @@ export class GameServer extends Server<ClientMessage, ServerMessage> {
     const player = room.battle.findPlayer(socket.account.id);
     if (!player) {
       return "not_in_battle";
-    } else if (sequenceNo !== room.events.length) {
+    } else if (sequenceNo !== room.sequenceNo()) {
       return "too_late";
     }
 
@@ -729,7 +859,7 @@ export class GameServer extends Server<ClientMessage, ServerMessage> {
   getBattlers(room: Room) {
     return room.battle.players.map(pl => {
       const acc = this.accounts.get(pl.id)!;
-      return {name: acc.name, id: acc.id, nPokemon: pl.teamDesc.length};
+      return {name: acc.name, id: acc.id, admin: acc.admin, nPokemon: pl.teamDesc.length};
     });
   }
 

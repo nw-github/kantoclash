@@ -34,8 +34,18 @@ export const stageStatKeys = ["atk", "def", "spa", "spd", "spe"] as const;
 export const statKeys = ["hp", ...stageStatKeys] as const;
 export const stageKeys = [...stageStatKeys, "acc", "eva"] as const;
 
-export const screens = ["light_screen", "reflect", "safeguard", "mist"] as const;
+export const screens = [
+  "light_screen",
+  "reflect",
+  "safeguard",
+  "mist",
+  "luckychant",
+  "tailwind",
+] as const;
 export type ScreenId = (typeof screens)[number];
+
+export const hazards = ["spikes", "rocks", "tspikes"] as const;
+export type HazardId = (typeof hazards)[number];
 
 // prettier-ignore
 export enum VF {
@@ -66,23 +76,21 @@ export enum VF {
   torment      = 0x0020_0000,
   snatch       = 0x0040_0000,
   magicCoat    = 0x0080_0000,
+  gastroAcid   = 0x0100_0000,
+}
 
-  /** Client only */
-  cConfused    = 0x8000_0000,
-  /** Client only */
-  cDisabled    = 0x4000_0000,
-  /** Client only */
-  cAttract     = 0x2000_0000,
-  /** Client only */
-  cEncore      = 0x1000_0000,
-  /** Client only */
-  cMeanLook    = 0x0800_0000,
-  /** Client only */
-  cSeeded      = 0x0400_0000,
-  /** Client only */
-  cTaunt       = 0x0200_0000,
-  /** Client only */
-  cDrowsy      = 0x0100_0000,
+/** Client only */
+// prettier-ignore
+export enum CVF {
+  none     = 0,
+  confused = 0x0000_0001,
+  disabled = 0x0000_0002,
+  attract  = 0x0000_0004,
+  encore   = 0x0000_0008,
+  meanLook = 0x0000_0010,
+  seeded   = 0x0000_0020,
+  taunt    = 0x0000_0040,
+  drowsy   = 0x0000_0080,
 }
 
 // prettier-ignore
@@ -90,6 +98,12 @@ export const HP_TYPES: Type[] = [
   "fight", "flying", "poison", "ground", "rock", "bug", "ghost", "steel", "fire", "water",
   "grass", "electric", "psychic", "ice", "dragon", "dark",
 ];
+
+export enum MC {
+  physical,
+  special,
+  status,
+}
 
 export const floatTo255 = (num: number) => Math.floor((num / 100) * 255);
 
@@ -108,31 +122,6 @@ export const hpPercent = (current: number, max: number) => {
 
 export const getEffectiveness = (typeChart: TypeChart, atk: Type, def: readonly Type[]) => {
   return def.reduce((eff, def) => eff * (typeChart[atk][def] ?? 1), 1);
-};
-
-export const isSpecial = (atk: Type) => {
-  switch (atk) {
-    case "normal":
-    case "rock":
-    case "ground":
-    case "ghost":
-    case "poison":
-    case "bug":
-    case "flying":
-    case "fight":
-    case "steel":
-    case "???":
-      return false;
-    case "water":
-    case "grass":
-    case "fire":
-    case "electric":
-    case "ice":
-    case "psychic":
-    case "dragon":
-    case "dark":
-      return true;
-  }
 };
 
 export const idiv = (a: number, b: number) => Math.floor(a / b);
@@ -160,6 +149,17 @@ export const randChoiceWeighted = <T>(rng: Random, arr: readonly T[], weights: n
 };
 
 export const playerId = (poke: PokeId): PlayerId => poke.split(":")[0];
+
+export const debugLog = import.meta.dev ? console.debug : (..._args: any[]) => {};
+
+export const dmgFlags = (flags: Record<string, any>) => {
+  let extra = "";
+  const c = (n: string, b?: bool) => b && (extra += n + " ");
+  for (const k in flags) {
+    c(k, flags[k]);
+  }
+  return extra;
+};
 
 // from ts-reset
 type WidenLiteral<T> = T extends string

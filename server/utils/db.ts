@@ -19,3 +19,12 @@ if (import.meta.dev || globalThis.Deno) {
 }
 
 export const useDrizzle = () => db;
+
+export const translateDbError = async <T>(foo: Promise<T>) => {
+  try {
+    return await foo;
+  } catch (err) {
+    console.error("Database error: ", err);
+    throw createError({statusCode: 500, message: "Database error"});
+  }
+};

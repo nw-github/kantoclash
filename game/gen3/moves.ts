@@ -1,5 +1,4 @@
-import {Range, type Move, type MoveFunctions, type MoveId} from "../moves";
-import {abilityList} from "../species";
+import {getLowKickPower, Range, type Move, type MoveFunctions, type MoveId} from "../moves";
 import {HP_TYPES, idiv, VF} from "../utils";
 
 export const moveFunctionPatches: Partial<MoveFunctions> = {
@@ -16,7 +15,7 @@ export const moveFunctionPatches: Partial<MoveFunctions> = {
     }
 
     if (this.why === "rest") {
-      if (abilityList[user.v.ability!]?.preventsStatus === "slp" || user.base.status === "slp") {
+      if (user.getAbility()?.preventsStatus === "slp" || user.base.status === "slp") {
         return battle.info(user, "fail_generic");
       } else if (battle.hasUproar(user)) {
         return battle.info(user, "fail_generic");
@@ -24,7 +23,7 @@ export const moveFunctionPatches: Partial<MoveFunctions> = {
 
       user.base.status = "slp";
       user.base.sleepTurns = 3;
-      if (user.v.ability === "earlybird") {
+      if (user.hasAbility("earlybird")) {
         user.base.sleepTurns--;
       }
       user.v.counter = 0;
@@ -46,7 +45,7 @@ export const moveFunctionPatches: Partial<MoveFunctions> = {
     const next = battle.rng.choice(target.owner.team.filter(p => p.hp && p != target.base.real));
     if (!next) {
       return battle.info(user, "fail_generic");
-    } else if (target.v.ability === "suctioncups") {
+    } else if (target.hasAbility("suctioncups")) {
       battle.ability(target);
       return battle.info(target, "immune");
     } else if (target.v.hasFlag(VF.ingrain)) {
@@ -55,7 +54,7 @@ export const moveFunctionPatches: Partial<MoveFunctions> = {
       return;
     }
 
-    target.switchTo(next, battle, "phaze");
+    target.switchTo(next, battle, "phaze", user);
   },
   protect(battle, user) {
     if (battle.turnOrder.at(-1) === user) {
@@ -136,23 +135,8 @@ export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
   lowkick: {
     acc: 100,
     effect: [0, "flinch"],
-    getPower(_user, target) {
-      if (!target) {
-        return 0;
-      } else if (target.species.weight <= 9.9) {
-        return 20;
-      } else if (target.species.weight <= 24.9) {
-        return 40;
-      } else if (target.species.weight <= 49.9) {
-        return 60;
-      } else if (target.species.weight <= 99.9) {
-        return 80;
-      } else if (target.species.weight <= 199.9) {
-        return 100;
-      } else {
-        return 120;
-      }
-    },
+    power: 0,
+    getPower: (_user, target) => getLowKickPower(target?.species?.weight ?? 0),
   },
   meanlook: {protect: true},
   megadrain: {kingsRock: false},
@@ -202,17 +186,7 @@ export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
   sleeptalk: {noEncore: false},
   smog: {effect: [40, "psn"]},
   spiderweb: {protect: true},
-  spikes: {
-    exec(battle, user) {
-      const target = battle.opponentOf(user.owner);
-      if (target.spikes === 3) {
-        return battle.info(user, "fail_generic");
-      }
-
-      battle.event({type: "spikes", src: user.id, player: target.id, spin: false});
-      target.spikes++;
-    },
-  },
+  spikes: {max: 3},
   spite: {
     exec(this: Move, battle, user, [target]) {
       if (!battle.checkAccuracy(this, user, target)) {

@@ -1,22 +1,36 @@
 import {Server as Engine} from "engine.io";
 import {defineEventHandler} from "h3";
 import {GameServer} from "../gameServer";
-import {rankBot, startBot} from "../bot";
-import {battles} from "../db/schema";
+import {startBot} from "../bot";
+import {battles, bugReports} from "../db/schema";
 
 export default defineNitroPlugin(nitro => {
   const engine = new Engine({pingInterval: 5000, pingTimeout: 5000});
   const io = new GameServer(undefined, {
     async onBattleComplete(format, battle) {
       const battlers = battle.players.map(pl => pl.id);
-      await useDrizzle()
-        .insert(battles)
-        .values({
-          format,
-          player1: +battlers[0],
-          player2: +battlers[1],
-          winner: battle.victor ? +battle.victor.id : null,
-        });
+      try {
+        await useDrizzle()
+          .insert(battles)
+          .values({
+            format,
+            player1: +battlers[0],
+            player2: +battlers[1],
+            winner: battle.victor ? +battle.victor.id : null,
+          });
+      } catch {
+        console.error("Cannot save battle due to database error");
+      }
+    },
+    async reportBugs(id, battle, reports) {
+      try {
+        await useDrizzle()
+          .insert(bugReports)
+          .values({id, battle, reports})
+          .onConflictDoUpdate({target: bugReports.id, set: {battle, reports}});
+      } catch {
+        console.error("Cannot save bug report due to database error");
+      }
     },
   });
   io.bind(engine);
@@ -49,5 +63,5 @@ export default defineNitroPlugin(nitro => {
   );
 
   console.log("initialized game server on port " + process.env.PORT || 3000);
-  startBot().then(() => startBot(undefined, rankBot));
+  startBot("random").then(() => startBot("rank"));
 });

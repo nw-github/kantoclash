@@ -2,13 +2,14 @@ import {shouldReturn, type Generation, GENERATION1} from "../gen1";
 import {GENERATION2, merge, type GenPatches} from "../gen2";
 import {applyItemStatBoost, Nature, natureTable} from "../pokemon";
 import {abilityList, type Species, type SpeciesId} from "../species";
-import {clamp, idiv, isSpecial, screens, VF} from "../utils";
+import {clamp, dmgFlags, debugLog, idiv, MC, screens, VF} from "../utils";
 import {moveFunctionPatches, movePatches} from "./moves";
 import speciesPatches from "./species.json";
 import items from "./items.json";
-import {reduceAccItem} from "../item";
+import {itemList, type ItemId} from "../item";
 import {tryDamage} from "./damaging";
 import type {ActivePokemon} from "../active";
+import {TurnType} from "../battle";
 
 const critStages: Record<number, number> = {
   [0]: 1 / 16,
@@ -34,6 +35,15 @@ const stageMultipliers: Record<number, number> = {
   6: 8 / 2,
 };
 
+export const createItemMergeList = (items: any) => {
+  for (const item in itemList) {
+    if (!(item in items)) {
+      items[item as ItemId] = {exists: false};
+    }
+  }
+  return items as typeof itemList;
+};
+
 const createGeneration = (): Generation => {
   const patches: Partial<GenPatches> = {
     id: 3,
@@ -43,14 +53,10 @@ const createGeneration = (): Generation => {
     moveList: movePatches as typeof GENERATION1.moveList,
     lastMoveIdx: GENERATION1.moveList.yawn.idx!,
     moveFunctions: moveFunctionPatches as typeof GENERATION1.moveFunctions,
+    items: createItemMergeList(items),
     maxIv: 31,
     maxEv: 255,
     maxTotalEv: 510,
-    itemTypeBoost: {
-      dragonscale: null,
-      dragonfang: {type: "dragon", percent: 10},
-    },
-    statBoostItem: {metalpowder: {ditto: {stats: ["def", "spd"], transformed: false, amount: 0.5}}},
     stageMultipliers,
     rng: {
       tryDefrost: battle => battle.rand100(20),
@@ -59,14 +65,15 @@ const createGeneration = (): Generation => {
         if (user.v.hasFlag(VF.focusEnergy)) {
           stages += 2;
         }
-        if (user.base.item === "scopelens") {
+        stages += user.base.item?.raiseCrit ?? 0;
+        if (user.base.itemId === "stick" && user.base.real.speciesId === "farfetchd") {
+          stages += 2;
+        }
+        if (user.base.itemId === "luckypunch" && user.base.real.speciesId === "chansey") {
+          stages += 2;
+        }
+        if (user.hasAbility("superluck")) {
           stages++;
-        }
-        if (user.base.item === "stick" && user.base.real.speciesId === "farfetchd") {
-          stages += 2;
-        }
-        if (user.base.item === "luckypunch" && user.base.real.speciesId === "chansey") {
-          stages += 2;
         }
         return battle.rand100(critStages[Math.min(stages, 4)] * 100);
       },
@@ -92,7 +99,7 @@ const createGeneration = (): Generation => {
         poke.base.stats[stat] * poke.base.gen.stageMultipliers[poke.v.stages[stat]],
       );
 
-      if (poke.base.status === "brn" && stat === "atk" && poke.v.ability !== "guts") {
+      if (poke.base.status === "brn" && stat === "atk" && !poke.hasAbility("guts")) {
         value = Math.max(Math.floor(value / 2), 1);
       } else if (poke.base.status === "par" && stat === "spe") {
         value = Math.max(Math.floor(value / 4), 1);
@@ -106,6 +113,9 @@ const createGeneration = (): Generation => {
         if (poke.base.status === "brn" && stat === "atk") {
           value = Math.max(Math.floor(value / 2), 1);
         }
+      }
+      if (stat === "spe" && poke.owner.screens.tailwind) {
+        value *= 2;
       }
 
       value = poke.applyAbilityStatBoost(battle, stat, value);
@@ -140,24 +150,28 @@ const createGeneration = (): Generation => {
     },
     getMaxPP: move => (move.pp === 1 ? 1 : Math.floor((move.pp * 8) / 5)),
     checkAccuracy(move, battle, user, target, phys) {
-      if (target.v.invuln) {
-        const charging = target.v.charging && battle.moveIdOf(target.v.charging.move);
-        if (charging && (!move.ignore || !move.ignore.includes(charging))) {
-          battle.miss(user, target);
-          return false;
-        }
+      if (user.hasAbility("noguard") || target.hasAbility("noguard")) {
+        return true;
       }
 
-      // TODO: does pursuit skip the invuln check? Could matter if:
+      if (
+        target.v.charging &&
+        target.v.charging.move.charge === "invuln" &&
+        (!move.ignore || !move.ignore.includes(battle.moveIdOf(target.v.charging.move)))
+      ) {
+        battle.miss(user, target);
+        return false;
+      }
+
+      // TODO: does pursuit skip the invuln check? Could matter if (Gen IV+):
       // Player 1: Pokémon A is flying, Pokémon B is switching out
       // Player 2: Pokémon C & D pursuit into B, C kills it, D retargets to A
-      // This situation can't happen in Gen 3 though since B would be replaced before D moves
       if (!move.acc || user.v.inPursuit || (move.rainAcc && battle.hasWeather("rain"))) {
         return true;
       }
 
       if (move.kind === "damage" && move.flag === "ohko") {
-        if (target.v.ability === "sturdy") {
+        if (target.hasAbility("sturdy")) {
           battle.ability(target);
           battle.info(target, "immune");
           return false;
@@ -183,27 +197,31 @@ const createGeneration = (): Generation => {
       let acc = Math.floor(
         chance * this.accStageMultipliers![clamp(user.v.stages.acc - eva, -6, 6)]!,
       );
-      if (reduceAccItem[target.base.item!]) {
-        acc -= Math.floor(acc * (reduceAccItem[target.base.item!]! / 100));
+      const targetItem = target.base.item;
+      if (targetItem?.reduceAcc) {
+        acc -= Math.floor(acc * (targetItem.reduceAcc / 100));
       }
 
-      if (user.v.ability === "compoundeyes") {
+      const userItem = user.base.item;
+      if (userItem?.boostAcc) {
+        acc += Math.floor(acc * (userItem.boostAcc / 100));
+      }
+
+      if (user.hasAbility("compoundeyes")) {
         acc += Math.floor(acc * 0.3);
       }
 
-      phys ??= !isSpecial(move.type);
-      if (user.v.ability === "hustle" && phys) {
+      phys ??= battle.gen.getCategory(move) === MC.physical;
+      if (user.hasAbility("hustle") && phys) {
         acc -= Math.floor(acc * 0.2);
       }
 
-      if (
-        abilityList[target.v.ability!]?.weatherEva &&
-        battle.getWeather() === abilityList[target.v.ability!]?.weatherEva
-      ) {
+      const weatherEva = target.getAbility()?.weatherEva;
+      if (weatherEva && battle.getWeather() === weatherEva) {
         acc = Math.floor((acc * 4) / 5);
       }
 
-      // console.log(`[${user.base.name}] ${move.name} (Acc ${acc}/255)`);
+      // debugLog(`[${user.base.name}] ${move.name} (Acc ${acc}/255)`);
       if (!battle.rand100(acc)) {
         battle.miss(user, target);
         return false;
@@ -251,7 +269,7 @@ const createGeneration = (): Generation => {
         return false;
       }
 
-      if (user.v.ability === "truant" && user.v.hasFlag(VF.loafing)) {
+      if (user.hasAbility("truant") && user.v.hasFlag(VF.loafing)) {
         battle.info(user, "loafing");
         resetVolatiles();
         return false;
@@ -297,8 +315,7 @@ const createGeneration = (): Generation => {
     afterBeforeUseMove: (battle, user) => battle.checkFaint(user) && shouldReturn(battle, false),
     afterUseMove(battle, user, isReplacement) {
       if (isReplacement) {
-        if (user.base.hp === 0 && !user.v.fainted) {
-          user.faint(battle);
+        if (user.faintIfNeeded(battle)) {
           return true;
         }
         user.handleBerry(battle, {status: true});
@@ -330,12 +347,10 @@ const createGeneration = (): Generation => {
       // out of battle speeed?
       const turnOrder = battle.turnOrder;
 
-      if (import.meta.dev) {
-        console.log(
-          `\nbetweenTurns(${BetweenTurns[battle.betweenTurns]}):`,
-          battle.turnOrder.map(t => t.base.name),
-        );
-      }
+      debugLog(
+        `\nbetweenTurns(${BetweenTurns[battle.betweenTurns]}):`,
+        battle.turnOrder.map(t => t.base.name),
+      );
 
       // Screens Wish & Weather
       if (battle.betweenTurns < BetweenTurns.Weather) {
@@ -364,8 +379,7 @@ const createGeneration = (): Generation => {
         let someoneDied = false;
         weather: if (battle.weather) {
           if (battle.weather.turns !== -1 && --battle.weather.turns === 0) {
-            battle.event({type: "weather", kind: "end", weather: battle.weather.kind});
-            delete battle.weather;
+            battle.endWeather();
             break weather;
           }
 
@@ -391,17 +405,18 @@ const createGeneration = (): Generation => {
         let someoneDied = false;
         const hasUproar = battle.allActive.some(p => p.v.thrashing?.move?.flag === "uproar");
         for (const poke of turnOrder) {
+          const ability = poke.getAbilityId();
           if (!poke.v.fainted) {
             if (poke.v.hasFlag(VF.ingrain)) {
               poke.recover(Math.max(1, idiv(poke.base.stats.hp, 16)), poke, battle, "ingrain");
             }
 
-            if (battle.hasWeather("rain") && poke.v.ability === "raindish") {
+            if (battle.hasWeather("rain") && ability === "raindish" && !poke.base.isMaxHp()) {
               battle.ability(poke);
-              poke.recover(Math.max(1, idiv(poke.base.stats.hp, 16)), poke, battle, "none");
+              poke.recover(Math.max(1, idiv(poke.base.stats.hp, 16)), poke, battle, "recover");
             }
 
-            if (poke.v.ability === "speedboost" && poke.v.canSpeedBoost && poke.v.stages.spe < 6) {
+            if (ability === "speedboost" && poke.v.canSpeedBoost && poke.v.stages.spe < 6) {
               battle.ability(poke);
               poke.modStages([["spe", +1]], battle);
             }
@@ -409,30 +424,26 @@ const createGeneration = (): Generation => {
             if (poke.v.canSpeedBoost) {
               if (poke.v.hasFlag(VF.loafing)) {
                 poke.v.clearFlag(VF.loafing);
-              } else if (poke.v.ability === "truant") {
+              } else if (ability === "truant") {
                 poke.v.setFlag(VF.loafing);
               }
             }
 
-            if (
-              poke.base.status &&
-              poke.v.ability === "shedskin" &&
-              battle.gen.rng.tryShedSkin(battle)
-            ) {
+            if (poke.base.status && ability === "shedskin" && battle.gen.rng.tryShedSkin(battle)) {
               battle.ability(poke);
               poke.unstatus(battle);
             }
           }
 
           poke.handleLeftovers(battle);
-          poke.handleBerry(battle, {pinch: true, status: true, heal: true, pp: true});
+          poke.handleBerry(battle, {pinch: true, status: true, pp: true});
           battle.gen.handleResidualDamage(battle, poke);
           if (poke.base.hp) {
             poke.handlePartialTrapping(battle);
           }
 
           if (poke.base.hp) {
-            if (hasUproar && poke.base.status === "slp" && poke.v.ability !== "soundproof") {
+            if (hasUproar && poke.base.status === "slp" && ability !== "soundproof") {
               poke.unstatus(battle, "wake");
             }
 
@@ -443,8 +454,8 @@ const createGeneration = (): Generation => {
               }
 
               if (done) {
-                if (poke.v.thrashing.move.flag === "multi_turn" && poke.v.ability !== "owntempo") {
-                  poke.confuse(battle, "cConfusedFatigueMax");
+                if (poke.v.thrashing.move.flag === "multi_turn" && ability !== "owntempo") {
+                  poke.confuse(battle, "fatigue_confuse_max");
                 }
                 poke.v.thrashing = undefined;
               }
@@ -466,7 +477,7 @@ const createGeneration = (): Generation => {
 
           if (poke.v.drowsy && --poke.v.drowsy === 0) {
             battle.event({type: "sv", volatiles: [{id: poke.id, v: {flags: poke.v.cflags}}]});
-            if (!poke.base.status && abilityList[poke.v.ability!]?.preventsStatus !== "slp") {
+            if (!poke.base.status && abilityList[ability!]?.preventsStatus !== "slp") {
               poke.status("slp", battle, poke, {ignoreSafeguard: true});
             }
           }
@@ -532,6 +543,15 @@ const createGeneration = (): Generation => {
       }
 
       battle.betweenTurns = BetweenTurns.Begin;
+      if (battle.turnType === TurnType.Lead) {
+        for (const poke of battle.inTurnOrder()) {
+          poke.handleWeatherAbility(battle);
+        }
+
+        for (const user of battle.turnOrder) {
+          user.handleSwitchInAbility(battle);
+        }
+      }
     },
     calcDamage({
       lvl,
@@ -600,30 +620,35 @@ const createGeneration = (): Generation => {
       dmg = Math.max(1, idiv(dmg * r, 100));
 
       if (import.meta.dev) {
-        let extra = "";
-        const c = (n: string, b?: bool) => b && (extra += n + " ");
-        c("crit", isCrit);
-        c("stab", hasStab);
-        c("ff", flashFire);
-        c("double", doubleDmg);
-        c("hh", helpingHand);
-        c("screen", screen);
-        c("spread", spread);
-        c(`item:${itemBonus}`, (itemBonus || 1) > 1);
-        c(`weather:${weather}`, !!weather);
-        c(`TK:${tripleKick}`, (tripleKick || 1) > 1);
-        c(`MM:${moveMod}`, (moveMod || 1) > 1);
-        c(`SP:${stockpile}`, (stockpile || 1) > 1);
-        console.log(`flag: ${extra}`);
-        console.log("vars:", {dmg, lvl, pow, atk, def, eff, r});
+        debugLog(
+          `flag: ${dmgFlags({
+            crit: isCrit,
+            stab: hasStab,
+            ff: flashFire,
+            double: doubleDmg,
+            hh: helpingHand,
+            screen: screen,
+            spread: spread,
+            [`item:${itemBonus}`]: (itemBonus || 1) > 1,
+            [`weather:${weather}`]: !!weather,
+            [`TK:${tripleKick}`]: (tripleKick || 1) > 1,
+            [`MM:${moveMod}`]: (moveMod || 1) > 1,
+            [`SP:${stockpile}`]: (stockpile || 1) > 1,
+          })}`,
+        );
+        debugLog("vars:", {dmg, lvl, pow, atk, def, eff, r});
       }
       return dmg;
     },
+    handleRage(battle, poke) {
+      if (poke.v.lastMove?.kind === "damage" && poke.v.lastMove.flag === "rage") {
+        battle.info(poke, "rage");
+        poke.modStages([["atk", +1]], battle);
+      }
+    },
   };
 
-  const r = merge(patches as any, GENERATION2);
-  r.items = items;
-  return r;
+  return merge(patches as any, GENERATION2);
 };
 
 enum BetweenTurns {

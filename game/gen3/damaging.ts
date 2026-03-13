@@ -2,7 +2,7 @@ import type {ActivePokemon, Battle} from "../battle";
 import {checkUsefulness, getDamage, Range, type DamagingMove} from "../moves";
 import type {Status} from "../pokemon";
 import {abilityList} from "../species";
-import {idiv, isSpecial, randChoiceWeighted, VF, type Type} from "../utils";
+import {hazards, idiv, randChoiceWeighted, VF, type Type} from "../utils";
 
 export const tryDamage = (
   self: DamagingMove,
@@ -21,7 +21,7 @@ export const tryDamage = (
       return true;
     } else if ((status === "psn" || status === "tox") && poke.v.hasAnyType("poison", "steel")) {
       return true;
-    } else if (abilityList[poke.v.ability!]?.preventsStatus === status) {
+    } else if (poke.getAbility()?.preventsStatus === status) {
       return true;
     } else if (status === "slp" && battle.hasUproar(poke)) {
       return true;
@@ -31,11 +31,12 @@ export const tryDamage = (
   };
 
   const onHit = (type: Type, hadSub: bool) => {
+    const targetAbility = target.getAbilityId();
     if (
-      user.base.item === "kingsrock" &&
+      user.base.item?.kingsRock &&
       self.kingsRock &&
       !hadSub &&
-      target.v.ability !== "innerfocus" &&
+      targetAbility !== "innerfocus" &&
       target.base.status !== "frz" &&
       target.base.status !== "slp" &&
       battle.gen.rng.tryKingsRock(battle)
@@ -47,7 +48,7 @@ export const tryDamage = (
     if (
       !hadSub &&
       target.base.hp &&
-      target.v.ability === "colorchange" &&
+      targetAbility === "colorchange" &&
       type !== "???" &&
       !target.v.types.includes(type)
     ) {
@@ -65,8 +66,8 @@ export const tryDamage = (
       return;
     }
 
-    let status: Status | "attract" | undefined = abilityList[target.v.ability!]?.contactStatus;
-    if (target.v.ability === "effectspore") {
+    let status: Status | "attract" | undefined = abilityList[targetAbility!]?.contactStatus;
+    if (targetAbility === "effectspore") {
       status = battle.rand100(10) ? battle.rng.choice(["psn", "par", "slp"])! : undefined;
     } else if (!battle.gen.rng.tryContactStatus(battle)) {
       status = undefined;
@@ -85,14 +86,14 @@ export const tryDamage = (
 
         battle.ability(target);
         user.v.attract = target;
-        battle.info(user, "cAttract", [{id: user.id, v: {flags: user.v.cflags}}]);
+        battle.info(user, "attract", [{id: user.id, v: {flags: user.v.cflags}}]);
       } else if (!user.base.status) {
         if (!isImmune(user, status)) {
           battle.ability(target);
           user.status(status, battle, target, {ignoreSafeguard: true});
         }
       }
-    } else if (target.v.ability === "roughskin") {
+    } else if (targetAbility === "roughskin") {
       battle.ability(target);
       user.damage2(battle, {
         dmg: Math.max(1, Math.floor(user.base.stats.hp / 16)),
@@ -128,7 +129,8 @@ export const tryDamage = (
   }
 
   const protect = target.v.hasFlag(VF.protect);
-  if (eff === 0 || fail || protect) {
+  const special = battle.gen.isSpecial(self, type);
+  if (eff === 0 || fail || protect || !battle.checkAccuracy(self, user, target, !special)) {
     user.v.furyCutter = 0;
     user.v.thrashing = undefined;
     if (self.flag === "spitup") {
@@ -136,14 +138,23 @@ export const tryDamage = (
     }
     if (eff === 0) {
       if (abilityImmunity) {
-        battle.ability(target);
+        battle.ability(
+          target,
+          target.hasAbility("flashfire") ? [target.setFlag(VF.flashFire)] : undefined,
+        );
       }
 
       battle.info(target, "immune");
+
+      if (abilityImmunity && target.hasAnyAbility("waterabsorb", "voltabsorb")) {
+        target.recover(Math.max(1, Math.floor(target.base.stats.hp / 4)), user, battle, "none");
+      }
     } else if (fail) {
       battle.info(user, "fail_generic");
-    } else if (protect) {
-      battle.info(target, "protect");
+    } else {
+      if (protect) {
+        battle.info(target, "protect");
+      }
       if (self.flag === "crash") {
         const {dmg} = getDamage(self, battle, user, target, {});
         battle.gen.handleCrashDamage(battle, user, target, dmg);
@@ -152,40 +163,10 @@ export const tryDamage = (
     return 0;
   }
 
-  if (
-    (type === "electric" && target.v.ability === "voltabsorb") ||
-    (type === "water" && target.v.ability === "waterabsorb")
-  ) {
-    user.v.furyCutter = 0;
-    user.v.thrashing = undefined;
-    battle.ability(target);
-    battle.info(target, "immune");
-    target.recover(Math.max(1, Math.floor(target.base.stats.hp / 4)), user, battle, "none");
-    return 0;
-  }
-
-  if (type === "fire" && target.v.ability === "flashfire" && target.base.status !== "frz") {
-    user.v.furyCutter = 0;
-    user.v.thrashing = undefined;
-    battle.ability(target, [target.setFlag(VF.flashFire)]);
-    battle.info(target, "immune");
-    return 0;
-  }
-
-  if (!battle.checkAccuracy(self, user, target, !isSpecial(type))) {
-    user.v.furyCutter = 0;
-    user.v.thrashing = undefined;
-    if (self.flag === "crash") {
-      const {dmg} = getDamage(self, battle, user, target, {});
-      battle.gen.handleCrashDamage(battle, user, target, dmg);
-    }
-    return 0;
-  }
-
   if (self.flag === "present") {
     const result = randChoiceWeighted(battle.rng, [40, 80, 120, -4], [40, 30, 10, 20]);
     if (result < 0) {
-      if (target.base.hp === target.base.stats.hp) {
+      if (target.base.isMaxHp()) {
         battle.info(target, "fail_present");
         return 0;
       }
@@ -218,7 +199,7 @@ export const tryDamage = (
       ({dead, event, dealt} = target.damage2(battle, {dmg, src: user, why: "attacked", isCrit}));
       user.handleShellBell(battle, dealt);
 
-      if (dmg !== 0) {
+      if (dealt !== 0) {
         onHit(type, hadSub);
       }
       if (dead || user.base.hp === 0) {
@@ -239,7 +220,7 @@ export const tryDamage = (
       if (
         self.flag === "triple" &&
         hits !== 0 &&
-        !battle.checkAccuracy(self, user, target, !isSpecial(type))
+        !battle.checkAccuracy(self, user, target, !special)
       ) {
         // TODO: lazy
         battle.events.splice(-1, 1);
@@ -260,7 +241,7 @@ export const tryDamage = (
       event.hitCount = hits + 1;
       user.handleShellBell(battle, dealt);
 
-      if (dmg !== 0) {
+      if (dealt !== 0) {
         onHit(type, hadSub);
 
         if (user.base.status === "slp" && !wasSleeping) {
@@ -281,7 +262,7 @@ export const tryDamage = (
       eff,
     ));
 
-    if (dmg !== 0) {
+    if (dealt !== 0) {
       onHit(type, hadSub);
     }
 
@@ -297,16 +278,12 @@ export const tryDamage = (
     dealt = 0;
   }
 
-  target.v.lastHitBy = {
-    move: self,
-    poke: user,
-    special: battle.moveIdOf(self) === "hiddenpower" ? false : isSpecial(type),
-  };
+  target.v.lastHitBy = {move: self, poke: user, special: battle.gen.isSpecial(self, type, true)};
 
   if (
     user.base.hp &&
     self.recoil &&
-    (self === battle.gen.moveList.struggle || user.v.ability !== "rockhead")
+    (self === battle.gen.moveList.struggle || !user.hasAbility("rockhead"))
   ) {
     user.damage(Math.max(Math.floor(dealt / self.recoil), 1), user, battle, false, "recoil", true);
   }
@@ -316,9 +293,11 @@ export const tryDamage = (
   } else if (self.flag === "payday") {
     battle.info(user, "payday");
   } else if (self.flag === "rapid_spin" && user.base.hp) {
-    if (user.owner.spikes) {
-      user.owner.spikes = 0;
-      battle.event({type: "spikes", src: user.id, player: user.owner.id, spin: true});
+    for (const hazard of hazards) {
+      if (user.owner.hazards[hazard]) {
+        user.owner.hazards[hazard] = 0;
+        battle.event({type: "hazard", src: user.id, player: user.owner.id, hazard, spin: true});
+      }
     }
 
     if (user.v.seededBy) {
@@ -354,7 +333,7 @@ export const tryDamage = (
   }
 
   if (self.flag === "recharge") {
-    user.v.recharge = self;
+    user.v.recharge = {move: self, target};
   }
 
   if (!event) {
@@ -392,10 +371,10 @@ export const tryDamage = (
     return dealt;
   }
 
-  if (user.v.ability === "serenegrace") {
+  if (user.hasAbility("serenegrace")) {
     chance *= 2;
   }
-  if (target.v.ability === "shielddust" && !effectSelf && effect !== "thief") {
+  if (target.hasAbility("shielddust") && !effectSelf && effect !== "thief") {
     return dealt;
   }
 
@@ -413,7 +392,7 @@ export const tryDamage = (
   }
 
   if (effect === "confusion") {
-    if (!target.v.confusion && !user.owner.screens.safeguard && target.v.ability !== "owntempo") {
+    if (!target.v.confusion && !user.owner.screens.safeguard && !target.hasAbility("owntempo")) {
       target.confuse(battle);
     }
   } else if (Array.isArray(effect)) {
@@ -425,7 +404,7 @@ export const tryDamage = (
       return dealt;
     }
 
-    if (target.v.ability !== "innerfocus") {
+    if (!target.hasAbility("innerfocus")) {
       target.v.flinch = true;
     } else if (chance === 100) {
       battle.ability(target);
@@ -433,10 +412,10 @@ export const tryDamage = (
     }
   } else if (effect === "thief") {
     if (
-      user.base.item ||
-      !target.base.item ||
-      target.base.item.includes("mail") ||
-      target.v.ability === "stickyhold"
+      user.base.itemId ||
+      !target.base.itemId ||
+      target.base.itemId.includes("mail") ||
+      target.hasAbility("stickyhold")
     ) {
       return dealt;
     }
@@ -445,19 +424,19 @@ export const tryDamage = (
       type: "thief",
       src: user.id,
       target: target.id,
-      item: target.base.item,
+      item: target.base.itemId,
     });
-    user.base.item = target.base.item;
-    target.base.item = undefined;
+    user.manipulateItem(poke => (poke.itemId = target.base.itemId));
+    target.manipulateItem(poke => (poke.itemId = undefined));
   } else if (effect === "knockoff") {
-    if (target.base.item && target.v.ability !== "stickyhold") {
+    if (target.base.itemId && !target.hasAbility("stickyhold")) {
       battle.event({
         type: "knockoff",
         src: user.id,
         target: target.id,
-        item: target.base.item,
+        item: target.base.itemId,
       });
-      target.base.itemUnusable = true;
+      target.manipulateItem(poke => (poke.itemUnusable = true));
     }
   } else {
     if (!target.owner.screens.safeguard && !isImmune(target, effect)) {

@@ -1,7 +1,6 @@
 import type {Random} from "random";
 import type {CalcDamageParams} from "../gen";
-import {abilityList} from "../species";
-import {isSpecial, VF} from "../utils";
+import {clamp, debugLog, VF} from "../utils";
 import type {DamagingMove} from ".";
 import type {ActivePokemon, Battle} from "../battle";
 import type {Pokemon} from "../pokemon";
@@ -20,13 +19,17 @@ export function checkUsefulness(
 
   let eff = battle.getEffectiveness(type, target);
   let abilityImmunity = false;
-  if (type === "ground" && eff !== 0 && target.v.ability === "levitate") {
+  const targetAbility = target.getAbilityId();
+  if (self.sound && targetAbility === "soundproof") {
     eff = 0;
     abilityImmunity = true;
-  } else if (eff <= 1 && type !== "???" && target.v.ability === "wonderguard") {
-    eff = 0;
-    abilityImmunity = true;
-  } else if (self.sound && target.v.ability === "soundproof") {
+  } else if (
+    (type !== "???" && eff <= 1 && targetAbility === "wonderguard") ||
+    (type === "ground" && eff !== 0 && targetAbility === "levitate") ||
+    (type === "electric" && targetAbility === "voltabsorb") ||
+    (type === "water" && targetAbility === "waterabsorb") ||
+    (type === "fire" && targetAbility === "flashfire" && target.base.status !== "frz")
+  ) {
     eff = 0;
     abilityImmunity = true;
   }
@@ -73,7 +76,11 @@ export function getDamage(
   const {type, eff, fail} = checkUsefulness(self, battle, user, target);
   let dmg = 0;
   let isCrit = battle.gen.rng.tryCrit(battle, user, self.flag === "high_crit");
-  if (target.v.ability && abilityList[target.v.ability].preventsCrit) {
+  if (target.getAbility()?.preventsCrit) {
+    isCrit = false;
+  }
+
+  if (target.owner.screens.luckychant) {
     isCrit = false;
   }
 
@@ -89,11 +96,7 @@ export function getDamage(
       rand = false;
     }
 
-    if (
-      user.base.belowHp(3) &&
-      user.v.ability &&
-      abilityList[user.v.ability].pinchBoostType === type
-    ) {
+    if (user.base.belowHp(3) && user.getAbility()?.pinchBoostType === type) {
       pow += Math.floor(pow / 2);
     }
     if (
@@ -138,6 +141,7 @@ export function getDamage(
     if (self.flag === "smellingsalt" && !target.v.substitute && target.base.status === "par") {
       doubleDmg = true;
     }
+
     if (battle.moveIdOf(self) === "weatherball" && battle.getWeather()) {
       doubleDmg = true;
     }
@@ -151,12 +155,12 @@ export function getDamage(
     }
 
     const explosion = self.flag === "explosion" ? 2 : 1;
-    const spc = isSpecial(type);
+    const spc = battle.gen.isSpecial(self, type);
     // eslint-disable-next-line prefer-const
     let [atk, def] = extras.beatUp
       ? ([extras.beatUp.stats.atk, target.base.stats.def] as const)
       : battle.gen.getDamageVariables(spc, battle, user, target, isCrit);
-    if ((type === "ice" || type === "fire") && target.v.ability === "thickfat") {
+    if ((type === "ice" || type === "fire") && target.hasAbility("thickfat")) {
       atk -= Math.floor(atk / 2);
     }
 
@@ -166,7 +170,7 @@ export function getDamage(
     } else if (self.flag === "rage") {
       moveMod = user.v.rage;
     } else if (self.flag === "fury_cutter") {
-      moveMod = 2 ** Math.min(user.v.furyCutter, 4);
+      moveMod = 2 ** clamp(user.v.furyCutter - 1, 0, 4);
     }
 
     let stockpile = 1;
@@ -175,10 +179,17 @@ export function getDamage(
       battle.sv([user.setVolatile("stockpile", 0)]);
     }
 
-    const itemBonus = user.base.item && battle.gen.itemTypeBoost[user.base.item];
-    if (import.meta.dev) {
-      console.log(`\n\x1b[0;32m${user.base.name}\x1b[0m => \x1b[0;31m${target.base.name}\x1b[0m`);
+    let itemBonus = 1;
+    const boost = user.base.item?.typeBoost;
+    if (
+      boost &&
+      (!boost.species || boost.species.includes(user.base.speciesId)) &&
+      (boost.type === type || boost.type2 === type)
+    ) {
+      itemBonus = 1 + boost.percent / 100;
     }
+
+    debugLog(`\n\x1b[0;32m${user.base.name}\x1b[0m => \x1b[0;31m${target.base.name}\x1b[0m`);
     dmg = battle.gen.calcDamage({
       lvl: extras.beatUp ? extras.beatUp.level : user.base.level,
       pow,
@@ -192,12 +203,13 @@ export function getDamage(
       moveMod,
       doubleDmg,
       tripleKick: extras.tripleKick,
-      itemBonus: itemBonus?.type === type ? 1 + itemBonus.percent / 100 : 1,
+      itemBonus,
       helpingHand: user.v.hasFlag(VF.helpingHand),
       spread: extras.spread,
       screen: !!target.owner.screens[spc ? "light_screen" : "reflect"],
       flashFire: user.v.hasFlag(VF.flashFire) && type === "fire",
       stockpile,
+      technician: user.hasAbility("technician") && !self.noTechnician,
     });
 
     if (self.flag === "false_swipe" && dmg >= target.base.hp && !target.v.substitute) {
@@ -209,7 +221,11 @@ export function getDamage(
   const endured = deadly && target.v.hasFlag(VF.endure);
   const band =
     extras.band ||
-    (deadly && !endured && target.base.item === "focusband" && battle.gen.rng.tryFocusBand(battle));
+    (deadly &&
+      !endured &&
+      target.base.itemId === "focusband" &&
+      battle.gen.rng.tryFocusBand(battle)) ||
+    (deadly && !endured && target.base.isMaxHp() && target.base.itemId === "focussash");
 
   if (endured || band) {
     dmg = Math.max(target.base.hp - 1, 0);

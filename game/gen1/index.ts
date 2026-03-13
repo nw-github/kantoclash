@@ -13,8 +13,11 @@ import {
   type StatStageId,
   type Type,
   randChoiceWeighted,
+  MC,
+  debugLog,
+  dmgFlags,
 } from "../utils";
-import type {ItemData, ItemId} from "../item";
+import {itemList, type ItemId} from "../item";
 import {UNOWN_FORM, type FormId, type Gender, type Nature} from "../pokemon";
 import type {DamageReason} from "../events";
 
@@ -73,30 +76,6 @@ const typeChart: TypeChart = {
   "???": {},
 };
 
-const itemTypeBoost: Partial<Record<ItemId, {type: Type; percent: number} | null>> = {
-  softsand: {type: "ground", percent: 10},
-  hardstone: {type: "rock", percent: 10},
-  metalcoat: {type: "steel", percent: 10},
-  pinkbow: {type: "normal", percent: 10},
-  blackbelt: {type: "fight", percent: 10},
-  sharpbeak: {type: "flying", percent: 10},
-  poisonbarb: {type: "poison", percent: 10},
-  silverpowder: {type: "bug", percent: 10},
-  spelltag: {type: "ghost", percent: 10},
-  polkadotbow: {type: "normal", percent: 10},
-  charcoal: {type: "fire", percent: 10},
-  mysticwater: {type: "water", percent: 10},
-  miracleseed: {type: "grass", percent: 10},
-  magnet: {type: "electric", percent: 10},
-  twistedspoon: {type: "psychic", percent: 10},
-  nevermeltice: {type: "ice", percent: 10},
-  dragonscale: {type: "dragon", percent: 10},
-  dragonfang: null,
-  blackglasses: {type: "dark", percent: 10},
-  silkscarf: {type: "normal", percent: 10},
-  seaincense: {type: "water", percent: 5},
-};
-
 const stageMultipliers: Record<number, number> = {
   [-6]: 25 / 100,
   [-5]: 28 / 100,
@@ -111,23 +90,6 @@ const stageMultipliers: Record<number, number> = {
   4: 300 / 100,
   5: 350 / 100,
   6: 400 / 100,
-};
-
-type PRecord<K extends string | number | symbol, V> = Partial<Record<K, V>>;
-
-const statBoostItem: PRecord<
-  ItemId,
-  PRecord<SpeciesId, {stats: StatStageId[]; transformed: bool; amount: number}>
-> = {
-  metalpowder: {ditto: {stats: ["def", "spd"], transformed: true, amount: 0.5}},
-  lightball: {pikachu: {stats: ["spa"], transformed: false, amount: 1}},
-  thickclub: {marowak: {stats: ["atk"], transformed: false, amount: 1}},
-  souldew: {
-    latias: {stats: ["spa", "spd"], transformed: false, amount: 0.5},
-    latios: {stats: ["spa", "spd"], transformed: false, amount: 0.5},
-  },
-  deepseatooth: {clamperl: {stats: ["spa"], transformed: false, amount: 1}},
-  deepseascale: {clamperl: {stats: ["spd"], transformed: false, amount: 1}},
 };
 
 enum BetweenTurns {
@@ -219,6 +181,7 @@ export type CalcDamageParams = {
   screen?: bool;
   spread?: bool;
   flashFire?: bool;
+  technician?: bool;
 };
 
 const calcDamage = ({lvl, pow, atk, def, eff, isCrit, hasStab, rand}: CalcDamageParams) => {
@@ -243,6 +206,11 @@ const calcDamage = ({lvl, pow, atk, def, eff, isCrit, hasStab, rand}: CalcDamage
   let r = typeof rand === "number" ? rand : 255;
   if (rand && typeof rand !== "number" && dmg > 1) {
     r = rand.int(217, 255);
+  }
+
+  if (import.meta.dev) {
+    debugLog(`flag: ${dmgFlags({crit: isCrit, stab: hasStab})}`);
+    debugLog("vars:", {dmg, lvl, pow, atk, def, eff, r});
   }
   return idiv(dmg * r, 255);
 };
@@ -457,10 +425,8 @@ const createGeneration = () => {
     speciesList,
     moveList,
     typeChart,
-    items: {} as Record<ItemId, ItemData>,
+    items: itemList,
     moveFunctions,
-    itemTypeBoost,
-    statBoostItem,
     lastMoveIdx: moveList.whirlwind.idx!,
     invalidSketchMoves: [
       "transform",
@@ -525,14 +491,22 @@ const createGeneration = () => {
       _species: Species,
       _atk: number,
     ): Gender | undefined => "N",
-    getForm(_desired: FormId | undefined, id: SpeciesId, dvs: Partial<Stats>): FormId | undefined {
+    getForm(
+      _desired: FormId | undefined,
+      id: SpeciesId,
+      dvs: Partial<Stats>,
+      item?: ItemId,
+    ): FormId | undefined {
       if (id === "unown") {
         const c2 = (iv?: number) => ((iv ?? 15) >> 1) & 0b11;
         const letter = (c2(dvs.atk) << 6) | (c2(dvs.def) << 4) | (c2(dvs.spe) << 2) | c2(dvs.spa);
         return UNOWN_FORM[idiv(letter, 10)];
       }
 
-      return;
+      const itemData = this.items[item!];
+      if (id === "arceus" && itemData?.plate) {
+        return itemData.plate;
+      }
     },
     getShiny: (_desired: bool | undefined, _dvs: Partial<Stats>) => false,
     accumulateBide,
@@ -572,10 +546,18 @@ const createGeneration = () => {
           d = why === "seeded" ? 8 : 16;
         }
 
-        const dmg = Math.max(Math.floor((m * poke.base.stats.hp) / d), 1);
-        const {dead} = poke.damage(dmg, poke, battle, false, why, true);
-        if (why === "seeded" && poke.v.seededBy) {
-          poke.v.seededBy.recover(dmg, poke, battle, "seeder");
+        let dead = false;
+        if (why === "psn" && poke.hasAbility("poisonheal")) {
+          if (poke.base.hp < poke.base.stats.hp) {
+            battle.ability(poke);
+            poke.recover(Math.max(Math.floor(poke.base.stats.hp / 8), 1), poke, battle, "recover");
+          }
+        } else {
+          const dmg = Math.max(Math.floor((m * poke.base.stats.hp) / d), 1);
+          dead = poke.damage(dmg, poke, battle, false, why, true).dead;
+          if (why === "seeded" && poke.v.seededBy) {
+            poke.v.seededBy.recover(dmg, poke, battle, "seeder");
+          }
         }
 
         if (poke.v.counter) {
@@ -645,8 +627,7 @@ const createGeneration = () => {
       if (battle.betweenTurns < BetweenTurns.Weather) {
         weather: if (battle.weather) {
           if (battle.weather.turns !== -1 && --battle.weather.turns === 0) {
-            battle.event({type: "weather", kind: "end", weather: battle.weather.kind});
-            delete battle.weather;
+            battle.endWeather();
             break weather;
           }
 
@@ -698,7 +679,7 @@ const createGeneration = () => {
           continue;
         }
 
-        if (poke.base.item === "leftovers") {
+        if (poke.base.itemId === "leftovers") {
           poke.recover(Math.max(1, idiv(poke.base.stats.hp, 16)), poke, battle, "leftovers");
         }
         poke.handleBerry(battle, {pp: true});
@@ -723,7 +704,7 @@ const createGeneration = () => {
 
       // Berries
       for (const poke of battle.allActive) {
-        poke.handleBerry(battle, {pinch: true, status: true, heal: true});
+        poke.handleBerry(battle, {pinch: true, status: true});
       }
 
       // Encore
@@ -733,6 +714,47 @@ const createGeneration = () => {
         if (!poke.base.hp && !poke.v.fainted) {
           battle.event({type: "bug", bug: "bug_gen2_spikes"});
         }
+      }
+    },
+    getCategory(move: Move, overrideType?: Type) {
+      return move.kind === "damage"
+        ? this.isSpecial(move, overrideType)
+          ? MC.special
+          : MC.physical
+        : MC.status;
+    },
+    isSpecial(move: Move, overrideType?: Type, other?: bool) {
+      if (other && (move === this.moveList.beatup || move === this.moveList.hiddenpower)) {
+        return false;
+      }
+
+      switch (overrideType ?? move.type) {
+        case "normal":
+        case "rock":
+        case "ground":
+        case "ghost":
+        case "poison":
+        case "bug":
+        case "flying":
+        case "fight":
+        case "steel":
+        case "???":
+          return false;
+        case "water":
+        case "grass":
+        case "fire":
+        case "electric":
+        case "ice":
+        case "psychic":
+        case "dragon":
+        case "dark":
+          return true;
+      }
+    },
+    handleRage(battle: Battle, poke: ActivePokemon) {
+      if (poke.v.thrashing?.move === battle.gen.moveList.rage && poke.v.stages.atk < 6) {
+        battle.info(poke, "rage");
+        poke.modStages([["atk", +1]], battle);
       }
     },
   };

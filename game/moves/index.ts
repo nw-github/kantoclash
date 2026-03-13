@@ -1,7 +1,7 @@
 import type {ActivePokemon, Battle} from "../battle";
 import type {FailReason, InfoReason, RecoveryReason} from "../events";
 import type {Pokemon, Status} from "../pokemon";
-import type {StageId, Type, VF, Weather, ScreenId} from "../utils";
+import type {StageId, Type, VF, Weather, ScreenId, MC, HazardId} from "../utils";
 import type {Range} from "./moveList";
 
 export * from "./functions";
@@ -80,14 +80,18 @@ export interface StatusMove extends BaseMove {
   readonly kind: "status";
   readonly status: Status;
   readonly checkType?: bool;
-  readonly range: Range.Adjacent | Range.Any;
+  readonly range: Range.Adjacent | Range.Any | Range.AllAdjacentFoe;
 }
 
 export interface SwitchMove extends BaseMove {
   readonly kind: "switch";
   readonly poke: Pokemon;
   readonly priority: number;
-  readonly batonPass: bool;
+}
+
+export interface TrickMove extends BaseMove {
+  readonly kind: "trick";
+  readonly range: Range.Adjacent;
 }
 
 export interface FailMove extends BaseMove {
@@ -103,6 +107,14 @@ export interface WeatherMove extends BaseMove {
 export interface ScreenMove extends BaseMove {
   readonly kind: "screen";
   readonly screen: ScreenId;
+  readonly turns?: number;
+}
+
+export interface HazardMove extends BaseMove {
+  readonly kind: "hazard";
+  readonly range: Range.Field;
+  readonly hazard: HazardId;
+  readonly max: number;
 }
 
 export interface PhazingMove extends BaseMove {
@@ -131,14 +143,6 @@ export interface HealBellMove extends BaseMove {
   readonly why: InfoReason;
 }
 
-export interface FutureSightMove extends BaseMove {
-  readonly kind: "futuresight";
-  readonly range: Range.Adjacent;
-  readonly power: number;
-  readonly msg: InfoReason;
-  readonly release: InfoReason;
-}
-
 export interface SwaggerMove extends BaseMove {
   readonly kind: "swagger";
   readonly range: Range.Adjacent;
@@ -154,8 +158,10 @@ export interface ForesightMove extends BaseMove {
 export interface DamagingMove extends BaseMove {
   readonly kind: "damage";
   readonly power: number;
+  readonly category: MC.physical | MC.special;
   readonly flag?: Flag;
   readonly effect?: [number, Effect] | [number, Effect, true];
+  readonly effect2?: DamagingMove["effect"];
   /** Recoil: max(1 / recoil, 1) */
   readonly recoil?: number;
   readonly punish?: bool;
@@ -163,6 +169,8 @@ export interface DamagingMove extends BaseMove {
   /** Affected by damp */
   readonly damp?: bool;
   readonly charge?: bool | "sun" | "invuln" | [StageId, number][];
+  readonly ignoreType?: bool;
+  readonly noTechnician?: bool;
   getPower?(user: Pokemon, target?: Pokemon): number;
   getType?(user: Pokemon, weather?: Weather): Type;
   checkSuccess?(battle: Battle, user: ActivePokemon, targets: ActivePokemon[]): bool;
@@ -184,14 +192,15 @@ export type Move =
   | StatusMove
   | SwitchMove
   | FailMove
+  | TrickMove
   | WeatherMove
   | ScreenMove
+  | HazardMove
   | PhazingMove
   | ProtectMove
   | PreventEscapeMove
   | LockOnMove
   | HealBellMove
-  | FutureSightMove
   | SwaggerMove
   | ForesightMove;
 
@@ -221,6 +230,7 @@ type Flag =
   | "rage"
   | "trap"
   | "ohko"
+  | "uturn"
   | "norand"
   | "magnitude"
   | "false_swipe"
@@ -232,7 +242,11 @@ type Flag =
   | "beatup"
   | "facade"
   | "remove_screens"
+  | "remove_protect"
   | "smellingsalt"
   | "spitup"
   | "uproar"
-  | "revenge";
+  | "revenge"
+  | "bugbite"
+  | "futuresight"
+  | "assurance";

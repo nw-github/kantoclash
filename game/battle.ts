@@ -3,16 +3,24 @@ import type {
   BattleEvent,
   PlayerId,
   InfoReason,
-  VictoryEvent,
+  EndBattleEvent,
   ChangedVolatiles,
   PokeId,
 } from "./events";
 import {type MoveId, type Move, Range, isSpreadMove} from "./moves";
 import {Pokemon, type ValidatedPokemonDesc} from "./pokemon";
-import {getEffectiveness, playerId, VF, type Type, type Weather, type ScreenId} from "./utils";
+import {
+  getEffectiveness,
+  playerId,
+  VF,
+  debugLog,
+  type Type,
+  type Weather,
+  type ScreenId,
+  type HazardId,
+} from "./utils";
 import type {Generation} from "./gen";
 import {ActivePokemon} from "./active";
-import {abilityList} from "./species";
 
 export {ActivePokemon};
 
@@ -37,14 +45,14 @@ export class Player {
   readonly team: Pokemon[];
   readonly teamDesc: ValidatedPokemonDesc[];
   readonly screens: Partial<Record<ScreenId, number>> = {};
+  readonly hazards: Partial<Record<HazardId, number>> = {};
 
   sleepClausePoke?: Pokemon;
-  spikes = 0;
 
   constructor(gen: Generation, {id, team}: PlayerParams, doubles: bool) {
     this.id = id;
     this.team = team.map(p => {
-      const poke = new Pokemon(gen, p);
+      const poke = Pokemon.fromDescriptor(gen, p);
       p.gender = poke.gender;
       p.form = poke.form;
       p.shiny = poke.shiny;
@@ -119,7 +127,6 @@ export class Player {
         pp: 0,
         priority: +7,
         poke,
-        batonPass: user.v.inBatonPass,
       },
       isReplacement: active.v.fainted,
       // This is only relevant for the order of weather abilities on the first turn, which are
@@ -149,17 +156,16 @@ export enum TurnType {
   Lead,
   Switch,
   Normal,
-  BatonPass,
 }
 
 type BattleParams = {
-  gen: Generation;
-  player1: PlayerParams;
-  player2: PlayerParams;
+  readonly gen: Generation;
+  readonly player1: PlayerParams;
+  readonly player2: PlayerParams;
   doubles?: bool;
   chooseLead?: bool;
   mods?: Mods;
-  seed?: string;
+  seed: string;
 };
 
 export class Battle {
@@ -179,8 +185,8 @@ export class Battle {
 
   private constructor(
     readonly gen: Generation,
-    p1: PlayerParams,
-    p2: PlayerParams,
+    readonly p1: PlayerParams,
+    readonly p2: PlayerParams,
     private readonly doubles: bool,
     readonly mods: Mods,
     readonly rng: Random,
@@ -193,9 +199,6 @@ export class Battle {
   }
 
   static start({gen, player1, player2, doubles, chooseLead, mods, seed}: BattleParams) {
-    seed ??= crypto.randomUUID();
-    console.log("new battle, seed: " + seed);
-
     const self = new Battle(gen, player1, player2, doubles ?? false, mods ?? {}, new Random(seed));
     self.players[0].updateOptions(self);
     self.players[1].updateOptions(self);
@@ -219,14 +222,15 @@ export class Battle {
     return this._turn;
   }
 
-  private set victor(value: Player) {
+  /** Should only be set by ActivePokemon::faintIfNeeded */
+  set victor(value: Player) {
     this._victor = value;
     this.finished = true;
   }
 
   getSpe(poke: ActivePokemon) {
-    if (poke.base.item === "quickclaw" && this.gen.rng.tryQuickClaw(this)) {
-      console.log("proc quick claw: ", poke.base.name);
+    if (poke.base.itemId === "quickclaw" && this.gen.rng.tryQuickClaw(this)) {
+      debugLog("proc quick claw: ", poke.base.name);
       return 65535;
     }
     return this.gen.getStat(this, poke, "spe");
@@ -266,6 +270,10 @@ export class Battle {
   }
 
   forfeit(player: Player, timer: bool) {
+    if (this.finished) {
+      return [];
+    }
+
     this.victor = this.opponentOf(player);
     this.event({type: "forfeit", user: player.id, timer});
     this.event({type: "end", victor: this.victor.id});
@@ -275,7 +283,7 @@ export class Battle {
     return this.events.splice(0);
   }
 
-  draw(why: VictoryEvent["why"]) {
+  forceEnd(why: EndBattleEvent["why"]) {
     this.finished = true;
     for (const player of this.players) {
       if (why === "timer") {
@@ -314,16 +322,20 @@ export class Battle {
   }
 
   calcTurnOrder() {
-    const switches = this.switchOrder().filter(p => p.choice?.move?.kind === "switch");
-    return switches.concat(this.inTurnOrder().filter(p => p.choice?.move?.kind !== "switch"));
+    if (this.gen.id <= 3 || this.turnType !== TurnType.Normal) {
+      const switches = this.switchOrder().filter(p => p.choice?.move?.kind === "switch");
+      return switches.concat(this.inTurnOrder().filter(p => p.choice?.move?.kind !== "switch"));
+    } else {
+      return this.inTurnOrder();
+    }
   }
 
   nextTurn() {
-    if (!this.allActive.every(poke => !poke.options || poke.choice)) {
+    if (!this.allActive.every(poke => !poke.options || poke.choice) || this.finished) {
       return;
     }
 
-    if (this.turnType === TurnType.Normal) {
+    if (this.turnType === TurnType.Normal && !this.allActive.some(p => p.v.inBatonPass)) {
       this._turn++;
       this.event({type: "next_turn", turn: this._turn});
     }
@@ -343,7 +355,7 @@ export class Battle {
 
       if (move === this.gen.moveList.pursuit) {
         if (target?.choice?.move?.kind === "switch" && target.owner !== user.owner) {
-          console.log(user.base.name + " is pursuing ", target.base.name);
+          debugLog(user.base.name + " is pursuing ", target.base.name);
           this.turnOrder.splice(this.turnOrder.indexOf(target), 0, ...this.turnOrder.splice(i, 1));
           user.v.inPursuit = true;
         }
@@ -353,8 +365,6 @@ export class Battle {
     this.runTurn();
 
     if (this.allActive.some(poke => poke.v.inBatonPass)) {
-      this.turnType = TurnType.BatonPass;
-
       for (const poke of this.allActive) {
         if (poke.v.inBatonPass) {
           poke.updateOptions(this);
@@ -366,7 +376,7 @@ export class Battle {
       if (this.victor) {
         this.event({type: "end", victor: this.victor.id});
       } else if (this._turn >= 1000 && this.mods.endlessBattle) {
-        return this.draw("too_long");
+        return this.forceEnd("too_long");
       }
 
       if (this.allActive.some(p => p.v.fainted && p.canBeReplaced(this))) {
@@ -524,7 +534,7 @@ export class Battle {
 
   hasUproar(user: ActivePokemon) {
     return (
-      user.v.ability !== "soundproof" &&
+      !user.hasAbility("soundproof") &&
       this.allActive.some(p => p.v.thrashing?.move?.flag === "uproar")
     );
   }
@@ -534,12 +544,12 @@ export class Battle {
     for (let i = 0; i < result.length; i++) {
       const e = result[i];
       if ((e.type === "damage" || e.type === "recover") && playerId(e.target) !== player?.id) {
-        result[i] = {...e, hpBefore: undefined, hpAfter: undefined};
+        result[i] = {...e, hpBefore: e.hpPercentBefore, hpAfter: e.hpPercentAfter};
       } else if (e.type === "switch" && playerId(e.src) !== player?.id) {
-        result[i] = {...e, hp: undefined, indexInTeam: -1};
+        result[i] = {...e, hp: e.hpPercent, indexInTeam: -1};
       } else if (
         e.type === "info" &&
-        e.why === "cConfusedFatigue" &&
+        e.why === "fatigue_confuse" &&
         playerId(e.src) !== player?.id
       ) {
         // don't leak short outrage/petal dance/thrash/etc. to the opponent
@@ -568,7 +578,7 @@ export class Battle {
   }
 
   getWeather() {
-    if (this.allActive.some(p => p.v.ability && abilityList[p.v.ability].negatesWeather)) {
+    if (this.allActive.some(p => p.getAbility()?.negatesWeather)) {
       return;
     }
     return this.weather?.kind;
@@ -583,9 +593,20 @@ export class Battle {
       volatiles: this.allActive.map(a => ({id: a.id, v: {stats: a.clientStats(this)}})),
     });
 
-    // not sure if this is the right order but doesn't really matter
+    // TODO: not sure if this is the right order
     for (const poke of this.switchOrder()) {
       poke.handleForecast(this);
+    }
+  }
+
+  endWeather() {
+    if (this.weather) {
+      this.event({type: "weather", kind: "end", weather: this.weather.kind});
+      delete this.weather;
+      // TODO: order?
+      for (const poke of this.inTurnOrder()) {
+        poke.handleForecast(this);
+      }
     }
   }
 
@@ -648,15 +669,6 @@ export class Battle {
     }
 
     this.gen.betweenTurns(this);
-    if (this.turnType === TurnType.Lead) {
-      for (const poke of this.inTurnOrder()) {
-        poke.handleWeatherAbility(this);
-      }
-
-      for (const user of this.turnOrder) {
-        user.handleSwitchInAbility(this);
-      }
-    }
   }
 
   useMove(
@@ -665,8 +677,26 @@ export class Battle {
     targets: ActivePokemon[],
     moveIndex?: number,
     quiet?: bool,
+    called?: bool,
+  ) {
+    const result = this.doUseMove(move, user, targets, moveIndex, quiet, called);
+    // TODO: does choice band lock you in if your move was disabled?
+    if (moveIndex !== undefined && user.base.item?.choice) {
+      user.v.choiceLock = moveIndex;
+    }
+    return result;
+  }
+
+  doUseMove(
+    move: Move,
+    user: ActivePokemon,
+    targets: ActivePokemon[],
+    moveIndex?: number,
+    quiet?: bool,
+    called?: bool,
   ) {
     if (move.kind !== "switch") {
+      const originalTargets = targets;
       targets = targets.filter(t => !t.v.fainted);
       const availableTargets = this.getTargets(user, move.range);
 
@@ -679,7 +709,7 @@ export class Battle {
         targets = [target];
       } else if (
         move.type === "electric" &&
-        (target = availableTargets.find(t => t.v.ability === "lightningrod"))
+        (target = availableTargets.find(t => t.hasAbility("lightningrod")))
       ) {
         targets = [target];
       } else if (!targets.length) {
@@ -688,10 +718,10 @@ export class Battle {
 
       const moveId = this.moveIdOf(move)!;
       if (move.kind === "damage") {
-        const damp = this.allActive.find(p => p.v.ability === "damp");
+        const damp = this.allActive.find(p => p.hasAbility("damp"));
         if (damp && move.damp) {
           this.ability(damp);
-          this.event({type: "cantuse", src: damp.id, move: moveId});
+          return this.event({type: "cantuse", src: user.id, move: moveId});
         }
 
         if (user.v.trapping && targets[0].v.trapped) {
@@ -709,7 +739,7 @@ export class Battle {
           }
 
           if (move.charge !== "sun" || !this.hasWeather("sun")) {
-            user.v.charging = {move: move, target: targets[0]};
+            user.v.charging = {move, targets: originalTargets};
             user.v.invuln = move.charge === "invuln" || user.v.invuln;
             this.sv([user.clearFlag(VF.charge)]);
             return;
@@ -729,11 +759,6 @@ export class Battle {
         this.sv([user.clearFlag(VF.charge)]);
       }
 
-      // TODO: does choice band lock you in if your move was disabled?
-      if (moveIndex !== undefined && user.base.item === "choiceband") {
-        user.v.choiceLock = moveIndex;
-      }
-
       if (moveId === user.base.moves[user.v.disabled?.indexInMoves ?? -1]) {
         this.event({move: moveId, type: "move", src: user.id, disabled: true});
         user.v.charging = undefined;
@@ -749,7 +774,7 @@ export class Battle {
 
         const tr = move.range === Range.Field ? this.allActive : targets;
         for (const poke of tr) {
-          if (poke.v.ability === "pressure" && poke !== user) {
+          if (poke.hasAbility("pressure") && poke !== user) {
             user.base.pp[moveIndex] = Math.max(0, user.base.pp[moveIndex] - 1);
           }
         }
@@ -772,22 +797,24 @@ export class Battle {
           move: moveId,
           src: user.id,
           thrashing: user.v.thrashing && this.gen.id === 1 ? true : undefined,
+          called,
         });
       }
       user.v.lastMove = move;
 
       if (move.snatch) {
-        for (const poke of this.turnOrder) {
-          if (!poke.v.fainted && poke.v.hasFlag(VF.snatch)) {
+        for (const snatcher of this.turnOrder) {
+          if (!snatcher.v.fainted && snatcher.v.hasFlag(VF.snatch)) {
             this.event({
               type: "snatch",
-              src: poke.id,
+              src: snatcher.id,
               target: user.id,
-              volatiles: [poke.clearFlag(VF.snatch)],
+              volatiles: [snatcher.clearFlag(VF.snatch)],
             });
-            // psych up targets the pokémon snatch was stolen from, even if its another snatch user
-            user = poke;
-            targets = move.range === Range.Adjacent ? [user] : [poke];
+            // psych up targets the pokémon snatch stole from, even if its another snatch user
+            // a snatched acupressure (only possible in gen 4) always targets the snatcher
+            targets = move.range === Range.Adjacent ? [user] : [snatcher];
+            user = snatcher;
             moveIndex = undefined;
           }
         }
@@ -814,7 +841,7 @@ export class Battle {
           if (targets[i].v.hasFlag(VF.protect)) {
             this.info(targets[i], "protect");
             targets.splice(i--, 1);
-          } else if (targets[i].v.ability === "soundproof" && move.sound) {
+          } else if (targets[i].hasAbility("soundproof") && move.sound) {
             this.ability(targets[i]);
             this.info(targets[i], "immune");
             targets.splice(i--, 1);
@@ -831,7 +858,7 @@ export class Battle {
           ? this.getTargets(leftmost, move.range)
           : [user];
         this.event({type: "bounce", src: leftmost.id, move: moveId});
-        this.useMove(move, leftmost, newTargets, undefined, true);
+        this.useMove(move, leftmost, newTargets, undefined, true, true);
         return;
       }
     }
@@ -849,13 +876,13 @@ export class Battle {
     if (!isSpreadMove(move.range) && targets.length) {
       targets = [this.rng.choice(targets)!];
     }
-    return this.useMove(move, user, targets, moveIndex);
+    return this.useMove(move, user, targets, moveIndex, false, true);
   }
 
   tryMagicBounce(move: Move, user: ActivePokemon, target: ActivePokemon) {
     if (target.v.hasFlag(VF.magicCoat) && move.magicCoat) {
       this.event({type: "bounce", src: target.id, move: this.moveIdOf(move)!});
-      this.useMove(move, target, [user], undefined, true);
+      this.useMove(move, target, [user], undefined, true, true);
       return true;
     }
     return false;
@@ -865,21 +892,13 @@ export class Battle {
     const targets = this.opponentOf(user.owner).active;
     let fainted = false;
     for (const poke of targets) {
-      if (poke.base.hp === 0 && !poke.v.fainted) {
-        poke.faint(this);
-        if (!this.victor && poke.owner.areAllDead()) {
-          this.victor = user.owner;
-        }
+      if (poke.faintIfNeeded(this)) {
         fainted = true;
       }
     }
 
     for (const poke of user.owner.active) {
-      if (poke.base.hp === 0 && !poke.v.fainted) {
-        poke.faint(this);
-        if (!this.victor && poke.owner.areAllDead()) {
-          this.victor = this.opponentOf(poke.owner);
-        }
+      if (poke.faintIfNeeded(this)) {
         fainted = true;
       }
     }

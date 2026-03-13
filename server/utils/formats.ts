@@ -1,21 +1,21 @@
-import {Nature, natureTable, type ValidatedPokemonDesc} from "~/game/pokemon";
-import {moveList, type MoveId, type Move} from "~/game/moves";
+import {Nature, natureTable, type ValidatedPokemonDesc} from "~~/game/pokemon";
+import {moveList, type MoveId, type Move} from "~~/game/moves";
 import {
   type AbilityId,
   speciesList,
   type Species,
   type SpeciesId,
   abilityList,
-} from "~/game/species";
-import {HP_TYPES, statKeys, type Stats} from "~/game/utils";
+} from "~~/game/species";
+import {HP_TYPES, MC, statKeys, type Stats} from "~~/game/utils";
+import {type Generation, GENERATION1, GENERATION2, GENERATION3, GENERATION4} from "~~/game/gen";
+import {itemList, type ItemId} from "~~/game/item";
+
 import random from "random";
 import {z} from "zod";
 import {isValidSketchMove, type FormatId} from "~/utils/shared";
-import {type Generation, GENERATION1, GENERATION2, GENERATION3} from "~/game/gen";
-import {statusBerry, type ItemId} from "~/game/item";
 import {profanityMatcher} from "~/utils/schema";
 import {HP_IVS} from "~/utils/pokemon";
-import {itemDesc} from "~/utils/describe";
 
 export type TeamProblems = {path: (string | number)[]; message: string}[];
 
@@ -30,7 +30,7 @@ const badMoves = new Set<MoveId>(["struggle", "focusenergy", "payday", "absorb",
 
 const uselessNfe = new Set<SpeciesId>(["weedle", "metapod", "kakuna", "magikarp", "caterpie"]);
 
-const getRandomPokemon = (
+export const getRandomPokemon = (
   gen: Generation,
   count: number,
   validSpecies: (s: Species, id: SpeciesId) => bool,
@@ -44,10 +44,20 @@ const getRandomPokemon = (
       const s = gen.speciesList[id];
       const poke = customize(s, id);
       const items = (Object.keys(gen.items) as ItemId[]).filter(item => {
-        if (!(item in itemDesc)) {
+        const itemData = gen.items[item];
+        if (
+          !itemData.desc ||
+          !itemData.exists ||
+          itemData.halveSpeed ||
+          itemData.laggingTail ||
+          itemData.extendWeather ||
+          itemData.reduceType ||
+          (itemData.statusOrb && poke.ability !== "guts")
+        ) {
           return false;
         } else if (
           (item === "metalpowder" && id !== "ditto") ||
+          (item === "quickpowder" && id !== "ditto") ||
           (item === "lightball" && id !== "pikachu") ||
           (item === "thickclub" && id !== "marowak") ||
           (item === "luckypunch" && id !== "chansey") ||
@@ -58,10 +68,10 @@ const getRandomPokemon = (
         ) {
           return false;
         } else if (
-          (statusBerry[item] === "frz" && s.types.includes("ice")) ||
-          (statusBerry[item] === "psn" && s.types.includes("poison")) ||
-          (statusBerry[item] === "psn" && s.types.includes("steel")) ||
-          (statusBerry[item] === "brn" && s.types.includes("fire"))
+          (itemData.cureStatus === "frz" && s.types.includes("ice")) ||
+          (itemData.cureStatus === "psn" && s.types.includes("poison")) ||
+          (itemData.cureStatus === "psn" && s.types.includes("steel")) ||
+          (itemData.cureStatus === "brn" && s.types.includes("fire"))
         ) {
           return false;
         } else if (item === "mysteryberry" && !poke.moves.some(m => gen.moveList[m].pp === 5)) {
@@ -72,10 +82,29 @@ const getRandomPokemon = (
           return true;
         }
 
-        const type = gen.itemTypeBoost[item]?.type;
+        const type = itemData.typeBoost?.type;
         if (
           type &&
+          (!itemData?.typeBoost?.species || itemData.typeBoost.species.includes(id)) &&
           !poke.moves.some(m => gen.moveList[m].kind === "damage" && gen.moveList[m].type === type)
+        ) {
+          return false;
+        }
+
+        if (id === "arceus" && !itemData.plate) {
+          return false;
+        }
+
+        if (
+          itemData.choice === "atk" &&
+          !poke.moves.some(m => gen.getCategory(gen.moveList[m]) === MC.physical)
+        ) {
+          return false;
+        }
+
+        if (
+          itemData.choice === "spa" &&
+          !poke.moves.some(m => gen.getCategory(gen.moveList[m]) === MC.special)
         ) {
           return false;
         }
@@ -114,7 +143,7 @@ const getRandomPokemon = (
         // evs[plusStat as keyof Stats] = 252;
       }
 
-      poke.item = random.choice(items);
+      poke.item = s.requiresItem ?? random.choice(items);
       poke.friendship = poke.moves.includes("frustration") ? 0 : 255;
       return poke;
     });
@@ -154,47 +183,58 @@ const isBadMove = (s: Species, move: Move, id: MoveId) => {
   return badMoves.has(id) || move.kind === "fail";
 };
 
-export const randoms = (
+export const defaultCustomize = (
   gen: Generation,
-  validSpecies: (s: Species, id: SpeciesId) => bool,
-  level = 100,
+  level: number,
+  s: Species,
+  speciesId: SpeciesId,
 ) => {
-  return getRandomPokemon(gen, 6, validSpecies, (s, id) => {
-    let valid = s.moves;
-    if (valid.includes("sketch")) {
-      valid = Object.keys(gen.moveList).filter(id => isValidSketchMove(gen, id)) as MoveId[];
-    }
+  let valid = s.moves;
+  if (valid.includes("sketch")) {
+    valid = Object.keys(gen.moveList).filter(id => isValidSketchMove(gen, id)) as MoveId[];
+  }
 
-    const moves = getRandomMoves(4, valid, (move, id) => !isBadMove(s, move, id));
-    const stab = s.moves.filter(m => {
-      const move = moveList[m];
-      return (
-        (move.power ?? 0) > 40 &&
-        s.types.includes(move.type) &&
-        !moves.includes(m) &&
-        !isBadMove(s, move, m)
-      );
-    });
-    if (stab.length) {
-      moves[0] = random.choice(stab)!;
-    }
-    let ivs: Partial<Stats> = {};
-    if (moves.includes("hiddenpower")) {
-      if (gen.id <= 2) {
-        ivs.atk = 0b1100 | Math.floor(Math.random() * 4);
-        ivs.def = 0b1100 | Math.floor(Math.random() * 4);
-      } else {
-        ivs = {...HP_IVS[random.choice(HP_TYPES)!]!};
-      }
-    }
-
-    let nature: Nature | undefined;
-    let ability: AbilityId | undefined;
-    return {species: id, level, moves, ivs, evs: {}, nature, ability};
+  const moves = getRandomMoves(4, valid, (move, id) => !isBadMove(s, move, id));
+  const stab = s.moves.filter(m => {
+    const move = moveList[m];
+    return (
+      (move.power ?? 0) > 40 &&
+      s.types.includes(move.type) &&
+      !moves.includes(m) &&
+      !isBadMove(s, move, m)
+    );
   });
+  if (stab.length) {
+    moves[0] = random.choice(stab)!;
+  }
+  if (speciesId === "arceus" && !moves.includes("judgement")) {
+    moves[0] = "judgment";
+  }
+
+  let ivs: Partial<Stats> = {};
+  if (moves.includes("hiddenpower")) {
+    if (gen.id <= 2) {
+      ivs.atk = 0b1100 | Math.floor(Math.random() * 4);
+      ivs.def = 0b1100 | Math.floor(Math.random() * 4);
+    } else {
+      ivs = {...HP_IVS[random.choice(HP_TYPES)!]!};
+    }
+  }
+
+  let nature: Nature | undefined;
+  let ability: AbilityId | undefined;
+  return {speciesId, level, moves, ivs, evs: {}, nature, ability};
 };
 
-const createValidator = (gen: Generation) => {
+export const randoms = (
+  gen: Generation,
+  level: number,
+  validSpecies: (s: Species, id: SpeciesId) => bool,
+) => {
+  return getRandomPokemon(gen, 6, validSpecies, (s, id) => defaultCustomize(gen, level, s, id));
+};
+
+const createValidator = (gen: Generation, maxLevel: number, nfe = false) => {
   return z
     .object({
       name: z
@@ -203,14 +243,26 @@ const createValidator = (gen: Generation) => {
         .max(24, "Name must be at most 24 characters")
         .refine(text => !profanityMatcher.hasMatch(text), "Name must not contain obscenities")
         .optional(),
-      level: z.number().min(1).max(100).optional(),
-      species: z
-        .string()
-        .refine(s => s in gen.speciesList, "Species is invalid")
-        .refine(
-          s => gen.validSpecies(gen.speciesList[s as SpeciesId]),
-          "Species does not exist in this generation",
-        ),
+      level: z.number().min(1).max(maxLevel).default(maxLevel),
+      speciesId: nfe
+        ? z
+            .string()
+            .refine(id => id in gen.speciesList, "Species is invalid")
+            .refine(
+              id => gen.validSpecies(gen.speciesList[id as SpeciesId]),
+              "Species does not exist in this generation",
+            )
+            .refine(
+              id => !gen.speciesList[id as SpeciesId].evolvesTo,
+              "Species cannot be used in NFE format (it does not evolve)",
+            )
+        : z
+            .string()
+            .refine(id => id in gen.speciesList, "Species is invalid")
+            .refine(
+              id => gen.validSpecies(gen.speciesList[id as SpeciesId]),
+              "Species does not exist in this generation",
+            ),
       moves: z
         .string()
         .refine(m => m in gen.moveList, "Move does not exist")
@@ -228,9 +280,8 @@ const createValidator = (gen: Generation) => {
       friendship: z.number().min(0).max(255).optional(),
       item: z
         .string()
-        .refine(i => i in gen.items, "Item does not exist")
-        .optional()
-        .refine(i => gen.id !== 1 || !i, "Cannot have item in Gen 1"),
+        .refine(i => gen.items[i as ItemId]?.exists, "Item is invalid or does not exist")
+        .optional(),
       gender: z.enum(["M", "F", "N"]).optional(),
       nature: z.nativeEnum(Nature).optional(),
       shiny: z.boolean().optional(),
@@ -241,7 +292,7 @@ const createValidator = (gen: Generation) => {
         .refine(s => gen.id <= 2 || s, "Must choose an ability"),
     })
     .superRefine((desc, ctx) => {
-      const species = gen.speciesList[desc.species as SpeciesId];
+      const species = gen.speciesList[desc.speciesId as SpeciesId];
       if (!species) {
         return;
       }
@@ -249,6 +300,16 @@ const createValidator = (gen: Generation) => {
         ctx.addIssue({
           path: ["ability"],
           message: `Does not have ability '${desc.ability}'`,
+          code: "custom",
+        });
+      }
+
+      if (species.requiresItem && species.requiresItem !== desc.item) {
+        ctx.addIssue({
+          path: ["item"],
+          message: `Pokémon of species '${species.name}' must hold item '${
+            itemList[species.requiresItem].name
+          }'`,
           code: "custom",
         });
       }
@@ -270,14 +331,23 @@ const createValidator = (gen: Generation) => {
     .nonempty("Team must have between 1 and 6 pokemon")
     .refine(
       team =>
-        new Set(team.map(p => gen.speciesList[p.species as SpeciesId].dexId)).size === team.length,
+        new Set(team.map(p => gen.speciesList[p.speciesId as SpeciesId].dexId)).size ===
+        team.length,
       "Cannot contain two pokemon with the same national dex number",
     );
 };
 
-const VALIDATOR_GEN1 = createValidator(GENERATION1);
-const VALIDATOR_GEN2 = createValidator(GENERATION2);
-const VALIDATOR_GEN3 = createValidator(GENERATION3);
+const VALIDATOR_GEN1 = createValidator(GENERATION1, 100);
+const VALIDATOR_GEN2 = createValidator(GENERATION2, 100);
+const VALIDATOR_GEN3 = createValidator(GENERATION3, 100);
+const VALIDATOR_GEN4 = createValidator(GENERATION4, 100);
+
+const VALIDATOR_GEN3_DBLS = createValidator(GENERATION3, 50);
+const VALIDATOR_GEN4_DBLS = createValidator(GENERATION4, 50);
+
+const VALIDATOR_GEN1_NFE = createValidator(GENERATION1, 5, true);
+const VALIDATOR_GEN3_NFE = createValidator(GENERATION3, 5, true);
+const VALIDATOR_GEN4_NFE = createValidator(GENERATION4, 5, true);
 
 const validateTeam = (
   validator: typeof VALIDATOR_GEN1,
@@ -304,55 +374,51 @@ const validateTeam = (
 };
 
 export const formatDescs: Record<FormatId, FormatFunctions> = {
+  g4_standard: {validate: team => validateTeam(VALIDATOR_GEN4, team)},
+  g4_doubles: {validate: team => validateTeam(VALIDATOR_GEN4_DBLS, team)},
   g3_standard: {validate: team => validateTeam(VALIDATOR_GEN3, team)},
-  g3_doubles: {validate: team => validateTeam(VALIDATOR_GEN3, team)},
+  g3_doubles: {validate: team => validateTeam(VALIDATOR_GEN3_DBLS, team)},
   g2_standard: {validate: team => validateTeam(VALIDATOR_GEN2, team)},
   g1_standard: {validate: team => validateTeam(VALIDATOR_GEN1, team)},
-  g1_nfe: {
-    validate(team) {
-      return validateTeam(VALIDATOR_GEN1, team, (poke, addProblem) => {
-        const species = GENERATION1.speciesList[poke.species];
-        if (!species.evolvesTo) {
-          addProblem(`'${species.name}' cannot be used in NFE format (it does not evolve)`);
-        }
-      });
-    },
-  },
 
+  g1_nfe: {validate: team => validateTeam(VALIDATOR_GEN1_NFE, team)},
+  g3_nfe: {validate: team => validateTeam(VALIDATOR_GEN3_NFE, team)},
+  g4_nfe: {validate: team => validateTeam(VALIDATOR_GEN4_NFE, team)},
+
+  g4_randoms: {
+    generate: () => randoms(GENERATION4, 100, (s, _) => !s.evolvesTo),
+  },
+  g4_randoms_doubles: {
+    generate: () => randoms(GENERATION4, 50, (s, _) => !s.evolvesTo),
+  },
   g3_randoms: {
-    generate: () => randoms(GENERATION3, (s, _) => !s.evolvesTo),
+    generate: () => randoms(GENERATION3, 100, (s, _) => !s.evolvesTo),
   },
   g3_randoms_doubles: {
-    generate: () => randoms(GENERATION3, s => !s.evolvesTo),
+    generate: () => randoms(GENERATION3, 50, s => !s.evolvesTo),
   },
   g2_randoms: {
-    generate: () => randoms(GENERATION2, (s, id) => !s.evolvesTo && id !== "mewtwo"),
-  },
-  g1_truly_randoms: {
-    generate() {
-      return getRandomPokemon(
-        GENERATION1,
-        6,
-        s => !s.evolvesTo,
-        (s, species) => ({
-          species,
-          moves: getRandomMoves(
-            4,
-            Object.keys(moveList) as MoveId[],
-            (move, id) => !isBadMove(s, move, id),
-          ),
-        }),
-      );
-    },
+    generate: () => randoms(GENERATION2, 100, (s, id) => !s.evolvesTo && id !== "mewtwo"),
   },
   g1_randoms: {
     generate() {
-      return randoms(GENERATION1, (s, id) => !s.evolvesTo && id !== "mewtwo");
+      return randoms(GENERATION1, 100, (s, id) => !s.evolvesTo && id !== "mewtwo");
     },
   },
+
   g1_randoms_nfe: {
     generate() {
-      return randoms(GENERATION1, (s, id) => !!s.evolvesTo && !uselessNfe.has(id));
+      return randoms(GENERATION1, 5, (s, id) => !!s.evolvesTo && !uselessNfe.has(id));
+    },
+  },
+  g3_randoms_nfe: {
+    generate() {
+      return randoms(GENERATION3, 5, (s, id) => !!s.evolvesTo && !uselessNfe.has(id));
+    },
+  },
+  g4_randoms_nfe: {
+    generate() {
+      return randoms(GENERATION4, 5, (s, id) => !!s.evolvesTo && !uselessNfe.has(id));
     },
   },
 
@@ -362,7 +428,7 @@ export const formatDescs: Record<FormatId, FormatFunctions> = {
         GENERATION1,
         6,
         s => !s.evolvesTo,
-        (_, species) => ({species, moves: ["metronome"]}),
+        (_, speciesId) => ({speciesId, moves: ["metronome"], level: 100}),
       );
     },
   },
@@ -372,7 +438,7 @@ export const formatDescs: Record<FormatId, FormatFunctions> = {
         GENERATION2,
         6,
         s => !s.evolvesTo,
-        (_, species) => ({species, moves: ["metronome"]}),
+        (_, speciesId) => ({speciesId, moves: ["metronome"], level: 100}),
       );
     },
   },
@@ -382,7 +448,17 @@ export const formatDescs: Record<FormatId, FormatFunctions> = {
         GENERATION3,
         6,
         s => !s.evolvesTo,
-        (_, species) => ({species, moves: ["metronome"]}),
+        (_, speciesId) => ({speciesId, moves: ["metronome"], level: 100}),
+      );
+    },
+  },
+  g4_metronome: {
+    generate() {
+      return getRandomPokemon(
+        GENERATION4,
+        6,
+        s => !s.evolvesTo,
+        (_, speciesId) => ({speciesId, moves: ["metronome"], level: 100}),
       );
     },
   },

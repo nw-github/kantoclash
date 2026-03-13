@@ -3,6 +3,7 @@ import type {StageId, Stats, Type, Weather} from "./utils";
 import __speciesList from "./species.json";
 import __abilityList from "./ability.json";
 import type {Status} from "./pokemon";
+import type {ItemId} from "./item";
 
 export type Species = {
   readonly dexId: number;
@@ -18,6 +19,8 @@ export type Species = {
   readonly sprite?: string;
   /** Weight in kilograms */
   readonly weight: number;
+  readonly requiresItem?: ItemId;
+  readonly unselectable?: bool;
 };
 
 export type SpeciesId = keyof typeof __speciesList;
