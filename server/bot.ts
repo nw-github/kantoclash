@@ -6,7 +6,7 @@ import type {Choice, ClientMessage, JoinRoomResponse, ServerMessage} from "./gam
 import type {BattleEvent} from "~~/game/events";
 import type {Options} from "~~/game/battle";
 import type {Pokemon} from "~~/game/pokemon";
-import {getEffectiveness, playerId, VF} from "~~/game/utils";
+import {CVF, getEffectiveness, playerId, VF} from "~~/game/utils";
 import type {MoveId} from "~~/game/moves";
 import {type Generation, GENERATIONS} from "~~/game/gen";
 
@@ -467,10 +467,10 @@ const botFunctions = {
         }
       }
 
-      const confused = (opponentActive.v.flags || 0) & VF.cConfused;
-      const seeded = (opponentActive.v.flags || 0) & VF.cSeeded;
-      const cursed = (opponentActive.v.flags || 0) & VF.curse;
-      const dbond = (active.v.flags || 0) & VF.destinyBond;
+      const confused = opponentActive.confused;
+      const seeded = (opponentActive.v.flags?.hi || 0) & CVF.seeded;
+      const cursed = (opponentActive.v.flags?.lo || 0) & VF.curse;
+      const dbond = (active.v.flags?.lo || 0) & VF.destinyBond;
       const sub = opponentActive.substitute;
 
       // prettier-ignore
