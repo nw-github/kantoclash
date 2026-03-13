@@ -108,6 +108,19 @@ type Callbacks = {
   preloadSprite(poke: PokeId, speciesId: string, female?: bool, shiny?: bool, form?: FormId): any;
 };
 
+export class AnimCallback {
+  private _cb: (() => void) | undefined;
+
+  constructor(cb: () => void) {
+    this._cb = cb;
+  }
+
+  exec() {
+    this._cb?.();
+    this._cb = undefined;
+  }
+}
+
 export class ClientManager {
   weather?: Weather;
   victor?: PlayerId | "draw";
@@ -160,7 +173,7 @@ export class ClientManager {
         anim: "sendin",
         name: e.name,
         batonPass: e.why === "batonpass",
-        cb: () => {
+        cb: new AnimCallback(() => {
           const poke = players.setPoke(e.src, {
             ...e,
             owned: e.indexInTeam !== -1,
@@ -178,7 +191,7 @@ export class ClientManager {
               this.cb.playShiny(e.src);
             }
           });
-        },
+        }),
       });
       return;
     } else if (e.type === "damage" || e.type === "recover") {
@@ -203,11 +216,11 @@ export class ClientManager {
         await this.cb.playAnimation(e.src, {
           anim: "attack",
           target: e.target,
-          cb: () => {
+          cb: new AnimCallback(() => {
             update();
             this.cb.playDmg(eff);
             this.cb.playAnimation(e.target, {anim: "hurt", direct: true});
-          },
+          }),
         });
       } else {
         update();
@@ -229,7 +242,7 @@ export class ClientManager {
         this.cb.displayEvent({type: "get_sub", src: e.target});
         await this.cb.playAnimation(e.target, {
           anim: "get_sub",
-          cb: () => this.handleVolatiles(e, players),
+          cb: new AnimCallback(() => this.handleVolatiles(e, players)),
         });
       }
       return;
@@ -283,7 +296,7 @@ export class ClientManager {
 
       await this.cb.playAnimation(e.src, {
         anim: "transform",
-        cb: () => {
+        cb: new AnimCallback(() => {
           this.handleVolatiles(e, players);
 
           const src = players.poke(e.src)!;
@@ -300,7 +313,7 @@ export class ClientManager {
             src.base = transform(src.base.real, players.poke(e.target)!.base);
           }
           src.base.form = e.form;
-        },
+        }),
       });
       return;
     } else if (e.type === "hit_sub") {
@@ -313,11 +326,11 @@ export class ClientManager {
         await this.cb.playAnimation(e.src, {
           anim: "attack",
           target: e.target,
-          cb: () => {
+          cb: new AnimCallback(() => {
             this.cb.displayEvent(e);
             this.cb.playDmg(e.eff ?? 1);
             this.cb.playAnimation(e.target, {anim: "hurt", direct: false});
-          },
+          }),
         });
       }
       if (e.broken) {
@@ -325,7 +338,7 @@ export class ClientManager {
         this.cb.displayEvent({type: "sub_break", target: e.target});
         await this.cb.playAnimation(e.target, {
           anim: "lose_sub",
-          cb: () => this.handleVolatiles(e, players),
+          cb: new AnimCallback(() => this.handleVolatiles(e, players)),
         });
       }
       return;
@@ -367,9 +380,9 @@ export class ClientManager {
       } else {
         await this.cb.playAnimation(e.src, {
           anim: "spikes",
-          cb() {
+          cb: new AnimCallback(() => {
             player.hazards![e.hazard] = (player.hazards![e.hazard] || 0) + 1;
-          },
+          }),
         });
       }
     } else if (e.type === "skill_swap") {

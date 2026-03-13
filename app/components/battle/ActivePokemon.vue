@@ -411,38 +411,38 @@ export type AnimationParams =
 
 export type SwitchAnim = {
   anim: "sendin";
-  cb?: () => void;
+  cb?: AnimCallback;
   name: string;
 };
 
 export type RetractAnim = {
   anim: "sendin" | "retract" | "phaze";
-  cb?: () => void;
+  cb?: AnimCallback;
   batonPass: bool;
   name: string;
 };
 
 export type AttackAnim = {
   anim: "attack";
-  cb?: () => void;
+  cb?: AnimCallback;
   target: PokeId;
 };
 
 export type OtherAnim = {
   anim: "faint" | "get_sub" | "lose_sub" | "spikes";
-  cb?: () => void;
+  cb?: AnimCallback;
   batonPass?: bool;
 };
 
 export type HurtAnim = {
   anim: "hurt";
-  cb?: () => void;
+  cb?: AnimCallback;
   direct: bool;
 };
 
 export type TransformAnim = {
   anim: "transform";
-  cb?: () => void;
+  cb?: AnimCallback;
 };
 
 const subOpacity = 0.5;
@@ -513,7 +513,7 @@ const playAnimation = (params: AnimationParams) => {
 
 const ms = (ms: number) => ms / 1000;
 
-const onComplete = (cb: () => void): Segment => {
+const onComplete = (cb: AnimCallback): Segment => {
   let once = false;
   let value = 0;
   const obj = {
@@ -523,7 +523,7 @@ const onComplete = (cb: () => void): Segment => {
     set value(v) {
       value = v;
       if (v !== 0 && !once) {
-        cb();
+        cb.exec();
         once = true;
       }
     },
@@ -578,7 +578,7 @@ const animations = {
     seq.push([".sprite", {y: rem(7), opacity: 0}, {ease: easeInExpo, duration: ms(250)}]);
     seq.push([".sprite", {y: 0}, {ease: steps(1, "start"), duration: 0.01}]);
   },
-  sendIn(seq: AnimationSequence, cb?: () => void) {
+  sendIn(seq: AnimationSequence, cb?: AnimCallback) {
     pbRow.value = 0;
 
     seq.push([
@@ -607,7 +607,7 @@ const animations = {
       {duration: ms(650), ease: easeOutExpo},
     ]);
   },
-  getSub(seq: AnimationSequence, cb?: () => void) {
+  getSub(seq: AnimationSequence, cb?: AnimCallback) {
     seq.push([
       ".sprite",
       {
@@ -631,14 +631,14 @@ const animations = {
       {duration: ms(350), ease: easeOutBounce},
     ]);
   },
-  loseSub(seq: AnimationSequence, cb?: () => void) {
+  loseSub(seq: AnimationSequence, cb?: AnimCallback) {
     this.fadeSub(seq);
     if (cb) {
       seq.push(onComplete(cb));
     }
     seq.push([".sprite", {x: 0, y: 0, opacity: 1}, {duration: ms(500), ease: easeInExpo}]);
   },
-  transform(seq: AnimationSequence, cb?: () => void) {
+  transform(seq: AnimationSequence, cb?: AnimCallback) {
     seq.push([".sprite", {scale: 0}, {duration: ms(400), ease: easeInExpo}]);
     if (cb) {
       seq.push(onComplete(cb));
@@ -668,10 +668,10 @@ const animations = {
         transformOrigin: {ease: steps(2, "start")},
       },
     ]);
-    seq.push(onComplete(() => (pbRow.value = 9)));
+    seq.push(onComplete(new AnimCallback(() => (pbRow.value = 9))));
     seq.push([".pokeball", {opacity: 0}, {duration: ms(200), ease: "linear"}]);
   },
-  spikes(seq: AnimationSequence, cb?: () => void) {
+  spikes(seq: AnimationSequence, cb?: AnimCallback) {
     const ground = document.querySelector<HTMLDivElement>(`.ground${back ? ".front" : ".back"}`)!;
     const sprites = scope.value.querySelectorAll(".caltrop");
 
@@ -706,7 +706,7 @@ const animations = {
       ]);
     }
   },
-  attack(seq: AnimationSequence, other: Element, cb?: () => void) {
+  attack(seq: AnimationSequence, other: Element, cb?: AnimCallback) {
     const [x, y] = arcTo(sprite.value!, other);
     seq.push([
       sprite.value!,

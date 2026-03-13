@@ -181,7 +181,7 @@ export async function startBot(botType: BotType, format?: FormatId) {
       playShiny() {},
       playDmg() {},
       preloadSprite() {},
-      playAnimation: (_, params) => params.cb?.(),
+      playAnimation: (_, params) => params.cb?.exec(),
       displayEvent() {},
     });
     let eventNo = 0;

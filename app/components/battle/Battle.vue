@@ -352,21 +352,22 @@ const clientMgr = new ClientManager({
   },
   async playAnimation(id, params) {
     if (!isLive()) {
-      params.cb?.();
-      params.cb = undefined;
+      params.cb?.exec();
       if (params.anim !== "attack" && params.anim !== "spikes" && params.anim !== "transform") {
         field.value?.playAnimation(id, params)?.complete();
       }
     } else {
       const animation = field.value?.playAnimation(id, params);
       if (!animation) {
-        params.cb?.();
+        params.cb?.exec();
         console.log("wtf");
         return;
       }
 
       animations.push(animation);
       await animation;
+      params.cb?.exec();
+
       const idx = animations.indexOf(animation);
       if (idx !== -1) {
         animations.splice(idx, 1);
