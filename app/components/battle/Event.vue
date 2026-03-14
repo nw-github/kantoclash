@@ -34,10 +34,10 @@
       {{ eff(e.target, e.eff) }}
     </p>
 
-    <p v-if="e.why !== 'explosion'" class="text-xs sm:text-[0.8rem] text-[var(--stat-down)]">
+    <p v-if="e.why !== 'explosion'" class="text-xs sm:text-[0.8rem] text-(--stat-down)">
       {{ pn(e.target) }} lost
       <UTooltip :text="tooltip(e)">
-        <b class="text-xs sm:text-[0.8rem] text-[var(--stat-down)]" :class="[tooltip(e) && 'underline decoration-dotted']">{{ percent(e) }}%</b>
+        <b class="text-xs sm:text-[0.8rem] text-(--stat-down)" :class="[tooltip(e) && 'underline decoration-dotted']">{{ percent(e) }}%</b>
       </UTooltip> of its health.
     </p>
 
@@ -56,10 +56,10 @@
     <p v-else-if="e.why === 'shellbell'">{{ pn(e.src) }} restored a little HP using its Shell Bell!</p>
     <p v-else-if="e.why.startsWith('wish:')">{{ e.why.slice(5) }}'s wish came true!</p>
 
-    <p class="text-xs sm:text-[0.8rem] text-[var(--stat-up)]">
+    <p class="text-xs sm:text-[0.8rem] text-(--stat-up)">
       {{ pn(e.target) }} gained
       <UTooltip :text="tooltip(e)">
-        <b class="text-xs sm:text-[0.8rem] text-[var(--stat-up)]" :class="[tooltip(e) && 'underline decoration-dotted']">{{ percent(e) }}%</b>
+        <b class="text-xs sm:text-[0.8rem] text-(--stat-up)" :class="[tooltip(e) && 'underline decoration-dotted']">{{ percent(e) }}%</b>
       </UTooltip> of its health.
     </p>
   </div>

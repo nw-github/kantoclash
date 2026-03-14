@@ -8,7 +8,7 @@
       class="p-2 space-y-2 rounded-lg divide-y divide-gray-200 dark:divide-gray-800 ring-1 ring-gray-200 dark:ring-gray-800 shadow bg-white dark:bg-gray-900"
       @submit="submit"
     >
-      <div class="after:w-full after:border-1 space-y-2">
+      <div class="after:w-full after:border space-y-2">
         <UFormGroup label="Username" name="username" required>
           <UInput v-model.trim="state.username" autofocus />
         </UFormGroup>

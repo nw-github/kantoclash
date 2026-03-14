@@ -81,7 +81,7 @@
         </template>
       </div>
     </div>
-    <div v-else-if="currOption" class="grid gap-2 sm:grid-cols-[1fr,1.5fr] h-min">
+    <div v-else-if="currOption" class="grid gap-2 sm:grid-cols-[1fr_1.5fr] h-min">
       <div class="flex flex-col gap-1 sm:gap-2">
         <template v-for="(option, i) in currOption.moves">
           <MoveButton

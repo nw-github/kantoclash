@@ -2,7 +2,7 @@
   <Selector
     v-model:open="open"
     class="grow"
-    base="w-92 sm:w-[31rem] h-60 sm:left-[-7rem]"
+    base="w-92 sm:w-124 h-60 sm:-left-28"
     :items
     searchable
     :filter

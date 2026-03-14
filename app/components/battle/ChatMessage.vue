@@ -2,7 +2,7 @@
   <p :key="JSON.stringify(chat)">
     <span
       v-if="chat.type === 'chat' && !mutedPlayers.includes(chat.id)"
-      class="text-wrap break-words break-all"
+      class="text-wrap wrap-break-word break-all"
     >
       <b :class="player?.admin && 'text-amber-200'">{{ player?.name ?? "???" }}</b
       >:

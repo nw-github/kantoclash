@@ -136,7 +136,7 @@
 
         <UCard
           v-if="selectedTab === 0"
-          class="flex grow h-full min-h-[23.5rem]"
+          class="flex grow h-full min-h-94"
           :ui="{body: {base: 'flex flex-col gap-2 grow justify-between', padding: 'p-2 sm:p-2'}}"
         >
           <div class="flex gap-2">
@@ -276,7 +276,7 @@
               />
             </div>
           </div>
-          <div class="grid items-center grid-cols-[auto,1fr,auto,auto,auto,auto] gap-0.5 grow">
+          <div class="grid items-center grid-cols-[auto_1fr_auto_auto_auto_auto] gap-0.5 grow">
             <template v-for="(name, stat) in statKeys" :key="stat">
               <span class="px-1.5">{{ name }}</span>
               <URange
@@ -348,7 +348,7 @@
           v-else
           v-model="currentPokeText"
           class="grow"
-          :ui="{base: 'h-full min-h-[23.5rem]', rounded: 'rounded-lg'}"
+          :ui="{base: 'h-full min-h-94', rounded: 'rounded-lg'}"
           autofocus
           spellcheck="false"
         >

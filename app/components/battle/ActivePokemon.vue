@@ -129,14 +129,14 @@
 
               <img
                 v-if="poke && !poke.fainted && poke.confused"
-                class="absolute size-10 sm:size-20 -top-3 sm:-top-0 z-30 dark:invisible"
+                class="absolute size-10 sm:size-20 -top-3 sm:top-0 z-30 dark:invisible"
                 src="/dizzy-light.gif"
                 alt="confused"
               />
 
               <img
                 v-if="poke && !poke.fainted && poke.confused"
-                class="absolute size-10 sm:size-20 -top-3 sm:-top-0 z-30 invisible dark:visible"
+                class="absolute size-10 sm:size-20 -top-3 sm:top-0 z-30 invisible dark:visible"
                 src="/dizzy.gif"
                 alt="confused"
               />

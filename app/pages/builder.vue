@@ -145,7 +145,7 @@
     <UModal v-model="importOpen">
       <UTextarea
         v-model="importText"
-        :ui="{base: 'h-full min-h-[23.5rem]', rounded: 'rounded-lg'}"
+        :ui="{base: 'h-full min-h-94', rounded: 'rounded-lg'}"
         :placeholder="exportMode ? undefined : 'Paste your team(s) here...'"
         variant="none"
       >

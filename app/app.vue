@@ -1,115 +1,115 @@
 <template>
-  <UContainer class="h-dvh sm:py-6" :ui="{padding: 'px-0'}">
-    <UCard
-      class="h-full flex flex-col"
-      :ui="{body: {base: 'grow overflow-hidden'}, rounded: 'rounded-none sm:rounded-lg'}"
-    >
-      <template #header>
-        <nav class="flex justify-between">
-          <UHorizontalNavigation class="hidden md:block" :links>
-            <template #default="{link, isActive}">
-              <UTooltip
-                :text="link.vs"
-                :class="[
-                  link.vs && 'lg:inline-block',
-                  link.vs && links.length > nLinks + 3 && 'hidden',
-                ]"
-              >
-                <div class="truncate" :class="[link.vs && 'max-w-10 md:max-w-20 lg:max-w-36']">
-                  <span
-                    class="text-gray-500 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
+  <UApp>
+    <UContainer class="h-dvh sm:py-6" :ui="{padding: 'px-0'}">
+      <UCard
+        class="h-full flex flex-col"
+        :ui="{body: {base: 'grow overflow-hidden'}, rounded: 'rounded-none sm:rounded-lg'}"
+      >
+        <template #header>
+          <nav class="flex justify-between">
+            <UHorizontalNavigation class="hidden md:block" :links>
+              <template #default="{link, isActive}">
+                <UTooltip
+                  :text="link.vs"
+                  :class="[
+                    link.vs && 'lg:inline-block',
+                    link.vs && links.length > nLinks + 3 && 'hidden',
+                  ]"
+                >
+                  <div class="truncate" :class="[link.vs && 'max-w-10 md:max-w-20 lg:max-w-36']">
+                    <span
+                      class="text-gray-500 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
+                      :class="[isActive && 'text-gray-900 dark:text-white']"
+                    >
+                      {{ link.label }}
+                    </span>
+                  </div>
+                </UTooltip>
+              </template>
+
+              <template #icon="{link, isActive}">
+                <UTooltip :text="link.vs">
+                  <UIcon
+                    :name="link.icon"
+                    class="text-gray-500 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white size-5"
                     :class="[isActive && 'text-gray-900 dark:text-white']"
-                  >
-                    {{ link.label }}
-                  </span>
-                </div>
-              </UTooltip>
-            </template>
+                  />
+                </UTooltip>
+              </template>
+            </UHorizontalNavigation>
 
-            <template #icon="{link, isActive}">
-              <UTooltip :text="link.vs">
-                <UIcon
-                  :name="link.icon"
-                  class="text-gray-500 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white size-5"
-                  :class="[isActive && 'text-gray-900 dark:text-white']"
-                />
-              </UTooltip>
-            </template>
-          </UHorizontalNavigation>
-
-          <UPopover class="block md:hidden" :popper="{placement: 'bottom-start'}">
-            <UButton icon="heroicons:bars-3-16-solid" variant="link" color="gray" />
-            <template #panel>
-              <UVerticalNavigation :links />
-            </template>
-          </UPopover>
-
-          <div class="flex items-center gap-3">
-            <UTooltip v-if="!connected" text="Disconnected from server">
-              <UIcon
-                name="fluent:plug-disconnected-16-regular"
-                class="animate-pulse size-5 bg-primary"
-              />
-            </UTooltip>
-            <ColorScheme>
-              <UButton
-                color="gray"
-                variant="ghost"
-                :icon="
-                  $colorMode.preference === 'dark' || $colorMode.value === 'dark'
-                    ? 'material-symbols:dark-mode'
-                    : 'material-symbols:light-mode'
-                "
-                @click="$colorMode.preference = $colorMode.value === 'dark' ? 'light' : 'dark'"
-              />
-            </ColorScheme>
-            <UPopover mode="click" :popper="{placement: 'bottom-start'}">
-              <ClientOnly>
-                <UButton
-                  :icon="
-                    musicVol === 0
-                      ? 'material-symbols:volume-off-outline-rounded'
-                      : 'material-symbols:volume-up-outline-rounded'
-                  "
-                  variant="ghost"
-                  color="gray"
-                />
-              </ClientOnly>
+            <UPopover class="block md:hidden" :popper="{placement: 'bottom-start'}">
+              <UButton icon="heroicons:bars-3-16-solid" variant="link" color="gray" />
               <template #panel>
-                <div class="p-4 w-80 space-y-2">
-                  <div>
-                    <span>Music</span>
-                    <URange v-model="musicVol" :max="0.8" :step="0.005" />
-                  </div>
-                  <div>
-                    <span>Sound Effects</span>
-                    <URange v-model="sfxVol" :max="0.8" :step="0.005" />
-                  </div>
-                  <div v-if="currentTrack || debug">
-                    <span>Current Track</span>
-                    <USelectMenu
-                      v-model="currentTrack"
-                      searchable
-                      :options="musicTrackItems"
-                      value-attribute="value"
-                      :popper="{strategy: 'fixed'}"
-                    />
-                  </div>
-                </div>
+                <UVerticalNavigation :links />
               </template>
             </UPopover>
-            <AccountButton v-model:open="accountOpen" />
-          </div>
-        </nav>
-      </template>
 
-      <NuxtPage @request-login="accountOpen = true" />
-    </UCard>
-  </UContainer>
+            <div class="flex items-center gap-3">
+              <UTooltip v-if="!connected" text="Disconnected from server">
+                <UIcon
+                  name="fluent:plug-disconnected-16-regular"
+                  class="animate-pulse size-5 bg-primary"
+                />
+              </UTooltip>
+              <ColorScheme>
+                <UButton
+                  color="gray"
+                  variant="ghost"
+                  :icon="
+                    $colorMode.preference === 'dark' || $colorMode.value === 'dark'
+                      ? 'material-symbols:dark-mode'
+                      : 'material-symbols:light-mode'
+                  "
+                  @click="$colorMode.preference = $colorMode.value === 'dark' ? 'light' : 'dark'"
+                />
+              </ColorScheme>
+              <UPopover mode="click" :popper="{placement: 'bottom-start'}">
+                <ClientOnly>
+                  <UButton
+                    :icon="
+                      musicVol === 0
+                        ? 'material-symbols:volume-off-outline-rounded'
+                        : 'material-symbols:volume-up-outline-rounded'
+                    "
+                    variant="ghost"
+                    color="gray"
+                  />
+                </ClientOnly>
+                <template #panel>
+                  <div class="p-4 w-80 space-y-2">
+                    <div>
+                      <span>Music</span>
+                      <URange v-model="musicVol" :max="0.8" :step="0.005" />
+                    </div>
+                    <div>
+                      <span>Sound Effects</span>
+                      <URange v-model="sfxVol" :max="0.8" :step="0.005" />
+                    </div>
+                    <div v-if="currentTrack || debug">
+                      <span>Current Track</span>
+                      <USelectMenu
+                        v-model="currentTrack"
+                        searchable
+                        :options="musicTrackItems"
+                        value-attribute="value"
+                        :popper="{strategy: 'fixed'}"
+                      />
+                    </div>
+                  </div>
+                </template>
+              </UPopover>
+              <AccountButton v-model:open="accountOpen" />
+            </div>
+          </nav>
+        </template>
 
-  <UModals />
-  <UNotifications />
-  <BackgroundMusic />
+        <NuxtPage @request-login="accountOpen = true" />
+      </UCard>
+    </UContainer>
+
+    <BackgroundMusic />
+  </UApp>
 </template>
 
 <style>
