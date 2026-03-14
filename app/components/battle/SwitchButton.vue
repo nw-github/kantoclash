@@ -1,6 +1,6 @@
 <template>
   <TouchPopover :popper="{placement: 'auto'}" :disabled="noPopover">
-    <UButton class="w-full" :disabled :color="active ? 'blue' : 'primary'" @click="$emit('click')">
+    <UButton class="w-full" :disabled :color="active ? 'info' : 'primary'" @click="$emit('click')">
       <div class="w-full space-y-0.5">
         <div class="flex items-center gap-1 w-full justify-start">
           <BoxSprite :species-id="poke.speciesId" :form="poke.form" />
@@ -8,7 +8,12 @@
           <GenderIcon class="size-4" :gender="gen1Gender[poke.speciesId] ?? poke.gender" />
           <StatusOrFaint :poke size="xs" class="ml-auto" />
         </div>
-        <UProgress :max="poke.stats.hp" :value="poke.hp" :color="colorForHp" class="w-full h-1" />
+        <UProgress
+          v-model:model-value="poke.hp"
+          :max="poke.stats.hp"
+          :color="colorForHp"
+          class="w-full h-1"
+        />
       </div>
     </UButton>
 
@@ -33,11 +38,11 @@ const {poke, noPopover, active} = defineProps<{
 
 const colorForHp = computed(() => {
   if (poke.hpPercent < 10) {
-    return "red";
+    return "error";
   } else if (poke.hpPercent < 30) {
-    return "amber";
+    return "warning";
   } else {
-    return "green";
+    return "success";
   }
 });
 </script>

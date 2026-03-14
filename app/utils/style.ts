@@ -22,12 +22,12 @@ export const typeColor: Record<Type, string> = {
 };
 
 export const statusColor = {
-  brn: "orange",
-  psn: "fuchsia",
-  tox: "fuchsia",
-  frz: "sky",
-  par: "amber",
-  slp: "gray",
+  brn: {color: "old-orange", variant: undefined},
+  psn: {color: "old-fuchsia", variant: undefined},
+  tox: {color: "old-fuchsia", variant: undefined},
+  frz: {color: "old-sky", variant: undefined},
+  par: {color: "old-amber", variant: undefined},
+  slp: {color: "neutral", variant: "subtle"},
 } as const;
 
 const lerp = (a: number, b: number, t: number) => a * (1 - t) + b * t;

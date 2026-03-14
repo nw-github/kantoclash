@@ -2,8 +2,9 @@
   <TouchPopover :popper="{placement: 'auto'}">
     <UButton
       :disabled="!option.valid"
-      class="flex justify-between content-center w-full p-1 text-black"
-      color="gray"
+      class="flex justify-between content-center w-full p-1"
+      color="neutral"
+      variant="subtle"
       @click="$emit('click')"
     >
       <div class="flex items-center">
