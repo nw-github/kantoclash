@@ -11,7 +11,8 @@
     <UInput
       v-model="query"
       placeholder="No Item"
-      :color="isIllegal(normalizeName(query)) ? 'red' : undefined"
+      color="error"
+      :highlight="!!isIllegal(normalizeName(query))"
       trailing-icon="heroicons:chevron-down-20-solid"
       @focus="open = true"
       @update:model-value="open = true"

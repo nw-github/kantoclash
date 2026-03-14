@@ -1,5 +1,5 @@
 <template>
-  <UTooltip :text :popper>
+  <UTooltip :text :content>
     <UButton v-bind="$attrs" @click="$emit('click')" />
   </UTooltip>
 </template>
@@ -12,7 +12,7 @@ type TooltipProps = InstanceType<typeof UTooltip>["$props"];
 
 interface Props extends /* @vue-ignore */ ButtonProps {
   text?: TooltipProps["text"];
-  popper?: TooltipProps["popper"];
+  content?: TooltipProps["content"];
 }
 
 defineProps<Props>();

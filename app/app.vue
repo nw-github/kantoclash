@@ -1,5 +1,5 @@
 <template>
-  <UApp :tooltip="{delayDuration: 1}">
+  <UApp :tooltip="{delayDuration: 200}">
     <UContainer class="h-dvh sm:py-6" :ui="{base: 'px-0'}">
       <UCard
         class="h-full flex flex-col"

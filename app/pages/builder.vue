@@ -1,5 +1,5 @@
 <template>
-  <UCard class="h-full flex flex-col" :ui="{body: {base: 'grow overflow-auto'}}">
+  <UCard class="h-full flex flex-col" :ui="{body: 'grow overflow-auto'}">
     <template #header>
       <h1 class="text-2xl text-center pb-5">Your Teams</h1>
       <div class="flex flex-col sm:flex-row gap-1">
@@ -14,30 +14,27 @@
           />
         </div>
         <div class="flex gap-1">
-          <UTooltip text="Import">
-            <UButton
-              color="green"
-              icon="heroicons:arrow-down-tray-20-solid"
-              variant="soft"
-              @click="onImportClick"
-            />
-          </UTooltip>
-          <UTooltip text="Export">
-            <UButton
-              color="green"
-              icon="heroicons:arrow-up-tray-20-solid"
-              variant="soft"
-              @click="onExportClick"
-            />
-          </UTooltip>
-          <UTooltip text="New">
-            <UButton
-              color="green"
-              icon="heroicons:plus-20-solid"
-              variant="soft"
-              @click="newTeam()"
-            />
-          </UTooltip>
+          <TooltipButton
+            text="Import"
+            color="success"
+            icon="heroicons:arrow-down-tray-20-solid"
+            variant="soft"
+            @click="onImportClick"
+          />
+          <TooltipButton
+            text="Export"
+            color="success"
+            icon="heroicons:arrow-up-tray-20-solid"
+            variant="soft"
+            @click="onExportClick"
+          />
+          <TooltipButton
+            text="New"
+            color="success"
+            icon="heroicons:plus-20-solid"
+            variant="soft"
+            @click="() => newTeam()"
+          />
         </div>
       </div>
     </template>
@@ -83,35 +80,31 @@
               <TooltipButton
                 text="Copy"
                 icon="material-symbols:content-copy-outline"
-                color="gray"
+                color="neutral"
                 variant="ghost"
-                @click="copyTeam(team)"
+                @click="() => copyTeam(team)"
               />
               <TooltipButton
                 text="Duplicate"
                 icon="material-symbols:file-copy-outline"
-                color="gray"
+                color="neutral"
                 variant="ghost"
-                @click="duplicateTeam(team)"
+                @click="() => duplicateTeam(team)"
               />
               <TooltipButton
                 text="Edit"
                 icon="material-symbols:edit-square-outline"
-                color="gray"
+                color="neutral"
                 variant="ghost"
-                @click="editingTeam = team"
+                @click="() => editTeam(team)"
               />
               <TooltipButton
                 text="Delete"
                 icon="material-symbols:delete-outline"
-                color="red"
+                color="error"
                 variant="ghost"
-                @click="deleteTeam(team)"
+                @click="() => deleteTeam(team)"
               />
-
-              <!-- <UTooltip text="Delete">
-                <UButton icon="material-symbols:delete-outline" color="red" variant="ghost" />
-              </UTooltip> -->
             </div>
           </div>
           <div class="flex justify-center">
@@ -132,67 +125,22 @@
         <UPagination v-model="page" :page-count :total="filteredTeams.length" />
       </div>
     </template>
-
-    <UModal v-model="open">
-      <TeamBuilder
-        v-if="editingTeam"
-        :team="editingTeam"
-        @delete="deleteTeam(editingTeam)"
-        @close="editingTeam = undefined"
-      />
-    </UModal>
-
-    <UModal v-model="importOpen">
-      <UTextarea
-        v-model="importText"
-        :ui="{base: 'h-full min-h-94', rounded: 'rounded-lg'}"
-        :placeholder="exportMode ? undefined : 'Paste your team(s) here...'"
-        variant="none"
-      >
-        <TooltipButton
-          v-if="!exportMode"
-          text="Import"
-          :popper="{placement: 'bottom-end', offsetDistance: 40}"
-          class="absolute top-2 right-2"
-          icon="heroicons:arrow-down-tray-20-solid"
-          variant="ghost"
-          color="gray"
-          @click="importOrCopy"
-        />
-        <TooltipButton
-          v-else
-          text="Copy"
-          :popper="{placement: 'bottom-end', offsetDistance: 40}"
-          class="absolute top-2 right-2"
-          icon="material-symbols:content-copy-outline"
-          variant="ghost"
-          color="gray"
-          @click="importOrCopy"
-        />
-      </UTextarea>
-    </UModal>
   </UCard>
 </template>
 
 <script setup lang="ts">
 import {breakpointsTailwind} from "@vueuse/core";
+import ImportTeamsModal from "~/components/dialog/ImportTeamsModal.vue";
+import TeamBuilderModal from "~/components/dialog/TeamBuilderModal.vue";
 import type {FormId} from "~~/game/pokemon";
 import type {SpeciesId} from "~~/game/species";
 
+const modal = useOverlay();
+const importTeamsModal = modal.create(ImportTeamsModal);
+const teamBuilderModal = modal.create(TeamBuilderModal);
+
 const toast = useToast();
 const myTeams = useMyTeams();
-const editingTeam = ref<Team>();
-const importText = ref("");
-const open = computed({
-  get() {
-    return !!editingTeam.value;
-  },
-  set() {
-    editingTeam.value = undefined;
-  },
-});
-const importOpen = ref(false);
-const exportMode = ref(false);
 const breakpoints = useBreakpoints(breakpointsTailwind);
 const isLgOrGreater = breakpoints.greaterOrEqual("lg");
 const isXS = breakpoints.smaller("sm");
@@ -210,20 +158,12 @@ const filteredTeams = computed(() => {
 });
 watch([pageCount, filteredTeams], () => (page.value = 1));
 
-const route = useRoute();
 const router = useRouter();
-
-watch(editingTeam, team => {
-  if (team) {
-    router.replace({query: {editing: myTeams.value.indexOf(team)}});
-  } else {
-    router.replace({query: {}});
-  }
-});
 
 onMounted(() => {
   useTitle("Team Builder");
 
+  const route = useRoute();
   const format = String(route.query.new_team);
   const editing = +String(route.query.editing);
 
@@ -231,45 +171,33 @@ onMounted(() => {
   if (battleFormats.includes(format)) {
     newTeam(format);
   } else if (myTeams.value[editing]) {
-    editingTeam.value = myTeams.value[editing];
+    editTeam(myTeams.value[editing]);
   }
 });
 
-const importOrCopy = async () => {
-  importOpen.value = false;
-  if (exportMode.value) {
-    await navigator.clipboard.writeText(importText.value);
-    toast.add({title: `Copied to clipboard!`});
-    return;
-  }
+const editTeam = async (team: Team) => {
+  router.replace({query: {editing: myTeams.value.indexOf(team)}});
 
-  const teams = parseTeams(importText.value);
-  importText.value = "";
-  myTeams.value.unshift(...teams);
-  if (teams.length === 1) {
-    editingTeam.value = myTeams.value.at(0);
-  } else if (!teams.length) {
-    toast.add({
-      title: "Malformed Input!",
-      icon: "material-symbols:error-circle-rounded-outline-sharp",
-    });
+  const shouldDelete = await teamBuilderModal.open({team});
+  router.replace({query: {}});
+
+  if (shouldDelete) {
+    deleteTeam(team);
   }
 };
 
 const deleteTeam = (team: Team) => {
-  editingTeam.value = undefined;
-
   const idx = myTeams.value.indexOf(team);
   const [removed] = myTeams.value.splice(idx, 1);
   toast.add({
     title: `'${team.name}' deleted!`,
-    actions: [{label: "Undo", click: () => myTeams.value.splice(idx, 0, removed)}],
+    actions: [{label: "Undo", onClick: () => void myTeams.value.splice(idx, 0, removed)}],
   });
 };
 
 const newTeam = (format: FormatId = "g1_standard") => {
   myTeams.value.unshift({name: "New Team", format, pokemon: [parsePokemon(format, "")]});
-  editingTeam.value = myTeams.value[0];
+  editTeam(myTeams.value[0]);
 };
 
 const copyTeam = async (team: Team) => {
@@ -292,17 +220,31 @@ const duplicateTeam = (team: Team) => {
 
   const idx = myTeams.value.indexOf(team);
   myTeams.value.splice(idx, 0, newTeam);
-  editingTeam.value = myTeams.value[idx];
+  editTeam(myTeams.value[idx]);
 };
 
-const onImportClick = () => {
-  importOpen.value = true;
-  exportMode.value = false;
-  importText.value = "";
+const onImportClick = async () => {
+  const res = await importTeamsModal.open({text: "", exportMode: false});
+  if (res?.accepted) {
+    const teams = parseTeams(res.text);
+    myTeams.value.unshift(...teams);
+    if (teams.length === 1) {
+      editTeam(myTeams.value[0]);
+    } else if (!teams.length) {
+      toast.add({
+        title: "Malformed Input!",
+        icon: "material-symbols:error-circle-rounded-outline-sharp",
+      });
+    }
+  }
 };
 
-const onExportClick = () => {
-  importOpen.value = exportMode.value = true;
-  importText.value = myTeams.value.map(teamToString).join("\n");
+const onExportClick = async () => {
+  const text = myTeams.value.map(teamToString).join("\n");
+  const res = await importTeamsModal.open({text, exportMode: true});
+  if (res?.accepted) {
+    await navigator.clipboard.writeText(res.text);
+    toast.add({title: `Copied to clipboard!`});
+  }
 };
 </script>

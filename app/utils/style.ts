@@ -33,7 +33,7 @@ export const statusColor = {
 
 const lerp = (a: number, b: number, t: number) => a * (1 - t) + b * t;
 
-export const colorInterp = (
+const colorInterp = (
   value: number,
   [start, ...colors]: [string, [string, number], ...[string, number][]],
   interp = lerp,
@@ -52,12 +52,8 @@ export const colorInterp = (
   };
 
   const hexrgb2hsv = (hex: string) => {
-    hex = hex.slice(1);
-    return rgb2hsv(
-      parseInt(hex.slice(0, 2), 16),
-      parseInt(hex.slice(2, 4), 16),
-      parseInt(hex.slice(4), 16),
-    );
+    const [r, g, b] = oklchStringToRGB(hex);
+    return rgb2hsv(r, g, b);
   };
 
   let prev = 0;
@@ -95,4 +91,40 @@ export const baseStatColor = (stat: number) => {
   const blue = tailwindColors.sky[500];
   const [r, g, b] = colorInterp(stat, [red, [yellow, 65], [green, 100], [blue, 255]]);
   return `rgb(${r}, ${g}, ${b})`;
+};
+
+const oklchStringToRGB = (str: string) => {
+  function linearToSRGB(c: number) {
+    if (c <= 0.0031308) return 12.92 * c;
+    return 1.055 * Math.pow(c, 1 / 2.4) - 0.055;
+  }
+
+  const ma = str.match(/oklch\(\s*([^\s]+)\s+([^\s]+)\s+([^\s)]+)\s*\)/i);
+  if (!ma) throw new Error("Invalid oklch color");
+
+  let L = parseFloat(ma[1]);
+  const C = parseFloat(ma[2]);
+  const h = parseFloat(ma[3]);
+
+  if (ma[1].includes("%")) {
+    L /= 100;
+  }
+
+  const hr = (h * Math.PI) / 180;
+  const a = C * Math.cos(hr);
+  const bp = C * Math.sin(hr);
+
+  const l = (L + 0.3963377774 * a + 0.2158037573 * bp) ** 3;
+  const m = (L - 0.1055613458 * a - 0.0638541728 * bp) ** 3;
+  const s = (L - 0.0894841775 * a - 1.291485548 * bp) ** 3;
+
+  const r = linearToSRGB(+4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s);
+  const g = linearToSRGB(-1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s);
+  const b = linearToSRGB(-0.0041960863 * l - 0.7034186147 * m + 1.707614701 * s);
+
+  return [
+    Math.round(Math.min(Math.max(r, 0), 1) * 255),
+    Math.round(Math.min(Math.max(g, 0), 1) * 255),
+    Math.round(Math.min(Math.max(b, 0), 1) * 255),
+  ];
 };
