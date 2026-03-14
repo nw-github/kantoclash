@@ -227,8 +227,9 @@ onMounted(() => {
         description: enabled
           ? "The server will be going down for maintenance shortly. The ability to start new battles is now disabled."
           : "Maintenance mode has been cancelled. The ability to start battles has been enabled.",
-        preventClose: true,
-        actions: [{variant: "solid", color: "primary", label: "OK", click: () => alert.close()}],
+        dismissible: false,
+        variant: "outline",
+        actions: [{variant: "solid", color: "primary", label: "OK", onClick: () => alert.close()}],
       });
     }
   });

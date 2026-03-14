@@ -74,8 +74,8 @@
                 :popper="{placement: 'top'}"
                 leading-icon="material-symbols:fast-rewind"
                 variant="ghost"
-                color="gray"
-                @click="$emit('rewind', rewindToTurn)"
+                color="neutral"
+                @click="() => $emit('rewind', rewindToTurn)"
               />
             </div>
 
@@ -85,10 +85,12 @@
               :popper="{placement: 'top'}"
               leading-icon="material-symbols:alarm-outline"
               variant="ghost"
-              :color="currOptions && timeLeft() <= 10 ? 'red' : 'gray'"
+              :color="currOptions && timeLeft() <= 10 ? 'error' : 'neutral'"
               :disabled="!isBattler || isBattleOver || !!timer || localMode"
-              :label="timer && !currOptions ? '--' : timer ? `${Math.max(timeLeft(), 0)}` : ''"
-              @click="$emit('timer')"
+              :label="
+                timer && !currOptions ? '--' : timer ? `${Math.max(timeLeft(), 0)}` : undefined
+              "
+              @click="() => $emit('timer')"
             />
 
             <UTooltip v-if="textBoxHidden" text="Open Chat" :popper="{placement: 'top'}">
@@ -97,7 +99,7 @@
                   ref="menuButton"
                   icon="material-symbols:chat-outline"
                   variant="link"
-                  color="gray"
+                  color="neutral"
                   @click="(slideoverOpen = true), (unseenChats = 0)"
                 />
               </UChip>
@@ -127,45 +129,45 @@
             <TooltipButton
               icon="heroicons:home"
               variant="ghost"
-              color="gray"
+              color="neutral"
               text="Go Home"
               to="/"
             />
             <TooltipButton
               icon="mi:switch"
               variant="ghost"
-              color="gray"
+              color="neutral"
               text="Switch Sides"
-              @click="perspective = opponent"
+              @click="() => void (perspective = opponent)"
             />
             <TooltipButton
               icon="material-symbols:search"
               text="Go to Turn"
               variant="ghost"
-              color="gray"
-              @click="goToTurnModalOpen = !goToTurnModalOpen"
+              color="neutral"
+              @click="() => void (goToTurnModalOpen = !goToTurnModalOpen)"
             />
             <TooltipButton
               icon="material-symbols:fast-rewind"
               text="First Turn"
               variant="ghost"
-              color="gray"
-              @click="skipToTurn(0)"
+              color="neutral"
+              @click="() => skipToTurn(0)"
             />
             <TooltipButton
               icon="material-symbols:skip-previous"
               text="Previous Turn"
               variant="ghost"
-              color="gray"
-              @click="skipToTurn(Math.max(0, currentTurnNo - 1))"
+              color="neutral"
+              @click="() => skipToTurn(Math.max(0, currentTurnNo - 1))"
             />
             <TooltipButton
               v-if="isBattleOver"
               :icon="paused ? 'material-symbols:play-arrow' : 'material-symbols:pause'"
               :text="paused ? 'Play' : 'Pause'"
               variant="ghost"
-              color="gray"
-              @click="paused = !paused"
+              color="neutral"
+              @click="() => void (paused = !paused)"
             />
           </template>
           <template v-if="isBattleOver || playingEvents">
@@ -173,17 +175,17 @@
               icon="material-symbols:skip-next"
               text="Skip Turn"
               variant="ghost"
-              color="gray"
+              color="neutral"
               :disabled="nextEvent >= events.length && isBattleOver"
-              @click="skipToTurn(currentTurnNo + 1)"
+              @click="() => skipToTurn(currentTurnNo + 1)"
             />
             <TooltipButton
               icon="material-symbols:fast-forward"
               text="Skip All"
               variant="ghost"
-              color="gray"
+              color="neutral"
               :disabled="nextEvent >= events.length && isBattleOver"
-              @click="skipToTurn(-1)"
+              @click="() => skipToTurn(-1)"
             />
           </template>
         </div>
@@ -210,22 +212,24 @@
       />
     </div>
 
-    <USlideover v-model="slideoverOpen">
-      <Textbox
-        :players
-        :chats
-        :victor
-        :perspective
-        :format
-        :smooth-scroll
-        :my-id
-        :turns="htmlTurns"
-        closable
-        @chat="$emit('chat', $event)"
-        @report="$emit('report', $event)"
-        @forfeit="$emit('choice', {type: 'forfeit'})"
-        @close="slideoverOpen = false"
-      />
+    <USlideover v-model:open="slideoverOpen">
+      <template #content>
+        <Textbox
+          :players
+          :chats
+          :victor
+          :perspective
+          :format
+          :smooth-scroll
+          :my-id
+          :turns="htmlTurns"
+          closable
+          @chat="$emit('chat', $event)"
+          @report="$emit('report', $event)"
+          @forfeit="$emit('choice', {type: 'forfeit'})"
+          @close="slideoverOpen = false"
+        />
+      </template>
     </USlideover>
   </div>
 </template>
