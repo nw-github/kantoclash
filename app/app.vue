@@ -229,6 +229,7 @@ onMounted(() => {
           : "Maintenance mode has been cancelled. The ability to start battles has been enabled.",
         dismissible: false,
         variant: "outline",
+        color: "neutral",
         actions: [{variant: "solid", color: "primary", label: "OK", onClick: () => alert.close()}],
       });
     }

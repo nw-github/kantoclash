@@ -200,6 +200,7 @@ const onJoinRoom = (resp: JoinRoomResponse | "bad_room") => {
       icon: "material-symbols:error-circle-rounded-outline-sharp",
       dismissible: false,
       variant: "outline",
+      color: "neutral",
       actions: [
         {
           label: "Go Home",
