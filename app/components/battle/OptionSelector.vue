@@ -34,12 +34,14 @@
         :class="choices.length === options.length ? 'flex-col' : 'items-center'"
       >
         <div class="italic">{{ choiceMessage(i, choice, opts) }}...</div>
-        <TooltipButton
-          v-if="i === choices.length - 1"
-          icon="material-symbols:cancel"
-          label="Cancel"
-          @click="cancelMove"
-        />
+        <div>
+          <TooltipButton
+            v-if="i === choices.length - 1"
+            icon="material-symbols:cancel"
+            label="Cancel"
+            @click="cancelMove"
+          />
+        </div>
       </div>
     </div>
 

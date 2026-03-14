@@ -1,5 +1,5 @@
 <template>
-  <UTabs v-model="currentTab" :items>
+  <UTabs v-model="currentTab" color="neutral" :items>
     <template #content="{item}">
       <UCard :ui="{body: 'p-2 sm:p-2'}">
         <UForm ref="form" :schema :state class="divide-y divide-default" @submit="submit">

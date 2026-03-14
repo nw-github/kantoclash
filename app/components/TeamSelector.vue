@@ -8,8 +8,7 @@
       "
       :items="validTeams"
       :disabled="!formatInfo[format].needsTeam || disabled"
-      option-attribute="name"
-      clear-search-on-close
+      label-key="name"
     >
       <template #item="{item: team}">
         <div>

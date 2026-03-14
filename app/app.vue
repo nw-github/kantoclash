@@ -88,6 +88,8 @@
 </template>
 
 <style>
+@reference "@/assets/main.css";
+
 @layer base {
   *,
   *::before,
@@ -106,6 +108,7 @@ body {
   background-image: linear-gradient(to right, var(--grid-color) 1px, transparent 1px),
     linear-gradient(to bottom, var(--grid-color) 1px, transparent 1px);
   background-size: 32px 32px;
+  @apply dark:bg-zinc-950/97;
 }
 
 .dark body {

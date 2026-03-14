@@ -77,7 +77,7 @@
 
           <UBadge
             v-if="poke.v.stockpile"
-            color="success"
+            color="old-lime"
             icon="material-symbols-light:money-bag"
             :label="poke.v.stockpile"
             variant="subtle"
@@ -89,7 +89,7 @@
           </template>
 
           <template v-for="(val, stage) in poke.v.stages">
-            <UBadge v-if="val" :key="stage" :color="val > 0 ? 'success' : 'error'">
+            <UBadge v-if="val" :key="stage" :color="val > 0 ? 'old-lime' : 'error'">
               {{
                 roundTo(
                   stage === "acc" || stage === "eva"

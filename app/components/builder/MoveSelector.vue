@@ -4,6 +4,7 @@
     v-model:open="open"
     v-model:query="query"
     :content="{align: 'end'}"
+    :ui="{list: 'min-w-80'}"
     :items
     :filter
     @chose="onChoose"

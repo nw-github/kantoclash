@@ -47,7 +47,7 @@
         <UTabs
           v-model="rawSelectedPokeIdx"
           orientation="vertical"
-          color="info"
+          color="neutral"
           :items
           :ui="{
             root: 'h-full flex',
@@ -65,7 +65,13 @@
       </div>
 
       <div class="block sm:hidden">
-        <UTabs v-model="rawSelectedPokeIdx" class="px-2 pt-2" :items :content="false" color="info">
+        <UTabs
+          v-model="rawSelectedPokeIdx"
+          class="px-2 pt-2"
+          :items
+          :content="false"
+          color="neutral"
+        >
           <template #default="{item}">
             <div class="size-[32px] flex items-center justify-center">
               <BoxSprite :species-id="item.speciesId" :form="item.form" />
@@ -78,7 +84,7 @@
         <div class="flex justify-between pb-1.5">
           <UTabs
             v-model="selectedTab"
-            color="info"
+            color="neutral"
             :items="[
               {label: 'Edit', icon: 'material-symbols:edit-square-outline'},
               {label: 'PokéPaste', icon: 'material-symbols:content-paste'},
