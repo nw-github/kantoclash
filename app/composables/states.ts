@@ -53,6 +53,6 @@ export const useAutoMuteMusic = () => useLocalStorage<bool>("autoMuteMusic", fal
 
 export const useChallenges = () => useState<Challenge[]>("challenges", () => []);
 
-const touchFocus = ref<HTMLElement>();
+const touchFocus = ref<HTMLElement | null>();
 
 export const useTouchedElement = () => touchFocus;

@@ -29,7 +29,7 @@ const {challenge} = defineProps<{challenge: Challenge; disabled?: boolean}>();
 const emit = defineEmits<{(e: "reject"): void; (e: "accept", team?: Team): void}>();
 
 const team = ref<Team>();
-const selectTeamMenu = ref<InstanceType<typeof TeamSelector>>();
+const selectTeamMenu = useTemplateRef("selectTeamMenu");
 
 const accept = () => {
   if (formatInfo[challenge.format].needsTeam && !team.value) {

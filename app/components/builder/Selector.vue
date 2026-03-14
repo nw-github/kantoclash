@@ -67,7 +67,6 @@ const {
   virtualize?: ScrollAreaProps["virtualize"];
 }>();
 const emit = defineEmits<{(e: "chose", item: T): void}>();
-const container = ref<HTMLUListElement>();
 const hovered = ref(0);
 const query = useDebounce(modelQuery, 100);
 const queryUnmodified = ref(true);
@@ -97,7 +96,7 @@ onKeyStroke("ArrowUp", () => trySetHovered(-1));
 onKeyStroke("Home", () => trySetHovered(-items.length));
 onKeyStroke("End", () => trySetHovered(items.length));
 onKeyStroke("Enter", () => select(hovered.value));
-onClickOutside(container, () => (open.value = false));
+onClickOutside(useTemplateRef("container"), () => (open.value = false));
 
 const filteredItems = computed(() => filter(items, queryUnmodified.value ? "" : query.value));
 

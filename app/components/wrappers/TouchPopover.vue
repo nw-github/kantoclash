@@ -34,7 +34,7 @@ const open = computed({
   set: val => (isHovered.value = val),
 });
 
-const element = ref<HTMLDivElement>();
+const element = useTemplateRef("element");
 const touchedEl = useTouchedElement();
 
 watch(touchedEl, el => {

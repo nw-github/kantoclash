@@ -21,7 +21,6 @@
 </template>
 
 <script setup lang="ts">
-import type {Battle} from "#components";
 import type {Socket} from "socket.io-client";
 import type {Options} from "~~/game/battle";
 import type {BattleEvent} from "~~/game/events";
@@ -40,7 +39,7 @@ const router = useRouter();
 const mounted = useMounted();
 const myId = useMyId();
 const {track: currentTrack} = useBGMusic();
-const battle = ref<InstanceType<typeof Battle>>();
+const battle = useTemplateRef("battle");
 const loading = ref(true);
 const players = ref<Players>(new Players());
 const events = ref<BattleEvent[]>([]);

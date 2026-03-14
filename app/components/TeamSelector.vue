@@ -45,7 +45,7 @@
 <script setup lang="ts">
 import {breakpointsTailwind} from "@vueuse/core";
 
-const selectTeamMenu = ref<HTMLDivElement>();
+const selectTeamMenu = useTemplateRef("selectTeamMenu");
 const model = defineModel<Team | undefined>();
 const {format} = defineProps<{format: FormatId; disabled?: boolean}>();
 

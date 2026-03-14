@@ -39,7 +39,7 @@
 
 <script setup lang="ts">
 import {z} from "zod";
-import type {Form, FormSubmitEvent} from "#ui/types";
+import type {FormSubmitEvent} from "#ui/types";
 
 const items = [
   {label: "Log in", icon: "material-symbols:login"},
@@ -47,7 +47,7 @@ const items = [
 ];
 
 const {$conn} = useNuxtApp();
-const form = ref<Form<Schema>>();
+const form = useTemplateRef("form");
 const state = reactive({username: undefined, password: undefined, confirmPassword: undefined});
 const loading = ref(false);
 const currentTab = ref("0");

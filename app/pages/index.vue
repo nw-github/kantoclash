@@ -116,7 +116,6 @@
 </template>
 
 <script setup lang="ts">
-import type {TeamSelector} from "#components";
 import type {TableColumn} from "@nuxt/ui";
 import InvalidTeamModal from "~/components/dialog/InvalidTeamModal.vue";
 import type {PokemonDesc} from "~~/game/pokemon";
@@ -137,7 +136,7 @@ const loadingRooms = ref(false);
 const acceptingChallenge = ref(false);
 const recentlyPlayed = useLocalStorage("showRecentlyPlayed", true);
 const selectedTeam = ref<Team | undefined>();
-const selectTeamMenu = ref<InstanceType<typeof TeamSelector>>();
+const selectTeamMenu = useTemplateRef("selectTeamMenu");
 
 type Room = {to: string; name: string; format: FormatId; live: bool};
 

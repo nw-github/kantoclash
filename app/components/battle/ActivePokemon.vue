@@ -184,14 +184,10 @@
       </div>
 
       <div
-        ref="ground"
         class="ground absolute bottom-4 sm:bottom-8 h-10 w-20 sm:h-16 sm:w-40 rounded-[100%] flex justify-center"
         :class="{back, front: !back}"
       >
-        <div
-          ref="pokeBall"
-          class="pokeball absolute size-[42px] z-10 opacity-0 pointer-events-none"
-        />
+        <div class="pokeball absolute size-[42px] z-10 opacity-0 pointer-events-none" />
 
         <div
           class="substitute absolute opacity-0 bottom-[50%] pointer-events-none"
@@ -279,7 +275,7 @@ const statShortName = computed(
 const breakpoint = useBreakpoints(breakpointsTailwind);
 const lessThanSm = breakpoint.smaller("sm");
 
-const sprite = ref<HTMLDivElement>();
+const sprite = useTemplateRef("sprite");
 const pbRow = ref(0);
 const pbCol = ref(3);
 const scrColor = {

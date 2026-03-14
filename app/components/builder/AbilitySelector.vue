@@ -1,6 +1,5 @@
 <template>
   <Selector
-    ref="selector"
     v-model:open="open"
     v-model:query="query"
     :content="{align: 'start'}"

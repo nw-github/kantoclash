@@ -188,7 +188,7 @@ const emit = defineEmits<{
 }>();
 const mutedPlayers = useMutedPlayerIds();
 const message = ref("");
-const scrollPoint = ref<HTMLDivElement>();
+const scrollPoint = useTemplateRef("scrollPoint");
 const gen = computed(() => GENERATIONS[formatInfo[props.format].generation]!);
 
 const overlay = useOverlay();
