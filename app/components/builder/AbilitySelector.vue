@@ -6,6 +6,7 @@
     :content="{align: 'start'}"
     :items
     :filter
+    :virtualize="false"
     @chose="onChoose"
   >
     <UInput

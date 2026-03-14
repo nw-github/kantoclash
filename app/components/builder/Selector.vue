@@ -22,42 +22,49 @@
           />
         </div>
 
-        <ul
-          class="max-h-60 p-0.5 focus:outline-none overflow-y-auto overflow-x-hidden scroll-py-1"
+        <UScrollArea
+          v-slot="{item, index}"
+          :items="filteredItems"
+          class="max-h-60 p-0.5 focus:outline-none"
           :class="ui?.list"
+          :virtualize
         >
-          <li
-            v-for="(item, i) in filteredItems"
-            :key="i"
+          <div
             class="cursor-default select-none relative flex items-center justify-between gap-1 rounded-md px-1.5 py-1 text-sm"
-            :class="[hovered === i && 'bg-elevated/50 hovered']"
-            @click="select(i)"
-            @mouseover="hovered = i"
-            @mouseleave="hovered = hovered === i ? -1 : hovered"
+            :class="[hovered === index && 'bg-elevated/50 hovered']"
+            @click="select(index)"
+            @mouseover="hovered = index"
+            @mouseleave="hovered = hovered === index ? -1 : hovered"
           >
-            <slot :item :index="i" name="item" />
-          </li>
+            <slot :item :index name="item" />
+          </div>
+        </UScrollArea>
 
-          <li v-if="!filteredItems.length" class="text-center text-sm">
-            <slot name="empty">No Items.</slot>
-          </li>
-        </ul>
+        <!-- TODO: make this better -->
+        <div v-if="!filteredItems.length" class="text-center text-sm">
+          <slot name="empty">No Items.</slot>
+        </div>
       </div>
     </template>
   </UPopover>
 </template>
 
 <script setup lang="ts" generic="T">
-import type {PopoverProps} from "@nuxt/ui";
+import type {PopoverProps, ScrollAreaProps} from "@nuxt/ui";
 
 const modelQuery = defineModel<string>("query", {default: ""});
 const open = defineModel<boolean>("open", {default: false});
-const {items, filter} = defineProps<{
+const {
+  items,
+  filter,
+  virtualize = true,
+} = defineProps<{
   items: T[];
   filter: (items: T[], query: string) => T[];
   searchable?: boolean;
   content?: PopoverProps["content"];
   ui?: {list?: string; content?: string};
+  virtualize?: ScrollAreaProps["virtualize"];
 }>();
 const emit = defineEmits<{(e: "chose", item: T): void}>();
 const container = ref<HTMLUListElement>();
