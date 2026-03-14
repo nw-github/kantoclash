@@ -2,7 +2,7 @@
   <UPopover
     v-model:open="open"
     :dismissible="false"
-    :ui="{content: 'p-0 -mt-1.5 ' + (ui?.content ?? '')}"
+    :ui="{content: 'p-0 -mt-1.5 rounded-md ring ring-default shadow-lg bg ' + (ui?.content ?? '')}"
     :content
   >
     <template #anchor>
@@ -10,12 +10,8 @@
     </template>
 
     <template #content>
-      <ul
-        ref="container"
-        class="max-h-60 p-0.5 focus:outline-none overflow-y-auto overflow-x-hidden scroll-py-1 ring-1 ring-gray-200 dark:ring-gray-700 rounded-md shadow-lg bg-white dark:bg-gray-800"
-        :class="ui?.list"
-      >
-        <li v-if="searchable" class="pb-1">
+      <div ref="container">
+        <div v-if="searchable" class="pb-1">
           <UInput
             v-model="modelQuery"
             class="w-full"
@@ -24,24 +20,29 @@
             autofocus
             @keydown.tab="open = false"
           />
-        </li>
+        </div>
 
-        <li
-          v-for="(item, i) in filteredItems"
-          :key="i"
-          class="cursor-default select-none relative flex items-center justify-between gap-1 rounded-md px-1.5 py-1 text-sm text-gray-900 dark:text-white"
-          :class="[hovered === i && 'bg-gray-100 dark:bg-gray-900 hovered']"
-          @click="select(i)"
-          @mouseover="hovered = i"
-          @mouseleave="hovered = hovered === i ? -1 : hovered"
+        <ul
+          class="max-h-60 p-0.5 focus:outline-none overflow-y-auto overflow-x-hidden scroll-py-1"
+          :class="ui?.list"
         >
-          <slot :item :index="i" name="item" />
-        </li>
+          <li
+            v-for="(item, i) in filteredItems"
+            :key="i"
+            class="cursor-default select-none relative flex items-center justify-between gap-1 rounded-md px-1.5 py-1 text-sm"
+            :class="[hovered === i && 'bg-elevated/50 hovered']"
+            @click="select(i)"
+            @mouseover="hovered = i"
+            @mouseleave="hovered = hovered === i ? -1 : hovered"
+          >
+            <slot :item :index="i" name="item" />
+          </li>
 
-        <li v-if="!filteredItems.length" class="text-center text-sm">
-          <slot name="empty">No Items.</slot>
-        </li>
-      </ul>
+          <li v-if="!filteredItems.length" class="text-center text-sm">
+            <slot name="empty">No Items.</slot>
+          </li>
+        </ul>
+      </div>
     </template>
   </UPopover>
 </template>

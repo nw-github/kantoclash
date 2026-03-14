@@ -4,7 +4,7 @@
       v-if="chat.type === 'chat' && !mutedPlayers.includes(chat.id)"
       class="text-wrap wrap-break-word break-all"
     >
-      <b :class="player?.admin && 'text-amber-200'">{{ player?.name ?? "???" }}</b
+      <b :class="player?.admin && 'text-amber-300'">{{ player?.name ?? "???" }}</b
       >:
       {{
         censorEnabled
@@ -14,19 +14,19 @@
     </span>
     <span
       v-else-if="chat.type === 'userJoin' && !mutedPlayers.includes(chat.id)"
-      class="text-sm text-gray-600 dark:text-gray-400"
+      class="text-sm text-muted"
     >
-      <b :class="player?.admin && 'text-amber-200'">{{ player?.name ?? "???" }}</b> joined the room.
+      <b :class="player?.admin && 'text-amber-300'">{{ player?.name ?? "???" }}</b> joined the room.
     </span>
     <span
       v-else-if="chat.type === 'userLeave' && !mutedPlayers.includes(chat.id)"
-      class="text-sm text-gray-600 dark:text-gray-400"
+      class="text-sm text-muted"
     >
-      <b :class="player?.admin && 'text-amber-200'">{{ player?.name ?? "???" }}</b> left the room.
+      <b :class="player?.admin && 'text-amber-300'">{{ player?.name ?? "???" }}</b> left the room.
     </span>
     <span v-else-if="chat.type === 'timerStart'">
       The timer was started by
-      <b :class="player?.admin && 'text-amber-200'">{{ player?.name ?? "???" }}</b
+      <b :class="player?.admin && 'text-amber-300'">{{ player?.name ?? "???" }}</b
       >.
     </span>
   </p>

@@ -45,20 +45,12 @@
         class="flex flex-col items-center justify-center flex-1 px-6 py-14 sm:px-14"
       >
         <template v-if="!formats.length && !query">
-          <UIcon
-            name="i-heroicons:circle-stack-20-solid"
-            class="size-6 mx-auto text-gray-400 dark:text-gray-500 mb-4"
-          />
-          <p class="text-sm text-center text-gray-900 dark:text-white">You don't have any teams.</p>
+          <UIcon name="i-heroicons:circle-stack-20-solid" class="size-6 mx-auto text-muted mb-4" />
+          <p class="text-sm text-center text-accented">You don't have any teams.</p>
         </template>
         <template v-else>
-          <UIcon
-            name="i-heroicons:circle-stack-20-solid"
-            class="size-6 mx-auto text-gray-400 dark:text-gray-500 mb-4"
-          />
-          <p class="text-sm text-center text-gray-900 dark:text-white">
-            No teams match this query.
-          </p>
+          <UIcon name="i-heroicons:circle-stack-20-solid" class="size-6 mx-auto text-muted mb-4" />
+          <p class="text-sm text-center text-accented">No teams match this query.</p>
         </template>
       </div>
 
@@ -66,9 +58,9 @@
         <div
           v-for="(team, i) in filteredTeams.slice((page - 1) * pageCount, page * pageCount)"
           :key="i"
-          class="space-y-1 py-1 divide-y divide-gray-200 dark:divide-gray-800"
+          class="space-y-1 py-1 divide-y divide-default"
         >
-          <div class="flex justify-between items-end">
+          <div class="flex justify-between items-end pb-1">
             <div>
               <span class="text-sm truncate">{{ team.name }}</span>
               <div class="flex items-center gap-1 text-xs">

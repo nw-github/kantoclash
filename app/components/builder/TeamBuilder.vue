@@ -279,9 +279,7 @@
               />
 
               <template v-if="selectedPoke.species">
-                <div
-                  class="relative group flex justify-center items-center px-1.5 min-w-10 text-gray-500"
-                >
+                <div class="relative group flex justify-center items-center px-1.5 min-w-10">
                   <UButton
                     variant="link"
                     color="neutral"
@@ -319,7 +317,7 @@
                 <div class="flex justify-center items-center px-1.5 min-w-10">
                   <UButton variant="link" color="neutral" :padded="false" label="--" disabled />
                 </div>
-                <span class="text-center px-1.5 min-w-9 text-gray-500 text-xs">--</span>
+                <span class="text-center px-1.5 min-w-9 text-dimmed text-xs">--</span>
               </template>
             </template>
           </div>

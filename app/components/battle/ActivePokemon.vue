@@ -25,7 +25,7 @@
       <div class="relative overflow-hidden rounded-md bg-[#333] flex">
         <div class="hp-fill absolute h-full rounded-md" />
         <div
-          class="w-full text-center text-gray-100 text-[0.65rem] leading-4 sm:text-xs font-medium z-30"
+          class="w-full text-center text-gray-100 dark:text-highlighted text-[0.65rem] leading-4 sm:text-xs font-medium z-30"
         >
           {{ hpPercent }}%
         </div>

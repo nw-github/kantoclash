@@ -38,15 +38,15 @@
           <MoveCategory :category="gen.getCategory(move)" image />
         </div>
         <div class="flex flex-col w-8">
-          <span class="text-[0.6rem] text-center text-gray-400">Power</span>
+          <span class="text-[0.6rem] text-center text-dimmed">Power</span>
           <span class="text-sm text-center">{{ move.power || "--" }}</span>
         </div>
         <div class="flex flex-col w-8">
-          <span class="text-[0.6rem] text-center text-gray-400">Acc</span>
+          <span class="text-[0.6rem] text-center text-dimmed">Acc</span>
           <span class="text-sm text-center">{{ move.acc || "--" }}</span>
         </div>
         <div class="flex flex-col w-8">
-          <span class="text-[0.6rem] text-center text-gray-400">PP</span>
+          <span class="text-[0.6rem] text-center text-dimmed">PP</span>
           <span class="text-sm text-center">{{ gen.getMaxPP(move) }}</span>
         </div>
       </div>

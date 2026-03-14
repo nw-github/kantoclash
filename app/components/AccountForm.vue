@@ -2,7 +2,7 @@
   <UTabs v-model="currentTab" :items>
     <template #content="{item}">
       <UCard :ui="{body: 'p-2 sm:p-2'}">
-        <UForm ref="form" :schema :state class="divide-y divide-accented" @submit="submit">
+        <UForm ref="form" :schema :state class="divide-y divide-default" @submit="submit">
           <div class="space-y-2 pb-2">
             <UFormField label="Username" name="username" required>
               <UInput v-model.trim="state.username" autofocus />

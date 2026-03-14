@@ -1,14 +1,12 @@
 <template>
-  <div
-    class="flex h-full p-4 rounded-lg gap-4 dark:divide-gray-800 ring-1 ring-gray-200 dark:ring-gray-800 shadow"
-  >
+  <div class="flex h-full p-4 rounded-lg gap-4 ring ring-default shadow">
     <div class="flex flex-col w-full items-center overflow-x-hidden overflow-y-auto">
       <!-- Top Bar -->
       <div class="flex w-full relative justify-between items-start">
         <div class="flex gap-2 items-center">
           <div
             :class="[!currentTurnNo && 'invisible order-1']"
-            class="rounded-md bg-gray-300 dark:bg-gray-700 flex justify-center py-0.5 px-1"
+            class="rounded-md bg-accented flex justify-center py-0.5 px-1"
           >
             <span class="text-lg font-medium">Turn {{ currentTurnNo }}</span>
           </div>
@@ -45,7 +43,7 @@
             <motion.div
               v-for="e in liveEvents"
               :key="e.time"
-              class="w-full bg-gray-300/90 dark:bg-gray-700/95 rounded-lg px-2 pb-0.5"
+              class="w-full bg-accented/90 rounded-lg px-2 pb-0.5"
               :initial="{opacity: 0, y: 20}"
               :animate="{opacity: 1, y: 0}"
               :exit="{opacity: 0, y: -10}"

@@ -2,7 +2,7 @@
   <TouchPopover ui2="w-min">
     <div class="relative w-min">
       <UButton :icon="formatInfo[format].icon" color="neutral" variant="ghost" />
-      <div class="absolute -bottom-0.5 right-1 text-xs font-medium text-gray-400">
+      <div class="absolute -bottom-0.5 right-1 text-xs font-medium text-muted">
         {{ formatInfo[format].generation }}
       </div>
     </div>
@@ -15,7 +15,7 @@
         <div class="flex flex-col">
           <span class="font-semibold">Mods:</span>
           <template v-for="(val, mod) in formatInfo[format].mods" :key="mod">
-            <span v-if="val" class="text-xs text-gray-600 dark:text-gray-400">
+            <span v-if="val" class="text-xs text-muted">
               {{ modNames[mod].name }}: {{ modNames[mod].desc }}
             </span>
           </template>

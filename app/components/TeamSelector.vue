@@ -33,7 +33,7 @@
           <ULink
             :to="`/builder?new_team=${format}`"
             active-class="text-primary"
-            inactive-class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+            inactive-class="text-highlighted hover:text-dimmed"
           >
             Make one</ULink
           >!

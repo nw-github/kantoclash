@@ -28,7 +28,7 @@
         </span>
       </div>
 
-      <div class="text-[0.6rem] text-gray-600 dark:text-gray-400 text-nowrap">
+      <div class="text-[0.6rem] text-muted text-nowrap">
         {{ item.desc || "No competitive use." }}
       </div>
     </template>

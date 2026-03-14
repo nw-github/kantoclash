@@ -87,7 +87,7 @@
 
     <template #default>
       <template v-for="(turn, i) in turns" :key="i">
-        <div v-if="i" class="bg-gray-300 dark:bg-gray-700 w-full px-1 py-0.5">
+        <div v-if="i" class="bg-accented w-full px-1 py-0.5">
           <h2 class="text-xl font-bold">Turn {{ i }}</h2>
         </div>
         <div class="events p-1">
@@ -158,7 +158,7 @@
   }
 
   .muted {
-    @apply text-gray-600 dark:text-gray-400;
+    @apply text-muted;
   }
 }
 </style>
