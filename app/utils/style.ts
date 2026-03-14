@@ -1,4 +1,3 @@
-import tailwindColors from "tailwindcss/colors";
 import type {Type} from "~~/game/utils";
 
 export const typeColor: Record<Type, string> = {
@@ -33,39 +32,26 @@ export const statusColor = {
 
 const lerp = (a: number, b: number, t: number) => a * (1 - t) + b * t;
 
+type HSV = {h: number; s: number; v: number};
+
 const colorInterp = (
   value: number,
-  [start, ...colors]: [string, [string, number], ...[string, number][]],
+  [start, ...colors]: [HSV, [HSV, number], ...[HSV, number][]],
   interp = lerp,
 ) => {
-  // https://stackoverflow.com/questions/8022885/rgb-to-hsv-color-in-javascript/54070620#54070620
-  const rgb2hsv = (r: number, g: number, b: number) => {
-    const v = Math.max(r, g, b);
-    const c = v - Math.min(r, g, b);
-    const h = c && (v == r ? (g - b) / c : v == g ? 2 + (b - r) / c : 4 + (r - g) / c);
-    return {h: 60 * (h < 0 ? h + 6 : h), s: v && c / v, v};
-  };
-
   const hsv2rgb = (h: number, s: number, v: number) => {
     const f = (n: number, k = (n + h / 60) % 6) => v - v * s * Math.max(Math.min(k, 4 - k, 1), 0);
     return [f(5), f(3), f(1)];
-  };
-
-  const hexrgb2hsv = (hex: string) => {
-    const [r, g, b] = oklchStringToRGB(hex);
-    return rgb2hsv(r, g, b);
   };
 
   let prev = 0;
   for (const [color, max] of colors) {
     if (value <= max) {
       const f = (value - prev) / (max - prev);
-      const begin = hexrgb2hsv(start);
-      const end = hexrgb2hsv(color);
       return hsv2rgb(
-        interp(begin.h, end.h, f),
-        interp(begin.s, end.s, f),
-        interp(begin.v, end.v, f),
+        interp(start.h, color.h, f),
+        interp(start.s, color.s, f),
+        interp(start.v, color.v, f),
       );
     }
 
@@ -76,55 +62,20 @@ const colorInterp = (
   return [0, 0, 0];
 };
 
-const red = tailwindColors.red[800];
-
 export const hpColor = (percent: number) => {
-  const yellow = tailwindColors.yellow[600];
-  const green = tailwindColors.lime[700];
-  const [r, g, b] = colorInterp(percent, [red, [yellow, 50], [green, 100]]);
+  const [r, g, b] = colorInterp(percent, [red, [hp_yellow, 50], [hp_green, 100]]);
   return `rgb(${r}, ${g}, ${b})`;
 };
 
 export const baseStatColor = (stat: number) => {
-  const yellow = tailwindColors.yellow[500];
-  const green = tailwindColors.lime[500];
-  const blue = tailwindColors.sky[500];
-  const [r, g, b] = colorInterp(stat, [red, [yellow, 65], [green, 100], [blue, 255]]);
+  const [r, g, b] = colorInterp(stat, [red, [bs_yellow, 65], [bs_green, 100], [bs_blue, 255]]);
   return `rgb(${r}, ${g}, ${b})`;
 };
 
-const oklchStringToRGB = (str: string) => {
-  function linearToSRGB(c: number) {
-    if (c <= 0.0031308) return 12.92 * c;
-    return 1.055 * Math.pow(c, 1 / 2.4) - 0.055;
-  }
+const red = {h: 0, s: 0.8235294117647058, v: 153};
+const hp_yellow = {h: 40.60606060606061, s: 0.9801980198019802, v: 202};
+const hp_green = {h: 85.87155963302752, s: 0.8790322580645161, v: 124};
 
-  const ma = str.match(/oklch\(\s*([^\s]+)\s+([^\s]+)\s+([^\s)]+)\s*\)/i);
-  if (!ma) throw new Error("Invalid oklch color");
-
-  let L = parseFloat(ma[1]);
-  const C = parseFloat(ma[2]);
-  const h = parseFloat(ma[3]);
-
-  if (ma[1].includes("%")) {
-    L /= 100;
-  }
-
-  const hr = (h * Math.PI) / 180;
-  const a = C * Math.cos(hr);
-  const bp = C * Math.sin(hr);
-
-  const l = (L + 0.3963377774 * a + 0.2158037573 * bp) ** 3;
-  const m = (L - 0.1055613458 * a - 0.0638541728 * bp) ** 3;
-  const s = (L - 0.0894841775 * a - 1.291485548 * bp) ** 3;
-
-  const r = linearToSRGB(+4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s);
-  const g = linearToSRGB(-1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s);
-  const b = linearToSRGB(-0.0041960863 * l - 0.7034186147 * m + 1.707614701 * s);
-
-  return [
-    Math.round(Math.min(Math.max(r, 0), 1) * 255),
-    Math.round(Math.min(Math.max(g, 0), 1) * 255),
-    Math.round(Math.min(Math.max(b, 0), 1) * 255),
-  ];
-};
+const bs_yellow = {h: 45.39823008849557, s: 0.9658119658119658, v: 234};
+const bs_green = {h: 83.73626373626374, s: 0.8921568627450981, v: 204};
+const bs_blue = {h: 198.63013698630135, s: 0.9399141630901288, v: 233};
