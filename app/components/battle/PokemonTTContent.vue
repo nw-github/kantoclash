@@ -58,7 +58,6 @@ import {Pokemon} from "~~/game/pokemon";
 import type {StatStageId, Weather} from "~~/game/utils";
 import {abilityList} from "~~/game/species";
 import type {MoveId} from "~~/game/moves";
-import "assets/colors.css";
 
 const {poke: p, weather} = defineProps<{poke: ClientActivePokemon | Pokemon; weather?: Weather}>();
 const poke = p instanceof Pokemon ? p : p.base;

@@ -199,7 +199,7 @@
 </template>
 
 <style scoped>
-@import "@/assets/colors.css";
+@reference "@/assets/main.css";
 
 div {
   @apply text-sm sm:text-base;

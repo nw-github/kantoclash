@@ -163,6 +163,8 @@
 </template>
 
 <style>
+@reference "@/assets/main.css";
+
 .events {
   .move,
   .charge,

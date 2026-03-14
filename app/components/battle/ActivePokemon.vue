@@ -213,8 +213,6 @@
 </template>
 
 <style scoped>
-@import "@/assets/colors.css";
-
 .hp-fill {
   width: v-bind("hpPercent + '%'");
   background-color: v-bind("hpColor(hpPercent)");

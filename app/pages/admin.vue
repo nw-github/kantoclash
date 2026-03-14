@@ -35,13 +35,13 @@
             <TooltipButton
               text="Copy"
               icon="material-symbols:content-copy-outline"
-              color="gray"
+              color="neutral"
               variant="ghost"
-              @click="copyData(reportedBattles[i])"
+              @click="() => copyData(reportedBattles[i])"
             />
             <UPopover mode="hover">
-              <UButton icon="material-symbols:chat-rounded" color="gray" variant="ghost" />
-              <template #panel>
+              <UButton icon="material-symbols:chat-rounded" color="neutral" variant="ghost" />
+              <template #content>
                 <div v-for="(messages, player) in reports" :key="player" class="p-1">
                   <h1 class="text-md">Reports by player '{{ player }}'</h1>
                   <p v-for="{message, turn} in messages" :key="turn" class="text-sm">
@@ -53,17 +53,17 @@
             <TooltipButton
               text="Debug"
               icon="material-symbols:play-arrow"
-              color="gray"
+              color="neutral"
               variant="ghost"
-              @click="viewingBattle = battle"
+              @click="() => void (viewingBattle = battle)"
             />
             <TooltipButton
               text="Delete"
               icon="material-symbols:delete-outline"
-              color="red"
+              color="error"
               variant="ghost"
               :disabled="deleting"
-              @click="deleteBugReport(reportedBattles[i])"
+              @click="() => deleteBugReport(reportedBattles[i])"
             />
           </div>
         </div>

@@ -1,2 +1,7 @@
 @import "tailwindcss";
 @import "@nuxt/ui";
+
+:root {
+  --stat-up: var(--color-green-600);
+  --stat-down: var(--color-red-600);
+}
