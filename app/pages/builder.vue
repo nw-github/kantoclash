@@ -122,7 +122,11 @@
 
     <template #footer>
       <div class="flex justify-center">
-        <UPagination v-model="page" :page-count :total="filteredTeams.length" />
+        <UPagination
+          v-model:page="page"
+          :items-per-page="pageCount"
+          :total="filteredTeams.length"
+        />
       </div>
     </template>
   </UCard>

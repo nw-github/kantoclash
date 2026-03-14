@@ -280,7 +280,6 @@ const breakpoint = useBreakpoints(breakpointsTailwind);
 const lessThanSm = breakpoint.smaller("sm");
 
 const sprite = ref<HTMLDivElement>();
-const ground = ref<HTMLDivElement>();
 const pbRow = ref(0);
 const pbCol = ref(3);
 const scrColor = {

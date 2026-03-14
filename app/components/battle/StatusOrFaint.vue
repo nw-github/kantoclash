@@ -2,8 +2,8 @@
   <UBadge v-if="poke.hp <= 0 && faint" color="error">FNT</UBadge>
   <UBadge
     v-else-if="poke.status && poke.hp > 0"
-    :color="statusColor[poke.v.status].color"
-    :variant="statusColor[poke.v.status].variant"
+    :color="statusColor[poke.status].color"
+    :variant="statusColor[poke.status].variant"
   >
     {{ poke.status.toUpperCase() }}
   </UBadge>
