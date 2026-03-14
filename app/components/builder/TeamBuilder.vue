@@ -337,7 +337,6 @@
             <div class="flex flex-col-reverse">
               <TooltipButton
                 text="Save"
-                :popper="{placement: 'bottom-end', offsetDistance: 40}"
                 icon="material-symbols:save-outline"
                 variant="ghost"
                 color="neutral"
@@ -353,7 +352,6 @@
               />
               <TooltipButton
                 text="Copy"
-                :popper="{placement: 'bottom-end', offsetDistance: 40}"
                 icon="material-symbols:content-copy-outline"
                 variant="ghost"
                 color="neutral"
@@ -377,7 +375,6 @@
         <div class="absolute top-1 right-4 flex flex-col-reverse">
           <TooltipButton
             text="Save"
-            :popper="{placement: 'bottom-end', offsetDistance: 40}"
             icon="material-symbols:save-outline"
             variant="ghost"
             color="neutral"
@@ -385,7 +382,6 @@
           />
           <TooltipButton
             text="Copy"
-            :popper="{placement: 'bottom-end', offsetDistance: 40}"
             icon="material-symbols:content-copy-outline"
             variant="ghost"
             color="neutral"

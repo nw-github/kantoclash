@@ -1,5 +1,5 @@
 <template>
-  <TouchPopover class="w-min">
+  <TouchPopover ui2="w-min">
     <div class="relative w-min">
       <UButton :icon="formatInfo[format].icon" color="neutral" variant="ghost" />
       <div class="absolute -bottom-0.5 right-1 text-xs font-medium text-gray-400">

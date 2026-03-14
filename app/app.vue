@@ -14,7 +14,7 @@
               variant="link"
             />
 
-            <UPopover class="block md:hidden" :popper="{placement: 'bottom-start'}">
+            <UPopover class="block md:hidden">
               <UButton icon="heroicons:bars-3-16-solid" variant="link" color="neutral" />
               <template #content>
                 <UNavigationMenu orientation="vertical" :items="links" />
@@ -41,7 +41,7 @@
                 />
               </ColorScheme>
               <ClientOnly>
-                <UPopover mode="click" :popper="{placement: 'bottom-start'}">
+                <UPopover mode="click" :content="{align: 'end'}">
                   <UButton
                     :icon="
                       musicVol === 0
@@ -68,7 +68,6 @@
                           class="w-full"
                           :items="musicTrackItems"
                           value-key="value"
-                          :popper="{strategy: 'fixed'}"
                         />
                       </div>
                     </div>
@@ -246,7 +245,13 @@ onMounted(() => {
       description: `You were challenged to a ${formatInfo[ch.format].name}!`,
       icon: "material-symbols:info-outline-rounded",
       actions: [
-        {label: "Go Home", icon: "heroicons:home", onClick: () => void navigateTo("/")},
+        {
+          label: "Go Home",
+          icon: "heroicons:home",
+          color: "neutral",
+          variant: "outline",
+          onClick: () => void navigateTo("/"),
+        },
         {
           label: "Block This User",
           icon: "material-symbols:block",

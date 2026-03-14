@@ -1,5 +1,5 @@
 <template>
-  <TouchPopover :popper="{placement: 'auto'}">
+  <TouchPopover>
     <UButton
       :disabled="!option.valid"
       class="flex justify-between content-center w-full p-1"

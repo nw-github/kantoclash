@@ -1,5 +1,5 @@
 <template>
-  <TouchPopover :popper="{placement: 'auto'}" :disabled="noPopover">
+  <TouchPopover :disabled="noPopover">
     <UButton class="w-full" :disabled :color="active ? 'info' : 'primary'" @click="$emit('click')">
       <div class="w-full space-y-0.5">
         <div class="flex items-center gap-1 w-full justify-start">

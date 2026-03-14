@@ -1,11 +1,11 @@
 <template>
   <div :key="challenge.from.id" class="space-y-2 pt-2">
-    <UDivider>
+    <USeparator>
       <div class="flex items-center gap-2">
         <UIcon :name="formatInfo[challenge.format].icon" />
         <span>{{ formatInfo[challenge.format].name }} - {{ challenge.from.name }}</span>
       </div>
-    </UDivider>
+    </USeparator>
 
     <TeamSelector ref="selectTeamMenu" v-model="team" :format="challenge.format" />
 

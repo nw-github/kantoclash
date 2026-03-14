@@ -71,7 +71,7 @@
               <NumericInput v-model="rewindToTurn" :min="0" class="w-12" />
               <TooltipButton
                 text="Rewind to Turn"
-                :popper="{placement: 'top'}"
+                :content="{side: 'top'}"
                 leading-icon="material-symbols:fast-rewind"
                 variant="ghost"
                 color="neutral"
@@ -82,7 +82,7 @@
             <TooltipButton
               :key="updateMarker"
               :text="timer === undefined ? 'Start Timer' : 'Timer is on'"
-              :popper="{placement: 'top'}"
+              :content="{side: 'top'}"
               leading-icon="material-symbols:alarm-outline"
               variant="ghost"
               :color="currOptions && timeLeft() <= 10 ? 'error' : 'neutral'"
@@ -93,7 +93,7 @@
               @click="() => $emit('timer')"
             />
 
-            <UTooltip v-if="textBoxHidden" text="Open Chat" :popper="{placement: 'top'}">
+            <UTooltip v-if="textBoxHidden" text="Open Chat" :content="{side: 'top'}">
               <UChip :show="unseenChats !== 0" :text="unseenChats" size="xl" inset>
                 <UButton
                   ref="menuButton"
@@ -108,7 +108,7 @@
         </div>
       </div>
 
-      <UDivider class="pb-2" />
+      <USeparator class="pb-2" />
 
       <!-- Selectors & Buttons -->
       <div class="w-full pb-2">

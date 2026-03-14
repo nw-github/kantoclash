@@ -13,7 +13,7 @@
           <TooltipButton
             v-if="closable"
             text="Close"
-            :popper="{placement: 'top'}"
+            :content="{side: 'top'}"
             icon="material-symbols:close"
             variant="link"
             color="neutral"
@@ -22,7 +22,7 @@
           />
           <TooltipButton
             text="Forfeit"
-            :popper="{placement: 'top'}"
+            :content="{side: 'top'}"
             icon="material-symbols:flag-rounded"
             variant="link"
             color="error"
@@ -32,7 +32,7 @@
           />
           <TooltipButton
             text="Report Bug"
-            :popper="{placement: 'top'}"
+            :content="{side: 'top'}"
             icon="material-symbols:bug-report"
             variant="link"
             color="neutral"
@@ -41,7 +41,7 @@
           />
           <!-- <TooltipButton
             text="Open Calculator"
-            :popper="{ placement: 'top' }"
+            :content="{side: 'top'}"
             icon="iconamoon:calculator-light"
             variant="ghost"
             color="gray"
@@ -50,7 +50,7 @@
           <FormatInfoButton :format />
         </div>
 
-        <UPopover mode="hover" :popper="{placement: 'bottom-end'}">
+        <UPopover mode="hover" :content="{align: 'end'}">
           <UButton
             color="neutral"
             variant="ghost"

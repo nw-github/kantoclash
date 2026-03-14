@@ -3,7 +3,7 @@
     <div
       ref="element"
       class="w-full h-full"
-      :class="isHovered && 'touch-none select-none'"
+      :class="[isHovered && 'touch-none select-none', ui2]"
       @touchstart="startTouch"
       @touchend="endTouch"
       @mouseover="isHovered = true"
@@ -19,8 +19,16 @@
 </template>
 
 <script setup lang="ts">
+import type {PopoverProps} from "@nuxt/ui";
+
+interface Props extends /* vue-ignore */ PopoverProps {
+  delay?: number;
+  disabled?: bool;
+  ui2?: string;
+}
+
 const isHovered = ref(false);
-const {delay = 100, disabled = false} = defineProps<{delay?: number; disabled?: bool}>();
+const {delay = 100, disabled = false} = defineProps<Props>();
 const open = computed({
   get: () => !disabled && isHovered.value,
   set: val => (isHovered.value = val),

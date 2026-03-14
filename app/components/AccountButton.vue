@@ -1,5 +1,5 @@
 <template>
-  <UPopover v-model:open="model" mode="click" :popper="{placement: 'bottom-end'}">
+  <UPopover v-model:open="model" mode="click" :content="{align: 'end'}">
     <UButton icon="material-symbols:account-circle-full" variant="ghost" color="neutral" />
     <template #content>
       <div class="p-4">
