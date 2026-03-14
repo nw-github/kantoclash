@@ -1,14 +1,14 @@
 <template>
   <Selector
     v-model:open="open"
-    class="grow"
-    base="w-92 sm:w-124 h-60 sm:-left-28"
+    :ui="{content: 'sm:ml-24', list: 'w-92 sm:w-124 h-76 max-h-full'}"
     :items
     searchable
+    modal
     :filter
     @chose="onChoose"
   >
-    <div class="w-full h-full flex items-center justify-center">
+    <div class="w-full h-full flex items-center justify-center" :class="ui">
       <div
         class="w-[128px] h-[117px] cursor-pointer flex items-center justify-center rounded-md hover:bg-gray-200 focus:bg-gray-200 hover:dark:bg-gray-600 focus:dark:bg-gray-600"
         :class="model && model in gen.speciesList && isIllegal(gen.speciesList[model as SpeciesId]) && 'border border-primary'"
@@ -70,6 +70,7 @@ const {team, gen} = defineProps<{
   gender?: Gender;
   shiny: boolean;
   form?: FormId;
+  ui?: string;
 }>();
 const open = ref(false);
 const items = computed(() => Object.entries(gen.speciesList) as [SpeciesId, Species][]);

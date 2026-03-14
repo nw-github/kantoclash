@@ -5,10 +5,7 @@
 </template>
 
 <script setup lang="ts">
-import type {UButton, UTooltip} from "#components";
-
-type ButtonProps = InstanceType<typeof UButton>["$props"];
-type TooltipProps = InstanceType<typeof UTooltip>["$props"];
+import type {ButtonProps, TooltipProps} from "@nuxt/ui";
 
 interface Props extends /* @vue-ignore */ ButtonProps {
   text?: TooltipProps["text"];

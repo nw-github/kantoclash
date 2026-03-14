@@ -167,7 +167,7 @@
 
               <SpeciesSelector
                 v-model="selectedPoke.data.speciesId"
-                :class="gen.id >= 2 && 'pl-10'"
+                ui="pl-10"
                 :team
                 :gen
                 :gender="currGender.gender"
@@ -188,14 +188,14 @@
               <ItemSelector
                 v-if="gen.id >= 2"
                 v-model="selectedPoke.data.item"
-                class="pt-1"
+                ui="pt-1"
                 :poke="selectedPoke.data"
                 :gen
               />
               <AbilitySelector
                 v-if="gen.id >= 3"
                 v-model="selectedPoke.data.ability"
-                class="pt-1"
+                ui="pt-1"
                 :poke="selectedPoke.data"
                 :gen
               />

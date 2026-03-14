@@ -1,21 +1,24 @@
 <template>
-  <div class="relative">
-    <slot />
+  <UPopover
+    v-model:open="open"
+    :dismissible="false"
+    :ui="{content: 'p-0 -mt-1.5 ' + (ui?.content ?? '')}"
+    :content
+  >
+    <template #anchor>
+      <slot />
+    </template>
 
-    <AnimatePresence>
-      <motion.ul
-        v-if="open"
+    <template #content>
+      <ul
         ref="container"
-        class="absolute z-1000 max-h-60 p-0.5 focus:outline-none overflow-y-auto overflow-x-hidden scroll-py-1 ring-1 ring-gray-200 dark:ring-gray-700 rounded-md shadow-lg bg-white dark:bg-gray-800"
-        :class="base"
-        :initial="{opacity: 0}"
-        :transition="{duration: 0.1, ease: 'easeOut'}"
-        :animate="{opacity: 1}"
-        :exit="{opacity: 0}"
+        class="max-h-60 p-0.5 focus:outline-none overflow-y-auto overflow-x-hidden scroll-py-1 ring-1 ring-gray-200 dark:ring-gray-700 rounded-md shadow-lg bg-white dark:bg-gray-800"
+        :class="ui?.list"
       >
         <li v-if="searchable" class="pb-1">
           <UInput
             v-model="modelQuery"
+            class="w-full"
             placeholder="Search..."
             variant="none"
             autofocus
@@ -38,25 +41,22 @@
         <li v-if="!filteredItems.length" class="text-center text-sm">
           <slot name="empty">No Items.</slot>
         </li>
-      </motion.ul>
-    </AnimatePresence>
-  </div>
+      </ul>
+    </template>
+  </UPopover>
 </template>
 
 <script setup lang="ts" generic="T">
-import {motion} from "motion-v";
+import type {PopoverProps} from "@nuxt/ui";
 
 const modelQuery = defineModel<string>("query", {default: ""});
 const open = defineModel<boolean>("open", {default: false});
-const {
-  items,
-  filter,
-  base = "",
-} = defineProps<{
+const {items, filter} = defineProps<{
   items: T[];
   filter: (items: T[], query: string) => T[];
-  base?: string;
   searchable?: boolean;
+  content?: PopoverProps["content"];
+  ui?: {list?: string; content?: string};
 }>();
 const emit = defineEmits<{(e: "chose", item: T): void}>();
 const container = ref<HTMLUListElement>();

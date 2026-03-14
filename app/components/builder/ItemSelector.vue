@@ -3,7 +3,7 @@
     ref="selector"
     v-model:open="open"
     v-model:query="query"
-    base="left-0 mt-1"
+    :content="{align: 'start'}"
     :items
     :filter
     @chose="onChoose"
@@ -12,6 +12,7 @@
       v-model="query"
       placeholder="No Item"
       color="error"
+      :class="ui"
       :highlight="!!isIllegal(normalizeName(query))"
       trailing-icon="heroicons:chevron-down-20-solid"
       @focus="open = true"
@@ -45,7 +46,7 @@ import type {PokemonDesc} from "~~/game/pokemon";
 import type {SpeciesId} from "~~/game/species";
 
 const query = defineModel<string>({default: ""});
-const {gen, poke} = defineProps<{gen: Generation; poke: PokemonDesc}>();
+const {gen, poke} = defineProps<{gen: Generation; poke: PokemonDesc; ui?: string}>();
 
 const open = ref(false);
 const items = computed(() => Object.entries(gen.items) as [ItemId, ItemData][]);

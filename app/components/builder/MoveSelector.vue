@@ -3,13 +3,14 @@
     ref="selector"
     v-model:open="open"
     v-model:query="query"
-    base="w-80 right-0 mt-1"
+    :content="{align: 'end'}"
     :items
     :filter
     @chose="onChoose"
   >
     <UInput
       v-model="query"
+      :class="ui"
       placeholder="Add move..."
       color="error"
       :highlight="isIllegal(normalizeName(query)) || hasConflict()"
@@ -69,6 +70,7 @@ const {poke, gen, idx, format} = defineProps<{
   gen: Generation;
   idx: number;
   format: FormatId;
+  ui?: string;
 }>();
 const open = ref(false);
 const species = computed<Species | undefined>(() => gen.speciesList[poke?.speciesId as SpeciesId]);

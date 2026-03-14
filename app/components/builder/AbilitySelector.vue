@@ -3,13 +3,14 @@
     ref="selector"
     v-model:open="open"
     v-model:query="query"
-    base="left-0 mt-1.5 min-w-full"
+    :content="{align: 'start'}"
     :items
     :filter
     @chose="onChoose"
   >
     <UInput
       v-model="query"
+      :class="ui"
       placeholder="No Ability"
       color="error"
       :highlight="isIllegal(normalizeName(query))"
@@ -45,7 +46,7 @@ import {abilityList, type AbilityId, type Species, type SpeciesId} from "~~/game
 type AbilityData = (typeof abilityList)[AbilityId];
 
 const query = defineModel<string>({default: ""});
-const {poke, gen} = defineProps<{poke: PokemonDesc; gen: Generation}>();
+const {poke, gen} = defineProps<{poke: PokemonDesc; gen: Generation; ui?: string}>();
 
 const open = ref(false);
 const items = computed(() => Object.entries(abilityList) as [AbilityId, AbilityData][]);
