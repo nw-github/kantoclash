@@ -1,7 +1,7 @@
 <template>
-  <TouchPopover>
-    <div class="relative">
-      <UButton :icon="formatInfo[format].icon" color="gray" variant="ghost" />
+  <TouchPopover class="w-min">
+    <div class="relative w-min">
+      <UButton :icon="formatInfo[format].icon" color="neutral" variant="ghost" />
       <div class="absolute -bottom-0.5 right-1 text-xs font-medium text-gray-400">
         {{ formatInfo[format].generation }}
       </div>

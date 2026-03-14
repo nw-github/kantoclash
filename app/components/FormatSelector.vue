@@ -2,10 +2,11 @@
   <div class="flex gap-1 w-full">
     <USelectMenu
       v-model="generation"
-      :options="Object.keys(formats[category])"
+      :items="Object.keys(formats[category])"
       :disabled="Object.keys(formats[category]).length <= 1"
+      :search-input="false"
     />
-    <USelectMenu v-model="category" class="w-full" :options="Object.keys(formats)" searchable />
+    <USelectMenu v-model="category" class="w-full" :items="Object.keys(formats)" />
   </div>
 </template>
 

@@ -12,7 +12,7 @@
       <slot></slot>
     </div>
 
-    <template #panel>
+    <template #content>
       <slot name="panel"></slot>
     </template>
   </UPopover>
@@ -20,7 +20,7 @@
 
 <script setup lang="ts">
 const isHovered = ref(false);
-const {delay = 100, disabled} = defineProps<{delay?: number; disabled?: bool}>();
+const {delay = 100, disabled = false} = defineProps<{delay?: number; disabled?: bool}>();
 const open = computed({
   get: () => !disabled && isHovered.value,
   set: val => (isHovered.value = val),

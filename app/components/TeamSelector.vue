@@ -2,16 +2,16 @@
   <div ref="selectTeamMenu">
     <USelectMenu
       v-model="model"
-      searchable
+      class="w-full"
       :placeholder="
         formatInfo[format].needsTeam ? 'Select team...' : 'No team required for this mode...'
       "
-      :options="validTeams"
+      :items="validTeams"
       :disabled="!formatInfo[format].needsTeam || disabled"
       option-attribute="name"
       clear-search-on-close
     >
-      <template #option="{option: team}">
+      <template #item="{item: team}">
         <div>
           <span class="truncate text-xs sm:text-base">{{ team.name }}</span>
 
