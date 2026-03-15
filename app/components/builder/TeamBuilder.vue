@@ -366,17 +366,19 @@
         </UTextarea>
       </div>
     </div>
-    <div v-else class="w-full h-[27.35rem] p-2">
-      <UTextarea
-        v-model="teamText"
-        class="h-full w-full"
-        :ui="{base: 'h-full rounded-lg'}"
-        placeholder="Paste your team here..."
-        variant="none"
-        autofocus
-        autoresize
-      >
-        <div class="absolute top-1 right-4 flex flex-col-reverse">
+    <UTextarea
+      v-else
+      v-model="teamText"
+      class="w-full h-131.5 p-2"
+      :ui="{base: 'h-full rounded-lg'}"
+      placeholder="Paste your team here..."
+      variant="none"
+      autofocus
+      autoresize
+      spellcheck="false"
+    >
+      <template #trailing>
+        <div class="flex flex-col-reverse pr-1">
           <TooltipButton
             text="Save"
             icon="material-symbols:save-outline"
@@ -392,8 +394,8 @@
             @click="() => copyTextArea(teamText)"
           />
         </div>
-      </UTextarea>
-    </div>
+      </template>
+    </UTextarea>
   </UCard>
 </template>
 

@@ -40,7 +40,6 @@
           </div>
         </UScrollArea>
 
-        <!-- TODO: make this better -->
         <div v-if="!filteredItems.length" class="text-center text-sm">
           <slot name="empty">No Items.</slot>
         </div>

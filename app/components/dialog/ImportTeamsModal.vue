@@ -7,6 +7,7 @@
         :placeholder="exportMode ? undefined : 'Paste your team(s) here...'"
         variant="none"
         autoresize
+        spellcheck="false"
       >
         <template #trailing>
           <TooltipButton

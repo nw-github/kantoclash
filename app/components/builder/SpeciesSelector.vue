@@ -1,7 +1,7 @@
 <template>
   <Selector
     v-model:open="open"
-    :ui="{content: 'sm:ml-24', list: 'w-92 sm:w-124 h-68 max-h-full'}"
+    :ui="{content: 'sm:ml-24', list: 'w-92 sm:w-124 max-h-68'}"
     :items
     searchable
     modal
@@ -52,7 +52,9 @@
       </div>
     </template>
 
-    <template #empty>No Pokémon found</template>
+    <template #empty>
+      <div class="pb-1">No Pokémon found</div>
+    </template>
   </Selector>
 </template>
 
