@@ -20,7 +20,7 @@
       </div>
     </div>
     <div v-if="poke.owned && poke.base.transformed" class="pt-1.5 space-y-1.5 w-full">
-      <UProgress :max="poke.base.stats.hp" :value="poke?.base.hp" />
+      <UProgress v-model:model-value="poke.base.hp" :max="poke.base.stats.hp" />
       <div class="flex justify-between gap-4">
         <span>
           {{ poke.base.hp }}/{{ poke.base.stats.hp }} HP ({{ roundTo(poke.base.hpPercent, 2) }}%)
