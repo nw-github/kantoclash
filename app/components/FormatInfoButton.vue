@@ -1,14 +1,19 @@
 <template>
-  <TouchPopover ui2="w-min">
-    <div class="relative w-min">
-      <UButton :icon="formatInfo[format].icon" color="neutral" variant="ghost" />
-      <div class="absolute -bottom-0.5 right-1 text-xs font-medium text-muted">
+  <PopoverButton
+    :ui="{base: 'w-min'}"
+    :icon="formatInfo[format].icon"
+    color="neutral"
+    variant="ghost"
+  >
+    <template #trailing>
+      <span class="text-xs font-medium text-muted">
         {{ formatInfo[format].generation }}
-      </div>
-    </div>
-    <template #panel>
+      </span>
+    </template>
+
+    <template #content>
       <div class="flex flex-col gap-2 p-1 max-w-96">
-        <h1 class="text-xl">{{ formatInfo[format].name }}</h1>
+        <h1 class="text-lg font-bold">{{ formatInfo[format].name }}</h1>
 
         <span>{{ formatInfo[format].desc }}</span>
 
@@ -23,7 +28,7 @@
         </div>
       </div>
     </template>
-  </TouchPopover>
+  </PopoverButton>
 </template>
 
 <script setup lang="ts">

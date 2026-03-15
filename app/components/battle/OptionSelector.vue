@@ -59,13 +59,12 @@
         <template v-for="(poke, i) in players.get(opponent).active.toReversed()" :key="i">
           <SwitchButton
             v-if="poke"
+            popover-disabled
             :poke="poke.base"
-            :disabled="
+            :button-disabled="
               poke.fainted ||
               !currTargets.includes(`${opponent}:${players.get(opponent).active.length - i - 1}`)
             "
-            :active="false"
-            :no-popover="true"
             @click="selectTarget(`${opponent}:${players.get(opponent).active.length - i - 1}`)"
           />
           <div v-else></div>
@@ -73,10 +72,10 @@
         <template v-for="(poke, i) in players.get(myId).active" :key="i">
           <SwitchButton
             v-if="poke"
+            popover-disabled
+            active
             :poke="poke.base"
-            :disabled="poke.fainted || !currTargets.includes(`${myId}:${i}`)"
-            :active="true"
-            :no-popover="true"
+            :button-disabled="poke.fainted || !currTargets.includes(`${myId}:${i}`)"
             @click="selectTarget(`${myId}:${i}`)"
           />
           <div v-else></div>
@@ -104,7 +103,7 @@
           :key="i"
           :poke
           :weather
-          :disabled="!isValidSwitch(currOption, i)"
+          :button-disabled="!isValidSwitch(currOption, i)"
           :active="players.get(myId).active.some(p => p?.indexInTeam === i)"
           @click="selectSwitch(currOption, i)"
         />

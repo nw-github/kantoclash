@@ -1,24 +1,23 @@
 <template>
-  <TouchPopover>
-    <UButton
-      :disabled="!option.valid"
-      class="flex justify-between content-center w-full p-1"
-      color="neutral"
-      variant="subtle"
-      @click="$emit('click')"
-    >
-      <div class="flex items-center">
-        <div class="pl-0.5 pr-1">
-          <TypeBadge :type="info.type" image />
-        </div>
-        <span class="text-sm sm:text-base truncate">{{ move.name }}</span>
+  <PopoverButton
+    :content="{side: 'right'}"
+    :ui="{base: 'flex justify-between content-center w-full h-full p-1'}"
+    :disabled="!option.valid"
+    color="neutral"
+    variant="subtle"
+    @click="$emit('click')"
+  >
+    <div class="flex items-center">
+      <div class="pl-0.5 pr-1">
+        <TypeBadge :type="info.type" image />
       </div>
-      <span class="text-xs">
-        {{ option.pp !== undefined ? option.pp : "--" }}/{{ user.base.gen.getMaxPP(move) }}
-      </span>
-    </UButton>
+      <span class="text-sm sm:text-base truncate">{{ move.name }}</span>
+    </div>
+    <span class="text-xs">
+      {{ option.pp !== undefined ? option.pp : "--" }}/{{ user.base.gen.getMaxPP(move) }}
+    </span>
 
-    <template #panel>
+    <template #content>
       <ul class="list-none p-2 m-0 w-max max-w-[300px]">
         <template v-for="{pow, acc, pokes} in info.powers" :key="pokes">
           <li v-if="displayAgainst && info.powers.length > 1" class="flex gap-1 items-center">
@@ -60,7 +59,7 @@
         </li>
       </ul>
     </template>
-  </TouchPopover>
+  </PopoverButton>
 </template>
 
 <script setup lang="ts">
