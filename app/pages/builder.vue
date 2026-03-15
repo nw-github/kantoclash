@@ -192,7 +192,12 @@ const deleteTeam = (team: Team) => {
 };
 
 const newTeam = (format: FormatId = "g1_standard") => {
-  myTeams.value.unshift({name: "New Team", format, pokemon: [parsePokemon(format, "")]});
+  myTeams.value.unshift({
+    name: "New Team",
+    format,
+    pokemon: [parsePokemon(format, "")],
+    id: crypto.randomUUID(),
+  });
   editTeam(myTeams.value[0]);
 };
 
@@ -206,6 +211,7 @@ const duplicateTeam = (team: Team) => {
   const teamNames = new Set(
     myTeams.value.filter(team => team.name.startsWith(newTeam.name)).map(team => team.name),
   );
+  newTeam.id = crypto.randomUUID();
   for (let i = 1; ; i++) {
     const name = newTeam.name + ` (${i})`;
     if (!teamNames.has(name)) {

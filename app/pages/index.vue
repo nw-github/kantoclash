@@ -216,7 +216,7 @@ const enterMatchmaking = () => {
     team,
     selectedFormat.value,
     challengeUser.value?.id,
-    (err, problems) => enterMMCallback(team, err, problems),
+    (err, problems) => enterMMCallback(team, selectedTeam.value?.id, err, problems),
   );
 };
 
@@ -231,7 +231,7 @@ const respondToChallenge = (accept: bool, challenge: Challenge, selected?: Team)
       challenges.value.splice(idx);
     }
 
-    enterMMCallback(team, err, problems);
+    enterMMCallback(team, selected?.id, err, problems);
   });
 };
 
@@ -268,7 +268,12 @@ const {
 
 const fetchUsers = () => execute();
 
-const enterMMCallback = (team?: PokemonDesc[], err?: MMError, problems?: TeamProblems) => {
+const enterMMCallback = (
+  team?: PokemonDesc[],
+  teamId?: string,
+  err?: MMError,
+  problems?: TeamProblems,
+) => {
   if (!err) {
     return;
   }
@@ -337,6 +342,7 @@ const enterMMCallback = (team?: PokemonDesc[], err?: MMError, problems?: TeamPro
     }
   }
 
-  invalidTeamModal.open({errors: issues});
+  const teamIdx = useMyTeams().value.findIndex(team => team.id === teamId);
+  invalidTeamModal.open({errors: issues, teamIdx});
 };
 </script>

@@ -10,7 +10,7 @@ type WithRequired<T, K extends keyof T> = T & {[P in K]-?: T[P]};
 
 export type TeamPokemonDesc = WithRequired<PokemonDesc, "evs" | "ivs">;
 
-export type Team = {name: string; pokemon: TeamPokemonDesc[]; format: FormatId};
+export type Team = {name: string; pokemon: TeamPokemonDesc[]; format: FormatId; id: string};
 
 export const teamToString = ({name, pokemon, format}: Team) => {
   return `=== [${format}] ${name} ===\n\n` + pokemon.map(p => descToString(format, p)).join("\n");
@@ -270,7 +270,7 @@ export const parseTeams = (src: string) => {
 
       pokemon.push(parsePokemon(format, res[i]));
     }
-    teams.push({name, pokemon, format});
+    teams.push({name, pokemon, format, id: crypto.randomUUID()});
   }
   return teams;
 };

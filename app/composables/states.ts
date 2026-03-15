@@ -16,6 +16,11 @@ export const useMyTeams = () => {
         delete poke.species;
       }
     }
+
+    // Legacy: team.id was added later
+    if (!team.id) {
+      team.id = crypto.randomUUID();
+    }
   }
   return teams;
 };
