@@ -1,15 +1,12 @@
 <template>
-  <PopoverButton
-    :ui="{base: 'w-min'}"
-    :icon="formatInfo[format].icon"
-    color="neutral"
-    variant="ghost"
-  >
-    <template #trailing>
-      <span class="text-xs font-medium text-muted">
-        {{ formatInfo[format].generation }}
-      </span>
-    </template>
+  <UPopover mode="hover">
+    <UButton
+      :ui="{base: 'w-min', label: 'text-xs font-medium text-muted'}"
+      :icon="formatInfo[format].icon"
+      :label="String(formatInfo[format].generation)"
+      color="neutral"
+      variant="ghost"
+    />
 
     <template #content>
       <div class="flex flex-col gap-2 p-1 max-w-96">
@@ -28,7 +25,7 @@
         </div>
       </div>
     </template>
-  </PopoverButton>
+  </UPopover>
 </template>
 
 <script setup lang="ts">
