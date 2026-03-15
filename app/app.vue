@@ -10,14 +10,23 @@
             <UNavigationMenu
               class="hidden md:block"
               orientation="horizontal"
-              :items="links"
+              content-orientation="vertical"
               variant="link"
+              color="neutral"
+              highlight
+              :items="links"
+              :ui="{viewportWrapper: 'z-1000'}"
             />
 
             <UPopover class="block md:hidden">
               <UButton icon="heroicons:bars-3-16-solid" variant="link" color="neutral" />
               <template #content>
-                <UNavigationMenu orientation="vertical" :items="links" />
+                <UNavigationMenu
+                  orientation="vertical"
+                  color="neutral"
+                  :items="links"
+                  :ui="{viewportWrapper: 'z-1000'}"
+                />
               </template>
             </UPopover>
 
@@ -120,7 +129,7 @@ body {
 import {provideSSRWidth} from "@vueuse/core";
 import type {RoomDescriptor} from "~~/server/gameServer";
 import AlertModal from "./components/dialog/AlertModal.vue";
-import type {NavigationMenuItem} from "@nuxt/ui";
+import type {NavigationMenuChildItem, NavigationMenuItem} from "@nuxt/ui";
 
 provideSSRWidth(768);
 
@@ -141,57 +150,68 @@ const accountOpen = ref(false);
 
 const alert = useOverlay().create(AlertModal);
 
-const links = ref<(NavigationMenuItem & {vs?: string})[]>([
+const battleText = (count: number) => {
+  // prettier-ignore
+  switch (count) {
+  case 0: return "No Battles";
+  case 1: return "1 Battle";
+  default: return `${count} Battles`;
+  }
+};
+
+const links = ref<NavigationMenuItem[]>([
   {label: "Home", icon: "heroicons:home", to: "/"},
   {label: "Team Builder", icon: "famicons:hammer-outline", to: "/builder"},
+  {label: battleText(0), icon: "akar-icons:double-sword", disabled: true, children: []},
 ]);
-const nLinks = ref(2);
+const battleLink = computed(() => links.value[2]);
 
 watchImmediate(user, user => {
+  const idx = links.value.findIndex(v => v.to === "/admin");
   if (user?.admin) {
-    links.value.push({
-      label: "Admin Panel",
-      icon: "material-symbols:settings-outline",
-      to: "/admin",
-    });
-    nLinks.value = 3;
-  } else {
-    links.value.splice(2, 1);
-    nLinks.value = 2;
+    if (idx === -1) {
+      links.value.push({
+        label: "Admin Panel",
+        icon: "material-symbols:settings-outline",
+        to: "/admin",
+      });
+    }
+  } else if (idx !== -1) {
+    links.value.splice(idx, 1);
   }
 });
 
-const roomToLink = (room: RoomDescriptor): NavigationMenuItem => {
+const roomToLink = (room: RoomDescriptor): NavigationMenuChildItem => {
   return {
     label: `vs. ${room.battlers.find(b => b.id !== useMyId().value)!.name}`,
     icon: formatInfo[room.format].icon,
     to: "/room/" + room.id,
-    tooltip: {
-      text: room.battlers.map(pl => pl.name).join(" vs. ") + " - " + formatInfo[room.format].name,
-    },
+    description: formatInfo[room.format].name,
   };
 };
 
 const fetchMyRooms = () => {
   if (!user.value) {
-    links.value.splice(nLinks.value, links.value.length - nLinks.value);
     return;
   }
 
   $conn.emit("getPlayerRooms", user.value.id, rooms => {
-    links.value.splice(nLinks.value, links.value.length - nLinks.value);
     if (rooms !== "bad_player") {
-      links.value.push(...rooms.map(roomToLink));
+      battleLink.value.children = rooms.map(roomToLink);
+      battleLink.value.label = battleText(rooms.length);
+      battleLink.value.disabled = !rooms.length;
     }
   });
 };
 
-watch(
+watchImmediate(
   () => route.path,
   path => {
     fetchMyRooms();
 
-    if (!path.startsWith("/room") && !import.meta.dev) {
+    const inRoom = path.startsWith("/room");
+    battleLink.value.active = inRoom;
+    if (!inRoom && !import.meta.dev) {
       currentTrack.value = undefined;
     }
   },
@@ -209,7 +229,10 @@ onMounted(() => {
   $conn.on("foundMatch", roomId => {
     $conn.emit("getRoom", roomId, room => {
       if (room !== "bad_room") {
-        links.value.push(roomToLink(room));
+        const rooms = (battleLink.value.children ??= []);
+        rooms.push(roomToLink(room));
+        battleLink.value.label = battleText(rooms.length);
+        battleLink.value.disabled = !rooms.length;
       }
     });
 
