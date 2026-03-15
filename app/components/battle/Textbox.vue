@@ -55,7 +55,7 @@
             color="neutral"
             variant="ghost"
             label="Players"
-            trailing-icon="heroicons:chevron-down-20-solid"
+            trailing-icon="lucide:chevron-down"
           />
           <template #content>
             <div class="p-2 gap-1 flex flex-col max-h-40 overflow-y-auto">

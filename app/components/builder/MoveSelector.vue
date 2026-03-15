@@ -14,7 +14,7 @@
       placeholder="Add move..."
       color="error"
       :highlight="isIllegal(normalizeName(query)) || hasConflict()"
-      :trailing-icon="trailing ? undefined : 'heroicons:chevron-down-20-solid'"
+      :trailing-icon="trailing ? undefined : 'lucide:chevron-down'"
       @focus="open = true"
       @update:model-value="open = true"
       @keydown.tab="open = false"

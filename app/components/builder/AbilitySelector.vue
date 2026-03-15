@@ -14,7 +14,7 @@
       placeholder="No Ability"
       color="error"
       :highlight="isIllegal(normalizeName(query))"
-      trailing-icon="heroicons:chevron-down-20-solid"
+      trailing-icon="lucide:chevron-down"
       @focus="open = true"
       @update:model-value="open = true"
       @keydown.tab="open = false"
