@@ -4,7 +4,7 @@
       <h1 class="text-2xl text-center pb-5">Your Teams</h1>
       <div class="flex flex-col sm:flex-row gap-1">
         <div class="flex gap-1 w-full">
-          <FormatDropdown v-model="formats" team-only multiple class="w-1/2" placeholder="Format" />
+          <FormatDropdown v-model="formats" team-only multiple class="w-48" placeholder="Format" />
           <UInput
             v-model="query"
             icon="heroicons:magnifying-glass-20-solid"

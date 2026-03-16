@@ -196,9 +196,9 @@ const roomsCols: TableColumn<Room>[] = [
 const onMaintenanceMode = (state: bool) => state && (findingMatch.value = false);
 const onChallengeRejected = () => (findingMatch.value = false);
 
-useTitle("Kanto Clash");
-
 onMounted(() => {
+  useTitle("Kanto Clash");
+
   loadRooms();
   $conn.on("maintenanceState", onMaintenanceMode);
   $conn.on("challengeRejected", onChallengeRejected);

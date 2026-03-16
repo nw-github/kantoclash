@@ -382,7 +382,7 @@
       spellcheck="false"
     >
       <template #trailing>
-        <div class="flex flex-col-reverse pr-1">
+        <div class="flex flex-col-reverse pr-2.5">
           <TooltipButton
             text="Save"
             icon="material-symbols:save-outline"
