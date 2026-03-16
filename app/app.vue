@@ -35,18 +35,7 @@
                   class="animate-pulse size-5 bg-primary"
                 />
               </UTooltip>
-              <ColorScheme>
-                <UButton
-                  color="neutral"
-                  variant="ghost"
-                  :icon="
-                    $colorMode.preference === 'dark' || $colorMode.value === 'dark'
-                      ? 'material-symbols:dark-mode'
-                      : 'material-symbols:light-mode'
-                  "
-                  @click="$colorMode.preference = $colorMode.value === 'dark' ? 'light' : 'dark'"
-                />
-              </ColorScheme>
+              <UColorModeButton />
               <ClientOnly>
                 <UPopover mode="click" :content="{align: 'end'}">
                   <UButton

@@ -40,15 +40,40 @@
     </template>
 
     <div class="flex justify-center h-full">
-      <UEmpty
-        v-if="!filteredTeams.length"
-        icon="heroicons:circle-stack-20-solid"
-        variant="naked"
-        :title="
-          !formats.length && !query ? 'You don\'t have any teams.' : 'No teams match this query.'
-        "
-        :actions="!formats.length && !query ? createEmptyActions : []"
-      />
+      <template v-if="!filteredTeams.length">
+        <UEmpty
+          v-if="formats.length || query"
+          variant="naked"
+          size="sm"
+          icon="heroicons:magnifying-glass-20-solid"
+          title="No battles match this query."
+          :actions="[
+            {
+              label: 'Clear',
+              color: 'neutral',
+              variant: 'subtle',
+              icon: 'lucide:x',
+              onClick: () => void ((formats = []), (query = '')),
+            },
+          ]"
+        />
+        <UEmpty
+          v-else
+          variant="naked"
+          size="sm"
+          icon="heroicons:circle-stack-20-solid"
+          title="You don't have any teams."
+          :actions="[
+            {
+              label: 'Create New',
+              color: 'success',
+              variant: 'subtle',
+              icon: 'heroicons:plus-20-solid',
+              onClick: () => newTeam(),
+            },
+          ]"
+        />
+      </template>
 
       <div class="w-max lg:grid lg:grid-cols-2 lg:gap-x-10">
         <div
@@ -151,16 +176,6 @@ const filteredTeams = computed(() => {
 watch([pageCount, filteredTeams], () => (page.value = 1));
 
 const router = useRouter();
-
-const createEmptyActions = [
-  {
-    label: "Create New",
-    color: "success",
-    variant: "subtle",
-    icon: "heroicons:plus-20-solid",
-    onClick: () => newTeam(),
-  } as const,
-];
 
 onMounted(() => {
   useTitle("Team Builder");

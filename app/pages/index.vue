@@ -108,13 +108,28 @@
 
         <template #empty>
           <UEmpty
+            v-if="filterFormats.length || battleQuery.length"
             variant="naked"
             size="sm"
-            :title="
-              filterFormats.length || battleQuery.length
-                ? 'No battles match this query.'
-                : 'There are currently no active battles. Be the first!'
-            "
+            icon="heroicons:magnifying-glass-20-solid"
+            title="No battles match this query."
+            :actions="[
+              {
+                label: 'Clear',
+                color: 'neutral',
+                variant: 'subtle',
+                icon: 'lucide:x',
+                loading: loadingRooms,
+                onClick: () => void ((filterFormats = []), (battleQuery = '')),
+              },
+            ]"
+          />
+          <UEmpty
+            v-else
+            variant="naked"
+            size="sm"
+            icon="heroicons:circle-stack-20-solid"
+            title="There are currently no active battles. Be the first!"
             :actions="[
               {
                 label: 'Refresh',
