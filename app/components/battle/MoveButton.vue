@@ -2,7 +2,7 @@
   <PopoverButton
     :content="{side: 'right'}"
     :ui="{base: 'flex justify-between content-center w-full h-full p-1'}"
-    :disabled="!option.valid"
+    :button-disabled="!option.valid"
     color="neutral"
     variant="subtle"
     @click="$emit('click')"
