@@ -93,13 +93,14 @@
 
             <UTooltip v-if="textBoxHidden" text="Open Chat" :content="{side: 'top'}">
               <UChip :show="unseenChats !== 0" :text="unseenChats" size="xl" inset>
-                <UButton
-                  ref="menuButton"
-                  icon="material-symbols:chat-outline"
-                  variant="link"
-                  color="neutral"
-                  @click="(slideoverOpen = true), (unseenChats = 0)"
-                />
+                <div ref="menuButton">
+                  <UButton
+                    icon="material-symbols:chat-outline"
+                    variant="link"
+                    color="neutral"
+                    @click="(slideoverOpen = true), (unseenChats = 0)"
+                  />
+                </div>
               </UChip>
             </UTooltip>
           </div>
@@ -270,7 +271,7 @@ const sfxVol = useSfxVolume();
 const {fadeOut} = useBGMusic();
 const isMounted = useMounted();
 const gen = computed(() => GENERATIONS[formatInfo[format].generation]!);
-const isMenuVisible = useElementVisibility(useTemplateRef("menuButton"));
+const isMenuBtnVisible = useElementVisibility(useTemplateRef("menuButton"));
 const unseenChats = ref(0);
 const slideoverOpen = ref(false);
 const smoothScroll = ref(true);
@@ -327,7 +328,7 @@ useIntervalFn(() => {
 useIntervalFn(() => updateMarker.value++, 1000);
 
 watchDeep(chats, () => {
-  if (isMenuVisible.value && !slideoverOpen.value) {
+  if (isMenuBtnVisible.value && !slideoverOpen.value) {
     unseenChats.value++;
   }
 });
