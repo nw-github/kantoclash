@@ -66,6 +66,9 @@ importers:
       '@iconify-json/line-md':
         specifier: ^1.2.16
         version: 1.2.16
+      '@iconify-json/lucide':
+        specifier: ^1.2.98
+        version: 1.2.98
       '@iconify-json/material-symbols':
         specifier: ^1.2.62
         version: 1.2.62
@@ -75,6 +78,9 @@ importers:
       '@iconify-json/mi':
         specifier: ^1.2.2
         version: 1.2.2
+      '@iconify-json/mingcute':
+        specifier: ^1.2.7
+        version: 1.2.7
       '@iconify-json/tabler':
         specifier: ^1.2.31
         version: 1.2.31
@@ -1026,6 +1032,9 @@ packages:
   '@iconify-json/line-md@1.2.16':
     resolution: {integrity: sha512-esHPUQUp30NyqJWa7MNu6ExdG8z/aEFC5r56rVyRGhtJ7acOme6YtYPnDOgVu6p+kk24rM8602xkFuBC6g6x+w==}
 
+  '@iconify-json/lucide@1.2.98':
+    resolution: {integrity: sha512-Lx2464W8Tty/QEnZ2UPb73nPdML/HpGCj0J0w37jP3/jx3l4fniZBjDxe1TgHiIL5XW9QO3vlx53ZQZ5JsNpzQ==}
+
   '@iconify-json/material-symbols@1.2.62':
     resolution: {integrity: sha512-FmAzV8UT7pcH6bv8vJxxFKrf3/ebt/CzpUxljjbWgWw0PjbjUHlkwxmtHTiRNS+MGD7t6ii2JdiDWHdBkvPSpQ==}
 
@@ -1034,6 +1043,9 @@ packages:
 
   '@iconify-json/mi@1.2.2':
     resolution: {integrity: sha512-V5ozqjxK7KtCsynf1A2d6JkvbVvx0t9Bp0IMZmYRrLOkCTxnsBw0692RAlpjKL1tOLrMcevWAta+nrpMZcbDrg==}
+
+  '@iconify-json/mingcute@1.2.7':
+    resolution: {integrity: sha512-bp4z6F53KAQp99aSL7qPCHL7HWUNGMNKIhfo/dx9pwVHiad/WusUbTOFXEZfpA44syJPzSOxa3O6Pwiq7qZz1g==}
 
   '@iconify-json/tabler@1.2.31':
     resolution: {integrity: sha512-Jfcw5TpGhfKKWyz1dGk7e79zIgDmpMKNYL0bjt17sURBPifAxowQcWAzcEhuiWU7FGXUM2NT6UhvACFZp7Hnjw==}
@@ -7009,6 +7021,10 @@ snapshots:
     dependencies:
       '@iconify/types': 2.0.0
 
+  '@iconify-json/lucide@1.2.98':
+    dependencies:
+      '@iconify/types': 2.0.0
+
   '@iconify-json/material-symbols@1.2.62':
     dependencies:
       '@iconify/types': 2.0.0
@@ -7018,6 +7034,10 @@ snapshots:
       '@iconify/types': 2.0.0
 
   '@iconify-json/mi@1.2.2':
+    dependencies:
+      '@iconify/types': 2.0.0
+
+  '@iconify-json/mingcute@1.2.7':
     dependencies:
       '@iconify/types': 2.0.0
 
