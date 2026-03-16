@@ -100,13 +100,6 @@
               }}x {{ statShortName![stage] }}
             </UBadge>
           </template>
-
-          <!-- <UBadge variant="subtle" color="lime" />
-          <UBadge variant="subtle" color="pink" />
-          <UBadge variant="subtle" color="violet" />
-          <UBadge variant="subtle" color="red" />
-          <UBadge variant="subtle" color="yellow" />
-          <UBadge variant="subtle" color="sky" /> -->
         </div>
       </div>
     </div>
