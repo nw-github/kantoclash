@@ -508,12 +508,18 @@ const onRangeInput = (e: Event & {target: HTMLInputElement}, stat: StatId) => {
 const natureDisabled = computed(() => gen.value.id <= 2);
 const friendshipDisabled = computed(() => gen.value.id <= 1);
 const nature = readEmptyIfDisabled(
-  toRef(selectedPoke.value.data, "nature"),
+  computed({
+    get: () => selectedPoke.value.data.nature,
+    set: v => (selectedPoke.value.data.nature = v),
+  }),
   undefined,
   natureDisabled,
 );
 const friendship = readEmptyIfDisabled(
-  toRef(selectedPoke.value.data, "friendship"),
+  computed({
+    get: () => selectedPoke.value.data.friendship,
+    set: v => (selectedPoke.value.data.friendship = v),
+  }),
   undefined,
   friendshipDisabled,
 );
