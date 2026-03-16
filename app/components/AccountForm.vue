@@ -1,5 +1,10 @@
 <template>
-  <UTabs v-model="currentTab" color="neutral" :items>
+  <UTabs
+    v-model="currentTab"
+    color="neutral"
+    :ui="{indicator: 'bg-default', trigger: 'data-[state=active]:text-highlighted'}"
+    :items
+  >
     <template #content="{item}">
       <UCard :ui="{body: 'p-2 sm:p-2'}">
         <UForm ref="form" :schema :state class="divide-y divide-default" @submit="submit">

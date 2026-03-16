@@ -52,7 +52,8 @@
           :ui="{
             root: 'h-full flex',
             list: 'w-min rounded-tl-none rounded-r-none h-full',
-            trigger: 'h-min py-0 px-2',
+            trigger: 'my-0.5 py-0 px-2 hover:data-[state=inactive]:bg-accented',
+            indicator: 'bg-default',
           }"
           :content="false"
         >
@@ -68,6 +69,7 @@
         <UTabs
           v-model="rawSelectedPokeIdx"
           class="px-2 pt-2"
+          :ui="{trigger: 'hover:data-[state=inactive]:bg-accented mx-0.5', indicator: 'bg-default'}"
           :items
           :content="false"
           color="neutral"
