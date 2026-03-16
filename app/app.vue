@@ -12,7 +12,6 @@
               orientation="horizontal"
               content-orientation="vertical"
               variant="link"
-              color="neutral"
               highlight
               :items="links"
               :ui="{viewportWrapper: 'z-1000'}"
@@ -23,7 +22,6 @@
               <template #content>
                 <UNavigationMenu
                   orientation="vertical"
-                  color="neutral"
                   :items="links"
                   :ui="{viewportWrapper: 'z-1000'}"
                 />

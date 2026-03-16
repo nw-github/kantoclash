@@ -86,12 +86,7 @@
         />
       </div>
       <UCheckbox v-model="recentlyPlayed" label="Recently Played" />
-      <UTable
-        :data="filteredRooms"
-        :columns="roomsCols"
-        :loading="loadingRooms"
-        :empty="filterFormats.length || battleQuery.length ? emptyStateFilter : emptyStateEmpty"
-      >
+      <UTable :data="filteredRooms" :columns="roomsCols" :loading="loadingRooms">
         <template #live-cell="{row}">
           <UIcon
             class="size-6"
@@ -109,6 +104,28 @@
             <UIcon :name="formatInfo[row.original.format as FormatId].icon" class="size-5" />
             <span>{{ formatInfo[row.original.format as FormatId].name }}</span>
           </div>
+        </template>
+
+        <template #empty>
+          <UEmpty
+            variant="naked"
+            size="sm"
+            :title="
+              filterFormats.length || battleQuery.length
+                ? 'No battles match this query.'
+                : 'There are currently no active battles. Be the first!'
+            "
+            :actions="[
+              {
+                label: 'Refresh',
+                color: 'neutral',
+                variant: 'subtle',
+                icon: 'material-symbols:refresh',
+                loading: loadingRooms,
+                onClick: loadRooms,
+              },
+            ]"
+          />
         </template>
       </UTable>
     </div>
@@ -160,8 +177,6 @@ const roomsCols: TableColumn<Room>[] = [
   {accessorKey: "type", header: "Type"},
   {accessorKey: "name", header: "Players"},
 ];
-const emptyStateEmpty = "There are currently no active battles. Be the first!";
-const emptyStateFilter = "No battles match this query.";
 
 const onMaintenanceMode = (state: bool) => state && (findingMatch.value = false);
 const onChallengeRejected = () => (findingMatch.value = false);
