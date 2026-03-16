@@ -13,7 +13,8 @@
       placeholder="No Item"
       color="error"
       :class="ui"
-      :highlight="!!isIllegal(normalizeName(query))"
+      :disabled
+      :highlight="!disabled && !!isIllegal(normalizeName(query))"
       trailing-icon="lucide:chevron-down"
       @focus="open = true"
       @update:model-value="open = true"
@@ -45,8 +46,14 @@ import type {ItemData, ItemId} from "~~/game/item";
 import type {PokemonDesc} from "~~/game/pokemon";
 import type {SpeciesId} from "~~/game/species";
 
-const query = defineModel<string>({default: ""});
-const {gen, poke} = defineProps<{gen: Generation; poke: PokemonDesc; ui?: string}>();
+const modelQuery = defineModel<string>({default: ""});
+const {gen, poke, disabled} = defineProps<{
+  gen: Generation;
+  poke: PokemonDesc;
+  ui?: string;
+  disabled?: bool;
+}>();
+const query = readEmptyIfDisabled(modelQuery, "", () => disabled);
 
 const open = ref(false);
 const items = computed(() => Object.entries(gen.items) as [ItemId, ItemData][]);

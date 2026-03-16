@@ -192,16 +192,16 @@
                 :placeholder="selectedPoke.species?.name ?? 'No Name'"
               />
               <ItemSelector
-                v-if="gen.id >= 2"
                 v-model="selectedPoke.data.item"
                 ui="pt-1"
+                :disabled="gen.id <= 1"
                 :poke="selectedPoke.data"
                 :gen
               />
               <AbilitySelector
-                v-if="gen.id >= 3"
                 v-model="selectedPoke.data.ability"
                 ui="pt-1"
+                :disabled="gen.id <= 2"
                 :poke="selectedPoke.data"
                 :gen
               />
@@ -217,25 +217,27 @@
                   :max="format.maxLevel"
                 />
               </div>
-              <div v-if="gen.id > 1" class="flex justify-between items-center">
+              <div class="flex justify-between items-center">
                 <span class="text-sm">Friendship</span>
                 <NumericInput
-                  v-model="selectedPoke.data.friendship"
+                  v-model="friendship"
                   class="w-12"
-                  placeholder="255"
+                  :placeholder="friendshipDisabled ? 'N/A' : '255'"
+                  :disabled="friendshipDisabled"
                   :min="0"
                   :max="255"
                 />
               </div>
-              <div v-if="gen.id >= 3" class="flex justify-between items-center">
+              <div class="flex justify-between items-center">
                 <span class="text-sm">Nature</span>
                 <USelectMenu
-                  v-model="selectedPoke.data.nature"
+                  v-model="nature"
                   class="w-24 sm:w-28"
-                  :items="natures"
-                  placeholder="Hardy"
                   label-key="name"
                   value-key="value"
+                  :items="natures"
+                  :placeholder="natureDisabled ? 'N/A' : 'Hardy'"
+                  :disabled="natureDisabled"
                 >
                   <template #item="{item}">
                     <div class="text-sm">
@@ -296,7 +298,7 @@
                   />
 
                   <span
-                    v-if="gen.id >= 3 && (prevStat ? prevStat === stat : ((natureTable as any)[selectedPoke.data.nature!]?.[stat] > 1))"
+                    v-if="gen.id >= 3 && (prevStat ? prevStat === stat : ((natureTable as any)[nature!]?.[stat] > 1))"
                     class="absolute text-lime-500 -top-2 -right-1 font-bold"
                   >
                     +
@@ -306,7 +308,7 @@
                     class="absolute text-red-500 -top-2 right-0 font-bold"
                     :class="[
                       prevStat && stat !== prevStat && stat !== 'hp' && 'group-hover:visible',
-                      !prevStat && gen.id >= 3 && (natureTable as any)[selectedPoke.data.nature!]?.[stat] < 1 ? 'visible' : 'invisible'
+                      !prevStat && gen.id >= 3 && (natureTable as any)[nature!]?.[stat] < 1 ? 'visible' : 'invisible'
                     ]"
                   >
                     -
@@ -500,6 +502,19 @@ const onRangeInput = (e: Event & {target: HTMLInputElement}, stat: StatId) => {
     e.preventDefault();
   }
 };
+
+const natureDisabled = computed(() => gen.value.id <= 2);
+const friendshipDisabled = computed(() => gen.value.id <= 1);
+const nature = readEmptyIfDisabled(
+  toRef(selectedPoke.value.data, "nature"),
+  undefined,
+  natureDisabled,
+);
+const friendship = readEmptyIfDisabled(
+  toRef(selectedPoke.value.data, "friendship"),
+  undefined,
+  friendshipDisabled,
+);
 
 const selectedTab = ref("0");
 const teamPokepaste = ref(false);

@@ -11,9 +11,10 @@
     <UInput
       v-model="query"
       :class="ui"
+      :disabled
       placeholder="No Ability"
       color="error"
-      :highlight="isIllegal(normalizeName(query))"
+      :highlight="!disabled && isIllegal(normalizeName(query))"
       trailing-icon="lucide:chevron-down"
       @focus="open = true"
       @update:model-value="open = true"
@@ -45,8 +46,15 @@ import {abilityList, type AbilityId, type Species, type SpeciesId} from "~~/game
 
 type AbilityData = (typeof abilityList)[AbilityId];
 
-const query = defineModel<string>({default: ""});
-const {poke, gen} = defineProps<{poke: PokemonDesc; gen: Generation; ui?: string}>();
+const modelQuery = defineModel<string>({default: ""});
+const {poke, gen, disabled} = defineProps<{
+  poke: PokemonDesc;
+  gen: Generation;
+  ui?: string;
+  disabled?: bool;
+}>();
+
+const query = readEmptyIfDisabled(modelQuery, "", () => disabled);
 
 const open = ref(false);
 const items = computed(() => Object.entries(abilityList) as [AbilityId, AbilityData][]);
