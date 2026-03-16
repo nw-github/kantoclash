@@ -1,5 +1,11 @@
 <template>
-  <USelectMenu :items="formats" v-bind="$attrs" value-key="id" />
+  <USelectMenu
+    v-bind="$attrs"
+    value-key="id"
+    :items="formats"
+    :content="{align: 'start'}"
+    :ui="{content: 'min-w-fit'}"
+  />
 </template>
 
 <script setup lang="ts">
