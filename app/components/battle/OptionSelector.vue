@@ -59,7 +59,7 @@
         <template v-for="(poke, i) in players.get(opponent).active.toReversed()" :key="i">
           <SwitchButton
             v-if="poke"
-            popover-disabled
+            :popover-disabled="true"
             :poke="poke.base"
             :button-disabled="
               poke.fainted ||
@@ -72,8 +72,8 @@
         <template v-for="(poke, i) in players.get(myId).active" :key="i">
           <SwitchButton
             v-if="poke"
-            popover-disabled
-            active
+            :popover-disabled="true"
+            :active="true"
             :poke="poke.base"
             :button-disabled="poke.fainted || !currTargets.includes(`${myId}:${i}`)"
             @click="selectTarget(`${myId}:${i}`)"

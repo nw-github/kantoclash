@@ -1,6 +1,6 @@
 <template>
   <PopoverButton
-    :content="{side: 'right'}"
+    :content="{side: lessThanSm ? 'top' : 'right'}"
     :ui="{base: 'flex justify-between content-center w-full h-full p-1'}"
     :button-disabled="!option.valid"
     color="neutral"
@@ -70,7 +70,12 @@ import {MC, type Type, type Weather} from "~~/game/utils";
 import type {ItemData} from "~~/game/item";
 import type {Pokemon} from "~~/game/pokemon";
 
-defineEmits<{(e: "click"): void}>();
+import {breakpointsTailwind} from "@vueuse/core";
+
+defineEmits<{click: []}>();
+
+const breakpoint = useBreakpoints(breakpointsTailwind);
+const lessThanSm = breakpoint.smaller("sm");
 
 const {option, user, weather, opponent} = defineProps<{
   option: MoveOption;
