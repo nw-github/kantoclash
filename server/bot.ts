@@ -50,10 +50,18 @@ export async function startBot(botType: BotType, format?: FormatId) {
 
   const {cookie, myId, name} = result;
 
-  const url = import.meta.dev
-    ? "http://localhost:3000"
-    : process.env.SELF_URL || `https://localhost:${process.env.PORT}`;
-  const $conn: S = io(url, {extraHeaders: {cookie}, secure: !import.meta.dev});
+  let url = process.env.SELF_URL,
+    secure = true;
+  const rejectUnauthorized = !(import.meta.dev && process.env.DEV_HTTPS);
+  const port = process.env.PORT ?? 3000;
+  if (import.meta.dev && !process.env.DEV_HTTPS) {
+    url ??= `http://localhost:${port}`;
+    secure = false;
+  } else {
+    url ??= `https://localhost:${port}`;
+  }
+
+  const $conn: S = io(url, {extraHeaders: {cookie}, secure, rejectUnauthorized});
   const games: Record<string, Game> = {};
   $conn.on("connect", () => {
     activeBots.push(myId);

@@ -5,12 +5,14 @@
   "scripts": {
     "build": "NODE_OPTIONS=--max-old-space-size=4096 nuxt build",
     "dev": "nuxt dev",
+    "dev-https": "DEV_HTTPS=1 PORT=4433 nuxt dev --https --ssl-cert ssl/localhost.pem --ssl-key ssl/localhost.key",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
     "migrate": "drizzle-kit migrate --config drizzle-prod.config.ts",
-    "migrate-dbg": "drizzle-kit generate && drizzle-kit migrate",
-    "typecheck": "nuxt prepare && vue-tsc -b --noEmit"
+    "dev-migrate": "drizzle-kit generate && drizzle-kit migrate",
+    "typecheck": "nuxt prepare && vue-tsc -b --noEmit",
+    "ssl-init": "sh gen-certs.sh"
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.2.17",
