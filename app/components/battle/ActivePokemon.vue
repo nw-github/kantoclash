@@ -106,7 +106,7 @@
 
     <div ref="scope" class="flex flex-col items-center relative">
       <div class="items-center justify-center flex">
-        <PopoverButton :content="{side: 'top'}">
+        <TouchPopover :content="{side: 'top'}">
           <div
             ref="sprite"
             class="sprite relative z-20 flex justify-center h-28 sm:h-56"
@@ -159,7 +159,7 @@
             <PokemonTTContent v-if="poke.owned && !poke.base.transformed" :poke :weather />
             <UnknownPokeTTContent v-else :poke />
           </template>
-        </PopoverButton>
+        </TouchPopover>
 
         <AnimatePresence>
           <motion.div

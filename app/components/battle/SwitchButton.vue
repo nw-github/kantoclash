@@ -1,10 +1,9 @@
 <template>
-  <PopoverButton :popover-disabled :content="{side: 'top'}">
+  <TouchPopover :disabled="popoverDisabled" :content="{side: 'top'}">
     <UButton
+      class="w-full h-full"
       :disabled="buttonDisabled"
-      :content="{side: 'top'}"
       :color="active ? 'info' : 'primary'"
-      :ui="{base: 'w-full h-full'}"
       @click="$emit('click')"
     >
       <div class="w-full space-y-0.5">
@@ -21,7 +20,7 @@
     <template #content>
       <PokemonTTContent :poke :weather />
     </template>
-  </PopoverButton>
+  </TouchPopover>
 </template>
 
 <script setup lang="ts">

@@ -1,5 +1,5 @@
 <template>
-  <UPopover v-model:open="open" :disabled="popoverDisabled" :content>
+  <UPopover v-model:open="open" :disabled :content>
     <template #anchor>
       <div
         ref="element"
@@ -25,16 +25,15 @@ import type {PopoverProps} from "@nuxt/ui";
 
 interface Props {
   delay?: number;
-  popoverDisabled?: bool;
-  buttonDisabled?: bool;
+  disabled?: bool;
   content?: PopoverProps["content"];
   ui?: string;
 }
 
 const isHovered = ref(false);
-const {delay = 100, popoverDisabled} = defineProps<Props>();
+const {delay = 100, disabled} = defineProps<Props>();
 const open = computed({
-  get: () => !popoverDisabled && isHovered.value,
+  get: () => !disabled && isHovered.value,
   set: val => (isHovered.value = val),
 });
 

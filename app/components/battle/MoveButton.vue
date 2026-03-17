@@ -1,11 +1,10 @@
 <template>
-  <PopoverButton :content="{side: lessThanSm ? 'top' : 'right'}" ui="w-full h-full">
+  <TouchPopover :content="{side: lessThanSm ? 'top' : 'right'}" ui="w-full h-full">
     <UButton
+      class="w-full h-full flex justify-between content-center p-1"
       color="neutral"
       variant="subtle"
       :disabled="!option.valid"
-      class="w-full h-full p-1"
-      :ui="{base: 'flex justify-between content-center'}"
       @click="$emit('click')"
     >
       <div class="flex items-center">
@@ -61,7 +60,7 @@
         </li>
       </ul>
     </template>
-  </PopoverButton>
+  </TouchPopover>
 </template>
 
 <script setup lang="ts">
