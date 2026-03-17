@@ -1,5 +1,5 @@
 <template>
-  <UPopover mode="hover">
+  <UPopover>
     <UButton
       :ui="{base: 'w-min', label: 'text-xs font-medium text-muted'}"
       :icon="formatInfo[format].icon"

@@ -14,7 +14,5 @@ export default defineAppConfig({
       "old-emerald": "emerald",
       "old-violet": "violet",
     },
-    // popover: {base: "pointer-coarse:block!"},
-    // tooltip: {base: "pointer-coarse:block!"},
   },
 });

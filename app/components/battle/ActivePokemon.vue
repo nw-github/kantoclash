@@ -106,7 +106,7 @@
 
     <div ref="scope" class="flex flex-col items-center relative">
       <div class="items-center justify-center flex">
-        <UPopover mode="hover" :content="{side: 'top'}">
+        <PopoverButton :content="{side: 'top'}">
           <div
             ref="sprite"
             class="sprite relative z-20 flex justify-center h-28 sm:h-56"
@@ -145,7 +145,7 @@
                   v-if="poke?.v.status === 'slp'"
                   class="absolute size-6 sm:size-10 top-6 z-30 invert dark:invert-0 rotate-180 ml-24"
                   src="/zzz.gif"
-                  alt="confused"
+                  alt="sleeping"
                   :initial="{opacity: 0}"
                   :transition="{duration: 0.2}"
                   :animate="{opacity: 1}"
@@ -159,7 +159,7 @@
             <PokemonTTContent v-if="poke.owned && !poke.base.transformed" :poke :weather />
             <UnknownPokeTTContent v-else :poke />
           </template>
-        </UPopover>
+        </PopoverButton>
 
         <AnimatePresence>
           <motion.div

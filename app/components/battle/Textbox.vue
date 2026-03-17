@@ -50,7 +50,7 @@
           <FormatInfoButton :format />
         </div>
 
-        <UPopover mode="hover" :content="{align: 'end'}">
+        <UPopover :content="{align: 'end'}">
           <UButton
             color="neutral"
             variant="ghost"

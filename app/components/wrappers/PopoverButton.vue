@@ -1,14 +1,9 @@
 <template>
   <UPopover v-model:open="open" :disabled="popoverDisabled" :content>
     <template #anchor>
-      <UButton
+      <div
         ref="element"
-        :color
-        :variant
-        :disabled="buttonDisabled"
-        :ui
-        :icon
-        :class="[isHovered && 'touch-none select-none']"
+        :class="[isHovered && 'touch-none select-none', ui]"
         @touchstart="startTouch"
         @touchend="endTouch"
         @mouseover="isHovered = true"
@@ -16,11 +11,7 @@
         @click="$emit('click')"
       >
         <slot></slot>
-
-        <template #trailing>
-          <slot name="trailing"></slot>
-        </template>
-      </UButton>
+      </div>
     </template>
 
     <template #content>
@@ -30,17 +21,14 @@
 </template>
 
 <script setup lang="ts">
-import type {ButtonProps, PopoverProps} from "@nuxt/ui";
+import type {PopoverProps} from "@nuxt/ui";
 
 interface Props {
   delay?: number;
   popoverDisabled?: bool;
   buttonDisabled?: bool;
   content?: PopoverProps["content"];
-  color?: ButtonProps["color"];
-  variant?: ButtonProps["variant"];
-  ui?: ButtonProps["ui"];
-  icon?: ButtonProps["icon"];
+  ui?: string;
 }
 
 const isHovered = ref(false);
@@ -76,9 +64,9 @@ const startTouch = () => {
 const endTouch = (e: TouchEvent) => {
   clearTimeout(timeout);
   timeout = undefined;
-  if (isHovered.value) {
-    isHovered.value = false;
+  if (isHovered.value && e.cancelable) {
     e.preventDefault();
   }
+  isHovered.value = false;
 };
 </script>
