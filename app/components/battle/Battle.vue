@@ -214,6 +214,7 @@
     <USlideover v-model:open="slideoverOpen">
       <template #content>
         <Textbox
+          class="rounded-none"
           :players
           :chats
           :victor
