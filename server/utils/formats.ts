@@ -82,11 +82,13 @@ export const getRandomPokemon = (
           return true;
         }
 
-        const type = itemData.typeBoost?.type;
+        const typeBoost = itemData.typeBoost;
         if (
-          type &&
-          (!itemData?.typeBoost?.species || itemData.typeBoost.species.includes(id)) &&
-          !poke.moves.some(m => gen.moveList[m].kind === "damage" && gen.moveList[m].type === type)
+          typeBoost &&
+          ((typeBoost.species && !typeBoost.species.includes(id)) ||
+            !poke.moves.some(
+              m => gen.moveList[m].kind === "damage" && gen.moveList[m].type === typeBoost.type,
+            ))
         ) {
           return false;
         }
