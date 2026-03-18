@@ -155,7 +155,7 @@ import type {PokemonDesc} from "~~/game/pokemon";
 import {speciesList, type SpeciesId} from "~~/game/species";
 import type {Battler, Challenge, MMError} from "~~/server/gameServer";
 
-const emit = defineEmits<{(e: "requestLogin"): void}>();
+const emit = defineEmits<{requestLogin: []}>();
 
 const {$conn} = useNuxtApp();
 const {user} = useUserSession();

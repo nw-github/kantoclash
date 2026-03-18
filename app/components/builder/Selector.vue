@@ -67,7 +67,7 @@ const {
   ui?: {list?: string; content?: string};
   virtualize?: ScrollAreaProps["virtualize"];
 }>();
-const emit = defineEmits<{(e: "chose", item: T): void}>();
+const emit = defineEmits<{select: [T]}>();
 const hovered = ref(0);
 const query = useDebounce(modelQuery, 100);
 const queryUnmodified = ref(true);
@@ -131,7 +131,7 @@ const trySetHovered = (offset: number) => {
 
 function select(value: number) {
   if (open.value && filteredItems.value[value]) {
-    emit("chose", filteredItems.value[value]);
+    emit("select", filteredItems.value[value]);
     open.value = false;
   }
 }

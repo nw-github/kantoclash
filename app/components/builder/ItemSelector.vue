@@ -6,7 +6,7 @@
     :items
     :filter
     :virtualize="false"
-    @chose="onChoose"
+    @select="onChoose"
   >
     <UInput
       v-model="query"

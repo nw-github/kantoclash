@@ -251,10 +251,12 @@ const weatherData = {
 } satisfies Record<Weather, any>;
 
 defineEmits<{
-  (e: "chat" | "report", message: string): void;
-  (e: "timer" | "cancel"): void;
-  (e: "choice", choice: Choice): void;
-  (e: "rewind", turn: number): void;
+  chat: [msg: string];
+  report: [msg: string];
+  timer: [];
+  cancel: [];
+  choice: [Choice];
+  rewind: [turn: number];
 }>();
 const {options, players, events, chats, timer, finished, format, ready, myId} = defineProps<{
   options: Partial<Record<number, Options[]>>;

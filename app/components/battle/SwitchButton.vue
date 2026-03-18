@@ -27,7 +27,7 @@
 import type {Pokemon} from "~~/game/pokemon";
 import type {Weather} from "~~/game/utils";
 
-defineEmits<{(e: "click"): void}>();
+defineEmits<{click: []}>();
 const {poke} = defineProps<{
   poke: Pokemon;
   active?: bool;

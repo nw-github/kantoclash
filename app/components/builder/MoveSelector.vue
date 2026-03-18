@@ -6,7 +6,7 @@
     :ui="{list: 'min-w-80'}"
     :items
     :filter
-    @chose="onChoose"
+    @select="onChoose"
   >
     <UInput
       v-model="query"

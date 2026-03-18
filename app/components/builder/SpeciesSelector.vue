@@ -7,7 +7,7 @@
     searchable
     modal
     :filter
-    @chose="onChoose"
+    @select="onChoose"
   >
     <div class="w-full h-full flex items-center justify-center" :class="ui">
       <div
@@ -64,7 +64,7 @@ import type {Species, SpeciesId} from "~~/game/species";
 import type {Generation} from "~~/game/gen1";
 import type {FormId, Gender} from "~~/game/pokemon";
 
-const emit = defineEmits<{(e: "chose", species: Species): void}>();
+const emit = defineEmits<{select: [Species]}>();
 
 const model = defineModel<string>();
 const {team, gen} = defineProps<{
@@ -92,7 +92,7 @@ const filter = (species: [SpeciesId, Species][], query: string) => {
   return subset.length ? subset : all;
 };
 
-const onChoose = ([id, s]: [SpeciesId, Species]) => ((model.value = id), emit("chose", s));
+const onChoose = ([id, s]: [SpeciesId, Species]) => ((model.value = id), emit("select", s));
 
 const isIllegal = (species: Species) => {
   if (!gen.validSpecies(species)) {

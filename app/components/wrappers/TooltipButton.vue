@@ -13,5 +13,5 @@ interface Props extends /* @vue-ignore */ ButtonProps {
 }
 
 defineProps<Props>();
-defineEmits<{(e: "click"): void}>();
+defineEmits<{click: []}>();
 </script>

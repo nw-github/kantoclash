@@ -191,10 +191,7 @@ const props = defineProps<{
   format: FormatId;
   myId: string;
 }>();
-const emit = defineEmits<{
-  (e: "chat" | "report", message: string): void;
-  (e: "forfeit" | "close"): void;
-}>();
+const emit = defineEmits<{chat: [string]; report: [string]; forfeit: []; close: []}>();
 const mutedPlayers = useMutedPlayerIds();
 const message = ref("");
 const scrollPoint = useTemplateRef("scrollPoint");

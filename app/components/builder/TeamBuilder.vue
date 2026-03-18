@@ -180,12 +180,12 @@
                   :gender="currGender.gender"
                   :shiny="gen.getShiny(selectedPoke.data.shiny, ivsToDvs(selectedPoke.data))"
                   :form="gen.getForm(
-                  undefined,
-                  selectedPoke.data.speciesId as SpeciesId,
-                  ivsToDvs(selectedPoke.data),
-                  (selectedPoke.data.item && normalizeName(selectedPoke.data.item)) as ItemId,
-                )"
-                  @chose="onSpeciesChange"
+                    undefined,
+                    selectedPoke.data.speciesId as SpeciesId,
+                    ivsToDvs(selectedPoke.data),
+                    (selectedPoke.data.item && normalizeName(selectedPoke.data.item)) as ItemId,
+                  )"
+                  @select="onSpeciesChange"
                 />
                 <InputWithMax
                   v-model.trim="selectedPoke.data.name"
@@ -423,7 +423,7 @@ import {Nature, natureTable, type FormId} from "~~/game/pokemon";
 import type {ItemId} from "~~/game/item";
 import {defaultCustomize, getRandomPokemon} from "~~/server/utils/formats";
 
-defineEmits<{(e: "delete" | "close"): void}>();
+defineEmits<{delete: []; close: []}>();
 
 const {team} = defineProps<{team: Team}>();
 const toast = useToast();

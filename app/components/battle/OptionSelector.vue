@@ -119,7 +119,7 @@ import type {PokeId} from "~~/game/events";
 import {playerId, type Weather} from "~~/game/utils";
 import {isSpreadMove} from "~~/game/moves";
 
-const emit = defineEmits<{(e: "choice", choice: Choice): void; (e: "cancel"): void}>();
+const emit = defineEmits<{choice: [Choice]; cancel: []}>();
 const {players, myId, options, opponent} = defineProps<{
   players: Players;
   myId: string;
