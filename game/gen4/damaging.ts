@@ -30,7 +30,7 @@ export const tryDamage = (
     }
   };
 
-  const onHit = (type: Type, hadSub: bool) => {
+  const onHit = (type: Type, hadSub: bool, isCrit: bool) => {
     const targetAbility = target.getAbilityId();
     if (
       user.base.item?.kingsRock &&
@@ -45,7 +45,7 @@ export const tryDamage = (
     }
 
     // In Gen IV, Anger Point works even if the crit hits a substitute
-    if (target.base.hp && targetAbility === "angerpoint" && target.v.stages.atk < 6) {
+    if (isCrit && target.base.hp && targetAbility === "angerpoint" && target.v.stages.atk < 6) {
       battle.ability(target);
       battle.info(target, "atk_maximize", target.setStage("atk", +6, battle, false));
       return;
@@ -210,7 +210,7 @@ export const tryDamage = (
       }
 
       if (dealt !== 0) {
-        onHit(type, hadSub);
+        onHit(type, hadSub, isCrit);
       }
       if (dead || user.base.hp === 0) {
         break;
@@ -260,7 +260,7 @@ export const tryDamage = (
       }
 
       if (dealt !== 0) {
-        onHit(type, hadSub);
+        onHit(type, hadSub, isCrit);
 
         if (user.base.status === "slp" && !wasSleeping) {
           break;
@@ -281,7 +281,7 @@ export const tryDamage = (
     ));
 
     if (dmg !== 0) {
-      onHit(type, hadSub);
+      onHit(type, hadSub, isCrit);
     }
   }
 
