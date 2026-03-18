@@ -2721,7 +2721,7 @@ const internalMoveList = createMoveList({
     name: "Pain Split",
     pp: 20,
     acc: 100,
-    type: "ghost",
+    type: "normal",
     range: Range.Adjacent,
     exec(battle, user, [target]) {
       if (target.v.substitute) {
