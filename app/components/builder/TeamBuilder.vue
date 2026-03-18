@@ -1,48 +1,46 @@
 <template>
-  <UCard :ui="{header: 'p-4 sm:p-4', body: 'p-0 sm:p-0 h-152 sm:h-132'}">
-    <template #header>
-      <div class="flex gap-1">
-        <FormatDropdown v-model="team.format" class="w-1/2" placeholder="Format" team-only />
-        <UInput
-          v-model.trim="team.name"
-          :trailing="false"
-          placeholder="Team name"
-          class="w-full"
-          autofocus
+  <div class="divide-y divide-default h-full flex flex-col">
+    <div class="p-4 flex gap-1">
+      <FormatDropdown v-model="team.format" class="w-1/2" placeholder="Format" team-only />
+      <UInput
+        v-model.trim="team.name"
+        :trailing="false"
+        placeholder="Team name"
+        class="w-full"
+        autofocus
+      />
+
+      <div class="flex gap-0.5">
+        <TooltipButton
+          :key="+teamPokepaste"
+          :text="teamPokepaste ? 'Team Edit' : 'Team PokePaste'"
+          :icon="
+            teamPokepaste
+              ? 'material-symbols:edit-square-outline'
+              : 'material-symbols:content-paste'
+          "
+          color="neutral"
+          variant="ghost"
+          @click="() => void (teamPokepaste = !teamPokepaste)"
         />
-
-        <div class="flex gap-0.5">
-          <TooltipButton
-            :key="+teamPokepaste"
-            :text="teamPokepaste ? 'Team Edit' : 'Team PokePaste'"
-            :icon="
-              teamPokepaste
-                ? 'material-symbols:edit-square-outline'
-                : 'material-symbols:content-paste'
-            "
-            color="neutral"
-            variant="ghost"
-            @click="() => void (teamPokepaste = !teamPokepaste)"
-          />
-          <TooltipButton
-            text="Delete Team"
-            icon="material-symbols:delete-outline"
-            color="error"
-            variant="ghost"
-            @click="() => $emit('delete')"
-          />
-          <TooltipButton
-            text="Close"
-            icon="material-symbols:close"
-            color="error"
-            variant="ghost"
-            @click="() => $emit('close')"
-          />
-        </div>
+        <TooltipButton
+          text="Delete Team"
+          icon="material-symbols:delete-outline"
+          color="error"
+          variant="ghost"
+          @click="() => $emit('delete')"
+        />
+        <TooltipButton
+          text="Close"
+          icon="material-symbols:close"
+          color="error"
+          variant="ghost"
+          @click="() => $emit('close')"
+        />
       </div>
-    </template>
+    </div>
 
-    <div v-if="!teamPokepaste" class="w-full h-full flex flex-col sm:flex-row">
+    <div v-if="!teamPokepaste" class="w-full h-full flex flex-col sm:flex-row overflow-hidden">
       <div class="hidden sm:block">
         <UTabs
           v-model="rawSelectedPokeIdx"
@@ -69,7 +67,10 @@
         <UTabs
           v-model="rawSelectedPokeIdx"
           class="px-2 pt-2"
-          :ui="{trigger: 'hover:data-[state=inactive]:bg-accented mx-0.5', indicator: 'bg-default'}"
+          :ui="{
+            trigger: 'hover:data-[state=inactive]:bg-accented mx-0.5',
+            indicator: 'bg-default',
+          }"
           :items
           :content="false"
           color="neutral"
@@ -86,7 +87,10 @@
         v-model="selectedTab"
         variant="link"
         color="neutral"
-        :ui="{root: 'h-full w-full px-2 pb-2 pt-1', content: 'h-full'}"
+        :ui="{
+          root: 'h-full w-full px-2 pb-2 pt-1 overflow-hidden',
+          content: 'h-full overflow-hidden',
+        }"
         :items="[
           {label: 'Edit', icon: 'material-symbols:edit-square-outline', slot: 'edit' as const},
           {label: 'PokéPaste', icon: 'material-symbols:content-paste', slot: 'pokepaste' as const},
@@ -122,9 +126,7 @@
         </template>
 
         <template #edit>
-          <div
-            class="h-full flex flex-col gap-2 justify-between p-2 sm:p-2 ring ring-default rounded-md"
-          >
+          <div class="h-full flex flex-col gap-2 justify-between p-1 rounded-md overflow-y-auto">
             <div class="flex gap-2">
               <div class="flex flex-col relative grow">
                 <div class="absolute p-1 flex flex-col gap-1 z-10">
@@ -335,13 +337,15 @@
         <template #pokepaste>
           <UTextarea
             v-model="currentPokeText"
-            :ui="{root: 'w-full h-full', base: 'h-full'}"
+            class="w-full h-full overflow-y-auto"
+            :ui="{base: 'h-full', trailing: 'pointer-events-none'}"
+            variant="none"
             autofocus
             autoresize
             spellcheck="false"
           >
             <template #trailing>
-              <div class="flex flex-col-reverse">
+              <div class="flex flex-col-reverse pointer-events-auto mr-1.5">
                 <TooltipButton
                   text="Save"
                   icon="material-symbols:save-outline"
@@ -373,8 +377,8 @@
     <UTextarea
       v-else
       v-model="teamText"
-      class="w-full h-full p-2"
-      :ui="{base: 'h-full rounded-lg'}"
+      class="w-full h-full p-2 overflow-y-auto"
+      :ui="{base: 'h-full', trailing: 'pointer-events-none'}"
       placeholder="Paste your team here..."
       variant="none"
       autofocus
@@ -382,7 +386,7 @@
       spellcheck="false"
     >
       <template #trailing>
-        <div class="flex flex-col-reverse pr-2.5">
+        <div class="flex flex-col-reverse pointer-events-auto mr-2.5">
           <TooltipButton
             text="Save"
             icon="material-symbols:save-outline"
@@ -400,7 +404,7 @@
         </div>
       </template>
     </UTextarea>
-  </UCard>
+  </div>
 </template>
 
 <script setup lang="ts">
