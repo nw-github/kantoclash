@@ -1,7 +1,7 @@
 <template>
   <TouchPopover :disabled="popoverDisabled" :content="{side: 'top'}">
     <UButton
-      class="w-full h-full"
+      class="w-full"
       :disabled="buttonDisabled"
       :color="active ? 'info' : 'primary'"
       @click="$emit('click')"

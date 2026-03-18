@@ -1,7 +1,7 @@
 <template>
-  <TouchPopover :content="{side: lessThanSm ? 'top' : 'right'}" ui="w-full h-full">
+  <TouchPopover :content="{side: lessThanSm ? 'top' : 'right'}">
     <UButton
-      class="w-full h-full flex justify-between content-center p-1"
+      class="w-full flex justify-between p-1"
       color="neutral"
       variant="subtle"
       :disabled="!option.valid"

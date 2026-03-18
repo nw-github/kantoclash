@@ -97,7 +97,7 @@
         </template>
       </div>
 
-      <div class="grid grid-cols-2 gap-1 sm:gap-2 items-center">
+      <div class="grid grid-cols-2 gap-1 sm:gap-2 h-fit">
         <SwitchButton
           v-for="(poke, i) in team"
           :key="i"
