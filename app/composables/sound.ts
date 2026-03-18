@@ -83,7 +83,7 @@ export const useAudio = (sounds: Record<string, {src: string; sprites?: Sprites}
 
   const play = (name: string, opts: {sprite?: string; volume?: number; detune?: number}) => {
     const audio = saved[name];
-    if (!context || !audio || !mounted) {
+    if (!context || !context.unlocked || !audio || !mounted) {
       return;
     }
 
