@@ -50,35 +50,44 @@
           <FormatInfoButton :format />
         </div>
 
-        <UPopover :content="{align: 'end'}">
+        <UPopover
+          :content="{align: 'end'}"
+          :ui="{content: 'p-2 gap-1 flex flex-col max-h-40 overflow-y-auto overflow-x-hidden w-64'}"
+        >
           <UButton
             color="neutral"
             variant="ghost"
             label="Players"
             trailing-icon="lucide:chevron-down"
           />
+
           <template #content>
-            <div class="p-2 gap-1 flex flex-col max-h-40 overflow-y-auto">
-              <UChip
-                v-for="(player, id) in players.items"
-                :key="id"
-                :color="player.connected ? 'success' : 'error'"
-                class="text-left"
-                :ui="{root: 'justify-between'}"
-              >
-                <span class="px-2">{{ playerInfo(player, id) }}</span>
-                <TooltipButton
-                  :text="`${mutedPlayers.includes(id) ? 'Unmute' : 'Mute'} this player`"
-                  color="neutral"
-                  variant="ghost"
-                  :icon="
-                    mutedPlayers.includes(id)
-                      ? 'material-symbols:volume-off-outline-rounded'
-                      : 'material-symbols:volume-up-outline-rounded'
-                  "
-                  @click="() => toggleMute(id)"
-                />
+            <div
+              v-for="(player, id) in players.items"
+              :key="id"
+              class="flex justify-between items-center w-full"
+            >
+              <UChip :color="player.connected ? 'success' : 'error'">
+                <UTooltip
+                  :text="`${playerInfo(player, id)} (${player.connected ? 'Online' : 'Offline'})`"
+                >
+                  <span class="max-w-36 truncate pr-2 hover:underline hover:decoration-dotted">
+                    {{ playerInfo(player, id) }}
+                  </span>
+                </UTooltip>
               </UChip>
+
+              <UButton
+                :label="mutedPlayers.includes(id) ? 'Unmute' : 'Mute'"
+                color="neutral"
+                variant="outline"
+                :icon="
+                  mutedPlayers.includes(id)
+                    ? 'material-symbols:volume-off-outline-rounded'
+                    : 'material-symbols:volume-up-outline-rounded'
+                "
+                @click="toggleMute(id)"
+              />
             </div>
           </template>
         </UPopover>
