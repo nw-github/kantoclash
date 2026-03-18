@@ -2,6 +2,7 @@
   <Selector
     v-model:open="open"
     :ui="{content: 'sm:ml-24', list: 'w-92 sm:w-124 max-h-68'}"
+    :content="{sideFlip: false}"
     :items
     searchable
     modal

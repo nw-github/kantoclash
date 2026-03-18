@@ -2,7 +2,7 @@
   <UPopover
     v-model:open="open"
     :dismissible="false"
-    :ui="{content: 'p-0 -mt-1.5 rounded-md ring ring-default shadow-lg bg ' + (ui?.content ?? '')}"
+    :ui="{content: 'p-0 rounded-md ring ring-default shadow-lg bg ' + (ui?.content ?? '')}"
     :content
   >
     <template #anchor>
@@ -50,12 +50,14 @@
 
 <script setup lang="ts" generic="T">
 import type {PopoverProps, ScrollAreaProps} from "@nuxt/ui";
+import defu from "defu";
 
 const modelQuery = defineModel<string>("query", {default: ""});
 const open = defineModel<boolean>("open", {default: false});
 const {
   items,
   filter,
+  content: _content,
   virtualize = true,
 } = defineProps<{
   items: T[];
@@ -69,6 +71,14 @@ const emit = defineEmits<{(e: "chose", item: T): void}>();
 const hovered = ref(0);
 const query = useDebounce(modelQuery, 100);
 const queryUnmodified = ref(true);
+
+const content = computed(() =>
+  defu(_content, {
+    disableUpdateOnLayoutShift: true,
+    side: "bottom" as const,
+    sideOffset: 1,
+  }),
+);
 
 watch(open, isOpen => {
   if (isOpen && filteredItems.value.length) {
