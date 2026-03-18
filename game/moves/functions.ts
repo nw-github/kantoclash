@@ -254,10 +254,8 @@ export const moveFunctions: MoveFunctions = {
       user.v.bide = undefined;
     } else if (user.v.inBatonPass) {
       battle.checkFaint(user);
-      if (battle.victor) {
+      if (battle.finished) {
         user.v.inBatonPass = undefined;
-      } else {
-        battle.info(user, "uturn");
       }
     }
   },

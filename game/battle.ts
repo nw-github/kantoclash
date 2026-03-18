@@ -346,23 +346,8 @@ export class Battle {
       this.turnOrder = this.calcTurnOrder();
       for (let i = 0; i < this.turnOrder.length; i++) {
         const user = this.turnOrder[i];
-        const {move, target, executed} = user.choice!;
-        if (executed) {
-          continue;
-        }
-
-        if (move.kind !== "protect") {
+        if (user.choice?.move.kind !== "protect") {
           user.v.protectCount = 0;
-        }
-
-        if (
-          move === this.gen.moveList.pursuit &&
-          target?.choice?.move?.kind === "switch" &&
-          target.owner !== user.owner
-        ) {
-          debugLog(user.base.name + " is pursuing ", target.base.name);
-          this.turnOrder.splice(this.turnOrder.indexOf(target), 0, ...this.turnOrder.splice(i, 1));
-          user.v.inPursuit = true;
         }
       }
     } else if (this.turnType !== TurnType.Normal) {
@@ -620,27 +605,13 @@ export class Battle {
   // --
 
   private runTurn(normal: bool) {
-    if (normal) {
-      for (const poke of this.switchOrder()) {
-        if (poke.choice?.move === this.gen.moveList.focuspunch) {
-          this.info(poke, "begin_focuspunch");
-        }
-      }
-    }
-
-    for (const user of this.turnOrder) {
-      if (!user.choice || user.choice.executed) {
-        continue;
-      }
-
+    const execChoice = (user: ActivePokemon) => {
       // eslint-disable-next-line prefer-const
-      let {move, target, indexInMoves, isReplacement} = user.choice;
+      let {move, target, indexInMoves, isReplacement} = user.choice!;
 
-      user.choice.executed = true;
+      user.choice!.executed = true;
       if (user.v.fainted && move.kind !== "switch") {
-        continue;
-      } else if (this.finished) {
-        break;
+        return;
       }
 
       if (user.v.hasFlag(VF.destinyBond | VF.grudge)) {
@@ -652,17 +623,13 @@ export class Battle {
         move = this.gen.moveList[user.base.moves[user.v.encore.indexInMoves]];
       }
 
-      if (user.v.inPursuit && target && !target.v.fainted) {
-        this.info(target, "withdraw");
-      }
-
       if (move.kind !== "switch" && !this.gen.beforeUseMove(this, move, user)) {
         if (this.gen.afterBeforeUseMove(this, user)) {
-          return;
+          return true;
         }
 
         user.v.protectCount = 0;
-        continue;
+        return;
       }
 
       if (user.v.encore) {
@@ -670,12 +637,81 @@ export class Battle {
       } else {
         this.useMove(move, user, target ? [target] : [], indexInMoves);
       }
+
       if (this.gen.afterUseMove(this, user, isReplacement)) {
+        return true;
+      }
+    };
+
+    const checkPursuit = (user: ActivePokemon) => {
+      const pursuers = this.turnOrder.filter(pursuer => {
+        return (
+          !pursuer.v.fainted &&
+          user.owner !== pursuer.owner &&
+          pursuer.choice &&
+          !pursuer.choice.executed &&
+          pursuer.choice.move === this.gen.moveList.pursuit &&
+          (pursuer.choice.target === user || this.gen.id >= 4) // In Gen 4+, pursuit will retarget itself to hit a switching opponent
+        );
+      });
+      if (pursuers.length) {
+        this.info(user, "withdraw");
+      }
+
+      for (const pursuer of pursuers) {
+        debugLog(`${pursuer.base.name} is pursuing ${user.base.name}`);
+        pursuer.v.inPursuit = true;
+        pursuer.choice!.target = user;
+        if (execChoice(pursuer)) {
+          return "exit";
+        } else if (user.v.fainted && (this.gen.id >= 5 || user.v.inBatonPass)) {
+          // Before Gen 5, switches continue even if the pursuited pokemon faints
+          return "next";
+        }
+      }
+    };
+
+    if (normal) {
+      for (const poke of this.switchOrder()) {
+        if (poke.choice?.move === this.gen.moveList.focuspunch) {
+          this.info(poke, "begin_focuspunch");
+        }
+      }
+    }
+
+    for (const user of this.turnOrder) {
+      if (this.finished) {
+        return;
+      } else if (!user.choice || user.choice.executed) {
+        continue;
+      }
+
+      if (user.choice.move.kind === "switch" && !user.v.inBatonPass) {
+        const res = checkPursuit(user);
+        if (res === "exit") {
+          return;
+        } else if (res === "next") {
+          continue;
+        }
+      }
+
+      if (execChoice(user)) {
+        if (!user.v.fainted && user.v.inBatonPass === "uturn") {
+          const res = checkPursuit(user);
+          if (res === "next") {
+            continue;
+          } else if (!res) {
+            this.info(user, "uturn");
+          }
+        }
+
         return;
       }
     }
 
-    this.gen.betweenTurns(this);
+    if (!this.finished) {
+      this.gen.betweenTurns(this);
+    }
   }
 
   useMove(
