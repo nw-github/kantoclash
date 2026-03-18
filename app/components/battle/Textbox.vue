@@ -1,9 +1,10 @@
 <template>
   <UCard
-    class="h-full w-full flex flex-col"
     :ui="{
-      body: {base: 'grow overflow-auto', padding: 'p-0 sm:p-0'},
-      header: {padding: 'p-1 sm:p-1'},
+      root: 'h-full w-full flex flex-col',
+      body: 'grow overflow-auto p-0 sm:p-0',
+      header: 'p-1 sm:p-1',
+      footer: 'p-2 sm:p-2',
     }"
   >
     <template #header>
@@ -12,35 +13,35 @@
           <TooltipButton
             v-if="closable"
             text="Close"
-            :popper="{placement: 'top'}"
+            :content="{side: 'top'}"
             icon="material-symbols:close"
             variant="link"
-            color="gray"
+            color="neutral"
             size="lg"
-            @click="$emit('close')"
+            @click="() => $emit('close')"
           />
           <TooltipButton
             text="Forfeit"
-            :popper="{placement: 'top'}"
+            :content="{side: 'top'}"
             icon="material-symbols:flag-rounded"
             variant="link"
-            color="red"
+            color="error"
             size="lg"
             :disabled="!players.get(myId) || players.get(myId).isSpectator || !!victor"
-            @click="forfeitModalOpen = true"
+            @click="openForfeitModal"
           />
           <TooltipButton
             text="Report Bug"
-            :popper="{placement: 'top'}"
+            :content="{side: 'top'}"
             icon="material-symbols:bug-report"
             variant="link"
-            color="gray"
+            color="neutral"
             size="lg"
-            @click="reportModalOpen = true"
+            @click="openReportModal"
           />
           <!-- <TooltipButton
             text="Open Calculator"
-            :popper="{ placement: 'top' }"
+            :content="{side: 'top'}"
             icon="iconamoon:calculator-light"
             variant="ghost"
             color="gray"
@@ -49,35 +50,44 @@
           <FormatInfoButton :format />
         </div>
 
-        <UPopover mode="hover" :popper="{placement: 'bottom-end'}">
+        <UPopover
+          :content="{align: 'end'}"
+          :ui="{content: 'p-2 gap-1 flex flex-col max-h-40 overflow-y-auto overflow-x-hidden w-64'}"
+        >
           <UButton
-            color="white"
+            color="neutral"
             variant="ghost"
             label="Players"
-            trailing-icon="heroicons:chevron-down-20-solid"
+            trailing-icon="lucide:chevron-down"
           />
-          <template #panel>
-            <div class="p-2 gap-1 flex flex-col max-h-40 overflow-y-auto">
-              <UChip
-                v-for="(player, id) in players.items"
-                :key="id"
-                :color="player.connected ? 'lime' : 'red'"
-                class="text-left"
-                :ui="{wrapper: 'justify-between'}"
-              >
-                <span class="px-2">{{ playerInfo(player, id) }}</span>
-                <TooltipButton
-                  :text="`${mutedPlayers.includes(id) ? 'Unmute' : 'Mute'} this player`"
-                  color="gray"
-                  variant="ghost"
-                  :icon="
-                    mutedPlayers.includes(id)
-                      ? 'material-symbols:volume-off-outline-rounded'
-                      : 'material-symbols:volume-up-outline-rounded'
-                  "
-                  @click="toggleMute(id)"
-                />
+
+          <template #content>
+            <div
+              v-for="(player, id) in players.items"
+              :key="id"
+              class="flex justify-between items-center w-full"
+            >
+              <UChip :color="player.connected ? 'success' : 'error'">
+                <UTooltip
+                  :text="`${playerInfo(player, id)} (${player.connected ? 'Online' : 'Offline'})`"
+                >
+                  <span class="max-w-36 truncate pr-2 hover:underline hover:decoration-dotted">
+                    {{ playerInfo(player, id) }}
+                  </span>
+                </UTooltip>
               </UChip>
+
+              <UButton
+                :label="mutedPlayers.includes(id) ? 'Unmute' : 'Mute'"
+                color="neutral"
+                variant="outline"
+                :icon="
+                  mutedPlayers.includes(id)
+                    ? 'material-symbols:volume-off-outline-rounded'
+                    : 'material-symbols:volume-up-outline-rounded'
+                "
+                @click="toggleMute(id)"
+              />
             </div>
           </template>
         </UPopover>
@@ -86,7 +96,7 @@
 
     <template #default>
       <template v-for="(turn, i) in turns" :key="i">
-        <div v-if="i" class="bg-gray-300 dark:bg-gray-700 w-full px-1 py-0.5">
+        <div v-if="i" class="bg-accented w-full px-1 py-0.5">
           <h2 class="text-xl font-bold">Turn {{ i }}</h2>
         </div>
         <div class="events p-1">
@@ -111,58 +121,32 @@
     </template>
 
     <template #footer>
-      <div class="relative">
-        <UInput
-          v-model="message"
-          placeholder="Send a message..."
-          :disabled="!myId"
-          :maxlength="CHAT_MAX_MESSAGE"
-          @keyup.enter="sendMessage"
-        >
-          <template #trailing>
-            <div class="w-3" />
-          </template>
-        </UInput>
-
-        <UButton
-          class="absolute top-1/2 right-2 -translate-y-1/2"
-          icon="material-symbols:send"
-          variant="link"
-          color="gray"
-          :padded="false"
-          :disabled="!message"
-          @click="sendMessage"
-        />
-      </div>
+      <UInput
+        v-model="message"
+        class="w-full"
+        placeholder="Send a message..."
+        :disabled="!myId"
+        :maxlength="CHAT_MAX_MESSAGE"
+        @keyup.enter="sendMessage"
+      >
+        <template #trailing>
+          <UButton
+            icon="material-symbols:send"
+            variant="link"
+            color="neutral"
+            :padded="false"
+            :disabled="!message"
+            @click="sendMessage"
+          />
+        </template>
+      </UInput>
     </template>
   </UCard>
-
-  <UModal v-model="forfeitModalOpen">
-    <UAlert
-      title="Are you sure?"
-      description="You are about to forfeit the match."
-      icon="material-symbols:error-circle-rounded-outline-sharp"
-      :actions="[
-        {
-          variant: 'solid',
-          color: 'primary',
-          label: 'Forfeit',
-          click: () => ((forfeitModalOpen = false), $emit('forfeit')),
-        },
-        {
-          variant: 'outline',
-          color: 'primary',
-          label: 'Cancel',
-          click: () => (forfeitModalOpen = false),
-        },
-      ]"
-    />
-  </UModal>
-
-  <ReportModal v-model="reportModalOpen" @submit="$emit('report', $event)" />
 </template>
 
 <style>
+@reference "@/assets/main.css";
+
 .events {
   .move,
   .charge,
@@ -183,7 +167,7 @@
   }
 
   .muted {
-    @apply text-gray-600 dark:text-gray-400;
+    @apply text-muted;
   }
 }
 </style>
@@ -193,6 +177,8 @@ import {useMutedPlayerIds} from "~/composables/states";
 import {GENERATIONS} from "~~/game/gen";
 import type {InfoRecord} from "~~/server/gameServer";
 import {until} from "@vueuse/core";
+import AlertModal from "~/components/dialog/AlertModal.vue";
+import ReportModal from "~/components/dialog/ReportModal.vue";
 
 const props = defineProps<{
   turns: UIBattleEvent[][];
@@ -211,10 +197,12 @@ const emit = defineEmits<{
 }>();
 const mutedPlayers = useMutedPlayerIds();
 const message = ref("");
-const scrollPoint = ref<HTMLDivElement>();
-const forfeitModalOpen = ref(false);
-const reportModalOpen = ref(false);
+const scrollPoint = useTemplateRef("scrollPoint");
 const gen = computed(() => GENERATIONS[formatInfo[props.format].generation]!);
+
+const overlay = useOverlay();
+const forfeitModal = overlay.create(AlertModal);
+const reportModal = overlay.create(ReportModal);
 
 let lastScroll = 0;
 onMounted(async () => {
@@ -266,6 +254,37 @@ const tryScroll = async () => {
     block: "center",
     inline: "center",
   });
+};
+
+const openForfeitModal = () => {
+  forfeitModal.open({
+    title: "Are you sure?",
+    description: "You are about to forfeit the match.",
+    icon: "material-symbols:error-circle-rounded-outline-sharp",
+    variant: "outline",
+    color: "neutral",
+    actions: [
+      {
+        variant: "solid",
+        color: "primary",
+        label: "Forfeit",
+        onClick: () => (forfeitModal.close(), emit("forfeit")),
+      },
+      {
+        variant: "outline",
+        color: "primary",
+        label: "Cancel",
+        onClick: () => forfeitModal.close(),
+      },
+    ],
+  });
+};
+
+const openReportModal = async () => {
+  const message = await reportModal.open({});
+  if (message) {
+    emit("report", message);
+  }
 };
 
 watch(props.chats, tryScroll);

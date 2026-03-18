@@ -1,66 +1,62 @@
 <template>
-  <UCard :ui="{header: {padding: 'p-4 sm:p-4'}, body: {padding: 'p-0 sm:p-0'}}">
-    <template #header>
-      <div class="flex gap-1">
-        <FormatDropdown v-model="team.format" class="w-1/2" placeholder="Format" team-only />
-        <UInput
-          v-model.trim="team.name"
-          :trailing="false"
-          placeholder="Team name"
-          class="w-full"
-          autofocus
+  <div class="divide-y divide-default h-full flex flex-col">
+    <div class="p-4 flex gap-1">
+      <FormatDropdown v-model="team.format" class="w-1/2" placeholder="Format" team-only />
+      <UInput
+        v-model.trim="team.name"
+        :trailing="false"
+        placeholder="Team name"
+        class="w-full"
+        autofocus
+      />
+
+      <div class="flex gap-0.5">
+        <TooltipButton
+          :key="+teamPokepaste"
+          :text="teamPokepaste ? 'Team Edit' : 'Team PokePaste'"
+          :icon="
+            teamPokepaste
+              ? 'material-symbols:edit-square-outline'
+              : 'material-symbols:content-paste'
+          "
+          color="neutral"
+          variant="ghost"
+          @click="() => void (teamPokepaste = !teamPokepaste)"
         />
-
-        <div class="flex gap-0.5">
-          <!-- <UButton icon="material-symbols:save-outline" color="gray" variant="ghost" /> -->
-          <TooltipButton
-            :key="+teamPokepaste"
-            :text="teamPokepaste ? 'Team Edit' : 'Team PokePaste'"
-            :icon="
-              teamPokepaste
-                ? 'material-symbols:edit-square-outline'
-                : 'material-symbols:content-paste'
-            "
-            color="gray"
-            variant="ghost"
-            @click="teamPokepaste = !teamPokepaste"
-          />
-          <TooltipButton
-            text="Delete Team"
-            icon="material-symbols:delete-outline"
-            color="red"
-            variant="ghost"
-            @click="$emit('delete')"
-          />
-          <TooltipButton
-            text="Close"
-            icon="material-symbols:close"
-            color="red"
-            variant="ghost"
-            @click="$emit('close')"
-          />
-        </div>
+        <TooltipButton
+          text="Delete Team"
+          icon="material-symbols:delete-outline"
+          color="error"
+          variant="ghost"
+          @click="() => $emit('delete')"
+        />
+        <TooltipButton
+          text="Close"
+          icon="material-symbols:close"
+          color="error"
+          variant="ghost"
+          @click="() => $emit('close')"
+        />
       </div>
-    </template>
+    </div>
 
-    <div v-if="!teamPokepaste" class="w-full h-full flex flex-col sm:flex-row">
+    <div v-if="!teamPokepaste" class="w-full h-full flex flex-col sm:flex-row overflow-hidden">
       <div class="hidden sm:block">
         <UTabs
-          v-model="selectedPokeIdx"
+          v-model="rawSelectedPokeIdx"
           orientation="vertical"
+          color="neutral"
           :items
           :ui="{
-            wrapper: 'h-full flex',
-            container: 'hidden',
-            list: {
-              width: 'w-min',
-              rounded: 'rounded-tl-none rounded-r-none',
-              tab: {height: 'h-min'},
-            },
+            root: 'h-full flex',
+            list: 'w-min rounded-tl-none rounded-r-none h-full',
+            trigger: 'my-0.5 py-0 px-2 hover:data-[state=inactive]:bg-accented',
+            indicator: 'bg-default',
           }"
+          :content="false"
         >
           <template #default="{item}">
-            <div class="size-[64px] m-1">
+            <div class="size-[64px] m-1 flex items-center">
               <BoxSprite :species-id="item.speciesId" :scale="2" :form="item.form" />
             </div>
           </template>
@@ -68,50 +64,45 @@
       </div>
 
       <div class="block sm:hidden">
-        <UTabs v-model="selectedPokeIdx" class="px-2 pt-2" :items :ui="{container: 'hidden'}">
+        <UTabs
+          v-model="rawSelectedPokeIdx"
+          class="px-2 pt-2"
+          :ui="{
+            trigger: 'hover:data-[state=inactive]:bg-accented mx-0.5',
+            indicator: 'bg-default',
+          }"
+          :items
+          :content="false"
+          color="neutral"
+        >
           <template #default="{item}">
-            <div class="size-[32px] m-1 flex items-center">
+            <div class="size-[32px] flex items-center justify-center">
               <BoxSprite :species-id="item.speciesId" :form="item.form" />
             </div>
           </template>
         </UTabs>
       </div>
 
-      <div class="flex flex-col h-full w-full p-2">
-        <div class="flex justify-between pb-1.5">
-          <div class="bg-gray-100 dark:bg-gray-800 rounded-lg p-1 h-10 items-center">
-            <UButton
-              variant="ghost"
-              icon="material-symbols:edit-square-outline"
-              label="Edit"
-              color="gray"
-              class="rounded-md text-gray-500 dark:text-gray-400"
-              :class="[
-                selectedTab === 0 &&
-                  'text-gray-900 dark:text-white bg-white dark:bg-gray-900 shadow-sm',
-              ]"
-              @click="selectedTab = 0"
-            />
-            <UButton
-              variant="ghost"
-              icon="material-symbols:content-paste"
-              label="PokePaste"
-              color="gray"
-              class="rounded-md text-gray-500 dark:text-gray-400"
-              :class="[
-                selectedTab === 1 &&
-                  'text-gray-900 dark:text-white bg-white dark:bg-gray-900 shadow-sm',
-              ]"
-              @click="selectedTab = 1"
-            />
-          </div>
-
-          <div class="flex items-center">
+      <UTabs
+        v-model="selectedTab"
+        variant="link"
+        color="neutral"
+        :ui="{
+          root: 'h-full w-full px-2 pb-2 pt-1 overflow-hidden',
+          content: 'h-full overflow-hidden',
+        }"
+        :items="[
+          {label: 'Edit', icon: 'material-symbols:edit-square-outline', slot: 'edit' as const},
+          {label: 'PokéPaste', icon: 'material-symbols:content-paste', slot: 'pokepaste' as const},
+        ]"
+      >
+        <template #list-trailing>
+          <div class="ml-auto flex items-center">
             <TooltipButton
               text="Add Random Pokemon"
               icon="mdi:dice-6-outline"
               variant="ghost"
-              color="gray"
+              color="neutral"
               :disabled="team.pokemon.length >= 6"
               @click="newRandom"
             />
@@ -119,293 +110,309 @@
               text="Add Pokemon"
               icon="material-symbols:add-2"
               variant="ghost"
-              color="gray"
+              color="neutral"
               :disabled="team.pokemon.length >= 6"
               @click="addPokemon"
             />
             <TooltipButton
               text="Delete Pokemon"
               icon="material-symbols:delete-outline"
-              color="red"
+              color="error"
               variant="ghost"
               :disabled="team.pokemon.length < 2"
-              @click="deletePokemon(selectedPokeIdx)"
+              @click="() => deletePokemon(selectedPokeIdx)"
             />
           </div>
-        </div>
+        </template>
 
-        <UCard
-          v-if="selectedTab === 0"
-          class="flex grow h-full min-h-[23.5rem]"
-          :ui="{body: {base: 'flex flex-col gap-2 grow justify-between', padding: 'p-2 sm:p-2'}}"
-        >
-          <div class="flex gap-2">
-            <div class="flex flex-col relative grow">
-              <div class="absolute p-1 flex flex-col gap-1 z-10">
-                <div v-if="gen.id >= 2" class="relative">
+        <template #edit>
+          <div class="h-full flex flex-col gap-2 justify-between p-1 rounded-md overflow-y-auto">
+            <div class="flex gap-2">
+              <div class="flex flex-col relative grow">
+                <div class="absolute p-1 flex flex-col gap-1 z-10">
+                  <div v-if="gen.id >= 2" class="relative">
+                    <TooltipButton
+                      text="Gender"
+                      variant="ghost"
+                      color="neutral"
+                      :icon="currGender.icon"
+                      :ui="{leadingIcon: currGender.clazz}"
+                      :disabled="currGender.forced"
+                      @click="toggleGender"
+                    />
+
+                    <UIcon
+                      v-if="currGender.random"
+                      name="mdi:dice-3-outline"
+                      class="absolute -bottom-1 -right-1 size-4"
+                    />
+                  </div>
+
                   <TooltipButton
-                    text="Gender"
+                    v-if="gen.id >= 2"
+                    text="Shiny"
+                    :icon="
+                      gen.getShiny(selectedPoke.data.shiny, ivsToDvs(selectedPoke.data))
+                        ? 'ion:sparkles'
+                        : 'ion:sparkles-outline'
+                    "
                     variant="ghost"
-                    color="gray"
-                    :icon="currGender.icon"
-                    :ui="{icon: {base: currGender.clazz}}"
-                    :disabled="currGender.forced"
-                    @click="toggleGender"
+                    color="neutral"
+                    :disabled="gen.id <= 2"
+                    @click="() => void (selectedPoke.data.shiny = !selectedPoke.data.shiny)"
                   />
 
-                  <UIcon
-                    v-if="currGender.random"
-                    name="mdi:dice-3-outline"
-                    class="absolute -bottom-1 -right-1 size-4"
+                  <TooltipButton
+                    text="Randomize Set"
+                    icon="mdi:dice-3-outline"
+                    variant="ghost"
+                    color="neutral"
+                    :disabled="!selectedPoke?.species"
+                    @click="() => randomizeCurrent(true)"
                   />
                 </div>
 
-                <TooltipButton
-                  v-if="gen.id >= 2"
-                  text="Shiny"
-                  :icon="
-                    gen.getShiny(selectedPoke.data.shiny, ivsToDvs(selectedPoke.data))
-                      ? 'ion:sparkles'
-                      : 'ion:sparkles-outline'
-                  "
-                  variant="ghost"
-                  color="gray"
-                  :disabled="gen.id <= 2"
-                  @click="selectedPoke.data.shiny = !selectedPoke.data.shiny"
-                />
-
-                <TooltipButton
-                  text="Randomize Set"
-                  icon="mdi:dice-3-outline"
-                  variant="ghost"
-                  color="gray"
-                  :disabled="!selectedPoke?.species"
-                  @click="randomizeCurrent(true)"
-                />
-              </div>
-
-              <SpeciesSelector
-                v-model="selectedPoke.data.speciesId"
-                :class="gen.id >= 2 && 'pl-10'"
-                :team
-                :gen
-                :gender="currGender.gender"
-                :shiny="gen.getShiny(selectedPoke.data.shiny, ivsToDvs(selectedPoke.data))"
-                :form="gen.getForm(
+                <SpeciesSelector
+                  v-model="selectedPoke.data.speciesId"
+                  ui="pl-10"
+                  :team
+                  :gen
+                  :gender="currGender.gender"
+                  :shiny="gen.getShiny(selectedPoke.data.shiny, ivsToDvs(selectedPoke.data))"
+                  :form="gen.getForm(
                   undefined,
                   selectedPoke.data.speciesId as SpeciesId,
                   ivsToDvs(selectedPoke.data),
                   (selectedPoke.data.item && normalizeName(selectedPoke.data.item)) as ItemId,
                 )"
-                @chose="onSpeciesChange"
-              />
-              <InputWithMax
-                v-model.trim="selectedPoke.data.name"
-                :maxlength="24"
-                :placeholder="selectedPoke.species?.name ?? 'No Name'"
-              />
-              <ItemSelector
-                v-if="gen.id >= 2"
-                v-model="selectedPoke.data.item"
-                class="pt-1"
-                :poke="selectedPoke.data"
-                :gen
-              />
-              <AbilitySelector
-                v-if="gen.id >= 3"
-                v-model="selectedPoke.data.ability"
-                class="pt-1"
-                :poke="selectedPoke.data"
-                :gen
-              />
-            </div>
-            <div class="flex flex-col justify-between gap-1">
-              <div class="flex justify-between items-center">
-                <span class="text-sm">Level</span>
-                <NumericInput
-                  v-model="selectedPoke.data.level"
-                  class="w-12"
-                  :placeholder="String(format.maxLevel)"
-                  :min="1"
-                  :max="format.maxLevel"
+                  @chose="onSpeciesChange"
+                />
+                <InputWithMax
+                  v-model.trim="selectedPoke.data.name"
+                  :maxlength="24"
+                  :placeholder="selectedPoke.species?.name ?? 'No Name'"
+                />
+                <ItemSelector
+                  v-model="selectedPoke.data.item"
+                  ui="pt-1"
+                  :disabled="gen.id <= 1"
+                  :poke="selectedPoke.data"
+                  :gen
+                />
+                <AbilitySelector
+                  v-model="selectedPoke.data.ability"
+                  ui="pt-1"
+                  :disabled="gen.id <= 2"
+                  :poke="selectedPoke.data"
+                  :gen
                 />
               </div>
-              <div v-if="gen.id > 1" class="flex justify-between items-center">
-                <span class="text-sm">Friendship</span>
-                <NumericInput
-                  v-model="selectedPoke.data.friendship"
-                  class="w-12"
-                  placeholder="255"
+              <div class="flex flex-col justify-between gap-1">
+                <div class="flex justify-between items-center">
+                  <span class="text-sm">Level</span>
+                  <NumericInput
+                    v-model="selectedPoke.data.level"
+                    class="w-12"
+                    :placeholder="String(format.maxLevel)"
+                    :min="1"
+                    :max="format.maxLevel"
+                  />
+                </div>
+                <div class="flex justify-between items-center">
+                  <span class="text-sm">Friendship</span>
+                  <NumericInput
+                    v-model="friendship"
+                    class="w-12"
+                    :placeholder="friendshipDisabled ? 'N/A' : '255'"
+                    :disabled="friendshipDisabled"
+                    :min="0"
+                    :max="255"
+                  />
+                </div>
+                <div class="flex justify-between items-center">
+                  <span class="text-sm">Nature</span>
+                  <USelectMenu
+                    v-model="nature"
+                    class="w-24 sm:w-28"
+                    label-key="name"
+                    value-key="value"
+                    :filter-fields="['name', 'plus', 'minus']"
+                    :items="natures"
+                    :placeholder="natureDisabled ? 'N/A' : 'Hardy'"
+                    :disabled="natureDisabled"
+                  >
+                    <template #item="{item}">
+                      <div class="text-sm">
+                        <span>{{ item.name }}</span>
+                        <div v-if="item.plus" class="text-xs">
+                          <span class="text-lime-500">{{ item.plus }}</span
+                          >,
+                          <span class="text-red-500">{{ item.minus }}</span>
+                        </div>
+                      </div>
+                    </template>
+                  </USelectMenu>
+                </div>
+                <MoveSelector
+                  v-for="(_, i) in 4"
+                  :key="i"
+                  v-model="selectedPoke.data.moves[i]"
+                  :poke="selectedPoke.data"
+                  :idx="i"
+                  :format="team.format"
+                  :gen
+                />
+              </div>
+            </div>
+            <div class="grid items-center grid-cols-[auto_1fr_auto_auto_auto_auto] gap-0.5 grow">
+              <template v-for="(name, stat) in statKeys" :key="stat">
+                <span class="px-1.5">{{ name }}</span>
+                <USlider
+                  v-model="selectedPoke.evProxy[stat]"
+                  :min="0"
+                  :max="gen.id <= 2 ? 255 : 252"
+                  :step="gen.id <= 2 ? 1 : 4"
+                  color="success"
+                  :disabled="gen.id <= 2 && stat === 'spd'"
+                  @input="onRangeInput($event, stat)"
+                />
+                <UInputNumber
+                  v-model="selectedPoke.evProxy[stat]"
+                  :ui="{root: 'w-10 text-xs', base: 'text-center'}"
+                  size="sm"
+                  variant="none"
                   :min="0"
                   :max="255"
+                  :increment="false"
+                  :decrement="false"
+                  :placeholder="String(selectedPoke.evProxy[stat])"
                 />
-              </div>
-              <div v-if="gen.id >= 3" class="flex justify-between items-center">
-                <span class="text-sm">Nature</span>
-                <USelectMenu
-                  v-model="selectedPoke.data.nature"
-                  class="w-24 sm:w-28"
-                  :options="natures"
-                  searchable
-                  placeholder="Hardy"
-                  option-attribute="name"
-                  value-attribute="value"
-                  :search-attributes="['name', 'plus', 'minus']"
-                  clear-search-on-close
-                >
-                  <template #option="{option}">
-                    <div class="text-sm">
-                      <span>{{ option.name }}</span>
-                      <div v-if="option.plus" class="text-xs">
-                        <span class="text-lime-500">{{ option.plus }}</span
-                        >,
-                        <span class="text-red-500">{{ option.minus }}</span>
-                      </div>
-                    </div>
-                  </template>
-                </USelectMenu>
-              </div>
-              <MoveSelector
-                v-for="(_, i) in 4"
-                :key="i"
-                v-model="selectedPoke.data.moves[i]"
-                :poke="selectedPoke.data"
-                :idx="i"
-                :format="team.format"
-                :gen
-              />
+                <NumericInput
+                  v-model="selectedPoke.ivProxy[stat]"
+                  class="w-10"
+                  :disabled="gen.id <= 2 && (stat === 'hp' || stat === 'spd')"
+                  placeholder="31"
+                  :min="0"
+                  :max="31"
+                />
+
+                <template v-if="selectedPoke.species">
+                  <div class="relative group flex justify-center items-center px-1.5 min-w-10">
+                    <UButton
+                      variant="link"
+                      color="neutral"
+                      class="px-0 sm:px-0"
+                      :label="`${calcPokeStat(stat, selectedPoke.data)}`"
+                      :disabled="stat === 'hp' || gen.id <= 2"
+                      @click="trySetNature(stat)"
+                    />
+
+                    <span
+                      v-if="gen.id >= 3 && (prevStat ? prevStat === stat : ((natureTable as any)[nature!]?.[stat] > 1))"
+                      class="absolute text-lime-500 -top-2 -right-1 font-bold"
+                    >
+                      +
+                    </span>
+
+                    <span
+                      class="absolute text-red-500 -top-2 right-0 font-bold"
+                      :class="[
+                      prevStat && stat !== prevStat && stat !== 'hp' && 'group-hover:visible',
+                      !prevStat && gen.id >= 3 && (natureTable as any)[nature!]?.[stat] < 1 ? 'visible' : 'invisible'
+                    ]"
+                    >
+                      -
+                    </span>
+                  </div>
+                  <span
+                    class="text-center px-1.5 min-w-9 text-sm"
+                    :style="{color: baseStatColor(selectedPoke.species.stats[stat])}"
+                  >
+                    {{ selectedPoke.species.stats[stat] }}
+                  </span>
+                </template>
+                <template v-else>
+                  <div class="flex justify-center items-center px-1.5 min-w-10">
+                    <UButton variant="link" color="neutral" :padded="false" label="--" disabled />
+                  </div>
+                  <span class="text-center px-1.5 min-w-9 text-dimmed text-sm">--</span>
+                </template>
+              </template>
             </div>
           </div>
-          <div class="grid items-center grid-cols-[auto,1fr,auto,auto,auto,auto] gap-0.5 grow">
-            <template v-for="(name, stat) in statKeys" :key="stat">
-              <span class="px-1.5">{{ name }}</span>
-              <URange
-                v-model="selectedPoke.evProxy[stat]"
-                :min="0"
-                :max="255"
-                :step="gen.id <= 2 ? 1 : 4"
-                color="green"
-                :disabled="gen.id <= 2 && stat === 'spd'"
-                @input="onRangeInput($event, stat)"
-              />
-              <span class="text-center px-1.5 min-w-8 text-xs">
-                {{ selectedPoke.evProxy[stat] }}
-              </span>
-              <NumericInput
-                v-model="selectedPoke.ivProxy[stat]"
-                class="w-10"
-                :disabled="gen.id <= 2 && (stat === 'hp' || stat === 'spd')"
-                placeholder="31"
-              />
+        </template>
 
-              <template v-if="selectedPoke.species">
-                <div
-                  class="relative group flex justify-center items-center px-1.5 min-w-10 text-gray-500"
-                >
-                  <UButton
-                    variant="link"
-                    color="white"
-                    :padded="false"
-                    :label="`${calcPokeStat(stat, selectedPoke.data)}`"
-                    :disabled="stat === 'hp' || gen.id <= 2"
-                    @click="trySetNature(stat)"
-                  />
-
-                  <span
-                    v-if="gen.id >= 3 && (prevStat ? prevStat === stat : ((natureTable as any)[selectedPoke.data.nature!]?.[stat] > 1))"
-                    class="absolute text-lime-500 -top-2 -right-1 font-bold"
-                  >
-                    +
-                  </span>
-
-                  <span
-                    class="absolute text-red-500 -top-2 right-0 font-bold"
-                    :class="[
-                      prevStat && stat !== prevStat && stat !== 'hp' && 'group-hover:visible',
-                      !prevStat && gen.id >= 3 && (natureTable as any)[selectedPoke.data.nature!]?.[stat] < 1 ? 'visible' : 'invisible'
-                    ]"
-                  >
-                    -
-                  </span>
-                </div>
-                <span
-                  class="text-center px-1.5 min-w-9 text-xs"
-                  :style="{color: baseStatColor(selectedPoke.species.stats[stat])}"
-                >
-                  {{ selectedPoke.species.stats[stat] }}
-                </span>
-              </template>
-              <template v-else>
-                <div class="flex justify-center items-center px-1.5 min-w-10">
-                  <UButton variant="link" color="white" :padded="false" label="--" disabled />
-                </div>
-                <span class="text-center px-1.5 min-w-9 text-gray-500 text-xs">--</span>
-              </template>
+        <template #pokepaste>
+          <UTextarea
+            v-model="currentPokeText"
+            class="w-full h-full overflow-y-auto"
+            :ui="{base: 'h-full', trailing: 'pointer-events-none'}"
+            variant="none"
+            autofocus
+            autoresize
+            spellcheck="false"
+          >
+            <template #trailing>
+              <div class="flex flex-col-reverse pointer-events-auto mr-1.5">
+                <TooltipButton
+                  text="Save"
+                  icon="material-symbols:save-outline"
+                  variant="ghost"
+                  color="neutral"
+                  @click="
+                    () => {
+                      team.pokemon[selectedPokeIdx] = parsePokemon(
+                        team.format,
+                        currentPokeText.trim(),
+                      );
+                      selectedTab = '0';
+                    }
+                  "
+                />
+                <TooltipButton
+                  text="Copy"
+                  icon="material-symbols:content-copy-outline"
+                  variant="ghost"
+                  color="neutral"
+                  @click="() => copyTextArea(currentPokeText)"
+                />
+              </div>
             </template>
-          </div>
-        </UCard>
-        <UTextarea
-          v-else
-          v-model="currentPokeText"
-          class="grow"
-          :ui="{base: 'h-full min-h-[23.5rem]', rounded: 'rounded-lg'}"
-          autofocus
-          spellcheck="false"
-        >
-          <div class="absolute top-2 right-2 flex flex-col-reverse">
-            <TooltipButton
-              text="Save"
-              :popper="{placement: 'bottom-end', offsetDistance: 40}"
-              icon="material-symbols:save-outline"
-              variant="ghost"
-              color="gray"
-              @click="
-                (team.pokemon[selectedPokeIdx] = parsePokemon(team.format, currentPokeText.trim())),
-                  (selectedTab = 0)
-              "
-            />
-            <TooltipButton
-              text="Copy"
-              :popper="{placement: 'bottom-end', offsetDistance: 40}"
-              icon="material-symbols:content-copy-outline"
-              variant="ghost"
-              color="gray"
-              @click="copyTextArea(currentPokeText)"
-            />
-          </div>
-        </UTextarea>
-      </div>
+          </UTextarea>
+        </template>
+      </UTabs>
     </div>
-    <div v-else class="w-full h-[27.35rem] p-2">
-      <UTextarea
-        v-model="teamText"
-        class="h-full"
-        :ui="{base: 'h-full', rounded: 'rounded-lg'}"
-        placeholder="Paste your team here..."
-        variant="none"
-        autofocus
-      >
-        <div class="absolute top-1 right-4 flex flex-col-reverse">
+    <UTextarea
+      v-else
+      v-model="teamText"
+      class="w-full h-full p-2 overflow-y-auto"
+      :ui="{base: 'h-full', trailing: 'pointer-events-none'}"
+      placeholder="Paste your team here..."
+      variant="none"
+      autofocus
+      autoresize
+      spellcheck="false"
+    >
+      <template #trailing>
+        <div class="flex flex-col-reverse pointer-events-auto mr-2.5">
           <TooltipButton
             text="Save"
-            :popper="{placement: 'bottom-end', offsetDistance: 40}"
             icon="material-symbols:save-outline"
             variant="ghost"
-            color="gray"
-            @click="teamTextChange(), (teamPokepaste = false)"
+            color="neutral"
+            @click="() => void (teamTextChange(), (teamPokepaste = false))"
           />
           <TooltipButton
             text="Copy"
-            :popper="{placement: 'bottom-end', offsetDistance: 40}"
             icon="material-symbols:content-copy-outline"
             variant="ghost"
-            color="gray"
-            @click="copyTextArea(teamText)"
+            color="neutral"
+            @click="() => copyTextArea(teamText)"
           />
         </div>
-      </UTextarea>
-    </div>
-  </UCard>
+      </template>
+    </UTextarea>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -434,7 +441,12 @@ const items = computed(() => {
 });
 const teamText = ref("");
 const currentPokeText = ref("");
-const selectedPokeIdx = ref(0);
+const rawSelectedPokeIdx = ref("0");
+
+const selectedPokeIdx = computed({
+  get: () => +rawSelectedPokeIdx.value,
+  set: v => (rawSelectedPokeIdx.value = String(v)),
+});
 const format = computed(() => formatInfo[team.format]);
 const gen = computed(() => GENERATIONS[format.value.generation]!);
 const statKeys = computed(() => getStatKeys(gen.value));
@@ -505,7 +517,26 @@ const onRangeInput = (e: Event & {target: HTMLInputElement}, stat: StatId) => {
   }
 };
 
-const selectedTab = ref(0);
+const natureDisabled = computed(() => gen.value.id <= 2);
+const friendshipDisabled = computed(() => gen.value.id <= 1);
+const nature = readEmptyIfDisabled(
+  computed({
+    get: () => selectedPoke.value.data.nature,
+    set: v => (selectedPoke.value.data.nature = v),
+  }),
+  undefined,
+  natureDisabled,
+);
+const friendship = readEmptyIfDisabled(
+  computed({
+    get: () => selectedPoke.value.data.friendship,
+    set: v => (selectedPoke.value.data.friendship = v),
+  }),
+  undefined,
+  friendshipDisabled,
+);
+
+const selectedTab = ref("0");
 const teamPokepaste = ref(false);
 const currGender = computed(() => {
   const species = gen.value.speciesList[selectedPoke.value.data.speciesId as SpeciesId];
@@ -560,7 +591,7 @@ const getTotalEvs = (stats: Partial<Stats>) => {
 };
 
 watch([selectedPokeIdx, selectedTab], ([_, tab]) => {
-  if (tab === 1) {
+  if (tab === "1") {
     currentPokeText.value = descToString(team.format, team.pokemon[selectedPokeIdx.value]).trim();
   }
 });
@@ -639,7 +670,7 @@ const deletePokemon = (i: number) => {
     poke.name || gen.value.speciesList[poke.speciesId as SpeciesId]?.name || `Pokemon ${i + 1}`;
   toast.add({
     title: `${name} deleted!`,
-    actions: [{label: "Undo", click: () => team.pokemon.splice(i, 0, poke)}],
+    actions: [{label: "Undo", onClick: () => void team.pokemon.splice(i, 0, poke)}],
   });
 };
 

@@ -17,25 +17,18 @@
       @cancel="cancelMove"
       @timer="startTimer"
     />
-
-    <UModal v-model="modalOpen" prevent-close>
-      <UAlert
-        title="Invalid Room"
-        description="This room does not exist or has expired."
-        icon="material-symbols:error-circle-rounded-outline-sharp"
-        :actions="[{label: 'Go Home', to: '/', icon: 'heroicons:home', variant: 'solid'}]"
-      />
-    </UModal>
   </div>
 </template>
 
 <script setup lang="ts">
-import type {Battle} from "#components";
 import type {Socket} from "socket.io-client";
 import type {Options} from "~~/game/battle";
 import type {BattleEvent} from "~~/game/events";
 import type {BattleTimer, Choice, InfoRecord, JoinRoomResponse} from "~~/server/gameServer";
 import type {InfoMessage} from "~~/server/utils/info";
+import AlertModal from "~/components/dialog/AlertModal.vue";
+
+const alert = useOverlay().create(AlertModal);
 
 const {$conn} = useNuxtApp();
 const {user} = useUserSession();
@@ -46,14 +39,13 @@ const router = useRouter();
 const mounted = useMounted();
 const myId = useMyId();
 const {track: currentTrack} = useBGMusic();
-const battle = ref<InstanceType<typeof Battle>>();
+const battle = useTemplateRef("battle");
 const loading = ref(true);
 const players = ref<Players>(new Players());
 const events = ref<BattleEvent[]>([]);
 const options = reactive<Partial<Record<number, Options[]>>>({});
 const chats = reactive<InfoRecord>({});
 const timer = ref<BattleTimer>();
-const modalOpen = ref(false);
 const room = `${route.params.id}`;
 const finished = ref(false);
 const format = ref<FormatId>("g1_standard");
@@ -201,7 +193,23 @@ const onJoinRoom = (resp: JoinRoomResponse | "bad_room") => {
   };
 
   if (resp === "bad_room") {
-    modalOpen.value = true;
+    alert.open({
+      title: "Invalid Room",
+      description: "This room does not exist or has expired.",
+      icon: "material-symbols:error-circle-rounded-outline-sharp",
+      dismissible: false,
+      variant: "outline",
+      color: "neutral",
+      actions: [
+        {
+          label: "Go Home",
+          to: "/",
+          icon: "heroicons:home",
+          variant: "solid",
+          onClick: () => alert.close(),
+        },
+      ],
+    });
     loading.value = false;
     return;
   } else if (!mounted.value) {

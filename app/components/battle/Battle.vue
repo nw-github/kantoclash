@@ -1,14 +1,12 @@
 <template>
-  <div
-    class="flex h-full p-4 rounded-lg gap-4 dark:divide-gray-800 ring-1 ring-gray-200 dark:ring-gray-800 shadow"
-  >
+  <div class="flex h-full p-4 rounded-lg gap-4 ring ring-default shadow">
     <div class="flex flex-col w-full items-center overflow-x-hidden overflow-y-auto">
       <!-- Top Bar -->
       <div class="flex w-full relative justify-between items-start">
         <div class="flex gap-2 items-center">
           <div
             :class="[!currentTurnNo && 'invisible order-1']"
-            class="rounded-md bg-gray-300 dark:bg-gray-700 flex justify-center py-0.5 px-1"
+            class="rounded-md bg-accented flex justify-center py-0.5 px-1"
           >
             <span class="text-lg font-medium">Turn {{ currentTurnNo }}</span>
           </div>
@@ -45,7 +43,7 @@
             <motion.div
               v-for="e in liveEvents"
               :key="e.time"
-              class="w-full bg-gray-300/90 dark:bg-gray-700/95 rounded-lg px-2 pb-0.5"
+              class="w-full bg-accented/90 rounded-lg px-2 pb-0.5"
               :initial="{opacity: 0, y: 20}"
               :animate="{opacity: 1, y: 0}"
               :exit="{opacity: 0, y: -10}"
@@ -71,42 +69,45 @@
               <NumericInput v-model="rewindToTurn" :min="0" class="w-12" />
               <TooltipButton
                 text="Rewind to Turn"
-                :popper="{placement: 'top'}"
+                :content="{side: 'top'}"
                 leading-icon="material-symbols:fast-rewind"
                 variant="ghost"
-                color="gray"
-                @click="$emit('rewind', rewindToTurn)"
+                color="neutral"
+                @click="() => $emit('rewind', rewindToTurn)"
               />
             </div>
 
             <TooltipButton
               :key="updateMarker"
               :text="timer === undefined ? 'Start Timer' : 'Timer is on'"
-              :popper="{placement: 'top'}"
+              :content="{side: 'top'}"
               leading-icon="material-symbols:alarm-outline"
               variant="ghost"
-              :color="currOptions && timeLeft() <= 10 ? 'red' : 'gray'"
+              :color="currOptions && timeLeft() <= 10 ? 'error' : 'neutral'"
               :disabled="!isBattler || isBattleOver || !!timer || localMode"
-              :label="timer && !currOptions ? '--' : timer ? `${Math.max(timeLeft(), 0)}` : ''"
-              @click="$emit('timer')"
+              :label="
+                timer && !currOptions ? '--' : timer ? `${Math.max(timeLeft(), 0)}` : undefined
+              "
+              @click="() => $emit('timer')"
             />
 
-            <UTooltip v-if="textBoxHidden" text="Open Chat" :popper="{placement: 'top'}">
+            <UTooltip v-if="textBoxHidden" text="Open Chat" :content="{side: 'top'}">
               <UChip :show="unseenChats !== 0" :text="unseenChats" size="xl" inset>
-                <UButton
-                  ref="menuButton"
-                  icon="material-symbols:chat-outline"
-                  variant="link"
-                  color="gray"
-                  @click="(slideoverOpen = true), (unseenChats = 0)"
-                />
+                <div ref="menuButton">
+                  <UButton
+                    icon="material-symbols:chat-outline"
+                    variant="link"
+                    color="neutral"
+                    @click="(slideoverOpen = true), (unseenChats = 0)"
+                  />
+                </div>
               </UChip>
             </UTooltip>
           </div>
         </div>
       </div>
 
-      <UDivider class="pb-2" />
+      <USeparator class="pb-2" />
 
       <!-- Selectors & Buttons -->
       <div class="w-full pb-2">
@@ -127,45 +128,45 @@
             <TooltipButton
               icon="heroicons:home"
               variant="ghost"
-              color="gray"
+              color="neutral"
               text="Go Home"
               to="/"
             />
             <TooltipButton
               icon="mi:switch"
               variant="ghost"
-              color="gray"
+              color="neutral"
               text="Switch Sides"
-              @click="perspective = opponent"
+              @click="() => void (perspective = opponent)"
             />
             <TooltipButton
               icon="material-symbols:search"
               text="Go to Turn"
               variant="ghost"
-              color="gray"
-              @click="goToTurnModalOpen = !goToTurnModalOpen"
+              color="neutral"
+              @click="() => void (goToTurnModalOpen = !goToTurnModalOpen)"
             />
             <TooltipButton
               icon="material-symbols:fast-rewind"
               text="First Turn"
               variant="ghost"
-              color="gray"
-              @click="skipToTurn(0)"
+              color="neutral"
+              @click="() => skipToTurn(0)"
             />
             <TooltipButton
               icon="material-symbols:skip-previous"
               text="Previous Turn"
               variant="ghost"
-              color="gray"
-              @click="skipToTurn(Math.max(0, currentTurnNo - 1))"
+              color="neutral"
+              @click="() => skipToTurn(Math.max(0, currentTurnNo - 1))"
             />
             <TooltipButton
               v-if="isBattleOver"
               :icon="paused ? 'material-symbols:play-arrow' : 'material-symbols:pause'"
               :text="paused ? 'Play' : 'Pause'"
               variant="ghost"
-              color="gray"
-              @click="paused = !paused"
+              color="neutral"
+              @click="() => void (paused = !paused)"
             />
           </template>
           <template v-if="isBattleOver || playingEvents">
@@ -173,17 +174,17 @@
               icon="material-symbols:skip-next"
               text="Skip Turn"
               variant="ghost"
-              color="gray"
+              color="neutral"
               :disabled="nextEvent >= events.length && isBattleOver"
-              @click="skipToTurn(currentTurnNo + 1)"
+              @click="() => skipToTurn(currentTurnNo + 1)"
             />
             <TooltipButton
               icon="material-symbols:fast-forward"
               text="Skip All"
               variant="ghost"
-              color="gray"
+              color="neutral"
               :disabled="nextEvent >= events.length && isBattleOver"
-              @click="skipToTurn(-1)"
+              @click="() => skipToTurn(-1)"
             />
           </template>
         </div>
@@ -210,22 +211,25 @@
       />
     </div>
 
-    <USlideover v-model="slideoverOpen">
-      <Textbox
-        :players
-        :chats
-        :victor
-        :perspective
-        :format
-        :smooth-scroll
-        :my-id
-        :turns="htmlTurns"
-        closable
-        @chat="$emit('chat', $event)"
-        @report="$emit('report', $event)"
-        @forfeit="$emit('choice', {type: 'forfeit'})"
-        @close="slideoverOpen = false"
-      />
+    <USlideover v-model:open="slideoverOpen">
+      <template #content>
+        <Textbox
+          class="rounded-none"
+          :players
+          :chats
+          :victor
+          :perspective
+          :format
+          :smooth-scroll
+          :my-id
+          :turns="htmlTurns"
+          closable
+          @chat="$emit('chat', $event)"
+          @report="$emit('report', $event)"
+          @forfeit="$emit('choice', {type: 'forfeit'})"
+          @close="slideoverOpen = false"
+        />
+      </template>
     </USlideover>
   </div>
 </template>
@@ -268,8 +272,7 @@ const sfxVol = useSfxVolume();
 const {fadeOut} = useBGMusic();
 const isMounted = useMounted();
 const gen = computed(() => GENERATIONS[formatInfo[format].generation]!);
-const menuButton = ref<HTMLElement>();
-const isMenuVisible = useElementVisibility(menuButton);
+const isMenuBtnVisible = useElementVisibility(useTemplateRef("menuButton"));
 const unseenChats = ref(0);
 const slideoverOpen = ref(false);
 const smoothScroll = ref(true);
@@ -326,7 +329,7 @@ useIntervalFn(() => {
 useIntervalFn(() => updateMarker.value++, 1000);
 
 watchDeep(chats, () => {
-  if (isMenuVisible.value && !slideoverOpen.value) {
+  if (isMenuBtnVisible.value && !slideoverOpen.value) {
     unseenChats.value++;
   }
 });

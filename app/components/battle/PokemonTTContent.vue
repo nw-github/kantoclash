@@ -23,7 +23,7 @@
       </div>
     </div>
 
-    <UProgress :max="poke.stats.hp" :value="poke.hp" />
+    <UProgress :model-value="poke.hp" :max="poke.stats.hp" />
     <div class="flex justify-between gap-4">
       <span>{{ poke.hp }}/{{ poke.stats.hp }} HP ({{ roundTo(poke.hpPercent, 2) }}%)</span>
       <StatusOrFaint :poke="poke" :faint="!active || active.fainted" />
@@ -32,7 +32,7 @@
     <div class="flex gap-1 justify-center">
       <template v-for="(name, stat) in statKeys">
         <template v-if="stat !== 'hp'">
-          <UBadge :key="stat" color="black" :class="statClass(stat)">
+          <UBadge :key="stat" color="neutral" :class="statClass(stat)">
             <span>{{ active?.v.stats?.[stat] ?? poke.stats[stat] }}</span>
             {{ name }}
           </UBadge>
@@ -58,7 +58,6 @@ import {Pokemon} from "~~/game/pokemon";
 import type {StatStageId, Weather} from "~~/game/utils";
 import {abilityList} from "~~/game/species";
 import type {MoveId} from "~~/game/moves";
-import "assets/colors.css";
 
 const {poke: p, weather} = defineProps<{poke: ClientActivePokemon | Pokemon; weather?: Weather}>();
 const poke = p instanceof Pokemon ? p : p.base;

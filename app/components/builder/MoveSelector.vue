@@ -1,19 +1,21 @@
 <template>
   <Selector
-    ref="selector"
     v-model:open="open"
     v-model:query="query"
-    base="w-80 right-0 mt-1"
+    :content="{align: 'end'}"
+    :ui="{list: 'min-w-80'}"
     :items
     :filter
     @chose="onChoose"
   >
     <UInput
       v-model="query"
+      :class="ui"
       placeholder="Add move..."
-      :color="isIllegal(normalizeName(query)) || hasConflict() ? 'red' : undefined"
-      :trailing-icon="trailing ? undefined : 'heroicons:chevron-down-20-solid'"
-      @focus="open = true"
+      color="error"
+      :highlight="isIllegal(normalizeName(query)) || hasConflict()"
+      :trailing-icon="trailing ? undefined : 'lucide:chevron-down'"
+      @focus="(open = true), $event.target.select()"
       @update:model-value="open = true"
       @keydown.tab="open = false"
     >
@@ -36,15 +38,15 @@
           <MoveCategory :category="gen.getCategory(move)" image />
         </div>
         <div class="flex flex-col w-8">
-          <span class="text-[0.6rem] text-center text-gray-400">Power</span>
+          <span class="text-[0.6rem] text-center text-dimmed">Power</span>
           <span class="text-sm text-center">{{ move.power || "--" }}</span>
         </div>
         <div class="flex flex-col w-8">
-          <span class="text-[0.6rem] text-center text-gray-400">Acc</span>
+          <span class="text-[0.6rem] text-center text-dimmed">Acc</span>
           <span class="text-sm text-center">{{ move.acc || "--" }}</span>
         </div>
         <div class="flex flex-col w-8">
-          <span class="text-[0.6rem] text-center text-gray-400">PP</span>
+          <span class="text-[0.6rem] text-center text-dimmed">PP</span>
           <span class="text-sm text-center">{{ gen.getMaxPP(move) }}</span>
         </div>
       </div>
@@ -68,6 +70,7 @@ const {poke, gen, idx, format} = defineProps<{
   gen: Generation;
   idx: number;
   format: FormatId;
+  ui?: string;
 }>();
 const open = ref(false);
 const species = computed<Species | undefined>(() => gen.speciesList[poke?.speciesId as SpeciesId]);

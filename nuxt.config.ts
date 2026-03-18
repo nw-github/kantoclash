@@ -1,5 +1,6 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
+  css: ["~/assets/main.css"],
   devtools: {enabled: true},
   compatibilityDate: "2025-02-08",
   modules: [
@@ -10,6 +11,29 @@ export default defineNuxtConfig({
     "@nuxt/eslint",
     "motion-v/nuxt",
   ],
+  ui: {
+    theme: {
+      colors: [
+        "primary",
+        "secondary",
+        "info",
+        "success",
+        "warning",
+        "error",
+        "old-orange",
+        "old-fuchsia",
+        "old-sky",
+        "old-amber",
+        "old-lime",
+        "old-yellow",
+        "old-purple",
+        "old-teal",
+        "old-pink",
+        "old-emerald",
+        "old-violet",
+      ],
+    },
+  },
   nitro: {
     experimental: {websocket: true},
     esbuild: {options: {target: "es2022"}},

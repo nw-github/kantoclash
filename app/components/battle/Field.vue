@@ -6,7 +6,7 @@
           <ActivePokemon
             v-for="(poke, i) in player.active"
             :key="i"
-            :ref="(c) => activePokemon.push(c as any)"
+            ref="activePokemon"
             :class="(id !== perspective ? i === 0 : i !== 0) && 'pt-2 sm:pt-4'"
             :poke
             :back="id === perspective"
@@ -18,7 +18,7 @@
         </div>
         <div class="relative flex justify-center w-full">
           <div
-            class="absolute bottom-4 sm:bottom-8 bg-gray-200 dark:bg-gray-600 w-[115%] h-10 sm:h-16 rounded-[100%] flex justify-center"
+            class="absolute bottom-4 sm:bottom-8 bg-accented w-[115%] h-10 sm:h-16 rounded-[100%] flex justify-center"
             :class="isSingles && 'w-full'"
           />
 
@@ -53,10 +53,10 @@ import type {Weather} from "~~/game/utils";
 
 defineProps<{players: Players; perspective: PlayerId; isSingles: boolean; weather?: Weather}>();
 
-const activePokemon = ref<InstanceType<typeof ActivePokemon>[]>([]);
+const activePokemon = useTemplateRef("activePokemon");
 
 const playAnimation = (id: PokeId, params: AnimationParams) => {
-  const component = activePokemon.value.find(a => a.getId() === id);
+  const component = activePokemon.value?.find(a => a?.getId() === id);
   return component && component.playAnimation(params);
 };
 

@@ -5,21 +5,21 @@
       <UButton label="Play" @click="playCry" />
     </div>
 
-    <UFormGroup label="Start Seconds Before">
+    <UFormField label="Start Seconds Before">
       <UInput v-model.number="offset" />
-    </UFormGroup>
+    </UFormField>
 
-    <USelectMenu v-model="track" searchable :options="musicTrackItems" value-attribute="value" />
+    <USelectMenu v-model="track" class="w-full" :items="musicTrackItems" value-key="value" />
 
     <div class="w-full">
-      <URange v-model="currentTime" :min="0" :max="duration" :step="0.05" disabled />
+      <USlider v-model="currentTime" :min="0" :max="duration" :step="0.05" disabled />
       <div class="w-full flex justify-between">
         <span>{{ toTime(currentTime) }}</span>
         <span>{{ toTime(duration) }}</span>
       </div>
     </div>
 
-    <USelectMenu v-model="startTime" :options="startTimes" />
+    <USelectMenu v-model="startTime" class="w-full" :items="startTimes" />
     <div class="flex gap-1">
       <UButton label="Restart" @click="restart" />
       <UButton label="Copy" @click="startTime && copy(startTime.start, startTime.end)" />

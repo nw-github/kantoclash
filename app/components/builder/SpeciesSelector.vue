@@ -1,16 +1,17 @@
 <template>
   <Selector
     v-model:open="open"
-    class="grow"
-    base="w-92 sm:w-[31rem] h-60 sm:left-[-7rem]"
+    :ui="{content: 'sm:ml-24', list: 'w-92 sm:w-124 max-h-68'}"
+    :content="{sideFlip: false}"
     :items
     searchable
+    modal
     :filter
     @chose="onChoose"
   >
-    <div class="w-full h-full flex items-center justify-center">
+    <div class="w-full h-full flex items-center justify-center" :class="ui">
       <div
-        class="w-[128px] h-[117px] cursor-pointer flex items-center justify-center rounded-md hover:bg-gray-200 focus:bg-gray-200 hover:dark:bg-gray-600 focus:dark:bg-gray-600"
+        class="w-[128px] h-[117px] cursor-pointer flex items-center justify-center rounded-md hover:bg-elevated focus:bg-elevated"
         :class="model && model in gen.speciesList && isIllegal(gen.speciesList[model as SpeciesId]) && 'border border-primary'"
         tabindex="0"
         @focus="open = true"
@@ -39,7 +40,7 @@
           <TypeBadge v-for="type in species.types" :key="type" :type image />
           <div class="flex items-center">
             <div v-for="(name, stat) in statKeys" :key="stat" class="flex flex-col w-6 sm:w-8">
-              <span class="text-[0.6rem] text-center text-gray-400">{{ name }}</span>
+              <span class="text-[0.6rem] text-center text-dimmed">{{ name }}</span>
               <span
                 class="text-[0.7rem] sm:text-xs text-center"
                 :style="{color: baseStatColor(species.stats[stat])}"
@@ -52,7 +53,9 @@
       </div>
     </template>
 
-    <template #empty>No Pokémon found</template>
+    <template #empty>
+      <div class="pb-1">No Pokémon found</div>
+    </template>
   </Selector>
 </template>
 
@@ -70,6 +73,7 @@ const {team, gen} = defineProps<{
   gender?: Gender;
   shiny: boolean;
   form?: FormId;
+  ui?: string;
 }>();
 const open = ref(false);
 const items = computed(() => Object.entries(gen.speciesList) as [SpeciesId, Species][]);

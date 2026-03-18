@@ -1,19 +1,22 @@
 <template>
   <Selector
-    ref="selector"
     v-model:open="open"
     v-model:query="query"
-    base="left-0 mt-1"
+    :content="{align: 'start'}"
     :items
     :filter
+    :virtualize="false"
     @chose="onChoose"
   >
     <UInput
       v-model="query"
       placeholder="No Item"
-      :color="isIllegal(normalizeName(query)) ? 'red' : undefined"
-      trailing-icon="heroicons:chevron-down-20-solid"
-      @focus="open = true"
+      color="error"
+      :class="ui"
+      :disabled
+      :highlight="!disabled && !!isIllegal(normalizeName(query))"
+      trailing-icon="lucide:chevron-down"
+      @focus="(open = true), $event.target.select()"
       @update:model-value="open = true"
       @keydown.tab="open = false"
     />
@@ -26,7 +29,7 @@
         </span>
       </div>
 
-      <div class="text-[0.6rem] text-gray-600 dark:text-gray-400 text-nowrap">
+      <div class="text-[0.6rem] text-muted text-nowrap">
         {{ item.desc || "No competitive use." }}
       </div>
     </template>
@@ -43,8 +46,14 @@ import type {ItemData, ItemId} from "~~/game/item";
 import type {PokemonDesc} from "~~/game/pokemon";
 import type {SpeciesId} from "~~/game/species";
 
-const query = defineModel<string>({default: ""});
-const {gen, poke} = defineProps<{gen: Generation; poke: PokemonDesc}>();
+const modelQuery = defineModel<string>({default: ""});
+const {gen, poke, disabled} = defineProps<{
+  gen: Generation;
+  poke: PokemonDesc;
+  ui?: string;
+  disabled?: bool;
+}>();
+const query = readEmptyIfDisabled(modelQuery, "", () => disabled);
 
 const open = ref(false);
 const items = computed(() => Object.entries(gen.items) as [ItemId, ItemData][]);

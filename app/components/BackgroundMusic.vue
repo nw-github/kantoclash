@@ -7,7 +7,7 @@ import {animate} from "motion-v";
 
 const toast = useToast();
 const {volume, track, fadeOutRequested} = useBGMusic();
-const musicController = ref<HTMLAudioElement>();
+const musicController = useTemplateRef("musicController");
 
 let playWasBlocked = false;
 let currentInfo: MusicInfo = {loopStart: 0, loopEnd: 0, offset: 0};

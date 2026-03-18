@@ -1,4 +1,5 @@
 .vscode
+ssl
 
 # Nuxt dev/build outputs
 .output

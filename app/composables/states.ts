@@ -16,6 +16,11 @@ export const useMyTeams = () => {
         delete poke.species;
       }
     }
+
+    // Legacy: team.id was added later
+    if (!team.id) {
+      team.id = crypto.randomUUID();
+    }
   }
   return teams;
 };
@@ -53,6 +58,6 @@ export const useAutoMuteMusic = () => useLocalStorage<bool>("autoMuteMusic", fal
 
 export const useChallenges = () => useState<Challenge[]>("challenges", () => []);
 
-const touchFocus = ref<HTMLElement>();
+const touchFocus = ref<any>();
 
 export const useTouchedElement = () => touchFocus;

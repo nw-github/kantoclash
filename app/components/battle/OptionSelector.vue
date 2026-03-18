@@ -34,12 +34,14 @@
         :class="choices.length === options.length ? 'flex-col' : 'items-center'"
       >
         <div class="italic">{{ choiceMessage(i, choice, opts) }}...</div>
-        <TooltipButton
-          v-if="i === choices.length - 1"
-          icon="material-symbols:cancel"
-          label="Cancel"
-          @click="cancelMove"
-        />
+        <div>
+          <TooltipButton
+            v-if="i === choices.length - 1"
+            icon="material-symbols:cancel"
+            label="Cancel"
+            @click="cancelMove"
+          />
+        </div>
       </div>
     </div>
 
@@ -57,13 +59,12 @@
         <template v-for="(poke, i) in players.get(opponent).active.toReversed()" :key="i">
           <SwitchButton
             v-if="poke"
+            :popover-disabled="true"
             :poke="poke.base"
-            :disabled="
+            :button-disabled="
               poke.fainted ||
               !currTargets.includes(`${opponent}:${players.get(opponent).active.length - i - 1}`)
             "
-            :active="false"
-            :no-popover="true"
             @click="selectTarget(`${opponent}:${players.get(opponent).active.length - i - 1}`)"
           />
           <div v-else></div>
@@ -71,17 +72,17 @@
         <template v-for="(poke, i) in players.get(myId).active" :key="i">
           <SwitchButton
             v-if="poke"
-            :poke="poke.base"
-            :disabled="poke.fainted || !currTargets.includes(`${myId}:${i}`)"
+            :popover-disabled="true"
             :active="true"
-            :no-popover="true"
+            :poke="poke.base"
+            :button-disabled="poke.fainted || !currTargets.includes(`${myId}:${i}`)"
             @click="selectTarget(`${myId}:${i}`)"
           />
           <div v-else></div>
         </template>
       </div>
     </div>
-    <div v-else-if="currOption" class="grid gap-2 sm:grid-cols-[1fr,1.5fr] h-min">
+    <div v-else-if="currOption" class="grid gap-2 sm:grid-cols-[1fr_1.5fr] h-min">
       <div class="flex flex-col gap-1 sm:gap-2">
         <template v-for="(option, i) in currOption.moves">
           <MoveButton
@@ -96,13 +97,13 @@
         </template>
       </div>
 
-      <div class="grid grid-cols-2 gap-1 sm:gap-2 items-center">
+      <div class="grid grid-cols-2 gap-1 sm:gap-2 h-fit">
         <SwitchButton
           v-for="(poke, i) in team"
           :key="i"
           :poke
           :weather
-          :disabled="!isValidSwitch(currOption, i)"
+          :button-disabled="!isValidSwitch(currOption, i)"
           :active="players.get(myId).active.some(p => p?.indexInTeam === i)"
           @click="selectSwitch(currOption, i)"
         />

@@ -21,9 +21,9 @@
       <div
         v-for="({id, battle, reports, deleting}, i) of reportedBattles"
         :key="id"
-        class="space-y-1 py-1 divide-y divide-gray-200 dark:divide-gray-800"
+        class="space-y-1 py-1 divide-y divide-default"
       >
-        <div class="flex justify-between items-end">
+        <div class="flex justify-between items-end pb-1">
           <div>
             <span class="text-sm truncate">Battle {{ id }}</span>
             <div class="flex items-center gap-1 text-xs">
@@ -35,17 +35,17 @@
             <TooltipButton
               text="Copy"
               icon="material-symbols:content-copy-outline"
-              color="gray"
+              color="neutral"
               variant="ghost"
-              @click="copyData(reportedBattles[i])"
+              @click="() => copyData(reportedBattles[i])"
             />
             <UPopover mode="hover">
-              <UButton icon="material-symbols:chat-rounded" color="gray" variant="ghost" />
-              <template #panel>
+              <UButton icon="material-symbols:chat-rounded" color="neutral" variant="ghost" />
+              <template #content>
                 <div v-for="(messages, player) in reports" :key="player" class="p-1">
                   <h1 class="text-md">Reports by player '{{ player }}'</h1>
                   <p v-for="{message, turn} in messages" :key="turn" class="text-sm">
-                    <span class="text-gray-400">Reported on turn {{ turn }}:</span> {{ message }}
+                    <span class="text-muted">Reported on turn {{ turn }}:</span> {{ message }}
                   </p>
                 </div>
               </template>
@@ -53,17 +53,17 @@
             <TooltipButton
               text="Debug"
               icon="material-symbols:play-arrow"
-              color="gray"
+              color="neutral"
               variant="ghost"
-              @click="viewingBattle = battle"
+              @click="() => void (viewingBattle = battle)"
             />
             <TooltipButton
               text="Delete"
               icon="material-symbols:delete-outline"
-              color="red"
+              color="error"
               variant="ghost"
               :disabled="deleting"
-              @click="deleteBugReport(reportedBattles[i])"
+              @click="() => deleteBugReport(reportedBattles[i])"
             />
           </div>
         </div>

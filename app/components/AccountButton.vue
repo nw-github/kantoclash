@@ -1,7 +1,7 @@
 <template>
-  <UPopover v-model="model" mode="click" :popper="{placement: 'bottom-end'}">
-    <UButton icon="material-symbols:account-circle-full" variant="ghost" color="gray" />
-    <template #panel>
+  <UPopover v-model:open="model" mode="click" :content="{align: 'end'}">
+    <UButton icon="material-symbols:account-circle-full" variant="ghost" color="neutral" />
+    <template #content>
       <div class="p-4">
         <AuthState v-slot="{user}">
           <div v-if="user">
@@ -9,7 +9,7 @@
               <UIcon name="material-symbols:account-circle-full" class="size-5" />
               <h2>{{ user.name }}</h2>
             </div>
-            <UDivider class="py-2" />
+            <USeparator class="py-2" />
             <div class="space-y-2">
               <UCheckbox v-model="filter" label="Enable profanity filter" />
               <UCheckbox v-model="challenges" label="Ignore challenges" />
@@ -37,7 +37,7 @@ const filter = useChatCensorEnabled();
 const challenges = useIgnoreChallenges();
 const autoMute = useAutoMuteMusic();
 const loading = ref(false);
-const model = defineModel<{open: boolean}>();
+const model = defineModel<boolean>({default: false});
 
 const logout = async () => {
   await clear();

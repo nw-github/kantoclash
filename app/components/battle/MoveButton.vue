@@ -1,9 +1,10 @@
 <template>
-  <TouchPopover :popper="{placement: 'auto'}">
+  <TouchPopover :content="{side: lessThanSm ? 'top' : 'right'}">
     <UButton
+      class="w-full flex justify-between p-1"
+      color="neutral"
+      variant="subtle"
       :disabled="!option.valid"
-      class="flex justify-between content-center w-full p-1 text-black"
-      color="gray"
       @click="$emit('click')"
     >
       <div class="flex items-center">
@@ -17,7 +18,7 @@
       </span>
     </UButton>
 
-    <template #panel>
+    <template #content>
       <ul class="list-none p-2 m-0 w-max max-w-[300px]">
         <template v-for="{pow, acc, pokes} in info.powers" :key="pokes">
           <li v-if="displayAgainst && info.powers.length > 1" class="flex gap-1 items-center">
@@ -70,7 +71,12 @@ import {MC, type Type, type Weather} from "~~/game/utils";
 import type {ItemData} from "~~/game/item";
 import type {Pokemon} from "~~/game/pokemon";
 
-defineEmits<{(e: "click"): void}>();
+import {breakpointsTailwind} from "@vueuse/core";
+
+defineEmits<{click: []}>();
+
+const breakpoint = useBreakpoints(breakpointsTailwind);
+const lessThanSm = breakpoint.smaller("sm");
 
 const {option, user, weather, opponent} = defineProps<{
   option: MoveOption;

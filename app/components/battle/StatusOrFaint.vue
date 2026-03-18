@@ -1,6 +1,10 @@
 <template>
-  <UBadge v-if="poke.hp <= 0 && faint" color="red">FNT</UBadge>
-  <UBadge v-else-if="poke.status && poke.hp > 0" :color="statusColor[poke.status]">
+  <UBadge v-if="poke.hp <= 0 && faint" color="error">FNT</UBadge>
+  <UBadge
+    v-else-if="poke.status && poke.hp > 0"
+    :color="statusColor[poke.status].color"
+    :variant="statusColor[poke.status].variant"
+  >
     {{ poke.status.toUpperCase() }}
   </UBadge>
 </template>

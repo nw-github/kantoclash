@@ -5,10 +5,11 @@
         {{ user ? `Welcome ${user.name}!` : "You must first log in to find a battle" }}
       </h1>
       <ClientOnly>
-        <div class="flex items-center gap-1.5">
-          <FormatSelector v-model="selectedFormat" />
-          <FormatInfoButton :format="selectedFormat" />
-        </div>
+        <FormatSelector v-model="selectedFormat" class="gap-1.5">
+          <template #trailing>
+            <FormatInfoButton :format="selectedFormat" />
+          </template>
+        </FormatSelector>
         <TeamSelector
           ref="selectTeamMenu"
           v-model="selectedTeam"
@@ -16,28 +17,20 @@
           :disabled="findingMatch"
         />
       </ClientOnly>
-      <div class="relative">
-        <USelectMenu
-          v-model="challengeUser"
-          placeholder="Challenge a user..."
-          :searchable="searchUsers"
-          option-attribute="name"
-          :loading
-          by="name"
-          :disabled="findingMatch || cancelling"
-        />
-        <UButton
-          class="absolute top-0 right-8"
-          icon="material-symbols:close"
-          variant="link"
-          color="gray"
-          :disabled="!challengeUser || findingMatch || cancelling"
-          @click="challengeUser = undefined"
-        />
-      </div>
+      <USelectMenu
+        v-model="challengeUser"
+        class="w-full"
+        placeholder="Challenge a user..."
+        :items="challengeUsers"
+        label-key="name"
+        :loading="status === 'pending'"
+        by="name"
+        :disabled="findingMatch || cancelling"
+        :clear="challengeUser && !findingMatch && !cancelling"
+        @update:open="fetchUsers"
+      />
 
       <UButton
-        :color="findingMatch ? 'red' : 'primary'"
         :disabled="acceptingChallenge"
         icon="heroicons:magnifying-glass-20-solid"
         @click="enterMatchmaking"
@@ -89,59 +82,75 @@
           icon="material-symbols:refresh"
           :loading="loadingRooms"
           variant="ghost"
-          color="gray"
+          color="neutral"
           @click="loadRooms"
         />
       </div>
       <UCheckbox v-model="recentlyPlayed" label="Recently Played" />
-      <UTable :rows="filteredRooms" :columns="roomsCols" :empty-state="emptyState">
-        <template #live-data="{row}">
+      <UTable :data="filteredRooms" :columns="roomsCols" :loading="loadingRooms">
+        <template #live-cell="{row}">
           <UIcon
             class="size-6"
-            :name="row.live ? 'material-symbols:check' : 'material-symbols:add-2'"
-            :class="!row.live && 'rotate-45'"
+            :name="row.original.live ? 'material-symbols:check' : 'material-symbols:add-2'"
+            :class="!row.original.live && 'rotate-45'"
           />
         </template>
 
-        <template #name-data="{row}">
-          <UButton :to="row.to">{{ row.name }}</UButton>
+        <template #name-cell="{row}">
+          <UButton :to="row.original.to" :label="row.original.name" />
         </template>
 
-        <template #type-data="{row}">
+        <template #type-cell="{row}">
           <div class="flex items-center gap-1">
-            <UIcon :name="formatInfo[row.format as FormatId].icon" class="size-5" />
-            <span>{{ formatInfo[row.format as FormatId].name }}</span>
+            <UIcon :name="formatInfo[row.original.format as FormatId].icon" class="size-5" />
+            <span>{{ formatInfo[row.original.format as FormatId].name }}</span>
           </div>
+        </template>
+
+        <template #empty>
+          <UEmpty
+            v-if="filterFormats.length || battleQuery.length"
+            variant="naked"
+            size="sm"
+            icon="heroicons:magnifying-glass-20-solid"
+            title="No battles match this query."
+            :actions="[
+              {
+                label: 'Clear',
+                color: 'neutral',
+                variant: 'subtle',
+                icon: 'lucide:x',
+                loading: loadingRooms,
+                onClick: () => void ((filterFormats = []), (battleQuery = '')),
+              },
+            ]"
+          />
+          <UEmpty
+            v-else
+            variant="naked"
+            size="sm"
+            icon="heroicons:circle-stack-20-solid"
+            title="There are currently no active battles. Be the first!"
+            :actions="[
+              {
+                label: 'Refresh',
+                color: 'neutral',
+                variant: 'subtle',
+                icon: 'material-symbols:refresh',
+                loading: loadingRooms,
+                onClick: loadRooms,
+              },
+            ]"
+          />
         </template>
       </UTable>
     </div>
-
-    <UModal v-model="modalOpen">
-      <UAlert
-        title="Your team is invalid!"
-        :actions="[
-          // Bring user to teambuilder
-          // { variant: 'solid', color: 'primary', label: 'Fix', click: () =>  },
-          {variant: 'solid', color: 'primary', label: 'OK', click: () => (modalOpen = false)},
-        ]"
-      >
-        <template #description>
-          <div class="max-h-60 overflow-auto">
-            <div v-for="([poke, problems], i) in errors" :key="i">
-              <span>{{ poke }}</span>
-              <ul class="list-disc pl-8">
-                <li v-for="(problem, j) in problems" :key="j">{{ problem }}</li>
-              </ul>
-            </div>
-          </div>
-        </template>
-      </UAlert>
-    </UModal>
   </div>
 </template>
 
 <script setup lang="ts">
-import type {TeamSelector} from "#components";
+import type {TableColumn} from "@nuxt/ui";
+import InvalidTeamModal from "~/components/dialog/InvalidTeamModal.vue";
 import type {PokemonDesc} from "~~/game/pokemon";
 import {speciesList, type SpeciesId} from "~~/game/species";
 import type {Battler, Challenge, MMError} from "~~/server/gameServer";
@@ -151,18 +160,20 @@ const emit = defineEmits<{(e: "requestLogin"): void}>();
 const {$conn} = useNuxtApp();
 const {user} = useUserSession();
 const toast = useToast();
+const modal = useOverlay();
+const invalidTeamModal = modal.create(InvalidTeamModal);
 
 const findingMatch = ref(false);
 const cancelling = ref(false);
 const loadingRooms = ref(false);
 const acceptingChallenge = ref(false);
-const modalOpen = ref(false);
 const recentlyPlayed = useLocalStorage("showRecentlyPlayed", true);
 const selectedTeam = ref<Team | undefined>();
-const errors = ref<Record<number, [string, string[]]>>({});
-const selectTeamMenu = ref<InstanceType<typeof TeamSelector>>();
+const selectTeamMenu = useTemplateRef("selectTeamMenu");
 
-const rooms = ref<{to: string; name: string; format: FormatId; live: bool}[]>([]);
+type Room = {to: string; name: string; format: FormatId; live: bool};
+
+const rooms = ref<Room[]>([]);
 const filterFormats = ref<string[]>([]);
 const battleQuery = ref("");
 const challengeUser = ref<Battler>();
@@ -177,31 +188,18 @@ const filteredRooms = computed(() => {
 });
 const selectedFormat = ref<FormatId>("g1_randoms");
 
-const roomsCols = [
-  {key: "live", label: "Live"},
-  {key: "type", label: "Type"},
-  {key: "name", label: "Players"},
+const roomsCols: TableColumn<Room>[] = [
+  {accessorKey: "live", header: "Live"},
+  {accessorKey: "type", header: "Type"},
+  {accessorKey: "name", header: "Players"},
 ];
-const emptyStateEmpty = {
-  label: "There are currently no active battles. Be the first!",
-  icon: "heroicons:circle-stack-20-solid",
-};
-const emptyStateFilter = {
-  label: "No battles match this query.",
-  icon: "heroicons:magnifying-glass-20-solid",
-};
-const emptyState = computed(() => {
-  return filterFormats.value.length || battleQuery.value.length
-    ? emptyStateFilter
-    : emptyStateEmpty;
-});
 
 const onMaintenanceMode = (state: bool) => state && (findingMatch.value = false);
 const onChallengeRejected = () => (findingMatch.value = false);
 
-useTitle("Kanto Clash");
-
 onMounted(() => {
+  useTitle("Kanto Clash");
+
   loadRooms();
   $conn.on("maintenanceState", onMaintenanceMode);
   $conn.on("challengeRejected", onChallengeRejected);
@@ -218,10 +216,11 @@ onUnmounted(() => {
 
 const enterMatchmaking = () => {
   if (!$conn.connected) {
-    return toast.add({
+    toast.add({
       title: "Disconnected",
       description: "You are not currently connected to the server! Try refreshing the page.",
     });
+    return;
   }
 
   if (!user.value) {
@@ -248,7 +247,7 @@ const enterMatchmaking = () => {
     team,
     selectedFormat.value,
     challengeUser.value?.id,
-    (err, problems) => enterMMCallback(team, err, problems),
+    (err, problems) => enterMMCallback(team, selectedTeam.value?.id, err, problems),
   );
 };
 
@@ -263,7 +262,7 @@ const respondToChallenge = (accept: bool, challenge: Challenge, selected?: Team)
       challenges.value.splice(idx);
     }
 
-    enterMMCallback(team, err, problems);
+    enterMMCallback(team, selected?.id, err, problems);
   });
 };
 
@@ -283,20 +282,29 @@ const loadRooms = () => {
   });
 };
 
-const loading = ref(false);
-
-const searchUsers = async (q: string) => {
-  loading.value = true;
-
-  return new Promise<Battler[]>(resolve => {
-    $conn.emit("getOnlineUsers", q, res => {
-      loading.value = false;
-      resolve(res);
+const {
+  data: challengeUsers,
+  status,
+  execute,
+} = await useLazyAsyncData(
+  () => {
+    return new Promise<Battler[]>(resolve => {
+      $conn.emit("getOnlineUsers", "", res => {
+        resolve(res);
+      });
     });
-  });
-};
+  },
+  {immediate: false},
+);
 
-const enterMMCallback = (team?: PokemonDesc[], err?: MMError, problems?: TeamProblems) => {
+const fetchUsers = () => execute();
+
+const enterMMCallback = (
+  team?: PokemonDesc[],
+  teamId?: string,
+  err?: MMError,
+  problems?: TeamProblems,
+) => {
   if (!err) {
     return;
   }
@@ -365,7 +373,7 @@ const enterMMCallback = (team?: PokemonDesc[], err?: MMError, problems?: TeamPro
     }
   }
 
-  errors.value = issues;
-  modalOpen.value = true;
+  const teamIdx = useMyTeams().value.findIndex(team => team.id === teamId);
+  invalidTeamModal.open({errors: issues, teamIdx});
 };
 </script>

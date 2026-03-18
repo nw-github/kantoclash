@@ -2,16 +2,15 @@
   <div ref="selectTeamMenu">
     <USelectMenu
       v-model="model"
-      searchable
+      class="w-full"
       :placeholder="
         formatInfo[format].needsTeam ? 'Select team...' : 'No team required for this mode...'
       "
-      :options="validTeams"
+      :items="validTeams"
       :disabled="!formatInfo[format].needsTeam || disabled"
-      option-attribute="name"
-      clear-search-on-close
+      label-key="name"
     >
-      <template #option="{option: team}">
+      <template #item="{item: team}">
         <div>
           <span class="truncate text-xs sm:text-base">{{ team.name }}</span>
 
@@ -33,7 +32,7 @@
           <ULink
             :to="`/builder?new_team=${format}`"
             active-class="text-primary"
-            inactive-class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+            inactive-class="text-highlighted hover:text-dimmed"
           >
             Make one</ULink
           >!
@@ -46,7 +45,7 @@
 <script setup lang="ts">
 import {breakpointsTailwind} from "@vueuse/core";
 
-const selectTeamMenu = ref<HTMLDivElement>();
+const selectTeamMenu = useTemplateRef("selectTeamMenu");
 const model = defineModel<Team | undefined>();
 const {format} = defineProps<{format: FormatId; disabled?: boolean}>();
 

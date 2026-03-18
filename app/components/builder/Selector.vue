@@ -1,68 +1,84 @@
 <template>
-  <div class="relative">
-    <slot />
+  <UPopover
+    v-model:open="open"
+    :dismissible="false"
+    :ui="{content: 'p-0 rounded-md ring ring-default shadow-lg bg ' + (ui?.content ?? '')}"
+    :content
+  >
+    <template #anchor>
+      <slot />
+    </template>
 
-    <AnimatePresence>
-      <motion.ul
-        v-if="open"
-        ref="container"
-        class="absolute z-30 max-h-60 p-0.5 focus:outline-none overflow-y-auto overflow-x-hidden scroll-py-1 ring-1 ring-gray-200 dark:ring-gray-700 rounded-md shadow-lg bg-white dark:bg-gray-800"
-        :class="base"
-        :initial="{opacity: 0}"
-        :transition="{duration: 0.1, ease: 'easeOut'}"
-        :animate="{opacity: 1}"
-        :exit="{opacity: 0}"
-      >
-        <li v-if="searchable" class="pb-1">
+    <template #content>
+      <div ref="container">
+        <div v-if="searchable" class="pb-1">
           <UInput
             v-model="modelQuery"
+            class="w-full"
             placeholder="Search..."
             variant="none"
             autofocus
             @keydown.tab="open = false"
           />
-        </li>
+        </div>
 
-        <li
-          v-for="(item, i) in filteredItems"
-          :key="i"
-          class="cursor-default select-none relative flex items-center justify-between gap-1 rounded-md px-1.5 py-1 text-sm text-gray-900 dark:text-white"
-          :class="[hovered === i && 'bg-gray-100 dark:bg-gray-900 hovered']"
-          @click="select(i)"
-          @mouseover="hovered = i"
-          @mouseleave="hovered = hovered === i ? -1 : hovered"
+        <UScrollArea
+          v-slot="{item, index}"
+          :items="filteredItems"
+          class="max-h-60 p-0.5 focus:outline-none"
+          :class="ui?.list"
+          :virtualize
         >
-          <slot :item :index="i" name="item" />
-        </li>
+          <div
+            class="cursor-default select-none relative flex items-center justify-between gap-1 rounded-md px-1.5 py-1 text-sm"
+            :class="[hovered === index && 'bg-elevated/50 hovered']"
+            @click="select(index)"
+            @mouseover="hovered = index"
+            @mouseleave="hovered = hovered === index ? -1 : hovered"
+          >
+            <slot :item :index name="item" />
+          </div>
+        </UScrollArea>
 
-        <li v-if="!filteredItems.length" class="text-center text-sm">
+        <div v-if="!filteredItems.length" class="text-center text-sm">
           <slot name="empty">No Items.</slot>
-        </li>
-      </motion.ul>
-    </AnimatePresence>
-  </div>
+        </div>
+      </div>
+    </template>
+  </UPopover>
 </template>
 
 <script setup lang="ts" generic="T">
-import {motion} from "motion-v";
+import type {PopoverProps, ScrollAreaProps} from "@nuxt/ui";
+import defu from "defu";
 
 const modelQuery = defineModel<string>("query", {default: ""});
 const open = defineModel<boolean>("open", {default: false});
 const {
   items,
   filter,
-  base = "",
+  content: _content,
+  virtualize = true,
 } = defineProps<{
   items: T[];
   filter: (items: T[], query: string) => T[];
-  base?: string;
   searchable?: boolean;
+  content?: PopoverProps["content"];
+  ui?: {list?: string; content?: string};
+  virtualize?: ScrollAreaProps["virtualize"];
 }>();
 const emit = defineEmits<{(e: "chose", item: T): void}>();
-const container = ref<HTMLUListElement>();
 const hovered = ref(0);
 const query = useDebounce(modelQuery, 100);
 const queryUnmodified = ref(true);
+
+const content = computed(() =>
+  defu(_content, {
+    disableUpdateOnLayoutShift: true,
+    side: "bottom" as const,
+    sideOffset: 1,
+  }),
+);
 
 watch(open, isOpen => {
   if (isOpen && filteredItems.value.length) {
@@ -89,7 +105,7 @@ onKeyStroke("ArrowUp", () => trySetHovered(-1));
 onKeyStroke("Home", () => trySetHovered(-items.length));
 onKeyStroke("End", () => trySetHovered(items.length));
 onKeyStroke("Enter", () => select(hovered.value));
-onClickOutside(container, () => (open.value = false));
+onClickOutside(useTemplateRef("container"), () => (open.value = false));
 
 const filteredItems = computed(() => filter(items, queryUnmodified.value ? "" : query.value));
 

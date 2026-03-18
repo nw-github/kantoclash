@@ -1,19 +1,16 @@
 <template>
-  <UInput v-bind="$props" v-model="model" :maxlength>
+  <UInput v-bind="$attrs" v-model="model" :maxlength>
     <template v-if="maxlength !== undefined" #trailing>
-      <span class="text-xs text-gray-500 dark:text-gray-400">
-        {{ model?.length ?? 0 }}/{{ maxlength }}
-      </span>
+      <span class="text-xs text-muted"> {{ model?.length ?? 0 }}/{{ maxlength }} </span>
     </template>
   </UInput>
 </template>
 
 <script setup lang="ts">
-import type {UInput} from "#components";
-
-type InputProps = InstanceType<typeof UInput>["$props"];
+import type {InputProps} from "@nuxt/ui";
 
 interface Props extends /* @vue-ignore */ InputProps {
+  // This is required
   maxlength?: number;
 }
 

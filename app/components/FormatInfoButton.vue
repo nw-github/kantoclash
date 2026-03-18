@@ -1,21 +1,23 @@
 <template>
-  <TouchPopover>
-    <div class="relative">
-      <UButton :icon="formatInfo[format].icon" color="gray" variant="ghost" />
-      <div class="absolute -bottom-0.5 right-1 text-xs font-medium text-gray-400">
-        {{ formatInfo[format].generation }}
-      </div>
-    </div>
-    <template #panel>
+  <UPopover>
+    <UButton
+      :ui="{base: 'w-min', label: 'text-xs font-medium text-muted'}"
+      :icon="formatInfo[format].icon"
+      :label="String(formatInfo[format].generation)"
+      color="neutral"
+      variant="ghost"
+    />
+
+    <template #content>
       <div class="flex flex-col gap-2 p-1 max-w-96">
-        <h1 class="text-xl">{{ formatInfo[format].name }}</h1>
+        <h1 class="text-lg font-bold">{{ formatInfo[format].name }}</h1>
 
         <span>{{ formatInfo[format].desc }}</span>
 
         <div class="flex flex-col">
           <span class="font-semibold">Mods:</span>
           <template v-for="(val, mod) in formatInfo[format].mods" :key="mod">
-            <span v-if="val" class="text-xs text-gray-600 dark:text-gray-400">
+            <span v-if="val" class="text-xs text-muted">
               {{ modNames[mod].name }}: {{ modNames[mod].desc }}
             </span>
           </template>
@@ -23,7 +25,7 @@
         </div>
       </div>
     </template>
-  </TouchPopover>
+  </UPopover>
 </template>
 
 <script setup lang="ts">

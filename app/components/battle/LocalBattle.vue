@@ -21,7 +21,6 @@ import {Battle as BattleEngine, type Options} from "~~/game/battle";
 import type {BattleEvent} from "~~/game/events";
 import {GENERATIONS} from "~~/game/gen";
 import type {BattleRecipe, Choice, InfoRecord} from "~~/server/gameServer";
-import type {Battle} from "#components";
 
 const {recipe: battleParams} = defineProps<{recipe: BattleRecipe}>();
 
@@ -34,7 +33,7 @@ const format = ref(battleParams.format);
 const ready = ref(false);
 const myId = ref("");
 const {track: currentTrack} = useBGMusic();
-const battle = ref<InstanceType<typeof Battle>>();
+const battle = useTemplateRef("battle");
 const loaded = ref(true);
 
 let engine: BattleEngine;

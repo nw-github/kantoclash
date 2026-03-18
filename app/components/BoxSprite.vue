@@ -24,10 +24,10 @@ import type {FormId} from "~~/game/pokemon";
 import type {SpeciesId} from "~~/game/species";
 
 const {form, speciesId} = defineProps<{
-  speciesId?: SpeciesId;
+  speciesId?: SpeciesId | string;
   scale?: number;
   shiny?: boolean;
-  form?: FormId;
+  form?: FormId | string;
 }>();
 
 const clazz = computed(() => {
