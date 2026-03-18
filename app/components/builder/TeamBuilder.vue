@@ -590,7 +590,7 @@ const getTotalEvs = (stats: Partial<Stats>) => {
   return v;
 };
 
-watch([selectedPokeIdx, selectedTab], ([_, tab]) => {
+watch([selectedTab, selectedPokeIdx, selectedPoke], ([tab]) => {
   if (tab === "1") {
     currentPokeText.value = descToString(team.format, team.pokemon[selectedPokeIdx.value]).trim();
   }
@@ -611,12 +611,6 @@ const onSpeciesChange = (s: Species) => {
     selectedPoke.value.data.item = gen.value.items[s.requiresItem].name;
   }
 };
-
-for (const poke of team.pokemon) {
-  for (let i = poke.moves.length; i < 4; i++) {
-    poke.moves.push("");
-  }
-}
 
 const copyTextArea = (text: string) => {
   navigator.clipboard.writeText(text);
@@ -759,4 +753,12 @@ const trySetNature = (stat: StatId) => {
     }
   }
 };
+
+onMounted(() => {
+  for (const poke of team.pokemon) {
+    for (let i = poke.moves.length; i < 4; i++) {
+      poke.moves.push("");
+    }
+  }
+});
 </script>

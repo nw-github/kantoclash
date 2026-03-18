@@ -270,6 +270,11 @@ export const parseTeams = (src: string) => {
 
       pokemon.push(parsePokemon(format, res[i]));
     }
+
+    if (!pokemon.length) {
+      pokemon.push(parsePokemon(format, ""));
+    }
+
     teams.push({name, pokemon, format, id: crypto.randomUUID()});
   }
   return teams;
