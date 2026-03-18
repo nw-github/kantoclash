@@ -16,7 +16,7 @@
       :disabled
       :highlight="!disabled && !!isIllegal(normalizeName(query))"
       trailing-icon="lucide:chevron-down"
-      @focus="open = true"
+      @focus="(open = true), $event.target.select()"
       @update:model-value="open = true"
       @keydown.tab="open = false"
     />

@@ -15,7 +15,7 @@
       color="error"
       :highlight="isIllegal(normalizeName(query)) || hasConflict()"
       :trailing-icon="trailing ? undefined : 'lucide:chevron-down'"
-      @focus="open = true"
+      @focus="(open = true), $event.target.select()"
       @update:model-value="open = true"
       @keydown.tab="open = false"
     >
