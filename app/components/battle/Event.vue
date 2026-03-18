@@ -36,9 +36,9 @@
 
     <p v-if="e.why !== 'explosion'" class="text-xs sm:text-[0.8rem] text-(--stat-down)">
       {{ pn(e.target) }} lost
-      <UTooltip :text="tooltip(e)">
+      <TouchTooltip :text="tooltip(e)">
         <b class="text-xs sm:text-[0.8rem] text-(--stat-down)" :class="[tooltip(e) && 'underline decoration-dotted']">{{ percent(e) }}%</b>
-      </UTooltip> of its health.
+      </TouchTooltip> of its health.
     </p>
 
     <template v-if="e.hitCount">
@@ -58,9 +58,9 @@
 
     <p class="text-xs sm:text-[0.8rem] text-(--stat-up)">
       {{ pn(e.target) }} gained
-      <UTooltip :text="tooltip(e)">
+      <TouchTooltip :text="tooltip(e)">
         <b class="text-xs sm:text-[0.8rem] text-(--stat-up)" :class="[tooltip(e) && 'underline decoration-dotted']">{{ percent(e) }}%</b>
-      </UTooltip> of its health.
+      </TouchTooltip> of its health.
     </p>
   </div>
   <div v-else-if="e.type === 'move'" class="move">

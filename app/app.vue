@@ -29,12 +29,12 @@
             </UPopover>
 
             <div class="flex items-center gap-3">
-              <UTooltip v-if="!connected" text="Disconnected from server">
+              <TouchTooltip v-if="!connected" text="Disconnected from server">
                 <UIcon
                   name="fluent:plug-disconnected-16-regular"
                   class="animate-pulse size-5 bg-primary"
                 />
-              </UTooltip>
+              </TouchTooltip>
               <UColorModeButton />
               <ClientOnly>
                 <UPopover mode="click" :content="{align: 'end'}">

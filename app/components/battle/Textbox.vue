@@ -68,13 +68,13 @@
               class="flex justify-between items-center w-full"
             >
               <UChip :color="player.connected ? 'success' : 'error'">
-                <UTooltip
+                <TouchTooltip
                   :text="`${playerInfo(player, id)} (${player.connected ? 'Online' : 'Offline'})`"
                 >
                   <span class="max-w-36 truncate pr-2 hover:underline hover:decoration-dotted">
                     {{ playerInfo(player, id) }}
                   </span>
-                </UTooltip>
+                </TouchTooltip>
               </UChip>
 
               <UButton

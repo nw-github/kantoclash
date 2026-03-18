@@ -10,13 +10,13 @@
           >
             <span class="text-lg font-medium">Turn {{ currentTurnNo }}</span>
           </div>
-          <UTooltip v-if="weather" :text="weatherData[weather].tooltip">
+          <TouchTooltip v-if="weather" :text="weatherData[weather].tooltip">
             <UIcon
               class="size-6"
               :class="weatherData[weather].class"
               :name="weatherData[weather].icon"
             />
-          </UTooltip>
+          </TouchTooltip>
         </div>
 
         <div v-if="opponent" class="absolute sm:static right-0 flex flex-col items-end gap-1">
