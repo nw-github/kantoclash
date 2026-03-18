@@ -5,10 +5,11 @@
         {{ user ? `Welcome ${user.name}!` : "You must first log in to find a battle" }}
       </h1>
       <ClientOnly>
-        <div class="flex items-center gap-1.5">
-          <FormatSelector v-model="selectedFormat" />
-          <FormatInfoButton :format="selectedFormat" />
-        </div>
+        <FormatSelector v-model="selectedFormat" class="gap-1.5">
+          <template #trailing>
+            <FormatInfoButton :format="selectedFormat" />
+          </template>
+        </FormatSelector>
         <TeamSelector
           ref="selectTeamMenu"
           v-model="selectedTeam"

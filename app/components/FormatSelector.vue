@@ -6,7 +6,14 @@
       :disabled="Object.keys(formats[category]).length <= 1"
       :search-input="false"
     />
-    <USelectMenu v-model="category" class="w-full" :items="Object.keys(formats)" />
+    <USelectMenu
+      v-model="category"
+      class="grow overflow-hidden"
+      :items="Object.keys(formats)"
+      :ui="{content: 'min-w-fit'}"
+    />
+
+    <slot name="trailing"></slot>
   </div>
 </template>
 
