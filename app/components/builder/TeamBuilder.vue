@@ -270,15 +270,23 @@
                 <USlider
                   v-model="selectedPoke.evProxy[stat]"
                   :min="0"
-                  :max="255"
+                  :max="gen.id <= 2 ? 255 : 252"
                   :step="gen.id <= 2 ? 1 : 4"
                   color="success"
                   :disabled="gen.id <= 2 && stat === 'spd'"
                   @input="onRangeInput($event, stat)"
                 />
-                <span class="text-center px-1.5 min-w-8 text-xs">
-                  {{ selectedPoke.evProxy[stat] }}
-                </span>
+                <UInputNumber
+                  v-model="selectedPoke.evProxy[stat]"
+                  :ui="{root: 'w-10 text-xs', base: 'text-center'}"
+                  size="sm"
+                  variant="none"
+                  :min="0"
+                  :max="255"
+                  :increment="false"
+                  :decrement="false"
+                  :placeholder="String(selectedPoke.evProxy[stat])"
+                />
                 <NumericInput
                   v-model="selectedPoke.ivProxy[stat]"
                   class="w-10"
@@ -317,7 +325,7 @@
                     </span>
                   </div>
                   <span
-                    class="text-center px-1.5 min-w-9 text-xs"
+                    class="text-center px-1.5 min-w-9 text-sm"
                     :style="{color: baseStatColor(selectedPoke.species.stats[stat])}"
                   >
                     {{ selectedPoke.species.stats[stat] }}
@@ -327,7 +335,7 @@
                   <div class="flex justify-center items-center px-1.5 min-w-10">
                     <UButton variant="link" color="neutral" :padded="false" label="--" disabled />
                   </div>
-                  <span class="text-center px-1.5 min-w-9 text-dimmed text-xs">--</span>
+                  <span class="text-center px-1.5 min-w-9 text-dimmed text-sm">--</span>
                 </template>
               </template>
             </div>
