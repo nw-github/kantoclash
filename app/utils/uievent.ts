@@ -144,6 +144,7 @@ export const infoMessage: Record<InfoReason, string> = {
   pressure: "{} is exerting its Pressure!",
   gastroAcid: "{}'s ability was suppressed!",
   atk_maximize: "{} maxed its Attack!",
+  quickclaw: "{} can move faster thanks to its Quick Claw!",
 };
 
 export const weatherMessage: Record<Weather, Record<WeatherEvent["kind"], string>> = {

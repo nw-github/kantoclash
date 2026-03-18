@@ -312,11 +312,20 @@ export class Battle {
 
   calcTurnOrder() {
     for (const poke of this.allActive) {
-      if (poke.choice) {
-        if (poke.base.itemId === "quickclaw" && this.gen.rng.tryQuickClaw(this)) {
-          debugLog("proc quick claw: ", poke.base.name);
+      if (poke.choice && !poke.choice.executed) {
+        const isSwitch = poke.choice.move.kind === "switch";
+        if (
+          poke.base.itemId === "quickclaw" &&
+          this.gen.rng.tryQuickClaw(this) &&
+          (!isSwitch || this.gen.id <= 3)
+        ) {
+          if (this.gen.id >= 4) {
+            this.info(poke, "quickclaw");
+          } else {
+            debugLog("proc quick claw: ", poke.base.name);
+          }
           poke.choice.spe = 65535;
-        } else if (poke.choice.move.kind === "switch") {
+        } else if (isSwitch) {
           // This is only relevant for the order of weather abilities on the first turn, which are
           // called in turn order and affected by quick claw in Gen 3
           poke.choice.spe = poke.base.stats.spe;
