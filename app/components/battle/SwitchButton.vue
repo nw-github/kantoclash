@@ -13,7 +13,7 @@
           <GenderIcon class="size-4" :gender="gen1Gender[poke.speciesId] ?? poke.gender" />
           <StatusOrFaint :poke size="xs" class="ml-auto" />
         </div>
-        <UProgress v-model="poke.hp" :max="poke.stats.hp" :color="colorForHp" class="w-full h-1" />
+        <UProgress :model-value="poke.hp" :max="poke.stats.hp" :color="barCol" class="w-full h-1" />
       </div>
     </UButton>
 
@@ -36,7 +36,7 @@ const {poke} = defineProps<{
   popoverDisabled?: bool;
 }>();
 
-const colorForHp = computed(() => {
+const barCol = computed(() => {
   if (poke.hpPercent < 10) {
     return "error";
   } else if (poke.hpPercent < 30) {
