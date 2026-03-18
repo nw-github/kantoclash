@@ -98,13 +98,13 @@ export class Player {
       move,
       target: singleTarget,
       isReplacement: false,
-      spe: battle.getSpe(user),
       executed: false,
+      spe: 0,
     };
     return true;
   }
 
-  chooseSwitch(who: number, battle: Battle, index: number) {
+  chooseSwitch(who: number, _battle: Battle, index: number) {
     const active = this.active[who];
     if (!active?.options?.switches.includes(index)) {
       return false;
@@ -117,7 +117,6 @@ export class Player {
       return false;
     }
 
-    const user = this.active[who];
     active.choice = {
       move: {
         kind: "switch",
@@ -129,10 +128,8 @@ export class Player {
         poke,
       },
       isReplacement: active.v.fainted,
-      // This is only relevant for the order of weather abilities on the first turn, which are
-      // called in turn order and affected by quick claw in Gen 3
-      spe: battle.getSpe(user) === 65535 ? 65535 : poke.stats.spe,
       executed: false,
+      spe: 0,
     };
     return true;
   }
@@ -228,14 +225,6 @@ export class Battle {
     this.finished = true;
   }
 
-  getSpe(poke: ActivePokemon) {
-    if (poke.base.itemId === "quickclaw" && this.gen.rng.tryQuickClaw(this)) {
-      debugLog("proc quick claw: ", poke.base.name);
-      return 65535;
-    }
-    return this.gen.getStat(this, poke, "spe");
-  }
-
   event<T extends BattleEvent = BattleEvent>(event: BattleEvent) {
     this.events.push(event);
     return event as T;
@@ -322,6 +311,21 @@ export class Battle {
   }
 
   calcTurnOrder() {
+    for (const poke of this.allActive) {
+      if (poke.choice) {
+        if (poke.base.itemId === "quickclaw" && this.gen.rng.tryQuickClaw(this)) {
+          debugLog("proc quick claw: ", poke.base.name);
+          poke.choice.spe = 65535;
+        } else if (poke.choice.move.kind === "switch") {
+          // This is only relevant for the order of weather abilities on the first turn, which are
+          // called in turn order and affected by quick claw in Gen 3
+          poke.choice.spe = poke.base.stats.spe;
+        } else {
+          poke.choice.spe = this.gen.getStat(this, poke, "spe");
+        }
+      }
+    }
+
     if (this.gen.id <= 3 || this.turnType !== TurnType.Normal) {
       const switches = this.switchOrder().filter(p => p.choice?.move?.kind === "switch");
       return switches.concat(this.inTurnOrder().filter(p => p.choice?.move?.kind !== "switch"));
@@ -338,28 +342,30 @@ export class Battle {
     if (this.turnType === TurnType.Normal && !this.allActive.some(p => p.v.inBatonPass)) {
       this._turn++;
       this.event({type: "next_turn", turn: this._turn});
-    }
+      this.turnOrder = this.calcTurnOrder();
+      for (let i = 0; i < this.turnOrder.length; i++) {
+        const user = this.turnOrder[i];
+        const {move, target, executed} = user.choice!;
+        if (executed) {
+          continue;
+        }
 
-    // TODO: don't recalculate speed ties?
-    this.turnOrder = this.calcTurnOrder();
-    for (let i = 0; i < this.turnOrder.length; i++) {
-      const user = this.turnOrder[i];
-      const {move, target, executed} = user.choice!;
-      if (executed) {
-        continue;
-      }
+        if (move.kind !== "protect") {
+          user.v.protectCount = 0;
+        }
 
-      if (move.kind !== "protect") {
-        user.v.protectCount = 0;
-      }
-
-      if (move === this.gen.moveList.pursuit) {
-        if (target?.choice?.move?.kind === "switch" && target.owner !== user.owner) {
+        if (
+          move === this.gen.moveList.pursuit &&
+          target?.choice?.move?.kind === "switch" &&
+          target.owner !== user.owner
+        ) {
           debugLog(user.base.name + " is pursuing ", target.base.name);
           this.turnOrder.splice(this.turnOrder.indexOf(target), 0, ...this.turnOrder.splice(i, 1));
           user.v.inPursuit = true;
         }
       }
+    } else if (this.turnType !== TurnType.Normal) {
+      this.turnOrder = this.calcTurnOrder();
     }
 
     this.runTurn();
