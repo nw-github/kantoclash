@@ -306,6 +306,11 @@ onMounted(() => {
     fetchMyRooms();
   });
   fetch();
+
+  // Prevent the annoying zoom in that happens when you blur an input element on iOS safari
+  if (/iP(ad|hone|od)/.test(navigator.userAgent)) {
+    document.addEventListener("focusout", onFocusOut);
+  }
 });
 
 onUnmounted(() => {
@@ -316,5 +321,9 @@ onUnmounted(() => {
   $conn.off("challengeReceived");
   $conn.off("challengeRetracted");
   $conn.off("challengeRejected");
+
+  document.removeEventListener("focusout", onFocusOut);
 });
+
+const onFocusOut = () => window.scrollTo(0, 0);
 </script>
