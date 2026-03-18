@@ -11,6 +11,7 @@ type InfoUserJoin = {
 
 type InfoUserLeave = {type: "userLeave"; id: string};
 
-type InfoTimerStart = {type: "timerStart"; id: string};
+type InfoTimerStart = {type: "timerStart"; id: string; info: BattleTimers};
 
 export type InfoMessage = InfoChatMessage | InfoUserJoin | InfoUserLeave | InfoTimerStart;
+export type BattleTimers = Record<string, {startedAt: number; duration: number}>;

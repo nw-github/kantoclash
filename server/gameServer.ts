@@ -7,11 +7,13 @@ import type {BattleEvent, PokeId} from "~~/game/events";
 
 import {type TeamProblems, formatDescs} from "./utils/formats";
 import type {User} from "#auth-utils";
-import type {InfoMessage} from "./utils/info";
+import type {InfoMessage, BattleTimers} from "./utils/info";
 import {CHAT_MAX_MESSAGE, formatInfo} from "~/utils/shared";
 import type {FormatId} from "~/utils/shared";
 import {activeBots, createBotTeam} from "./bot";
 import random from "random";
+
+export {BattleTimers, InfoMessage};
 
 export type JoinRoomResponse = {
   team?: ValidatedPokemonDesc[];
@@ -19,12 +21,10 @@ export type JoinRoomResponse = {
   events: BattleEvent[];
   chats: InfoRecord;
   format: FormatId;
-  timer?: BattleTimer;
+  timer?: BattleTimers;
   finished: bool;
   battlers: {id: string; name: string; admin?: bool; nPokemon: number}[];
 };
-
-export type BattleTimer = {startedAt: number; duration: number};
 
 export type ChoiceError = "invalid_choice" | "bad_room" | "not_in_battle" | "too_late" | "finished";
 
@@ -114,8 +114,7 @@ export interface ServerMessage {
   challengeRetracted: (by: Battler) => void;
   challengeRejected: (by: Battler) => void;
 
-  nextTurn: (room: string, events: BattleEvent[], options?: Options[], timer?: BattleTimer) => void;
-  timerStart: (room: string, who: string, timer: BattleTimer) => void;
+  nextTurn: (room: string, events: BattleEvent[], options?: Options[], tmrs?: BattleTimers) => void;
   info: (room: string, message: InfoMessage, turn: number) => void;
 
   maintenanceState: (state: bool) => void;
@@ -202,6 +201,7 @@ class Room {
     }
 
     this.lastTurn = Date.now();
+    return this.timerInfo();
   }
 
   startTimer(initiator: Account) {
@@ -229,44 +229,38 @@ class Room {
       }
     }, 1000);
 
-    this.resetTimerState();
-    for (const accountId of this.accounts) {
-      const account = this.server.getAccount(accountId);
-      if (account) {
-        const info = this.timerInfo(account);
-        if (info) {
-          this.server.to(account.userRoom).emit("timerStart", this.id, initiator.id, info);
-        }
-      }
-    }
-
-    this.sendMessage({type: "timerStart", id: initiator.id});
+    this.sendMessage({type: "timerStart", id: initiator.id, info: this.resetTimerState()!});
     return true;
   }
 
-  timerInfo(_account: Account) {
-    // TODO: per-player timer duration
-    return this.timer && !this.battle.finished
-      ? ({startedAt: this.lastTurn, duration: TURN_DECISION_TIME_MS} satisfies BattleTimer)
-      : undefined;
+  timerInfo() {
+    if (!this.timer || this.battle.finished) {
+      return undefined;
+    }
+
+    const info: BattleTimers = {};
+    for (const {id} of this.battlers) {
+      // TODO: per-player timer duration
+      info[id] = {startedAt: this.lastTurn, duration: TURN_DECISION_TIME_MS};
+    }
+    return info;
   }
 
   broadcastTurn(turn: BattleEvent[]) {
     this.events.push(...turn);
-    this.resetTimerState();
-
+    const timer = this.resetTimerState();
     for (const player of this.battle.players) {
       const account = this.server.getAccount(player.id);
       if (account) {
         const result = Battle.censorEvents(turn, player);
         const opts = player.active.map(a => a.options).filter(a => !!a);
-        this.server
-          .to(account.userRoom)
-          .emit("nextTurn", this.id, result, opts, this.timerInfo(account));
+        this.server.to(account.userRoom).emit("nextTurn", this.id, result, opts, timer);
       }
     }
 
-    this.server.to(this.spectatorRoom).emit("nextTurn", this.id, Battle.censorEvents(turn));
+    this.server
+      .to(this.spectatorRoom)
+      .emit("nextTurn", this.id, Battle.censorEvents(turn), undefined, timer);
     if (this.battle.finished) {
       for (const player of this.battle.players) {
         this.server.onBattleEnded(player.id, this);
@@ -551,7 +545,7 @@ export class GameServer extends Server<ClientMessage, ServerMessage> {
         events: Battle.censorEvents(room.events.slice(eventStartIndex), player),
         chats: room.chats,
         format: room.battleRecipe.format,
-        timer: socket.account && room.timerInfo(socket.account),
+        timer: room.timerInfo(),
         finished: room.battle.finished,
         battlers: room.battlers,
       });

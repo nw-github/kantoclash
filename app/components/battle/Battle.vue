@@ -79,15 +79,13 @@
 
             <TooltipButton
               :key="updateMarker"
-              :text="timer === undefined ? 'Start Timer' : 'Timer is on'"
+              :text="timers === undefined ? 'Start Timer' : 'Timer is on'"
               :content="{side: 'top'}"
               leading-icon="material-symbols:alarm-outline"
               variant="ghost"
               :color="currOptions && timeLeft() <= 10 ? 'error' : 'neutral'"
-              :disabled="!isBattler || isBattleOver || !!timer || localMode"
-              :label="
-                timer && !currOptions ? '--' : timer ? `${Math.max(timeLeft(), 0)}` : undefined
-              "
+              :disabled="!isBattler || isBattleOver || !!timers || localMode"
+              :label="timers && !currOptions ? '--' : timers && `${timeLeft()}`"
               @click="() => $emit('timer')"
             />
 
@@ -236,7 +234,7 @@
 
 <script setup lang="ts">
 import type {BattleEvent, PokeId} from "~~/game/events";
-import type {BattleTimer, Choice, InfoRecord} from "~~/server/gameServer";
+import type {BattleTimers, Choice, InfoRecord} from "~~/server/gameServer";
 import criesSpritesheet from "~~/public/effects/cries.json";
 import {GENERATIONS} from "~~/game/gen";
 import {playerId, type Weather} from "~~/game/utils";
@@ -258,12 +256,12 @@ defineEmits<{
   choice: [Choice];
   rewind: [turn: number];
 }>();
-const {options, players, events, chats, timer, finished, format, ready, myId} = defineProps<{
+const {options, players, events, chats, timers, finished, format, ready, myId} = defineProps<{
   options: Partial<Record<number, Options[]>>;
   players: Players;
   events: BattleEvent[];
   chats: InfoRecord;
-  timer?: BattleTimer;
+  timers?: BattleTimers;
   finished: bool;
   format: FormatId;
   ready: bool;
@@ -415,7 +413,11 @@ const goToTurnEnter = (e: KeyboardEvent) => {
 };
 
 const timeLeft = () => {
-  return timer ? Math.floor((timer.startedAt + timer.duration - Date.now()) / 1000) : 1000;
+  const timer = timers?.[perspective.value];
+  if (!timer) {
+    return 1000;
+  }
+  return Math.max(Math.floor((timer.startedAt + timer.duration - Date.now()) / 1000), 0);
 };
 
 const animations: AnimationPlaybackControls[] = [];

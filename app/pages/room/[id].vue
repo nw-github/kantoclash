@@ -6,7 +6,7 @@
       :players
       :events
       :chats
-      :timer
+      :timers
       :finished
       :format
       :ready
@@ -24,8 +24,8 @@
 import type {Socket} from "socket.io-client";
 import type {Options} from "~~/game/battle";
 import type {BattleEvent} from "~~/game/events";
-import type {BattleTimer, Choice, InfoRecord, JoinRoomResponse} from "~~/server/gameServer";
-import type {InfoMessage} from "~~/server/utils/info";
+import type {Choice, InfoRecord, JoinRoomResponse} from "~~/server/gameServer";
+import type {InfoMessage, BattleTimers} from "~~/server/utils/info";
 import AlertModal from "~/components/dialog/AlertModal.vue";
 
 const alert = useOverlay().create(AlertModal);
@@ -45,7 +45,7 @@ const players = ref<Players>(new Players());
 const events = ref<BattleEvent[]>([]);
 const options = reactive<Partial<Record<number, Options[]>>>({});
 const chats = reactive<InfoRecord>({});
-const timer = ref<BattleTimer>();
+const timers = ref<BattleTimers>();
 const room = `${route.params.id}`;
 const finished = ref(false);
 const format = ref<FormatId>("g1_standard");
@@ -64,7 +64,6 @@ onMounted(() => {
   $conn.on("disconnect", onDisconnect);
   $conn.on("nextTurn", onNextTurn);
   $conn.on("info", onInfo);
-  $conn.on("timerStart", onTimerStart);
 
   firstConnect = Boolean(route.query.intro);
   router.replace({query: {}});
@@ -75,7 +74,6 @@ onUnmounted(() => {
   $conn.off("disconnect", onDisconnect);
   $conn.off("nextTurn", onNextTurn);
   $conn.off("info", onInfo);
-  $conn.off("timerStart", onTimerStart);
 
   if ($conn.connected) {
     $conn.emit("leaveRoom", room, () => {});
@@ -254,7 +252,7 @@ const onJoinRoom = (resp: JoinRoomResponse | "bad_room") => {
   }
 
   options[sequenceNo] = resp.options;
-  timer.value = resp.timer;
+  timers.value = resp.timer;
   format.value = resp.format;
 
   clearObj(chats);
@@ -290,7 +288,7 @@ const onJoinRoom = (resp: JoinRoomResponse | "bad_room") => {
 const onConnect = () => {
   loading.value = true;
   ready.value = false;
-  timer.value = undefined;
+  timers.value = undefined;
 
   for (const k in options) {
     // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
@@ -305,8 +303,8 @@ const onDisconnect = (reason: Socket.DisconnectReason) => {
   needsFreshStart = reason === "io client disconnect";
 };
 
-const onNextTurn = (roomId: string, turn: BattleEvent[], opts?: Options[], tmr?: BattleTimer) => {
-  timer.value = tmr || undefined;
+const onNextTurn = (roomId: string, turn: BattleEvent[], opts?: Options[], tmr?: BattleTimers) => {
+  timers.value = tmr || undefined;
   if (roomId === room) {
     events.value.push(...turn);
     sequenceNo += turn.length;
@@ -326,11 +324,9 @@ const onInfo = (roomId: string, message: InfoMessage, turn: number) => {
     chats[turn] = [];
   }
   chats[turn].push(message);
-};
 
-const onTimerStart = (roomId: string, _who: string, tmr: BattleTimer) => {
-  if (roomId === room) {
-    timer.value = tmr || undefined;
+  if (message.type === "timerStart") {
+    timers.value = message.info;
   }
 };
 </script>
