@@ -131,6 +131,7 @@
     "weatherEva": "hail"
   },
   "angerpoint": {"name": "Anger Point", "desc": "Maximizes attack if crit."},
+  "multitype": {"name": "Multitype", "desc": "User changes type to match its plate."},
 
   "download": {"name": "Download", "desc": "Unimplemented"},
   "forewarn": {"name": "Forewarn", "desc": "Unimplemented"},
@@ -156,7 +157,6 @@
   "klutz": {"name": "Klutz", "desc": "Unimplemented"},
   "moldbreaker": {"name": "Mold Breaker", "desc": "Unimplemented"},
   "motordrive": {"name": "Motor Drive", "desc": "Unimplemented"},
-  "multitype": {"name": "Multitype", "desc": "Unimplemented"},
   "quickfeet": {"name": "Quick Feet", "desc": "Unimplemented"},
   "reckless": {"name": "Reckless", "desc": "Unimplemented"},
   "rivalry": {"name": "Rivalry", "desc": "Unimplemented"},
