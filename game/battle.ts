@@ -339,7 +339,8 @@ export class Battle {
       return;
     }
 
-    if (this.turnType === TurnType.Normal && !this.allActive.some(p => p.v.inBatonPass)) {
+    const normal = this.turnType === TurnType.Normal && !this.allActive.some(p => p.v.inBatonPass);
+    if (normal) {
       this._turn++;
       this.event({type: "next_turn", turn: this._turn});
       this.turnOrder = this.calcTurnOrder();
@@ -368,7 +369,7 @@ export class Battle {
       this.turnOrder = this.calcTurnOrder();
     }
 
-    this.runTurn();
+    this.runTurn(normal);
 
     if (this.allActive.some(poke => poke.v.inBatonPass)) {
       for (const poke of this.allActive) {
@@ -618,8 +619,8 @@ export class Battle {
 
   // --
 
-  private runTurn() {
-    if (this.turnType === TurnType.Normal) {
+  private runTurn(normal: bool) {
+    if (normal) {
       for (const poke of this.switchOrder()) {
         if (poke.choice?.move === this.gen.moveList.focuspunch) {
           this.info(poke, "begin_focuspunch");
