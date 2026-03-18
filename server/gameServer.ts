@@ -138,15 +138,16 @@ type Account = {
   id: string;
   name: string;
   admin?: bool;
-  offline: bool;
+  sockets: number;
   matchmaking?: {format: FormatId} | {challenged: Account};
   userRoom: string;
   activeBattles: Set<Room>;
   challenges: {format: FormatId; from: Account; player: PlayerParams}[];
+  get offline(): bool;
 };
 
 class Room {
-  readonly accounts = new Set<Account>();
+  readonly accounts = new Set<string>();
   readonly chats: InfoRecord = {};
   timer?: NodeJS.Timeout;
   lastTurn: number = Date.now();
@@ -155,6 +156,7 @@ class Room {
   readonly events: BattleEvent[];
   readonly battleRecipe: BattleRecipe;
   readonly reports: BugReports = {};
+  readonly battlers: JoinRoomResponse["battlers"];
 
   constructor(
     public id: string,
@@ -179,6 +181,13 @@ class Room {
     this.events = turn0;
     this.spectatorRoom = `spectator:${this.id}`;
     this.battleRecipe = {seed, player1, player2, choices: {}, format};
+
+    this.battlers = this.battle.players.map(pl => {
+      // admin might become stale but not a huge deal
+      const acc = this.server.getAccount(pl.id)!;
+      return {name: acc.name, id: acc.id, admin: acc.admin, nPokemon: pl.teamDesc.length};
+    });
+
     console.log(
       `New room '${this.id}' hosting battle with seed '${seed}' [players ${player1.id}, ${player2.id}]`,
     );
@@ -221,10 +230,13 @@ class Room {
     }, 1000);
 
     this.resetTimerState();
-    for (const account of this.accounts) {
-      const info = this.timerInfo(account);
-      if (info) {
-        this.server.to(account.userRoom).emit("timerStart", this.id, initiator.id, info);
+    for (const accountId of this.accounts) {
+      const account = this.server.getAccount(accountId);
+      if (account) {
+        const info = this.timerInfo(account);
+        if (info) {
+          this.server.to(account.userRoom).emit("timerStart", this.id, initiator.id, info);
+        }
       }
     }
 
@@ -281,7 +293,7 @@ class Room {
     if (!socket.account) {
       socket.join(this.spectatorRoom);
       return;
-    } else if (this.accounts.has(socket.account)) {
+    } else if (this.accounts.has(socket.account.id)) {
       if (!this.battle.findPlayer(socket.account.id)) {
         socket.join(this.spectatorRoom);
       }
@@ -299,7 +311,7 @@ class Room {
         nPokemon: player?.team.length ?? 0,
       });
     }
-    this.accounts.add(socket.account);
+    this.accounts.add(socket.account.id);
     if (!player) {
       socket.join(this.spectatorRoom);
     }
@@ -308,7 +320,7 @@ class Room {
   makeDescriptor() {
     return {
       id: this.id,
-      battlers: this.server.getBattlers(this),
+      battlers: this.battlers,
       format: this.battleRecipe.format,
       finished: this.battle.finished,
     } satisfies RoomDescriptor;
@@ -347,14 +359,14 @@ class Room {
   async onSocketLeave(socket: Socket, server: GameServer, sockets?: Socket[]) {
     socket.leave(this.id);
     socket.leave(this.spectatorRoom);
-    if (!socket.account || !this.accounts.has(socket.account)) {
+    if (!socket.account || !this.accounts.has(socket.account.id)) {
       return;
     }
 
     sockets ??= (await server.in(socket.account.userRoom).fetchSockets()) as unknown as Socket[];
     if (sockets.every(s => !s.rooms.has(this.id))) {
       this.sendMessage({type: "userLeave", id: socket.account.id});
-      this.accounts.delete(socket.account);
+      this.accounts.delete(socket.account.id);
     }
   }
 }
@@ -400,20 +412,25 @@ export class GameServer extends Server<ClientMessage, ServerMessage> {
     const user: User | undefined = socket.request.__SOCKETIO_USER__;
     if (user) {
       console.log(`new connection: ${socket.id} from '${user.name}':${user.id}`);
-      if (!(socket.account = this.accounts.get(user.id))) {
-        const account: Account = {
+      if ((socket.account = this.accounts.get(user.id))) {
+        socket.account.admin = user.admin;
+        socket.account.name = user.name;
+        socket.account.sockets++;
+      } else {
+        socket.account = {
           id: user.id,
           name: user.name,
           admin: user.admin,
-          offline: false,
+          sockets: 1,
           userRoom: `user:${user.id}`,
           activeBattles: new Set(),
           challenges: [],
+          get offline() {
+            return this.sockets === 0;
+          },
         };
-        this.accounts.set(user.id, account);
-        socket.account = account;
+        this.accounts.set(user.id, socket.account);
       }
-      socket.account.offline = false;
       socket.join(socket.account.userRoom);
     } else {
       console.log(`new connection: ${socket.id}`);
@@ -536,7 +553,7 @@ export class GameServer extends Server<ClientMessage, ServerMessage> {
         format: room.battleRecipe.format,
         timer: socket.account && room.timerInfo(socket.account),
         finished: room.battle.finished,
-        battlers: this.getBattlers(room),
+        battlers: room.battlers,
       });
     });
     socket.on("leaveRoom", async (roomId, ack) => {
@@ -604,7 +621,7 @@ export class GameServer extends Server<ClientMessage, ServerMessage> {
       const room = this.rooms.get(roomId);
       if (!room) {
         return ack("bad_room");
-      } else if (!socket.account || !room.accounts.has(socket.account)) {
+      } else if (!socket.account || !room.accounts.has(socket.account.id)) {
         return ack("not_in_room");
       } else if (!room.battle.findPlayer(socket.account.id)) {
         return ack("not_in_battle");
@@ -624,7 +641,7 @@ export class GameServer extends Server<ClientMessage, ServerMessage> {
         return ack("bad_room");
       } else if (!message.length || message.length > CHAT_MAX_MESSAGE) {
         return ack("bad_message");
-      } else if (!socket.account || !room.accounts.has(socket.account)) {
+      } else if (!socket.account || !room.accounts.has(socket.account.id)) {
         return ack("not_in_room");
       }
 
@@ -643,7 +660,7 @@ export class GameServer extends Server<ClientMessage, ServerMessage> {
         return ack("bad_room");
       } else if (!message.length || message.length > CHAT_MAX_MESSAGE) {
         return ack("bad_message");
-      } else if (!socket.account || !room.accounts.has(socket.account)) {
+      } else if (!socket.account || !room.accounts.has(socket.account.id)) {
         return ack("not_in_room");
       }
 
@@ -716,7 +733,6 @@ export class GameServer extends Server<ClientMessage, ServerMessage> {
         return;
       }
 
-      console.log(`lost connection: ${socket.id} (was '${account.name}':${account.id})`);
       socket.leave(account.userRoom);
 
       const rooms = [...socket.rooms];
@@ -729,11 +745,17 @@ export class GameServer extends Server<ClientMessage, ServerMessage> {
         }
       }
 
-      if (!sockets.length) {
+      console.log(
+        `lost connection: ${socket.id} (was '${account.name}':${account.id}, ${
+          account.sockets - 1
+        } sockets connected)`,
+      );
+      if (--account.sockets <= 0) {
         this.leaveMatchmaking(account);
-        account.offline = true;
-        // FIXME: Account memory leak
-        // this.accounts.delete(account.id);
+        if (!account.activeBattles.size) {
+          this.accounts.delete(account.id);
+          console.log(`Pruning account '${account.name}': Went offline + not in any battles`);
+        }
       }
     });
     socket.on("getConfig", ack => {
@@ -856,19 +878,23 @@ export class GameServer extends Server<ClientMessage, ServerMessage> {
     }
   }
 
-  getBattlers(room: Room) {
-    return room.battle.players.map(pl => {
-      const acc = this.accounts.get(pl.id)!;
-      return {name: acc.name, id: acc.id, admin: acc.admin, nPokemon: pl.teamDesc.length};
-    });
-  }
-
   getAccount(id: string) {
     return this.accounts.get(id);
   }
 
   onBattleEnded(player: string, room: Room) {
-    this.accounts.get(player)!.activeBattles.delete(room);
+    const account = this.accounts.get(player);
+    if (account) {
+      account.activeBattles.delete(room);
+      if (account.offline && !account.activeBattles.size) {
+        this.accounts.delete(account.id);
+        console.log(`Pruning account '${account.name}': Last battle ended & user is offline`);
+      }
+    } else {
+      console.error(
+        `onBattleEnded(): Account with ID ${player} was somehow pruned while still in a battle!`,
+      );
+    }
   }
 
   destroyRoom(room: Room) {
