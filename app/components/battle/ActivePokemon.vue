@@ -347,6 +347,7 @@ const badges: {cond: () => bool; props: BadgeProps}[] = [
       color: "old-purple",
       icon: "material-symbols:skull",
       label: "Suppressed",
+      variant: "subtle",
     },
   },
   {
