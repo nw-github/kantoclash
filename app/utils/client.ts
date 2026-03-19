@@ -10,6 +10,7 @@ import {speciesList, type SpeciesId} from "~~/game/species";
 import type {HazardId, ScreenId, Weather} from "~~/game/utils";
 import type {Generation} from "~~/game/gen";
 import type {AnimationParams} from "~/components/battle/ActivePokemon.vue";
+import type {BattleTimers} from "~~/server/gameServer";
 
 export type ClientActivePokemon = {
   hidden?: bool;
@@ -28,6 +29,7 @@ export type ClientPlayer = {
   isSpectator: bool;
   connected: bool;
   admin: bool | undefined;
+  time?: BattleTimers[string];
 
   team: Pokemon[];
   teamDesc: ValidatedPokemonDesc[];

@@ -6,7 +6,6 @@
       :players
       :events
       :chats
-      :timers
       :finished
       :format
       :ready
@@ -45,7 +44,6 @@ const players = ref<Players>(new Players());
 const events = ref<BattleEvent[]>([]);
 const options = reactive<Partial<Record<number, Options[]>>>({});
 const chats = reactive<InfoRecord>({});
-const timers = ref<BattleTimers>();
 const room = `${route.params.id}`;
 const finished = ref(false);
 const format = ref<FormatId>("g1_standard");
@@ -252,7 +250,7 @@ const onJoinRoom = (resp: JoinRoomResponse | "bad_room") => {
   }
 
   options[sequenceNo] = resp.options;
-  timers.value = resp.timer;
+  timers(resp.timer);
   format.value = resp.format;
 
   clearObj(chats);
@@ -288,7 +286,7 @@ const onJoinRoom = (resp: JoinRoomResponse | "bad_room") => {
 const onConnect = () => {
   loading.value = true;
   ready.value = false;
-  timers.value = undefined;
+  timers(undefined);
 
   for (const k in options) {
     // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
@@ -304,7 +302,7 @@ const onDisconnect = (reason: Socket.DisconnectReason) => {
 };
 
 const onNextTurn = (roomId: string, turn: BattleEvent[], opts?: Options[], tmr?: BattleTimers) => {
-  timers.value = tmr || undefined;
+  timers(tmr);
   if (roomId === room) {
     events.value.push(...turn);
     sequenceNo += turn.length;
@@ -326,7 +324,13 @@ const onInfo = (roomId: string, message: InfoMessage, turn: number) => {
   chats[turn].push(message);
 
   if (message.type === "timerStart") {
-    timers.value = message.info;
+    timers(message.info);
+  }
+};
+
+const timers = (timers?: BattleTimers) => {
+  for (const player in players.value.items) {
+    players.value.items[player].time = timers?.[player];
   }
 };
 </script>

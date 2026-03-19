@@ -39,6 +39,16 @@
             size="lg"
             @click="openReportModal"
           />
+          <TooltipButton
+            :text="players.get(myId)?.time ? 'Timer is on' : 'Start Timer'"
+            :content="{side: 'top'}"
+            icon="material-symbols:alarm-outline"
+            color="neutral"
+            variant="ghost"
+            :disabled="disableTimer || !!players.get(myId)?.time"
+            @click="() => $emit('timer')"
+          />
+
           <!-- <TooltipButton
             text="Open Calculator"
             :content="{side: 'top'}"
@@ -47,50 +57,55 @@
             color="gray"
             size="lg"
           /> -->
-          <FormatInfoButton :format />
         </div>
 
-        <UPopover
-          :content="{align: 'end'}"
-          :ui="{content: 'p-2 gap-1 flex flex-col max-h-40 overflow-y-auto overflow-x-hidden w-64'}"
-        >
-          <UButton
-            color="neutral"
-            variant="ghost"
-            label="Players"
-            trailing-icon="lucide:chevron-down"
-          />
+        <div class="flex items-center">
+          <FormatInfoButton :format />
 
-          <template #content>
-            <div
-              v-for="(player, id) in players.items"
-              :key="id"
-              class="flex justify-between items-center w-full"
-            >
-              <UChip :color="player.connected ? 'success' : 'error'">
-                <TouchTooltip
-                  :text="`${playerInfo(player, id)} (${player.connected ? 'Online' : 'Offline'})`"
-                >
-                  <span class="max-w-36 truncate pr-2 hover:underline hover:decoration-dotted">
-                    {{ playerInfo(player, id) }}
-                  </span>
-                </TouchTooltip>
-              </UChip>
+          <UPopover
+            :content="{align: 'end'}"
+            :ui="{
+              content: 'p-2 gap-1 flex flex-col max-h-40 overflow-y-auto overflow-x-hidden w-64',
+            }"
+          >
+            <UButton
+              color="neutral"
+              variant="ghost"
+              label="Players"
+              trailing-icon="lucide:chevron-down"
+            />
 
-              <UButton
-                :label="mutedPlayers.includes(id) ? 'Unmute' : 'Mute'"
-                color="neutral"
-                variant="outline"
-                :icon="
-                  mutedPlayers.includes(id)
-                    ? 'material-symbols:volume-off-outline-rounded'
-                    : 'material-symbols:volume-up-outline-rounded'
-                "
-                @click="toggleMute(id)"
-              />
-            </div>
-          </template>
-        </UPopover>
+            <template #content>
+              <div
+                v-for="(player, id) in players.items"
+                :key="id"
+                class="flex justify-between items-center w-full"
+              >
+                <UChip :color="player.connected ? 'success' : 'error'">
+                  <TouchTooltip
+                    :text="`${playerInfo(player, id)} (${player.connected ? 'Online' : 'Offline'})`"
+                  >
+                    <span class="max-w-36 truncate pr-2 hover:underline hover:decoration-dotted">
+                      {{ playerInfo(player, id) }}
+                    </span>
+                  </TouchTooltip>
+                </UChip>
+
+                <UButton
+                  :label="mutedPlayers.includes(id) ? 'Unmute' : 'Mute'"
+                  color="neutral"
+                  variant="outline"
+                  :icon="
+                    mutedPlayers.includes(id)
+                      ? 'material-symbols:volume-off-outline-rounded'
+                      : 'material-symbols:volume-up-outline-rounded'
+                  "
+                  @click="toggleMute(id)"
+                />
+              </div>
+            </template>
+          </UPopover>
+        </div>
       </div>
     </template>
 
@@ -190,8 +205,9 @@ const props = defineProps<{
   smoothScroll?: boolean;
   format: FormatId;
   myId: string;
+  disableTimer: bool;
 }>();
-const emit = defineEmits<{chat: [string]; report: [string]; forfeit: []; close: []}>();
+const emit = defineEmits<{chat: [string]; report: [string]; forfeit: []; close: []; timer: []}>();
 const mutedPlayers = useMutedPlayerIds();
 const message = ref("");
 const scrollPoint = useTemplateRef("scrollPoint");

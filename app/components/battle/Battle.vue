@@ -2,29 +2,9 @@
   <div class="flex h-full p-4 rounded-lg gap-4 ring ring-default shadow">
     <div class="flex flex-col w-full items-center overflow-x-hidden overflow-y-auto">
       <!-- Top Bar -->
-      <div class="flex w-full relative justify-between items-start">
-        <div class="flex gap-2 items-center">
-          <div
-            :class="[!currentTurnNo && 'invisible order-1']"
-            class="rounded-md bg-accented flex justify-center py-0.5 px-1"
-          >
-            <span class="text-lg font-medium">Turn {{ currentTurnNo }}</span>
-          </div>
-          <TouchTooltip v-if="weather" :text="weatherData[weather].tooltip">
-            <UIcon
-              class="size-6"
-              :class="weatherData[weather].class"
-              :name="weatherData[weather].icon"
-            />
-          </TouchTooltip>
-        </div>
-
-        <div v-if="opponent" class="absolute sm:static right-0 flex flex-col items-end gap-1">
-          <TeamDisplay :player="players.get(opponent)" />
-          <span class="text-xs pr-0.5 pb-1 font-semibold">
-            {{ players.get(opponent).name }}
-          </span>
-        </div>
+      <div v-if="perspective && opponent" class="flex w-full justify-between items-start">
+        <TeamDisplay :player="players.get(perspective)" />
+        <TeamDisplay :player="players.get(opponent)" :reverse="true" />
       </div>
 
       <Field ref="field" :players :perspective :is-singles :weather />
@@ -55,60 +35,47 @@
           </AnimatePresence>
         </div>
 
-        <div
-          v-if="players.get(perspective)"
-          class="absolute bottom-0 z-0 flex flex-row justify-between w-full p-0.5 items-end"
-        >
-          <TeamDisplay
-            :player="players.get(perspective)"
-            class="self-end p-2 invisible sm:visible"
-          />
-
-          <div class="flex flex-row my-1 gap-2 px-2">
-            <div v-if="localMode" class="flex items-center gap-2">
-              <NumericInput v-model="rewindToTurn" :min="0" class="w-12" />
-              <TooltipButton
-                text="Rewind to Turn"
-                :content="{side: 'top'}"
-                leading-icon="material-symbols:fast-rewind"
-                variant="ghost"
-                color="neutral"
-                @click="() => $emit('rewind', rewindToTurn)"
-              />
-            </div>
-
-            <TooltipButton
-              :key="updateMarker"
-              :text="timers === undefined ? 'Start Timer' : 'Timer is on'"
-              :content="{side: 'top'}"
-              leading-icon="material-symbols:alarm-outline"
-              variant="ghost"
-              :color="currOptions && timeLeft() <= 10 ? 'error' : 'neutral'"
-              :disabled="!isBattler || isBattleOver || !!timers || localMode"
-              :label="timers && !currOptions ? '--' : timers && `${timeLeft()}`"
-              @click="() => $emit('timer')"
+        <div class="absolute bottom-0 z-0 flex flex-row pb-2 justify-end w-full gap-2 items-center">
+          <TouchTooltip v-if="weather" :text="weatherData[weather].tooltip">
+            <UIcon
+              class="size-6"
+              :class="weatherData[weather].class"
+              :name="weatherData[weather].icon"
             />
+          </TouchTooltip>
 
-            <UTooltip v-if="textBoxHidden" text="Open Chat" :content="{side: 'top'}">
-              <UChip :show="unseenChats !== 0" :text="unseenChats" size="xl" inset>
-                <div ref="menuButton">
-                  <UButton
-                    icon="material-symbols:chat-outline"
-                    variant="link"
-                    color="neutral"
-                    @click="(slideoverOpen = true), (unseenChats = 0)"
-                  />
-                </div>
-              </UChip>
-            </UTooltip>
-          </div>
+          <TooltipButton
+            v-if="currentTurnNo || localMode"
+            class="font-bold"
+            text="Go to Turn"
+            :label="`Turn ${currentTurnNo}`"
+            variant="subtle"
+            color="neutral"
+            :disabled="isBattler && !isBattleOver"
+            @click="goToTurn"
+          />
         </div>
       </div>
 
       <USeparator class="pb-2" />
 
       <!-- Selectors & Buttons -->
-      <div class="w-full pb-2">
+      <div class="w-full pb-2 relative">
+        <div class="absolute right-0 pr-1">
+          <UTooltip v-if="textBoxHidden" text="Open Chat" :content="{side: 'top'}">
+            <UChip :show="unseenChats !== 0" :text="unseenChats" size="xl" inset>
+              <div ref="menuButton">
+                <UButton
+                  icon="material-symbols:chat-outline"
+                  variant="link"
+                  color="neutral"
+                  @click="(slideoverOpen = true), (unseenChats = 0)"
+                />
+              </div>
+            </UChip>
+          </UTooltip>
+        </div>
+
         <div v-if="!playingEvents && isBattler && !isBattleOver">
           <OptionSelector
             :options="currOptions"
@@ -136,13 +103,6 @@
               color="neutral"
               text="Switch Sides"
               @click="() => void (perspective = opponent)"
-            />
-            <TooltipButton
-              icon="material-symbols:search"
-              text="Go to Turn"
-              variant="ghost"
-              color="neutral"
-              @click="() => void (goToTurnModalOpen = !goToTurnModalOpen)"
             />
             <TooltipButton
               icon="material-symbols:fast-rewind"
@@ -186,10 +146,6 @@
             />
           </template>
         </div>
-        <div v-if="(!isBattler || isBattleOver) && goToTurnModalOpen" class="p-1 flex gap-2 w-40">
-          <div class="whitespace-nowrap">Go to turn</div>
-          <NumericInput v-model="goToTurn" :min="0" class="w-full" @keydown="goToTurnEnter" />
-        </div>
       </div>
     </div>
 
@@ -203,6 +159,8 @@
         :smooth-scroll
         :my-id
         :turns="htmlTurns"
+        :disable-timer="!isBattler || isBattleOver || localMode"
+        @timer="$emit('timer')"
         @chat="$emit('chat', $event)"
         @report="$emit('report', $event)"
         @forfeit="$emit('choice', {type: 'forfeit'})"
@@ -221,7 +179,9 @@
           :smooth-scroll
           :my-id
           :turns="htmlTurns"
+          :disable-timer="!isBattler || isBattleOver || localMode"
           closable
+          @timer="$emit('timer')"
           @chat="$emit('chat', $event)"
           @report="$emit('report', $event)"
           @forfeit="$emit('choice', {type: 'forfeit'})"
@@ -234,12 +194,13 @@
 
 <script setup lang="ts">
 import type {BattleEvent, PokeId} from "~~/game/events";
-import type {BattleTimers, Choice, InfoRecord} from "~~/server/gameServer";
+import type {Choice, InfoRecord} from "~~/server/gameServer";
 import criesSpritesheet from "~~/public/effects/cries.json";
 import {GENERATIONS} from "~~/game/gen";
 import {playerId, type Weather} from "~~/game/utils";
 import {AnimatePresence, motion, type AnimationPlaybackControls} from "motion-v";
 import type {Options} from "~~/game/battle";
+import GoToTurnModal from "../dialog/GoToTurnModal.vue";
 
 const weatherData = {
   rain: {icon: "material-symbols:rainy", tooltip: "Raining", class: "text-sky-400"},
@@ -248,7 +209,7 @@ const weatherData = {
   hail: {icon: "material-symbols:weather-hail", tooltip: "Hail", class: ""},
 } satisfies Record<Weather, any>;
 
-defineEmits<{
+const emit = defineEmits<{
   chat: [msg: string];
   report: [msg: string];
   timer: [];
@@ -256,12 +217,11 @@ defineEmits<{
   choice: [Choice];
   rewind: [turn: number];
 }>();
-const {options, players, events, chats, timers, finished, format, ready, myId} = defineProps<{
+const {options, players, events, chats, finished, format, ready, myId, localMode} = defineProps<{
   options: Partial<Record<number, Options[]>>;
   players: Players;
   events: BattleEvent[];
   chats: InfoRecord;
-  timers?: BattleTimers;
   finished: bool;
   format: FormatId;
   ready: bool;
@@ -277,14 +237,11 @@ const unseenChats = ref(0);
 const slideoverOpen = ref(false);
 const smoothScroll = ref(true);
 const skipToEvent = ref(0);
-const updateMarker = ref(0);
 const currentTurnNo = ref(0);
 const weather = ref<Weather>();
 const field = useTemplateRef("field");
 
-const goToTurnModalOpen = ref(false);
-const goToTurn = ref(0);
-const rewindToTurn = ref(0);
+const goToTurnModal = useOverlay().create(GoToTurnModal);
 
 const nextEvent = ref(0);
 const playToIndex = ref(0);
@@ -326,7 +283,6 @@ const sound = useAudio({
 useIntervalFn(() => {
   liveEvents.value = liveEvents.value.filter(e => Date.now() - e.time < 1400);
 }, 400);
-useIntervalFn(() => updateMarker.value++, 1000);
 
 watchDeep(chats, () => {
   if (isMenuBtnVisible.value && !slideoverOpen.value) {
@@ -403,21 +359,14 @@ const clientMgr = new ClientManager({
   },
 });
 
-const goToTurnEnter = (e: KeyboardEvent) => {
-  // TODO: Don't do this
-  if (e.code === "Enter") {
-    skipToTurn(goToTurn.value);
-    goToTurnModalOpen.value = false;
-    paused.value = true;
+const goToTurn = async () => {
+  const max = events.findLast(ev => ev.type === "next_turn")?.turn;
+  const result = await goToTurnModal.open({localMode, max});
+  if (result?.why === "go") {
+    skipToTurn(result.turn);
+  } else if (result?.why === "rewind") {
+    emit("rewind", result.turn);
   }
-};
-
-const timeLeft = () => {
-  const timer = timers?.[perspective.value];
-  if (!timer) {
-    return 1000;
-  }
-  return Math.max(Math.floor((timer.startedAt + timer.duration - Date.now()) / 1000), 0);
 };
 
 const animations: AnimationPlaybackControls[] = [];

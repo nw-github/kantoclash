@@ -1,10 +1,7 @@
 <template>
   <div>
     <div v-if="players.get(myId).active.every(a => !a)" class="pb-2">Choose your lead</div>
-    <div
-      v-else-if="currOptionPoke && (options!.length > 1 || localMode)"
-      class="pb-2 flex gap-1 items-center"
-    >
+    <div v-else-if="currOptionPoke" class="pb-2 flex gap-1 items-center w-[90%]">
       <BoxSprite :species-id="currOptionPoke.base.speciesId" :form="currOptionPoke.base.form" />
 
       <span v-if="currOptionPoke.fainted">
@@ -26,7 +23,7 @@
     </div>
 
     <div v-if="!options || !options.length" class="italic">Waiting for opponent...</div>
-    <div v-else-if="choices.length" class="flex flex-col gap-1 pb-2">
+    <div v-else-if="choices.length" class="flex flex-col gap-1 pb-2 w-[90%]">
       <div
         v-for="([opts, choice], i) in choices"
         :key="i"
