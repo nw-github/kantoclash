@@ -189,7 +189,7 @@ export async function startBot(botType: BotType, format?: FormatId) {
       playShiny() {},
       playDmg() {},
       preloadSprite() {},
-      playAnimation: (_, params) => params.cb?.exec(),
+      playAnimation: (_, params) => void params.cb?.exec(),
       displayEvent() {},
     });
     let eventNo = 0;
@@ -205,7 +205,7 @@ export async function startBot(botType: BotType, format?: FormatId) {
       if (tries === 0) {
         console.error(`[${name}] Couldn't make a valid move after 3 tries, abandoning ${room}.`);
         sendChatMessage("I couldn't figure out a move and must forfeit!");
-        $conn.emit("choose", room, eventNo, {type: "forfeit"}, () => {});
+        $conn.emit("choose", room, 0, {type: "forfeit"}, () => {});
 
         gameOver();
         return;
@@ -284,8 +284,8 @@ export async function startBot(botType: BotType, format?: FormatId) {
     games[room] = {
       async nextTurn(turn, options) {
         let done = false;
+        eventNo += turn.length;
         for (const event of turn) {
-          eventNo++;
           await mgr.handleEvent(event, players, gen);
           if (event.type === "end") {
             done = true;

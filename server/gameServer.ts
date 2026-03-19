@@ -560,7 +560,7 @@ export class GameServer extends Server<ClientMessage, ServerMessage> {
       return ack();
     });
     socket.on("choose", (roomId, sequenceNo, choice, ack) => {
-      const info = this.validateMove(socket, roomId, sequenceNo);
+      const info = this.validateMove(socket, roomId);
       if (typeof info === "string") {
         return ack(info);
       }
@@ -568,6 +568,8 @@ export class GameServer extends Server<ClientMessage, ServerMessage> {
       const [player, room] = info;
       if (room.battle.finished) {
         return ack("finished");
+      } else if (choice.type !== "forfeit" && sequenceNo !== room.sequenceNo()) {
+        return "too_late";
       }
 
       let ok = false;
@@ -603,9 +605,11 @@ export class GameServer extends Server<ClientMessage, ServerMessage> {
       }
     });
     socket.on("cancel", (roomId, sequenceNo, ack) => {
-      const info = this.validateMove(socket, roomId, sequenceNo);
+      const info = this.validateMove(socket, roomId);
       if (typeof info === "string") {
         return ack(info);
+      } else if (sequenceNo !== info[1].sequenceNo()) {
+        return "too_late";
       }
 
       info[0].cancel();
@@ -841,7 +845,7 @@ export class GameServer extends Server<ClientMessage, ServerMessage> {
     onFoundMatch(room, this.accounts.get(opponent.id)!);
   }
 
-  private validateMove(socket: Socket, roomId: string, sequenceNo: number) {
+  private validateMove(socket: Socket, roomId: string) {
     const room = this.rooms.get(roomId);
     if (!room) {
       return "bad_room";
@@ -852,8 +856,6 @@ export class GameServer extends Server<ClientMessage, ServerMessage> {
     const player = room.battle.findPlayer(socket.account.id);
     if (!player) {
       return "not_in_battle";
-    } else if (sequenceNo !== room.sequenceNo()) {
-      return "too_late";
     }
 
     return [player, room] as const;

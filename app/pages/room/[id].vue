@@ -49,7 +49,6 @@ const finished = ref(false);
 const format = ref<FormatId>("g1_standard");
 const ready = ref(false);
 
-let sequenceNo = 0;
 let needsFreshStart = true;
 let firstConnect = false;
 
@@ -97,10 +96,12 @@ const sendBugReport = (report: string) => {
   });
 };
 const makeChoice = (choice: Choice) => {
-  $conn.emit("choose", room, sequenceNo, choice, displayErrorToast);
+  $conn.emit("choose", room, sequenceNo(), choice, displayErrorToast);
 };
-const cancelMove = () => $conn.emit("cancel", room, sequenceNo, displayErrorToast);
+const cancelMove = () => $conn.emit("cancel", room, sequenceNo(), displayErrorToast);
 const startTimer = () => $conn.emit("startTimer", room, displayErrorToast);
+
+const sequenceNo = () => events.value.length;
 
 //
 
@@ -238,18 +239,16 @@ const onJoinRoom = (resp: JoinRoomResponse | "bad_room") => {
   }
 
   if (needsFreshStart) {
-    sequenceNo = resp.events.length;
     events.value = resp.events;
     const self = players.value.get(myId.value);
     if (self) {
       self.teamDesc = resp.team ?? [];
     }
   } else {
-    sequenceNo += resp.events.length;
     events.value.push(...resp.events);
   }
 
-  options[sequenceNo] = resp.options;
+  options[sequenceNo()] = resp.options;
   timers(resp.timer);
   format.value = resp.format;
 
@@ -293,7 +292,7 @@ const onConnect = () => {
     delete options[k];
   }
 
-  const sq = needsFreshStart ? 0 : sequenceNo;
+  const sq = needsFreshStart ? 0 : sequenceNo();
   $conn.emit("joinRoom", room, sq, onJoinRoom);
 };
 
@@ -305,10 +304,7 @@ const onNextTurn = (roomId: string, turn: BattleEvent[], opts?: Options[], tmr?:
   timers(tmr);
   if (roomId === room) {
     events.value.push(...turn);
-    sequenceNo += turn.length;
-    options[sequenceNo] = opts;
-
-    // console.log("next turn, got", turn.length, "events");
+    options[sequenceNo()] = opts;
   }
 };
 
