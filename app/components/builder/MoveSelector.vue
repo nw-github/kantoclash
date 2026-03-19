@@ -18,7 +18,7 @@
       :ui="{trailing: 'pointer-events-none'}"
       @focus="(open = true), $event.target.select()"
       @update:model-value="open = true"
-      @keydown.tab="open = false"
+      @blur="open = false"
     >
       <template v-if="trailing" #trailing>
         <div class="gap-1 flex items-center justify-center">

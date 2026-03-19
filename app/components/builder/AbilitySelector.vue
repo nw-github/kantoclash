@@ -18,7 +18,7 @@
       trailing-icon="lucide:chevron-down"
       @focus="(open = true), $event.target.select()"
       @update:model-value="open = true"
-      @keydown.tab="open = false"
+      @blur="open = false"
     />
 
     <template #item="{item: [id, ability]}">
