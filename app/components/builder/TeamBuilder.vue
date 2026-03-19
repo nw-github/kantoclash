@@ -278,7 +278,7 @@
                 />
                 <UInputNumber
                   v-model="selectedPoke.evProxy[stat]"
-                  :ui="{root: 'w-10 text-xs', base: 'text-center'}"
+                  :ui="{root: 'w-12 sm:w-10 text-xs', base: 'text-center'}"
                   size="sm"
                   variant="none"
                   :min="0"

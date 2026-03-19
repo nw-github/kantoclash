@@ -14,5 +14,8 @@ export const userSchema = z.object({
     .regex(/[a-zA-Z0-9 ]+/, "English alphanumeric characters only")
     .trim()
     .refine(text => !profanityMatcher.hasMatch(text), "Must not contain obscenities"),
-  password: z.string().min(3, "Password must be at least 3 characters"),
+  password: z
+    .string()
+    .min(3, "Password must be at least 3 characters")
+    .max(64, "Must be at most 64 characters"),
 });

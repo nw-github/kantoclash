@@ -4,7 +4,7 @@
       class="flex flex-col gap-0.5 sm:gap-1 text-sm z-40"
       :class="[(!poke || poke.hidden) && 'invisible', !isSingles ? 'w-16 sm:w-32' : 'w-28 sm:w-40']"
     >
-      <div class="flex justify-between flex-col sm:flex-row">
+      <div class="flex justify-between flex-col sm:flex-row gap-1">
         <div class="font-bold flex items-center grow overflow-hidden">
           <span class="truncate text-xs">{{ poke?.base?.name || "--" }}</span>
           <GenderIcon

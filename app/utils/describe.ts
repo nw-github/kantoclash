@@ -139,6 +139,8 @@ const descriptions: Partial<Record<number, Partial<Record<MoveId, string>>>> = {
     acupressure: "Randomly raises a stat of the target by 2. ",
     gastroacid:
       "Suppresses the target's ability until it switches out. Fails on Pokémon with Multitype. ",
+    captivate:
+      "Drops the target's Special Attack by 2 stages. Fails if the target is not of the opposite gender. ",
   },
   [2]: {
     conversion:

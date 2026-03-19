@@ -11,8 +11,9 @@ const musicController = useTemplateRef("musicController");
 
 let playWasBlocked = false;
 let currentInfo: MusicInfo = {loopStart: 0, loopEnd: 0, offset: 0};
+let mounted = false;
 const context = useAudioContext(() => {
-  if (playWasBlocked && source) {
+  if (playWasBlocked && source && mounted) {
     source.start(0, currentInfo.offset);
     showToast();
   }
@@ -20,6 +21,7 @@ const context = useAudioContext(() => {
 
 let notified = false;
 onMounted(() => {
+  mounted = true;
   musicController.value!.volume = 0;
   if (track.value) {
     play(track.value);
@@ -27,6 +29,7 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
+  mounted = false;
   source?.stop();
   source = undefined;
   gain = undefined;

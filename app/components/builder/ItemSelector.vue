@@ -2,6 +2,7 @@
   <Selector
     v-model:open="open"
     v-model:query="query"
+    :ui="{list: 'w-84 sm:w-96'}"
     :content="{align: 'start'}"
     :items
     :filter
@@ -29,7 +30,7 @@
         </span>
       </div>
 
-      <div class="text-[0.6rem] text-muted text-nowrap">
+      <div class="text-[0.6rem] text-muted text-right">
         {{ item.desc || "No competitive use." }}
       </div>
     </template>

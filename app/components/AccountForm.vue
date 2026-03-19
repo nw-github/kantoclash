@@ -6,38 +6,42 @@
     :items
   >
     <template #content="{item}">
-      <UCard :ui="{body: 'p-2 sm:p-2'}">
-        <UForm ref="form" :schema :state class="divide-y divide-default" @submit="submit">
-          <div class="space-y-2 pb-2">
-            <UFormField label="Username" name="username" required>
-              <UInput v-model.trim="state.username" autofocus />
-            </UFormField>
-            <UFormField label="Password" name="password" required>
-              <UInput v-model="state.password" type="password" />
-            </UFormField>
-            <UFormField v-if="item.signUp" label="Confirm Password" name="confirmPassword" required>
-              <UInput v-model="state.confirmPassword" type="password" />
-            </UFormField>
-          </div>
+      <UForm
+        ref="form"
+        :schema
+        :state
+        class="ring ring-default p-2 divide-y divide-default rounded-lg"
+        @submit="submit"
+      >
+        <div class="space-y-2 pb-2 w-full overflow-hidden">
+          <UFormField label="Username" name="username" required>
+            <InputWithMax v-model.trim="state.username" autofocus :maxlength="24" />
+          </UFormField>
+          <UFormField label="Password" name="password" required>
+            <InputWithMax v-model="state.password" type="password" :maxlength="64" />
+          </UFormField>
+          <UFormField v-if="item.signUp" label="Confirm Password" name="confirmPassword" required>
+            <UInput v-model="state.confirmPassword" type="password" class="w-full" />
+          </UFormField>
+        </div>
 
-          <div class="pt-2">
-            <UButton
-              v-if="item.signUp"
-              type="submit"
-              icon="material-symbols:person-add"
-              :label="!loading ? 'Sign Up' : 'Signing up...'"
-              :loading="loading"
-            />
-            <UButton
-              v-else
-              type="submit"
-              icon="material-symbols:login"
-              :label="!loading ? 'Log In' : 'Logging in...'"
-              :loading="loading"
-            />
-          </div>
-        </UForm>
-      </UCard>
+        <div class="pt-2">
+          <UButton
+            v-if="item.signUp"
+            type="submit"
+            icon="material-symbols:person-add"
+            :label="!loading ? 'Sign Up' : 'Signing up...'"
+            :loading="loading"
+          />
+          <UButton
+            v-else
+            type="submit"
+            icon="material-symbols:login"
+            :label="!loading ? 'Log In' : 'Logging in...'"
+            :loading="loading"
+          />
+        </div>
+      </UForm>
     </template>
   </UTabs>
 </template>
