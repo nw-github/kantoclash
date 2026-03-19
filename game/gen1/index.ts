@@ -492,7 +492,7 @@ const createGeneration = () => {
       _atk: number,
     ): Gender | undefined => "N",
     getForm(
-      _desired: FormId | undefined,
+      _desired: string | undefined,
       id: SpeciesId,
       dvs: Partial<Stats>,
       item?: ItemId,

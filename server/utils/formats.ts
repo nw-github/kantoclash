@@ -1,4 +1,4 @@
-import {Nature, natureTable, type ValidatedPokemonDesc} from "~~/game/pokemon";
+import {Nature, natureTable, UNOWN_FORM, type ValidatedPokemonDesc} from "~~/game/pokemon";
 import {moveList, type MoveId, type Move} from "~~/game/moves";
 import {
   type AbilityId,
@@ -147,6 +147,11 @@ export const getRandomPokemon = (
 
       poke.item = s.requiresItem ?? random.choice(items);
       poke.friendship = poke.moves.includes("frustration") ? 0 : 255;
+
+      if (poke.speciesId === "unown" && !poke.form) {
+        poke.form = random.choice(UNOWN_FORM as unknown as any[])!;
+      }
+
       return poke;
     });
 };
@@ -292,6 +297,7 @@ const createValidator = (gen: Generation, maxLevel: number, nfe = false) => {
         .optional()
         .refine(s => gen.id >= 3 || !s, "Cannot have ability before Gen 3")
         .refine(s => gen.id <= 2 || s, "Must choose an ability"),
+      form: z.string().optional(),
     })
     .superRefine((desc, ctx) => {
       const species = gen.speciesList[desc.speciesId as SpeciesId];

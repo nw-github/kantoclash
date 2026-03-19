@@ -180,7 +180,7 @@
                   :gender="currGender.gender"
                   :shiny="gen.getShiny(selectedPoke.data.shiny, ivsToDvs(selectedPoke.data))"
                   :form="gen.getForm(
-                    undefined,
+                    selectedPoke.data.form,
                     selectedPoke.data.speciesId as SpeciesId,
                     ivsToDvs(selectedPoke.data),
                     (selectedPoke.data.item && normalizeName(selectedPoke.data.item)) as ItemId,
