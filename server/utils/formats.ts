@@ -8,7 +8,14 @@ import {
   abilityList,
 } from "~~/game/species";
 import {HP_TYPES, MC, statKeys, type Stats} from "~~/game/utils";
-import {type Generation, GENERATION1, GENERATION2, GENERATION3, GENERATION4} from "~~/game/gen";
+import {
+  type Generation,
+  GENERATION1,
+  GENERATION2,
+  GENERATION3,
+  GENERATION4,
+  GENERATION5,
+} from "~~/game/gen";
 import {itemList, type ItemId} from "~~/game/item";
 
 import random from "random";
@@ -349,6 +356,7 @@ const VALIDATOR_GEN1 = createValidator(GENERATION1, 100);
 const VALIDATOR_GEN2 = createValidator(GENERATION2, 100);
 const VALIDATOR_GEN3 = createValidator(GENERATION3, 100);
 const VALIDATOR_GEN4 = createValidator(GENERATION4, 100);
+const VALIDATOR_GEN5 = createValidator(GENERATION5, 100);
 
 const VALIDATOR_GEN3_DBLS = createValidator(GENERATION3, 50);
 const VALIDATOR_GEN4_DBLS = createValidator(GENERATION4, 50);
@@ -382,6 +390,7 @@ const validateTeam = (
 };
 
 export const formatDescs: Record<FormatId, FormatFunctions> = {
+  g5_standard: {validate: team => validateTeam(VALIDATOR_GEN5, team)},
   g4_standard: {validate: team => validateTeam(VALIDATOR_GEN4, team)},
   g4_doubles: {validate: team => validateTeam(VALIDATOR_GEN4_DBLS, team)},
   g3_standard: {validate: team => validateTeam(VALIDATOR_GEN3, team)},

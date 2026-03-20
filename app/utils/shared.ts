@@ -16,6 +16,7 @@ type FormatInfo = {
 };
 
 export const battleFormats = [
+  "g5_standard",
   "g4_doubles",
   "g4_standard",
   "g4_randoms",
@@ -43,6 +44,17 @@ export const battleFormats = [
 export type FormatId = (typeof battleFormats)[number];
 
 export const formatInfo: Record<FormatId, FormatInfo> = {
+  g5_standard: {
+    name: "[BW2] Standard Battle",
+    icon: "akar-icons:sword",
+    desc: "A standard battle allowing all BW and B2W2 Pokémon and moves.",
+    needsTeam: true,
+    chooseLead: true,
+    mods: {sleepClause: true, endlessBattle: true},
+    generation: 5,
+    beta: true,
+    maxLevel: 100,
+  },
   g4_standard: {
     name: "[DPP] Standard Battle",
     icon: "akar-icons:sword",
