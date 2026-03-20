@@ -2170,7 +2170,7 @@ const internalMoveList = createMoveList({
     range: Range.Adjacent,
     category: MC.physical,
     power: 25,
-    acc: 90,
+    acc: 80,
     flag: "multi",
     kingsRock: true,
   },
@@ -4798,6 +4798,7 @@ const internalMoveList = createMoveList({
     type: "normal",
     range: Range.Self,
     why: "fail_unimplemented",
+    noAssist: true,
   },
   crosspoison: {
     kind: "damage",
@@ -4979,6 +4980,7 @@ const internalMoveList = createMoveList({
     type: "normal",
     range: Range.Adjacent,
     why: "fail_unimplemented",
+    noAssist: true,
   },
   firefang: {
     kind: "damage",
@@ -5330,6 +5332,7 @@ const internalMoveList = createMoveList({
     type: "normal",
     range: Range.Adjacent,
     why: "fail_unimplemented",
+    noAssist: true,
   },
   metalburst: {
     kind: "fail",
@@ -5832,8 +5835,7 @@ const internalMoveList = createMoveList({
   },
   // >== GENERATION 5
   acidspray: {
-    // Sharply lowers opponent's Special Defense.
-    kind: "fail",
+    kind: "damage",
     name: "Acid Spray",
     pp: 20,
     type: "poison",
@@ -5841,19 +5843,21 @@ const internalMoveList = createMoveList({
     power: 40,
     acc: 100,
     category: MC.special,
-    why: "fail_unimplemented",
+    effect: [100, [["spd", -2]]],
   },
   acrobatics: {
-    // Stronger when the user does not have a held item.
-    kind: "fail",
+    kind: "damage",
     name: "Acrobatics",
     pp: 15,
     type: "flying",
-    range: Range.Adjacent,
+    range: Range.Any,
     power: 55,
     acc: 100,
     category: MC.physical,
-    why: "fail_unimplemented",
+    contact: true,
+    getPower(user) {
+      return user.item ? this.power * 2 : this.power;
+    },
   },
   afteryou: {
     // Gives target priority in the next turn.
@@ -5890,10 +5894,10 @@ const internalMoveList = createMoveList({
     type: "normal",
     range: Range.Adjacent,
     why: "fail_unimplemented",
+    noAssist: true,
   },
   blueflare: {
-    // May burn opponent.
-    kind: "fail",
+    kind: "damage",
     name: "Blue Flare",
     pp: 5,
     type: "fire",
@@ -5901,11 +5905,10 @@ const internalMoveList = createMoveList({
     power: 130,
     acc: 85,
     category: MC.special,
-    why: "fail_unimplemented",
+    effect: [20, "brn"],
   },
   boltstrike: {
-    // May paralyze opponent.
-    kind: "fail",
+    kind: "damage",
     name: "Bolt Strike",
     pp: 5,
     type: "electric",
@@ -5913,19 +5916,19 @@ const internalMoveList = createMoveList({
     power: 130,
     acc: 85,
     category: MC.physical,
-    why: "fail_unimplemented",
+    effect: [20, "par"],
+    contact: true,
   },
   bulldoze: {
-    // Lowers opponent's Speed.
-    kind: "fail",
+    kind: "damage",
     name: "Bulldoze",
     pp: 20,
     type: "ground",
-    range: Range.Adjacent,
+    range: Range.AllAdjacent,
     power: 60,
     acc: 100,
     category: MC.physical,
-    why: "fail_unimplemented",
+    effect: [100, [["spe", -1]]],
   },
   chipaway: {
     // Ignores opponent's stat changes.
@@ -5950,6 +5953,7 @@ const internalMoveList = createMoveList({
     acc: 90,
     category: MC.physical,
     why: "fail_unimplemented",
+    noAssist: true,
   },
   clearsmog: {
     // Removes all of the target's stat changes.
@@ -5963,22 +5967,23 @@ const internalMoveList = createMoveList({
     why: "fail_unimplemented",
   },
   coil: {
-    // Raises user's Attack, Defense and Accuracy.
-    kind: "fail",
+    kind: "stage",
     name: "Coil",
     pp: 20,
     type: "poison",
-    range: Range.Adjacent,
-    why: "fail_unimplemented",
+    range: Range.Self,
+    // prettier-ignore
+    stages: [["atk", 1], ["def", 1], ["acc", 1]],
+    snatch: true,
   },
   cottonguard: {
-    // Drastically raises user's Defense.
-    kind: "fail",
+    kind: "stage",
     name: "Cotton Guard",
     pp: 10,
     type: "grass",
-    range: Range.Adjacent,
-    why: "fail_unimplemented",
+    range: Range.Self,
+    stages: [["def", 3]],
+    snatch: true,
   },
   dragontail: {
     // In battles, the opponent switches. In the wild, the Pokémon runs.
@@ -5991,10 +5996,10 @@ const internalMoveList = createMoveList({
     acc: 90,
     category: MC.physical,
     why: "fail_unimplemented",
+    noAssist: true,
   },
   drillrun: {
-    // High critical hit ratio.
-    kind: "fail",
+    kind: "damage",
     name: "Drill Run",
     pp: 10,
     type: "ground",
@@ -6002,11 +6007,11 @@ const internalMoveList = createMoveList({
     power: 80,
     acc: 95,
     category: MC.physical,
-    why: "fail_unimplemented",
+    flag: "high_crit",
+    contact: true,
   },
   dualchop: {
-    // Hits twice in one turn.
-    kind: "fail",
+    kind: "damage",
     name: "Dual Chop",
     pp: 15,
     type: "dragon",
@@ -6014,7 +6019,8 @@ const internalMoveList = createMoveList({
     power: 40,
     acc: 90,
     category: MC.physical,
-    why: "fail_unimplemented",
+    flag: "double",
+    contact: true,
   },
   echoedvoice: {
     // Power increases each turn.
@@ -6027,6 +6033,7 @@ const internalMoveList = createMoveList({
     acc: 100,
     category: MC.special,
     why: "fail_unimplemented",
+    sound: true,
   },
   electroball: {
     // The faster the user, the stronger the attack.
@@ -6040,16 +6047,15 @@ const internalMoveList = createMoveList({
     why: "fail_unimplemented",
   },
   electroweb: {
-    // Lowers opponent's Speed.
-    kind: "fail",
+    kind: "damage",
     name: "Electroweb",
     pp: 15,
     type: "electric",
-    range: Range.Adjacent,
+    range: Range.AllAdjacentFoe,
     power: 55,
     acc: 95,
     category: MC.special,
-    why: "fail_unimplemented",
+    effect: [100, [["spe", -1]]],
   },
   entrainment: {
     // Makes target's ability same as user's.
@@ -6062,8 +6068,7 @@ const internalMoveList = createMoveList({
     why: "fail_unimplemented",
   },
   fierydance: {
-    // May raise user's Special Attack.
-    kind: "fail",
+    kind: "damage",
     name: "Fiery Dance",
     pp: 10,
     type: "fire",
@@ -6071,7 +6076,7 @@ const internalMoveList = createMoveList({
     power: 80,
     acc: 100,
     category: MC.special,
-    why: "fail_unimplemented",
+    effect: [50, [["spa", +1]], true],
   },
   finalgambit: {
     // Inflicts damage equal to the user's remaining HP. User faints.
@@ -6109,8 +6114,7 @@ const internalMoveList = createMoveList({
     why: "fail_unimplemented",
   },
   flamecharge: {
-    // Raises user's Speed.
-    kind: "fail",
+    kind: "damage",
     name: "Flame Charge",
     pp: 20,
     type: "fire",
@@ -6118,7 +6122,8 @@ const internalMoveList = createMoveList({
     power: 50,
     acc: 100,
     category: MC.physical,
-    why: "fail_unimplemented",
+    contact: true,
+    effect: [100, [["spe", +1]], true],
   },
   foulplay: {
     // Uses the opponent's Attack stat.
@@ -6133,8 +6138,7 @@ const internalMoveList = createMoveList({
     why: "fail_unimplemented",
   },
   freezeshock: {
-    // Charges on first turn, attacks on second. May paralyze opponent.
-    kind: "fail",
+    kind: "damage",
     name: "Freeze Shock",
     pp: 5,
     type: "ice",
@@ -6142,7 +6146,8 @@ const internalMoveList = createMoveList({
     power: 140,
     acc: 90,
     category: MC.physical,
-    why: "fail_unimplemented",
+    charge: true,
+    effect: [30, "par"],
   },
   frostbreath: {
     // Always results in a critical hit.
@@ -6181,8 +6186,7 @@ const internalMoveList = createMoveList({
     why: "fail_unimplemented",
   },
   geargrind: {
-    // Hits twice in one turn.
-    kind: "fail",
+    kind: "damage",
     name: "Gear Grind",
     pp: 15,
     type: "steel",
@@ -6190,19 +6194,19 @@ const internalMoveList = createMoveList({
     power: 50,
     acc: 85,
     category: MC.physical,
-    why: "fail_unimplemented",
+    contact: true,
+    flag: "double",
   },
   glaciate: {
-    // Lowers opponent's Speed.
-    kind: "fail",
+    kind: "damage",
     name: "Glaciate",
     pp: 10,
     type: "ice",
-    range: Range.Adjacent,
+    range: Range.AllAdjacentFoe,
     power: 65,
     acc: 95,
     category: MC.special,
-    why: "fail_unimplemented",
+    effect: [100, [["spe", -1]]],
   },
   grasspledge: {
     // Added effects appear if preceded by Water Pledge or succeeded by Fire Pledge.
@@ -6226,8 +6230,7 @@ const internalMoveList = createMoveList({
     why: "fail_unimplemented",
   },
   headcharge: {
-    // User receives recoil damage.
-    kind: "fail",
+    kind: "damage",
     name: "Head Charge",
     pp: 15,
     type: "normal",
@@ -6235,7 +6238,8 @@ const internalMoveList = createMoveList({
     power: 120,
     acc: 100,
     category: MC.physical,
-    why: "fail_unimplemented",
+    recoil: 4, // 1 / 4
+    contact: true,
   },
   healpulse: {
     // Restores half the target's max HP.
@@ -6247,8 +6251,7 @@ const internalMoveList = createMoveList({
     why: "fail_unimplemented",
   },
   heartstamp: {
-    // May cause flinching.
-    kind: "fail",
+    kind: "damage",
     name: "Heart Stamp",
     pp: 25,
     type: "psychic",
@@ -6256,7 +6259,8 @@ const internalMoveList = createMoveList({
     power: 60,
     acc: 100,
     category: MC.physical,
-    why: "fail_unimplemented",
+    effect: [30, "flinch"],
+    contact: true,
   },
   heatcrash: {
     // The heavier the user, the stronger the attack.
@@ -6281,8 +6285,7 @@ const internalMoveList = createMoveList({
     why: "fail_unimplemented",
   },
   hex: {
-    // Inflicts more damage if the target has a status condition.
-    kind: "fail",
+    kind: "damage",
     name: "Hex",
     pp: 10,
     type: "ghost",
@@ -6290,20 +6293,22 @@ const internalMoveList = createMoveList({
     power: 65,
     acc: 100,
     category: MC.special,
-    why: "fail_unimplemented",
+    getPower(_, target) {
+      return target?.status ? this.power * 2 : this.power;
+    },
   },
   honeclaws: {
-    // Raises user's Attack and Accuracy.
-    kind: "fail",
+    kind: "stage",
     name: "Hone Claws",
     pp: 15,
     type: "dark",
-    range: Range.Adjacent,
-    why: "fail_unimplemented",
+    range: Range.Self,
+    // prettier-ignore
+    stages: [["atk", 1], ["acc", 1]],
+    snatch: true,
   },
   hornleech: {
-    // User recovers half the HP inflicted on opponent.
-    kind: "fail",
+    kind: "damage",
     name: "Horn Leech",
     pp: 10,
     type: "grass",
@@ -6311,23 +6316,24 @@ const internalMoveList = createMoveList({
     power: 75,
     acc: 100,
     category: MC.physical,
-    why: "fail_unimplemented",
+    flag: "drain",
+    contact: true,
   },
   hurricane: {
-    // May confuse opponent.
-    kind: "fail",
+    kind: "damage",
     name: "Hurricane",
     pp: 10,
     type: "flying",
-    range: Range.Adjacent,
+    range: Range.Any,
     power: 110,
     acc: 70,
     category: MC.special,
-    why: "fail_unimplemented",
+    ignore: ["fly", "bounce", "skydrop"],
+    effect: [30, "confusion"],
+    rainAcc: true,
   },
   iceburn: {
-    // Charges on first turn, attacks on second. May burn opponent.
-    kind: "fail",
+    kind: "damage",
     name: "Ice Burn",
     pp: 5,
     type: "ice",
@@ -6335,11 +6341,11 @@ const internalMoveList = createMoveList({
     power: 140,
     acc: 90,
     category: MC.special,
-    why: "fail_unimplemented",
+    charge: true,
+    effect: [30, "brn"],
   },
   iciclecrash: {
-    // May cause flinching.
-    kind: "fail",
+    kind: "damage",
     name: "Icicle Crash",
     pp: 10,
     type: "ice",
@@ -6347,7 +6353,7 @@ const internalMoveList = createMoveList({
     power: 85,
     acc: 90,
     category: MC.physical,
-    why: "fail_unimplemented",
+    effect: [30, "flinch"],
   },
   incinerate: {
     // Destroys the target's held berry.
@@ -6362,8 +6368,7 @@ const internalMoveList = createMoveList({
     why: "fail_unimplemented",
   },
   inferno: {
-    // Burns opponent.
-    kind: "fail",
+    kind: "damage",
     name: "Inferno",
     pp: 5,
     type: "fire",
@@ -6371,11 +6376,10 @@ const internalMoveList = createMoveList({
     power: 100,
     acc: 50,
     category: MC.special,
-    why: "fail_unimplemented",
+    effect: [100, "brn"],
   },
   leaftornado: {
-    // May lower opponent's Accuracy.
-    kind: "fail",
+    kind: "damage",
     name: "Leaf Tornado",
     pp: 10,
     type: "grass",
@@ -6383,11 +6387,10 @@ const internalMoveList = createMoveList({
     power: 65,
     acc: 90,
     category: MC.special,
-    why: "fail_unimplemented",
+    effect: [50, [["acc", -1]]],
   },
   lowsweep: {
-    // Lowers opponent's Speed.
-    kind: "fail",
+    kind: "damage",
     name: "Low Sweep",
     pp: 20,
     type: "fight",
@@ -6395,7 +6398,8 @@ const internalMoveList = createMoveList({
     power: 65,
     acc: 100,
     category: MC.physical,
-    why: "fail_unimplemented",
+    effect: [100, [["spe", -1]]],
+    contact: true,
   },
   magicroom: {
     // Suppresses the effects of held items for five turns.
@@ -6407,8 +6411,7 @@ const internalMoveList = createMoveList({
     why: "fail_unimplemented",
   },
   nightdaze: {
-    // May lower opponent's Accuracy.
-    kind: "fail",
+    kind: "damage",
     name: "Night Daze",
     pp: 10,
     type: "dark",
@@ -6416,7 +6419,7 @@ const internalMoveList = createMoveList({
     power: 85,
     acc: 95,
     category: MC.special,
-    why: "fail_unimplemented",
+    effect: [40, [["acc", -1]]],
   },
   powersplit: {
     // Averages Attack and Special Attack with the target.
@@ -6471,26 +6474,27 @@ const internalMoveList = createMoveList({
     why: "fail_unimplemented",
   },
   quiverdance: {
-    // Raises user's Special Attack, Special Defense and Speed.
-    kind: "fail",
+    kind: "stage",
     name: "Quiver Dance",
     pp: 20,
     type: "bug",
-    range: Range.Adjacent,
-    why: "fail_unimplemented",
+    range: Range.Self,
+    // prettier-ignore
+    stages: [["spa", 1], ["spd", 1], ["spe", 1]],
+    snatch: true,
   },
   ragepowder: {
-    // Forces attacks to hit user, not team-mates.
-    kind: "fail",
+    kind: "volatile",
     name: "Rage Powder",
     pp: 20,
     type: "bug",
-    range: Range.Adjacent,
-    why: "fail_unimplemented",
+    range: Range.Self,
+    priority: +3,
+    noAssist: true,
+    flag: VF.followMe,
   },
   razorshell: {
-    // May lower opponent's Defense.
-    kind: "fail",
+    kind: "damage",
     name: "Razor Shell",
     pp: 10,
     type: "water",
@@ -6498,7 +6502,8 @@ const internalMoveList = createMoveList({
     power: 75,
     acc: 95,
     category: MC.physical,
-    why: "fail_unimplemented",
+    effect: [50, [["def", -1]]],
+    contact: true,
   },
   reflecttype: {
     // User becomes the target's type.
@@ -6520,6 +6525,7 @@ const internalMoveList = createMoveList({
     acc: 100,
     category: MC.special,
     why: "fail_unimplemented",
+    sound: true,
   },
   retaliate: {
     // Inflicts double damage if a teammate fainted on the last turn.
@@ -6544,6 +6550,7 @@ const internalMoveList = createMoveList({
     acc: 100,
     category: MC.special,
     why: "fail_unimplemented",
+    sound: true,
   },
   sacredsword: {
     // Ignores opponent's stat changes.
@@ -6558,8 +6565,7 @@ const internalMoveList = createMoveList({
     why: "fail_unimplemented",
   },
   scald: {
-    // May burn opponent.
-    kind: "fail",
+    kind: "damage",
     name: "Scald",
     pp: 15,
     type: "water",
@@ -6567,19 +6573,19 @@ const internalMoveList = createMoveList({
     power: 80,
     acc: 100,
     category: MC.special,
-    why: "fail_unimplemented",
+    effect: [30, "brn"],
+    selfThaw: true,
   },
   searingshot: {
-    // May burn opponent.
-    kind: "fail",
+    kind: "damage",
     name: "Searing Shot",
     pp: 5,
     type: "fire",
-    range: Range.Adjacent,
+    range: Range.AllAdjacent,
     power: 100,
     acc: 100,
     category: MC.special,
-    why: "fail_unimplemented",
+    effect: [30, "brn"],
   },
   secretsword: {
     // Inflicts damage based on the target's Defense, not Special Defense.
@@ -6594,22 +6600,24 @@ const internalMoveList = createMoveList({
     why: "fail_unimplemented",
   },
   shellsmash: {
-    // Sharply raises user's Attack, Special Attack and Speed but lowers Defense and Special Defense.
-    kind: "fail",
+    kind: "stage",
     name: "Shell Smash",
     pp: 15,
     type: "normal",
-    range: Range.Adjacent,
-    why: "fail_unimplemented",
+    range: Range.Self,
+    // prettier-ignore
+    stages: [["def", -1], ["spd", -1], ["atk", 2], ["spa", 2], ["spe", 2]],
+    snatch: true,
   },
   shiftgear: {
-    // Raises user's Attack and sharply raises Speed.
-    kind: "fail",
+    kind: "stage",
     name: "Shift Gear",
     pp: 10,
     type: "steel",
-    range: Range.Adjacent,
-    why: "fail_unimplemented",
+    range: Range.Self,
+    // prettier-ignore
+    stages: [["atk", 1], ["spe", 2]],
+    snatch: true,
   },
   simplebeam: {
     // Changes target's ability to Simple.
@@ -6632,18 +6640,18 @@ const internalMoveList = createMoveList({
     acc: 100,
     category: MC.physical,
     why: "fail_unimplemented",
+    noAssist: true,
   },
   sludgewave: {
-    // May poison opponent.
-    kind: "fail",
+    kind: "damage",
     name: "Sludge Wave",
     pp: 10,
     type: "poison",
-    range: Range.Adjacent,
+    range: Range.AllAdjacent,
     power: 95,
     acc: 100,
     category: MC.special,
-    why: "fail_unimplemented",
+    effect: [10, "psn"],
   },
   smackdown: {
     // Makes Flying-type Pokémon vulnerable to Ground moves.
@@ -6658,16 +6666,16 @@ const internalMoveList = createMoveList({
     why: "fail_unimplemented",
   },
   snarl: {
-    // Lowers opponent's Special Attack.
-    kind: "fail",
+    kind: "damage",
     name: "Snarl",
     pp: 15,
     type: "dark",
-    range: Range.Adjacent,
+    range: Range.AllAdjacent,
     power: 55,
     acc: 95,
     category: MC.special,
-    why: "fail_unimplemented",
+    effect: [100, [["spa", -1]], true],
+    sound: true,
   },
   soak: {
     // Changes the target's type to water.
@@ -6680,8 +6688,7 @@ const internalMoveList = createMoveList({
     why: "fail_unimplemented",
   },
   steamroller: {
-    // May cause flinching.
-    kind: "fail",
+    kind: "damage",
     name: "Steamroller",
     pp: 20,
     type: "bug",
@@ -6689,7 +6696,9 @@ const internalMoveList = createMoveList({
     power: 65,
     acc: 100,
     category: MC.physical,
-    why: "fail_unimplemented",
+    effect: [30, "flinch"],
+    flag: "minimize",
+    contact: true,
   },
   storedpower: {
     // Power increases when user's stats have been raised.
@@ -6716,16 +6725,15 @@ const internalMoveList = createMoveList({
     why: "fail_unimplemented",
   },
   strugglebug: {
-    // Lowers opponent's Special Attack.
-    kind: "fail",
+    kind: "damage",
     name: "Struggle Bug",
     pp: 20,
     type: "bug",
-    range: Range.Adjacent,
+    range: Range.AllAdjacentFoe,
     power: 50,
     acc: 100,
     category: MC.special,
-    why: "fail_unimplemented",
+    effect: [100, [["spa", -1]]],
   },
   synchronoise: {
     // Hits any Pokémon that shares a type with the user.
@@ -6740,8 +6748,7 @@ const internalMoveList = createMoveList({
     why: "fail_unimplemented",
   },
   tailslap: {
-    // Hits 2-5 times in one turn.
-    kind: "fail",
+    kind: "damage",
     name: "Tail Slap",
     pp: 10,
     type: "normal",
@@ -6749,7 +6756,8 @@ const internalMoveList = createMoveList({
     power: 25,
     acc: 85,
     category: MC.physical,
-    why: "fail_unimplemented",
+    flag: "multi",
+    contact: true,
   },
   technoblast: {
     // Type depends on the Drive being held.
@@ -6773,8 +6781,7 @@ const internalMoveList = createMoveList({
     why: "fail_unimplemented",
   },
   vcreate: {
-    // Lowers user's Defense, Special Defense and Speed.
-    kind: "fail",
+    kind: "damage",
     name: "V-create",
     pp: 5,
     type: "fire",
@@ -6782,11 +6789,12 @@ const internalMoveList = createMoveList({
     power: 180,
     acc: 95,
     category: MC.physical,
-    why: "fail_unimplemented",
+    // prettier-ignore
+    effect: [100, [["def", -1], ["spd", -1], ["spe", -1]], true],
+    contact: true,
   },
   venoshock: {
-    // Inflicts double damage if the target is poisoned.
-    kind: "fail",
+    kind: "damage",
     name: "Venoshock",
     pp: 10,
     type: "poison",
@@ -6794,11 +6802,12 @@ const internalMoveList = createMoveList({
     power: 65,
     acc: 100,
     category: MC.special,
-    why: "fail_unimplemented",
+    getPower(_user, target) {
+      return target?.status === "psn" || target?.status === "tox" ? this.power * 2 : this.power;
+    },
   },
   voltswitch: {
-    // User must switch out after attacking.
-    kind: "fail",
+    kind: "damage",
     name: "Volt Switch",
     pp: 20,
     type: "electric",
@@ -6806,7 +6815,7 @@ const internalMoveList = createMoveList({
     power: 70,
     acc: 100,
     category: MC.special,
-    why: "fail_unimplemented",
+    flag: "uturn",
   },
   waterpledge: {
     // Added effects appear if preceded by Fire Pledge or succeeded by Grass Pledge.
@@ -6830,8 +6839,7 @@ const internalMoveList = createMoveList({
     why: "fail_unimplemented",
   },
   wildcharge: {
-    // User receives recoil damage.
-    kind: "fail",
+    kind: "damage",
     name: "Wild Charge",
     pp: 15,
     type: "electric",
@@ -6839,7 +6847,8 @@ const internalMoveList = createMoveList({
     power: 90,
     acc: 100,
     category: MC.physical,
-    why: "fail_unimplemented",
+    recoil: 4, // 1 / 4
+    contact: true,
   },
   wonderroom: {
     // Swaps every Pokémon's Defense and Special Defense for 5 turns.
@@ -6851,13 +6860,14 @@ const internalMoveList = createMoveList({
     why: "fail_unimplemented",
   },
   workup: {
-    // Raises user's Attack and Special Attack.
-    kind: "fail",
+    kind: "stage",
     name: "Work Up",
     pp: 30,
     type: "normal",
-    range: Range.Adjacent,
-    why: "fail_unimplemented",
+    range: Range.Self,
+    // prettier-ignore
+    stages: [["atk", 1], ["spa", 1]],
+    snatch: true,
   },
 });
 

@@ -94,7 +94,7 @@
       {{ pn(e.src) }}'s {{ getStageTable(gen)[e.stat] }} was not lowered!
     </template>
     <template v-else>
-      {{ pn(e.src) }}'s {{ getStageTable(gen)[e.stat] }} {{ e.count > 0 ? "rose" : "fell" }}{{ Math.abs(e.count) > 1 ? " sharply" : "" }}!
+      {{ pn(e.src) }}'s {{ getStageTable(gen)[e.stat] }} {{ e.count > 0 ? "rose" : "fell" }}{{ statMod[Math.abs(e.count)] ?? "" }}!
     </template>
   </div>
   <div v-else-if="e.type === 'info'" :class="{ confused: e.why === 'confused', move: e.why === 'sleep' || e.why === 'disable_end' || e.why === 'wake' }">
@@ -224,6 +224,8 @@ const {perspective, players, myId, e} = defineProps<{
   myId: string;
   gen: Generation;
 }>();
+
+const statMod = {[1]: "", [2]: " sharply", [3]: " drastically"} as any;
 
 const pn = (id: PokeId, title = true) => {
   if (playerId(id) === perspective) {

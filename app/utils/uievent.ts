@@ -59,6 +59,7 @@ export const chargeMessage: Partial<Record<MoveId, string>> = {
   dive: "{} hid underwater!",
   bounce: "{} sprang up!",
   shadowforce: "{} vanished instantly!",
+  freezeshock: "{} became cloaked in a freezing light!",
 };
 
 export const infoMessage: Record<InfoReason, string> = {
