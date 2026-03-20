@@ -10,37 +10,39 @@
     </template>
 
     <template #content>
-      <div v-if="searchable" class="pb-1">
-        <UInput
-          v-model="modelQuery"
-          class="w-full"
-          placeholder="Search..."
-          variant="none"
-          autofocus
-          @blur="open = false"
-        />
-      </div>
-
-      <UScrollArea
-        v-slot="{item, index}"
-        :items="filteredItems"
-        class="max-h-60 p-0.5 focus:outline-none"
-        :class="ui?.list"
-        :virtualize
-      >
-        <div
-          class="cursor-default select-none relative flex items-center justify-between gap-1 rounded-md px-1.5 py-1 text-sm"
-          :class="[hovered === index && 'bg-elevated/50 hovered']"
-          @click="select(index)"
-          @mouseover="hovered = index"
-          @mouseleave="hovered = hovered === index ? -1 : hovered"
-        >
-          <slot :item :index name="item" />
+      <div ref="container">
+        <div v-if="searchable" class="pb-1">
+          <UInput
+            v-model="modelQuery"
+            class="w-full"
+            placeholder="Search..."
+            variant="none"
+            autofocus
+            @keydown.tab="open = false"
+          />
         </div>
-      </UScrollArea>
 
-      <div v-if="!filteredItems.length" class="text-center text-sm">
-        <slot name="empty">No Items.</slot>
+        <UScrollArea
+          v-slot="{item, index}"
+          :items="filteredItems"
+          class="max-h-60 p-0.5 focus:outline-none"
+          :class="ui?.list"
+          :virtualize
+        >
+          <div
+            class="cursor-default select-none relative flex items-center justify-between gap-1 rounded-md px-1.5 py-1 text-sm"
+            :class="[hovered === index && 'bg-elevated/50 hovered']"
+            @click="select(index)"
+            @mouseover="hovered = index"
+            @mouseleave="hovered = hovered === index ? -1 : hovered"
+          >
+            <slot :item :index name="item" />
+          </div>
+        </UScrollArea>
+
+        <div v-if="!filteredItems.length" class="text-center text-sm">
+          <slot name="empty">No Items.</slot>
+        </div>
       </div>
     </template>
   </UPopover>
@@ -103,6 +105,7 @@ onKeyStroke("ArrowUp", () => trySetHovered(-1));
 onKeyStroke("Home", () => trySetHovered(-items.length));
 onKeyStroke("End", () => trySetHovered(items.length));
 onKeyStroke("Enter", () => select(hovered.value));
+onClickOutside(useTemplateRef("container"), () => (open.value = false));
 
 const filteredItems = computed(() => filter(items, queryUnmodified.value ? "" : query.value));
 
