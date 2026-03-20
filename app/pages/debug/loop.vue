@@ -1,7 +1,7 @@
 <template>
   <div class="space-y-2 p-1">
     <div class="p-1 flex gap-2">
-      <NumericInput v-model="cry" class="w-20" />
+      <UInput v-model="cry" class="w-20" />
       <UButton label="Play" @click="playCry" />
     </div>
 
@@ -33,7 +33,7 @@
 <script setup lang="ts">
 import criesSpritesheet from "~~/public/effects/cries.json";
 
-const cry = ref(1);
+const cry = ref("1");
 
 const sound = useAudio({
   cries: {src: "/effects/cries.mp3", sprites: criesSpritesheet},
@@ -42,7 +42,9 @@ const sound = useAudio({
 const playCry = () => {
   const sprite = cry.value.toString();
   sound.play("cries", {sprite});
-  cry.value++;
+  if (!Number.isNaN(+cry.value)) {
+    cry.value = String(+cry.value + 1);
+  }
 };
 
 definePageMeta({middleware: ["admin"]});

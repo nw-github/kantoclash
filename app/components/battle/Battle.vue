@@ -295,7 +295,8 @@ const isLive = () => skipToEvent.value < nextEvent.value && isMounted.value;
 const clientMgr = new ClientManager({
   playCry(speciesId, pitchDown) {
     if (isLive()) {
-      let sprite = gen.value.speciesList[speciesId].dexId.toString();
+      const species = gen.value.speciesList[speciesId];
+      let sprite = species.cry ?? species.dexId.toString();
       if (speciesId === "shayminsky") {
         sprite += "-sky";
       }
