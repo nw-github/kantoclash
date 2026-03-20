@@ -255,15 +255,14 @@ const createGeneration = (): Generation => {
         }
       }
 
-      if (!move.acc || (move.rainAcc && battle.hasWeather("rain"))) {
+      const acc0 = move.getAcc ? move.getAcc(battle.getWeather()) : move.acc;
+      if (!acc0) {
         return true;
       }
 
-      let chance = floatTo255(move.acc);
+      let chance = floatTo255(acc0);
       if (move.kind === "damage" && move.flag === "ohko") {
         chance = (user.base.level - target.base.level) * 2 + 76;
-      } else if (move.rainAcc && battle.hasWeather("sun")) {
-        chance = 127;
       }
 
       let acc = scaleAccuracy255(chance, user, target);

@@ -176,7 +176,8 @@ const createGeneration = (): Generation => {
       // TODO: does pursuit skip the invuln check? Could matter if (Gen IV+):
       // Player 1: Pokémon A is flying, Pokémon B is switching out
       // Player 2: Pokémon C & D pursuit into B, C kills it, D retargets to A
-      if (!move.acc || user.v.inPursuit || (move.rainAcc && battle.hasWeather("rain"))) {
+      const chance = move.getAcc ? move.getAcc(battle.getWeather()) : move.acc;
+      if (!chance || user.v.inPursuit) {
         return true;
       }
 
@@ -192,11 +193,6 @@ const createGeneration = (): Generation => {
           battle.miss(user, target);
           return false;
         }
-      }
-
-      let chance = move.acc;
-      if (move.rainAcc && battle.hasWeather("sun")) {
-        chance = 50;
       }
 
       let eva = target.v.stages.eva;

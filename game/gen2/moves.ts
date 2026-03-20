@@ -1,4 +1,4 @@
-import {Range, type Move, type MoveFunctions, type MoveId} from "../moves";
+import {rainAcc, Range, type Move, type MoveFunctions, type MoveId} from "../moves";
 import {stageKeys} from "../utils";
 
 export const moveFunctionPatches: Partial<MoveFunctions> = {
@@ -191,7 +191,7 @@ export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
   sludge: {effect: [30, "psn"]},
   stomp: {flag: "minimize"},
   struggle: {type: "???", recoil: 4, pp: 1},
-  thunder: {ignore: ["fly", "bounce"], effect: [30, "par"], rainAcc: true},
+  thunder: {ignore: ["fly", "bounce"], effect: [30, "par"], getAcc: rainAcc},
   triattack: {effect: [20, "tri_attack"]},
   wingattack: {power: 60},
 };

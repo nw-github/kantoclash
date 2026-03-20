@@ -17,6 +17,11 @@ export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
   ancientpower: {contact: false},
   astonish: {flag: "none"},
   bide: {ignoreType: true, acc: 0, priority: +1},
+  blizzard: {
+    getAcc(weather) {
+      return weather === "hail" ? undefined : this.acc;
+    },
+  },
   covet: {contact: true},
   crunch: {effect: [20, [["def", -1]]]},
   dig: {power: 80},

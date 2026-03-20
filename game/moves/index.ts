@@ -17,8 +17,6 @@ export interface BaseMove {
   readonly acc?: number;
   readonly priority?: number;
   readonly power?: number;
-  /** 50% accurate in sun, -- in rain */
-  readonly rainAcc?: bool;
   /** Hits users in the semi-invuln state of these moves */
   readonly ignore?: string[] /* MoveId[] */;
   /** Not encoreable */
@@ -37,14 +35,13 @@ export interface BaseMove {
   readonly sleepOnly?: bool;
   /** Usable while frozen; thaws the user out */
   readonly selfThaw?: bool;
-  /** Affected by kings rock pre Gen V */
-  readonly kingsRock?: bool;
   /** Soundproof Pokémon are immune */
   readonly sound?: bool;
   /** Affected by snatch */
   readonly snatch?: bool;
   /** Affected by magic coat */
   readonly magicCoat?: bool;
+  getAcc?(weather?: Weather): number | undefined;
 }
 
 export interface CustomMove extends BaseMove {
@@ -171,6 +168,8 @@ export interface DamagingMove extends BaseMove {
   readonly charge?: bool | "sun" | "invuln" | [StageId, number][];
   readonly ignoreType?: bool;
   readonly noTechnician?: bool;
+  /** Affected by kings rock pre Gen V */
+  readonly kingsRock?: bool;
   getPower?(user: Pokemon, target?: Pokemon): number;
   getType?(user: Pokemon, weather?: Weather): Type;
   checkSuccess?(battle: Battle, user: ActivePokemon, targets: ActivePokemon[]): bool;

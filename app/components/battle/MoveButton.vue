@@ -105,7 +105,9 @@ const info = computed(() => {
     }
 
     pow = pow ? applyPowerModifiers(pow, type, item) : undefined;
-    const acc = applyAccuracyModifiers(move.value.acc, item);
+
+    let acc = move.value.getAcc ? move.value.getAcc(weather) : move.value.acc;
+    acc = applyAccuracyModifiers(acc, item);
     const other = powers.find(r => r.pow == pow && r.acc == acc);
     if (other) {
       other.pokes.push(opp.base);

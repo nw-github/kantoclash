@@ -1,6 +1,6 @@
 import type {DamagingMove, Move} from "./index";
 import type {Pokemon} from "../pokemon";
-import {HP_TYPES, idiv, stageKeys, stageStatKeys, VF, MC, type Type} from "../utils";
+import {HP_TYPES, idiv, stageKeys, stageStatKeys, VF, MC, type Type, type Weather} from "../utils";
 
 export type MoveId = keyof typeof internalMoveList;
 
@@ -6330,7 +6330,7 @@ const internalMoveList = createMoveList({
     category: MC.special,
     ignore: ["fly", "bounce", "skydrop"],
     effect: [30, "confusion"],
-    rainAcc: true,
+    getAcc: rainAcc,
   },
   iceburn: {
     kind: "damage",
@@ -6903,5 +6903,16 @@ export function getLowKickPower(weight: number): number {
     return 100;
   } else {
     return 120;
+  }
+}
+
+export function rainAcc(this: Move, weather?: Weather) {
+  switch (weather) {
+    case "rain":
+      return undefined;
+    case "sun":
+      return 50;
+    default:
+      return this.acc;
   }
 }
