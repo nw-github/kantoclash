@@ -218,18 +218,52 @@ const flagDesc: Record<NonNullable<DamagingMove["flag"]>, string> = {
     "After two turns, the target is hit with an attack. Damage is calculated upon use of the move. ",
 };
 
-const formatStages = (gen: Generation, stages: [StageId, number][]) => {
-  const table = getStageTable(gen);
-  const statsBefore = stages.map(v => table[v[0]]);
-  let stats = "";
-  if (statsBefore.length > 1) {
-    stats = statsBefore.slice(0, -1).join(", ") + ", and " + statsBefore.at(-1);
+const groupWithComma = (items: readonly string[]) => {
+  if (items.length > 1) {
+    const comma = items.length > 2 ? "," : "";
+    return items.slice(0, -1).join(", ") + `${comma} and ` + items.at(-1);
   } else {
-    stats = statsBefore[0];
+    return items[0];
   }
+};
 
-  const [, count] = stages[0];
-  return `${stats} by ${Math.abs(count)} stage${Math.abs(count) > 1 ? "s" : ""}`;
+const formatStages = (
+  gen: Generation,
+  stages: readonly [StageId, number][],
+  dropraise: readonly [string, string],
+) => {
+  const groupByStages = (arr: readonly [StageId, number][]) => {
+    const map = new Map<number, [StageId, number][]>();
+    for (const tuple of arr) {
+      let val;
+      if ((val = map.get(tuple[1]))) {
+        val.push(tuple);
+      } else {
+        map.set(tuple[1], [tuple]);
+      }
+    }
+    return Array.from(map.values());
+  };
+
+  const pos = stages.filter(stage => stage[1] > 0);
+  const neg = stages.filter(stage => stage[1] < 0);
+  const table = getStageTable(gen);
+
+  let res = "";
+  for (const stat of [neg, pos]) {
+    if (!stat.length) {
+      continue;
+    }
+
+    const groups = groupByStages(stat.sort((a, b) => a[1] - b[1])).map(stat => {
+      const c = Math.abs(stat[0][1]);
+      const v = groupWithComma(stat.map(v => table[v[0]]));
+      return `${v} by ${c} stage${c > 1 ? "s" : ""}`;
+    });
+
+    res += `${stat[0][1] < 0 ? dropraise[0] : dropraise[1]} ${groupWithComma(groups)}. `;
+  }
+  return res;
 };
 
 const describeEffect = (gen: Generation, eff: DamagingMove["effect"]) => {
@@ -241,8 +275,7 @@ const describeEffect = (gen: Generation, eff: DamagingMove["effect"]) => {
 
   buf += `Has a ${chance}% chance to `;
   if (Array.isArray(effect)) {
-    const raise = effect[0][1] < 0 ? "drop" : "raise";
-    buf += `${raise} ${formatStages(gen, effect)}. `;
+    buf += formatStages(gen, effect, ["drop", "raise"]);
   } else if (effect === "confusion") {
     buf += "confuse the target. ";
   } else if (effect === "flinch") {
@@ -282,8 +315,7 @@ export const describeMove = (gen: Generation, id: MoveId) => {
       } else if (move.charge === "sun") {
         buf += "Skips the charging turn if sun is active.";
       } else if (Array.isArray(move.charge)) {
-        const raise = move.charge[0][1] < 0 ? "drops" : "raises";
-        buf += `On the charge turn, ${raise} ${formatStages(gen, move.charge)}. `;
+        buf += `On the charge turn, ${formatStages(gen, move.charge, ["drops", "raises"])}`;
       }
     }
 
@@ -315,14 +347,13 @@ export const describeMove = (gen: Generation, id: MoveId) => {
   } else if (move.kind === "status") {
     return statusTable[move.status] + ". ";
   } else if (move.kind === "stage") {
-    const [, count] = move.stages[0];
     const target = move.acc ? "target" : "user";
-    const raise = count < 0 ? "Drops" : "Raises";
-    return `${raise} the ${target}'s ${formatStages(gen, move.stages)}. `;
+    const raise = [`Drops the ${target}'s`, `Raises the ${target}'s`] as const;
+    return formatStages(gen, move.stages, raise);
   } else if (move.kind === "confuse") {
     return "Confuses the target. ";
   } else if (move.kind === "fail") {
-    return "Has no effect. ";
+    return move.why === "fail_unimplemented" ? "Unimplemented. " : "Has no effect. ";
   } else if (move.kind === "recover") {
     if (move.why === "rest") {
       return "The user goes to sleep for two turns, recovering HP and curing status conditions. ";
@@ -335,6 +366,17 @@ export const describeMove = (gen: Generation, id: MoveId) => {
     }
   } else if (move.kind === "phaze") {
     return "Forces the target to switch to a different Pokémon. Fails if the target has no other living Pokémon, or if the move is used before the target attacks. ";
+  } else if (move.kind === "hwish") {
+    const stuff = move.restorePP ? "HP and PP" : "HP";
+    if (gen.id <= 4) {
+      return `Causes the user to faint, then switch to another Pokémon, who's ${stuff} will be restored and status condition cleared upon switching in. Fails if the user's team has no other living Pokémon.`;
+    } else {
+      return `Causes the user to faint. The next Pokémon to switch in will have its ${stuff} restored and status condition cleared. Fails if the user's team has no other living Pokémon.`;
+    }
+  } else if (move.kind === "swap") {
+    const table = getStageTable(gen);
+    const stats = groupWithComma(move.stats.map(stat => table[stat]));
+    return `Switches the user's ${stats} with the target. `;
   } else if (move.kind === "weather") {
     let base = `Sets the weather to ${move.weather} for 5 turns. `;
     // FIXME: mention moonlight, morning sun, etc.
