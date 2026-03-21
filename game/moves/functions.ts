@@ -440,4 +440,14 @@ export const moveFunctions: MoveFunctions = {
     });
     target.hazards[this.hazard] = (target.hazards[this.hazard] ?? 0) + 1;
   },
+  swap(battle, user, [target]) {
+    for (const stat of this.stats) {
+      [user.v.stages[stat], target.v.stages[stat]] = [target.v.stages[stat], user.v.stages[stat]];
+    }
+    battle.info(
+      user,
+      this.message,
+      [user, target].map(t => ({id: t.id, v: t.getClientVolatiles(user.base, battle)})),
+    );
+  },
 };

@@ -146,6 +146,9 @@ export const infoMessage: Record<InfoReason, string> = {
   gastroAcid: "{}'s ability was suppressed!",
   atk_maximize: "{} maxed its Attack!",
   quickclaw: "{} can move faster thanks to its Quick Claw!",
+  heartswap: "{} switched stat stages with the target!",
+  guardswap: "{} switched all changes to its Defense and Sp. Def with the target!",
+  powerswap: "{} switched all changes to its Attack and Sp. Atk with the target!",
 };
 
 export const weatherMessage: Record<Weather, Record<WeatherEvent["kind"], string>> = {

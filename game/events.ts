@@ -285,7 +285,10 @@ export type InfoReason =
   | "cure_attract"
   | "pressure"
   | "atk_maximize"
-  | "quickclaw";
+  | "quickclaw"
+  | "heartswap"
+  | "powerswap"
+  | "guardswap";
 
 type InfoEvent = {type: "info"; src: PokeId; why: InfoReason};
 

@@ -152,6 +152,13 @@ export interface ForesightMove extends BaseMove {
   readonly protect: true;
 }
 
+export interface SwapMove extends BaseMove {
+  readonly kind: "swap";
+  readonly range: Range.Adjacent;
+  readonly message: InfoReason;
+  readonly stats: readonly StageId[];
+}
+
 export interface DamagingMove extends BaseMove {
   readonly kind: "damage";
   readonly power: number;
@@ -201,7 +208,8 @@ export type Move =
   | LockOnMove
   | HealBellMove
   | SwaggerMove
-  | ForesightMove;
+  | ForesightMove
+  | SwapMove;
 
 type Effect =
   | Status
