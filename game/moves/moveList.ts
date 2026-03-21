@@ -53,6 +53,7 @@ const internalMoveList = createMoveList({
     category: MC.special,
     power: 20,
     acc: 100,
+    flag: "drain",
     kingsRock: true,
   },
   acid: {
