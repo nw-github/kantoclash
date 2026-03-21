@@ -3,7 +3,6 @@ import type {FormId, Gender, Status} from "./pokemon";
 import type {AbilityId, SpeciesId} from "./species";
 import type {StageId, Type, VF, Weather, ScreenId, HazardId, StageStats, CVF} from "./utils";
 import type {ItemId} from "./item";
-import type {SwitchReason} from "./active";
 
 export type ClientVolatiles = {
   stages: Partial<Record<StageId, number>>;
@@ -84,7 +83,7 @@ export type SwitchEvent = {
   gender: Gender;
   shiny: bool;
   form?: FormId;
-  why?: SwitchReason;
+  why?: "phaze" | "batonpass" | "uturn";
 };
 
 type TransformEvent = {
@@ -288,7 +287,9 @@ export type InfoReason =
   | "quickclaw"
   | "heartswap"
   | "powerswap"
-  | "guardswap";
+  | "guardswap"
+  | "healingwish"
+  | "lunardance";
 
 type InfoEvent = {type: "info"; src: PokeId; why: InfoReason};
 

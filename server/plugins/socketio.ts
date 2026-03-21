@@ -18,8 +18,8 @@ export default defineNitroPlugin(nitro => {
             player2: +battlers[1],
             winner: battle.victor ? +battle.victor.id : null,
           });
-      } catch {
-        console.error("Cannot save battle due to database error");
+      } catch (ex) {
+        console.error("Cannot save battle due to database error: ", ex);
       }
     },
     async reportBugs(id, battle, reports) {
@@ -28,8 +28,8 @@ export default defineNitroPlugin(nitro => {
           .insert(bugReports)
           .values({id, battle, reports})
           .onConflictDoUpdate({target: bugReports.id, set: {battle, reports}});
-      } catch {
-        console.error("Cannot save bug report due to database error");
+      } catch (ex) {
+        console.error("Cannot save bug report due to database error: ", ex);
       }
     },
   });

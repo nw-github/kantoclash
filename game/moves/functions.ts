@@ -146,7 +146,7 @@ export const moveFunctions: MoveFunctions = {
     target.status(this.status, battle, user, {override: false, loud: true});
   },
   switch(battle, user) {
-    user.switchTo(this.poke, battle, user.v.inBatonPass);
+    user.switchTo(this.poke, battle);
   },
   damage(battle, user, targets) {
     let power: number | undefined;
@@ -295,7 +295,7 @@ export const moveFunctions: MoveFunctions = {
       return;
     }
 
-    target.switchTo(next, battle, "phaze", user);
+    target.switchTo(next, battle, user);
   },
   protect(battle, user) {
     if (user.v.substitute || (battle.turnOrder.at(-1) === user && !this.endure)) {
@@ -449,5 +449,16 @@ export const moveFunctions: MoveFunctions = {
       this.message,
       [user, target].map(t => ({id: t.id, v: t.getClientVolatiles(user.base, battle)})),
     );
+  },
+  hwish(battle, user) {
+    if (!user.owner.team.some(p => p.hp && user.owner.active.every(a => p !== a.base.real))) {
+      return battle.info(user, "fail_generic");
+    }
+
+    user.v.hwish = this;
+    user.damage2(battle, {dmg: user.base.hp, src: user, why: "explosion", direct: true});
+    if (battle.gen.id <= 4) {
+      user.v.inBatonPass = "hwish";
+    }
   },
 };

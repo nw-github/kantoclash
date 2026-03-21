@@ -152,6 +152,12 @@ export interface ForesightMove extends BaseMove {
   readonly protect: true;
 }
 
+export interface HealingWishMove extends BaseMove {
+  readonly kind: "hwish";
+  readonly range: Range.Self;
+  readonly restorePP: bool;
+}
+
 export interface SwapMove extends BaseMove {
   readonly kind: "swap";
   readonly range: Range.Adjacent;
@@ -209,7 +215,8 @@ export type Move =
   | HealBellMove
   | SwaggerMove
   | ForesightMove
-  | SwapMove;
+  | SwapMove
+  | HealingWishMove;
 
 type Effect =
   | Status

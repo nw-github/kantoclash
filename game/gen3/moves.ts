@@ -54,7 +54,7 @@ export const moveFunctionPatches: Partial<MoveFunctions> = {
       return;
     }
 
-    target.switchTo(next, battle, "phaze", user);
+    target.switchTo(next, battle, user);
   },
   protect(battle, user) {
     if (battle.turnOrder.at(-1) === user) {

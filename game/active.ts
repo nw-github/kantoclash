@@ -7,7 +7,7 @@ import type {
   ChangedVolatiles,
   PokeId,
 } from "./events";
-import {type MoveId, type Move, type DamagingMove, Range} from "./moves";
+import {type MoveId, type Move, type DamagingMove, Range, type HealingWishMove} from "./moves";
 import {
   natureTable,
   transform,
@@ -57,8 +57,6 @@ export type ChosenMove = {
   executed: bool;
 };
 
-export type SwitchReason = "phaze" | "uturn" | "batonpass";
-
 export class ActivePokemon {
   v: Volatiles;
   lastChosenMove?: Move;
@@ -74,7 +72,7 @@ export class ActivePokemon {
     this.id = `${this.owner.id}:${idx}`;
   }
 
-  switchTo(next: Pokemon, battle: Battle, why?: SwitchReason, phazer?: ActivePokemon) {
+  switchTo(next: Pokemon, battle: Battle, phazer?: ActivePokemon) {
     if (this.choice) {
       this.choice.executed = true;
     }
@@ -93,7 +91,7 @@ export class ActivePokemon {
     this.v = new Volatiles(next);
     this.base = next;
 
-    if (why === "batonpass") {
+    if (old.inBatonPass === "batonpass") {
       this.v.substitute = old.substitute;
       this.v.stages = old.stages;
       this.v.confusion = old.confusion;
@@ -138,7 +136,7 @@ export class ActivePokemon {
       shiny: next.shiny,
       form: next.form,
       indexInTeam: this.owner.team.indexOf(next),
-      why,
+      why: phazer ? "phaze" : old.inBatonPass !== "hwish" ? old.inBatonPass : undefined,
       volatiles: [{id: this.id, v: this.getClientVolatiles(next, battle)}],
     });
 
@@ -150,6 +148,17 @@ export class ActivePokemon {
       // BUG GEN2: If you baton pass into a pokemon with a berserk gene, the confusion value
       // is not updated.
       this.confuse(battle, undefined, 256);
+    }
+
+    if (old.hwish) {
+      battle.info(this, old.hwish.restorePP ? "lunardance" : "healingwish");
+      this.recover(this.base.stats.hp - this.base.hp, this, battle, "recover");
+      this.unstatus(battle);
+      if (old.hwish.restorePP) {
+        this.base.moves.forEach(
+          (move, i) => (this.base.pp[i] = battle.gen.getMaxPP(battle.gen.moveList[move])),
+        );
+      }
     }
 
     if (this.isGrounded()) {
@@ -1307,7 +1316,7 @@ class Volatiles {
   hazed = false;
   fainted = false;
   inPursuit = false;
-  inBatonPass?: "batonpass" | "uturn";
+  inBatonPass?: "batonpass" | "uturn" | "hwish";
   usedDefenseCurl = false;
   usedMinimize = false;
   usedIntimidate = false;
@@ -1329,6 +1338,7 @@ class Volatiles {
   seededBy?: ActivePokemon;
   choiceLock?: number;
   lastHitBy?: {move: Move; poke: ActivePokemon; special: bool};
+  hwish?: HealingWishMove;
   lastMove?: Move;
   lastMoveIndex?: number;
   charging?: {move: DamagingMove; targets: ActivePokemon[]};
