@@ -1507,7 +1507,7 @@ const internalMoveList = createMoveList({
     name: "Sky Attack",
     pp: 5,
     type: "flying",
-    range: Range.Adjacent,
+    range: Range.Any,
     category: MC.physical,
     power: 140,
     acc: 90,
@@ -3220,7 +3220,7 @@ const internalMoveList = createMoveList({
     power: 40,
     acc: 100,
     effect: [20, "flinch"],
-    ignore: ["fly", "bounce"],
+    ignore: ["fly", "bounce", "skydrop"],
     punish: true,
   },
   vitalthrow: {
@@ -4009,6 +4009,7 @@ const internalMoveList = createMoveList({
     kingsRock: true,
     contact: true,
     effect: [30, "flinch"],
+    flag: "minimize",
   },
   odorsleuth: {
     kind: "foresight",
@@ -4825,7 +4826,7 @@ const internalMoveList = createMoveList({
     acc: 100,
     kingsRock: true,
     contact: true,
-    getPower: (_user, target) => (target ? 1 + Math.floor(120 * (target.hp, target.stats.hp)) : 0),
+    getPower: getCrushGripPower,
   },
   darkpulse: {
     kind: "damage",
@@ -5251,6 +5252,7 @@ const internalMoveList = createMoveList({
     kind: "fail",
     name: "Last Resort",
     pp: 1,
+    power: 130,
     type: "normal",
     range: Range.Adjacent,
     why: "fail_unimplemented",
@@ -5801,12 +5803,16 @@ const internalMoveList = createMoveList({
     why: "fail_unimplemented",
   },
   wringout: {
-    kind: "fail",
+    kind: "damage",
     name: "Wring Out",
-    pp: 1,
+    pp: 5,
     type: "normal",
     range: Range.Adjacent,
-    why: "fail_unimplemented",
+    category: MC.special,
+    power: 0,
+    contact: true,
+    kingsRock: true,
+    getPower: getCrushGripPower,
   },
   xscissor: {
     kind: "damage",
@@ -6888,6 +6894,10 @@ function getFlailPower(this: DamagingMove, user: Pokemon) {
   } else {
     return 200;
   }
+}
+
+function getCrushGripPower(_user: Pokemon, target: Pokemon) {
+  return target ? 1 + Math.floor(120 * (target.hp / target.stats.hp)) : 0;
 }
 
 export function getLowKickPower(weight: number): number {

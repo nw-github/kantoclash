@@ -178,7 +178,7 @@ export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
   explosion: {power: 250},
   fireblast: {effect: [10, "brn"]},
   fissure: {ignore: ["dig"]},
-  gust: {type: "flying", ignore: ["fly", "bounce"]},
+  gust: {type: "flying", ignore: ["fly", "bounce", "skydrop"]},
   karatechop: {type: "fight"},
   poisonsting: {effect: [30, "psn"]},
   psychic: {effect: [10, [["spd", -1]]]},
@@ -191,7 +191,7 @@ export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
   sludge: {effect: [30, "psn"]},
   stomp: {flag: "minimize"},
   struggle: {type: "???", recoil: 4, pp: 1},
-  thunder: {ignore: ["fly", "bounce"], effect: [30, "par"], getAcc: rainAcc},
+  thunder: {ignore: ["fly", "bounce", "skydrop"], effect: [30, "par"], getAcc: rainAcc},
   triattack: {effect: [20, "tri_attack"]},
   wingattack: {power: 60},
 };
