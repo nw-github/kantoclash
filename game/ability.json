@@ -200,7 +200,11 @@
   "prankster": {"name": "Prankster", "desc": "Unimplemented"},
   "regenerator": {"name": "Regenerator", "desc": "Unimplemented"},
   "sandforce": {"name": "Sand Force", "desc": "Unimplemented"},
-  "sandrush": {"name": "Sand Rush", "desc": "Unimplemented"},
+  "sandrush": {
+    "name": "Sand Rush",
+    "desc": "Doubles Spe in sandstorm.",
+    "weatherSpeedBoost": "sand"
+  },
   "sheerforce": {"name": "Sheer Force", "desc": "Unimplemented"},
   "telepathy": {"name": "Telepathy", "desc": "Unimplemented"},
   "teravolt": {"name": "Teravolt", "desc": "Unimplemented"},
