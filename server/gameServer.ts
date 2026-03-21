@@ -440,7 +440,10 @@ export class GameServer extends Server<ClientMessage, ServerMessage> {
         return ack("must_login");
       }
 
-      if (!(format in formatInfo) || (formatInfo[format].beta && !account.admin)) {
+      if (
+        !(format in formatInfo) ||
+        (formatInfo[format].beta && !import.meta.dev && !account.admin)
+      ) {
         return ack("bad_format");
       }
 

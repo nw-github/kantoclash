@@ -40,7 +40,7 @@ const formats = computed(() => {
   }
 
   for (const format of battleFormats.toSorted().toReversed()) {
-    if (formatInfo[format].beta && !showBetaFormats.value) {
+    if (formatInfo[format].beta && !import.meta.dev && !showBetaFormats.value) {
       continue;
     }
 
