@@ -42,7 +42,9 @@ export const moveFunctionPatches: Partial<MoveFunctions> = {
     }
   },
   phaze(battle, user, [target]) {
-    const next = battle.rng.choice(target.owner.team.filter(p => p.hp && p != target.base.real));
+    const next = battle.rng.choice(
+      target.owner.team.filter(p => p.hp && target.owner.active.every(a => p !== a.base.real)),
+    );
     if (!next) {
       return battle.info(user, "fail_generic");
     } else if (target.hasAbility("suctioncups")) {
