@@ -55,9 +55,10 @@ export const useAudio = (sounds: Record<string, {src: string; sprites?: Sprites}
   const playing: AudioBufferSourceNode[] = [];
   let mounted = false;
 
+  const loading: Promise<void>[] = [];
   onMounted(() => {
     for (const name in sounds) {
-      load(name, sounds[name].src, sounds[name].sprites);
+      loading.push(load(name, sounds[name].src, sounds[name].sprites));
     }
 
     mounted = true;
@@ -81,7 +82,12 @@ export const useAudio = (sounds: Record<string, {src: string; sprites?: Sprites}
     saved[name] = [await context.decodeAudioData(sound), sprites];
   };
 
-  const play = (name: string, opts: {sprite?: string; volume?: number; detune?: number}) => {
+  const play = async (name: string, opts: {sprite?: string; volume?: number; detune?: number}) => {
+    if (loading.length) {
+      await Promise.allSettled(loading);
+      loading.length = 0;
+    }
+
     const audio = saved[name];
     if (!context || !context.unlocked || !audio || !mounted) {
       return;
