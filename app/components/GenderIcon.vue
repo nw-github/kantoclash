@@ -9,5 +9,5 @@
 <script setup lang="ts">
 import type {Gender} from "~~/game/pokemon";
 
-defineProps<{gender?: Gender}>();
+defineProps<{gender: Gender | undefined}>();
 </script>

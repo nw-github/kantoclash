@@ -8,7 +8,7 @@ type FormatInfo = {
   needsTeam?: bool;
   desc: string;
   mods: Mods;
-  chooseLead?: bool;
+  chooseLead?: bool | "teamPreview";
   generation: number;
   maxLevel: number;
   doubles?: bool;
@@ -49,7 +49,7 @@ export const formatInfo: Record<FormatId, FormatInfo> = {
     icon: "akar-icons:sword",
     desc: "A standard battle allowing all BW and B2W2 Pokémon and moves.",
     needsTeam: true,
-    chooseLead: true,
+    chooseLead: "teamPreview",
     mods: {sleepClause: true, endlessBattle: true},
     generation: 5,
     beta: true,

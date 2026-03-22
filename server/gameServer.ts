@@ -1,9 +1,10 @@
 import {type ServerOptions, Server, type Socket as SocketIoClient} from "socket.io";
 
-import type {PokemonDesc, ValidatedPokemonDesc} from "~~/game/pokemon";
+import type {FormId, Gender, PokemonDesc, ValidatedPokemonDesc} from "~~/game/pokemon";
 import {Battle, type PlayerParams, type Options} from "~~/game/battle";
 import {GENERATIONS} from "~~/game/gen";
 import type {BattleEvent, PokeId} from "~~/game/events";
+import type {SpeciesId} from "~~/game/species";
 
 import {type TeamProblems, formatDescs} from "./utils/formats";
 import type {User} from "#auth-utils";
@@ -15,6 +16,8 @@ import random from "random";
 
 export {BattleTimers, InfoMessage};
 
+export type TeamPreview = {speciesId: SpeciesId; form?: FormId; hasItem: bool; gender?: Gender}[];
+
 export type JoinRoomResponse = {
   team?: ValidatedPokemonDesc[];
   options?: Options[];
@@ -23,7 +26,13 @@ export type JoinRoomResponse = {
   format: FormatId;
   timer?: BattleTimers;
   finished: bool;
-  battlers: {id: string; name: string; admin?: bool; nPokemon: number}[];
+  battlers: {
+    id: string;
+    name: string;
+    admin?: bool;
+    nPokemon: number;
+    teamPreview?: TeamPreview;
+  }[];
 };
 
 export type ChoiceError = "invalid_choice" | "bad_room" | "not_in_battle" | "too_late" | "finished";
@@ -171,7 +180,7 @@ class Room {
       player1,
       player2,
       doubles: fmt.doubles,
-      chooseLead: fmt.chooseLead,
+      chooseLead: !!fmt.chooseLead,
       mods: fmt.mods,
       seed,
     });
@@ -182,9 +191,29 @@ class Room {
     this.battleRecipe = {seed, player1, player2, choices: {}, format};
 
     this.battlers = this.battle.players.map(pl => {
+      const shownForm = (species: SpeciesId, form?: FormId) => {
+        return species === "unown" || species === "sawsbuck" || species === "basculin"
+          ? form
+          : undefined;
+      };
+
       // admin might become stale but not a huge deal
       const acc = this.server.getAccount(pl.id)!;
-      return {name: acc.name, id: acc.id, admin: acc.admin, nPokemon: pl.teamDesc.length};
+      return {
+        name: acc.name,
+        id: acc.id,
+        admin: acc.admin,
+        nPokemon: pl.teamDesc.length,
+        teamPreview:
+          fmt.chooseLead === "teamPreview"
+            ? pl.team.map(p => ({
+                speciesId: p.speciesId,
+                form: shownForm(p.speciesId, p.form),
+                hasItem: !!p.item,
+                gender: p.gender,
+              }))
+            : undefined,
+      };
     });
 
     console.log(

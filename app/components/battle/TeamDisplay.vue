@@ -68,7 +68,7 @@
 <script setup lang="ts">
 import type {ScreenId} from "~~/game/utils";
 
-const {player, reverse} = defineProps<{player?: ClientPlayer; reverse?: bool}>();
+const {player, reverse} = defineProps<{player?: ClientPlayer; reverse?: boolean}>();
 
 const nPokemon = computed(() => player?.nPokemon ?? 6);
 const nFainted = computed(() => player?.nFainted ?? 0);

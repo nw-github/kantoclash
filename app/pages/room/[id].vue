@@ -219,7 +219,7 @@ const onJoinRoom = (resp: JoinRoomResponse | "bad_room") => {
   }
 
   const fmt = formatInfo[resp.format];
-  for (const {id, name, nPokemon, admin} of resp.battlers) {
+  for (const {id, name, nPokemon, admin, teamPreview} of resp.battlers) {
     const player = players.value.get(id);
     if (player) {
       continue;
@@ -235,6 +235,7 @@ const onJoinRoom = (resp: JoinRoomResponse | "bad_room") => {
       active: Array(fmt.doubles ? 2 : 1).fill(undefined),
       team: [],
       teamDesc: [],
+      teamPreview,
     });
   }
 

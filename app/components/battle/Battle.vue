@@ -4,10 +4,24 @@
       <!-- Top Bar -->
       <div v-if="perspective && opponent" class="flex w-full justify-between items-start">
         <TeamDisplay :player="players.get(perspective)" />
-        <TeamDisplay :player="players.get(opponent)" :reverse="true" />
+        <TeamDisplay :player="players.get(opponent)" reverse />
       </div>
 
-      <Field ref="field" :players :perspective :is-singles :weather />
+      <div v-if="showTeamPreview" class="w-full relative">
+        <div class="absolute flex justify-between w-full p-1 sm:p-4">
+          <TeamPreview :gen :format :preview="players.get(perspective)?.teamPreview ?? []" />
+          <TeamPreview :gen :format :preview="players.get(opponent)?.teamPreview ?? []" reverse />
+        </div>
+      </div>
+
+      <Field
+        ref="field"
+        :class="showTeamPreview && 'invisible'"
+        :players
+        :perspective
+        :is-singles
+        :weather
+      />
 
       <div v-if="!ready" class="relative">
         <div class="flex gap-2 top-[50%] left-[50%]">
@@ -253,6 +267,13 @@ const isBattleOver = computed(() => finished || !!victor.value);
 const isBattler = computed(() => players.get(myId) && !players.get(myId).isSpectator);
 const perspective = ref("");
 const isSingles = computed(() => players.get(perspective.value)?.active?.length === 1);
+
+const showTeamPreview = computed(
+  () =>
+    players.get(perspective.value)?.active?.every(a => !a) &&
+    !!players.get(perspective.value)?.teamPreview &&
+    !events.length,
+);
 
 const mediaQuery = computed(() => (isSingles.value ? "(max-width: 900px)" : "(max-width: 1100px)"));
 const textBoxHidden = useMediaQuery(mediaQuery);
