@@ -138,13 +138,14 @@
                       :icon="currGender.icon"
                       :ui="{leadingIcon: currGender.clazz}"
                       :disabled="currGender.forced"
+                      size="sm"
                       @click="toggleGender"
                     />
 
                     <UIcon
                       v-if="currGender.random"
                       name="mdi:dice-3-outline"
-                      class="absolute -bottom-1 -right-1 size-4"
+                      class="absolute -bottom-1 -right-1 size-3"
                     />
                   </div>
 
@@ -158,6 +159,7 @@
                     "
                     variant="ghost"
                     color="neutral"
+                    size="sm"
                     :disabled="gen.id <= 2"
                     @click="() => void (selectedPoke.data.shiny = !selectedPoke.data.shiny)"
                   />
@@ -167,9 +169,43 @@
                     icon="mdi:dice-3-outline"
                     variant="ghost"
                     color="neutral"
-                    :disabled="!selectedPoke?.species"
+                    size="sm"
+                    :disabled="!selectedPoke.species"
                     @click="() => randomizeCurrent(true)"
                   />
+
+                  <UPopover
+                    v-if="choosableForms[selectedPoke.data.speciesId as SpeciesId] && !(gen.id <= 2 && selectedPoke.data.speciesId === 'unown')"
+                    :content="{align: 'start'}"
+                    :ui="{content: 'grid grid-cols-[repeat(5,max-content)] p-1 gap-1'}"
+                  >
+                    <TooltipButton
+                      text="Change Form"
+                      size="sm"
+                      icon="lucide:chevron-down"
+                      variant="ghost"
+                      color="neutral"
+                    />
+
+                    <template #content>
+                      <UButton
+                        v-for="form in choosableForms[selectedPoke.data.speciesId as SpeciesId]"
+                        :key="form"
+                        variant="ghost"
+                        color="neutral"
+                        @click="selectedPoke.data.form = form"
+                      >
+                        <template #leading>
+                          <BoxSprite
+                            :species-id="selectedPoke.data.speciesId"
+                            :form
+                            :scale="1.25"
+                            :shiny="selectedPoke.data.shiny"
+                          />
+                        </template>
+                      </UButton>
+                    </template>
+                  </UPopover>
                 </div>
 
                 <SpeciesSelector
@@ -419,7 +455,7 @@
 import {abilityList, type Species, type SpeciesId} from "~~/game/species";
 import type {Stats, StatId} from "~~/game/utils";
 import {GENERATIONS} from "~~/game/gen";
-import {Nature, natureTable, type FormId} from "~~/game/pokemon";
+import {choosableForms, Nature, natureTable, type FormId} from "~~/game/pokemon";
 import type {ItemId} from "~~/game/item";
 import {defaultCustomize, getRandomPokemon} from "~~/server/utils/formats";
 

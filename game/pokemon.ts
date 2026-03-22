@@ -56,6 +56,12 @@ export type FormId =
   | KeldeoForm
   | SawsbuckForm;
 
+export const choosableForms: Partial<Record<SpeciesId, readonly FormId[]>> = {
+  unown: UNOWN_FORM,
+  deerling: SAWSBUCK_FORM,
+  sawsbuck: SAWSBUCK_FORM,
+};
+
 export type ValidatedPokemonDesc = PokemonDesc<SpeciesId, MoveId, ItemId, AbilityId, FormId> & {
   level: number;
 };

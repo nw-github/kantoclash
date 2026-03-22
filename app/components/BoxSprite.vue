@@ -35,11 +35,11 @@ const useForm = () => {
   // prettier-ignore
   switch(speciesId) {
   case "unown": return form && form !== "a" && UNOWN_FORM.includes(form);
-  case "arceus": return form && HP_TYPES.includes(form);
+  case "arceus": return form && form !== "normal" && HP_TYPES.includes(form);
   case "keldeo": return form && form === "resolute";
   case "genesect": return form && GENESECT_FORM.includes(form);
   case "sawsbuck":
-  case "deerling": return form && SAWSBUCK_FORM.includes(form);
+  case "deerling": return form && form !== "spring" && SAWSBUCK_FORM.includes(form);
   default: return false;
   }
 };

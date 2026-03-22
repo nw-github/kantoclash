@@ -1,4 +1,4 @@
-import {Nature, natureTable, UNOWN_FORM, type ValidatedPokemonDesc} from "~~/game/pokemon";
+import {choosableForms, Nature, natureTable, type ValidatedPokemonDesc} from "~~/game/pokemon";
 import {moveList, type MoveId, type Move} from "~~/game/moves";
 import {
   type AbilityId,
@@ -155,8 +155,9 @@ export const getRandomPokemon = (
       poke.item = s.requiresItem ?? random.choice(items);
       poke.friendship = poke.moves.includes("frustration") ? 0 : 255;
 
-      if (poke.speciesId === "unown" && !poke.form) {
-        poke.form = random.choice(UNOWN_FORM as unknown as any[])!;
+      const forms = choosableForms[poke.speciesId];
+      if (forms) {
+        poke.form = random.choice([...forms])!;
       }
 
       return poke;
