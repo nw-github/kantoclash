@@ -361,10 +361,12 @@ const VALIDATOR_GEN5 = createValidator(GENERATION5, 100);
 
 const VALIDATOR_GEN3_DBLS = createValidator(GENERATION3, 50);
 const VALIDATOR_GEN4_DBLS = createValidator(GENERATION4, 50);
+const VALIDATOR_GEN5_DBLS = createValidator(GENERATION5, 50);
 
 const VALIDATOR_GEN1_NFE = createValidator(GENERATION1, 5, true);
 const VALIDATOR_GEN3_NFE = createValidator(GENERATION3, 5, true);
 const VALIDATOR_GEN4_NFE = createValidator(GENERATION4, 5, true);
+const VALIDATOR_GEN5_NFE = createValidator(GENERATION5, 5, true);
 
 const validateTeam = (
   validator: typeof VALIDATOR_GEN1,
@@ -392,6 +394,7 @@ const validateTeam = (
 
 export const formatDescs: Record<FormatId, FormatFunctions> = {
   g5_standard: {validate: team => validateTeam(VALIDATOR_GEN5, team)},
+  g5_doubles: {validate: team => validateTeam(VALIDATOR_GEN5_DBLS, team)},
   g4_standard: {validate: team => validateTeam(VALIDATOR_GEN4, team)},
   g4_doubles: {validate: team => validateTeam(VALIDATOR_GEN4_DBLS, team)},
   g3_standard: {validate: team => validateTeam(VALIDATOR_GEN3, team)},
@@ -402,7 +405,14 @@ export const formatDescs: Record<FormatId, FormatFunctions> = {
   g1_nfe: {validate: team => validateTeam(VALIDATOR_GEN1_NFE, team)},
   g3_nfe: {validate: team => validateTeam(VALIDATOR_GEN3_NFE, team)},
   g4_nfe: {validate: team => validateTeam(VALIDATOR_GEN4_NFE, team)},
+  g5_nfe: {validate: team => validateTeam(VALIDATOR_GEN5_NFE, team)},
 
+  g5_randoms: {
+    generate: () => randoms(GENERATION5, 100, (s, _) => !s.evolvesTo),
+  },
+  g5_randoms_doubles: {
+    generate: () => randoms(GENERATION5, 50, (s, _) => !s.evolvesTo),
+  },
   g4_randoms: {
     generate: () => randoms(GENERATION4, 100, (s, _) => !s.evolvesTo),
   },
@@ -437,6 +447,11 @@ export const formatDescs: Record<FormatId, FormatFunctions> = {
   g4_randoms_nfe: {
     generate() {
       return randoms(GENERATION4, 5, (s, id) => !!s.evolvesTo && !uselessNfe.has(id));
+    },
+  },
+  g5_randoms_nfe: {
+    generate() {
+      return randoms(GENERATION5, 5, (s, id) => !!s.evolvesTo && !uselessNfe.has(id));
     },
   },
 
@@ -474,6 +489,16 @@ export const formatDescs: Record<FormatId, FormatFunctions> = {
     generate() {
       return getRandomPokemon(
         GENERATION4,
+        6,
+        s => !s.evolvesTo,
+        (_, speciesId) => ({speciesId, moves: ["metronome"], level: 100}),
+      );
+    },
+  },
+  g5_metronome: {
+    generate() {
+      return getRandomPokemon(
+        GENERATION5,
         6,
         s => !s.evolvesTo,
         (_, speciesId) => ({speciesId, moves: ["metronome"], level: 100}),
