@@ -311,14 +311,15 @@ export class Battle {
       });
   }
 
-  calcTurnOrder() {
+  private calcTurnOrder() {
     for (const poke of this.allActive) {
       if (poke.choice && !poke.choice.executed) {
-        const isSwitch = poke.choice.move.kind === "switch";
+        const isLead = this.turnType === TurnType.Lead;
+        // Roll quick claw for lead turn in Gen 3 only
         if (
           poke.base.itemId === "quickclaw" &&
           this.gen.rng.tryQuickClaw(this) &&
-          (!isSwitch || this.gen.id <= 3)
+          (poke.choice.move.kind !== "switch" || (this.gen.id <= 3 && isLead))
         ) {
           if (this.gen.id >= 4) {
             this.info(poke, "quickclaw");
@@ -326,11 +327,12 @@ export class Battle {
             debugLog("proc quick claw: ", poke.base.name);
           }
           poke.choice.spe = 65535;
-        } else if (isSwitch) {
-          // This is only relevant for the order of weather abilities on the first turn, which are
-          // called in turn order and affected by quick claw in Gen 3
-          poke.choice.spe = poke.base.stats.spe;
         } else {
+          // Ensure switch-in abilities activate in turn order on the lead turn including item
+          // effects like choice scarf
+          if (poke.choice.move.kind === "switch" && isLead) {
+            poke.base = poke.choice.move.poke;
+          }
           poke.choice.spe = this.gen.getStat(this, poke, "spe");
         }
       }
