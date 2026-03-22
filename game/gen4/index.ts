@@ -18,13 +18,13 @@ const createGeneration = (): Generation => {
     > as typeof GENERATION1.speciesList,
     moveList: movePatches as typeof GENERATION1.moveList,
     lastMoveIdx: GENERATION1.moveList.zenheadbutt.idx!,
+    lastPokemon: 493,
     moveFunctions: moveFunctionPatches as typeof GENERATION1.moveFunctions,
     items: createItemMergeList(items),
     rng: {
       disableTurns: battle => battle.rng.int(4, 7) + 1,
     },
     tryDamage,
-    validSpecies: species => species.dexId <= 493 && !species.unselectable,
     getCategory: move => ("category" in move ? move.category : MC.status),
     isSpecial: move => "category" in move && move.category === MC.special,
     afterBeforeUseMove: (battle, user) => {

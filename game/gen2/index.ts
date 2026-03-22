@@ -187,6 +187,7 @@ const createGeneration = (): Generation => {
     moveList: movePatches as typeof GENERATION1.moveList,
     typeChart: typeChartPatch as typeof GENERATION1.typeChart,
     lastMoveIdx: GENERATION1.moveList.zapcannon.idx!,
+    lastPokemon: 251,
     moveFunctions: moveFunctionPatches as typeof GENERATION1.moveFunctions,
     items: items as Record<ItemId, ItemData>,
     accStageMultipliers,
@@ -296,7 +297,6 @@ const createGeneration = (): Generation => {
       dmg = Math.min(dmg, target.base.hp);
       user.damage(Math.floor(dmg / 8), user, battle, false, "crash", true);
     },
-    validSpecies: species => species.dexId <= 251,
     canOHKOHit: (_, user, target) => target.base.level <= user.base.level,
     getStat(battle, poke, stat, isCrit) {
       const def = stat === "def" || stat === "spd";

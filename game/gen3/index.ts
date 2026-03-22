@@ -52,6 +52,7 @@ const createGeneration = (): Generation => {
     > as typeof GENERATION1.speciesList,
     moveList: movePatches as typeof GENERATION1.moveList,
     lastMoveIdx: GENERATION1.moveList.yawn.idx!,
+    lastPokemon: 386,
     moveFunctions: moveFunctionPatches as typeof GENERATION1.moveFunctions,
     items: createItemMergeList(items),
     maxIv: 31,
@@ -91,7 +92,6 @@ const createGeneration = (): Generation => {
       dmg = Math.min(dmg, target.base.hp);
       user.damage(Math.floor(dmg / 2), user, battle, false, "crash", true);
     },
-    validSpecies: species => species.dexId <= 386,
     canOHKOHit: () => true,
     getStat(battle, poke, stat, isCrit) {
       const def = stat === "def" || stat === "spd";

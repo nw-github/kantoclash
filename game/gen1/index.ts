@@ -428,6 +428,7 @@ const createGeneration = () => {
     items: itemList,
     moveFunctions,
     lastMoveIdx: moveList.whirlwind.idx!,
+    lastPokemon: 151,
     invalidSketchMoves: [
       "transform",
       "metronome",
@@ -479,7 +480,9 @@ const createGeneration = () => {
     getDamageVariables,
     handleCrashDamage,
     getStat,
-    validSpecies: (species: Species) => species.dexId <= 151,
+    validSpecies(species: Species) {
+      return species.dexId <= this.lastPokemon;
+    },
     getMaxPP: (move: Move) => (move.pp === 1 ? 1 : Math.min(Math.floor((move.pp * 8) / 5), 61)),
     canOHKOHit(battle: Battle, user: ActivePokemon, target: ActivePokemon) {
       return getStat(battle, target, "spe") <= getStat(battle, user, "spe");

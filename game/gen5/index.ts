@@ -15,9 +15,9 @@ const createGeneration = (): Generation => {
     > as typeof GENERATION1.speciesList,
     moveList: movePatches as typeof GENERATION1.moveList,
     lastMoveIdx: GENERATION1.moveList.zenheadbutt.idx!,
+    lastPokemon: 649,
     moveFunctions: moveFunctionPatches as typeof GENERATION1.moveFunctions,
     items: createItemMergeList(items),
-    validSpecies: species => species.dexId <= 649 && !species.unselectable,
   };
 
   return merge(patches as any, GENERATION4);

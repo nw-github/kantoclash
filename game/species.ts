@@ -13,7 +13,7 @@ export type Species = {
   readonly stats: Stats;
   readonly name: string;
   readonly evolvesFrom?: SpeciesId;
-  readonly evolvesTo?: SpeciesId | SpeciesId[];
+  readonly evolvesTo?: SpeciesId | readonly SpeciesId[];
   /** Male part of Ratio | Ex: 87.5 means 87.5% male, 12.5% female. Undefined for Gender Unknown */
   readonly genderRatio?: number;
   readonly sprite?: string;
@@ -21,7 +21,6 @@ export type Species = {
   /** Weight in kilograms */
   readonly weight: number;
   readonly requiresItem?: ItemId;
-  readonly unselectable?: bool;
 };
 
 export type SpeciesId = keyof typeof __speciesList;
