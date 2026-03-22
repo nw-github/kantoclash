@@ -114,12 +114,12 @@
             :data-poke-id="pokeId"
           >
             <div
-              class="absolute w-[128px] h-[117px] sm:w-[256px] sm:h-[234px] flex justify-center items-center select-none"
+              class="absolute pb-10 sm:pb-8 w-[128px] h-[117px] sm:w-[256px] sm:h-[234px] flex justify-center items-center select-none"
             >
               <Sprite
                 v-show="poke?.base?.speciesId"
                 :species-id="poke?.base?.speciesId"
-                :scale="lessThanSm ? 1 : 2"
+                :scale="lessThanSm ? 0.95 : 1.75"
                 :shiny="poke?.base?.shiny"
                 :form="poke?.base?.form"
                 :gender="poke?.base?.gender"
