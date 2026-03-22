@@ -171,7 +171,7 @@ const deleteBugReport = async (entry: BugReportEntry) => {
     toast.add({title: `'Deleted '${result.id}'!`});
     const idx = reportedBattles.value.findIndex(e => e.id === entry.id);
     if (idx !== -1) {
-      reportedBattles.value.splice(idx);
+      reportedBattles.value.splice(idx, 1);
     }
   } catch (ex) {
     toast.add({title: "Deletion failed", description: `Reason: ${ex}`});
