@@ -226,7 +226,7 @@ const {perspective, players, myId, e} = defineProps<{
 }>();
 
 const statMod = (count: number) => {
-  if (count > 0) {
+  if (count < 0) {
     return {[2]: "fell sharply", [3]: "severely fell"}[count] ?? "fell";
   } else {
     return {[2]: "rose sharply", [3]: "rose drastically"}[count] ?? "rose";
