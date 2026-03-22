@@ -141,6 +141,7 @@ type Socket = SocketIoClient<ClientMessage, ServerMessage>;
 
 const ROOM_CLEANUP_DELAY_MS = 15 * 60 * 1000;
 const TURN_DECISION_TIME_MS = 45 * 1000;
+const SHOW_SPECIES_FORM = new Set<SpeciesId>(["unown", "sawsbuck", "deerling", "basculin"]);
 
 type Account = {
   id: string;
@@ -191,12 +192,6 @@ class Room {
     this.battleRecipe = {seed, player1, player2, choices: {}, format};
 
     this.battlers = this.battle.players.map(pl => {
-      const shownForm = (species: SpeciesId, form?: FormId) => {
-        return species === "unown" || species === "sawsbuck" || species === "basculin"
-          ? form
-          : undefined;
-      };
-
       // admin might become stale but not a huge deal
       const acc = this.server.getAccount(pl.id)!;
       return {
@@ -208,7 +203,7 @@ class Room {
           fmt.chooseLead === "teamPreview"
             ? pl.team.map(p => ({
                 speciesId: p.speciesId,
-                form: shownForm(p.speciesId, p.form),
+                form: SHOW_SPECIES_FORM.has(p.speciesId) ? p.form : undefined,
                 hasItem: !!p.item,
                 gender: p.gender,
               }))

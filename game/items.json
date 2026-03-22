@@ -1190,10 +1190,30 @@
   "jadeorb": {"name": "Jade Orb"},
   "lockcapsule": {"name": "Lock Capsule"},
   "enigmastone": {"name": "Enigma Stone"},
-  "dousedrive": {"name": "Douse Drive", "fling": 70},
-  "shockdrive": {"name": "Shock Drive", "fling": 70},
-  "burndrive": {"name": "Burn Drive", "fling": 70},
-  "chilldrive": {"name": "Chill Drive", "fling": 70},
+  "dousedrive": {
+    "name": "Douse Drive",
+    "fling": 70,
+    "drive": "douse",
+    "desc": "Changes Genesect to Douse form and Techno Blast to Water Type."
+  },
+  "shockdrive": {
+    "name": "Shock Drive",
+    "fling": 70,
+    "drive": "shock",
+    "desc": "Changes Genesect to Shock form and Techno Blast to Electric Type."
+  },
+  "burndrive": {
+    "name": "Burn Drive",
+    "fling": 70,
+    "drive": "burn",
+    "desc": "Changes Genesect to Burn form and Techno Blast to Fire Type."
+  },
+  "chilldrive": {
+    "name": "Chill Drive",
+    "fling": 70,
+    "drive": "chill",
+    "desc": "Changes Genesect to Chill form and Techno Blast to Ice Type."
+  },
   "sweetheart": {"name": "Sweet Heart", "fling": 30},
   "greetmail": {"name": "Greet Mail"},
   "favoredmail": {"name": "Favored Mail"},

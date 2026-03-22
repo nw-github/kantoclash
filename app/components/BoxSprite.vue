@@ -20,8 +20,9 @@ span {
 </style>
 
 <script setup lang="ts">
-import type {FormId} from "~~/game/pokemon";
+import {GENESECT_FORM, SAWSBUCK_FORM, UNOWN_FORM, type FormId} from "~~/game/pokemon";
 import type {SpeciesId} from "~~/game/species";
+import {HP_TYPES} from "~~/game/utils";
 
 const {form, speciesId} = defineProps<{
   speciesId?: SpeciesId | string;
@@ -30,8 +31,21 @@ const {form, speciesId} = defineProps<{
   form?: FormId | string;
 }>();
 
+const useForm = () => {
+  // prettier-ignore
+  switch(speciesId) {
+  case "unown": return form && form !== "a" && UNOWN_FORM.includes(form);
+  case "arceus": return form && HP_TYPES.includes(form);
+  case "keldeo": return form && form === "resolute";
+  case "genesect": return form && GENESECT_FORM.includes(form);
+  case "sawsbuck":
+  case "deerling": return form && SAWSBUCK_FORM.includes(form);
+  default: return false;
+  }
+};
+
 const clazz = computed(() => {
-  if (speciesId === "unown" && form && form !== "a") {
+  if (useForm()) {
     return `${speciesId}${form}`;
   }
   return speciesId;

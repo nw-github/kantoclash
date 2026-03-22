@@ -37,12 +37,24 @@ export const UNOWN_FORM = [
 ] as const;
 
 export const CASTFORM_FORM = ["rainy", "snowy", "sunny"] as const;
+export const GENESECT_FORM = ["douse", "shock", "burn", "chill"] as const;
+export const SAWSBUCK_FORM = ["summer", "spring", "autumn", "winter"] as const;
 
 export type UnownForm = (typeof UNOWN_FORM)[number];
 export type CastformForm = (typeof CASTFORM_FORM)[number];
+export type GenesectForm = (typeof GENESECT_FORM)[number];
+export type SawsbuckForm = (typeof SAWSBUCK_FORM)[number];
 export type CherrimForm = "sunshine" | "overcast";
 export type ArceusForm = Exclude<Type, "???">;
-export type FormId = UnownForm | CastformForm | CherrimForm | ArceusForm;
+export type KeldeoForm = "resolute";
+export type FormId =
+  | UnownForm
+  | CastformForm
+  | CherrimForm
+  | ArceusForm
+  | GenesectForm
+  | KeldeoForm
+  | SawsbuckForm;
 
 export type ValidatedPokemonDesc = PokemonDesc<SpeciesId, MoveId, ItemId, AbilityId, FormId> & {
   level: number;

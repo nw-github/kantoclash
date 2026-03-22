@@ -1,6 +1,6 @@
 import {shouldReturn, type Generation, GENERATION1} from "../gen1";
 import {GENERATION2, merge, type GenPatches} from "../gen2";
-import {applyItemStatBoost, Nature, natureTable, UNOWN_FORM} from "../pokemon";
+import {applyItemStatBoost, Nature, natureTable, SAWSBUCK_FORM, UNOWN_FORM} from "../pokemon";
 import {abilityList, type Species, type SpeciesId} from "../species";
 import {clamp, dmgFlags, debugLog, idiv, MC, screens, VF} from "../utils";
 import {moveFunctionPatches, movePatches} from "./moves";
@@ -139,13 +139,14 @@ const createGeneration = (): Generation => {
     },
     tryDamage,
     getForm(desired, id, _dvs, item) {
-      if (id === "unown") {
-        return UNOWN_FORM.includes(desired) ? desired : undefined;
-      }
-
-      const itemData = this.items![item!];
-      if (id === "arceus" && itemData?.plate) {
-        return itemData.plate;
+      // prettier-ignore
+      switch (id) {
+      case "unown": return UNOWN_FORM.includes(desired) ? desired : undefined;
+      case "deerling":
+      case "sawsbuck": return SAWSBUCK_FORM.includes(desired) ? desired : undefined;
+      case "genesect": return this.items![item!]?.drive;
+      case "arceus": return this.items![item!]?.plate;
+      default: return;
       }
     },
     getShiny: desired => desired ?? false,

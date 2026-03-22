@@ -1,5 +1,5 @@
 import __items from "./items.json";
-import type {Status} from "./pokemon";
+import type {ArceusForm, GenesectForm, Status} from "./pokemon";
 import type {SpeciesId} from "./species";
 import type {StatStageId, Type, Weather} from "./utils";
 
@@ -11,7 +11,8 @@ export type ItemData = {
   desc?: string;
   exists?: bool;
 
-  plate?: Exclude<Type, "???">;
+  plate?: ArceusForm;
+  drive?: GenesectForm;
   typeBoost?: {type: Type; type2?: Type; percent: number; species?: SpeciesId[]};
   cureStatus?: Status | "any" | "confuse";
   healFixed?: number;

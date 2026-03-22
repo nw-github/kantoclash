@@ -5866,7 +5866,7 @@ const internalMoveList = createMoveList({
     category: MC.physical,
     contact: true,
     getPower(user) {
-      return user.item ? this.power * 2 : this.power;
+      return user.item ? this.power : this.power * 2;
     },
   },
   afteryou: {
@@ -6770,16 +6770,24 @@ const internalMoveList = createMoveList({
     contact: true,
   },
   technoblast: {
-    // Type depends on the Drive being held.
-    kind: "fail",
+    kind: "damage",
     name: "Techno Blast",
     pp: 5,
     type: "normal",
     range: Range.Adjacent,
-    power: 120,
+    power: 85,
     acc: 100,
     category: MC.special,
-    why: "fail_unimplemented",
+    getType(user) {
+      // prettier-ignore
+      switch (user.item?.drive) {
+      case "douse": return "water";
+      case "shock": return "electric";
+      case "burn": return "fire";
+      case "chill": return "ice";
+      default: return this.type;
+      }
+    },
   },
   telekinesis: {
     // Ignores opponent's Evasiveness for three turns, add Ground immunity.
