@@ -114,7 +114,7 @@
             :data-poke-id="pokeId"
           >
             <div
-              class="absolute pb-10 sm:pb-8 w-[128px] h-[117px] sm:w-[256px] sm:h-[234px] flex justify-center items-center select-none"
+              class="absolute w-[128px] h-[117px] sm:w-[256px] sm:h-[234px] flex justify-center items-center select-none"
             >
               <Sprite
                 v-show="poke?.base?.speciesId"
