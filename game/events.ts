@@ -60,7 +60,8 @@ type AnyEvent =
   | StockPileEvent
   | TransformEvent
   | BounceEvent
-  | FutureSightEvent;
+  | FutureSightEvent
+  | MoldBreakerEvent;
 
 export type ChangedVolatiles = {id: PokeId; v: NullOrOptional<ClientVolatiles>}[];
 
@@ -294,6 +295,8 @@ export type InfoReason =
 type InfoEvent = {type: "info"; src: PokeId; why: InfoReason};
 
 type BugEvent = {type: "bug"; bug: BugType};
+
+type MoldBreakerEvent = {type: "moldbreaker"; src: PokeId; ability: AbilityId};
 
 type SrcTargetEvent = {
   type:

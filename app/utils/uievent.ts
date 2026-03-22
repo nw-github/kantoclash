@@ -11,6 +11,7 @@ import type {
 } from "~~/game/events";
 import type {MoveId} from "~~/game/moves";
 import type {Status} from "~~/game/pokemon";
+import type {AbilityId} from "~~/game/species";
 import type {Weather, ScreenId, HazardId} from "~~/game/utils";
 
 export type RawUIBattleEvent =
@@ -265,6 +266,12 @@ export const futureSightMessage: Partial<Record<MoveId, {set: string; release: s
     set: "{} chose Doom Desire as its destiny!",
     release: "{} took the Doom Desire attack!",
   },
+};
+
+export const moldBreakerMessage: Partial<Record<AbilityId, string>> = {
+  moldbreaker: "{} breaks the mold!",
+  teravolt: "{} is radiating a bursting aura!",
+  turboblaze: "{} is radiating a blazing aura!",
 };
 
 export const bugMessage: Record<BugType, string> = {

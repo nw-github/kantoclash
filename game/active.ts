@@ -721,9 +721,7 @@ export class ActivePokemon {
           poke.modStages([["atk", -1]], battle, this);
         }
       }
-    }
-
-    if (this.hasAbility("trace") && !this.v.usedTrace) {
+    } else if (this.hasAbility("trace") && !this.v.usedTrace) {
       const target = battle.rng.choice(
         battle
           .getTargets(this, Range.AllAdjacentFoe)
@@ -741,14 +739,15 @@ export class ActivePokemon {
           volatiles: [{id: this.id, v: {ability: this.v.ability}}],
         });
       }
-    }
-
-    if (this.hasAbility("pressure") && battle.gen.id >= 4) {
+    } else if (this.hasAbility("pressure") && battle.gen.id >= 4) {
       battle.ability(this);
       battle.info(this, "pressure");
+    } else if (this.getAbility()?.moldBreaker) {
+      battle.ability(this);
+      battle.event({type: "moldbreaker", src: this.id, ability: this.getAbilityId()!});
+    } else {
+      this.handleForecast(battle);
     }
-
-    this.handleForecast(battle);
 
     battle.sv(battle.allActive.map(p => ({id: p.id, v: {stats: p.clientStats(battle)}})));
   }

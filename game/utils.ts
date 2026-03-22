@@ -1,6 +1,7 @@
 import type {Random} from "random";
 import type {TypeChart} from "./gen";
 import type {PlayerId, PokeId} from "./events";
+import type {AbilityId} from "./species";
 
 export type Weather = "rain" | "sun" | "sand" | "hail";
 
@@ -99,6 +100,18 @@ export const HP_TYPES: Type[] = [
   "fight", "flying", "poison", "ground", "rock", "bug", "ghost", "steel", "fire", "water",
   "grass", "electric", "psychic", "ice", "dragon", "dark",
 ];
+
+// prettier-ignore
+export const IGNORABLE_ABILITIES = new Set<AbilityId>([
+  'battlearmor', 'clearbody', 'damp', 'dryskin', 'filter', 'flashfire', 'flowergift',
+  'heatproof', 'hypercutter', 'immunity', 'innerfocus', 'insomnia', 'keeneye', 'leafguard',
+  'levitate', 'lightningrod', 'limber', 'magmaarmor', 'marvelscale', 'motordrive', 'oblivious',
+  'owntempo', 'sandveil', 'shellarmor', 'shielddust', 'simple', 'snowcloak', 'solidrock',
+  'soundproof', 'stickyhold', 'stormdrain', 'sturdy', 'suctioncups', 'tangledfeet', 'thickfat',
+  'unaware', 'vitalspirit', 'voltabsorb', 'waterabsorb', 'waterveil', 'whitesmoke', 'wonderguard',
+  'bigpecks', 'contrary', 'friendguard', 'heavymetal', 'lightmetal', 'magicbounce', 'multiscale',
+  'sapsipper', 'telepathy', 'wonderskin',
+]);
 
 export enum MC {
   physical,

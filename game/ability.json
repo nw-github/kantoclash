@@ -155,7 +155,11 @@
   "honeygather": {"name": "Honey Gather", "desc": "Unimplemented"},
   "ironfist": {"name": "Iron Fist", "desc": "Unimplemented"},
   "klutz": {"name": "Klutz", "desc": "Unimplemented"},
-  "moldbreaker": {"name": "Mold Breaker", "desc": "Unimplemented"},
+  "moldbreaker": {
+    "name": "Mold Breaker",
+    "desc": "Moves used by this Pokémon ignore target abilities.",
+    "moldBreaker": true
+  },
   "motordrive": {"name": "Motor Drive", "desc": "Unimplemented"},
   "quickfeet": {"name": "Quick Feet", "desc": "Unimplemented"},
   "reckless": {"name": "Reckless", "desc": "Unimplemented"},
@@ -207,9 +211,17 @@
   },
   "sheerforce": {"name": "Sheer Force", "desc": "Unimplemented"},
   "telepathy": {"name": "Telepathy", "desc": "Unimplemented"},
-  "teravolt": {"name": "Teravolt", "desc": "Unimplemented"},
+  "teravolt": {
+    "name": "Teravolt",
+    "desc": "Moves used by this Pokémon ignore target abilities.",
+    "moldBreaker": true
+  },
   "toxicboost": {"name": "Toxic Boost", "desc": "Unimplemented"},
-  "turboblaze": {"name": "Turboblaze", "desc": "Unimplemented"},
+  "turboblaze": {
+    "name": "Turboblaze",
+    "desc": "Moves used by this Pokémon ignore target abilities.",
+    "moldBreaker": true
+  },
   "unnerve": {"name": "Unnerve", "desc": "Unimplemented"},
   "victorystar": {"name": "Victory Star", "desc": "Unimplemented"},
   "wonderskin": {"name": "Wonder Skin", "desc": "Unimplemented"}

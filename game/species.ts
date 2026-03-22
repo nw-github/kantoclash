@@ -39,6 +39,7 @@ export type Ability = {
   startsWeather?: Weather;
   contactStatus?: Status | "attract";
   preventsStatDrop?: StageId | "all";
+  moldBreaker?: bool;
 };
 
 export const speciesList = __speciesList as Record<SpeciesId, Species>;
