@@ -369,7 +369,7 @@ const badges: {cond: () => bool; props: BadgeProps}[] = [
     },
   },
   {
-    cond: fc(VF.identified),
+    cond: cfc(CVF.identified),
     props: {color: "old-violet", icon: "material-symbols:search-rounded", variant: "subtle"},
   },
   {

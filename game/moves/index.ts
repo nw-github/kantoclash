@@ -150,6 +150,7 @@ export interface ForesightMove extends BaseMove {
   readonly kind: "foresight";
   readonly range: Range.Adjacent;
   readonly protect: true;
+  readonly removeImmunities: Type;
 }
 
 export interface HealingWishMove extends BaseMove {

@@ -104,7 +104,7 @@ export const scaleAccuracy255 = (acc: number, user: ActivePokemon, target: Activ
   // https://bulbapedia.bulbagarden.net/wiki/Accuracy#Generation_I_and_II
   let userStages = user.v.stages["acc"];
   let targetStages = target.v.stages["eva"];
-  if (userStages < targetStages && target.v.hasFlag(VF.identified)) {
+  if (userStages < targetStages && target.v.identified) {
     userStages = 0;
     targetStages = 0;
   }

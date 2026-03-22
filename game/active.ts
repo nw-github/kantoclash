@@ -7,7 +7,14 @@ import type {
   ChangedVolatiles,
   PokeId,
 } from "./events";
-import {type MoveId, type Move, type DamagingMove, Range, type HealingWishMove} from "./moves";
+import {
+  type MoveId,
+  type Move,
+  type DamagingMove,
+  Range,
+  type HealingWishMove,
+  type ForesightMove,
+} from "./moves";
 import {
   natureTable,
   transform,
@@ -99,20 +106,12 @@ export class ActivePokemon {
       this.v.meanLook = old.meanLook;
       this.v.counter = old.counter;
       this.v.seededBy = old.seededBy;
-
-      let passedFlags =
-        VF.lightScreen |
-        VF.reflect |
-        VF.mist |
-        VF.focusEnergy |
-        VF.curse |
-        VF.identified |
-        VF.lockon |
-        VF.ingrain;
       if (battle.gen.id >= 3) {
-        passedFlags &= ~VF.identified;
+        this.v.identified = old.identified;
       }
 
+      const passedFlags =
+        VF.lightScreen | VF.reflect | VF.mist | VF.focusEnergy | VF.curse | VF.lockon | VF.ingrain;
       this.v.setFlag(old.flags & passedFlags);
 
       // Is trapping passed? Encore? Nightmare?
@@ -1341,6 +1340,7 @@ class Volatiles {
   hwish?: HealingWishMove;
   lastMove?: Move;
   lastMoveIndex?: number;
+  identified?: ForesightMove;
   charging?: {move: DamagingMove; targets: ActivePokemon[]};
   recharge?: {move: DamagingMove; target: ActivePokemon};
   thrashing?: {move: DamagingMove; turns: number; max: bool; acc?: number};
@@ -1409,6 +1409,7 @@ class Volatiles {
     hi |= this.seededBy ? CVF.seeded : 0;
     hi |= this.tauntTurns ? CVF.taunt : 0;
     hi |= this.drowsy ? CVF.drowsy : 0;
+    hi |= this.identified ? CVF.identified : 0;
     return {lo: this._flags, hi};
   }
 }

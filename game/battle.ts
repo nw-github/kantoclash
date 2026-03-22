@@ -18,6 +18,7 @@ import {
   type Weather,
   type ScreenId,
   type HazardId,
+  HP_TYPES,
 } from "./utils";
 import type {Generation} from "./gen";
 import {ActivePokemon} from "./active";
@@ -492,11 +493,14 @@ export class Battle {
   // --
 
   getEffectiveness(atk: Type, target: ActivePokemon) {
-    if (target.v.hasFlag(VF.identified)) {
+    if (target.v.identified) {
       // FIXME: this is lazy
       const chart = structuredClone(this.gen.typeChart);
-      chart.normal.ghost = 1;
-      chart.fight.ghost = 1;
+      for (const type of HP_TYPES) {
+        if (chart[type][target.v.identified.removeImmunities] === 0) {
+          chart[type][target.v.identified.removeImmunities] = 1;
+        }
+      }
       return getEffectiveness(chart, atk, target.v.types);
     }
     return getEffectiveness(this.gen.typeChart, atk, target.v.types);

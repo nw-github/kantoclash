@@ -34,6 +34,7 @@ export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
   fakeout: {priority: +3},
   feint: {power: 30},
   firespin: {power: 35, acc: 85},
+  foresight: {magicCoat: true},
   furycutter: {power: 20},
   futuresight: {power: 100, acc: 100, pp: 10},
   glare: {acc: 90},
@@ -47,11 +48,13 @@ export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
   magmastorm: {acc: 75},
   magnetrise: {snatch: true},
   minimize: {stages: [["eva", +1]]},
+  miracleeye: {magicCoat: true},
   naturepower: {
     exec(battle, user) {
       battle.callMove(battle.gen.moveList.earthquake, user);
     },
   },
+  odorsleuth: {magicCoat: true},
   outrage: {pp: 10},
   petaldance: {power: 120, pp: 10},
   poisongas: {acc: 90, range: Range.AllAdjacentFoe},

@@ -197,7 +197,8 @@ const createGeneration = (): Generation => {
       }
 
       let eva = target.v.stages.eva;
-      if (target.v.hasFlag(VF.identified)) {
+      // Starting from Gen 4, Foresight/Odor Sleuth/Miracle Eye only ignore positive evasion changes
+      if (target.v.identified && (eva > 0 || battle.gen.id <= 3)) {
         eva = 0;
       }
 

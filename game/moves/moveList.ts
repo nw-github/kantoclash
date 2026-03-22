@@ -2442,6 +2442,7 @@ const internalMoveList = createMoveList({
     type: "normal",
     range: Range.Adjacent,
     protect: true,
+    removeImmunities: "ghost",
   },
   frustration: {
     kind: "damage",
@@ -4020,6 +4021,7 @@ const internalMoveList = createMoveList({
     type: "normal",
     range: Range.Adjacent,
     protect: true,
+    removeImmunities: "ghost",
   },
   overheat: {
     kind: "damage",
@@ -5351,10 +5353,10 @@ const internalMoveList = createMoveList({
     kind: "foresight",
     name: "Miracle Eye",
     pp: 40,
-    acc: 100,
     type: "psychic",
     range: Range.Adjacent,
     protect: true,
+    removeImmunities: "dark",
   },
   mirrorshot: {
     kind: "damage",

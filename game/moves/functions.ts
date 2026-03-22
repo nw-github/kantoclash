@@ -386,17 +386,20 @@ export const moveFunctions: MoveFunctions = {
     }
   },
   foresight(battle, user, [target]) {
-    if (target.v.hasFlag(VF.identified) && battle.gen.id <= 2 && battle.gen.id <= 5) {
+    if (battle.tryMagicBounce(this, user, target)) {
+      return;
+    } else if (target.v.identified && battle.gen.id <= 2 && battle.gen.id >= 5) {
       return battle.info(user, "fail_generic");
     } else if (!battle.checkAccuracy(this, user, target)) {
       return;
     }
 
+    target.v.identified = this;
     battle.event({
       type: "foresight",
       src: user.id,
       target: target.id,
-      volatiles: [target.setFlag(VF.identified)],
+      volatiles: [{id: target.id, v: {flags: target.v.cflags}}],
     });
   },
   trick(battle, user, [target]) {
