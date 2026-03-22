@@ -345,7 +345,7 @@ const badges: {cond: () => bool; props: BadgeProps}[] = [
     cond: fc(VF.gastroAcid),
     props: {
       color: "old-purple",
-      icon: "material-symbols:skull",
+      icon: "material-symbols:block-outline",
       label: "Suppressed",
       variant: "subtle",
     },
