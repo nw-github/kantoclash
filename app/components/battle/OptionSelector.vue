@@ -23,14 +23,14 @@
     </div>
 
     <div v-if="!options || !options.length" class="italic">Waiting for opponent...</div>
-    <div v-else-if="choices.length" class="flex flex-col gap-1 pb-2 w-[90%]">
+    <div v-else-if="choices.length" class="flex flex-col gap-1 pb-2">
       <div
         v-for="([opts, choice], i) in choices"
         :key="i"
         class="italic flex gap-1"
         :class="choices.length === options.length ? 'flex-col' : 'items-center'"
       >
-        <div class="italic">{{ choiceMessage(i, choice, opts) }}...</div>
+        <span class="italic text-xs sm:text-sm">{{ choiceMessage(i, choice, opts) }}...</span>
         <div>
           <TooltipButton
             v-if="i === choices.length - 1"
@@ -52,7 +52,7 @@
         />
       </div>
 
-      <div class="grid gap-2 grid-cols-2 h-min sm:w-1/2">
+      <div class="grid gap-1 sm:gap-2 grid-cols-2 h-min sm:w-1/2">
         <template v-for="(poke, i) in players.get(opponent).active.toReversed()" :key="i">
           <SwitchButton
             v-if="poke"

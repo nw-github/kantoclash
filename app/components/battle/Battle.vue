@@ -1,5 +1,5 @@
 <template>
-  <div class="flex h-full p-4 rounded-lg gap-4 ring ring-default shadow">
+  <div class="flex h-full rounded-lg gap-4 sm:p-4 sm:ring sm:ring-default shadow">
     <div class="flex flex-col w-full items-center overflow-x-hidden overflow-y-auto">
       <!-- Top Bar -->
       <div v-if="perspective && opponent" class="flex w-full justify-between items-start">
