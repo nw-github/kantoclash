@@ -3,13 +3,14 @@ import {GENERATION2, merge, type GenPatches} from "../gen2";
 import {applyItemStatBoost, Nature, natureTable, SAWSBUCK_FORM, UNOWN_FORM} from "../pokemon";
 import {abilityList, type Species, type SpeciesId} from "../species";
 import {clamp, dmgFlags, debugLog, idiv, MC, screens, VF} from "../utils";
-import {moveFunctionPatches, movePatches} from "./moves";
+import {dmgOverrides, moveScripts, powOverrides, typOverrides, movePatches} from "./moves";
 import speciesPatches from "./species.json";
 import items from "./items.json";
 import {itemList, type ItemId} from "../item";
 import {tryDamage} from "./damaging";
 import type {ActivePokemon} from "../active";
 import {TurnType} from "../battle";
+import type {MoveScripts} from "../moves";
 
 const critStages: Record<number, number> = {
   [0]: 1 / 16,
@@ -53,7 +54,12 @@ const createGeneration = (): Generation => {
     moveList: movePatches as typeof GENERATION1.moveList,
     lastMoveIdx: GENERATION1.moveList.yawn.idx!,
     lastPokemon: 386,
-    moveFunctions: moveFunctionPatches as typeof GENERATION1.moveFunctions,
+    move: {
+      scripts: moveScripts as MoveScripts,
+      powOverrides,
+      dmgOverrides,
+      typOverrides,
+    },
     items: createItemMergeList(items),
     maxIv: 31,
     maxEv: 255,
@@ -236,7 +242,6 @@ const createGeneration = (): Generation => {
       }
       return true;
     },
-
     beforeUseMove(battle, move, user) {
       const resetVolatiles = () => {
         user.v.charging = undefined;

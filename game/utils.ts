@@ -119,6 +119,36 @@ export enum MC {
   status,
 }
 
+export enum Range {
+  /** Targets the user */
+  Self,
+  /** Targets a random opponent */
+  Random,
+  /** Targets any adjacent pokemon */
+  Adjacent,
+  /** Targets any adjacent excluding allies */
+  AdjacentFoe,
+  /** Targets one ally */
+  AdjacentAlly,
+  /** Targets self or one adjacent ally */
+  SelfOrAdjacentAlly,
+  /** Targets any pokemon except the user */
+  Any,
+
+  /** Targets all pokemon */
+  All,
+  /** Targets all allies except the user */
+  AllAllies,
+  /** Targets any adjacent pokemon, including allies (Earthquake) */
+  AllAdjacent,
+  /** Targets any adjacent pokemon, excluding allies (Rock Slide) */
+  AllAdjacentFoe,
+  /** User/Target field or Battle */
+  Field,
+}
+
+export const isSpreadMove = (range: Range) => range >= Range.All;
+
 export const floatTo255 = (num: number) => Math.floor((num / 100) * 255);
 
 export const clamp = (num: number, min: number, max: number) => Math.max(Math.min(num, max), min);

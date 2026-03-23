@@ -1,9 +1,9 @@
 import type {Random} from "random";
-import type {CalcDamageParams} from "../gen";
-import {clamp, debugLog, VF} from "../utils";
-import type {DamagingMove} from ".";
-import type {ActivePokemon, Battle} from "../battle";
-import type {Pokemon} from "../pokemon";
+import type {CalcDamageParams} from "./gen";
+import {clamp, debugLog, VF} from "./utils";
+import type {DamagingMove} from "./moves";
+import type {ActivePokemon, Battle} from "./battle";
+import type {Pokemon} from "./pokemon";
 
 export function checkUsefulness(
   self: DamagingMove,
@@ -40,7 +40,7 @@ export function checkUsefulness(
     fail = true;
   } else if (self.flag === "ohko" && !battle.gen.canOHKOHit(battle, user, target)) {
     fail = true;
-  } else if (typeof self.getDamage === "number") {
+  } else if (self.fixedDamage) {
     if (battle.gen.id === 1 || eff !== 0) {
       eff = 1;
     }
@@ -84,9 +84,11 @@ export function getDamage(
     isCrit = false;
   }
 
-  if (self.getDamage) {
-    dmg =
-      typeof self.getDamage === "number" ? self.getDamage : self.getDamage(battle, user, target);
+  if (self.fixedDamage) {
+    dmg = self.fixedDamage;
+    isCrit = false;
+  } else if (self.getDamage) {
+    dmg = self.getDamage(battle, user, target);
     isCrit = false;
   } else {
     let pow = extras.power ?? (self.getPower ? self.getPower(user.base, target.base) : self.power);

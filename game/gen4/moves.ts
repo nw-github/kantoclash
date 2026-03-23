@@ -1,4 +1,5 @@
-import {Range, type Move, type MoveFunctions, type MoveId} from "../moves";
+import type {Move, MoveScripts, MoveId, AccOverrides} from "../moves";
+import {Range} from "../utils";
 
 /**
  * TODO:
@@ -10,18 +11,19 @@ import {Range, type Move, type MoveFunctions, type MoveId} from "../moves";
  * Pursuit into u-turn
  */
 
-export const moveFunctionPatches: Partial<MoveFunctions> = {};
+export const moveScripts: Partial<MoveScripts> = {};
+
+export const accOverrides: AccOverrides = {
+  blizzard(weather) {
+    return weather === "hail" ? undefined : this.acc;
+  },
+};
 
 export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
   acid: {effect: [10, [["spd", -1]]]},
   ancientpower: {contact: false},
   astonish: {flag: "none"},
   bide: {ignoreType: true, acc: 0, priority: +1},
-  blizzard: {
-    getAcc(weather) {
-      return weather === "hail" ? undefined : this.acc;
-    },
-  },
   covet: {contact: true},
   crunch: {effect: [20, [["def", -1]]]},
   dig: {power: 80},
@@ -43,12 +45,6 @@ export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
   megadrain: {pp: 15},
   memento: {acc: 100},
   mindreader: {acc: 0},
-  naturepower: {
-    exec(battle, user) {
-      // TODO: should target the opponent across from the user
-      battle.callMove(battle.gen.moveList.triattack, user);
-    },
-  },
   needlearm: {flag: "none"},
   nightmare: {acc: 100},
   odorsleuth: {acc: 0},

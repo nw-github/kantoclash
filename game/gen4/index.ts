@@ -3,12 +3,12 @@ import items from "./items.json";
 import {GENERATION1, type Generation} from "../gen1";
 import type {Species, SpeciesId} from "../species";
 import {merge, type GenPatches} from "../gen2";
-import {moveFunctionPatches, movePatches} from "./moves";
+import {moveScripts, movePatches, accOverrides} from "./moves";
 import {GENERATION3, createItemMergeList} from "../gen3";
-import {dmgFlags, debugLog, idiv, MC, screens, VF} from "../utils";
+import {Range, dmgFlags, debugLog, idiv, MC, screens, VF} from "../utils";
 import {TurnType} from "../battle";
 import {tryDamage} from "./damaging";
-import {Range} from "../moves";
+import type {MoveScripts} from "../moves";
 
 const createGeneration = (): Generation => {
   const patches: Partial<GenPatches> = {
@@ -19,7 +19,11 @@ const createGeneration = (): Generation => {
     moveList: movePatches as typeof GENERATION1.moveList,
     lastMoveIdx: GENERATION1.moveList.zenheadbutt.idx!,
     lastPokemon: 493,
-    moveFunctions: moveFunctionPatches as typeof GENERATION1.moveFunctions,
+    move: {
+      scripts: moveScripts as MoveScripts,
+      accOverrides,
+    },
+    naturePowerMove: "triattack",
     items: createItemMergeList(items),
     rng: {
       disableTurns: battle => battle.rng.int(4, 7) + 1,

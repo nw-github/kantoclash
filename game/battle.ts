@@ -7,9 +7,11 @@ import type {
   ChangedVolatiles,
   PokeId,
 } from "./events";
-import {type MoveId, type Move, Range, isSpreadMove} from "./moves";
+import type {MoveId, Move} from "./moves";
 import type {Pokemon} from "./pokemon";
 import {
+  Range,
+  isSpreadMove,
   getEffectiveness,
   playerId,
   VF,
@@ -875,13 +877,6 @@ export class Battle {
         user.v.charging = undefined;
         this.sv([user.clearFlag(VF.charge)]);
         return this.info(user, "fail_notarget");
-      } else if (
-        move.kind === "damage" &&
-        move.checkSuccess &&
-        !move.checkSuccess(this, user, targets)
-      ) {
-        user.v.charging = undefined;
-        return this.sv([user.clearFlag(VF.charge)]);
       }
 
       const leftmost = targets[0];

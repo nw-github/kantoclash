@@ -1,29 +1,25 @@
-import {Range, type Move, type MoveFunctions, type MoveId} from "../moves";
+import type {Move, MoveScripts as MoveScripts, MoveId, PowOverrides} from "../moves";
 import type {Pokemon} from "../pokemon";
+import {Range} from "../utils";
 
-export const moveFunctionPatches: Partial<MoveFunctions> = {};
+export const moveScripts: Partial<MoveScripts> = {};
+
+export const powOverrides: PowOverrides = {
+  crushgrip: getCrushGripPower,
+  wringout: getCrushGripPower,
+};
 
 export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
   aquaring: {snatch: true},
+  beatup: {noTechnician: false},
   bind: {acc: 85},
   bonerush: {acc: 90},
   bulletseed: {power: 25},
-  camouflage: {
-    exec(battle, user) {
-      battle.event({
-        type: "conversion",
-        types: ["ground"],
-        src: user.id,
-        volatiles: [user.setVolatile("types", ["ground"])],
-      });
-    },
-  },
   clamp: {acc: 85, pp: 15},
   conversion: {snatch: true},
   cottonspore: {acc: 100},
   covet: {power: 60},
   crabhammer: {acc: 90},
-  crushgrip: {getPower: getCrushGripPower},
   curse: {type: "ghost"},
   detect: {priority: +4},
   disable: {acc: 100},
@@ -49,11 +45,6 @@ export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
   magnetrise: {snatch: true},
   minimize: {stages: [["eva", +1]]},
   miracleeye: {magicCoat: true},
-  naturepower: {
-    exec(battle, user) {
-      battle.callMove(battle.gen.moveList.earthquake, user);
-    },
-  },
   odorsleuth: {magicCoat: true},
   outrage: {pp: 10},
   petaldance: {power: 120, pp: 10},
@@ -64,6 +55,7 @@ export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
   rockblast: {acc: 90},
   sandtomb: {power: 35, acc: 85},
   scaryface: {acc: 100},
+  struggle: {noTechnician: false},
   tackle: {power: 50, acc: 100},
   tailglow: {stages: [["spa", +3]]},
   tailwind: {turns: 4 + 1},
@@ -72,9 +64,8 @@ export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
   uproar: {power: 90},
   whirlpool: {power: 35, acc: 85},
   wrap: {acc: 90},
-  wringout: {getPower: getCrushGripPower},
 };
 
-function getCrushGripPower(_user: Pokemon, target: Pokemon) {
+function getCrushGripPower(_user: Pokemon, target?: Pokemon) {
   return target ? Math.max(1, Math.floor(120 * (target.hp / target.stats.hp))) : 0;
 }

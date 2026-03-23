@@ -2,10 +2,10 @@ import {createDefu} from "defu";
 import {GENERATION1, scaleAccuracy255, type CalcDamageParams, type Generation} from "../gen1";
 import type {Species, SpeciesId} from "../species";
 import {clamp, debugLog, dmgFlags, floatTo255, idiv, imul, VF} from "../utils";
-import {moveFunctionPatches, movePatches} from "./moves";
+import {dmgOverrides, accOverrides, moveScripts, movePatches} from "./moves";
 import __speciesPatches from "./species.json";
 import type {ActivePokemon, Battle} from "../battle";
-import type {Move} from "../moves";
+import type {Move, MoveScripts} from "../moves";
 import items from "./items.json";
 import {applyItemStatBoost} from "../pokemon";
 import {tryDamage} from "./damaging";
@@ -188,8 +188,12 @@ const createGeneration = (): Generation => {
     typeChart: typeChartPatch as typeof GENERATION1.typeChart,
     lastMoveIdx: GENERATION1.moveList.zapcannon.idx!,
     lastPokemon: 251,
-    moveFunctions: moveFunctionPatches as typeof GENERATION1.moveFunctions,
     items: items as Record<ItemId, ItemData>,
+    move: {
+      scripts: moveScripts as MoveScripts,
+      dmgOverrides,
+      accOverrides,
+    },
     accStageMultipliers,
     rng: {
       tryDefrost: battle => battle.rand255(25),
@@ -220,7 +224,6 @@ const createGeneration = (): Generation => {
       thrashDuration: battle => battle.rng.int(2, 3),
       maxThrash: 2,
     },
-    canSubstitute: (user, hp) => hp < user.base.hp,
     beforeUseMove,
     isValidMove(battle, user, move, i) {
       if (user.v.lockedIn() && user.v.lockedIn() !== battle.gen.moveList[move]) {
@@ -256,7 +259,9 @@ const createGeneration = (): Generation => {
         }
       }
 
-      const acc0 = move.getAcc ? move.getAcc(battle.getWeather()) : move.acc;
+      const acc0 =
+        this.move!.accOverrides![battle.moveIdOf(move)!]?.call(move, battle.getWeather()) ??
+        move.acc;
       if (!acc0) {
         return true;
       }

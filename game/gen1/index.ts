@@ -1,7 +1,16 @@
 import type {Random} from "random";
 import {accumulateBide, tryDamage} from "./damaging";
 import type {ActivePokemon, Battle} from "../battle";
-import {moveFunctions, moveList, type Move, type MoveId} from "../moves";
+import {
+  accOverrides,
+  dmgOverrides,
+  moveList,
+  moveScripts,
+  powOverrides,
+  typOverrides,
+  type Move,
+  type MoveId,
+} from "../moves";
 import {speciesList, type Species, type SpeciesId} from "../species";
 import {
   clamp,
@@ -426,7 +435,8 @@ const createGeneration = () => {
     moveList,
     typeChart,
     items: itemList,
-    moveFunctions,
+    naturePowerMove: "swift" as MoveId,
+    camouflageType: "normal" as Type,
     lastMoveIdx: moveList.whirlwind.idx!,
     lastPokemon: 151,
     invalidSketchMoves: [
@@ -440,10 +450,15 @@ const createGeneration = () => {
     ] as MoveId[],
     stageMultipliers,
     accStageMultipliers: stageMultipliers,
-    // Gen 1 bug, if you have exactly 25% hp you can create a substitute and instantly die
-    canSubstitute: (user: ActivePokemon, hp: number) => hp <= user.base.hp,
     beforeUseMove,
     isValidMove,
+    move: {
+      scripts: moveScripts,
+      powOverrides,
+      dmgOverrides,
+      accOverrides,
+      typOverrides,
+    },
     rng: {
       maxThrash: 3,
       tryDefrost: (_: Battle) => false,

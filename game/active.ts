@@ -7,14 +7,7 @@ import type {
   ChangedVolatiles,
   PokeId,
 } from "./events";
-import {
-  type MoveId,
-  type Move,
-  type DamagingMove,
-  Range,
-  type HealingWishMove,
-  type ForesightMove,
-} from "./moves";
+import type {MoveId, Move, DamagingMove, HealingWishMove, ForesightMove} from "./moves";
 import {
   natureTable,
   transform,
@@ -34,6 +27,7 @@ import {
   stageKeys,
   stageStatKeys,
   VF,
+  Range,
   type StageId,
   type StageStats,
   type StatStageId,

@@ -1,7 +1,15 @@
-import {getLowKickPower, Range, type Move, type MoveFunctions, type MoveId} from "../moves";
-import {HP_TYPES, idiv, VF} from "../utils";
+import {
+  getLowKickPower,
+  type Move,
+  type MoveScripts,
+  type MoveId,
+  type PowOverrides,
+  type DmgOverrides,
+  type TypOverrides,
+} from "../moves";
+import {HP_TYPES, idiv, VF, Range} from "../utils";
 
-export const moveFunctionPatches: Partial<MoveFunctions> = {
+export const moveScripts: Partial<MoveScripts> = {
   weather(battle, user) {
     if (battle.weather?.kind === this.weather) {
       return battle.info(user, "fail_generic");
@@ -78,6 +86,73 @@ export const moveFunctionPatches: Partial<MoveFunctions> = {
       battle.info(user, "endure", [user.setFlag(VF.endure)]);
     }
   },
+  //
+  psychup(battle, user, [target]) {
+    if (!battle.checkAccuracy(this, user, target)) {
+      return;
+    }
+
+    user.v.stages = {...target.v.stages};
+    battle.event({
+      type: "psych_up",
+      src: user.id,
+      target: target.id,
+      volatiles: [{id: user.id, v: {stats: user.clientStats(battle), stages: {...user.v.stages}}}],
+    });
+  },
+  spite(battle, user, [target]) {
+    if (!battle.checkAccuracy(this, user, target)) {
+      return;
+    } else if (target.v.lastMoveIndex === undefined) {
+      return battle.info(user, "fail_generic");
+    } else if (target.base.pp[target.v.lastMoveIndex] === 1) {
+      return battle.info(user, "fail_generic");
+    }
+
+    const amount = Math.min(battle.rng.int(2, 5), target.base.pp[target.v.lastMoveIndex]);
+    target.base.pp[target.v.lastMoveIndex] -= amount;
+    battle.event({
+      type: "spite",
+      src: target.id,
+      move: target.base.moves[target.v.lastMoveIndex],
+      amount,
+    });
+  },
+};
+
+export const dmgOverrides: DmgOverrides = {
+  psywave(battle, user) {
+    return Math.max(1, Math.floor((user.base.level * (10 * battle.rng.int(0, 10) + 50)) / 100));
+  },
+};
+
+export const powOverrides: PowOverrides = {
+  frustration: user => Math.max(1, idiv(255 - user.friendship, 2.5)),
+  hiddenpower(user) {
+    const v =
+      ((user.ivs.hp >> 1) & 1) |
+      (((user.ivs.atk >> 1) & 1) << 1) |
+      (((user.ivs.def >> 1) & 1) << 2) |
+      (((user.ivs.spe >> 1) & 1) << 3) |
+      (((user.ivs.spa >> 1) & 1) << 4) |
+      (((user.ivs.spd >> 1) & 1) << 5);
+    return Math.floor((v * 40) / 63) + 30;
+  },
+  lowkick: (_user, target) => getLowKickPower(target?.species?.weight ?? 0),
+  return: user => Math.max(1, idiv(user.friendship, 2.5)),
+};
+
+export const typOverrides: TypOverrides = {
+  hiddenpower(user) {
+    const v =
+      (user.ivs.hp & 1) |
+      ((user.ivs.atk & 1) << 1) |
+      ((user.ivs.def & 1) << 2) |
+      ((user.ivs.spe & 1) << 3) |
+      ((user.ivs.spa & 1) << 4) |
+      ((user.ivs.spd & 1) << 5);
+    return HP_TYPES[Math.floor((v * 15) / 63) % HP_TYPES.length];
+  },
 };
 
 export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
@@ -101,32 +176,9 @@ export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
   firespin: {kingsRock: true},
   flail: {flag: "none"},
   flamethrower: {effect: [10, "brn"]},
-  frustration: {getPower: user => Math.max(1, idiv(255 - user.friendship, 2.5))},
   gigadrain: {kingsRock: false},
   gust: {kingsRock: true},
   headbutt: {effect: [30, "flinch"]},
-  hiddenpower: {
-    getPower(user) {
-      const v =
-        ((user.ivs.hp >> 1) & 1) |
-        (((user.ivs.atk >> 1) & 1) << 1) |
-        (((user.ivs.def >> 1) & 1) << 2) |
-        (((user.ivs.spe >> 1) & 1) << 3) |
-        (((user.ivs.spa >> 1) & 1) << 4) |
-        (((user.ivs.spd >> 1) & 1) << 5);
-      return Math.floor((v * 40) / 63) + 30;
-    },
-    getType(user) {
-      const v =
-        (user.ivs.hp & 1) |
-        ((user.ivs.atk & 1) << 1) |
-        ((user.ivs.def & 1) << 2) |
-        ((user.ivs.spe & 1) << 3) |
-        ((user.ivs.spa & 1) << 4) |
-        ((user.ivs.spd & 1) << 5);
-      return HP_TYPES[Math.floor((v * 15) / 63) % HP_TYPES.length];
-    },
-  },
   hyperbeam: {kingsRock: true},
   hyperfang: {effect: [10, "flinch"]},
   icebeam: {effect: [10, "frz"]},
@@ -134,12 +186,7 @@ export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
   icywind: {effect: [100, [["spe", -1]]]},
   leechlife: {kingsRock: false},
   lick: {effect: [30, "par"]},
-  lowkick: {
-    acc: 100,
-    effect: [0, "flinch"],
-    power: 0,
-    getPower: (_user, target) => getLowKickPower(target?.species?.weight ?? 0),
-  },
+  lowkick: {acc: 100, effect: [0, "flinch"], power: 0},
   meanlook: {protect: true},
   megadrain: {kingsRock: false},
   metronome: {noEncore: false, noSleepTalk: true},
@@ -150,36 +197,9 @@ export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
   mudslap: {effect: [100, [["acc", -1]]]},
   nightmare: {protect: true},
   painsplit: {acc: 0},
-  psychup: {
-    name: "Psych Up",
-    pp: 10,
-    type: "normal",
-    range: Range.Adjacent,
-    exec(this: Move, battle, user, [target]) {
-      if (!battle.checkAccuracy(this, user, target)) {
-        return;
-      }
-
-      user.v.stages = {...target.v.stages};
-      battle.event({
-        type: "psych_up",
-        src: user.id,
-        target: target.id,
-        volatiles: [
-          {id: user.id, v: {stats: user.clientStats(battle), stages: {...user.v.stages}}},
-        ],
-      });
-    },
-  },
-  psywave: {
-    getDamage(battle, user) {
-      return Math.max(1, Math.floor((user.base.level * (10 * battle.rng.int(0, 10) + 50)) / 100));
-    },
-  },
   present: {kingsRock: false},
   protect: {priority: +3},
   pursuit: {kingsRock: false},
-  return: {getPower: user => Math.max(1, idiv(user.friendship, 2.5))},
   razorwind: {acc: 100},
   reversal: {flag: "none"},
   roar: {priority: -6},
@@ -189,26 +209,6 @@ export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
   smog: {effect: [40, "psn"]},
   spiderweb: {protect: true},
   spikes: {max: 3},
-  spite: {
-    exec(this: Move, battle, user, [target]) {
-      if (!battle.checkAccuracy(this, user, target)) {
-        return;
-      } else if (target.v.lastMoveIndex === undefined) {
-        return battle.info(user, "fail_generic");
-      } else if (target.base.pp[target.v.lastMoveIndex] === 1) {
-        return battle.info(user, "fail_generic");
-      }
-
-      const amount = Math.min(battle.rng.int(2, 5), target.base.pp[target.v.lastMoveIndex]);
-      target.base.pp[target.v.lastMoveIndex] -= amount;
-      battle.event({
-        type: "spite",
-        src: target.id,
-        move: target.base.moves[target.v.lastMoveIndex],
-        amount,
-      });
-    },
-  },
   steelwing: {kingsRock: true},
   stomp: {effect: [30, "flinch"]},
   superfang: {kingsRock: false},

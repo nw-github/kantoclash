@@ -3,9 +3,10 @@ import items from "./items.json";
 import {GENERATION1, type Generation} from "../gen1";
 import type {Species, SpeciesId} from "../species";
 import {merge, type GenPatches} from "../gen2";
-import {moveFunctionPatches, movePatches} from "./moves";
+import {movePatches, moveScripts, powOverrides} from "./moves";
 import {createItemMergeList} from "../gen3";
 import {GENERATION4} from "../gen4";
+import type {MoveScripts} from "../moves";
 
 const createGeneration = (): Generation => {
   const patches: Partial<GenPatches> = {
@@ -16,7 +17,12 @@ const createGeneration = (): Generation => {
     moveList: movePatches as typeof GENERATION1.moveList,
     lastMoveIdx: GENERATION1.moveList.zenheadbutt.idx!,
     lastPokemon: 649,
-    moveFunctions: moveFunctionPatches as typeof GENERATION1.moveFunctions,
+    move: {
+      scripts: moveScripts as MoveScripts,
+      powOverrides,
+    },
+    camouflageType: "ground",
+    naturePowerMove: "earthquake",
     items: createItemMergeList(items),
   };
 

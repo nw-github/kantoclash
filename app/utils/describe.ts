@@ -327,8 +327,8 @@ export const describeMove = (gen: Generation, id: MoveId) => {
       buf += describeEffect(gen, move.effect2);
     }
 
-    if (typeof move.getDamage === "number") {
-      buf += `Deals ${move.getDamage} damage. `;
+    if (move.fixedDamage) {
+      buf += `Deals ${move.fixedDamage} damage. `;
     }
 
     if (move.recoil) {

@@ -1,7 +1,7 @@
 import type {ActivePokemon, Battle} from "../battle";
 import {VF} from "../utils";
 import type {DamagingMove} from "../moves";
-import {getDamage} from "../moves";
+import {getDamage} from "../damaging";
 
 export function accumulateBide(
   battle: Battle,

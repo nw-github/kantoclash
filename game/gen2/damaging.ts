@@ -1,6 +1,7 @@
 import type {ActivePokemon, Battle} from "../battle";
-import {checkUsefulness, getDamage, Range, type DamagingMove} from "../moves";
-import {hazards, idiv, randChoiceWeighted, VF} from "../utils";
+import type {DamagingMove} from "../moves";
+import {getDamage, checkUsefulness} from "../damaging";
+import {hazards, idiv, randChoiceWeighted, VF, Range} from "../utils";
 
 export const tryDamage = (
   self: DamagingMove,
