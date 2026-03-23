@@ -402,7 +402,7 @@ export class ClientManager {
       const src = players.poke(e.src)!;
       if (!src.owned && !e.called) {
         const idx = src.base.moves.findIndex(id => id === e.move);
-        // TODO: pressure, ignore 'called' moves (from assist, metronome, etc)
+        // TODO: pressure
         const ppcost = e.disabled || e.thrashing ? 0 : 1;
         if (idx === -1) {
           src.base.moves.push(e.move);
@@ -413,7 +413,7 @@ export class ClientManager {
       }
     } else if (e.type === "charge") {
       const src = players.poke(e.src)!;
-      if (!src.owned && !src.base.moves.includes(e.move)) {
+      if (!e.called && !src.owned && !src.base.moves.includes(e.move)) {
         src.base.moves.push(e.move);
         src.base.pp.push(src.base.gen.getMaxPP(src.base.gen.moveList[e.move]));
       }

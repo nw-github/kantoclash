@@ -791,7 +791,7 @@ export class Battle {
         }
 
         if (move.charge && user.v.charging?.move !== move) {
-          this.event({type: "charge", src: user.id, move: moveId});
+          this.event({type: "charge", src: user.id, move: moveId, called});
           if (Array.isArray(move.charge)) {
             user.modStages(move.charge, this);
           }
