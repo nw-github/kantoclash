@@ -1,7 +1,7 @@
+import __speciesList from "./data/species.json";
+import __abilityList from "./data/abilities.json";
 import type {MoveId} from "./moves";
 import type {StageId, Stats, Type, Weather} from "./utils";
-import __speciesList from "./species.json";
-import __abilityList from "./ability.json";
 import type {Status} from "./pokemon";
 import type {ItemId} from "./item";
 

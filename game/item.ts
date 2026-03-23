@@ -1,4 +1,4 @@
-import __items from "./items.json";
+import __items from "./data/items.json";
 import type {ArceusForm, GenesectForm, Status} from "./pokemon";
 import type {SpeciesId} from "./species";
 import type {StatStageId, Type, Weather} from "./utils";

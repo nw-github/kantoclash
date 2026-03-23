@@ -1349,7 +1349,7 @@ class Volatiles {
   mimic?: {move: MoveId; indexInMoves: number};
   trapping?: {move: Move; turns: number};
   trapped?: {user: ActivePokemon; move: Move; turns: number};
-  private _flags = VF.none;
+  flags = VF.none;
 
   constructor(base: Pokemon) {
     this.types = [...base.species.types];
@@ -1384,19 +1384,15 @@ class Volatiles {
   }
 
   setFlag(flag: VF) {
-    this._flags |= flag;
+    this.flags |= flag;
   }
 
   clearFlag(flag: VF) {
-    this._flags &= ~flag;
+    this.flags &= ~flag;
   }
 
   hasFlag(flag: VF) {
-    return (this._flags & flag) !== 0;
-  }
-
-  get flags() {
-    return this._flags;
+    return (this.flags & flag) !== 0;
   }
 
   get cflags() {
@@ -1409,6 +1405,6 @@ class Volatiles {
     hi |= this.tauntTurns ? CVF.taunt : 0;
     hi |= this.drowsy ? CVF.drowsy : 0;
     hi |= this.identified ? CVF.identified : 0;
-    return {lo: this._flags, hi};
+    return {lo: this.flags, hi};
   }
 }
