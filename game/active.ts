@@ -274,7 +274,7 @@ export class ActivePokemon {
           src: opp.id,
           target: opp.id,
           kind: "end",
-          move: battle.moveIdOf(opp.v.trapped.move)!,
+          move: opp.v.trapped.move.id!,
           volatiles: [{id: opp.id, v: {trapped: null}}],
         });
         opp.v.trapped = undefined;
@@ -980,7 +980,7 @@ export class ActivePokemon {
       return;
     }
 
-    const move = battle.moveIdOf(this.v.trapped.move)!;
+    const move = this.v.trapped.move.id!;
     if (--this.v.trapped.turns === 0) {
       battle.event({
         type: "trap",
@@ -1014,7 +1014,7 @@ export class ActivePokemon {
         battle.event({
           type: "futuresight",
           src: this.id,
-          move: battle.moveIdOf(this.futureSight.move)!,
+          move: this.futureSight.move.id!,
           release: true,
         });
         if (!battle.checkAccuracy(battle.gen.moveList.futuresight, this, this)) {
@@ -1129,7 +1129,7 @@ export class ActivePokemon {
       // Two-turn moves, thrashing moves, and recharging skip the normal move selection menu
       moves.forEach(move => (move.display = false));
 
-      const move = lockedIn ? battle.moveIdOf(lockedIn)! : "struggle";
+      const move = lockedIn?.id ?? "struggle";
       moves.push({
         move,
         valid: true,
@@ -1260,8 +1260,8 @@ export class ActivePokemon {
       status: base.status || null,
       stages: {...this.v.stages},
       stats: this.clientStats(battle),
-      charging: this.v.charging ? battle.moveIdOf(this.v.charging.move) : undefined,
-      trapped: this.v.trapped ? battle.moveIdOf(this.v.trapped.move) : undefined,
+      charging: this.v.charging?.move?.id,
+      trapped: this.v.trapped?.move?.id,
       types: !arraysEqual(this.v.types, base.species.types) ? [...this.v.types] : undefined,
       flags: this.v.cflags,
       perishCount: this.v.perishCount,

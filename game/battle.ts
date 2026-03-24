@@ -162,7 +162,6 @@ type BattleParams = {
 
 export class Battle {
   readonly events: BattleEvent[] = [];
-  private readonly moveListToId = new Map<Move, MoveId>();
   turnType = TurnType.Lead;
 
   private _victor?: Player;
@@ -181,9 +180,6 @@ export class Battle {
     readonly mods: Mods,
     readonly rng: Random,
   ) {
-    for (const k in this.gen.moveList) {
-      this.moveListToId.set(this.gen.moveList[k as MoveId], k as MoveId);
-    }
     this.allActive = this.players.flatMap(pl => pl.active);
   }
 
@@ -242,10 +238,6 @@ export class Battle {
 
   opponentOf(player: Player): Player {
     return this.players[0] === player ? this.players[1] : this.players[0];
-  }
-
-  moveIdOf(move: Move) {
-    return this.moveListToId.get(move);
   }
 
   findPlayer(id: string) {
@@ -518,9 +510,9 @@ export class Battle {
       this.event({type: "sv", volatiles: [target.clearFlag(VF.lockon)]});
 
       if (this.gen.id === 2) {
-        const moveId = this.moveIdOf(move);
+        const moveId = move.id;
         if (moveId === "earthquake" || moveId === "fissure" || moveId === "magnitude") {
-          if (target.v.charging && this.moveIdOf(target.v.charging.move) === "fly") {
+          if (target.v.charging && target.v.charging.move.id === "fly") {
             return false;
           }
         }
@@ -767,7 +759,7 @@ export class Battle {
         targets = availableTargets.slice(0, 1);
       }
 
-      const moveId = this.moveIdOf(move)!;
+      const moveId = move.id!;
       if (move.kind === "damage") {
         const damp = this.allActive.find(p => p.hasAbility("damp"));
         if (damp && move.damp) {
@@ -920,7 +912,7 @@ export class Battle {
 
   tryMagicBounce(move: Move, user: ActivePokemon, target: ActivePokemon) {
     if (target.v.hasFlag(VF.magicCoat) && move.magicCoat) {
-      this.event({type: "bounce", src: target.id, move: this.moveIdOf(move)!});
+      this.event({type: "bounce", src: target.id, move: move.id!});
       this.useMove(move, target, [user], undefined, true, true);
       return true;
     }

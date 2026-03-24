@@ -86,11 +86,7 @@ export const moveScripts: Partial<MoveScripts> = {
     battle.event({type: "conversion", src: user.id, types: [type], volatiles: [v]});
   },
   disable(this: Move, battle, user, [target]) {
-    if (
-      target.v.disabled ||
-      !target.v.lastMove ||
-      battle.moveIdOf(target.v.lastMove) === "struggle"
-    ) {
+    if (target.v.disabled || !target.v.lastMove || target.v.lastMove.id === "struggle") {
       battle.info(user, "fail_generic");
       return;
     } else if (!battle.checkAccuracy(this, user, target)) {
@@ -131,7 +127,7 @@ export const moveScripts: Partial<MoveScripts> = {
   },
   mimic(this: Move, battle, user, [target], indexInMoves) {
     const lastMove = target.v.lastMove;
-    const move = lastMove && battle.moveIdOf(lastMove);
+    const move = lastMove?.id;
     if (!move || lastMove.noMimic || user.moveset().includes(move)) {
       return battle.info(user, "fail_generic");
     }

@@ -10,6 +10,7 @@ export type MoveScriptId = (typeof rawMoveList)[MoveId]["kind"];
 
 export interface BaseMove {
   readonly kind: MoveScriptId | "phaze" | "switch";
+  readonly id?: MoveId;
   readonly idx?: number;
   readonly name: string;
   readonly pp: number;
@@ -267,11 +268,11 @@ type Flag =
   | "assurance";
 
 const createMoveList = (list: any) => {
-  let id = 0;
+  let idx = 0;
   for (const moveId in list) {
     const move = list[moveId] as any;
-
-    move.idx = id++;
+    move.id = moveId;
+    move.idx = idx++;
     move.range = Range[move.range];
     if (move.kind === "volatile") {
       move.flag = VF[move.flag];
@@ -382,7 +383,7 @@ export const moveScripts: MoveScripts = {
     battle.gen1LastDamage = 0;
     let failed = true;
 
-    const id = battle.moveIdOf(this)!;
+    const id = this.id!;
     for (const target of targets) {
       if (this.range !== Range.Self) {
         if (battle.tryMagicBounce(this, user, target)) {
@@ -451,7 +452,7 @@ export const moveScripts: MoveScripts = {
     user.switchTo(this.poke, battle);
   },
   damage(battle, user, targets) {
-    const checkSuccess = battle.gen.move.overrides.dmgPreCheck[battle.moveIdOf(this)!];
+    const checkSuccess = battle.gen.move.overrides.dmgPreCheck[this.id!];
     if (checkSuccess && !checkSuccess.call(this, battle, user, targets)) {
       user.v.charging = undefined;
       return battle.sv([user.clearFlag(VF.charge)]);
@@ -508,7 +509,7 @@ export const moveScripts: MoveScripts = {
       return battle.event({
         type: "futuresight",
         src: user.id,
-        move: battle.moveIdOf(this)!,
+        move: this.id!,
         release: false,
       });
     }
@@ -1129,7 +1130,7 @@ export const moveScripts: MoveScripts = {
       return battle.info(user, "fail_generic");
     }
 
-    const id = battle.moveIdOf(target.v.lastMove)!;
+    const id = target.v.lastMove.id!;
     const idx = target.base.moves.indexOf(id);
     // Fail for struggle, metronome, mirror move, sleep talk
     if (
@@ -1168,7 +1169,7 @@ export const moveScripts: MoveScripts = {
     } else if (!target.v.lastMove) {
       return battle.info(user, "fail_generic");
     }
-    const id = battle.moveIdOf(target.v.lastMove)!;
+    const id = target.v.lastMove.id!;
     const idx = target.base.moves.indexOf(id);
     // Fail for struggle, metronome, mirror move, sleep talk unless it called a move we already
     // know (which metronome cant in gen 2)
@@ -1456,14 +1457,7 @@ export const moveOverrides: MovePropOverrides = {
     mirrorcoat(_battle, user) {
       return !user.v.lastHitBy || !user.v.lastHitBy.special ? 0 : user.v.retaliateDamage * 2;
     },
-    endeavor(_, user, target) {
-      const diff = target.base.hp - user.base.hp;
-      if (diff <= 0) {
-        return 0;
-      }
-
-      return diff;
-    },
+    endeavor: (_, user, target) => Math.max(0, target.base.hp - user.base.hp),
   },
   acc: {
     hurricane: rainAcc,

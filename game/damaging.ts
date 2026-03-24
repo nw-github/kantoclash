@@ -128,7 +128,7 @@ export function getDamage(
 
     let doubleDmg = user.v.inPursuit;
     if (target.v.charging && self.ignore && self.punish) {
-      doubleDmg = doubleDmg || self.ignore.includes(battle.moveIdOf(target.v.charging.move));
+      doubleDmg = doubleDmg || self.ignore.includes(target.v.charging.move.id);
     }
     if (target.v.usedMinimize && self.flag === "minimize") {
       doubleDmg = true;
@@ -144,7 +144,7 @@ export function getDamage(
       doubleDmg = true;
     }
 
-    if (battle.moveIdOf(self) === "weatherball" && battle.getWeather()) {
+    if (self.id === "weatherball" && battle.getWeather()) {
       doubleDmg = true;
     }
     if (

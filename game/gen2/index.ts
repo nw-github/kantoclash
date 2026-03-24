@@ -215,14 +215,14 @@ export class Generation2 extends Generation1 {
 
   override checkAccuracy(move: Move, battle: Battle, user: ActivePokemon, target: ActivePokemon) {
     if (target.v.invuln) {
-      const charging = target.v.charging && battle.moveIdOf(target.v.charging.move);
+      const charging = target.v.charging && target.v.charging.move.id;
       if (charging && (!move.ignore || !move.ignore.includes(charging))) {
         battle.miss(user, target);
         return false;
       }
     }
 
-    const acc0 = this.getMoveAcc(battle, move);
+    const acc0 = this.getMoveAcc(move, battle.getWeather());
     if (!acc0) {
       return true;
     }

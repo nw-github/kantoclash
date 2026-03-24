@@ -16,6 +16,7 @@ import {
   MC,
   debugLog,
   dmgFlags,
+  type Weather,
 } from "../utils";
 import {itemList, type ItemId} from "../item";
 import {UNOWN_FORM, type FormId, type Gender, type Nature} from "../pokemon";
@@ -758,12 +759,8 @@ export class Generation1 {
     }
   }
 
-  getMoveAcc(battle: Battle, move: Move) {
-    return (
-      this.move.overrides.acc[battle.moveIdOf(move)!]?.call(move, battle.getWeather()) ??
-      move.acc ??
-      0
-    );
+  getMoveAcc(move: Move, weather: Weather | undefined) {
+    return this.move.overrides.acc[move.id!]?.call(move, weather) ?? move.acc;
   }
 }
 

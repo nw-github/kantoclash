@@ -328,7 +328,7 @@ export const tryDamage = (
         src: user.id,
         target: user.id,
         kind: "end",
-        move: battle.moveIdOf(user.v.trapped.move)!,
+        move: user.v.trapped.move.id!,
         volatiles: [{id: user.id, v: {trapped: null}}],
       });
       user.v.trapped = undefined;
@@ -366,7 +366,7 @@ export const tryDamage = (
 
   if (self.flag === "trap" && !hadSub && target.base.hp) {
     target.v.trapped = {user, move: self, turns: battle.gen.rng.multiHitCount(battle) + 1};
-    const move = battle.moveIdOf(self)!;
+    const move = self.id!;
     battle.event({
       type: "trap",
       src: user.id,

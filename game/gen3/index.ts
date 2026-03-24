@@ -250,13 +250,13 @@ export class Generation3 extends Generation2 {
     if (
       target.v.charging &&
       target.v.charging.move.charge === "invuln" &&
-      (!move.ignore || !move.ignore.includes(battle.moveIdOf(target.v.charging.move)))
+      (!move.ignore || !move.ignore.includes(target.v.charging.move.id))
     ) {
       battle.miss(user, target);
       return false;
     }
 
-    const chance = this.getMoveAcc(battle, move);
+    const chance = this.getMoveAcc(move, battle.getWeather());
     if (!chance || user.v.inPursuit) {
       return true;
     }
@@ -368,7 +368,7 @@ export class Generation3 extends Generation2 {
       return false;
     }
 
-    const moveId = battle.moveIdOf(move)!;
+    const moveId = move.id!;
     if (moveId === user.base.moves[user.v.disabled?.indexInMoves ?? -1]) {
       battle.event({move: moveId, type: "move", src: user.id, disabled: true});
       resetVolatiles();
