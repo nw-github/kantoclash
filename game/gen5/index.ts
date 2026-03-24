@@ -2,7 +2,7 @@ import speciesPatches from "./species.json";
 import items from "./items.json";
 import type {Species, SpeciesId} from "../species";
 import {merge} from "../gen2";
-import {movePatches, moveScripts, powOverrides} from "./moves";
+import {movePatches, moveScripts, moveOverrides} from "./moves";
 import {createItemMergeList} from "../gen3";
 import {Generation4} from "../gen4";
 
@@ -24,6 +24,6 @@ export class Generation5 extends Generation4 {
     );
     this.moveList = merge(this.moveList, movePatches);
     this.items = merge(this.items, createItemMergeList(items));
-    this.move = merge(this.move, {scripts: moveScripts, powOverrides});
+    this.move = merge(this.move, {scripts: moveScripts, overrides: moveOverrides});
   }
 }

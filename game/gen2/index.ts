@@ -12,7 +12,7 @@ import {
   type Stats,
   type StatStageId,
 } from "../utils";
-import {dmgOverrides, accOverrides, moveScripts, movePatches} from "./moves";
+import {moveOverrides, moveScripts, movePatches} from "./moves";
 import speciesPatches from "./species.json";
 import type {ActivePokemon, Battle} from "../battle";
 import type {Move, MoveId} from "../moves";
@@ -115,7 +115,7 @@ export class Generation2 extends Generation1 {
       ice: {fire: 0.5},
     });
     this.items = merge(this.items, items as Partial<Record<ItemId, ItemData>>);
-    this.move = merge(this.move, {scripts: moveScripts, dmgOverrides, accOverrides});
+    this.move = merge(this.move, {scripts: moveScripts, overrides: moveOverrides});
   }
 
   override beforeUseMove(battle: Battle, move: Move, user: ActivePokemon) {
@@ -222,8 +222,7 @@ export class Generation2 extends Generation1 {
       }
     }
 
-    const acc0 =
-      this.move!.accOverrides![battle.moveIdOf(move)!]?.call(move, battle.getWeather()) ?? move.acc;
+    const acc0 = this.getMoveAcc(battle, move);
     if (!acc0) {
       return true;
     }

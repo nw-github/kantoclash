@@ -3,9 +3,7 @@ import {
   type Move,
   type MoveScripts,
   type MoveId,
-  type PowOverrides,
-  type DmgOverrides,
-  type TypOverrides,
+  type MovePropOverrides,
 } from "../moves";
 import {HP_TYPES, idiv, VF, Range} from "../utils";
 
@@ -120,38 +118,38 @@ export const moveScripts: Partial<MoveScripts> = {
   },
 };
 
-export const dmgOverrides: DmgOverrides = {
-  psywave(battle, user) {
-    return Math.max(1, Math.floor((user.base.level * (10 * battle.rng.int(0, 10) + 50)) / 100));
+export const moveOverrides: Partial<MovePropOverrides> = {
+  dmg: {
+    psywave(battle, user) {
+      return Math.max(1, Math.floor((user.base.level * (10 * battle.rng.int(0, 10) + 50)) / 100));
+    },
   },
-};
-
-export const powOverrides: PowOverrides = {
-  frustration: user => Math.max(1, idiv(255 - user.friendship, 2.5)),
-  hiddenpower(user) {
-    const v =
-      ((user.ivs.hp >> 1) & 1) |
-      (((user.ivs.atk >> 1) & 1) << 1) |
-      (((user.ivs.def >> 1) & 1) << 2) |
-      (((user.ivs.spe >> 1) & 1) << 3) |
-      (((user.ivs.spa >> 1) & 1) << 4) |
-      (((user.ivs.spd >> 1) & 1) << 5);
-    return Math.floor((v * 40) / 63) + 30;
+  pow: {
+    frustration: user => Math.max(1, idiv(255 - user.friendship, 2.5)),
+    hiddenpower(user) {
+      const v =
+        ((user.ivs.hp >> 1) & 1) |
+        (((user.ivs.atk >> 1) & 1) << 1) |
+        (((user.ivs.def >> 1) & 1) << 2) |
+        (((user.ivs.spe >> 1) & 1) << 3) |
+        (((user.ivs.spa >> 1) & 1) << 4) |
+        (((user.ivs.spd >> 1) & 1) << 5);
+      return Math.floor((v * 40) / 63) + 30;
+    },
+    lowkick: (_user, target) => getLowKickPower(target?.species?.weight ?? 0),
+    return: user => Math.max(1, idiv(user.friendship, 2.5)),
   },
-  lowkick: (_user, target) => getLowKickPower(target?.species?.weight ?? 0),
-  return: user => Math.max(1, idiv(user.friendship, 2.5)),
-};
-
-export const typOverrides: TypOverrides = {
-  hiddenpower(user) {
-    const v =
-      (user.ivs.hp & 1) |
-      ((user.ivs.atk & 1) << 1) |
-      ((user.ivs.def & 1) << 2) |
-      ((user.ivs.spe & 1) << 3) |
-      ((user.ivs.spa & 1) << 4) |
-      ((user.ivs.spd & 1) << 5);
-    return HP_TYPES[Math.floor((v * 15) / 63) % HP_TYPES.length];
+  type: {
+    hiddenpower(user) {
+      const v =
+        (user.ivs.hp & 1) |
+        ((user.ivs.atk & 1) << 1) |
+        ((user.ivs.def & 1) << 2) |
+        ((user.ivs.spe & 1) << 3) |
+        ((user.ivs.spa & 1) << 4) |
+        ((user.ivs.spd & 1) << 5);
+      return HP_TYPES[Math.floor((v * 15) / 63) % HP_TYPES.length];
+    },
   },
 };
 

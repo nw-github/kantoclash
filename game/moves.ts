@@ -301,16 +301,17 @@ export type MoveScripts = {
 
 type PR<V> = Partial<Record<MoveId, V>>;
 
-export type PowOverrides = PR<(this: DamagingMove, user: Pokemon, target?: Pokemon) => number>;
-
-export type DmgOverrides = PR<
-  (this: DamagingMove, battle: Battle, user: ActivePokemon, target: ActivePokemon) => number
->;
-export type AccOverrides = PR<(this: Move, weather?: Weather) => number | undefined>;
-export type TypOverrides = PR<(this: Move, user: Pokemon, weather?: Weather) => Type>;
-export type PreCheckTable = PR<
-  (this: DamagingMove, battle: Battle, user: ActivePokemon, targets: ActivePokemon[]) => bool
->;
+export type MovePropOverrides = {
+  dmg: PR<
+    (this: DamagingMove, battle: Battle, user: ActivePokemon, target: ActivePokemon) => number
+  >;
+  pow: PR<(this: DamagingMove, user: Pokemon, target?: Pokemon) => number>;
+  acc: PR<(this: Move, weather: Weather | undefined) => number | undefined>;
+  type: PR<(this: Move, user: Pokemon, weather: Weather | undefined) => Type>;
+  dmgPreCheck: PR<
+    (this: DamagingMove, battle: Battle, user: ActivePokemon, targets: ActivePokemon[]) => bool
+  >;
+};
 
 export const moveScripts: MoveScripts = {
   volatile(battle, user) {
@@ -450,7 +451,7 @@ export const moveScripts: MoveScripts = {
     user.switchTo(this.poke, battle);
   },
   damage(battle, user, targets) {
-    const checkSuccess = preCheck[battle.moveIdOf(this)!];
+    const checkSuccess = battle.gen.move.overrides.dmgPreCheck[battle.moveIdOf(this)!];
     if (checkSuccess && !checkSuccess.call(this, battle, user, targets)) {
       user.v.charging = undefined;
       return battle.sv([user.clearFlag(VF.charge)]);
@@ -992,10 +993,10 @@ export const moveScripts: MoveScripts = {
     if (!user.v.types.includes("ghost")) {
       // prettier-ignore
       if (battle.gen.id <= 2 && user.v.stages.atk >= 6 && user.v.stages.def >= 6) {
-              return battle.info(user, "fail_generic");
-            } else if (!user.modStages([["spe", -1], ["atk", +1], ["def", +1]], battle)) {
-              return battle.info(user, "fail_generic");
-            }
+        return battle.info(user, "fail_generic");
+      } else if (!user.modStages([["spe", -1], ["atk", +1], ["def", +1]], battle)) {
+        return battle.info(user, "fail_generic");
+      }
     } else {
       // mid-turn type switch
       if (target === user) {
@@ -1229,14 +1230,14 @@ export const moveScripts: MoveScripts = {
     let faint = true;
     // prettier-ignore
     if (target.v.hasFlag(VF.mist) || target.owner.screens.mist) {
-            battle.info(target, "mist_protect");
-          } else if (target.v.hasFlag(VF.protect)) {
-            battle.info(target, "protect");
-          } else if (target.v.substitute) {
-            battle.info(target, "fail_generic");
-          } else if (!target.modStages([["atk", -2], ["spa", -2]], battle, user)) {
-            faint = false;
-          }
+      battle.info(target, "mist_protect");
+    } else if (target.v.hasFlag(VF.protect)) {
+      battle.info(target, "protect");
+    } else if (target.v.substitute) {
+      battle.info(target, "fail_generic");
+    } else if (!target.modStages([["atk", -2], ["spa", -2]], battle, user)) {
+      faint = false;
+    }
 
     if (faint) {
       user.damage(user.base.hp, user, battle, false, "explosion");
@@ -1388,131 +1389,129 @@ export const moveScripts: MoveScripts = {
   },
 };
 
-export const powOverrides: PowOverrides = {
-  // Gen III
-  flail: getFlailPower,
-  frustration: user => idiv(255 - user.friendship, 2.5),
-  hiddenpower({ivs: dvs}) {
-    const msb = (dv?: number) => +(((dv ?? 15) & (1 << 3)) !== 0);
+export const moveOverrides: MovePropOverrides = {
+  pow: {
+    // Gen III
+    flail: getFlailPower,
+    frustration: user => idiv(255 - user.friendship, 2.5),
+    hiddenpower({ivs: dvs}) {
+      const msb = (dv?: number) => +(((dv ?? 15) & (1 << 3)) !== 0);
 
-    const x = msb(dvs.spa) | (msb(dvs.spe) << 1) | (msb(dvs.def) << 2) | (msb(dvs.atk) << 3);
-    const y = (dvs.spa ?? 15) & 0b11;
-    return idiv(5 * x + y, 2) + 31;
+      const x = msb(dvs.spa) | (msb(dvs.spe) << 1) | (msb(dvs.def) << 2) | (msb(dvs.atk) << 3);
+      const y = (dvs.spa ?? 15) & 0b11;
+      return idiv(5 * x + y, 2) + 31;
+    },
+    return: user => idiv(user.friendship, 2.5),
+    reversal: getFlailPower,
+    eruption: user => Math.max(1, Math.floor((user.hp * 150) / user.stats.hp)),
+    waterspout: user => Math.max(1, Math.floor((user.hp * 150) / user.stats.hp)),
+    // Gen IV
+    crushgrip: getCrushGripPower,
+    grassknot: (_user, target) => getLowKickPower((target as any)?.species?.weight ?? 0),
+    wringout: getCrushGripPower,
+    // Gen V
+    acrobatics(user) {
+      return user.item ? this.power : this.power * 2;
+    },
+    brine(_user, target) {
+      return target?.belowHp(2) ? this.power * 2 : this.power;
+    },
+    hex(_, target) {
+      return target?.status ? this.power * 2 : this.power;
+    },
+    venoshock(_user, target) {
+      return target?.status === "psn" || target?.status === "tox" ? this.power * 2 : this.power;
+    },
   },
-  return: user => idiv(user.friendship, 2.5),
-  reversal: getFlailPower,
-  eruption: user => Math.max(1, Math.floor((user.hp * 150) / user.stats.hp)),
-  waterspout: user => Math.max(1, Math.floor((user.hp * 150) / user.stats.hp)),
-  // Gen IV
-  crushgrip: getCrushGripPower,
-  grassknot: (_user, target) => getLowKickPower((target as any)?.species?.weight ?? 0),
-  wringout: getCrushGripPower,
-  // Gen V
-  acrobatics(user) {
-    return user.item ? this.power : this.power * 2;
-  },
-  brine(_user, target) {
-    return target?.belowHp(2) ? this.power * 2 : this.power;
-  },
-  hex(_, target) {
-    return target?.status ? this.power * 2 : this.power;
-  },
-  venoshock(_user, target) {
-    return target?.status === "psn" || target?.status === "tox" ? this.power * 2 : this.power;
-  },
-};
+  dmg: {
+    bide: (_, user) => (user.v.bide?.dmg ?? 0) * 2,
+    counter(battle, _, target) {
+      // https://www.youtube.com/watch?v=ftTalHMjPRY
+      //  On cartrige, the move counter uses is updated whenever a player hovers over a move (even
+      //  if he doesn't select it). In a link battle, this information is not shared between both
+      //  players. This means, that a player can influence the ability of counter to succeed by
+      //  hovering over a move on their side, cancelling the 'FIGHT' menu, and switching out. Since
+      //  we don't have a FIGHT menu, and this can cause a desync anyway, just use the last
+      //  attempted move.
 
-export const dmgOverrides: DmgOverrides = {
-  bide: (_, user) => (user.v.bide?.dmg ?? 0) * 2,
-  counter(battle, _, target) {
-    // https://www.youtube.com/watch?v=ftTalHMjPRY
-    //  On cartrige, the move counter uses is updated whenever a player hovers over a move (even
-    //  if he doesn't select it). In a link battle, this information is not shared between both
-    //  players. This means, that a player can influence the ability of counter to succeed by
-    //  hovering over a move on their side, cancelling the 'FIGHT' menu, and switching out. Since
-    //  we don't have a FIGHT menu, and this can cause a desync anyway, just use the last
-    //  attempted move.
+      const mv = target.lastChosenMove;
+      if (
+        mv &&
+        ((mv.type !== "normal" && mv.type !== "fight") || mv.kind !== "damage" || mv === this)
+      ) {
+        return 0;
+      } else if (target.choice?.move === this) {
+        return 0;
+      }
+      // Counter can crit, but it won't do any more damage
+      return battle.gen1LastDamage * 2;
+    },
+    nightshade: (_, user) => user.base.level,
+    psywave(battle, user) {
+      // psywave has a desync glitch that we don't emulate
+      return battle.rng.int(1, Math.max(Math.floor(user.base.level * 1.5 - 1), 1));
+    },
+    seismictoss: (_, user) => user.base.level,
+    superfang: (_battle, _, target) => Math.max(Math.floor(target.base.hp / 2), 1),
+    mirrorcoat(_battle, user) {
+      return !user.v.lastHitBy || !user.v.lastHitBy.special ? 0 : user.v.retaliateDamage * 2;
+    },
+    endeavor(_, user, target) {
+      const diff = target.base.hp - user.base.hp;
+      if (diff <= 0) {
+        return 0;
+      }
 
-    const mv = target.lastChosenMove;
-    if (
-      mv &&
-      ((mv.type !== "normal" && mv.type !== "fight") || mv.kind !== "damage" || mv === this)
-    ) {
-      return 0;
-    } else if (target.choice?.move === this) {
-      return 0;
-    }
-    // Counter can crit, but it won't do any more damage
-    return battle.gen1LastDamage * 2;
+      return diff;
+    },
   },
-  nightshade: (_, user) => user.base.level,
-  psywave(battle, user) {
-    // psywave has a desync glitch that we don't emulate
-    return battle.rng.int(1, Math.max(Math.floor(user.base.level * 1.5 - 1), 1));
+  acc: {
+    hurricane: rainAcc,
   },
-  seismictoss: (_, user) => user.base.level,
-  superfang: (_battle, _, target) => Math.max(Math.floor(target.base.hp / 2), 1),
-  mirrorcoat(_battle, user) {
-    return !user.v.lastHitBy || !user.v.lastHitBy.special ? 0 : user.v.retaliateDamage * 2;
+  type: {
+    hiddenpower(user) {
+      return HP_TYPES[(((user.ivs.atk ?? 15) & 0b11) << 2) | ((user.ivs.def ?? 15) & 0b11)];
+    },
+    weatherball(_user, weather) {
+      return (
+        (weather && ({hail: "ice", sand: "rock", rain: "water", sun: "fire"} as const)[weather]) ??
+        "normal"
+      );
+    },
+    judgment: user => user.item?.plate ?? "normal",
+    technoblast(user) {
+      // prettier-ignore
+      switch (user.item?.drive) {
+      case "douse": return "water";
+      case "shock": return "electric";
+      case "burn": return "fire";
+      case "chill": return "ice";
+      default: return this.type;
+      }
+    },
   },
-  endeavor(_, user, target) {
-    const diff = target.base.hp - user.base.hp;
-    if (diff <= 0) {
-      return 0;
-    }
-
-    return diff;
-  },
-};
-
-export const accOverrides: AccOverrides = {
-  hurricane: rainAcc,
-};
-
-export const typOverrides: TypOverrides = {
-  hiddenpower(user) {
-    return HP_TYPES[(((user.ivs.atk ?? 15) & 0b11) << 2) | ((user.ivs.def ?? 15) & 0b11)];
-  },
-  weatherball(_user, weather) {
-    return (
-      (weather && ({hail: "ice", sand: "rock", rain: "water", sun: "fire"} as const)[weather]) ??
-      "normal"
-    );
-  },
-  judgment: user => user.item?.plate ?? "normal",
-  technoblast(user) {
-    // prettier-ignore
-    switch (user.item?.drive) {
-    case "douse": return "water";
-    case "shock": return "electric";
-    case "burn": return "fire";
-    case "chill": return "ice";
-    default: return this.type;
-    }
-  },
-};
-
-const preCheck: PreCheckTable = {
-  fakeout(battle, user) {
-    if (!user.v.canFakeOut) {
-      battle.info(user, "fail_generic");
-      return false;
-    }
-    return true;
-  },
-  focuspunch(battle, user) {
-    if (!user.v.hasFocus) {
-      battle.info(user, "fail_focus");
-      return false;
-    }
-    return true;
-  },
-  suckerpunch(battle, user, [target]) {
-    if (target?.choice?.move?.kind !== "damage" || target?.choice?.executed) {
-      battle.info(user, "fail_generic");
-      return false;
-    }
-    return true;
+  dmgPreCheck: {
+    fakeout(battle, user) {
+      if (!user.v.canFakeOut) {
+        battle.info(user, "fail_generic");
+        return false;
+      }
+      return true;
+    },
+    focuspunch(battle, user) {
+      if (!user.v.hasFocus) {
+        battle.info(user, "fail_focus");
+        return false;
+      }
+      return true;
+    },
+    suckerpunch(battle, user, [target]) {
+      if (target?.choice?.move?.kind !== "damage" || target?.choice?.executed) {
+        battle.info(user, "fail_generic");
+        return false;
+      }
+      return true;
+    },
   },
 };
 

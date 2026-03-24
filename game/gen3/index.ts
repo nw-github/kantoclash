@@ -20,7 +20,7 @@ import {
   type StatStageId,
   type Stats,
 } from "../utils";
-import {dmgOverrides, moveScripts, powOverrides, typOverrides, movePatches} from "./moves";
+import {moveScripts, moveOverrides, movePatches} from "./moves";
 import speciesPatches from "./species.json";
 import items from "./items.json";
 import {itemList, type ItemId} from "../item";
@@ -114,7 +114,7 @@ export class Generation3 extends Generation2 {
     );
     this.moveList = merge(this.moveList, movePatches);
     this.items = merge(this.items, createItemMergeList(items));
-    this.move = merge(this.move, {scripts: moveScripts, powOverrides, dmgOverrides, typOverrides});
+    this.move = merge(this.move, {scripts: moveScripts, overrides: moveOverrides});
   }
 
   override getDamageVariables(
@@ -256,10 +256,7 @@ export class Generation3 extends Generation2 {
       return false;
     }
 
-    // TODO: does pursuit skip the invuln check? Could matter if (Gen IV+):
-    // Player 1: Pokémon A is flying, Pokémon B is switching out
-    // Player 2: Pokémon C & D pursuit into B, C kills it, D retargets to A
-    const chance = move.getAcc ? move.getAcc(battle.getWeather()) : move.acc;
+    const chance = this.getMoveAcc(battle, move);
     if (!chance || user.v.inPursuit) {
       return true;
     }

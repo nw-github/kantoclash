@@ -3,7 +3,7 @@ import items from "./items.json";
 import type {CalcDamageParams} from "../gen1";
 import type {Species, SpeciesId} from "../species";
 import {merge} from "../gen2";
-import {moveScripts, movePatches, accOverrides} from "./moves";
+import {moveScripts, movePatches, moveOverrides} from "./moves";
 import {Generation3, createItemMergeList} from "../gen3";
 import {Range, dmgFlags, debugLog, idiv, MC, screens, VF} from "../utils";
 import {type ActivePokemon, type Battle, TurnType} from "../battle";
@@ -29,7 +29,7 @@ export class Generation4 extends Generation3 {
     );
     this.moveList = merge(this.moveList, movePatches);
     this.items = merge(this.items, createItemMergeList(items));
-    this.move = merge(this.move, {scripts: moveScripts, accOverrides});
+    this.move = merge(this.move, {scripts: moveScripts, overrides: moveOverrides});
   }
 
   override tryDamage = tryDamage;

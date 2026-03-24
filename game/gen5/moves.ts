@@ -1,12 +1,14 @@
-import type {Move, MoveScripts as MoveScripts, MoveId, PowOverrides} from "../moves";
+import type {Move, MoveScripts, MoveId, MovePropOverrides} from "../moves";
 import type {Pokemon} from "../pokemon";
 import {Range} from "../utils";
 
 export const moveScripts: Partial<MoveScripts> = {};
 
-export const powOverrides: PowOverrides = {
-  crushgrip: getCrushGripPower,
-  wringout: getCrushGripPower,
+export const moveOverrides: Partial<MovePropOverrides> = {
+  pow: {
+    crushgrip: getCrushGripPower,
+    wringout: getCrushGripPower,
+  },
 };
 
 export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {

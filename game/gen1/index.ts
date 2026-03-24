@@ -1,16 +1,7 @@
 import type {Random} from "random";
 import {accumulateBide, tryDamage} from "./damaging";
 import type {ActivePokemon, Battle} from "../battle";
-import {
-  accOverrides,
-  dmgOverrides,
-  moveList,
-  moveScripts,
-  powOverrides,
-  typOverrides,
-  type Move,
-  type MoveId,
-} from "../moves";
+import {moveOverrides, moveList, moveScripts, type Move, type MoveId} from "../moves";
 import {speciesList, type Species, type SpeciesId} from "../species";
 import {
   clamp,
@@ -218,13 +209,7 @@ export class Generation1 {
   ];
   stageMultipliers = stageMultipliers;
   accStageMultipliers = stageMultipliers;
-  move = {
-    scripts: moveScripts,
-    powOverrides,
-    dmgOverrides,
-    accOverrides,
-    typOverrides,
-  };
+  move = {scripts: moveScripts, overrides: moveOverrides};
   rng = new Generation1.Rng();
 
   beforeUseMove(battle: Battle, move: Move, user: ActivePokemon) {
@@ -771,6 +756,14 @@ export class Generation1 {
       battle.info(poke, "rage");
       poke.modStages([["atk", +1]], battle);
     }
+  }
+
+  getMoveAcc(battle: Battle, move: Move) {
+    return (
+      this.move.overrides.acc[battle.moveIdOf(move)!]?.call(move, battle.getWeather()) ??
+      move.acc ??
+      0
+    );
   }
 }
 

@@ -1,4 +1,4 @@
-import type {Move, MoveScripts, MoveId, AccOverrides} from "../moves";
+import type {Move, MoveScripts, MoveId, MovePropOverrides} from "../moves";
 import {Range} from "../utils";
 
 /**
@@ -13,9 +13,11 @@ import {Range} from "../utils";
 
 export const moveScripts: Partial<MoveScripts> = {};
 
-export const accOverrides: AccOverrides = {
-  blizzard(weather) {
-    return weather === "hail" ? undefined : this.acc;
+export const moveOverrides: Partial<MovePropOverrides> = {
+  acc: {
+    blizzard(weather) {
+      return weather === "hail" ? undefined : this.acc;
+    },
   },
 };
 

@@ -1,4 +1,4 @@
-import type {Move, MoveScripts, MoveId, DmgOverrides, AccOverrides} from "../moves";
+import type {Move, MoveScripts, MoveId, MovePropOverrides} from "../moves";
 import {rainAcc} from "../moves";
 import {stageKeys, Range} from "../utils";
 
@@ -147,14 +147,15 @@ export const moveScripts: Partial<MoveScripts> = {
   },
 };
 
-export const dmgOverrides: DmgOverrides = {
-  counter(_battle, user) {
-    return !user.v.lastHitBy || user.v.lastHitBy.special ? 0 : user.v.retaliateDamage * 2;
+export const moveOverrides: Partial<MovePropOverrides> = {
+  dmg: {
+    counter(_battle, user) {
+      return !user.v.lastHitBy || user.v.lastHitBy.special ? 0 : user.v.retaliateDamage * 2;
+    },
   },
-};
-
-export const accOverrides: AccOverrides = {
-  thunder: rainAcc,
+  acc: {
+    thunder: rainAcc,
+  },
 };
 
 export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
