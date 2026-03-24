@@ -8,7 +8,7 @@ import type {
   PokeId,
 } from "./events";
 import {type MoveId, type Move, Range, isSpreadMove} from "./moves";
-import {Pokemon, type ValidatedPokemonDesc} from "./pokemon";
+import type {Pokemon} from "./pokemon";
 import {
   getEffectiveness,
   playerId,
@@ -36,30 +36,22 @@ export type MoveOption = {
 
 export type Options = NonNullable<ActivePokemon["options"]>;
 
-export type PlayerParams = {readonly id: PlayerId; readonly team: ValidatedPokemonDesc[]};
+type PlayerParams = {readonly id: PlayerId; readonly team: Pokemon[]};
 
-export type NonEmptyArray<T> = [T, ...T[]];
+type NonEmptyArray<T> = [T, ...T[]];
 
 export class Player {
   readonly id: PlayerId;
   readonly active: NonEmptyArray<ActivePokemon>;
   readonly team: Pokemon[];
-  readonly teamDesc: ValidatedPokemonDesc[];
   readonly screens: Partial<Record<ScreenId, number>> = {};
   readonly hazards: Partial<Record<HazardId, number>> = {};
 
   sleepClausePoke?: Pokemon;
 
-  constructor(gen: Generation, {id, team}: PlayerParams, doubles: bool) {
+  constructor({id, team}: PlayerParams, doubles: bool) {
     this.id = id;
-    this.team = team.map(p => {
-      const poke = Pokemon.fromDescriptor(gen, p);
-      p.gender = poke.gender;
-      p.form = poke.form;
-      p.shiny = poke.shiny;
-      return poke;
-    });
-    this.teamDesc = team;
+    this.team = team;
     this.active = [new ActivePokemon(this.team[0], this, 0)];
     if (doubles && this.team.length > 1) {
       this.active.push(new ActivePokemon(this.team[1], this, 1));
@@ -167,7 +159,6 @@ type BattleParams = {
 };
 
 export class Battle {
-  readonly players: [Player, Player];
   readonly events: BattleEvent[] = [];
   private readonly moveListToId = new Map<Move, MoveId>();
   turnType = TurnType.Lead;
@@ -183,13 +174,11 @@ export class Battle {
 
   private constructor(
     readonly gen: Generation,
-    readonly p1: PlayerParams,
-    readonly p2: PlayerParams,
+    readonly players: readonly [Player, Player],
     private readonly doubles: bool,
     readonly mods: Mods,
     readonly rng: Random,
   ) {
-    this.players = [new Player(gen, p1, doubles), new Player(gen, p2, doubles)];
     for (const k in this.gen.moveList) {
       this.moveListToId.set(this.gen.moveList[k as MoveId], k as MoveId);
     }
@@ -197,7 +186,9 @@ export class Battle {
   }
 
   static start({gen, player1, player2, doubles, chooseLead, mods, seed}: BattleParams) {
-    const self = new Battle(gen, player1, player2, doubles ?? false, mods ?? {}, new Random(seed));
+    doubles ??= false;
+    const players = [new Player(player1, doubles), new Player(player2, doubles)] as const;
+    const self = new Battle(gen, players, doubles, mods ?? {}, new Random(seed));
     self.players[0].updateOptions(self);
     self.players[1].updateOptions(self);
     if (chooseLead) {

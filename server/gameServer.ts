@@ -1,9 +1,15 @@
 import {type ServerOptions, Server, type Socket as SocketIoClient} from "socket.io";
 
-import type {FormId, Gender, PokemonDesc, ValidatedPokemonDesc} from "~~/game/pokemon";
-import {Battle, type PlayerParams, type Options} from "~~/game/battle";
+import {
+  Pokemon,
+  type FormId,
+  type Gender,
+  type PokemonDesc,
+  type ValidatedPokemonDesc,
+} from "~~/game/pokemon";
+import {Battle, type Options} from "~~/game/battle";
 import {GENERATIONS} from "~~/game/gen";
-import type {BattleEvent, PokeId} from "~~/game/events";
+import type {BattleEvent, PlayerId, PokeId} from "~~/game/events";
 import type {SpeciesId} from "~~/game/species";
 
 import {type TeamProblems, formatDescs} from "./utils/formats";
@@ -131,6 +137,8 @@ export interface ServerMessage {
 
 export type InfoRecord = Record<number, InfoMessage[]>;
 
+export type PlayerParams = {readonly id: PlayerId; readonly team: ValidatedPokemonDesc[]};
+
 declare module "socket.io" {
   interface Socket {
     account?: Account;
@@ -165,21 +173,35 @@ class Room {
   readonly events: BattleEvent[];
   readonly battleRecipe: BattleRecipe;
   readonly reports: BugReports = {};
-  readonly battlers: JoinRoomResponse["battlers"];
+  readonly battlers: Battler[];
 
   constructor(
-    public id: string,
-    public server: GameServer,
+    public readonly id: string,
+    public readonly server: GameServer,
     format: FormatId,
     player1: PlayerParams,
     player2: PlayerParams,
     seed = crypto.randomUUID(),
   ) {
     const fmt = formatInfo[format];
+    const gen = GENERATIONS[fmt.generation]!;
+    const cvtAndModify = ({id, team}: PlayerParams) => {
+      return {
+        id,
+        team: team.map(p => {
+          const poke = Pokemon.fromDescriptor(gen, p);
+          p.shiny = poke.shiny;
+          p.form = poke.form;
+          p.gender = poke.gender;
+          return poke;
+        }),
+      };
+    };
+
     const [battle, turn0] = Battle.start({
-      gen: GENERATIONS[fmt.generation]!,
-      player1,
-      player2,
+      gen,
+      player1: cvtAndModify(player1),
+      player2: cvtAndModify(player2),
       doubles: fmt.doubles,
       chooseLead: !!fmt.chooseLead,
       mods: fmt.mods,
@@ -190,18 +212,36 @@ class Room {
     this.events = turn0;
     this.spectatorRoom = `spectator:${this.id}`;
     this.battleRecipe = {seed, player1, player2, choices: {}, format};
-
-    this.battlers = this.battle.players.map(pl => {
-      // admin might become stale but not a huge deal
+    this.battlers = [player1, player2].map(pl => {
       const acc = this.server.getAccount(pl.id)!;
+      // admin might become stale but not a huge deal
+      return {name: acc.name, id: acc.id, admin: acc.admin};
+    });
+
+    console.log(
+      `New room '${this.id}' hosting battle with seed '${seed}' [players ${this.battlers[0].name}, ${this.battlers[1].name}]`,
+    );
+  }
+
+  getTeam(id: PlayerId) {
+    if (id === this.battleRecipe.player1.id) {
+      return this.battleRecipe.player1.team;
+    } else if (id === this.battleRecipe.player2.id) {
+      return this.battleRecipe.player2.team;
+    }
+  }
+
+  getBattlerInfo(): JoinRoomResponse["battlers"] {
+    return this.battlers.map(pl => {
+      const team = this.getTeam(pl.id)!;
       return {
-        name: acc.name,
-        id: acc.id,
-        admin: acc.admin,
-        nPokemon: pl.teamDesc.length,
+        id: pl.id,
+        name: pl.name,
+        admin: pl.admin,
+        nPokemon: team.length,
         teamPreview:
-          fmt.chooseLead === "teamPreview"
-            ? pl.team.map(p => ({
+          formatInfo[this.battleRecipe.format].chooseLead === "teamPreview"
+            ? team.map(p => ({
                 speciesId: p.speciesId,
                 form: SHOW_SPECIES_FORM.has(p.speciesId) ? p.form : undefined,
                 hasItem: !!p.item,
@@ -210,10 +250,6 @@ class Room {
             : undefined,
       };
     });
-
-    console.log(
-      `New room '${this.id}' hosting battle with seed '${seed}' [players ${player1.id}, ${player2.id}]`,
-    );
   }
 
   resetTimerState() {
@@ -335,13 +371,13 @@ class Room {
     }
   }
 
-  makeDescriptor() {
+  makeDescriptor(): RoomDescriptor {
     return {
       id: this.id,
       battlers: this.battlers,
       format: this.battleRecipe.format,
       finished: this.battle.finished,
-    } satisfies RoomDescriptor;
+    };
   }
 
   saveChoice(accountId: string, choice: Choice) {
@@ -567,14 +603,14 @@ export class GameServer extends Server<ClientMessage, ServerMessage> {
 
       const player = socket.account && room.battle.findPlayer(socket.account.id);
       return ack({
-        team: player?.teamDesc,
+        team: socket.account && room.getTeam(socket.account.id),
         options: player?.active?.map(a => a.options)?.filter(a => !!a),
         events: Battle.censorEvents(room.events.slice(eventStartIndex), player),
         chats: room.chats,
         format: room.battleRecipe.format,
         timer: room.timerInfo(),
         finished: room.battle.finished,
-        battlers: room.battlers,
+        battlers: room.getBattlerInfo(),
       });
     });
     socket.on("leaveRoom", async (roomId, ack) => {

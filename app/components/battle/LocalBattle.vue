@@ -20,7 +20,8 @@
 import {Battle as BattleEngine, type Options} from "~~/game/battle";
 import type {BattleEvent} from "~~/game/events";
 import {GENERATIONS} from "~~/game/gen";
-import type {BattleRecipe, Choice, InfoRecord} from "~~/server/gameServer";
+import {Pokemon} from "~~/game/pokemon";
+import type {PlayerParams, BattleRecipe, Choice, InfoRecord} from "~~/server/gameServer";
 
 const {recipe: battleParams} = defineProps<{recipe: BattleRecipe}>();
 
@@ -138,13 +139,19 @@ const nextTurn = () => {
 };
 
 const init = (turnNo: number) => {
+  const load = ({id, team}: PlayerParams) => ({
+    id,
+    team: team.map(p => Pokemon.fromDescriptor(gen, p)),
+  });
+
   const fmt = formatInfo[battleParams.format];
+  const gen = GENERATIONS[fmt.generation]!;
   [engine, events.value] = BattleEngine.start({
-    gen: GENERATIONS[fmt.generation]!,
-    player1: battleParams.player1,
-    player2: battleParams.player2,
+    gen,
+    player1: load(battleParams.player1),
+    player2: load(battleParams.player2),
     doubles: fmt.doubles,
-    chooseLead: fmt.chooseLead,
+    chooseLead: !!fmt.chooseLead,
     mods: fmt.mods,
     seed: battleParams.seed,
   });
