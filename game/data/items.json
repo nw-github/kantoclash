@@ -30,7 +30,12 @@
   "protein": {"name": "Protein", "fling": 30},
   "iron": {"name": "Iron", "fling": 30},
   "carbos": {"name": "Carbos", "fling": 30},
-  "luckypunch": {"name": "Lucky Punch", "fling": 40},
+  "luckypunch": {
+    "name": "Lucky Punch",
+    "fling": 40,
+    "desc": "Boosts Chansey's critical hit ratio by 2.",
+    "boostCrit": "chansey"
+  },
   "calcium": {"name": "Calcium", "fling": 30},
   "rarecandy": {"name": "Rare Candy", "fling": 30},
   "xaccuracy": {"name": "X Accuracy", "fling": 30},
@@ -146,7 +151,11 @@
     "desc": "Boosts Normal-type moves by 10%.",
     "typeBoost": {"type": "normal", "percent": 10}
   },
-  "stick": {"name": "Stick", "desc": "Boosts Farfetch'd's critical hit ratio by 2."},
+  "stick": {
+    "name": "Stick",
+    "desc": "Boosts Farfetch'd's critical hit ratio by 2.",
+    "boostCrit": "farfetchd"
+  },
   "smokeball": {"name": "Smoke Ball", "fling": 30},
   "nevermeltice": {
     "name": "NeverMeltIce",

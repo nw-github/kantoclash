@@ -33,6 +33,7 @@ export type ItemData = {
   boostStats?: Partial<
     Record<SpeciesId, {stats: StatStageId[]; amount: number; transformed: bool}>
   >;
+  boostCrit?: SpeciesId;
 };
 
 export const itemList = __items as Record<ItemId, ItemData>;

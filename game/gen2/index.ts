@@ -71,10 +71,7 @@ export class Generation2 extends Generation1 {
         stages++;
       }
       stages += user.base.item?.raiseCrit ?? 0;
-      if (user.base.itemId === "stick" && user.base.real.speciesId === "farfetchd") {
-        stages += 2;
-      }
-      if (user.base.itemId === "luckypunch" && user.base.real.speciesId === "chansey") {
+      if (user.base.item?.boostCrit && user.base.item?.boostCrit === user.base.real.speciesId) {
         stages += 2;
       }
       return battle.rand255Good(floatTo255(critStages[Math.min(stages, 4)] * 100));

@@ -63,15 +63,9 @@ export const getRandomPokemon = (
         ) {
           return false;
         } else if (
-          (item === "metalpowder" && id !== "ditto") ||
-          (item === "quickpowder" && id !== "ditto") ||
-          (item === "lightball" && id !== "pikachu") ||
-          (item === "thickclub" && id !== "marowak") ||
-          (item === "luckypunch" && id !== "chansey") ||
-          (item === "deepseascale" && id !== "clamperl") ||
-          (item === "deepseatooth" && id !== "clamperl") ||
-          (item === "souldew" && id !== "latios" && id !== "latias") ||
-          (item === "stick" && id !== "farfetchd")
+          (itemData.drive && id !== "genesect") ||
+          (itemData.boostStats && !itemData.boostStats[id]) ||
+          (itemData.boostCrit && itemData.boostCrit !== id)
         ) {
           return false;
         } else if (

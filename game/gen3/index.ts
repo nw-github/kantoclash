@@ -80,10 +80,7 @@ export class Generation3 extends Generation2 {
         stages += 2;
       }
       stages += user.base.item?.raiseCrit ?? 0;
-      if (user.base.itemId === "stick" && user.base.real.speciesId === "farfetchd") {
-        stages += 2;
-      }
-      if (user.base.itemId === "luckypunch" && user.base.real.speciesId === "chansey") {
+      if (user.base.item?.boostCrit && user.base.item?.boostCrit === user.base.real.speciesId) {
         stages += 2;
       }
       if (user.hasAbility("superluck")) {
