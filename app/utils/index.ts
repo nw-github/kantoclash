@@ -1,6 +1,6 @@
 import type {Mods} from "~~/game/battle";
 import type {StageId} from "~~/game/utils";
-import type {Generation} from "~~/game/gen1";
+import type {Generation} from "~~/game/gen";
 import {parseBlob} from "music-metadata";
 
 export const randChoice = <T>(arr: T[]) => arr[Math.floor(Math.random() * arr.length)];

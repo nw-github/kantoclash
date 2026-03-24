@@ -61,7 +61,7 @@
 
 <script setup lang="ts">
 import type {Species, SpeciesId} from "~~/game/species";
-import type {Generation} from "~~/game/gen1";
+import type {Generation} from "~~/game/gen";
 import type {FormId, Gender} from "~~/game/pokemon";
 
 const emit = defineEmits<{select: [Species]}>();

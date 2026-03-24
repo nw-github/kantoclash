@@ -1,32 +1,29 @@
 import speciesPatches from "./species.json";
 import items from "./items.json";
-import {GENERATION1, type Generation} from "../gen1";
 import type {Species, SpeciesId} from "../species";
-import {merge, type GenPatches} from "../gen2";
+import {merge} from "../gen2";
 import {movePatches, moveScripts, powOverrides} from "./moves";
 import {createItemMergeList} from "../gen3";
-import {GENERATION4} from "../gen4";
-import type {MoveScripts} from "../moves";
+import {Generation4} from "../gen4";
 
-const createGeneration = (): Generation => {
-  const patches: Partial<GenPatches> = {
-    id: 5,
-    speciesList: speciesPatches as Partial<
-      Record<SpeciesId, Partial<Species>>
-    > as typeof GENERATION1.speciesList,
-    moveList: movePatches as typeof GENERATION1.moveList,
-    lastMoveIdx: GENERATION1.moveList.zenheadbutt.idx!,
-    lastPokemon: 649,
-    move: {
-      scripts: moveScripts as MoveScripts,
-      powOverrides,
-    },
-    camouflageType: "ground",
-    naturePowerMove: "earthquake",
-    items: createItemMergeList(items),
-  };
+export class Generation5 extends Generation4 {
+  // prettier-ignore
+  static override Rng = class extends super.Rng {
+  }
 
-  return merge(patches as any, GENERATION4);
-};
+  override id = 5;
+  override lastMoveIdx = this.moveList.workup.idx!;
+  override lastPokemon = 649;
+  override rng = new Generation5.Rng();
 
-export const GENERATION5 = createGeneration();
+  constructor() {
+    super();
+    this.speciesList = merge(
+      this.speciesList,
+      speciesPatches as Partial<Record<SpeciesId, Partial<Species>>>,
+    );
+    this.moveList = merge(this.moveList, movePatches);
+    this.items = merge(this.items, createItemMergeList(items));
+    this.move = merge(this.move, {scripts: moveScripts, powOverrides});
+  }
+}

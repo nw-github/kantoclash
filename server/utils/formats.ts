@@ -1,5 +1,5 @@
 import {choosableForms, Nature, natureTable, type ValidatedPokemonDesc} from "~~/game/pokemon";
-import {moveList, type MoveId, type Move} from "~~/game/moves";
+import type {MoveId, Move} from "~~/game/moves";
 import {
   type AbilityId,
   speciesList,
@@ -165,12 +165,13 @@ export const getRandomPokemon = (
 };
 
 const getRandomMoves = (
+  gen: Generation,
   count: number,
   moves: readonly MoveId[],
   validMove: (m: Move, id: MoveId) => bool,
 ) => {
   return moves
-    .filter(id => validMove(moveList[id], id))
+    .filter(id => validMove(gen.moveList[id], id))
     .sort(() => Math.random() - 0.5)
     .slice(0, count);
 };
@@ -209,9 +210,9 @@ export const defaultCustomize = (
     valid = Object.keys(gen.moveList).filter(id => isValidSketchMove(gen, id)) as MoveId[];
   }
 
-  const moves = getRandomMoves(4, valid, (move, id) => !isBadMove(s, move, id));
+  const moves = getRandomMoves(gen, 4, valid, (move, id) => !isBadMove(s, move, id));
   const stab = s.moves.filter(m => {
-    const move = moveList[m];
+    const move = gen.moveList[m];
     return (
       (move.power ?? 0) > 40 &&
       s.types.includes(move.type) &&

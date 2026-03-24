@@ -907,12 +907,7 @@ export class Battle {
       }
     }
 
-    if (!move.kind) {
-      return move.exec(this, user, targets, moveIndex);
-    }
-
-    const func = (this as any).gen.moveFunctions[move.kind];
-    return func.call(move, this, user, targets, moveIndex);
+    return (this.gen.move.scripts[move.kind] as any).call(move, this, user, targets, moveIndex);
   }
 
   callMove(move: Move, user: ActivePokemon, moveIndex?: number) {

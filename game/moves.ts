@@ -9,7 +9,7 @@ export type MoveId = keyof typeof rawMoveList;
 export type MoveScriptId = (typeof rawMoveList)[MoveId]["kind"];
 
 export interface BaseMove {
-  readonly kind: string;
+  readonly kind: MoveScriptId | "phaze" | "switch";
   readonly idx?: number;
   readonly name: string;
   readonly pp: number;
@@ -184,6 +184,16 @@ export interface DamagingMove extends BaseMove {
   readonly fixedDamage?: number;
 }
 
+interface NaturePowerMove extends BaseMove {
+  readonly kind: "naturepower";
+  readonly calls: MoveId;
+}
+
+interface CamouflageMove extends BaseMove {
+  readonly kind: "camouflage";
+  readonly camouflageType: Type;
+}
+
 export type Move =
   | VolatileFlagMove
   | ConfuseMove
@@ -205,7 +215,9 @@ export type Move =
   | SwaggerMove
   | ForesightMove
   | SwapMove
-  | HealingWishMove;
+  | HealingWishMove
+  | CamouflageMove
+  | NaturePowerMove;
 
 type Effect =
   | Status
@@ -1181,9 +1193,9 @@ export const moveScripts: MoveScripts = {
   camouflage(battle, user) {
     battle.event({
       type: "conversion",
-      types: [battle.gen.camouflageType],
+      types: [this.camouflageType],
       src: user.id,
-      volatiles: [user.setVolatile("types", [battle.gen.camouflageType])],
+      volatiles: [user.setVolatile("types", [this.camouflageType])],
     });
   },
   charge(battle, user) {
@@ -1232,7 +1244,7 @@ export const moveScripts: MoveScripts = {
   },
   naturepower(battle, user) {
     // TODO: should target the opponent across from the user
-    battle.callMove(battle.gen.moveList[battle.gen.naturePowerMove], user);
+    battle.callMove(battle.gen.moveList[this.calls], user);
   },
   recycle(battle, user) {
     if (!user.consumed) {

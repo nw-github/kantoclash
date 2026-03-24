@@ -644,7 +644,9 @@ export class GameServer extends Server<ClientMessage, ServerMessage> {
         } else if (choice.type === "forfeit") {
           ok = true;
         }
-      } catch {
+      } catch (ex) {
+        console.log(`Ending ${room.id} due to an exception while choosing: `, ex);
+
         room.saveChoice(player.id, choice);
         room.broadcastTurn(room.battle.forceEnd("error"));
         return ack();
@@ -662,7 +664,9 @@ export class GameServer extends Server<ClientMessage, ServerMessage> {
         if (turn) {
           room.broadcastTurn(turn);
         }
-      } catch {
+      } catch (ex) {
+        console.log(`Ending ${room.id} due to an exception: `, ex);
+
         room.reportBug("", "The game was automatically terminated due to an exception.");
         room.broadcastTurn(room.battle.forceEnd("error"));
       }

@@ -66,8 +66,7 @@
 <script setup lang="ts">
 import type {MoveOption} from "~~/game/battle";
 import {abilityList} from "~~/game/species";
-import {Range} from "~~/game/moves";
-import {MC, type Type, type Weather} from "~~/game/utils";
+import {MC, Range, type Type, type Weather} from "~~/game/utils";
 import type {ItemData} from "~~/game/item";
 import type {Pokemon} from "~~/game/pokemon";
 

@@ -3371,7 +3371,14 @@ export const rawMoveList = {
     effect: [30, [["acc", -1]]],
     kingsRock: true,
   },
-  naturepower: {kind: "naturepower", name: "Nature Power", pp: 20, type: "normal", range: "Self"},
+  naturepower: {
+    kind: "naturepower",
+    name: "Nature Power",
+    pp: 20,
+    type: "normal",
+    range: "Self",
+    calls: "swift",
+  },
   needlearm: {
     kind: "damage",
     name: "Needle Arm",

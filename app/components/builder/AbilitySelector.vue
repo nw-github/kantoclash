@@ -40,7 +40,7 @@
 </template>
 
 <script setup lang="ts">
-import type {Generation} from "~~/game/gen1";
+import type {Generation} from "~~/game/gen";
 import type {PokemonDesc} from "~~/game/pokemon";
 import {abilityList, type AbilityId, type Species, type SpeciesId} from "~~/game/species";
 

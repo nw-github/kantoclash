@@ -45,6 +45,7 @@ export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
   megadrain: {pp: 15},
   memento: {acc: 100},
   mindreader: {acc: 0},
+  naturepower: {calls: "triattack"},
   needlearm: {flag: "none"},
   nightmare: {acc: 100},
   odorsleuth: {acc: 0},

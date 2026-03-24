@@ -20,7 +20,8 @@
 
 <script setup lang="ts">
 import {GENERATIONS} from "~~/game/gen";
-import {Range, type MoveId} from "~~/game/moves";
+import {Range} from "~~/game/utils";
+import type {MoveId} from "~~/game/moves";
 
 const move = ref<MoveId>("absorb");
 const genNumber = ref(5);
