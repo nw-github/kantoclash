@@ -11,7 +11,7 @@ export function checkUsefulness(
   user: ActivePokemon,
   target: ActivePokemon,
 ) {
-  let type = self.getType ? self.getType(user.base, battle.getWeather()) : self.type;
+  let type = battle.gen.getMoveType(self, user.base, battle.getWeather());
   let fail = false;
   if (self.flag === "beatup") {
     type = "???";
@@ -44,12 +44,12 @@ export function checkUsefulness(
     if (battle.gen.id === 1 || eff !== 0) {
       eff = 1;
     }
-  } else if (self.getDamage) {
+  } else if (battle.gen.move.overrides.dmg[self.id!]) {
     if ((battle.gen.id === 1 && self.flag !== "ohko") || eff !== 0) {
       eff = 1;
     }
 
-    const result = self.getDamage(battle, user, target);
+    const result = battle.gen.getMoveDamage(self, battle, user, target);
     if (result === 0) {
       fail = true;
     }
@@ -87,11 +87,11 @@ export function getDamage(
   if (self.fixedDamage) {
     dmg = self.fixedDamage;
     isCrit = false;
-  } else if (self.getDamage) {
-    dmg = self.getDamage(battle, user, target);
+  } else if (battle.gen.move.overrides.dmg[self.id!]) {
+    dmg = battle.gen.getMoveDamage(self, battle, user, target) ?? 0;
     isCrit = false;
   } else {
-    let pow = extras.power ?? (self.getPower ? self.getPower(user.base, target.base) : self.power);
+    let pow = extras.power ?? battle.gen.getMoveBasePower(self, user.base, target.base);
     let rand: false | Random = battle.rng;
     if (self.flag === "norand" || self.flag === "spitup") {
       isCrit = false;

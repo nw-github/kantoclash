@@ -304,10 +304,8 @@ export async function startBot(botType: BotType, format?: FormatId) {
       chat(message) {
         const dox = (a: Pokemon) => {
           const name = (m: MoveId) => {
-            const move = gen.moveList[m];
-            const typ = "getType" in move && move.getType!(a, mgr.weather);
-            if (typ) {
-              return m + typ;
+            if (gen.move.overrides.type[m]) {
+              return m + gen.getMoveType(gen.moveList[m], a, mgr.weather);
             }
             return m;
           };
@@ -447,10 +445,10 @@ const botFunctions = {
 
       const opponentPoke = opponentActive.base;
       const move = gen.moveList[id];
-      if ((move.power ?? 0) > 1) {
+      if (move.kind === "damage") {
         const eff = getEffectiveness(
           gen.typeChart,
-          ("getType" in move && move.getType?.(active.base, mgr.weather)) || move.type,
+          gen.getMoveType(move, active.base, mgr.weather),
           opponentActive.v.types ?? opponentPoke.species.types,
         );
         let score = 10;

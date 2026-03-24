@@ -85,28 +85,22 @@ const {option, user, weather, opponent} = defineProps<{
 }>();
 const move = computed(() => user.base.gen.moveList[option.move]);
 const info = computed(() => {
-  let type = move.value.type;
-
-  if (move.value.kind === "damage" && move.value.getType) {
-    type = move.value.getType(user.base, weather);
-  }
-
+  const type = user.base.gen.getMoveType(move.value, user.base, weather);
   const powers: {pokes: Pokemon[]; pow?: number; acc?: number}[] = [];
   const item = user.base.item;
   for (const opp of opponent?.active?.toReversed() ?? []) {
-    let pow = move.value.power;
     if (!opp || opp.fainted) {
       continue;
     }
 
-    if (move.value.kind === "damage" && move.value.getPower) {
-      pow = move.value.getPower(user.base, opp.base);
+    let pow = move.value.power;
+    if (move.value.kind === "damage") {
+      pow = user.base.gen.getMoveBasePower(move.value, user.base, opp.base);
     }
 
-    pow = pow ? applyPowerModifiers(pow, type, item) : undefined;
+    pow = pow && applyPowerModifiers(pow, type, item);
 
-    let acc = move.value.getAcc ? move.value.getAcc(weather) : move.value.acc;
-    acc = applyAccuracyModifiers(acc, item);
+    const acc = applyAccuracyModifiers(user.base.gen.getMoveAcc(move.value, weather), item);
     const other = powers.find(r => r.pow == pow && r.acc == acc);
     if (other) {
       other.pokes.push(opp.base);

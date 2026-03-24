@@ -1,4 +1,4 @@
-import type {MoveId, Move, DamagingMove} from "~~/game/moves";
+import type {MoveId, Move} from "~~/game/moves";
 import {abilityList, type Species, type SpeciesId} from "~~/game/species";
 import {HP_TYPES, statKeys, type StatId, type Stats, type Type} from "~~/game/utils";
 import {Nature, Pokemon, type PokemonDesc} from "~~/game/pokemon";
@@ -70,14 +70,13 @@ export const descToString = (format: FormatId, poke: PokemonDesc) => {
   for (const move of poke.moves) {
     const id = normalizeName(move);
     if (id === "hiddenpower") {
-      const type = (gen.moveList.hiddenpower as DamagingMove).getType!(
-        Pokemon.fromDescriptor(gen, {
-          speciesId: "abra",
-          ivs: poke.ivs ?? {},
-          moves: [],
-          level: 100,
-        }),
-      );
+      const fakeUser = Pokemon.fromDescriptor(gen, {
+        speciesId: "abra",
+        ivs: poke.ivs ?? {},
+        moves: [],
+        level: 100,
+      });
+      const type = gen.getMoveType(gen.moveList.hiddenpower, fakeUser, undefined);
       result += ` - Hidden Power [${toTitleCase(type)}]\n`;
     } else if ((gen.moveList as Record<string, Move>)[id]) {
       result += ` - ${gen.moveList[id as MoveId].name}\n`;

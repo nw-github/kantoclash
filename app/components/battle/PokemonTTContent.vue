@@ -71,13 +71,7 @@ const statClass = (stat: StatStageId) => {
   return poke.stats[stat] > active.v.stats[stat] ? "down" : "up";
 };
 
-const getType = (id: MoveId) => {
-  const move = poke.gen.moveList[id];
-  if (move.kind === "damage" && poke && move.getType) {
-    return move.getType(poke, weather);
-  }
-  return move.type;
-};
+const getType = (id: MoveId) => poke.gen.getMoveType(poke.gen.moveList[id], poke, weather);
 </script>
 
 <style scoped>

@@ -1,7 +1,14 @@
 import type {Random} from "random";
 import {accumulateBide, tryDamage} from "./damaging";
 import type {ActivePokemon, Battle} from "../battle";
-import {moveOverrides, moveList, moveScripts, type Move, type MoveId} from "../moves";
+import {
+  moveOverrides,
+  moveList,
+  moveScripts,
+  type Move,
+  type MoveId,
+  type DamagingMove,
+} from "../moves";
 import {speciesList, type Species, type SpeciesId} from "../species";
 import {
   clamp,
@@ -19,7 +26,7 @@ import {
   type Weather,
 } from "../utils";
 import {itemList, type ItemId} from "../item";
-import {UNOWN_FORM, type FormId, type Gender, type Nature} from "../pokemon";
+import {UNOWN_FORM, type Pokemon, type FormId, type Gender, type Nature} from "../pokemon";
 import type {DamageReason} from "../events";
 
 export type TypeChart = Record<Type, Partial<Record<Type, number>>>;
@@ -761,6 +768,18 @@ export class Generation1 {
 
   getMoveAcc(move: Move, weather: Weather | undefined) {
     return this.move.overrides.acc[move.id!]?.call(move, weather) ?? move.acc;
+  }
+
+  getMoveType(move: Move, user: Pokemon, weather: Weather | undefined) {
+    return this.move.overrides.type[move.id!]?.call(move, user, weather) ?? move.type;
+  }
+
+  getMoveBasePower(move: DamagingMove, user: Pokemon, target: Pokemon | undefined) {
+    return this.move.overrides.pow[move.id!]?.call(move, user, target) ?? move.power;
+  }
+
+  getMoveDamage(move: DamagingMove, battle: Battle, user: ActivePokemon, target: ActivePokemon) {
+    return this.move.overrides.dmg[move.id!]?.call(move, battle, user, target);
   }
 }
 
