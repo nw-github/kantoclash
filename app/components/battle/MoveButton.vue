@@ -117,7 +117,6 @@ const targeting = computed(() => targetingMap[move.value.range]);
 
 const applyPowerModifiers = (pow: number, type: Type, item?: ItemData) => {
   if (
-    pow !== 1 &&
     item?.typeBoost?.type === type &&
     (!item.typeBoost.species || item.typeBoost.species.includes(user.base.speciesId))
   ) {

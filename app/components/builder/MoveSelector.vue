@@ -76,6 +76,9 @@ const {poke, gen, idx, format} = defineProps<{
 const open = ref(false);
 const species = computed<Species | undefined>(() => gen.speciesList[poke?.speciesId as SpeciesId]);
 const items = computed(() => Object.entries(gen.moveList) as [MoveId, Move][]);
+const fakeTarget = computed(() => {
+  return Pokemon.fromDescriptor(gen, {speciesId: "abra", ivs: {}, moves: [], level: 100});
+});
 const trailing = computed(() => {
   const q = normalizeName(query.value);
   const move = q && q in gen.moveList ? gen.moveList[q as MoveId] : undefined;
@@ -93,7 +96,7 @@ const trailing = computed(() => {
     level: poke.level ?? formatInfo[format].maxLevel,
   });
   const type = gen.getMoveType(move, base, undefined);
-  const pow = gen.getMoveBasePower(move, base, undefined);
+  const pow = move.power && gen.getMoveBasePower(move, base, fakeTarget.value);
   if (type === move.type && pow === move.power) {
     return;
   }

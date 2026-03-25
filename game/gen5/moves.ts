@@ -70,6 +70,6 @@ export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
   wrap: {acc: 90},
 };
 
-function getCrushGripPower(_user: Pokemon, target?: Pokemon) {
-  return target ? Math.max(1, Math.floor(120 * (target.hp / target.stats.hp))) : 0;
+function getCrushGripPower(_user: Pokemon, target: Pokemon) {
+  return Math.max(1, Math.floor(120 * (target.hp / target.stats.hp)));
 }

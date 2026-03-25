@@ -774,7 +774,7 @@ export class Generation1 {
     return this.move.overrides.type[move.id!]?.call(move, user, weather) ?? move.type;
   }
 
-  getMoveBasePower(move: DamagingMove, user: Pokemon, target: Pokemon | undefined) {
+  getMoveBasePower(move: DamagingMove, user: Pokemon, target: Pokemon) {
     return this.move.overrides.pow[move.id!]?.call(move, user, target) ?? move.power;
   }
 

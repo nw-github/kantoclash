@@ -136,7 +136,7 @@ export const moveOverrides: Partial<MovePropOverrides> = {
         (((user.ivs.spd >> 1) & 1) << 5);
       return Math.floor((v * 40) / 63) + 30;
     },
-    lowkick: (_user, target) => getLowKickPower(target?.species?.weight ?? 0),
+    lowkick: (_user, target) => getLowKickPower(target.species.weight),
     return: user => Math.max(1, idiv(user.friendship, 2.5)),
   },
   type: {

@@ -306,7 +306,7 @@ export type MovePropOverrides = {
   dmg: PR<
     (this: DamagingMove, battle: Battle, user: ActivePokemon, target: ActivePokemon) => number
   >;
-  pow: PR<(this: DamagingMove, user: Pokemon, target?: Pokemon) => number>;
+  pow: PR<(this: DamagingMove, user: Pokemon, target: Pokemon) => number>;
   acc: PR<(this: Move, weather: Weather | undefined) => number | undefined>;
   type: PR<(this: Move, user: Pokemon, weather: Weather | undefined) => Type>;
   dmgPreCheck: PR<
@@ -1408,20 +1408,20 @@ export const moveOverrides: MovePropOverrides = {
     waterspout: user => Math.max(1, Math.floor((user.hp * 150) / user.stats.hp)),
     // Gen IV
     crushgrip: getCrushGripPower,
-    grassknot: (_user, target) => getLowKickPower((target as any)?.species?.weight ?? 0),
+    grassknot: (_user, target) => getLowKickPower(target.species.weight),
     wringout: getCrushGripPower,
     // Gen V
     acrobatics(user) {
-      return user.item ? this.power : this.power * 2;
+      return !user.itemId ? this.power * 2 : this.power;
     },
     brine(_user, target) {
-      return target?.belowHp(2) ? this.power * 2 : this.power;
+      return target.belowHp(2) ? this.power * 2 : this.power;
     },
     hex(_, target) {
-      return target?.status ? this.power * 2 : this.power;
+      return target.status ? this.power * 2 : this.power;
     },
     venoshock(_user, target) {
-      return target?.status === "psn" || target?.status === "tox" ? this.power * 2 : this.power;
+      return target.status === "psn" || target.status === "tox" ? this.power * 2 : this.power;
     },
   },
   dmg: {
