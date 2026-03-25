@@ -1,5 +1,5 @@
 import type {Move, MoveScripts, MoveId, MovePropOverrides} from "../moves";
-import {rainAcc} from "../moves";
+import {thunderAccOverride} from "../moves";
 import {stageKeys, Range} from "../utils";
 
 export const moveScripts: Partial<MoveScripts> = {
@@ -150,7 +150,7 @@ export const moveOverrides: Partial<MovePropOverrides> = {
     },
   },
   acc: {
-    thunder: rainAcc,
+    thunder: thunderAccOverride,
   },
 };
 

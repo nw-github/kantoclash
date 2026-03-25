@@ -277,7 +277,7 @@ const createMoveList = (list: any) => {
     if (move.kind === "volatile") {
       move.flag = VF[move.flag];
     }
-    if (move.kind === "damage") {
+    if (move.category) {
       move.category = MC[move.category];
     }
   }
@@ -1460,7 +1460,7 @@ export const moveOverrides: MovePropOverrides = {
     endeavor: (_, user, target) => Math.max(0, target.base.hp - user.base.hp),
   },
   acc: {
-    hurricane: rainAcc,
+    hurricane: thunderAccOverride,
   },
   type: {
     hiddenpower(user) {
@@ -1546,7 +1546,7 @@ export function getLowKickPower(weight: number): number {
   }
 }
 
-export function rainAcc(this: Move, weather?: Weather) {
+export function thunderAccOverride(this: Move, weather?: Weather) {
   switch (weather) {
     case "rain":
       return undefined;
