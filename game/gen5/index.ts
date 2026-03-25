@@ -6,10 +6,12 @@ import {movePatches, moveScripts, moveOverrides} from "./moves";
 import {createItemMergeList} from "../gen3";
 import {Generation4} from "../gen4";
 
+// prettier-ignore
+class Rng extends Generation4.Rng {
+}
+
 export class Generation5 extends Generation4 {
-  // prettier-ignore
-  static override Rng = class extends super.Rng {
-  }
+  static override Rng = Rng;
 
   override id = 5;
   override lastMoveIdx = this.moveList.workup.idx!;

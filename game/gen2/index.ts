@@ -58,39 +58,41 @@ type DeepPartial<T> = {
 
 export const merge = <T extends object>(a: T, b: DeepPartial<T>): T => __merge(b, a) as any;
 
-export class Generation2 extends Generation1 {
-  // prettier-ignore
-  static override Rng = class extends super.Rng {
-    override maxThrash = 2;
+// prettier-ignore
+class Rng extends Generation1.Rng {
+  override maxThrash = 2;
 
-    override tryDefrost(battle: Battle) { return battle.rand255(25) }
+  override tryDefrost(battle: Battle) { return battle.rand255(25) }
 
-    override tryCrit(battle: Battle, user: ActivePokemon, hc: boolean) {
-      let stages = hc ? 2 : 0;
-      if (user.v.hasFlag(VF.focusEnergy)) {
-        stages++;
-      }
-      stages += user.base.item?.raiseCrit ?? 0;
-      if (user.base.item?.boostCrit && user.base.item?.boostCrit === user.base.real.speciesId) {
-        stages += 2;
-      }
-      return battle.rand255Good(floatTo255(critStages[Math.min(stages, 4)] * 100));
+  override tryCrit(battle: Battle, user: ActivePokemon, hc: boolean) {
+    let stages = hc ? 2 : 0;
+    if (user.v.hasFlag(VF.focusEnergy)) {
+      stages++;
     }
-
-    override sleepTurns(battle: Battle) {
-      let rng = battle.rng.int(0, 255);
-      let sleepTurns = rng & 7;
-      while (!sleepTurns || sleepTurns === 7) {
-        rng = (rng * 5 + 1) & 255;
-        sleepTurns = rng & 7;
-      }
-      return sleepTurns;
+    stages += user.base.item?.raiseCrit ?? 0;
+    if (user.base.item?.boostCrit && user.base.item?.boostCrit === user.base.real.speciesId) {
+      stages += 2;
     }
-
-    override disableTurns(battle: Battle) { return battle.rng.int(2, 8) + 1; }
-
-    override thrashDuration(battle: Battle) { return battle.rng.int(2, 3); }
+    return battle.rand255Good(floatTo255(critStages[Math.min(stages, 4)] * 100));
   }
+
+  override sleepTurns(battle: Battle) {
+    let rng = battle.rng.int(0, 255);
+    let sleepTurns = rng & 7;
+    while (!sleepTurns || sleepTurns === 7) {
+      rng = (rng * 5 + 1) & 255;
+      sleepTurns = rng & 7;
+    }
+    return sleepTurns;
+  }
+
+  override disableTurns(battle: Battle) { return battle.rng.int(2, 8) + 1; }
+
+  override thrashDuration(battle: Battle) { return battle.rng.int(2, 3); }
+}
+
+export class Generation2 extends Generation1 {
+  static override Rng = Rng;
 
   override id = 2;
   override lastMoveIdx = this.moveList.zapcannon.idx!;

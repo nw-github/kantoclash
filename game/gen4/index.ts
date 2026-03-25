@@ -10,11 +10,13 @@ import {type ActivePokemon, type Battle, TurnType} from "../battle";
 import {tryDamage} from "./damaging";
 import type {Move} from "../moves";
 
+// prettier-ignore
+class Rng extends Generation3.Rng {
+  override disableTurns(battle: Battle) { return battle.rng.int(4, 7) + 1; }
+}
+
 export class Generation4 extends Generation3 {
-  // prettier-ignore
-  static override Rng = class extends super.Rng {
-    override disableTurns(battle: Battle) { return battle.rng.int(4, 7) + 1; }
-  }
+  static override Rng = Rng;
 
   override id = 4;
   override lastMoveIdx = this.moveList.zenheadbutt.idx!;

@@ -70,28 +70,30 @@ export const createItemMergeList = (items: any) => {
   return items as typeof itemList;
 };
 
-export class Generation3 extends Generation2 {
-  // prettier-ignore
-  static override Rng = class extends super.Rng {
-    override tryDefrost(battle: Battle) { return battle.rand100(20); }
-    override tryCrit(battle: Battle, user: ActivePokemon, hc: boolean) {
-      let stages = hc ? 2 : 0;
-      if (user.v.hasFlag(VF.focusEnergy)) {
-        stages += 2;
-      }
-      stages += user.base.item?.raiseCrit ?? 0;
-      if (user.base.item?.boostCrit && user.base.item?.boostCrit === user.base.real.speciesId) {
-        stages += 2;
-      }
-      if (user.hasAbility("superluck")) {
-        stages++;
-      }
-      return battle.rand100(critStages[Math.min(stages, 4)] * 100);
+// prettier-ignore
+class Rng extends Generation2.Rng {
+  override tryDefrost(battle: Battle) { return battle.rand100(20); }
+  override tryCrit(battle: Battle, user: ActivePokemon, hc: boolean) {
+    let stages = hc ? 2 : 0;
+    if (user.v.hasFlag(VF.focusEnergy)) {
+      stages += 2;
     }
-    override sleepTurns(battle: Battle) { return battle.rng.int(1, 4); }
-    override disableTurns(battle: Battle) { return battle.rng.int(2, 5) + 1; }
-    override bideDuration() { return 2; }
+    stages += user.base.item?.raiseCrit ?? 0;
+    if (user.base.item?.boostCrit && user.base.item?.boostCrit === user.base.real.speciesId) {
+      stages += 2;
+    }
+    if (user.hasAbility("superluck")) {
+      stages++;
+    }
+    return battle.rand100(critStages[Math.min(stages, 4)] * 100);
   }
+  override sleepTurns(battle: Battle) { return battle.rng.int(1, 4); }
+  override disableTurns(battle: Battle) { return battle.rng.int(2, 5) + 1; }
+  override bideDuration() { return 2; }
+}
+
+export class Generation3 extends Generation2 {
+  static override Rng = Rng;
 
   override id = 3;
   override lastMoveIdx = this.moveList.yawn.idx!;

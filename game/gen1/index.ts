@@ -157,44 +157,46 @@ export type CalcDamageParams = {
   technician?: bool;
 };
 
-export class Generation1 {
-  // prettier-ignore
-  static Rng = class {
-    maxThrash = 3;
+// prettier-ignore
+class Rng {
+  maxThrash = 3;
 
-    tryDefrost(_: Battle) { return false; }
-    tryQuickClaw(battle: Battle) { return battle.rand255Good(60); }
-    tryKingsRock(battle: Battle) { return battle.rand255Good(30); }
-    tryFocusBand(battle: Battle) { return battle.rand255Good(30); }
-    tryCrit(battle: Battle, user: ActivePokemon, hc: bool) {
-      const baseSpe = user.base.species.stats.spe;
-      const focus = user.v.hasFlag(VF.focusEnergy);
-      if (hc) {
-        return battle.rand255(focus ? 4 * Math.floor(baseSpe / 4) : 8 * Math.floor(baseSpe / 2));
-      } else {
-        return battle.rand255(Math.floor(focus ? baseSpe / 8 : baseSpe / 2));
-      }
+  tryDefrost(_: Battle) { return false; }
+  tryQuickClaw(battle: Battle) { return battle.rand255Good(60); }
+  tryKingsRock(battle: Battle) { return battle.rand255Good(30); }
+  tryFocusBand(battle: Battle) { return battle.rand255Good(30); }
+  tryCrit(battle: Battle, user: ActivePokemon, hc: bool) {
+    const baseSpe = user.base.species.stats.spe;
+    const focus = user.v.hasFlag(VF.focusEnergy);
+    if (hc) {
+      return battle.rand255(focus ? 4 * Math.floor(baseSpe / 4) : 8 * Math.floor(baseSpe / 2));
+    } else {
+      return battle.rand255(Math.floor(focus ? baseSpe / 8 : baseSpe / 2));
     }
-    tryFullPara(battle: Battle) { return battle.rand100(25); }
-    tryAttract(battle: Battle) { return battle.rand100(50); }
-    tryShedSkin(battle: Battle) { return battle.rand100((1 / 3) * 100); }
-    tryContactStatus(battle: Battle) { return battle.rand100((1 / 3) * 100); }
-    sleepTurns(battle: Battle) {
-      // https://www.smogon.com/forums/threads/outdated-new-rby-sleep-mechanics-discovery.3745689/
-      let rng = battle.rng.int(0, 255);
-      let sleepTurns = rng & 7;
-      while (!sleepTurns) {
-        rng = (rng * 5 + 1) & 255;
-        sleepTurns = rng & 7;
-      }
-      return sleepTurns;
-    }
-    disableTurns(battle: Battle) { return battle.rng.int(1, 8); }
-    multiHitCount(battle: Battle) { return randChoiceWeighted(battle.rng, [2, 3, 4, 5], [37.5, 37.5, 12.5, 12.5]); }
-    bideDuration(battle: Battle) { return battle.rng.int(2, 3) + 1; }
-    uproarDuration(battle: Battle) { return battle.rng.int(2, 5); }
-    thrashDuration(battle: Battle) { return battle.rng.int(2, this.maxThrash); }
   }
+  tryFullPara(battle: Battle) { return battle.rand100(25); }
+  tryAttract(battle: Battle) { return battle.rand100(50); }
+  tryShedSkin(battle: Battle) { return battle.rand100((1 / 3) * 100); }
+  tryContactStatus(battle: Battle) { return battle.rand100((1 / 3) * 100); }
+  sleepTurns(battle: Battle) {
+    // https://www.smogon.com/forums/threads/outdated-new-rby-sleep-mechanics-discovery.3745689/
+    let rng = battle.rng.int(0, 255);
+    let sleepTurns = rng & 7;
+    while (!sleepTurns) {
+      rng = (rng * 5 + 1) & 255;
+      sleepTurns = rng & 7;
+    }
+    return sleepTurns;
+  }
+  disableTurns(battle: Battle) { return battle.rng.int(1, 8); }
+  multiHitCount(battle: Battle) { return randChoiceWeighted(battle.rng, [2, 3, 4, 5], [37.5, 37.5, 12.5, 12.5]); }
+  bideDuration(battle: Battle) { return battle.rng.int(2, 3) + 1; }
+  uproarDuration(battle: Battle) { return battle.rng.int(2, 5); }
+  thrashDuration(battle: Battle) { return battle.rng.int(2, this.maxThrash); }
+}
+
+export class Generation1 {
+  static Rng = Rng;
 
   id = 1;
   maxIv = 15;
