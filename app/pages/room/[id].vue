@@ -40,7 +40,7 @@ const myId = useMyId();
 const {track: currentTrack} = useBGMusic();
 const battle = useTemplateRef("battle");
 const loading = ref(true);
-const players = ref<Players>(new Players());
+const players = reactive(new Players());
 const events = ref<BattleEvent[]>([]);
 const options = reactive<Partial<Record<number, Options[]>>>({});
 const chats = reactive<InfoRecord>({});
@@ -158,11 +158,11 @@ const displayErrorToast = (err?: string) => {
 
 const processMessage = (message: InfoMessage) => {
   if (message.type === "userJoin") {
-    const player = players.value.get(message.id);
+    const player = players.get(message.id);
     if (player) {
       player.connected = true;
     } else if (message.isSpectator) {
-      players.value.add(message.id, {
+      players.add(message.id, {
         name: message.name,
         isSpectator: message.isSpectator,
         nPokemon: message.nPokemon,
@@ -175,7 +175,7 @@ const processMessage = (message: InfoMessage) => {
       });
     }
   } else if (message.type === "userLeave") {
-    players.value.get(message.id).connected = false;
+    players.get(message.id).connected = false;
   }
 };
 
@@ -220,12 +220,12 @@ const onJoinRoom = (resp: JoinRoomResponse | "bad_room") => {
 
   const fmt = formatInfo[resp.format];
   for (const {id, name, nPokemon, admin, teamPreview} of resp.battlers) {
-    const player = players.value.get(id);
+    const player = players.get(id);
     if (player) {
       continue;
     }
 
-    players.value.add(id, {
+    players.add(id, {
       name,
       admin,
       isSpectator: false,
@@ -241,7 +241,7 @@ const onJoinRoom = (resp: JoinRoomResponse | "bad_room") => {
 
   if (needsFreshStart) {
     events.value = resp.events;
-    const self = players.value.get(myId.value);
+    const self = players.get(myId.value);
     if (self) {
       self.teamDesc = resp.team ?? [];
     }
@@ -326,8 +326,8 @@ const onInfo = (roomId: string, message: InfoMessage, turn: number) => {
 };
 
 const timers = (timers?: BattleTimers) => {
-  for (const player in players.value.items) {
-    players.value.items[player].time = timers?.[player];
+  for (const player in players.items) {
+    players.items[player].time = timers?.[player];
   }
 };
 </script>

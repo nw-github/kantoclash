@@ -25,7 +25,7 @@ import type {PlayerParams, BattleRecipe, Choice, InfoRecord} from "~~/server/gam
 
 const {recipe: battleParams} = defineProps<{recipe: BattleRecipe}>();
 
-const players = ref(new Players());
+const players = reactive(new Players());
 const events = ref<BattleEvent[]>([]);
 const options = reactive<Partial<Record<number, Options[]>>>({});
 const chats = reactive<InfoRecord>({});
@@ -41,10 +41,10 @@ let engine: BattleEngine;
 
 onMounted(() => {
   const loadNames = async () => {
-    for (const player in players.value.items) {
+    for (const player in players.items) {
       try {
         const {name} = await $fetch(`/api/users/${player}`);
-        players.value.get(player).name = name;
+        players.get(player).name = name;
       } catch {
         continue;
       }
@@ -56,7 +56,7 @@ onMounted(() => {
   }
 
   for (const player of [battleParams.player1, battleParams.player2]) {
-    players.value.add(player.id, {
+    players.add(player.id, {
       name: `#ID${player.id}`,
       isSpectator: false,
       nPokemon: player.team.length,
@@ -83,12 +83,12 @@ const makeChoice = (playerId: string, choice: Choice) => {
         return false;
       case "move":
         if (!player.chooseMove(choice.who, engine, choice.moveIndex, choice.target)) {
-          console.log(`Player ${players.value.get(player.id).name}: Choice failed: `, {...choice});
+          console.log(`Player ${players.get(player.id).name}: Choice failed: `, {...choice});
         }
         break;
       case "switch":
         if (!player.chooseSwitch(choice.who, engine, choice.pokeIndex)) {
-          console.log(`Player ${players.value.get(player.id).name}: Choice failed: `, {...choice});
+          console.log(`Player ${players.get(player.id).name}: Choice failed: `, {...choice});
         }
         break;
     }

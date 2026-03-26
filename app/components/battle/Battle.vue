@@ -50,6 +50,10 @@
         </div>
 
         <div class="absolute bottom-0 z-0 flex flex-row pb-2 justify-end w-full gap-2 items-center">
+          <TouchTooltip v-if="clientMgr.trickRoom" text="Trick Room">
+            <UIcon class="size-6 text-pink-400" name="material-symbols:swap-calls" />
+          </TouchTooltip>
+
           <TouchTooltip v-if="weather" :text="weatherData[weather].tooltip">
             <UIcon
               class="size-6"
@@ -167,7 +171,7 @@
       <Textbox
         :players
         :chats
-        :victor
+        :victor="clientMgr.victor"
         :perspective
         :format
         :smooth-scroll
@@ -187,7 +191,7 @@
           class="rounded-none"
           :players
           :chats
-          :victor
+          :victor="clientMgr.victor"
           :perspective
           :format
           :smooth-scroll
@@ -252,7 +256,7 @@ const slideoverOpen = ref(false);
 const smoothScroll = ref(true);
 const skipToEvent = ref(0);
 const currentTurnNo = ref(0);
-const weather = ref<Weather>();
+const weather = computed(() => clientMgr.weather);
 const field = useTemplateRef("field");
 
 const goToTurnModal = useOverlay().create(GoToTurnModal);
@@ -262,8 +266,7 @@ const playToIndex = ref(0);
 const paused = ref(false);
 const playingEvents = ref(true);
 
-const victor = ref<string>();
-const isBattleOver = computed(() => finished || !!victor.value);
+const isBattleOver = computed(() => finished || !!clientMgr.victor);
 const isBattler = computed(() => players.get(myId) && !players.get(myId).isSpectator);
 const perspective = ref("");
 const isSingles = computed(() => players.get(perspective.value)?.active?.length === 1);
@@ -313,73 +316,75 @@ watchDeep(chats, () => {
 
 const isLive = () => skipToEvent.value < nextEvent.value && isMounted.value;
 
-const clientMgr = new ClientManager({
-  playCry(speciesId, pitchDown) {
-    if (isLive()) {
-      const species = gen.value.speciesList[speciesId];
-      let sprite = species.cry ?? species.dexId.toString();
-      if (speciesId === "shayminsky") {
-        sprite += "-sky";
+const clientMgr = reactive(
+  new ClientManager({
+    playCry(speciesId, pitchDown) {
+      if (isLive()) {
+        const species = gen.value.speciesList[speciesId];
+        let sprite = species.cry ?? species.dexId.toString();
+        if (speciesId === "shayminsky") {
+          sprite += "-sky";
+        }
+        return sound.play("cries", {sprite, volume: sfxVol.value, detune: pitchDown ? -350 : 0});
       }
-      return sound.play("cries", {sprite, volume: sfxVol.value, detune: pitchDown ? -350 : 0});
-    }
-  },
-  playShiny: _id => sound.play("shiny", {volume: sfxVol.value}),
-  playDmg(eff) {
-    if (isLive()) {
-      const name = eff > 1 ? "supereffective" : eff < 1 ? "ineffective" : "neutral";
-      return sound.play(name, {volume: sfxVol.value});
-    }
-  },
-  async playAnimation(id, params) {
-    if (!isLive()) {
-      params.cb?.exec();
-      if (params.anim !== "attack" && params.anim !== "spikes" && params.anim !== "transform") {
-        field.value?.playAnimation(id, params)?.complete();
+    },
+    playShiny: _id => sound.play("shiny", {volume: sfxVol.value}),
+    playDmg(eff) {
+      if (isLive()) {
+        const name = eff > 1 ? "supereffective" : eff < 1 ? "ineffective" : "neutral";
+        return sound.play(name, {volume: sfxVol.value});
       }
-    } else {
-      const animation = field.value?.playAnimation(id, params);
-      if (!animation) {
+    },
+    async playAnimation(id, params) {
+      if (!isLive()) {
         params.cb?.exec();
-        console.log("wtf");
-        return;
+        if (params.anim !== "attack" && params.anim !== "spikes" && params.anim !== "transform") {
+          field.value?.playAnimation(id, params)?.complete();
+        }
+      } else {
+        const animation = field.value?.playAnimation(id, params);
+        if (!animation) {
+          params.cb?.exec();
+          console.log("wtf");
+          return;
+        }
+
+        animations.push(animation);
+        await animation;
+        params.cb?.exec();
+
+        const idx = animations.indexOf(animation);
+        if (idx !== -1) {
+          animations.splice(idx, 1);
+        }
+
+        if (isLive() && params.anim === "faint") {
+          await delay(400);
+        }
+      }
+    },
+    displayEvent(e) {
+      const ev = {...e, time: Date.now()} as UIBattleEvent;
+      if ("src" in ev && ev.src) {
+        ev[ev.src] = players.poke(ev.src as PokeId)!.base.name;
+      }
+      if ("target" in ev && ev.target) {
+        ev[ev.target] = players.poke(ev.target as PokeId)!.base.name;
       }
 
-      animations.push(animation);
-      await animation;
-      params.cb?.exec();
-
-      const idx = animations.indexOf(animation);
-      if (idx !== -1) {
-        animations.splice(idx, 1);
+      htmlTurns.value.at(-1)!.push(ev);
+      if (isLive()) {
+        liveEvents.value.push(ev);
       }
-
-      if (isLive() && params.anim === "faint") {
-        await delay(400);
-      }
-    }
-  },
-  displayEvent(e) {
-    const ev = {...e, time: Date.now()} as UIBattleEvent;
-    if ("src" in ev) {
-      ev[ev.src] = players.poke(ev.src as PokeId)!.base.name;
-    }
-    if ("target" in ev && ev.target) {
-      ev[ev.target] = players.poke(ev.target as PokeId)!.base.name;
-    }
-
-    htmlTurns.value.at(-1)!.push(ev);
-    if (isLive()) {
-      liveEvents.value.push(ev);
-    }
-  },
-  preloadSprite(poke, speciesId, female, shiny, form) {
-    const back = playerId(poke) === perspective.value;
-    const img = new Image();
-    img.src = getSpritePath(speciesId, female, shiny, back, form);
-    return img;
-  },
-});
+    },
+    preloadSprite(poke, speciesId, female, shiny, form) {
+      const back = playerId(poke) === perspective.value;
+      const img = new Image();
+      img.src = getSpritePath(speciesId, female, shiny, back, form);
+      return img;
+    },
+  }),
+);
 
 const goToTurn = async () => {
   const max = events.findLast(ev => ev.type === "next_turn")?.turn;
@@ -454,14 +459,6 @@ onMounted(async () => {
 
     await clientMgr.handleEvent(e, players, gen.value);
 
-    if (victor.value !== clientMgr.victor) {
-      victor.value = clientMgr.victor;
-    }
-
-    if (weather.value !== clientMgr.weather) {
-      weather.value = clientMgr.weather;
-    }
-
     if (
       isLive() &&
       e.type !== "sv" &&
@@ -479,7 +476,6 @@ onMounted(async () => {
   const reset = () => {
     htmlTurns.value = [[]];
     currentTurnNo.value = 0;
-    weather.value = undefined;
     clientMgr.reset(players, gen.value);
   };
 
