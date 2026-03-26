@@ -130,7 +130,7 @@ export class ActivePokemon {
       form: next.form,
       indexInTeam: this.owner.team.indexOf(next),
       why: phazer ? "phaze" : old.inBatonPass !== "hwish" ? old.inBatonPass : undefined,
-      volatiles: [{id: this.id, v: this.getClientVolatiles(next, battle)}],
+      volatiles: [{id: this.id, v: this.getClientVolatiles(battle, next)}],
     });
 
     this.freeOpponents(battle);
@@ -313,7 +313,7 @@ export class ActivePokemon {
       shiny: this.base.shiny,
       gender: this.base.gender,
       form: this.v.form,
-      volatiles: [{id: this.id, v: this.getClientVolatiles(this.base, battle)}],
+      volatiles: [{id: this.id, v: this.getClientVolatiles(battle)}],
     });
   }
 
@@ -528,7 +528,7 @@ export class ActivePokemon {
         volatiles: [
           {
             id: this.id,
-            v: {...this.getClientVolatiles(this.base, battle), ability: this.v.ability},
+            v: {...this.getClientVolatiles(battle), ability: this.v.ability},
           },
         ],
         permanent: true,
@@ -1255,7 +1255,8 @@ export class ActivePokemon {
     }
   }
 
-  getClientVolatiles(base: Pokemon, battle: Battle): ChangedVolatiles[number]["v"] {
+  getClientVolatiles(battle: Battle, base?: Pokemon): ChangedVolatiles[number]["v"] {
+    base ??= this.base;
     return {
       status: base.status || null,
       stages: {...this.v.stages},

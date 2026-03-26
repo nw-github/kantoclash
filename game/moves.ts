@@ -761,7 +761,7 @@ export const moveScripts: MoveScripts = {
     battle.info(
       user,
       this.message,
-      [user, target].map(t => ({id: t.id, v: t.getClientVolatiles(user.base, battle)})),
+      [user, target].map(t => ({id: t.id, v: t.getClientVolatiles(battle)})),
     );
   },
   hwish(battle, user) {
@@ -839,7 +839,7 @@ export const moveScripts: MoveScripts = {
     battle.info(
       user,
       "haze",
-      targets.map(t => ({id: t.id, v: t.getClientVolatiles(user.base, battle)})),
+      targets.map(t => ({id: t.id, v: t.getClientVolatiles(battle)})),
     );
   },
   leechseed(battle, user, [target]) {
