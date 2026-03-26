@@ -270,7 +270,7 @@ export class Generation4 extends Generation3 {
 
       // TODO: lockon/mind reader?
 
-      if (poke.v.drowsy && --poke.v.drowsy === 0) {
+      if (poke.base.hp && poke.v.drowsy && --poke.v.drowsy === 0) {
         battle.event({type: "sv", volatiles: [{id: poke.id, v: {flags: poke.v.cflags}}]});
         if (!poke.base.status && poke.getAbility()?.preventsStatus !== "slp") {
           poke.status("slp", battle, poke, {ignoreSafeguard: true});
