@@ -96,7 +96,7 @@ const trailing = computed(() => {
     level: poke.level ?? formatInfo[format].maxLevel,
   });
   const type = gen.getMoveType(move, base, undefined);
-  const pow = move.power && gen.getMoveBasePower(move, base, fakeTarget.value);
+  const pow = gen.getMoveBasePower(move, base, fakeTarget.value);
   if (type === move.type && pow === move.power) {
     return;
   }

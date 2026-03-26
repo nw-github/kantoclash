@@ -744,7 +744,7 @@ const randomizeCurrent = (keepSpecies: bool) => {
 };
 
 const teamTextChange = () => {
-  const [parsed] = parseTeams(teamText.value);
+  const [parsed] = parseTeams(teamText.value, team.format);
   if (!parsed) {
     return;
   }

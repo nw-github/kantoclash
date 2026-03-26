@@ -237,7 +237,11 @@ export const parsePokemon = (format: FormatId, src: string): TeamPokemonDesc => 
   return desc;
 };
 
-export const parseTeams = (src: string) => {
+export const parseTeams = (src: string, fallback: FormatId = "g1_standard") => {
+  const smogonName: Partial<Record<string, FormatId>> = {
+    gen1ou: "g1_standard",
+  };
+
   const res = src
     .split("\n\n")
     .map(t => t.trim())
@@ -245,7 +249,7 @@ export const parseTeams = (src: string) => {
   const teams: Team[] = [];
   for (let i = 0; i < res.length; i++) {
     let name = "New Team";
-    let format: FormatId = "g1_standard";
+    let format: FormatId = fallback;
 
     const match = res[i].match(teamRegex);
     if (match) {
@@ -254,8 +258,8 @@ export const parseTeams = (src: string) => {
       const fmt = match[1]?.trim();
       if (fmt && battleFormats.includes(fmt)) {
         format = fmt;
-      } else if (fmt === "gen1ou") {
-        format = "g1_standard";
+      } else if (smogonName[fmt]) {
+        format = smogonName[fmt];
       }
       ++i;
     }
