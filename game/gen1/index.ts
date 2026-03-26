@@ -772,15 +772,15 @@ export class Generation1 {
   }
 
   getMoveAcc(move: Move, weather: Weather | undefined) {
-    return this.move.overrides.acc[move.id!]?.call(move, weather) ?? move.acc;
+    return callOr(move.acc, this.move.overrides.acc[move.id!], move, weather);
   }
 
   getMoveType(move: Move, user: Pokemon, weather: Weather | undefined) {
-    return this.move.overrides.type[move.id!]?.call(move, user, weather) ?? move.type;
+    return callOr(move.type, this.move.overrides.type[move.id!], move, user, weather);
   }
 
   getMoveBasePower(move: DamagingMove, user: Pokemon, target: Pokemon) {
-    return this.move.overrides.pow[move.id!]?.call(move, user, target) ?? move.power;
+    return callOr(move.power, this.move.overrides.pow[move.id!], move, user, target);
   }
 
   getMoveDamage(move: DamagingMove, battle: Battle, user: ActivePokemon, target: ActivePokemon) {
@@ -796,4 +796,13 @@ export const shouldReturn = (battle: Battle, pursuit: bool) => {
       p.getOptions(battle) &&
       (!pursuit || p.choice?.move?.kind !== "switch" || p.choice.executed),
   );
+};
+
+const callOr = <T, Args extends any[], R>(
+  _default: R,
+  func: ((...args: Args) => R) | undefined,
+  self: T,
+  ...args: Args
+) => {
+  return func ? func.call(self, ...args) : _default;
 };
