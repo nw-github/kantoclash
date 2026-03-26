@@ -83,12 +83,12 @@ const makeChoice = (playerId: string, choice: Choice) => {
         return false;
       case "move":
         if (!player.chooseMove(choice.who, engine, choice.moveIndex, choice.target)) {
-          console.log(`Player ${player}: Choice failed: `, choice);
+          console.log(`Player ${players.value.get(player.id).name}: Choice failed: `, {...choice});
         }
         break;
       case "switch":
         if (!player.chooseSwitch(choice.who, engine, choice.pokeIndex)) {
-          console.log(`Player ${player}: Choice failed: `, choice);
+          console.log(`Player ${players.value.get(player.id).name}: Choice failed: `, {...choice});
         }
         break;
     }

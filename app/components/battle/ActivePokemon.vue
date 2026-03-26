@@ -354,7 +354,10 @@ const badges: {cond: () => bool; props: BadgeProps}[] = [
     cond: cfc(CVF.encore),
     props: {color: "old-sky", icon: "material-symbols:celebration", variant: "subtle"},
   },
-  {cond: cfc(CVF.disabled), props: {color: "error", icon: "fe:disabled", variant: "subtle"}},
+  {
+    cond: cfc(CVF.disabled),
+    props: {color: "error", icon: "material-symbols:block-outline", variant: "subtle"},
+  },
   {
     cond: cfc(CVF.taunt),
     props: {color: "error", icon: "fluent-emoji-high-contrast:anger-symbol", variant: "subtle"},

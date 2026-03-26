@@ -11,10 +11,13 @@
       label-key="name"
     >
       <template #item="{item: team}">
-        <div>
-          <span class="truncate text-xs sm:text-base">{{ team.name }}</span>
+        <div class="w-full">
+          <div class="flex items-center justify-between">
+            <span class="truncate text-xs sm:text-base">{{ team.name }}</span>
+            <span class="truncate text-xs text-muted">{{ formatInfo[team.format].name }}</span>
+          </div>
 
-          <div class="flex justify-center">
+          <div class="flex">
             <BoxSprite
               v-for="({speciesId, form}, i) in team.pokemon"
               :key="i"
@@ -50,7 +53,11 @@ const model = defineModel<Team | undefined>();
 const {format} = defineProps<{format: FormatId; disabled?: boolean}>();
 
 const myTeams = useMyTeams();
-const validTeams = computed(() => myTeams.value.filter(team => team.format === format));
+const validTeams = computed(() => {
+  return myTeams.value
+    .filter(team => formatInfo[team.format].generation === formatInfo[format].generation)
+    .sort(team => (team.format === format ? -1 : 1));
+});
 
 const breakpoint = useBreakpoints(breakpointsTailwind);
 const lessThanSm = breakpoint.smaller("sm");
