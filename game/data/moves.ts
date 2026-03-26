@@ -5044,6 +5044,7 @@ export const rawMoveList = {
     range: "Adjacent",
     category: "special",
     power: 0,
+    acc: 100,
     contact: true,
     kingsRock: true,
   },
