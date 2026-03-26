@@ -158,9 +158,13 @@ export function getDamage(
 
     const explosion = self.flag === "explosion" ? 2 : 1;
     const spc = battle.gen.isSpecial(self, type);
+    // Before Gen V, beat up uses the *species* base attack and defense for damage calculation
+    // https://github.com/pret/pokecrystal/blob/c73ab9e9c9a8b6eaee38f19fdcf956c1baf268ea/engine/battle/move_effects/beat_up.asm#L169
+    // https://github.com/pret/pokeemerald/blob/efc15141285c74c2569a1ef22c48126aaf93c3ee/src/battle_script_commands.c#L8988
+    // https://github.com/pret/pokeheartgold/blob/a6a9655094d23d501b1477831d107f9d37727f33/src/battle/battle_command.c#L3730
     // eslint-disable-next-line prefer-const
     let [atk, def] = extras.beatUp
-      ? ([extras.beatUp.stats.atk, target.base.stats.def] as const)
+      ? ([extras.beatUp.species.stats.atk, target.base.species.stats.def] as const)
       : battle.gen.getDamageVariables(spc, battle, user, target, isCrit);
     if ((type === "ice" || type === "fire") && target.hasAbility("thickfat")) {
       atk -= Math.floor(atk / 2);
