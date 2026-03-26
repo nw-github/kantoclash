@@ -80,7 +80,7 @@
       </div>
     </div>
     <div v-else-if="currOption" class="grid gap-2 sm:grid-cols-[1fr_1.5fr] h-min">
-      <div class="flex flex-col gap-1 sm:gap-2">
+      <div class="sm:flex flex-col gap-1 sm:gap-2 grid grid-cols-2">
         <template v-for="(option, i) in currOption.moves">
           <MoveButton
             v-if="option.display && currOptionPoke?.owned"

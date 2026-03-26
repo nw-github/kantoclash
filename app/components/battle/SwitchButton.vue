@@ -13,7 +13,12 @@
           <GenderIcon class="size-4" :gender="gen1Gender[poke.speciesId] ?? poke.gender" />
           <StatusOrFaint :poke size="xs" class="ml-auto" />
         </div>
-        <UProgress :model-value="poke.hp" :max="poke.stats.hp" :color="barCol" class="w-full h-1" />
+        <UProgress
+          :model-value="poke.hp"
+          :max="poke.stats.hp"
+          :color="barCol"
+          class="w-full h-0.5 sm:h-0.75"
+        />
       </div>
     </UButton>
 

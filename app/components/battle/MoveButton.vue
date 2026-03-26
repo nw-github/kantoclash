@@ -11,9 +11,9 @@
         <div class="pl-0.5 pr-1">
           <TypeBadge :type="info.type" image />
         </div>
-        <span class="text-sm sm:text-base truncate">{{ move.name }}</span>
+        <span class="text-xs sm:text-base truncate">{{ move.name }}</span>
       </div>
-      <span class="text-xs">
+      <span class="text-[calc(var(--text-xs)*0.75)] sm:text-xs">
         {{ option.pp !== undefined ? option.pp : "--" }}/{{ user.base.gen.getMaxPP(move) }}
       </span>
     </UButton>
