@@ -37,20 +37,20 @@ const critStages: Record<number, number> = {
   [4]: 1 / 2,
 };
 
-const stageMultipliers: Record<number, number> = {
-  [-6]: 2 / 8,
-  [-5]: 2 / 7,
-  [-4]: 2 / 6,
-  [-3]: 2 / 5,
-  [-2]: 2 / 4,
-  [-1]: 2 / 3,
-  0: 2 / 2,
-  1: 3 / 2,
-  2: 4 / 2,
-  3: 5 / 2,
-  4: 6 / 2,
-  5: 7 / 2,
-  6: 8 / 2,
+const stageMultipliers: Record<number, [num: number, div: number]> = {
+  [-6]: [2, 8],
+  [-5]: [2, 7],
+  [-4]: [2, 6],
+  [-3]: [2, 5],
+  [-2]: [2, 4],
+  [-1]: [2, 3],
+  0: [2, 2],
+  1: [3, 2],
+  2: [4, 2],
+  3: [5, 2],
+  4: [6, 2],
+  5: [7, 2],
+  6: [8, 2],
 };
 
 enum BetweenTurns {
@@ -149,14 +149,13 @@ export class Generation3 extends Generation2 {
     isCrit: boolean | undefined,
   ) {
     const def = stat === "def" || stat === "spd";
-    let value = Math.floor(
-      poke.base.stats[stat] * poke.base.gen.stageMultipliers[poke.v.stages[stat]],
-    );
+    const [num, div] = poke.base.gen.stageMultipliers[poke.v.stages[stat]];
+    let value = idiv(poke.base.stats[stat] * num, div);
 
     if (poke.base.status === "brn" && stat === "atk" && !poke.hasAbility("guts")) {
-      value = Math.max(Math.floor(value / 2), 1);
+      value = Math.max(idiv(value, 2), 1);
     } else if (poke.base.status === "par" && stat === "spe") {
-      value = Math.max(Math.floor(value / 4), 1);
+      value = Math.max(idiv(value, 4), 1);
     }
 
     if (isCrit && def && poke.v.stages[stat] > 0) {
@@ -165,7 +164,7 @@ export class Generation3 extends Generation2 {
     if (isCrit && !def && poke.v.stages[stat] < 0) {
       value = poke.base.stats[stat];
       if (poke.base.status === "brn" && stat === "atk") {
-        value = Math.max(Math.floor(value / 2), 1);
+        value = Math.max(idiv(value, 2), 1);
       }
     }
     if (stat === "spe" && poke.owner.screens.tailwind) {
@@ -281,9 +280,8 @@ export class Generation3 extends Generation2 {
       eva = 0;
     }
 
-    let acc = Math.floor(
-      chance * this.accStageMultipliers![clamp(user.v.stages.acc - eva, -6, 6)]!,
-    );
+    const [num, div] = this.accStageMultipliers[clamp(user.v.stages.acc - eva, -6, 6)];
+    let acc = idiv(chance * num, div);
     const targetItem = target.base.item;
     if (targetItem?.reduceAcc) {
       acc -= Math.floor(acc * (targetItem.reduceAcc / 100));

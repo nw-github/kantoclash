@@ -84,20 +84,20 @@ const typeChart: TypeChart = {
   "???": {},
 };
 
-const stageMultipliers: Record<number, number> = {
-  [-6]: 25 / 100,
-  [-5]: 28 / 100,
-  [-4]: 33 / 100,
-  [-3]: 40 / 100,
-  [-2]: 50 / 100,
-  [-1]: 66 / 100,
-  0: 100 / 100,
-  1: 150 / 100,
-  2: 200 / 100,
-  3: 250 / 100,
-  4: 300 / 100,
-  5: 350 / 100,
-  6: 400 / 100,
+const stageMultipliers: Record<number, [num: number, div: number]> = {
+  [-6]: [25, 100],
+  [-5]: [28, 100],
+  [-4]: [33, 100],
+  [-3]: [40, 100],
+  [-2]: [50, 100],
+  [-1]: [66, 100],
+  0: [100, 100],
+  1: [150, 100],
+  2: [200, 100],
+  3: [250, 100],
+  4: [300, 100],
+  5: [350, 100],
+  6: [400, 100],
 };
 
 enum BetweenTurns {
@@ -118,8 +118,9 @@ export const scaleAccuracy255 = (acc: number, user: ActivePokemon, target: Activ
   }
 
   const m = user.base.gen.accStageMultipliers;
-  acc *= m[userStages] * m[-targetStages];
-  return clamp(Math.floor(acc), 1, 255);
+  acc = idiv(acc * m[userStages][0], m[userStages][1]);
+  acc = idiv(acc * m[-targetStages][0], m[-targetStages][1]);
+  return clamp(acc, 1, 255);
 };
 
 export type CalcDamageParams = {

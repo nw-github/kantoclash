@@ -29,20 +29,20 @@ const critStages: Record<number, number> = {
   [4]: 1 / 2,
 };
 
-const accStageMultipliers: Record<number, number> = {
-  [-6]: 33 / 100,
-  [-5]: 36 / 100,
-  [-4]: 43 / 100,
-  [-3]: 50 / 100,
-  [-2]: 60 / 100,
-  [-1]: 75 / 100,
-  0: 100 / 100,
-  1: 133 / 100,
-  2: 266 / 100,
-  3: 200 / 100,
-  4: 233 / 100,
-  5: 266 / 100,
-  6: 300 / 100,
+const accStageMultipliers: Record<number, [num: number, div: number]> = {
+  [-6]: [33, 100],
+  [-5]: [36, 100],
+  [-4]: [43, 100],
+  [-3]: [50, 100],
+  [-2]: [60, 100],
+  [-1]: [75, 100],
+  0: [100, 100],
+  1: [133, 100],
+  2: [266, 100],
+  3: [200, 100],
+  4: [233, 100],
+  5: [266, 100],
+  6: [300, 100],
 };
 
 const __merge = createDefu((obj, key, value) => {
@@ -337,9 +337,8 @@ export class Generation2 extends Generation1 {
     const def = stat === "def" || stat === "spd";
     const screen = def && !!poke.owner.screens[stat === "def" ? "reflect" : "light_screen"];
 
-    let value = Math.floor(
-      poke.base.stats[stat] * poke.base.gen.stageMultipliers[poke.v.stages[stat]],
-    );
+    const [num, div] = poke.base.gen.stageMultipliers[poke.v.stages[stat]];
+    let value = idiv(poke.base.stats[stat] * num, div);
 
     if (poke.base.status === "brn" && stat === "atk" && !poke.hasAbility("guts")) {
       value = Math.max(Math.floor(value / 2), 1);

@@ -93,8 +93,10 @@
               {{
                 roundTo(
                   stage === "acc" || stage === "eva"
-                    ? poke.base.gen.accStageMultipliers[val]
-                    : poke.base.gen.stageMultipliers[val],
+                    ? poke.base.gen.accStageMultipliers[val][0] /
+                        poke.base.gen.accStageMultipliers[val][1]
+                    : poke.base.gen.stageMultipliers[val][0] /
+                        poke.base.gen.stageMultipliers[val][1],
                   2,
                 )
               }}x {{ statShortName![stage] }}

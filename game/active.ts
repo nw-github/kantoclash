@@ -1057,9 +1057,8 @@ export class ActivePokemon {
   }
 
   recalculateStat(battle: Battle, stat: StatStageId, negative: bool) {
-    this.v.stats[stat] = Math.floor(
-      this.base.stats[stat] * battle.gen.stageMultipliers[this.v.stages[stat]],
-    );
+    const [num, div] = battle.gen.stageMultipliers[this.v.stages[stat]];
+    this.v.stats[stat] = idiv(this.base.stats[stat] * num, div);
 
     // https://www.smogon.com/rb/articles/rby_mechanics_guide#stat-mechanics
     if (negative && battle.gen.id === 1) {
