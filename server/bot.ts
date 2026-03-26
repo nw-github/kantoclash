@@ -10,7 +10,7 @@ import {CVF, getEffectiveness, playerId, VF} from "~~/game/utils";
 import type {MoveId} from "~~/game/moves";
 import {type Generation, GENERATIONS} from "~~/game/gen";
 
-import {type FormatId, formatInfo} from "~/utils/shared";
+import {type FormatId, formatInfo, tryReconnect} from "~/utils/shared";
 import {convertTeam, parseTeams, type Team} from "~/utils/pokemon";
 import {ClientManager, Players} from "~/utils/client";
 
@@ -117,6 +117,16 @@ export async function startBot(botType: BotType, format?: FormatId) {
 
     findMatch();
   });
+  $conn.on("disconnect", () => {
+    const self = activeBots.indexOf(myId);
+    if (self !== -1) {
+      console.log(`[${name}] was disconnected, attempting to reconnect...`);
+      activeBots.splice(self, 1);
+      tryReconnect($conn, random).then(() => console.log(`[${name}] reconnected!`));
+    } else {
+      console.log(`[${name}] was disconnected but already not active?`);
+    }
+  });
 
   function generateName() {
     const regex = botType === "rank" ? /[a-mA-M]/ : /[n-zN-Z]/;
@@ -146,8 +156,8 @@ export async function startBot(botType: BotType, format?: FormatId) {
             method: "POST",
             body: {username: name, password: process.env.BOT_PASSWORD},
           });
-        } catch {
-          console.log(`[${name}] Login failed!...`);
+        } catch (ex) {
+          console.log(`[${name}] Login failed: `, ex);
           continue;
         }
       }
@@ -159,7 +169,7 @@ export async function startBot(botType: BotType, format?: FormatId) {
         return {cookie, myId: user.id, name};
       }
 
-      console.log(`[${name}] Login failed!...`);
+      console.log(`[${name}] Login failed (no session returned)`);
     }
   }
 

@@ -1,6 +1,8 @@
 import type {Mods} from "~~/game/battle";
 import type {MoveId} from "~~/game/moves";
 import type {Generation} from "~~/game/gen";
+import type {Socket} from "socket.io-client";
+import type {Random} from "random";
 
 type FormatInfo = {
   name: string;
@@ -343,6 +345,14 @@ export const isValidSketchMove = (gen: Generation, id: string) => {
     return false;
   }
   return !gen.invalidSketchMoves.includes(id) && move.idx! <= gen.lastMoveIdx;
+};
+
+export const tryReconnect = async (conn: Socket, rng: Random, retries: number = 999) => {
+  const [base, max] = [1000, 30000];
+  for (let i = 0; !conn.connected && i <= retries; i++) {
+    const timeout = Math.min(base * 2 ** i, max) * rng.float(0.5, 1.5);
+    conn.timeout(timeout).connect();
+  }
 };
 
 export const CHAT_MAX_MESSAGE = 500;

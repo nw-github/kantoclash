@@ -117,6 +117,7 @@ import {provideSSRWidth} from "@vueuse/core";
 import type {RoomDescriptor} from "~~/server/gameServer";
 import AlertModal from "./components/dialog/AlertModal.vue";
 import type {NavigationMenuChildItem, NavigationMenuItem} from "@nuxt/ui";
+import random from "random";
 
 provideSSRWidth(768);
 
@@ -211,7 +212,7 @@ onMounted(() => {
   });
   $conn.on("disconnect", () => {
     connected.value = false;
-    $conn.connect();
+    tryReconnect($conn, random);
   });
   $conn.on("foundMatch", roomId => {
     $conn.emit("getRoom", roomId, room => {
