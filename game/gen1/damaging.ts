@@ -191,5 +191,5 @@ function trapTarget(
   target: ActivePokemon,
 ) {
   target.v.trapped = {move: self, turns: -1, user};
-  user.v.trapping = {move: self, turns: battle.gen.rng.multiHitCount(battle) - 1};
+  user.v.trapping = {move: self, turns: battle.gen.rng.bindingMoveTurns(battle, user)};
 }

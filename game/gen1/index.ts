@@ -190,6 +190,7 @@ class Rng {
   }
   disableTurns(battle: Battle) { return battle.rng.int(1, 8); }
   multiHitCount(battle: Battle) { return randChoiceWeighted(battle.rng, [2, 3, 4, 5], [37.5, 37.5, 12.5, 12.5]); }
+  bindingMoveTurns(battle: Battle, _user: ActivePokemon) { return this.multiHitCount(battle) - 1; }
   bideDuration(battle: Battle) { return battle.rng.int(2, 3) + 1; }
   uproarDuration(battle: Battle) { return battle.rng.int(2, 5); }
   thrashDuration(battle: Battle) { return battle.rng.int(2, this.maxThrash); }

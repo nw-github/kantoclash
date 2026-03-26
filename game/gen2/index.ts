@@ -89,6 +89,8 @@ class Rng extends Generation1.Rng {
   override disableTurns(battle: Battle) { return battle.rng.int(2, 8) + 1; }
 
   override thrashDuration(battle: Battle) { return battle.rng.int(2, 3); }
+
+  override bindingMoveTurns(battle: Battle, _user: ActivePokemon) { return this.multiHitCount(battle) + 1; }
 }
 
 export class Generation2 extends Generation1 {

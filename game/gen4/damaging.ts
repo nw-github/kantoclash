@@ -365,7 +365,7 @@ export const tryDamage = (
   }
 
   if (self.flag === "trap" && !hadSub && target.base.hp) {
-    target.v.trapped = {user, move: self, turns: battle.gen.rng.multiHitCount(battle) + 1};
+    target.v.trapped = {user, move: self, turns: battle.gen.rng.bindingMoveTurns(battle, user)};
     const move = self.id!;
     battle.event({
       type: "trap",

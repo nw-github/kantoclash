@@ -5,9 +5,19 @@ import {merge} from "../gen2";
 import {movePatches, moveScripts, moveOverrides} from "./moves";
 import {createItemMergeList} from "../gen3";
 import {Generation4} from "../gen4";
+import type {ActivePokemon, Battle} from "../battle";
+import {randChoiceWeighted} from "../utils";
 
 // prettier-ignore
 class Rng extends Generation4.Rng {
+  override disableTurns(_: Battle) { return 4 + 1; }
+  override multiHitCount(battle: Battle) { return randChoiceWeighted(battle.rng, [2, 3, 4, 5], [35, 35, 15, 15]); }
+  override bindingMoveTurns(battle: Battle, user: ActivePokemon) {
+    if (user.base.itemId === "gripclaw") {
+      return 7 + 1;
+    }
+    return super.bindingMoveTurns(battle, user);
+  }
 }
 
 export class Generation5 extends Generation4 {

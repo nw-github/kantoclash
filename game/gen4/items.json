@@ -339,7 +339,7 @@
   "smoothrock": {"exists": true},
   "heatrock": {"exists": true},
   "damprock": {"exists": true},
-  "gripclaw": {"exists": true},
+  "gripclaw": {"exists": true, "desc": "Binding moves trap for 5 turns."},
   "choicescarf": {"exists": true},
   "stickybarb": {"exists": true},
   "powerbracer": {"exists": true},

@@ -13,6 +13,12 @@ import type {Move} from "../moves";
 // prettier-ignore
 class Rng extends Generation3.Rng {
   override disableTurns(battle: Battle) { return battle.rng.int(4, 7) + 1; }
+  override bindingMoveTurns(battle: Battle, user: ActivePokemon) {
+    if (user.base.itemId === "gripclaw") {
+      return 5 + 1;
+    }
+    return super.bindingMoveTurns(battle, user);
+  }
 }
 
 export class Generation4 extends Generation3 {

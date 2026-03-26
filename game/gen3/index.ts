@@ -348,27 +348,21 @@ export class Generation3 extends Generation2 {
       }
     }
 
+    const moveId = move.id!;
     if (user.v.recharge) {
       battle.info(user, "recharge");
       user.v.recharge = undefined;
       resetVolatiles();
       return false;
-    }
-
-    if (user.hasAbility("truant") && user.v.hasFlag(VF.loafing)) {
+    } else if (user.hasAbility("truant") && user.v.hasFlag(VF.loafing)) {
       battle.info(user, "loafing");
       resetVolatiles();
       return false;
-    }
-
-    if (user.v.flinch) {
+    } else if (user.v.flinch) {
       battle.info(user, "flinch");
       resetVolatiles();
       return false;
-    }
-
-    const moveId = move.id!;
-    if (moveId === user.base.moves[user.v.disabled?.indexInMoves ?? -1]) {
+    } else if (moveId === user.base.moves[user.v.disabled?.indexInMoves ?? -1]) {
       battle.event({move: moveId, type: "move", src: user.id, disabled: true});
       resetVolatiles();
       return false;
