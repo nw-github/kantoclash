@@ -252,7 +252,7 @@ export class Pokemon {
       stats,
       nature,
       moves,
-      pp: moves.map(move => gen.getMaxPP(gen.moveList[move])),
+      pp: moves.map(move => gen.getMaxPP(move)),
       name: name || species.name,
       hp: stats.hp,
       friendship: friendship ?? 255,
@@ -309,7 +309,7 @@ class TransformedPokemon extends Pokemon {
       stats: {...target.stats, hp: base.stats.hp},
       speciesId: target.speciesId,
       moves: [...target.moves],
-      pp: target.moves.map(move => Math.min(base.gen.getMaxPP(base.gen.moveList[move]), 5)),
+      pp: target.moves.map(move => Math.min(base.gen.getMaxPP(move), 5)),
       shiny: target.shiny,
       form: target.form,
 
@@ -367,7 +367,7 @@ class TransformedPokemon extends Pokemon {
 
 // export const transform = (user: Pokemon, transformed: Pokemon) => {
 //   const moves = [...transformed.moves];
-//   const pp = transformed.moves.map(move => Math.min(user.gen.getMaxPP(user.gen.moveList[move]), 5));
+//   const pp = transformed.moves.map(move => Math.min(user.gen.getMaxPP(move), 5));
 //   const stats = {...transformed.stats, hp: user.stats.hp};
 //   const speciesId = transformed.speciesId;
 //   const shiny = transformed.shiny;

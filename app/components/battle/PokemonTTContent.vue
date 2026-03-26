@@ -44,9 +44,7 @@
       <li v-for="(id, i) in poke.moves" :key="id" class="flex items-center gap-1">
         <TypeBadge :type="getType(id)" image />
         <span>
-          {{ poke.gen.moveList[id].name }} ({{ poke.pp[i] }}/{{
-            poke.gen.getMaxPP(poke.gen.moveList[id])
-          }})
+          {{ poke.gen.moveList[id].name }} ({{ poke.pp[i] }}/{{ poke.gen.getMaxPP(id) }})
         </span>
       </li>
     </ul>

@@ -27,7 +27,7 @@ import {itemList, type ItemId} from "../item";
 import {tryDamage} from "./damaging";
 import type {ActivePokemon} from "../active";
 import {TurnType, type Battle} from "../battle";
-import type {Move} from "../moves";
+import type {Move, MoveId} from "../moves";
 
 const critStages: Record<number, number> = {
   [0]: 1 / 16,
@@ -231,7 +231,8 @@ export class Generation3 extends Generation2 {
     }
   }
 
-  override getMaxPP(move: Move) {
+  override getMaxPP(move: Move | MoveId) {
+    move = typeof move === "string" ? this.moveList[move] : move;
     return move.pp === 1 ? 1 : Math.floor((move.pp * 8) / 5);
   }
 

@@ -406,7 +406,7 @@ export class ClientManager {
         const ppcost = e.disabled || e.thrashing ? 0 : 1;
         if (idx === -1) {
           src.base.moves.push(e.move);
-          src.base.pp.push(src.base.gen.getMaxPP(src.base.gen.moveList[e.move]) - ppcost);
+          src.base.pp.push(src.base.gen.getMaxPP(e.move) - ppcost);
         } else {
           src.base.pp[idx] -= ppcost;
         }
@@ -415,7 +415,7 @@ export class ClientManager {
       const src = players.poke(e.src)!;
       if (!e.called && !src.owned && !src.base.moves.includes(e.move)) {
         src.base.moves.push(e.move);
-        src.base.pp.push(src.base.gen.getMaxPP(src.base.gen.moveList[e.move]));
+        src.base.pp.push(src.base.gen.getMaxPP(e.move));
       }
     } else if (e.type === "proc_ability") {
       const src = players.poke(e.src)!;

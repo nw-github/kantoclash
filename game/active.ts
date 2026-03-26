@@ -148,9 +148,7 @@ export class ActivePokemon {
       this.recover(this.base.stats.hp - this.base.hp, this, battle, "recover");
       this.unstatus(battle);
       if (old.hwish.restorePP) {
-        this.base.moves.forEach(
-          (move, i) => (this.base.pp[i] = battle.gen.getMaxPP(battle.gen.moveList[move])),
-        );
+        this.base.moves.forEach((move, i) => (this.base.pp[i] = battle.gen.getMaxPP(move)));
       }
     }
 

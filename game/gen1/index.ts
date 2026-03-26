@@ -479,7 +479,8 @@ export class Generation1 {
     return species.dexId <= this.lastPokemon;
   }
 
-  getMaxPP(move: Move) {
+  getMaxPP(move: Move | MoveId) {
+    move = typeof move === "string" ? this.moveList[move] : move;
     return move.pp === 1 ? 1 : Math.min(Math.floor((move.pp * 8) / 5), 61);
   }
 
