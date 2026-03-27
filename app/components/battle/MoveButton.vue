@@ -1,5 +1,5 @@
 <template>
-  <TouchPopover :content="{side: lessThanSm ? 'top' : 'right'}">
+  <TouchPopover :content="{side: lessThanSm ? 'top' : 'right'}" :ui>
     <UButton
       class="w-full flex justify-between p-1"
       color="neutral"
@@ -82,6 +82,7 @@ const {option, user, weather, opponent} = defineProps<{
   user: ClientActivePokemon;
   weather?: Weather;
   opponent?: ClientPlayer;
+  ui?: string;
 }>();
 const move = computed(() => user.base.gen.moveList[option.move]);
 const info = computed(() => {

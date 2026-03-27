@@ -85,6 +85,7 @@
           <MoveButton
             v-if="option.display && currOptionPoke?.owned"
             :key="i"
+            ui="only:col-span-2"
             :option
             :weather
             :user="currOptionPoke"

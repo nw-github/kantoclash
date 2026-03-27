@@ -108,7 +108,7 @@
   </div>
   <div v-else-if="e.type === 'miss'">
     <template v-if="players.ownerOf(e.target).active.length > 1">{{ pn(e.target) }} avoided the attack!</template>
-    <template v-else>{{ pn(e.src) }} missed!</template>
+    <template v-else>{{ pn(e.src) }}'s attack missed!</template>
   </div>
   <div v-else-if="e.type === 'transform'">
     <template v-if="e.target">{{ pn(e.src) }} transformed into {{ pn(e.target, false) }}!</template>
