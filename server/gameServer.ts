@@ -22,7 +22,13 @@ import random from "random";
 
 export {BattleTimers, InfoMessage};
 
-export type TeamPreview = {speciesId: SpeciesId; form?: FormId; hasItem: bool; gender?: Gender}[];
+export type TeamPreview = {
+  speciesId: SpeciesId;
+  form?: FormId;
+  hasItem: bool;
+  level: number;
+  gender?: Gender;
+}[];
 
 export type JoinRoomResponse = {
   team?: ValidatedPokemonDesc[];
@@ -246,6 +252,7 @@ class Room {
                 form: SHOW_SPECIES_FORM.has(p.speciesId) ? p.form : undefined,
                 hasItem: !!p.item,
                 gender: p.gender,
+                level: p.level,
               }))
             : undefined,
       };

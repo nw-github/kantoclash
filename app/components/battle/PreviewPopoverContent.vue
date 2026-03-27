@@ -20,32 +20,18 @@ import type {Generation} from "~~/game/gen";
 import {Nature} from "~~/game/pokemon";
 import {abilityList, type SpeciesId} from "~~/game/species";
 
-const {gen, speciesId, format} = defineProps<{
+const {gen, speciesId, level} = defineProps<{
   gen: Generation;
   speciesId: SpeciesId;
-  format: FormatId;
+  level: number;
 }>();
 
 const species = computed(() => gen.speciesList[speciesId]);
 
 const minSpe = computed(() =>
-  gen.calcStat(
-    "spe",
-    species.value.stats,
-    formatInfo[format].maxLevel,
-    {spe: 0},
-    {spe: 0},
-    Nature.quiet,
-  ),
+  gen.calcStat("spe", species.value.stats, level, {spe: 0}, {spe: 0}, Nature.quiet),
 );
 const maxSpe = computed(() =>
-  gen.calcStat(
-    "spe",
-    species.value.stats,
-    formatInfo[format].maxLevel,
-    {spe: gen.maxIv},
-    {spe: gen.maxEv},
-    Nature.timid,
-  ),
+  gen.calcStat("spe", species.value.stats, level, {spe: gen.maxIv}, {spe: gen.maxEv}, Nature.timid),
 );
 </script>

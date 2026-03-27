@@ -1,20 +1,26 @@
 <template>
   <div>
     <div
-      v-for="({speciesId, hasItem, gender, form}, i) in preview"
+      v-for="({speciesId, hasItem, gender, form, level}, i) in preview"
       :key="i"
-      class="flex items-center"
+      class="flex items-center overflow-hidden"
       :class="reverse && 'flex-row-reverse'"
     >
       <TouchPopover>
         <BoxSprite :species-id :form :scale="lessThanSm ? 1 : 1.5" />
 
         <template #content>
-          <PreviewPopoverContent :gen :format :species-id :has-item />
+          <PreviewPopoverContent :gen :level :species-id :has-item />
         </template>
       </TouchPopover>
 
-      <div class="flex items-center gap-1">
+      <div class="flex items-center gap-1 overflow-hidden">
+        <span
+          v-if="level !== formatInfo[format].maxLevel"
+          class="text-xs sm:text-sm text-nowrap text-muted font-medium"
+        >
+          Lv. {{ level }}
+        </span>
         <span class="text-xs sm:text-sm truncate">{{ gen.speciesList[speciesId].name }}</span>
         <GenderIcon :gender />
       </div>
@@ -34,8 +40,7 @@ import {breakpointsTailwind} from "@vueuse/core";
 
 defineProps<{preview: TeamPreview; gen: Generation; format: FormatId; reverse?: boolean}>();
 
-const breakpoint = useBreakpoints(breakpointsTailwind);
-const lessThanSm = breakpoint.smaller("sm");
+const lessThanSm = useBreakpoints(breakpointsTailwind).smaller("sm");
 </script>
 
 <style scoped>

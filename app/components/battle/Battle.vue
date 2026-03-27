@@ -8,7 +8,7 @@
       </div>
 
       <div v-if="showTeamPreview" class="w-full relative">
-        <div class="absolute flex justify-between w-full p-1 sm:p-4">
+        <div class="absolute grid grid-cols-2 w-full gap-2 p-1 sm:p-4">
           <TeamPreview :gen :format :preview="players.get(perspective)?.teamPreview ?? []" />
           <TeamPreview :gen :format :preview="players.get(opponent)?.teamPreview ?? []" reverse />
         </div>
@@ -50,9 +50,9 @@
         </div>
 
         <div class="absolute bottom-0 z-0 flex flex-row pb-2 justify-end w-full gap-2 items-center">
-          <TouchTooltip v-if="clientMgr.trickRoom" text="Trick Room">
+          <!-- <TouchTooltip v-if="clientMgr.trickRoom" text="Trick Room">
             <UIcon class="size-6 text-pink-400" name="material-symbols:swap-calls" />
-          </TouchTooltip>
+          </TouchTooltip> -->
 
           <TouchTooltip v-if="weather" :text="weatherData[weather].tooltip">
             <UIcon
