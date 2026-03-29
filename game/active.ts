@@ -111,11 +111,11 @@ export class ActivePokemon {
       // Is trapping passed? Encore? Nightmare?
 
       for (const stat of stageStatKeys) {
-        this.recalculateStat(battle, stat, false);
+        battle.gen.recalculateStat(this, battle, stat, false);
       }
     }
 
-    this.applyStatusDebuff();
+    battle.gen.applyStatusDebuff(this);
 
     battle.event({
       type: "switch",
@@ -289,7 +289,7 @@ export class ActivePokemon {
     for (const k of stageKeys) {
       this.v.stages[k] = target.v.stages[k];
       if (stageStatKeys.includes(k)) {
-        this.recalculateStat(battle, k, false);
+        battle.gen.recalculateStat(this, battle, k, false);
       }
     }
 
@@ -484,7 +484,7 @@ export class ActivePokemon {
     }
 
     this.base.status = status;
-    this.applyStatusDebuff();
+    battle.gen.applyStatusDebuff(this);
     battle.event({
       type: "status",
       src: this.id,
@@ -563,7 +563,7 @@ export class ActivePokemon {
     this.v.stages[stat] = value;
 
     if (stageStatKeys.includes(stat)) {
-      this.recalculateStat(battle, stat, negative);
+      battle.gen.recalculateStat(this, battle, stat, negative);
     }
 
     const v: ChangedVolatiles = [
@@ -573,7 +573,7 @@ export class ActivePokemon {
       for (const other of battle.allActive) {
         if (other !== this) {
           // https://bulbapedia.bulbagarden.net/wiki/List_of_battle_glitches_(Generation_I)#Stat_modification_errors
-          other.applyStatusDebuff();
+          battle.gen.applyStatusDebuff(other);
           v.push({id: other.id, v: {stats: other.clientStats(battle)}});
         }
       }
@@ -796,20 +796,7 @@ export class ActivePokemon {
     const done = --this.v.confusion === 0;
     battle.info(this, done ? "confused_end" : "confused");
     if (!done && battle.rng.bool()) {
-      const move = this.choice?.move;
-      const explosion = move?.kind === "damage" && move.flag === "explosion" ? 2 : 1;
-      const [atk, def] = battle.gen.getDamageVariables(false, battle, this, this, false);
-      const dmg = battle.gen.calcDamage({
-        lvl: this.base.level,
-        pow: 40,
-        def: Math.max(Math.floor(def / explosion), 1),
-        atk,
-        eff: 1,
-        rand: false,
-        isCrit: false,
-        hasStab: false,
-      });
-
+      const dmg = battle.gen.getConfusionSelfDamage(battle, this);
       this.damage2(battle, {dmg, src: this, why: "confusion", direct: true});
       return true;
     }
@@ -1048,26 +1035,6 @@ export class ActivePokemon {
     }
   }
 
-  applyStatusDebuff() {
-    if (this.base.status === "brn") {
-      this.v.stats.atk = Math.max(Math.floor(this.v.stats.atk / 2), 1);
-    } else if (this.base.status === "par") {
-      this.v.stats.spe = Math.max(Math.floor(this.v.stats.spe / 4), 1);
-    }
-  }
-
-  recalculateStat(battle: Battle, stat: StatStageId, negative: bool) {
-    const [num, div] = battle.gen.stageMultipliers[this.v.stages[stat]];
-    this.v.stats[stat] = idiv(this.base.stats[stat] * num, div);
-
-    // https://www.smogon.com/rb/articles/rby_mechanics_guide#stat-mechanics
-    if (negative && battle.gen.id === 1) {
-      this.v.stats[stat] %= 1024;
-    } else {
-      this.v.stats[stat] = clamp(this.v.stats[stat], 1, 999);
-    }
-  }
-
   getSwitches(battle: Battle) {
     const switches: number[] = [];
     for (let i = 0; i < this.owner.team.length; i++) {
@@ -1244,11 +1211,9 @@ export class ActivePokemon {
     return {id: this.id, v: {flags: this.v.cflags}};
   }
 
-  clientStats(battle: Battle) {
+  clientStats(_battle: Battle) {
     if (!this.base.transformed) {
-      return Object.fromEntries(
-        stageStatKeys.map(key => [key, battle.gen.getStat(battle, this, key)]),
-      ) as StageStats;
+      return this.v.stats;
     }
   }
 
@@ -1293,7 +1258,11 @@ export class ActivePokemon {
 
 class Volatiles {
   stages = {atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0};
-  /** Gen 1 only */
+  /**
+   * In generations 1 and 2, this is the stat including stat stages and burn modifier.
+   * In generations 3+, this is the base stats before modifiers, but taking into account effects
+   * like Power Trick.
+   */
   stats: StageStats;
   types: Type[];
   form?: FormId;
@@ -1344,21 +1313,14 @@ class Volatiles {
   flags = VF.none;
 
   constructor(base: Pokemon) {
-    this.types = [...base.species.types];
-    this.stats = {
-      atk: base.stats.atk,
-      def: base.stats.def,
-      spa: base.stats.spa,
-      spd: base.stats.spd,
-      spe: base.stats.spe,
-    };
+    this.types =
+      base.ability === "multitype" && HP_TYPES.includes(this.form)
+        ? [this.form]
+        : [...base.species.types];
+    this.stats = {...base.stats};
     this.ability = base.ability;
     this.counter = base.status === "tox" ? 1 : 0;
     this.form = base.form;
-
-    if (base.ability === "multitype" && HP_TYPES.includes(this.form)) {
-      this.types = [this.form];
-    }
   }
 
   hasAnyType(...types: Type[]) {

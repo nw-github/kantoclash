@@ -1,6 +1,6 @@
 import type {ActivePokemon, Battle} from "../battle";
 import type {DamagingMove} from "../moves";
-import {getDamage, checkUsefulness} from "../damaging";
+import {checkUsefulness} from "../damaging";
 import type {Status} from "../pokemon";
 import {abilityList} from "../species";
 import {hazards, idiv, randChoiceWeighted, VF, Range, type Type} from "../utils";

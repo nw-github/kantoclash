@@ -493,19 +493,15 @@ export const moveScripts: MoveScripts = {
         return battle.info(user, "fail_generic");
       }
 
-      const spc = battle.gen.isSpecial(this);
-      const [atk, def] = battle.gen.getDamageVariables(spc, battle, user, target, false);
-      const damage = battle.gen.calcDamage({
-        atk,
-        def,
-        pow: this.power,
-        lvl: user.base.level,
-        eff: 1,
+      const {dmg} = battle.gen.getDamage({
+        user,
+        target,
+        battle,
+        move: this,
+        skipType: true,
         isCrit: false,
-        hasStab: false,
-        rand: battle.rng,
       });
-      target.futureSight = {damage, turns: 3, move: this};
+      target.futureSight = {damage: dmg, turns: 3, move: this};
       return battle.event({
         type: "futuresight",
         src: user.id,
@@ -1102,7 +1098,7 @@ export const moveScripts: MoveScripts = {
 
     user.v.stages = {...target.v.stages};
     for (const stat of stageStatKeys) {
-      user.recalculateStat(battle, stat, false);
+      battle.gen.recalculateStat(user, battle, stat, false);
     }
     battle.event({
       type: "psych_up",
@@ -1425,7 +1421,12 @@ export const moveOverrides: MovePropOverrides = {
     },
   },
   dmg: {
-    bide: (_, user) => (user.v.bide?.dmg ?? 0) * 2,
+    bide: (_, user) => {
+      // Bide doesn't have an overflow check
+      // https://github.com/pret/pokered/blob/fbcf7d0e19a3a2db505440d3ccd3d40ca996c15c/engine/battle/core.asm#L5878
+      // https://github.com/pret/pokered/blob/fbcf7d0e19a3a2db505440d3ccd3d40ca996c15c/engine/battle/core.asm#L3503
+      return ((user.v.bide?.dmg ?? 0) * 2) & 0xffff;
+    },
     counter(battle, _, target) {
       // https://www.youtube.com/watch?v=ftTalHMjPRY
       //  On cartrige, the move counter uses is updated whenever a player hovers over a move (even
@@ -1445,12 +1446,16 @@ export const moveOverrides: MovePropOverrides = {
         return 0;
       }
       // Counter can crit, but it won't do any more damage
-      return battle.gen1LastDamage * 2;
+      // Counter checks for an overflow and sets the damage to 0xffff in that case
+      return Math.min(battle.gen1LastDamage * 2, 0xffff);
     },
     nightshade: (_, user) => user.base.level,
     psywave(battle, user) {
-      // psywave has a desync glitch that we don't emulate
-      return battle.rng.int(1, Math.max(Math.floor(user.base.level * 1.5 - 1), 1));
+      // Psywave generates a random number between 1 and Level * 1.5 exclusive for the player,
+      // and 0 and level * 1.5 exclusive for the enemy. This can cause a desync, so we
+      // just always use [1, level * 1.5).
+      const upperBound = Math.max(1, user.base.level + (user.base.level >> 1));
+      return battle.rng.int(1, upperBound);
     },
     seismictoss: (_, user) => user.base.level,
     superfang: (_battle, _, target) => Math.max(Math.floor(target.base.hp / 2), 1),

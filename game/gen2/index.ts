@@ -329,7 +329,7 @@ export class Generation2 extends Generation1 {
     user.damage(Math.floor(dmg / 8), user, battle, false, "crash", true);
   }
 
-  override canOHKOHit(_: Battle, user: ActivePokemon, target: ActivePokemon) {
+  override canOHKOHit(user: ActivePokemon, target: ActivePokemon) {
     return target.base.level <= user.base.level;
   }
 
@@ -365,6 +365,11 @@ export class Generation2 extends Generation1 {
     return value;
   }
 
+  override recalculateStat(poke: ActivePokemon, battle: Battle, stat: StatStageId) {
+    const [num, div] = battle.gen.stageMultipliers[poke.v.stages[stat]];
+    poke.v.stats[stat] = clamp(idiv(poke.base.stats[stat] * num, div), 1, 999);
+  }
+
   override getGender(
     _desired: Gender | undefined,
     species: Species,
@@ -388,7 +393,7 @@ export class Generation2 extends Generation1 {
     );
   }
 
-  override accumulateBide = () => {};
+  override accumulateBide() {}
 
   override tryDamage = tryDamage;
 
