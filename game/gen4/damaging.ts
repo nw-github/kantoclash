@@ -295,7 +295,7 @@ export const tryDamage = (
     target.v.bide.dmg += dealt;
   }
 
-  target.v.lastHitBy = {move: self, poke: user, special: battle.gen.isSpecial(self, type, true)};
+  target.v.lastHitBy = {move: self, poke: user, type};
 
   if (
     user.base.hp &&

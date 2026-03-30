@@ -181,7 +181,7 @@ export const tryDamage = (
     }
   }
 
-  target.v.lastHitBy = {move: self, poke: user, special: battle.gen.isSpecial(self, type, true)};
+  target.v.lastHitBy = {move: self, poke: user, type};
 
   checkThrashing();
   if (user.base.hp && self.recoil) {

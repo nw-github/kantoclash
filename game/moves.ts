@@ -965,7 +965,8 @@ export const moveScripts: MoveScripts = {
     );
   },
   conversion2(battle, user) {
-    let lastType = user.v.lastHitBy?.move?.type;
+    // Conversion2 takes type changes like Hidden Power into account
+    let lastType = user.v.lastHitBy?.type;
     if (!lastType) {
       return battle.info(user, "fail_generic");
     }
@@ -1458,8 +1459,9 @@ export const moveOverrides: MovePropOverrides = {
     },
     seismictoss: (_, user) => user.base.level,
     superfang: (_battle, _, target) => Math.max(Math.floor(target.base.hp / 2), 1),
-    mirrorcoat(_battle, user) {
-      if (!user.v.lastHitBy || !user.v.lastHitBy.special) {
+    mirrorcoat(battle, user) {
+      const lastHit = user.v.lastHitBy;
+      if (!lastHit || !battle.gen.isSpecial(lastHit.move, lastHit.type, true)) {
         return 0;
       }
       return Math.min(user.v.retaliateDamage << 1, 0xffff);

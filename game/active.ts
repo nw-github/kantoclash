@@ -1295,7 +1295,7 @@ class Volatiles {
   attract?: ActivePokemon;
   seededBy?: ActivePokemon;
   choiceLock?: number;
-  lastHitBy?: {move: Move; poke: ActivePokemon; special: bool};
+  lastHitBy?: {move: Move; poke: ActivePokemon; type: Type};
   hwish?: HealingWishMove;
   lastMove?: Move;
   lastMoveIndex?: number;

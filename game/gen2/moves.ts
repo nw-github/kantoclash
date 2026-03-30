@@ -145,8 +145,9 @@ export const moveScripts: Partial<MoveScripts> = {
 
 export const moveOverrides: Partial<MovePropOverrides> = {
   dmg: {
-    counter(_battle, user) {
-      if (!user.v.lastHitBy || user.v.lastHitBy.special) {
+    counter(battle, user) {
+      const lastHit = user.v.lastHitBy;
+      if (!lastHit || battle.gen.isSpecial(lastHit.move, lastHit.type, true)) {
         return 0;
       }
       return Math.min(user.v.retaliateDamage << 1, 0xffff);
