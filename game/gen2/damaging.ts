@@ -83,10 +83,11 @@ export const tryDamage = (
     endured = false,
     band = false,
     beatUpFail = false;
+  let why = self.flag === "ohko" ? ("ohko" as const) : ("attacked" as const);
 
   // command BattleCommand_ApplyDamage
   const applyDamage = (dmg: number) => {
-    if (!band) {
+    if (!band && user.base.itemId === "focusband") {
       band = battle.gen.rng.tryFocusBand(battle);
     }
 
@@ -96,16 +97,17 @@ export const tryDamage = (
 
     // command falseswipe BattleCommand_FalseSwipe
     if (band || endured || (self.flag === "false_swipe" && dmg >= target.base.hp)) {
-      // not sure why, but it also resets wCriticalHit if its not equal to 2 (OHKO flag)
       dmg = target.base.hp - 1;
+      why = "attacked";
     }
 
     let event;
     ({dead, event, dealt} = target.damage2(battle, {
       dmg,
       src: user,
-      why: self.flag === "ohko" ? "ohko" : "attacked",
+      why,
       isCrit,
+      eff: self.flag === "beatup" ? 1 : eff,
     }));
     return {dead, event};
   };

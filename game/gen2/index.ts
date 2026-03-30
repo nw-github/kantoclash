@@ -205,9 +205,9 @@ class DamageCalc extends Gen1DamageCalc {
       if (deftype === "ghost" && modifier === NO_EFFECT && target.v.identified) {
         break;
       } else if (atktype === type && target.v.hasAnyType(deftype)) {
+        eff *= modifier / EFFECTIVE;
         if (modifier === NO_EFFECT) {
           dmg = 0;
-          eff *= modifier / 10;
           break;
         }
 
@@ -401,6 +401,8 @@ export class Generation2 extends Generation1 {
       return res;
     }
 
+    const type = this.getMoveType(move, user.base, battle.getWeather());
+
     let A, D, level;
     if (beatUp) {
       // These stats are already byte values
@@ -408,10 +410,14 @@ export class Generation2 extends Generation1 {
       D = target.base.stats.def;
       level = beatUp.level;
     } else {
-      ({A, D, level} = DamageCalc.getDamageVariables(user, target, this.isSpecial(move), isCrit));
+      ({A, D, level} = DamageCalc.getDamageVariables(
+        user,
+        target,
+        this.isSpecial(move, type),
+        isCrit,
+      ));
     }
 
-    const type = this.getMoveType(move, user.base, battle.getWeather());
     power ??= this.getMoveBasePower(move, user.base, target.base);
 
     if (move.flag === "present") {
@@ -487,6 +493,18 @@ export class Generation2 extends Generation1 {
   ) {
     dmg = Math.min(dmg, target.base.hp);
     user.damage(idiv(dmg, 8), user, battle, false, "crash", true);
+  }
+
+  override rollCrit(
+    battle: Battle,
+    user: ActivePokemon,
+    _target: ActivePokemon,
+    move: DamagingMove,
+  ) {
+    if (move.fixedDamage || this.move.overrides.dmg[move.id!]) {
+      return false;
+    }
+    return this.rng.tryCrit(battle, user, move.flag === "high_crit");
   }
 
   override getConfusionSelfDamage(_battle: Battle, user: ActivePokemon) {

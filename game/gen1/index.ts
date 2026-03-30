@@ -418,20 +418,15 @@ export class Generation1 {
     target: ActivePokemon,
     move: DamagingMove,
   ) {
-    let dmg = 0,
-      miss = false;
     if (move.fixedDamage) {
-      dmg = move.fixedDamage;
+      const dmg = move.fixedDamage;
       // in the real game, this is handled inside calcBaseDamage
-      if (move.flag === "ohko" && !this.canOHKOHit(user, target)) {
-        miss = true;
-      }
+      const miss = move.flag === "ohko" && !this.canOHKOHit(user, target);
       return {dmg, miss, eff: 1, type: move.type};
     } else if (this.move.overrides.dmg[move.id!]) {
       // Counter, Bide
-      dmg = this.getMoveDamage(move, battle, user, target) ?? 0;
-      miss = !!dmg;
-      return {dmg, miss, eff: 1, type: move.type};
+      const dmg = this.getMoveDamage(move, battle, user, target) ?? 0;
+      return {dmg, miss: !dmg, eff: 1, type: move.type};
     }
   }
 
@@ -477,6 +472,10 @@ export class Generation1 {
   }
 
   rollCrit(battle: Battle, user: ActivePokemon, _target: ActivePokemon, move: DamagingMove) {
+    // Counter gets handled right after calling CriticalHitTest, but it never does anything with wCriticalHitOrOHKO
+    if (move.fixedDamage || move.id === "bide") {
+      return false;
+    }
     return this.rng.tryCrit(battle, user, move.flag === "high_crit");
   }
 

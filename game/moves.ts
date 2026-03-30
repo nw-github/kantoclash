@@ -1445,7 +1445,6 @@ export const moveOverrides: MovePropOverrides = {
       } else if (target.choice?.move === this) {
         return 0;
       }
-      // Counter can crit, but it won't do any more damage
       // Counter checks for an overflow and sets the damage to 0xffff in that case
       return Math.min(battle.gen1LastDamage << 1, 0xffff);
     },
