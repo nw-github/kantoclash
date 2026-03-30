@@ -12,15 +12,12 @@ import type {Pokemon} from "./pokemon";
 import {
   Range,
   isSpreadMove,
-  getEffectiveness,
   playerId,
   VF,
   debugLog,
-  type Type,
   type Weather,
   type ScreenId,
   type HazardId,
-  HP_TYPES,
 } from "./utils";
 import type {Generation} from "./gen";
 import {ActivePokemon} from "./active";
@@ -478,20 +475,6 @@ export class Battle {
   }
 
   // --
-
-  getEffectiveness(atk: Type, target: ActivePokemon) {
-    if (target.v.identified) {
-      // FIXME: this is lazy
-      const chart = structuredClone(this.gen.typeChart);
-      for (const type of HP_TYPES) {
-        if (chart[type][target.v.identified.removeImmunities] === 0) {
-          chart[type][target.v.identified.removeImmunities] = 1;
-        }
-      }
-      return getEffectiveness(chart, atk, target.v.types);
-    }
-    return getEffectiveness(this.gen.typeChart, atk, target.v.types);
-  }
 
   rand255(num: number) {
     return this.rng.int(0, 255) < Math.min(num, 255);

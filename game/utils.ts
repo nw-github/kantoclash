@@ -1,5 +1,4 @@
 import type {Random} from "random";
-import type {TypeChart} from "./gen";
 import type {PlayerId, PokeId} from "./events";
 import type {AbilityId} from "./species";
 
@@ -160,10 +159,6 @@ export const hpPercent = (current: number, max: number) => {
     return 1;
   }
   return percent;
-};
-
-export const getEffectiveness = (typeChart: TypeChart, atk: Type, def: readonly Type[]) => {
-  return def.reduce((eff, def) => eff * (typeChart[atk][def] ?? 1), 1);
 };
 
 export const idiv = (a: number, b: number) => Math.floor(a / b);

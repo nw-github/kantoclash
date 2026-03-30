@@ -25,61 +25,6 @@ import {itemList, type ItemId} from "../item";
 import {UNOWN_FORM, type Pokemon, type FormId, type Gender, type Nature} from "../pokemon";
 import type {DamageReason} from "../events";
 
-export type TypeChart = Record<Type, Partial<Record<Type, number>>>;
-
-const typeChart: TypeChart = {
-  normal: {ghost: 0, rock: 0.5, steel: 0.5},
-  rock: {bug: 2, fire: 2, flying: 2, ice: 2, fight: 0.5, ground: 0.5, steel: 0.5},
-  ground: {rock: 2, poison: 2, bug: 0.5, flying: 0, grass: 0.5, fire: 2, electric: 2, steel: 2},
-  ghost: {normal: 0, ghost: 2, psychic: 0, dark: 0.5, steel: 0.5},
-  poison: {rock: 0.5, ground: 0.5, ghost: 0.5, grass: 2, bug: 2, poison: 0.5, steel: 0},
-  bug: {
-    ghost: 0.5,
-    flying: 0.5,
-    fight: 0.5,
-    grass: 2,
-    fire: 0.5,
-    psychic: 2,
-    poison: 2,
-    dark: 2,
-    steel: 0.5,
-  },
-  flying: {rock: 0.5, bug: 2, fight: 2, grass: 2, electric: 0.5, steel: 0.5},
-  fight: {
-    normal: 2,
-    rock: 2,
-    ghost: 0,
-    poison: 0.5,
-    bug: 0.5,
-    flying: 0.5,
-    ice: 2,
-    psychic: 0.5,
-    dark: 2,
-    steel: 2,
-  },
-  water: {rock: 2, ground: 2, water: 0.5, grass: 0.5, fire: 2, dragon: 0.5},
-  grass: {
-    rock: 2,
-    ground: 2,
-    poison: 0.5,
-    bug: 0.5,
-    flying: 0.5,
-    water: 2,
-    fire: 0.5,
-    dragon: 0.5,
-    grass: 0.5,
-    steel: 0.5,
-  },
-  fire: {rock: 0.5, bug: 2, water: 0.5, grass: 2, fire: 0.5, ice: 2, dragon: 0.5, steel: 2},
-  electric: {ground: 0, flying: 2, water: 2, grass: 0.5, electric: 0.5, dragon: 0.5},
-  ice: {ground: 2, flying: 2, water: 0.5, grass: 2, ice: 0.5, dragon: 2, steel: 0.5},
-  psychic: {poison: 2, fight: 2, psychic: 0.5, steel: 0.5, dark: 0},
-  dragon: {dragon: 2, steel: 0.5},
-  dark: {ghost: 2, fight: 0.5, psychic: 2, dark: 0.5, steel: 0.5},
-  steel: {rock: 2, water: 0.5, fire: 0.5, electric: 0.5, ice: 2, steel: 0.5},
-  "???": {},
-};
-
 const stageMultipliers: Record<number, [num: number, div: number]> = {
   [-6]: [25, 100],
   [-5]: [28, 100],
@@ -157,95 +102,6 @@ class Rng {
   uproarDuration(battle: Battle) { return battle.rng.int(2, 5); }
   thrashDuration(battle: Battle) { return battle.rng.int(2, this.maxThrash); }
 }
-
-const SUPER_EFFECTIVE = 20;
-const NOT_VERY_EFFECTIVE = 5;
-const NO_EFFECT = 0;
-
-const typeMatchupTable: [Type, Type, number][] = [
-  ["water", "fire", SUPER_EFFECTIVE],
-  ["fire", "grass", SUPER_EFFECTIVE],
-  ["fire", "ice", SUPER_EFFECTIVE],
-  ["grass", "water", SUPER_EFFECTIVE],
-  ["electric", "water", SUPER_EFFECTIVE],
-  ["water", "rock", SUPER_EFFECTIVE],
-  ["ground", "flying", NO_EFFECT],
-  ["water", "water", NOT_VERY_EFFECTIVE],
-  ["fire", "fire", NOT_VERY_EFFECTIVE],
-  ["electric", "electric", NOT_VERY_EFFECTIVE],
-  ["ice", "ice", NOT_VERY_EFFECTIVE],
-  ["grass", "grass", NOT_VERY_EFFECTIVE],
-  ["psychic", "psychic", NOT_VERY_EFFECTIVE],
-  ["fire", "water", NOT_VERY_EFFECTIVE],
-  ["grass", "fire", NOT_VERY_EFFECTIVE],
-  ["water", "grass", NOT_VERY_EFFECTIVE],
-  ["electric", "grass", NOT_VERY_EFFECTIVE],
-  ["normal", "rock", NOT_VERY_EFFECTIVE],
-  ["normal", "ghost", NO_EFFECT],
-  ["ghost", "ghost", SUPER_EFFECTIVE],
-  ["fire", "bug", SUPER_EFFECTIVE],
-  ["fire", "rock", NOT_VERY_EFFECTIVE],
-  ["water", "ground", SUPER_EFFECTIVE],
-  ["electric", "ground", NO_EFFECT],
-  ["electric", "flying", SUPER_EFFECTIVE],
-  ["grass", "ground", SUPER_EFFECTIVE],
-  ["grass", "bug", NOT_VERY_EFFECTIVE],
-  ["grass", "poison", NOT_VERY_EFFECTIVE],
-  ["grass", "rock", SUPER_EFFECTIVE],
-  ["grass", "flying", NOT_VERY_EFFECTIVE],
-  ["ice", "water", NOT_VERY_EFFECTIVE],
-  ["ice", "grass", SUPER_EFFECTIVE],
-  ["ice", "ground", SUPER_EFFECTIVE],
-  ["ice", "flying", SUPER_EFFECTIVE],
-  ["fight", "normal", SUPER_EFFECTIVE],
-  ["fight", "poison", NOT_VERY_EFFECTIVE],
-  ["fight", "flying", NOT_VERY_EFFECTIVE],
-  ["fight", "psychic", NOT_VERY_EFFECTIVE],
-  ["fight", "bug", NOT_VERY_EFFECTIVE],
-  ["fight", "rock", SUPER_EFFECTIVE],
-  ["fight", "ice", SUPER_EFFECTIVE],
-  ["fight", "ghost", NO_EFFECT],
-  ["poison", "grass", SUPER_EFFECTIVE],
-  ["poison", "poison", NOT_VERY_EFFECTIVE],
-  ["poison", "ground", NOT_VERY_EFFECTIVE],
-  ["poison", "bug", SUPER_EFFECTIVE],
-  ["poison", "rock", NOT_VERY_EFFECTIVE],
-  ["poison", "ghost", NOT_VERY_EFFECTIVE],
-  ["ground", "fire", SUPER_EFFECTIVE],
-  ["ground", "electric", SUPER_EFFECTIVE],
-  ["ground", "grass", NOT_VERY_EFFECTIVE],
-  ["ground", "bug", NOT_VERY_EFFECTIVE],
-  ["ground", "rock", SUPER_EFFECTIVE],
-  ["ground", "poison", SUPER_EFFECTIVE],
-  ["flying", "electric", NOT_VERY_EFFECTIVE],
-  ["flying", "fight", SUPER_EFFECTIVE],
-  ["flying", "bug", SUPER_EFFECTIVE],
-  ["flying", "grass", SUPER_EFFECTIVE],
-  ["flying", "rock", NOT_VERY_EFFECTIVE],
-  ["psychic", "fight", SUPER_EFFECTIVE],
-  ["psychic", "poison", SUPER_EFFECTIVE],
-  ["bug", "fire", NOT_VERY_EFFECTIVE],
-  ["bug", "grass", SUPER_EFFECTIVE],
-  ["bug", "fight", NOT_VERY_EFFECTIVE],
-  ["bug", "flying", NOT_VERY_EFFECTIVE],
-  ["bug", "psychic", SUPER_EFFECTIVE],
-  ["bug", "ghost", NOT_VERY_EFFECTIVE],
-  ["bug", "poison", SUPER_EFFECTIVE],
-  ["rock", "fire", SUPER_EFFECTIVE],
-  ["rock", "fight", NOT_VERY_EFFECTIVE],
-  ["rock", "ground", NOT_VERY_EFFECTIVE],
-  ["rock", "flying", SUPER_EFFECTIVE],
-  ["rock", "bug", SUPER_EFFECTIVE],
-  ["rock", "ice", SUPER_EFFECTIVE],
-  ["ghost", "normal", NO_EFFECT],
-  ["ghost", "psychic", NO_EFFECT],
-  ["fire", "dragon", NOT_VERY_EFFECTIVE],
-  ["water", "dragon", NOT_VERY_EFFECTIVE],
-  ["electric", "dragon", NOT_VERY_EFFECTIVE],
-  ["grass", "dragon", NOT_VERY_EFFECTIVE],
-  ["ice", "dragon", SUPER_EFFECTIVE],
-  ["dragon", "dragon", SUPER_EFFECTIVE],
-];
 
 type BaseDamageParams = {
   move?: DamagingMove;
@@ -370,7 +226,7 @@ export class Generation1 {
   maxTotalEv = 65535 * 6;
   speciesList = speciesList;
   moveList = moveList;
-  typeChart = typeChart;
+  typeMatchupTable = typeMatchupTable;
   items = itemList;
   lastMoveIdx = moveList.whirlwind.idx!;
   lastPokemon = 151;
@@ -971,6 +827,16 @@ export class Generation1 {
   getMoveDamage(move: DamagingMove, battle: Battle, user: ActivePokemon, target: ActivePokemon) {
     return this.move.overrides.dmg[move.id!]?.call(move, battle, user, target);
   }
+
+  getEffectiveness(atk: Type, def: readonly Type[]) {
+    let eff = 1;
+    for (const [atktype, deftype, modifier] of this.typeMatchupTable) {
+      if (atktype === atk && def.includes(deftype)) {
+        eff *= modifier / 10;
+      }
+    }
+    return eff;
+  }
 }
 
 export const shouldReturn = (battle: Battle, pursuit: bool) => {
@@ -1164,3 +1030,92 @@ export function tryDamage(
   }
   return dealt;
 }
+
+const SUPER_EFFECTIVE = 20;
+const NOT_VERY_EFFECTIVE = 5;
+const NO_EFFECT = 0;
+
+const typeMatchupTable: [Type, Type, number][] = [
+  ["water", "fire", SUPER_EFFECTIVE],
+  ["fire", "grass", SUPER_EFFECTIVE],
+  ["fire", "ice", SUPER_EFFECTIVE],
+  ["grass", "water", SUPER_EFFECTIVE],
+  ["electric", "water", SUPER_EFFECTIVE],
+  ["water", "rock", SUPER_EFFECTIVE],
+  ["ground", "flying", NO_EFFECT],
+  ["water", "water", NOT_VERY_EFFECTIVE],
+  ["fire", "fire", NOT_VERY_EFFECTIVE],
+  ["electric", "electric", NOT_VERY_EFFECTIVE],
+  ["ice", "ice", NOT_VERY_EFFECTIVE],
+  ["grass", "grass", NOT_VERY_EFFECTIVE],
+  ["psychic", "psychic", NOT_VERY_EFFECTIVE],
+  ["fire", "water", NOT_VERY_EFFECTIVE],
+  ["grass", "fire", NOT_VERY_EFFECTIVE],
+  ["water", "grass", NOT_VERY_EFFECTIVE],
+  ["electric", "grass", NOT_VERY_EFFECTIVE],
+  ["normal", "rock", NOT_VERY_EFFECTIVE],
+  ["normal", "ghost", NO_EFFECT],
+  ["ghost", "ghost", SUPER_EFFECTIVE],
+  ["fire", "bug", SUPER_EFFECTIVE],
+  ["fire", "rock", NOT_VERY_EFFECTIVE],
+  ["water", "ground", SUPER_EFFECTIVE],
+  ["electric", "ground", NO_EFFECT],
+  ["electric", "flying", SUPER_EFFECTIVE],
+  ["grass", "ground", SUPER_EFFECTIVE],
+  ["grass", "bug", NOT_VERY_EFFECTIVE],
+  ["grass", "poison", NOT_VERY_EFFECTIVE],
+  ["grass", "rock", SUPER_EFFECTIVE],
+  ["grass", "flying", NOT_VERY_EFFECTIVE],
+  ["ice", "water", NOT_VERY_EFFECTIVE],
+  ["ice", "grass", SUPER_EFFECTIVE],
+  ["ice", "ground", SUPER_EFFECTIVE],
+  ["ice", "flying", SUPER_EFFECTIVE],
+  ["fight", "normal", SUPER_EFFECTIVE],
+  ["fight", "poison", NOT_VERY_EFFECTIVE],
+  ["fight", "flying", NOT_VERY_EFFECTIVE],
+  ["fight", "psychic", NOT_VERY_EFFECTIVE],
+  ["fight", "bug", NOT_VERY_EFFECTIVE],
+  ["fight", "rock", SUPER_EFFECTIVE],
+  ["fight", "ice", SUPER_EFFECTIVE],
+  ["fight", "ghost", NO_EFFECT],
+  ["poison", "grass", SUPER_EFFECTIVE],
+  ["poison", "poison", NOT_VERY_EFFECTIVE],
+  ["poison", "ground", NOT_VERY_EFFECTIVE],
+  ["poison", "bug", SUPER_EFFECTIVE],
+  ["poison", "rock", NOT_VERY_EFFECTIVE],
+  ["poison", "ghost", NOT_VERY_EFFECTIVE],
+  ["ground", "fire", SUPER_EFFECTIVE],
+  ["ground", "electric", SUPER_EFFECTIVE],
+  ["ground", "grass", NOT_VERY_EFFECTIVE],
+  ["ground", "bug", NOT_VERY_EFFECTIVE],
+  ["ground", "rock", SUPER_EFFECTIVE],
+  ["ground", "poison", SUPER_EFFECTIVE],
+  ["flying", "electric", NOT_VERY_EFFECTIVE],
+  ["flying", "fight", SUPER_EFFECTIVE],
+  ["flying", "bug", SUPER_EFFECTIVE],
+  ["flying", "grass", SUPER_EFFECTIVE],
+  ["flying", "rock", NOT_VERY_EFFECTIVE],
+  ["psychic", "fight", SUPER_EFFECTIVE],
+  ["psychic", "poison", SUPER_EFFECTIVE],
+  ["bug", "fire", NOT_VERY_EFFECTIVE],
+  ["bug", "grass", SUPER_EFFECTIVE],
+  ["bug", "fight", NOT_VERY_EFFECTIVE],
+  ["bug", "flying", NOT_VERY_EFFECTIVE],
+  ["bug", "psychic", SUPER_EFFECTIVE],
+  ["bug", "ghost", NOT_VERY_EFFECTIVE],
+  ["bug", "poison", SUPER_EFFECTIVE],
+  ["rock", "fire", SUPER_EFFECTIVE],
+  ["rock", "fight", NOT_VERY_EFFECTIVE],
+  ["rock", "ground", NOT_VERY_EFFECTIVE],
+  ["rock", "flying", SUPER_EFFECTIVE],
+  ["rock", "bug", SUPER_EFFECTIVE],
+  ["rock", "ice", SUPER_EFFECTIVE],
+  ["ghost", "normal", NO_EFFECT],
+  ["ghost", "psychic", NO_EFFECT],
+  ["fire", "dragon", NOT_VERY_EFFECTIVE],
+  ["water", "dragon", NOT_VERY_EFFECTIVE],
+  ["electric", "dragon", NOT_VERY_EFFECTIVE],
+  ["grass", "dragon", NOT_VERY_EFFECTIVE],
+  ["ice", "dragon", SUPER_EFFECTIVE],
+  ["dragon", "dragon", SUPER_EFFECTIVE],
+];

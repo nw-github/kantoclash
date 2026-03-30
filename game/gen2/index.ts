@@ -240,6 +240,7 @@ export class Generation2 extends Generation1 {
   override lastPokemon = 251;
   override rng = new Generation2.Rng();
   override accStageMultipliers = accStageMultipliers;
+  override typeMatchupTable = typeMatchupTable;
 
   constructor() {
     super();
@@ -248,12 +249,6 @@ export class Generation2 extends Generation1 {
       speciesPatches as Partial<Record<SpeciesId, Partial<Species>>>,
     );
     this.moveList = merge(this.moveList, movePatches);
-    this.typeChart = merge(this.typeChart, {
-      ghost: {psychic: 2},
-      poison: {bug: 1},
-      bug: {poison: 0.5},
-      ice: {fire: 0.5},
-    });
     this.items = merge(this.items, items as Partial<Record<ItemId, ItemData>>);
     this.move = merge(this.move, {scripts: moveScripts, overrides: moveOverrides});
   }

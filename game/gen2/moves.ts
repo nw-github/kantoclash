@@ -32,7 +32,7 @@ export const moveScripts: Partial<MoveScripts> = {
       } else if (target.v.substitute || (battle.hasUproar(target) && this.status === "slp")) {
         continue;
       } else if (
-        (this.checkType && battle.getEffectiveness(this.type, target) === 0) ||
+        (this.checkType && battle.gen.getEffectiveness(this.type, target.v.types) === 0) ||
         ((this.status === "psn" || this.status === "tox") &&
           target.v.hasAnyType("poison", "steel")) ||
         (this.status === "brn" && target.v.types.includes("fire"))

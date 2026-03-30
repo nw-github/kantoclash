@@ -432,7 +432,7 @@ export const moveScripts: MoveScripts = {
     if (target.v.substitute && this.status !== "par" && this.status !== "slp") {
       return battle.info(target, "fail_generic");
     } else if (
-      (this.type === "electric" && battle.getEffectiveness(this.type, target) === 0) ||
+      (this.type === "electric" && battle.gen.getEffectiveness(this.type, target.v.types) === 0) ||
       (this.type === "poison" && target.v.types.includes("poison")) ||
       (this.type === "fire" && target.v.types.includes("fire"))
     ) {
@@ -974,11 +974,10 @@ export const moveScripts: MoveScripts = {
       lastType = "normal";
     }
 
-    const types = (Object.keys(battle.gen.typeChart) as Type[]).filter(type => {
-      return (battle.gen.typeChart[lastType][type] ?? 1) < 1;
+    const types = battle.gen.typeMatchupTable.filter(([atk, , mod]) => {
+      return atk === lastType && mod < 10;
     });
-
-    const v = user.setVolatile("types", [battle.rng.choice(types)!]);
+    const v = user.setVolatile("types", [battle.rng.choice(types)![1]]);
     battle.event({
       type: "conversion",
       src: user.id,

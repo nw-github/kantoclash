@@ -4,8 +4,6 @@ import {Generation3} from "./gen3";
 import {Generation4} from "./gen4";
 import {Generation5} from "./gen5";
 
-export {type TypeChart, type CalcDamageParams} from "./gen1";
-
 export type Generation = Generation1;
 
 export const GENERATION1 = new Generation1();

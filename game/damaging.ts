@@ -13,7 +13,7 @@ export function checkUsefulness(
     type = "???";
   }
 
-  let eff = battle.getEffectiveness(type, target);
+  let eff = battle.gen.getEffectiveness(type, target.v.types);
   let abilityImmunity = false;
   const targetAbility = target.getAbilityId();
   if (self.sound && targetAbility === "soundproof") {

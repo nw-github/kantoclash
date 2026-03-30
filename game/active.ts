@@ -20,7 +20,6 @@ import {
   arraysEqual,
   clamp,
   CVF,
-  getEffectiveness,
   HP_TYPES,
   hpPercent,
   idiv,
@@ -183,7 +182,7 @@ export class ActivePokemon {
     }
 
     if (this.owner.hazards.rocks) {
-      const eff = getEffectiveness(battle.gen.typeChart, "rock", this.v.types);
+      const eff = battle.gen.getEffectiveness("rock", this.v.types);
       const dmg = Math.max(1, Math.floor(this.base.stats.hp * (0.125 * eff)));
       this.damage(dmg, this, battle, false, "rocks", true);
       if (this.base.hp === 0) {

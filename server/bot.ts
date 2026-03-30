@@ -6,7 +6,7 @@ import type {Choice, ClientMessage, JoinRoomResponse, ServerMessage} from "./gam
 import type {BattleEvent} from "~~/game/events";
 import type {Options} from "~~/game/battle";
 import type {Pokemon} from "~~/game/pokemon";
-import {CVF, getEffectiveness, playerId, VF} from "~~/game/utils";
+import {CVF, playerId, VF} from "~~/game/utils";
 import type {MoveId} from "~~/game/moves";
 import {type Generation, GENERATIONS} from "~~/game/gen";
 
@@ -456,8 +456,7 @@ const botFunctions = {
       const opponentPoke = opponentActive.base;
       const move = gen.moveList[id];
       if (move.kind === "damage") {
-        const eff = getEffectiveness(
-          gen.typeChart,
+        const eff = gen.getEffectiveness(
           gen.getMoveType(move, active.base, mgr.weather),
           opponentActive.v.types ?? opponentPoke.species.types,
         );
