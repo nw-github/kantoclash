@@ -20,7 +20,7 @@ export const rawMoveList = {
     category: "special",
     power: 40,
     acc: 100,
-    effect: [33.21, [["spa", -1]]],
+    effect: [33, [["spa", -1]]],
   },
   acidarmor: {
     kind: "stage",
@@ -58,7 +58,7 @@ export const rawMoveList = {
     category: "special",
     power: 65,
     acc: 100,
-    effect: [33.21, [["atk", -1]]],
+    effect: [33, [["atk", -1]]],
   },
   barrage: {
     kind: "damage",
@@ -115,7 +115,7 @@ export const rawMoveList = {
     category: "physical",
     power: 85,
     acc: 100,
-    effect: [30.1, "par"],
+    effect: [30, "par"],
     contact: true,
   },
   bonemerang: {
@@ -139,7 +139,7 @@ export const rawMoveList = {
     category: "special",
     power: 20,
     acc: 100,
-    effect: [33.21, [["spe", -1]]],
+    effect: [33, [["spe", -1]]],
   },
   bubblebeam: {
     kind: "damage",
@@ -150,7 +150,7 @@ export const rawMoveList = {
     category: "special",
     power: 65,
     acc: 100,
-    effect: [33.21, [["spe", -1]]],
+    effect: [33, [["spe", -1]]],
   },
   bite: {
     kind: "damage",
@@ -161,7 +161,7 @@ export const rawMoveList = {
     category: "physical",
     power: 60,
     acc: 100,
-    effect: [10.2, "flinch"],
+    effect: [10, "flinch"],
     contact: true,
   },
   blizzard: {
@@ -173,7 +173,7 @@ export const rawMoveList = {
     category: "special",
     power: 120,
     acc: 90,
-    effect: [10.2, "frz"],
+    effect: [10, "frz"],
   },
   boneclub: {
     kind: "damage",
@@ -184,7 +184,7 @@ export const rawMoveList = {
     category: "physical",
     power: 65,
     acc: 85,
-    effect: [10.2, "flinch"],
+    effect: [10, "flinch"],
   },
   clamp: {
     kind: "damage",
@@ -240,7 +240,7 @@ export const rawMoveList = {
     category: "physical",
     power: 10,
     acc: 100,
-    effect: [33.21, [["spe", -1]]],
+    effect: [33, [["spe", -1]]],
     contact: true,
   },
   conversion: {kind: "conversion", name: "Conversion", pp: 30, type: "normal", range: "Adjacent"},
@@ -438,7 +438,7 @@ export const rawMoveList = {
     category: "special",
     power: 40,
     acc: 100,
-    effect: [10.2, "brn"],
+    effect: [10, "brn"],
   },
   explosion: {
     kind: "damage",
@@ -462,7 +462,7 @@ export const rawMoveList = {
     category: "special",
     power: 120,
     acc: 85,
-    effect: [30.1, "brn"],
+    effect: [30, "brn"],
   },
   firepunch: {
     kind: "damage",
@@ -473,7 +473,7 @@ export const rawMoveList = {
     category: "physical",
     power: 75,
     acc: 100,
-    effect: [10.2, "brn"],
+    effect: [10, "brn"],
     contact: true,
   },
   firespin: {
@@ -508,7 +508,7 @@ export const rawMoveList = {
     category: "special",
     power: 95,
     acc: 100,
-    effect: [10.2, "brn"],
+    effect: [10, "brn"],
   },
   flash: {
     kind: "stage",
@@ -642,7 +642,7 @@ export const rawMoveList = {
     category: "physical",
     power: 70,
     acc: 100,
-    effect: [30.1, "flinch"],
+    effect: [30, "flinch"],
     contact: true,
   },
   hijumpkick: {
@@ -714,7 +714,7 @@ export const rawMoveList = {
     category: "physical",
     power: 80,
     acc: 90,
-    effect: [10.2, "flinch"],
+    effect: [10, "flinch"],
     contact: true,
   },
   hypnosis: {
@@ -736,7 +736,7 @@ export const rawMoveList = {
     category: "special",
     power: 95,
     acc: 100,
-    effect: [10.2, "frz"],
+    effect: [10, "frz"],
   },
   icepunch: {
     kind: "damage",
@@ -747,7 +747,7 @@ export const rawMoveList = {
     category: "physical",
     power: 75,
     acc: 100,
-    effect: [10.2, "frz"],
+    effect: [10, "frz"],
     contact: true,
   },
   jumpkick: {
@@ -827,7 +827,7 @@ export const rawMoveList = {
     category: "physical",
     power: 20,
     acc: 100,
-    effect: [30.1, "par"],
+    effect: [30, "par"],
     contact: true,
   },
   lightscreen: {
@@ -858,7 +858,7 @@ export const rawMoveList = {
     category: "physical",
     power: 50,
     acc: 90,
-    effect: [30.1, "flinch"],
+    effect: [30, "flinch"],
     contact: true,
   },
   meditate: {
@@ -1044,7 +1044,7 @@ export const rawMoveList = {
     category: "physical",
     power: 15,
     acc: 100,
-    effect: [20.4, "psn"],
+    effect: [20, "psn"],
   },
   pound: {
     kind: "damage",
@@ -1078,7 +1078,7 @@ export const rawMoveList = {
     category: "special",
     power: 90,
     acc: 100,
-    effect: [33.21, [["spa", -1]]],
+    effect: [33, [["spa", -1]]],
   },
   psywave: {
     kind: "damage",
@@ -1209,7 +1209,7 @@ export const rawMoveList = {
     category: "physical",
     power: 60,
     acc: 85,
-    effect: [30.1, "flinch"],
+    effect: [30, "flinch"],
     contact: true,
   },
   sandattack: {
@@ -1361,7 +1361,7 @@ export const rawMoveList = {
     category: "special",
     power: 65,
     acc: 100,
-    effect: [40.4, "psn"],
+    effect: [40, "psn"],
   },
   smog: {
     kind: "damage",
@@ -1372,7 +1372,7 @@ export const rawMoveList = {
     category: "special",
     power: 20,
     acc: 70,
-    effect: [40.4, "psn"],
+    effect: [40, "psn"],
   },
   smokescreen: {
     kind: "stage",
@@ -1450,7 +1450,7 @@ export const rawMoveList = {
     category: "physical",
     power: 65,
     acc: 100,
-    effect: [30.1, "flinch"],
+    effect: [30, "flinch"],
     flag: "minimize",
     contact: true,
   },
@@ -1644,7 +1644,7 @@ export const rawMoveList = {
     category: "special",
     power: 120,
     acc: 70,
-    effect: [10.2, "par"],
+    effect: [10, "par"],
   },
   thunderbolt: {
     kind: "damage",
@@ -1655,7 +1655,7 @@ export const rawMoveList = {
     category: "special",
     power: 95,
     acc: 100,
-    effect: [10.2, "par"],
+    effect: [10, "par"],
   },
   thunderpunch: {
     kind: "damage",
@@ -1666,7 +1666,7 @@ export const rawMoveList = {
     category: "physical",
     power: 75,
     acc: 100,
-    effect: [10.2, "par"],
+    effect: [10, "par"],
     contact: true,
   },
   thundershock: {
@@ -1678,7 +1678,7 @@ export const rawMoveList = {
     category: "special",
     power: 40,
     acc: 100,
-    effect: [10.2, "par"],
+    effect: [10, "par"],
   },
   thunderwave: {
     kind: "status",
@@ -1994,7 +1994,7 @@ export const rawMoveList = {
     category: "physical",
     power: 100,
     acc: 50,
-    effect: [99.6, "confusion"],
+    effect: [100, "confusion"],
     contact: true,
   },
   encore: {
@@ -2169,7 +2169,7 @@ export const rawMoveList = {
     category: "special",
     power: 55,
     acc: 95,
-    effect: [99.6, [["spe", -1]]],
+    effect: [100, [["spe", -1]]],
   },
   irontail: {
     kind: "damage",
@@ -2303,7 +2303,7 @@ export const rawMoveList = {
     category: "special",
     power: 20,
     acc: 100,
-    effect: [99.6, [["acc", -1]]],
+    effect: [100, [["acc", -1]]],
   },
   nightmare: {kind: "nightmare", name: "Nightmare", pp: 15, type: "ghost", range: "Adjacent"},
   octazooka: {
@@ -2676,7 +2676,7 @@ export const rawMoveList = {
     power: 40,
     acc: 100,
     noMetronome: true,
-    effect: [99.6, "thief"],
+    effect: [100, "thief"],
     kingsRock: true,
     noAssist: true,
     contact: true,
@@ -2741,7 +2741,7 @@ export const rawMoveList = {
     category: "special",
     power: 100,
     acc: 50,
-    effect: [99.6, "par"],
+    effect: [100, "par"],
   },
   aerialace: {
     kind: "damage",

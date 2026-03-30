@@ -1003,7 +1003,14 @@ export function tryDamage(
     return dealt;
   }
 
-  if (!battle.rand100(chance)) {
+  /*
+   * ld b, XX percent + 1
+   * call BattleRandom      ; a = 0-255
+   * cp b
+   * ret nc                 ; ret if a >= b
+   * ; Do the effect
+   */
+  if (battle.rng.int(0, 255) >= DamageCalc.P(chance) + 1) {
     return dealt;
   }
 

@@ -284,7 +284,13 @@ export const tryDamage = (
     target.unstatus(battle, "thaw");
     // TODO: can you thaw and then burn?
     return dealt;
-  } else if (!battle.rand100(chance) || (hadSub && !effectSelf)) {
+  } else if (hadSub && !effectSelf) {
+    return dealt;
+  } else if (battle.rng.int(0, 255) >= chance) {
+    /**
+     * Gen2 Bug: moves with 100% effect chance have a 1/256 chance to not trigger
+     * https://github.com/pret/pokecrystal/blob/c73ab9e9c9a8b6eaee38f19fdcf956c1baf268ea/engine/battle/effect_commands.asm#L1864
+     */
     return dealt;
   }
 
