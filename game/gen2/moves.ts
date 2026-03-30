@@ -146,8 +146,12 @@ export const moveScripts: Partial<MoveScripts> = {
 export const moveOverrides: Partial<MovePropOverrides> = {
   dmg: {
     counter(_battle, user) {
-      return !user.v.lastHitBy || user.v.lastHitBy.special ? 0 : user.v.retaliateDamage * 2;
+      if (!user.v.lastHitBy || user.v.lastHitBy.special) {
+        return 0;
+      }
+      return Math.min(user.v.retaliateDamage << 1, 0xffff);
     },
+    bide: (_battle, user) => Math.min((user.v.bide?.dmg ?? 0) << 1, 0xffff),
   },
   acc: {
     thunder: thunderAccOverride,
@@ -196,7 +200,7 @@ export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
   skullbash: {charge: [["def", +1]]},
   sludge: {effect: [30, "psn"]},
   stomp: {flag: "minimize"},
-  struggle: {type: "???", recoil: 4, pp: 1},
+  struggle: {recoil: 4, pp: 1},
   thunder: {ignore: ["fly", "bounce", "skydrop"], effect: [30, "par"]},
   triattack: {effect: [20, "tri_attack"]},
   wingattack: {power: 60},

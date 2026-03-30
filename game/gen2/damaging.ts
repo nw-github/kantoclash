@@ -1,14 +1,13 @@
 import type {ActivePokemon, Battle} from "../battle";
 import type {DamagingMove} from "../moves";
-import {checkUsefulness} from "../damaging";
-import {hazards, idiv, randChoiceWeighted, VF, Range} from "../utils";
+import {hazards, VF} from "../utils";
 
 export const tryDamage = (
   self: DamagingMove,
   battle: Battle,
   user: ActivePokemon,
   target: ActivePokemon,
-  spread: bool,
+  _spread: bool,
   power?: number,
 ): number => {
   const checkThrashing = () => {
@@ -21,41 +20,34 @@ export const tryDamage = (
     }
   };
 
-  if (self.range === Range.AllAdjacent) {
-    spread = false;
-  }
-
-  const {eff, fail, type, abilityImmunity} = checkUsefulness(self, battle, user, target);
-  if ((self.flag === "drain" || self.flag === "dream_eater") && target.v.substitute) {
-    user.v.furyCutter = 0;
-    battle.miss(user, target);
-    return 0;
-  }
-
   if (self.flag === "explosion") {
-    // Explosion into destiny bond, who dies first?
     user.damage(user.base.hp, user, battle, false, "explosion", true);
   }
 
   const protect = target.v.hasFlag(VF.protect);
-  if (eff === 0 || fail || protect) {
+  let isCrit = battle.gen.rollCrit(battle, user, target, self);
+  const {eff, dmg, miss, type} = battle.gen.getDamage({
+    battle,
+    user,
+    target,
+    move: self,
+    isCrit,
+    rng: self.flag === "norand" ? null : undefined,
+    power,
+  });
+  if (eff === 0 || miss || protect) {
     user.v.furyCutter = 0;
     if (user.v.thrashing?.move?.flag === "rollout") {
       user.v.thrashing = undefined;
     }
 
     if (eff === 0) {
-      if (abilityImmunity) {
-        battle.ability(target);
-      }
-
       battle.info(target, "immune");
-    } else if (fail) {
+    } else if (miss) {
       battle.miss(user, target);
     } else if (protect) {
       battle.info(target, "protect");
       if (self.flag === "crash") {
-        const {dmg} = getDamage(self, battle, user, target, {});
         battle.gen.handleCrashDamage(battle, user, target, dmg);
       }
     }
@@ -68,39 +60,59 @@ export const tryDamage = (
 
     user.v.furyCutter = 0;
     if (self.flag === "crash") {
-      const {dmg} = getDamage(self, battle, user, target, {});
       battle.gen.handleCrashDamage(battle, user, target, dmg);
     } else if (self.flag === "ohko" && self !== battle.gen.moveList.guillotine) {
       // In Gen 2, Horn Drill and Fissure can be countered for max damage on miss
-      target.v.retaliateDamage = 65535;
+      target.v.retaliateDamage = dmg;
     }
     checkThrashing();
     return 0;
-  }
-
-  if (self.flag === "present") {
-    const result = randChoiceWeighted(battle.rng, [40, 80, 120, -4], [40, 30, 10, 20]);
-    if (result < 0) {
-      if (target.base.isMaxHp()) {
-        battle.info(target, "fail_present");
-        return 0;
-      }
-
-      target.recover(Math.max(idiv(target.base.stats.hp, 4), 1), user, battle, "present");
+  } else if (dmg < 0) {
+    if (target.base.isMaxHp()) {
+      battle.info(target, "fail_present");
       return 0;
     }
-    power = result;
+
+    target.recover(-dmg, user, battle, "present");
+    return 0;
   }
 
   let hadSub = target.v.substitute !== 0,
     dealt = 0,
     dead = false,
-    event,
     endured = false,
-    band = false;
+    band = false,
+    beatUpFail = false;
+
+  // command BattleCommand_ApplyDamage
+  const applyDamage = (dmg: number) => {
+    if (!band) {
+      band = battle.gen.rng.tryFocusBand(battle);
+    }
+
+    if (target.v.hasFlag(VF.endure) && dmg >= target.base.hp) {
+      endured = true;
+    }
+
+    // command falseswipe BattleCommand_FalseSwipe
+    if (band || endured || (self.flag === "false_swipe" && dmg >= target.base.hp)) {
+      // not sure why, but it also resets wCriticalHit if its not equal to 2 (OHKO flag)
+      dmg = target.base.hp - 1;
+    }
+
+    let event;
+    ({dead, event, dealt} = target.damage2(battle, {
+      dmg,
+      src: user,
+      why: self.flag === "ohko" ? "ohko" : "attacked",
+      isCrit,
+    }));
+    return {dead, event};
+  };
 
   if (self.flag === "beatup") {
-    let dmg, isCrit;
+    let dmg;
+    beatUpFail = true;
     for (const poke of user.owner.team) {
       if (poke.status || !poke.hp) {
         continue;
@@ -109,9 +121,19 @@ export const tryDamage = (
       battle.event({type: "beatup", name: poke.name});
 
       hadSub = target.v.substitute !== 0;
-      ({dmg, isCrit, endured, band} = getDamage(self, battle, user, target, {band, beatUp: poke}));
-      ({dead, event, dealt} = target.damage2(battle, {dmg, src: user, why: "attacked", isCrit}));
-      if (dead || user.base.hp === 0) {
+      isCrit = false;
+      beatUpFail = false;
+      ({dmg} = battle.gen.getDamage({
+        battle,
+        user,
+        target,
+        move: self,
+        isCrit,
+        power,
+        beatUp: poke,
+      }));
+
+      if (applyDamage(dmg).dead) {
         break;
       }
     }
@@ -128,19 +150,23 @@ export const tryDamage = (
     };
 
     const count = counts[self.flag];
-    let dmg, isCrit;
-    for (let hits = 0; !dead && user.base.hp && !endured && hits < count; hits++) {
+    let dmg, event;
+    for (let hits = 1; !dead && hits <= count; hits++) {
       hadSub = target.v.substitute !== 0;
-      ({dmg, isCrit, endured, band} = getDamage(self, battle, user, target, {
-        tripleKick: self.flag === "triple" ? hits + 1 : 1,
-        band,
+      isCrit = battle.gen.rollCrit(battle, user, target, self);
+      ({dmg} = battle.gen.getDamage({
+        battle,
+        user,
+        target,
+        move: self,
+        isCrit,
         power,
+        tripleKick: self.flag === "triple" ? hits : 1,
       }));
-
       if (event) {
         event.hitCount = 0;
       }
-      ({dead, event, dealt} = target.damage(dmg, user, battle, isCrit, "attacked", false, eff));
+      ({dead, event} = applyDamage(dmg));
       event.hitCount = hits + 1;
     }
 
@@ -149,18 +175,7 @@ export const tryDamage = (
     }
     dealt = 0;
   } else {
-    let dmg, isCrit;
-    ({dmg, isCrit, endured, band} = getDamage(self, battle, user, target, {power, spread}));
-    ({dealt, dead, event} = target.damage(
-      dmg,
-      user,
-      battle,
-      isCrit,
-      self.flag === "ohko" ? "ohko" : "attacked",
-      false,
-      eff,
-    ));
-
+    applyDamage(dmg);
     if (!hadSub && target.v.bide) {
       target.v.bide.dmg += dealt;
     }
@@ -173,7 +188,7 @@ export const tryDamage = (
     user.damage(Math.max(Math.floor(dealt / self.recoil), 1), user, battle, false, "recoil", true);
   }
 
-  if (user.base.hp && (self.flag === "drain" || self.flag === "dream_eater")) {
+  if (self.flag === "drain" || self.flag === "dream_eater") {
     user.recover(Math.max(Math.floor(dealt / 2), 1), target, battle, "drain");
   } else if (self.flag === "payday") {
     battle.info(user, "payday");
@@ -203,10 +218,11 @@ export const tryDamage = (
     }
   }
 
-  if (endured) {
-    battle.info(target, "endure_hit");
-  } else if (band) {
+  // Focus band text is prioritized over endure
+  if (band) {
     battle.info(target, "endure_band");
+  } else if (endured) {
+    battle.info(target, "endure_hit");
   }
 
   if (self.flag === "recharge") {
@@ -224,7 +240,7 @@ export const tryDamage = (
     target.v.flinch = true;
   }
 
-  if (!event) {
+  if (beatUpFail) {
     // beat up failure
     battle.info(user, "fail_generic");
   } else if (!hadSub) {

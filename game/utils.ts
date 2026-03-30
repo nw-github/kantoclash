@@ -149,8 +149,6 @@ export enum Range {
 
 export const isSpreadMove = (range: Range) => range >= Range.All;
 
-export const floatTo255 = (num: number) => Math.floor((num / 100) * 255);
-
 export const clamp = (num: number, min: number, max: number) => Math.max(Math.min(num, max), min);
 
 export const hpPercentExact = (current: number, max: number) => (current / max) * 100;

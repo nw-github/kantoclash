@@ -318,7 +318,7 @@ export class Battle {
           if (poke.choice.move.kind === "switch" && isLead) {
             poke.base = poke.choice.move.poke;
           }
-          poke.choice.spe = this.gen.getStat(this, poke, "spe");
+          poke.choice.spe = this.gen.getSpeed(this, poke);
         }
       }
     }

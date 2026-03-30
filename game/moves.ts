@@ -1425,7 +1425,7 @@ export const moveOverrides: MovePropOverrides = {
       // Bide doesn't have an overflow check
       // https://github.com/pret/pokered/blob/fbcf7d0e19a3a2db505440d3ccd3d40ca996c15c/engine/battle/core.asm#L5878
       // https://github.com/pret/pokered/blob/fbcf7d0e19a3a2db505440d3ccd3d40ca996c15c/engine/battle/core.asm#L3503
-      return ((user.v.bide?.dmg ?? 0) * 2) & 0xffff;
+      return ((user.v.bide?.dmg ?? 0) << 1) & 0xffff;
     },
     counter(battle, _, target) {
       // https://www.youtube.com/watch?v=ftTalHMjPRY
@@ -1447,7 +1447,7 @@ export const moveOverrides: MovePropOverrides = {
       }
       // Counter can crit, but it won't do any more damage
       // Counter checks for an overflow and sets the damage to 0xffff in that case
-      return Math.min(battle.gen1LastDamage * 2, 0xffff);
+      return Math.min(battle.gen1LastDamage << 1, 0xffff);
     },
     nightshade: (_, user) => user.base.level,
     psywave(battle, user) {
@@ -1460,7 +1460,10 @@ export const moveOverrides: MovePropOverrides = {
     seismictoss: (_, user) => user.base.level,
     superfang: (_battle, _, target) => Math.max(Math.floor(target.base.hp / 2), 1),
     mirrorcoat(_battle, user) {
-      return !user.v.lastHitBy || !user.v.lastHitBy.special ? 0 : user.v.retaliateDamage * 2;
+      if (!user.v.lastHitBy || !user.v.lastHitBy.special) {
+        return 0;
+      }
+      return Math.min(user.v.retaliateDamage << 1, 0xffff);
     },
     endeavor: (_, user, target) => Math.max(0, target.base.hp - user.base.hp),
   },

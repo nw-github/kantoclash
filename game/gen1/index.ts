@@ -119,41 +119,6 @@ export const scaleAccuracy255 = (acc: number, user: ActivePokemon, target: Activ
   return clamp(acc, 1, 255);
 };
 
-export type CalcDamageParams = {
-  lvl: number;
-  pow: number;
-  atk: number;
-  def: number;
-  eff: number;
-  isCrit: bool;
-  hasStab: bool;
-  rand: Random | number | false;
-
-  itemBonus?: number;
-  weather?: "bonus" | "penalty";
-  tripleKick?: number;
-  /**
-   * Rollout:     2**(n + d) | n: min(consecutive hits, 4), d: defense curl used
-   * Fury Cutter: 2**n | n: min(consecutive hits, 4)
-   * Rage:        number of times user was damaged while using rage
-   */
-  moveMod?: number;
-  /**
-   * Pursuit & target is switching
-   * "minimize" flag  and target has minimized
-   * ignore + punish and target is in semi-invulnerable move
-   * SmellingSalt and target is paralyzed
-   * Facade and target is burned
-   */
-  doubleDmg?: bool;
-  stockpile?: number;
-  helpingHand?: bool;
-  screen?: bool;
-  spread?: bool;
-  flashFire?: bool;
-  technician?: bool;
-};
-
 // prettier-ignore
 class Rng {
   maxThrash = 3;
@@ -290,8 +255,14 @@ type BaseDamageParams = {
   D: number; // u8
 };
 
+type StabParams = {
+  type: Type;
+  user: ActivePokemon;
+  target: ActivePokemon;
+};
+
 // eslint-disable-next-line @typescript-eslint/no-extraneous-class
-class DamageCalc {
+export class DamageCalc {
   static P(v: number) {
     return Math.floor((v * 255) / 100);
   }
@@ -335,11 +306,10 @@ class DamageCalc {
       D = Math.max(D >> 1, 1);
     }
 
-    const dmg = Math.min(idiv(idiv((idiv(level * 2, 5) + 2) * power * A, D), 50), 997) + 2;
-    return {dmg, miss: false};
+    return Math.min(idiv(idiv((idiv(level * 2, 5) + 2) * power * A, D), 50), 997) + 2;
   }
 
-  static applyTypeModifiers(dmg: number, type: Type, user: ActivePokemon, target: ActivePokemon) {
+  static applyTypeModifiers(dmg: number, {type, user, target}: StabParams) {
     if (user.v.hasAnyType(type)) {
       // Stab does not check for overflow
       dmg = (dmg + (dmg >> 1)) & 0xffff;
@@ -375,13 +345,24 @@ export type GetDamageParams = {
   target: ActivePokemon;
   move: DamagingMove;
   isCrit: bool;
-  skipRandom?: bool;
+  /**
+   * If RNG is null, skip damage randomization. If RNG is a number, use that number. Otherwise,
+   * use battle.rng to generate a number.
+   */
+  rng?: number | null;
   skipType?: bool;
+
+  // Gen 2+
+
+  /** Which triple kick (a number between 1 and 3) */
+  tripleKick?: number;
+  power?: number;
+  /** The party mon for this beat up attack */
+  beatUp?: Pokemon;
 };
 
 export class Generation1 {
   static Rng = Rng;
-  static Calc = DamageCalc;
 
   id = 1;
   maxIv = 15;
@@ -550,42 +531,52 @@ export class Generation1 {
     return true;
   }
 
-  getDamage({battle, user, target, move, isCrit, skipRandom, skipType}: GetDamageParams) {
-    let result: {eff?: number; dmg: number; miss: bool};
-    if (move.fixedDamage) {
-      // in the real game, this is handled inside calcBaseDamage
-      if (move.flag === "ohko") {
-        if (!battle.gen.canOHKOHit(user, target)) {
-          result = {dmg: 0, miss: true};
-        } else {
-          result = {dmg: move.fixedDamage, miss: false};
-        }
-      }
-
-      result = {dmg: move.fixedDamage, miss: false};
-    } else if (this.move.overrides.dmg[move.id!]) {
-      // Counter, Bide
-      const tmp = this.getMoveDamage(move, battle, user, target);
-      result = {dmg: tmp ?? 0, miss: !!tmp};
-    } else {
-      const {A, D, level} = DamageCalc.getDamageVariables(
-        user,
-        target,
-        this.isSpecial(move),
-        isCrit,
-      );
-      result = DamageCalc.calcBaseDamage({level, A, D, power: move.power, move});
-      if (!result.miss && !skipType) {
-        result = DamageCalc.applyTypeModifiers(result.dmg, move.type, user, target);
-      }
-
-      if (!result.miss && !skipRandom) {
-        result.dmg = DamageCalc.randomizeDamage(result.dmg, battle.rng);
-      }
+  getDamage({battle, user, target, move, isCrit, rng, skipType}: GetDamageParams) {
+    let eff = 1,
+      dmg = 0,
+      miss = false,
+      res;
+    if ((res = this.getFixedDamage(battle, user, target, move))) {
+      battle.gen1LastDamage = dmg;
+      return res;
     }
 
-    battle.gen1LastDamage = result.dmg;
-    return result;
+    const {A, D, level} = DamageCalc.getDamageVariables(user, target, this.isSpecial(move), isCrit);
+    dmg = DamageCalc.calcBaseDamage({level, A, D, power: move.power, move});
+    if (!skipType) {
+      ({dmg, miss, eff} = DamageCalc.applyTypeModifiers(dmg, {type: move.type, user, target}));
+    }
+
+    const random = !rng && rng !== null ? battle.rng : rng;
+    if (!miss && random) {
+      dmg = DamageCalc.randomizeDamage(dmg, random);
+    }
+
+    battle.gen1LastDamage = dmg;
+    return {dmg, miss, eff, type: move.type};
+  }
+
+  protected getFixedDamage(
+    battle: Battle,
+    user: ActivePokemon,
+    target: ActivePokemon,
+    move: DamagingMove,
+  ) {
+    let dmg = 0,
+      miss = false;
+    if (move.fixedDamage) {
+      dmg = move.fixedDamage;
+      // in the real game, this is handled inside calcBaseDamage
+      if (move.flag === "ohko" && !this.canOHKOHit(user, target)) {
+        miss = true;
+      }
+      return {dmg, miss, eff: 1};
+    } else if (this.move.overrides.dmg[move.id!]) {
+      // Counter, Bide
+      dmg = this.getMoveDamage(move, battle, user, target) ?? 0;
+      miss = !!dmg;
+      return {dmg, miss, eff: 1, type: move.type};
+    }
   }
 
   getConfusionSelfDamage(battle: Battle, user: ActivePokemon) {
@@ -599,7 +590,7 @@ export class Generation1 {
     target.v.stats.def = olddef;
 
     // Confusion damage is not adjusted for type effectiveness/stab or varied by a random factor
-    return DamageCalc.calcBaseDamage({power: 40, A, D, level}).dmg;
+    return DamageCalc.calcBaseDamage({power: 40, A, D, level});
   }
 
   applyStatusDebuff(poke: ActivePokemon) {
@@ -627,6 +618,10 @@ export class Generation1 {
     } else if (!user.v.substitute) {
       user.damage(1, user, battle, false, "crash", true);
     }
+  }
+
+  rollCrit(battle: Battle, user: ActivePokemon, _target: ActivePokemon, move: DamagingMove) {
+    return this.rng.tryCrit(battle, user, move.flag === "high_crit");
   }
 
   calcStat(
@@ -665,6 +660,10 @@ export class Generation1 {
   getMaxPP(move: Move | MoveId) {
     move = typeof move === "string" ? this.moveList[move] : move;
     return move.pp === 1 ? 1 : Math.min(Math.floor((move.pp * 8) / 5), 61);
+  }
+
+  getSpeed(_battle: Battle, user: ActivePokemon) {
+    return user.v.stats.spe;
   }
 
   canOHKOHit(user: ActivePokemon, target: ActivePokemon) {
@@ -1010,11 +1009,16 @@ export function tryDamage(
     }
   };
 
+  const trapTarget = () => {
+    target.v.trapped = {move: self, turns: -1, user};
+    user.v.trapping = {move: self, turns: battle.gen.rng.bindingMoveTurns(battle, user)};
+  };
+
   if (self.flag === "trap") {
     target.v.recharge = undefined;
   }
 
-  const isCrit = battle.gen.rng.tryCrit(battle, user, self.flag === "high_crit");
+  const isCrit = battle.gen.rollCrit(battle, user, target, self);
   // eslint-disable-next-line prefer-const
   let {dmg, eff, miss} = battle.gen.getDamage({battle, user, target, move: self, isCrit});
   if (miss || !battle.checkAccuracy(self, user, target, !battle.gen.isSpecial(self, self.type))) {
@@ -1026,7 +1030,7 @@ export function tryDamage(
       } else {
         battle.info(target, "immune");
         if (self.flag === "trap") {
-          trapTarget(self, battle, user, target);
+          trapTarget();
         } else if (self.flag === "crash") {
           checkThrashing();
           return 0;
@@ -1116,7 +1120,7 @@ export function tryDamage(
   if (self.flag === "recharge") {
     user.v.recharge = {move: self, target};
   } else if (self.flag === "trap") {
-    trapTarget(self, battle, user, target);
+    trapTarget();
   }
 
   if (!self.effect) {
@@ -1159,14 +1163,4 @@ export function tryDamage(
     target.status(effect, battle, user, {});
   }
   return dealt;
-}
-
-function trapTarget(
-  self: DamagingMove,
-  battle: Battle,
-  user: ActivePokemon,
-  target: ActivePokemon,
-) {
-  target.v.trapped = {move: self, turns: -1, user};
-  user.v.trapping = {move: self, turns: battle.gen.rng.bindingMoveTurns(battle, user)};
 }
