@@ -268,7 +268,6 @@ export class Generation1 {
 
     if (user.v.flinch) {
       battle.info(user, "flinch");
-      user.v.recharge = undefined;
       return false;
     } else if (user.v.trapped) {
       battle.info(user, "trapped");
@@ -1020,9 +1019,17 @@ export function tryDamage(
     target.modStages(effect, battle, user, true);
   } else if (effect === "flinch") {
     target.v.flinch = true;
+    // Flinching moves clear hyper beam from the target
+    // https://github.com/pret/pokered/blob/fbcf7d0e19a3a2db505440d3ccd3d40ca996c15c/engine/battle/effects.asm#L992
+    target.v.recharge = undefined;
   } else if (effect !== "knockoff" && effect !== "thief") {
     if (target.base.status || target.v.types.includes(self.type)) {
       return dealt;
+    }
+
+    if (effect === "frz") {
+      // https://github.com/pret/pokered/blob/fbcf7d0e19a3a2db505440d3ccd3d40ca996c15c/engine/battle/effects.asm#L249
+      target.v.recharge = undefined;
     }
 
     target.status(effect, battle, user, {});
