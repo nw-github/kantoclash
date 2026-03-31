@@ -1,7 +1,7 @@
 import type {Generation} from "./gen";
 import type {AbilityId, SpeciesId} from "./species";
 import type {MoveId} from "./moves";
-import type {StageStats, Stats, StatStageId, Type} from "./utils";
+import type {StageStats, Stats, Type} from "./utils";
 import type {ItemData, ItemId} from "./item";
 
 export type Status = "psn" | "par" | "slp" | "frz" | "tox" | "brn";
@@ -402,31 +402,4 @@ class TransformedPokemon extends Pokemon {
 
 export const transform = (user: Pokemon, target: Pokemon) => {
   return new TransformedPokemon(user, target) as Pokemon;
-};
-
-export const applyItemStatBoost = (poke: Pokemon, stat: StatStageId, value: number) => {
-  const item = poke.item;
-  if (!item) {
-    return value;
-  }
-
-  if (item?.halveSpeed && stat === "spe") {
-    return Math.floor(value / 2);
-  } else if (item?.choice === stat) {
-    return value + Math.floor(value / 2);
-  }
-
-  const boostItem = item?.boostStats?.[poke.real.speciesId];
-  if (boostItem && boostItem.stats.includes(stat) && (boostItem.transformed || !poke.transformed)) {
-    value += Math.floor(value * boostItem.amount);
-  }
-
-  if (poke.transformed && poke.real.speciesId !== poke.speciesId) {
-    const boostItem = item?.boostStats?.[poke.speciesId];
-    if (boostItem && boostItem.stats.includes(stat) && boostItem.transformed) {
-      value += Math.floor(value * boostItem.amount);
-    }
-  }
-
-  return value;
 };

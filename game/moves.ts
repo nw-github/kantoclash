@@ -1,5 +1,5 @@
 import {rawMoveList} from "./data/moves";
-import {VF, MC, Range, stageKeys, idiv, stageStatKeys, HP_TYPES} from "./utils";
+import {VF, MC, Range, stageKeys, idiv, stageStatKeys, HP_TYPES, TypeMod} from "./utils";
 import type {FailReason, InfoReason, RecoveryReason} from "./events";
 import type {Pokemon, Status} from "./pokemon";
 import type {StageId, Type, Weather, ScreenId, HazardId} from "./utils";
@@ -469,8 +469,6 @@ export const moveScripts: MoveScripts = {
       if (user.lastChosenMove !== battle.gen.moveList.sleeptalk) {
         user.v.thrashing = {move: this, turns: 5, max: false};
       }
-    } else if (this.flag === "fury_cutter") {
-      user.v.furyCutter++;
     } else if (this.flag === "bide") {
       if (!user.v.bide) {
         user.v.bide = {move: this, turns: battle.gen.rng.bideDuration(battle), dmg: 0};
@@ -493,21 +491,9 @@ export const moveScripts: MoveScripts = {
         return battle.info(user, "fail_generic");
       }
 
-      const {dmg} = battle.gen.getDamage({
-        user,
-        target,
-        battle,
-        move: this,
-        skipType: true,
-        isCrit: false,
-      });
+      const {dmg} = battle.gen.getDamage({user, target, battle, move: this, isCrit: false});
       target.futureSight = {damage: dmg, turns: 3, move: this};
-      return battle.event({
-        type: "futuresight",
-        src: user.id,
-        move: this.id!,
-        release: false,
-      });
+      return battle.event({type: "futuresight", src: user.id, move: this.id!, release: false});
     }
 
     if (this.range === Range.Self) {
@@ -976,7 +962,7 @@ export const moveScripts: MoveScripts = {
     }
 
     const types = battle.gen.typeMatchupTable.filter(([atk, , mod]) => {
-      return atk === lastType && mod < 10;
+      return atk === lastType && mod < TypeMod.EFFECTIVE;
     });
     const v = user.setVolatile("types", [battle.rng.choice(types)![1]]);
     battle.event({

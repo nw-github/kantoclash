@@ -44,7 +44,7 @@
     "name": "Metal Powder",
     "desc": "Boosts Ditto's Def and SpD by 50%.",
     "fling": 10,
-    "boostStats": {"ditto": {"stats": ["def", "spd"], "transformed": true, "amount": 0.5}}
+    "boostStats": {"ditto": {"stats": ["def", "spd"], "transformed": true, "percent": 100}}
   },
   "nugget": {"name": "Nugget", "fling": 30},
   "pokedoll": {"name": "Poke Doll"},
@@ -193,7 +193,7 @@
     "name": "Thick Club",
     "desc": "Boosts Marowak's Atk by 50%.",
     "fling": 90,
-    "boostStats": {"marowak": {"stats": ["atk"], "transformed": false, "amount": 1}}
+    "boostStats": {"marowak": {"stats": ["atk"], "transformed": false, "percent": 100}}
   },
   "focusband": {
     "name": "Focus Band",
@@ -257,7 +257,7 @@
     "name": "Light Ball",
     "desc": "Boosts Pikachu's SpA by 50%.",
     "fling": 30,
-    "boostStats": {"pikachu": {"stats": ["spa"], "transformed": false, "amount": 1}}
+    "boostStats": {"pikachu": {"stats": ["spa"], "transformed": false, "percent": 100}}
   },
   "friendball": {"name": "Friend Ball"},
   "moonball": {"name": "Moon Ball"},
@@ -555,21 +555,21 @@
     "desc": "Boosts Latios/Latias's SpA and SpD by 50%.",
     "fling": 30,
     "boostStats": {
-      "latias": {"stats": ["spa", "spd"], "transformed": false, "amount": 0.5},
-      "latios": {"stats": ["spa", "spd"], "transformed": false, "amount": 0.5}
+      "latias": {"stats": ["spa", "spd"], "transformed": false, "percent": 50},
+      "latios": {"stats": ["spa", "spd"], "transformed": false, "percent": 50}
     }
   },
   "deepseatooth": {
     "name": "DeepSeaTooth",
     "desc": "Boosts Clamperl's SpA by 50%.",
     "fling": 90,
-    "boostStats": {"clamperl": {"stats": ["spa"], "transformed": false, "amount": 1}}
+    "boostStats": {"clamperl": {"stats": ["spa"], "transformed": false, "percent": 100}}
   },
   "deepseascale": {
     "name": "DeepSeaScale",
     "desc": "Boosts Clamperl's SpD by 50%.",
     "fling": 30,
-    "boostStats": {"clamperl": {"stats": ["spd"], "transformed": false, "amount": 1}}
+    "boostStats": {"clamperl": {"stats": ["spd"], "transformed": false, "percent": 100}}
   },
   "silkscarf": {
     "name": "Silk Scarf",
@@ -834,7 +834,7 @@
     "name": "Quick Powder",
     "fling": 10,
     "desc": "Doubles Ditto's Spe.",
-    "boostStats": {"ditto": {"stats": ["spe"], "transformed": false, "amount": 1}}
+    "boostStats": {"ditto": {"stats": ["spe"], "transformed": false, "percent": 100}}
   },
   "focussash": {"name": "Focus Sash", "fling": 10, "desc": "Endures fatal hits from full HP."},
   "zoomlens": {"name": "Zoom Lens", "fling": 10, "desc": "Boosts accuracy by 20%.", "boostAcc": 20},

@@ -31,7 +31,7 @@ export type ItemData = {
   extendWeather?: Weather;
   statusOrb?: Status;
   boostStats?: Partial<
-    Record<SpeciesId, {stats: StatStageId[]; amount: number; transformed: bool}>
+    Record<SpeciesId, {stats: StatStageId[]; percent: number; transformed: bool}>
   >;
   boostCrit?: SpeciesId;
 };

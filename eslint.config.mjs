@@ -7,6 +7,7 @@ export default withNuxt({
     "vue/no-mutating-props": 0,
     "vue/html-self-closing": 0,
     "@typescript-eslint/no-explicit-any": 0,
+    "@typescript-eslint/no-extraneous-class": 0,
     "vue/multi-word-component-names": 0,
     "vue/require-default-prop": 0,
   },

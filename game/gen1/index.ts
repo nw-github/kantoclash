@@ -20,6 +20,9 @@ import {
   type Type,
   type Weather,
   type StatStageId,
+  TypeMod,
+  isSpecialType,
+  type Endure,
 } from "../utils";
 import {itemList, type ItemId} from "../item";
 import {UNOWN_FORM, type Pokemon, type FormId, type Gender, type Nature} from "../pokemon";
@@ -117,7 +120,6 @@ type StabParams = {
   target: ActivePokemon;
 };
 
-// eslint-disable-next-line @typescript-eslint/no-extraneous-class
 export class DamageCalc {
   static P(v: number) {
     return Math.floor((v * 255) / 100);
@@ -174,8 +176,8 @@ export class DamageCalc {
     let eff = 1;
     for (const [atktype, deftype, modifier] of typeMatchupTable) {
       if (atktype === type && target.v.hasAnyType(deftype)) {
-        dmg = idiv(dmg * modifier, 10);
-        eff *= modifier / 10;
+        dmg = idiv(dmg * modifier, TypeMod.EFFECTIVE);
+        eff *= modifier / TypeMod.EFFECTIVE;
         if (dmg === 0) {
           return {dmg: 0, eff, miss: true};
         }
@@ -206,11 +208,10 @@ export type GetDamageParams = {
    * use battle.rng to generate a number.
    */
   rng?: number | null;
-  skipType?: bool;
 
   // Gen 2+
 
-  /** Which triple kick (a number between 1 and 3) */
+  /** Gen 2 only: Which triple kick (a number between 1 and 3) */
   tripleKick?: number;
   power?: number;
   /** The party mon for this beat up attack */
@@ -306,7 +307,7 @@ export class Generation1 {
     }
 
     if (confuse) {
-      const dmg = this.getConfusionSelfDamage(battle, user);
+      const {dmg} = this.getConfusionSelfDamage(battle, user);
       if (!user.v.substitute) {
         user.damage(dmg, user, battle, false, "confusion");
       } else {
@@ -386,7 +387,7 @@ export class Generation1 {
     return true;
   }
 
-  getDamage({battle, user, target, move, isCrit, rng, skipType}: GetDamageParams) {
+  getDamage({battle, user, target, move, isCrit, rng}: GetDamageParams) {
     let eff = 1,
       dmg = 0,
       miss = false,
@@ -398,9 +399,7 @@ export class Generation1 {
 
     const {A, D, level} = DamageCalc.getDamageVariables(user, target, this.isSpecial(move), isCrit);
     dmg = DamageCalc.calcBaseDamage({level, A, D, power: move.power, move});
-    if (!skipType) {
-      ({dmg, miss, eff} = DamageCalc.applyTypeModifiers(dmg, {type: move.type, user, target}));
-    }
+    ({dmg, miss, eff} = DamageCalc.applyTypeModifiers(dmg, {type: move.type, user, target}));
 
     const random = !rng && rng !== null ? battle.rng : rng;
     if (!miss && random) {
@@ -420,7 +419,7 @@ export class Generation1 {
     if (move.fixedDamage) {
       const dmg = move.fixedDamage;
       // in the real game, this is handled inside calcBaseDamage
-      const miss = move.flag === "ohko" && !this.canOHKOHit(user, target);
+      const miss = move.flag === "ohko" && user.v.stats.spe < target.v.stats.spe;
       return {dmg, miss, eff: 1, type: move.type};
     } else if (this.move.overrides.dmg[move.id!]) {
       // Counter, Bide
@@ -429,7 +428,7 @@ export class Generation1 {
     }
   }
 
-  getConfusionSelfDamage(battle: Battle, user: ActivePokemon) {
+  getConfusionSelfDamage(battle: Battle, user: ActivePokemon): {dmg: number; endure?: Endure} {
     const target = battle.opponentOf(user.owner).active[0];
 
     // This is the exact hack the game does (pokered:HandleSelfConfusionDamage)
@@ -440,7 +439,7 @@ export class Generation1 {
     target.v.stats.def = olddef;
 
     // Confusion damage is not adjusted for type effectiveness/stab or varied by a random factor
-    return DamageCalc.calcBaseDamage({power: 40, A, D, level});
+    return {dmg: DamageCalc.calcBaseDamage({power: 40, A, D, level})};
   }
 
   applyStatusDebuff(poke: ActivePokemon) {
@@ -518,10 +517,6 @@ export class Generation1 {
 
   getSpeed(_battle: Battle, user: ActivePokemon) {
     return user.v.stats.spe;
-  }
-
-  canOHKOHit(user: ActivePokemon, target: ActivePokemon) {
-    return user.v.stats.spe >= target.v.stats.spe;
   }
 
   getGender(_desired: Gender | undefined, _species: Species, _atk: number): Gender | undefined {
@@ -779,28 +774,7 @@ export class Generation1 {
       return false;
     }
 
-    switch (overrideType ?? move.type) {
-      case "normal":
-      case "rock":
-      case "ground":
-      case "ghost":
-      case "poison":
-      case "bug":
-      case "flying":
-      case "fight":
-      case "steel":
-      case "???":
-        return false;
-      case "water":
-      case "grass":
-      case "fire":
-      case "electric":
-      case "ice":
-      case "psychic":
-      case "dragon":
-      case "dark":
-        return true;
-    }
+    return isSpecialType(overrideType ?? move.type);
   }
 
   handleRage(battle: Battle, poke: ActivePokemon) {
@@ -834,6 +808,17 @@ export class Generation1 {
       }
     }
     return eff;
+  }
+
+  tryAbilityImmunity(
+    _battle: Battle,
+    _user: ActivePokemon,
+    _target: ActivePokemon,
+    _self: Move,
+    _type: Type,
+    _eff: number,
+  ) {
+    return false;
   }
 }
 
@@ -1044,91 +1029,87 @@ export function tryDamage(
   return dealt;
 }
 
-const SUPER_EFFECTIVE = 20;
-const NOT_VERY_EFFECTIVE = 5;
-const NO_EFFECT = 0;
-
 const typeMatchupTable: [Type, Type, number][] = [
-  ["water", "fire", SUPER_EFFECTIVE],
-  ["fire", "grass", SUPER_EFFECTIVE],
-  ["fire", "ice", SUPER_EFFECTIVE],
-  ["grass", "water", SUPER_EFFECTIVE],
-  ["electric", "water", SUPER_EFFECTIVE],
-  ["water", "rock", SUPER_EFFECTIVE],
-  ["ground", "flying", NO_EFFECT],
-  ["water", "water", NOT_VERY_EFFECTIVE],
-  ["fire", "fire", NOT_VERY_EFFECTIVE],
-  ["electric", "electric", NOT_VERY_EFFECTIVE],
-  ["ice", "ice", NOT_VERY_EFFECTIVE],
-  ["grass", "grass", NOT_VERY_EFFECTIVE],
-  ["psychic", "psychic", NOT_VERY_EFFECTIVE],
-  ["fire", "water", NOT_VERY_EFFECTIVE],
-  ["grass", "fire", NOT_VERY_EFFECTIVE],
-  ["water", "grass", NOT_VERY_EFFECTIVE],
-  ["electric", "grass", NOT_VERY_EFFECTIVE],
-  ["normal", "rock", NOT_VERY_EFFECTIVE],
-  ["normal", "ghost", NO_EFFECT],
-  ["ghost", "ghost", SUPER_EFFECTIVE],
-  ["fire", "bug", SUPER_EFFECTIVE],
-  ["fire", "rock", NOT_VERY_EFFECTIVE],
-  ["water", "ground", SUPER_EFFECTIVE],
-  ["electric", "ground", NO_EFFECT],
-  ["electric", "flying", SUPER_EFFECTIVE],
-  ["grass", "ground", SUPER_EFFECTIVE],
-  ["grass", "bug", NOT_VERY_EFFECTIVE],
-  ["grass", "poison", NOT_VERY_EFFECTIVE],
-  ["grass", "rock", SUPER_EFFECTIVE],
-  ["grass", "flying", NOT_VERY_EFFECTIVE],
-  ["ice", "water", NOT_VERY_EFFECTIVE],
-  ["ice", "grass", SUPER_EFFECTIVE],
-  ["ice", "ground", SUPER_EFFECTIVE],
-  ["ice", "flying", SUPER_EFFECTIVE],
-  ["fight", "normal", SUPER_EFFECTIVE],
-  ["fight", "poison", NOT_VERY_EFFECTIVE],
-  ["fight", "flying", NOT_VERY_EFFECTIVE],
-  ["fight", "psychic", NOT_VERY_EFFECTIVE],
-  ["fight", "bug", NOT_VERY_EFFECTIVE],
-  ["fight", "rock", SUPER_EFFECTIVE],
-  ["fight", "ice", SUPER_EFFECTIVE],
-  ["fight", "ghost", NO_EFFECT],
-  ["poison", "grass", SUPER_EFFECTIVE],
-  ["poison", "poison", NOT_VERY_EFFECTIVE],
-  ["poison", "ground", NOT_VERY_EFFECTIVE],
-  ["poison", "bug", SUPER_EFFECTIVE],
-  ["poison", "rock", NOT_VERY_EFFECTIVE],
-  ["poison", "ghost", NOT_VERY_EFFECTIVE],
-  ["ground", "fire", SUPER_EFFECTIVE],
-  ["ground", "electric", SUPER_EFFECTIVE],
-  ["ground", "grass", NOT_VERY_EFFECTIVE],
-  ["ground", "bug", NOT_VERY_EFFECTIVE],
-  ["ground", "rock", SUPER_EFFECTIVE],
-  ["ground", "poison", SUPER_EFFECTIVE],
-  ["flying", "electric", NOT_VERY_EFFECTIVE],
-  ["flying", "fight", SUPER_EFFECTIVE],
-  ["flying", "bug", SUPER_EFFECTIVE],
-  ["flying", "grass", SUPER_EFFECTIVE],
-  ["flying", "rock", NOT_VERY_EFFECTIVE],
-  ["psychic", "fight", SUPER_EFFECTIVE],
-  ["psychic", "poison", SUPER_EFFECTIVE],
-  ["bug", "fire", NOT_VERY_EFFECTIVE],
-  ["bug", "grass", SUPER_EFFECTIVE],
-  ["bug", "fight", NOT_VERY_EFFECTIVE],
-  ["bug", "flying", NOT_VERY_EFFECTIVE],
-  ["bug", "psychic", SUPER_EFFECTIVE],
-  ["bug", "ghost", NOT_VERY_EFFECTIVE],
-  ["bug", "poison", SUPER_EFFECTIVE],
-  ["rock", "fire", SUPER_EFFECTIVE],
-  ["rock", "fight", NOT_VERY_EFFECTIVE],
-  ["rock", "ground", NOT_VERY_EFFECTIVE],
-  ["rock", "flying", SUPER_EFFECTIVE],
-  ["rock", "bug", SUPER_EFFECTIVE],
-  ["rock", "ice", SUPER_EFFECTIVE],
-  ["ghost", "normal", NO_EFFECT],
-  ["ghost", "psychic", NO_EFFECT],
-  ["fire", "dragon", NOT_VERY_EFFECTIVE],
-  ["water", "dragon", NOT_VERY_EFFECTIVE],
-  ["electric", "dragon", NOT_VERY_EFFECTIVE],
-  ["grass", "dragon", NOT_VERY_EFFECTIVE],
-  ["ice", "dragon", SUPER_EFFECTIVE],
-  ["dragon", "dragon", SUPER_EFFECTIVE],
+  ["water", "fire", TypeMod.SUPER_EFFECTIVE],
+  ["fire", "grass", TypeMod.SUPER_EFFECTIVE],
+  ["fire", "ice", TypeMod.SUPER_EFFECTIVE],
+  ["grass", "water", TypeMod.SUPER_EFFECTIVE],
+  ["electric", "water", TypeMod.SUPER_EFFECTIVE],
+  ["water", "rock", TypeMod.SUPER_EFFECTIVE],
+  ["ground", "flying", TypeMod.NO_EFFECT],
+  ["water", "water", TypeMod.NOT_VERY_EFFECTIVE],
+  ["fire", "fire", TypeMod.NOT_VERY_EFFECTIVE],
+  ["electric", "electric", TypeMod.NOT_VERY_EFFECTIVE],
+  ["ice", "ice", TypeMod.NOT_VERY_EFFECTIVE],
+  ["grass", "grass", TypeMod.NOT_VERY_EFFECTIVE],
+  ["psychic", "psychic", TypeMod.NOT_VERY_EFFECTIVE],
+  ["fire", "water", TypeMod.NOT_VERY_EFFECTIVE],
+  ["grass", "fire", TypeMod.NOT_VERY_EFFECTIVE],
+  ["water", "grass", TypeMod.NOT_VERY_EFFECTIVE],
+  ["electric", "grass", TypeMod.NOT_VERY_EFFECTIVE],
+  ["normal", "rock", TypeMod.NOT_VERY_EFFECTIVE],
+  ["normal", "ghost", TypeMod.NO_EFFECT],
+  ["ghost", "ghost", TypeMod.SUPER_EFFECTIVE],
+  ["fire", "bug", TypeMod.SUPER_EFFECTIVE],
+  ["fire", "rock", TypeMod.NOT_VERY_EFFECTIVE],
+  ["water", "ground", TypeMod.SUPER_EFFECTIVE],
+  ["electric", "ground", TypeMod.NO_EFFECT],
+  ["electric", "flying", TypeMod.SUPER_EFFECTIVE],
+  ["grass", "ground", TypeMod.SUPER_EFFECTIVE],
+  ["grass", "bug", TypeMod.NOT_VERY_EFFECTIVE],
+  ["grass", "poison", TypeMod.NOT_VERY_EFFECTIVE],
+  ["grass", "rock", TypeMod.SUPER_EFFECTIVE],
+  ["grass", "flying", TypeMod.NOT_VERY_EFFECTIVE],
+  ["ice", "water", TypeMod.NOT_VERY_EFFECTIVE],
+  ["ice", "grass", TypeMod.SUPER_EFFECTIVE],
+  ["ice", "ground", TypeMod.SUPER_EFFECTIVE],
+  ["ice", "flying", TypeMod.SUPER_EFFECTIVE],
+  ["fight", "normal", TypeMod.SUPER_EFFECTIVE],
+  ["fight", "poison", TypeMod.NOT_VERY_EFFECTIVE],
+  ["fight", "flying", TypeMod.NOT_VERY_EFFECTIVE],
+  ["fight", "psychic", TypeMod.NOT_VERY_EFFECTIVE],
+  ["fight", "bug", TypeMod.NOT_VERY_EFFECTIVE],
+  ["fight", "rock", TypeMod.SUPER_EFFECTIVE],
+  ["fight", "ice", TypeMod.SUPER_EFFECTIVE],
+  ["fight", "ghost", TypeMod.NO_EFFECT],
+  ["poison", "grass", TypeMod.SUPER_EFFECTIVE],
+  ["poison", "poison", TypeMod.NOT_VERY_EFFECTIVE],
+  ["poison", "ground", TypeMod.NOT_VERY_EFFECTIVE],
+  ["poison", "bug", TypeMod.SUPER_EFFECTIVE],
+  ["poison", "rock", TypeMod.NOT_VERY_EFFECTIVE],
+  ["poison", "ghost", TypeMod.NOT_VERY_EFFECTIVE],
+  ["ground", "fire", TypeMod.SUPER_EFFECTIVE],
+  ["ground", "electric", TypeMod.SUPER_EFFECTIVE],
+  ["ground", "grass", TypeMod.NOT_VERY_EFFECTIVE],
+  ["ground", "bug", TypeMod.NOT_VERY_EFFECTIVE],
+  ["ground", "rock", TypeMod.SUPER_EFFECTIVE],
+  ["ground", "poison", TypeMod.SUPER_EFFECTIVE],
+  ["flying", "electric", TypeMod.NOT_VERY_EFFECTIVE],
+  ["flying", "fight", TypeMod.SUPER_EFFECTIVE],
+  ["flying", "bug", TypeMod.SUPER_EFFECTIVE],
+  ["flying", "grass", TypeMod.SUPER_EFFECTIVE],
+  ["flying", "rock", TypeMod.NOT_VERY_EFFECTIVE],
+  ["psychic", "fight", TypeMod.SUPER_EFFECTIVE],
+  ["psychic", "poison", TypeMod.SUPER_EFFECTIVE],
+  ["bug", "fire", TypeMod.NOT_VERY_EFFECTIVE],
+  ["bug", "grass", TypeMod.SUPER_EFFECTIVE],
+  ["bug", "fight", TypeMod.NOT_VERY_EFFECTIVE],
+  ["bug", "flying", TypeMod.NOT_VERY_EFFECTIVE],
+  ["bug", "psychic", TypeMod.SUPER_EFFECTIVE],
+  ["bug", "ghost", TypeMod.NOT_VERY_EFFECTIVE],
+  ["bug", "poison", TypeMod.SUPER_EFFECTIVE],
+  ["rock", "fire", TypeMod.SUPER_EFFECTIVE],
+  ["rock", "fight", TypeMod.NOT_VERY_EFFECTIVE],
+  ["rock", "ground", TypeMod.NOT_VERY_EFFECTIVE],
+  ["rock", "flying", TypeMod.SUPER_EFFECTIVE],
+  ["rock", "bug", TypeMod.SUPER_EFFECTIVE],
+  ["rock", "ice", TypeMod.SUPER_EFFECTIVE],
+  ["ghost", "normal", TypeMod.NO_EFFECT],
+  ["ghost", "psychic", TypeMod.NO_EFFECT],
+  ["fire", "dragon", TypeMod.NOT_VERY_EFFECTIVE],
+  ["water", "dragon", TypeMod.NOT_VERY_EFFECTIVE],
+  ["electric", "dragon", TypeMod.NOT_VERY_EFFECTIVE],
+  ["grass", "dragon", TypeMod.NOT_VERY_EFFECTIVE],
+  ["ice", "dragon", TypeMod.SUPER_EFFECTIVE],
+  ["dragon", "dragon", TypeMod.SUPER_EFFECTIVE],
 ];

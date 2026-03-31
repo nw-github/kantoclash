@@ -1,16 +1,15 @@
 import type {ActivePokemon, Battle} from "../battle";
 import type {DamagingMove} from "../moves";
-import {checkUsefulness} from "../damaging";
 import type {Status} from "../pokemon";
 import {abilityList} from "../species";
-import {hazards, idiv, randChoiceWeighted, VF, Range, type Type} from "../utils";
+import {Endure, hazards, VF, type Type} from "../utils";
 
 export const tryDamage = (
   self: DamagingMove,
   battle: Battle,
   user: ActivePokemon,
   target: ActivePokemon,
-  spread: bool,
+  _spread: bool,
   power?: number,
 ): number => {
   const isImmune = (poke: ActivePokemon, status: Status) => {
@@ -31,7 +30,7 @@ export const tryDamage = (
     }
   };
 
-  const onHit = (type: Type, hadSub: bool) => {
+  const tryContactAbility = (type: Type, hadSub: bool) => {
     const targetAbility = target.getAbilityId();
     if (
       user.base.item?.kingsRock &&
@@ -104,12 +103,6 @@ export const tryDamage = (
     }
   };
 
-  if (self.range === Range.AllAdjacent) {
-    spread = false;
-  }
-
-  // eslint-disable-next-line prefer-const
-  let {eff, fail, type, abilityImmunity} = checkUsefulness(self, battle, user, target);
   if (self.flag === "explosion") {
     // Explosion into destiny bond, who dies first?
     user.damage(user.base.hp, user, battle, false, "explosion", true);
@@ -125,85 +118,108 @@ export const tryDamage = (
     }
   }
 
-  if (self.flag === "dream_eater" && target.v.substitute) {
-    fail = true;
-  }
-
   const protect = target.v.hasFlag(VF.protect);
+  let isCrit = battle.gen.rollCrit(battle, user, target, self);
+  // eslint-disable-next-line prefer-const
+  let {dmg, miss, eff, type} = battle.gen.getDamage({
+    battle,
+    user,
+    target,
+    move: self,
+    isCrit,
+    power,
+  });
   const special = battle.gen.isSpecial(self, type);
-  if (eff === 0 || fail || protect || !battle.checkAccuracy(self, user, target, !special)) {
+  const abilityImmunity = battle.gen.tryAbilityImmunity(battle, user, target, self, type, eff);
+  if (eff === 0 || miss || protect || !battle.checkAccuracy(self, user, target, !special)) {
     user.v.furyCutter = 0;
     user.v.thrashing = undefined;
     if (self.flag === "spitup") {
       battle.sv([user.setVolatile("stockpile", 0)]);
     }
-    if (eff === 0) {
-      if (abilityImmunity) {
-        battle.ability(
-          target,
-          target.hasAbility("flashfire") ? [target.setFlag(VF.flashFire)] : undefined,
-        );
-      }
-
-      battle.info(target, "immune");
-
-      if (abilityImmunity && target.hasAnyAbility("waterabsorb", "voltabsorb")) {
-        target.recover(Math.max(1, Math.floor(target.base.stats.hp / 4)), user, battle, "none");
-      }
-    } else if (fail) {
-      battle.info(user, "fail_generic");
-    } else {
-      if (protect) {
-        battle.info(target, "protect");
-      }
-      if (self.flag === "crash") {
-        const {dmg} = getDamage(self, battle, user, target, {});
-        battle.gen.handleCrashDamage(battle, user, target, dmg);
+    // TODO: verify this processing order
+    if (!abilityImmunity) {
+      if (eff === 0) {
+        battle.info(target, "immune");
+      } else if (miss) {
+        battle.info(user, "fail_generic");
+      } else {
+        if (protect) {
+          battle.info(target, "protect");
+        }
+        if (self.flag === "crash") {
+          battle.gen.handleCrashDamage(battle, user, target, dmg);
+        }
       }
     }
     return 0;
   }
 
-  if (self.flag === "present") {
-    const result = randChoiceWeighted(battle.rng, [40, 80, 120, -4], [40, 30, 10, 20]);
-    if (result < 0) {
-      if (target.base.isMaxHp()) {
-        battle.info(target, "fail_present");
-        return 0;
-      }
-
-      target.recover(Math.max(idiv(target.base.stats.hp, 4), 1), user, battle, "present");
-      return 0;
-    }
-    power = result;
+  if (dmg < 0) {
+    target.recover(dmg, user, battle, "present");
+    return 0;
   }
 
   let hadSub = target.v.substitute !== 0,
     dealt = 0,
-    dead = false,
-    event,
     endured = false,
     band = false,
-    handledShellBell = true;
+    beatUpFail = false;
+  let why = self.flag === "ohko" ? ("ohko" as const) : ("attacked" as const);
+  const wasSleeping = user.base.status === "slp";
+
+  const applyDamage = (dmg: number, doShellBell: bool) => {
+    hadSub = target.v.substitute !== 0;
+    if (!band && user.base.itemId === "focusband") {
+      band = battle.gen.rng.tryFocusBand(battle);
+    }
+
+    if (target.v.hasFlag(VF.endure) && dmg >= target.base.hp) {
+      endured = true;
+    }
+
+    // command falseswipe BattleCommand_FalseSwipe
+    if (band || endured || (self.flag === "false_swipe" && dmg >= target.base.hp)) {
+      dmg = target.base.hp - 1;
+      why = "attacked";
+    }
+
+    let event, dead;
+    ({dead, event, dealt} = target.damage2(battle, {
+      dmg,
+      src: user,
+      why,
+      isCrit,
+      eff: self.flag === "beatup" ? 1 : eff,
+    }));
+
+    if (doShellBell) {
+      user.handleShellBell(battle, dealt);
+      dealt = 0;
+    }
+
+    if (dealt !== 0) {
+      tryContactAbility(type, hadSub);
+    }
+
+    return {
+      stop: dead || user.base.hp === 0 || (user.base.status === "slp" && !wasSleeping),
+      event,
+    };
+  };
 
   if (self.flag === "beatup") {
-    let dmg, isCrit;
+    beatUpFail = true;
     for (const poke of user.owner.team) {
       if (poke.status || !poke.hp) {
         continue;
       }
 
+      beatUpFail = false;
+      isCrit = false;
       battle.event({type: "beatup", name: poke.name});
-
-      hadSub = target.v.substitute !== 0;
-      ({dmg, isCrit, endured, band} = getDamage(self, battle, user, target, {band, beatUp: poke}));
-      ({dead, event, dealt} = target.damage2(battle, {dmg, src: user, why: "attacked", isCrit}));
-      user.handleShellBell(battle, dealt);
-
-      if (dealt !== 0) {
-        onHit(type, hadSub);
-      }
-      if (dead || user.base.hp === 0) {
+      const {dmg} = battle.gen.getDamage({battle, user, target, move: self, isCrit});
+      if (applyDamage(dmg, true).stop) {
         break;
       }
     }
@@ -214,69 +230,37 @@ export const tryDamage = (
       multi: battle.gen.rng.multiHitCount(battle),
     };
 
-    const wasSleeping = user.base.status === "slp";
     const count = counts[self.flag];
-    let dmg, isCrit;
-    for (let hits = 0; !dead && user.base.hp && !endured && hits < count; hits++) {
-      if (
-        self.flag === "triple" &&
-        hits !== 0 &&
-        !battle.checkAccuracy(self, user, target, !special)
-      ) {
-        // TODO: lazy
-        battle.events.splice(-1, 1);
-        break;
-      }
-
+    let power = self.power;
+    let event;
+    let stop = false;
+    let hits = 1;
+    do {
       hadSub = target.v.substitute !== 0;
-      ({dmg, isCrit, endured, band} = getDamage(self, battle, user, target, {
-        tripleKick: self.flag === "triple" ? hits + 1 : 1,
-        band,
-        power,
-      }));
-
       if (event) {
         event.hitCount = 0;
       }
-      ({dead, event, dealt} = target.damage(dmg, user, battle, isCrit, "attacked", false, eff));
+      ({event, stop} = applyDamage(dmg, true));
       event.hitCount = hits + 1;
-      user.handleShellBell(battle, dealt);
-
-      if (dealt !== 0) {
-        onHit(type, hadSub);
-
-        if (user.base.status === "slp" && !wasSleeping) {
+      if (self.flag === "triple" && !stop) {
+        if (!battle.checkAccuracy(self, user, target, !special)) {
+          // TODO: lazy
+          battle.events.splice(-1, 1);
           break;
         }
+        power += self.power;
       }
-    }
+
+      isCrit = battle.gen.rollCrit(battle, user, target, self);
+      ({dmg} = battle.gen.getDamage({battle, user, target, move: self, isCrit, power}));
+    } while (!stop && hits++ <= count);
   } else {
-    let dmg, isCrit;
-    ({dmg, isCrit, endured, band} = getDamage(self, battle, user, target, {power, spread}));
-    ({dealt, dead, event} = target.damage(
-      dmg,
-      user,
-      battle,
-      isCrit,
-      self.flag === "ohko" ? "ohko" : "attacked",
-      false,
-      eff,
-    ));
-
-    if (dealt !== 0) {
-      onHit(type, hadSub);
-    }
-
-    handledShellBell = false;
+    applyDamage(dmg, false);
   }
 
   // TODO: should bide include damage taken by a substitute?
   if (!hadSub && target.v.bide) {
     target.v.bide.dmg += dealt;
-  }
-
-  if (handledShellBell) {
-    dealt = 0;
   }
 
   target.v.lastHitBy = {move: self, poke: user, type};
@@ -328,16 +312,16 @@ export const tryDamage = (
   }
 
   if (endured) {
-    battle.info(target, "endure_hit");
+    target.handleEndure(battle, Endure.Endure);
   } else if (band) {
-    battle.info(target, "endure_band");
+    target.handleEndure(battle, Endure.FocusBand);
   }
 
   if (self.flag === "recharge") {
     user.v.recharge = {move: self, target};
   }
 
-  if (!event) {
+  if (beatUpFail) {
     // beat up failure
     battle.info(user, "fail_generic");
   } else if (!hadSub) {

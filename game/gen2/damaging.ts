@@ -77,7 +77,7 @@ export const tryDamage = (
     return 0;
   }
 
-  let hadSub = target.v.substitute !== 0,
+  let hadSub = false,
     dealt = 0,
     dead = false,
     endured = false,
@@ -87,6 +87,7 @@ export const tryDamage = (
 
   // command BattleCommand_ApplyDamage
   const applyDamage = (dmg: number) => {
+    hadSub = target.v.substitute !== 0;
     if (!band && user.base.itemId === "focusband") {
       band = battle.gen.rng.tryFocusBand(battle);
     }
@@ -113,7 +114,6 @@ export const tryDamage = (
   };
 
   if (self.flag === "beatup") {
-    let dmg;
     beatUpFail = true;
     for (const poke of user.owner.team) {
       if (poke.status || !poke.hp) {
@@ -122,19 +122,9 @@ export const tryDamage = (
 
       battle.event({type: "beatup", name: poke.name});
 
-      hadSub = target.v.substitute !== 0;
       isCrit = false;
       beatUpFail = false;
-      ({dmg} = battle.gen.getDamage({
-        battle,
-        user,
-        target,
-        move: self,
-        isCrit,
-        power,
-        beatUp: poke,
-      }));
-
+      const {dmg} = battle.gen.getDamage({battle, user, target, move: self, isCrit, beatUp: poke});
       if (applyDamage(dmg).dead) {
         break;
       }
@@ -154,7 +144,6 @@ export const tryDamage = (
     const count = counts[self.flag];
     let dmg, event;
     for (let hits = 1; !dead && hits <= count; hits++) {
-      hadSub = target.v.substitute !== 0;
       isCrit = battle.gen.rollCrit(battle, user, target, self);
       ({dmg} = battle.gen.getDamage({
         battle,

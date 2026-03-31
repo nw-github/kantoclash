@@ -29,9 +29,9 @@ import {
   Range,
   type StageId,
   type StageStats,
-  type StatStageId,
   type Type,
   type Weather,
+  Endure,
 } from "./utils";
 import {TurnType, type Battle, type MoveOption, type Options, type Player} from "./battle";
 import {abilityList, type AbilityId} from "./species";
@@ -630,62 +630,6 @@ export class ActivePokemon {
     return true;
   }
 
-  applyAbilityStatBoost(battle: Battle, stat: StatStageId, value: number) {
-    const ability = this.getAbilityId();
-    if (!ability) {
-      return value;
-    }
-
-    if ((ability === "hugepower" || ability === "purepower") && stat === "atk") {
-      value *= 2;
-    }
-
-    const weather = battle.getWeather();
-    if (weather && abilityList[ability]?.weatherSpeedBoost === weather && stat === "spe") {
-      value *= 2;
-    }
-
-    if (
-      weather === "sun" &&
-      this.owner.active.some(p => !p.v.fainted && p.hasAbility("flowergift")) &&
-      (stat === "atk" || stat === "spd")
-    ) {
-      value += Math.floor(value / 2);
-    }
-
-    // TODO: the attack boost from guts should activate if the pokemon uses a move that thaws it
-    // out
-    if (ability === "guts" && stat === "atk" && this.base.status) {
-      value += Math.floor(value / 2);
-    }
-
-    if (ability === "hustle" && stat === "atk") {
-      value += Math.floor(value / 2);
-    }
-
-    if (ability === "marvelscale" && stat === "def" && this.base.status) {
-      value += Math.floor(value / 2);
-    }
-
-    if (stat === "spa" && (ability === "plus" || ability === "minus")) {
-      let minus = false,
-        plus = false;
-      for (const poke of battle.allActive) {
-        // pre Gen V, plus and minus activate for opponents
-        if (!poke.v.fainted) {
-          minus = minus || poke.hasAbility("minus");
-          plus = plus || poke.hasAbility("plus");
-        }
-      }
-
-      if ((minus && ability === "plus") || (plus && ability === "minus")) {
-        value += Math.floor(value / 2);
-      }
-    }
-
-    return value;
-  }
-
   handleWeatherAbility(battle: Battle) {
     const weather = this.getAbility()?.startsWeather;
     if (weather) {
@@ -795,8 +739,11 @@ export class ActivePokemon {
     const done = --this.v.confusion === 0;
     battle.info(this, done ? "confused_end" : "confused");
     if (!done && battle.rng.bool()) {
-      const dmg = battle.gen.getConfusionSelfDamage(battle, this);
+      const {dmg, endure} = battle.gen.getConfusionSelfDamage(battle, this);
       this.damage2(battle, {dmg, src: this, why: "confusion", direct: true});
+      if (endure) {
+        this.handleEndure(battle, endure);
+      }
       return true;
     }
 
@@ -933,6 +880,17 @@ export class ActivePokemon {
           }
         }
       }
+    }
+  }
+
+  handleEndure(battle: Battle, endure: Endure) {
+    switch (endure) {
+      case Endure.Endure:
+        return battle.info(this, "endure_hit");
+      case Endure.FocusBand:
+        return battle.info(this, "endure_band");
+      case Endure.FocusSash:
+        return this.consumeItem(battle);
     }
   }
 

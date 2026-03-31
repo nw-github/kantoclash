@@ -86,7 +86,7 @@
   "drought": {"name": "Drought", "desc": "Starts sun on entry.", "startsWeather": "sun"},
   "earlybird": {"name": "Early Bird", "desc": "Decreased sleep duration."},
   "guts": {"name": "Guts", "desc": "Atk boosted when statused."},
-  "hugepower": {"name": "Huge Power", "desc": "Doubles Atk."},
+  "hugepower": {"name": "Huge Power", "desc": "Doubles Atk.", "doubleAtk": true},
   "hypercutter": {"name": "Hyper Cutter", "desc": "Prevents Atk drops.", "preventsStatDrop": "atk"},
   "illuminate": {"name": "Illuminate", "desc": ""},
   "immunity": {"name": "Immunity", "desc": "Prevents poison.", "preventsStatus": "psn"},
@@ -95,7 +95,7 @@
   "magmaarmor": {"name": "Magma Armor", "desc": "Prevents freeze.", "preventsStatus": "frz"},
   "magnetpull": {"name": "Magnet Pull", "desc": "Traps steel-type Pokémon."},
   "marvelscale": {"name": "Marvel Scale", "desc": "Boosts Def when statused."},
-  "purepower": {"name": "Pure Power", "desc": "Doubles Atk."},
+  "purepower": {"name": "Pure Power", "desc": "Doubles Atk.", "doubleAtk": true},
   "rockhead": {"name": "Rock Head", "desc": "Prevents recoil damage."},
   "runaway": {"name": "Run Away", "desc": ""},
   "sandstream": {

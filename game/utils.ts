@@ -94,6 +94,12 @@ export enum CVF {
   identified = 0x0000_0100,
 }
 
+export enum Endure {
+  Endure = 1,
+  FocusBand,
+  FocusSash,
+}
+
 // prettier-ignore
 export const HP_TYPES: Type[] = [
   "fight", "flying", "poison", "ground", "rock", "bug", "ghost", "steel", "fire", "water",
@@ -111,6 +117,14 @@ export const IGNORABLE_ABILITIES = new Set<AbilityId>([
   'bigpecks', 'contrary', 'friendguard', 'heavymetal', 'lightmetal', 'magicbounce', 'multiscale',
   'sapsipper', 'telepathy', 'wonderskin',
 ]);
+
+export const TypeMod = {
+  SUPER_EFFECTIVE: 20,
+  MORE_EFFECTIVE: 15,
+  EFFECTIVE: 10,
+  NOT_VERY_EFFECTIVE: 5,
+  NO_EFFECT: 0,
+} as const;
 
 export enum MC {
   physical,
@@ -161,9 +175,7 @@ export const hpPercent = (current: number, max: number) => {
   return percent;
 };
 
-export const idiv = (a: number, b: number) => Math.floor(a / b);
-
-export const imul = (a: number, b: number) => Math.floor(a * b);
+export const idiv = (a: number, b: number) => (a / b) | 0;
 
 export const arraysEqual = <T>(a: readonly T[], b: readonly T[]) => {
   return a.length === b.length && a.every((item, i) => b[i] === item);
@@ -196,6 +208,31 @@ export const dmgFlags = (flags: Record<string, any>) => {
     c(k, flags[k]);
   }
   return extra;
+};
+
+export const isSpecialType = (type: Type) => {
+  switch (type) {
+    case "normal":
+    case "rock":
+    case "ground":
+    case "ghost":
+    case "poison":
+    case "bug":
+    case "flying":
+    case "fight":
+    case "steel":
+    case "???":
+      return false;
+    case "water":
+    case "grass":
+    case "fire":
+    case "electric":
+    case "ice":
+    case "psychic":
+    case "dragon":
+    case "dark":
+      return true;
+  }
 };
 
 // from ts-reset

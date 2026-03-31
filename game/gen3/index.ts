@@ -1,24 +1,30 @@
-import {shouldReturn, type CalcDamageParams} from "../gen1";
+import {type GetDamageParams, shouldReturn} from "../gen1";
 import {Generation2, merge} from "../gen2";
 import {
-  applyItemStatBoost,
   Nature,
   natureTable,
   SAWSBUCK_FORM,
   UNOWN_FORM,
+  type Pokemon,
   type Gender,
 } from "../pokemon";
 import {abilityList, type Species, type SpeciesId} from "../species";
 import {
   clamp,
-  dmgFlags,
   debugLog,
   idiv,
   MC,
   screens,
   VF,
+  TypeMod,
+  isSpecialType,
+  Range,
   type StatStageId,
   type Stats,
+  type Type,
+  type Weather,
+  Endure,
+  randChoiceWeighted,
 } from "../utils";
 import {moveScripts, moveOverrides, movePatches} from "./moves";
 import speciesPatches from "./species.json";
@@ -27,7 +33,9 @@ import {itemList, type ItemId} from "../item";
 import {tryDamage} from "./damaging";
 import type {ActivePokemon} from "../active";
 import {TurnType, type Battle} from "../battle";
-import type {Move, MoveId} from "../moves";
+import type {DamagingMove, Move, MoveId} from "../moves";
+import type {Generation} from "../gen";
+import type {Random} from "random";
 
 const critStages: Record<number, number> = {
   [0]: 1 / 16,
@@ -92,6 +100,294 @@ class Rng extends Generation2.Rng {
   override bideDuration() { return 2; }
 }
 
+type StabParams = {
+  type: Type;
+  user: ActivePokemon;
+  target: ActivePokemon;
+  gen: Generation;
+};
+
+type BaseDamageParams = {
+  move: DamagingMove;
+  power: number;
+  type?: Type;
+  battle: Battle;
+  user: ActivePokemon;
+  target: ActivePokemon;
+  isCrit?: bool;
+  explosion: bool;
+};
+
+type MiscModsParams = {
+  isCrit: bool;
+  battle: Battle;
+  user: ActivePokemon;
+  target: ActivePokemon;
+  move: DamagingMove;
+};
+
+class DamageCalc {
+  private static getBoostedAttack(
+    battle: Battle,
+    user: ActivePokemon,
+    target: ActivePokemon,
+    type: Type,
+  ) {
+    const ability = user.getAbility();
+    const abilityId = user.getAbilityId();
+    const item = user.base.item;
+
+    let {atk, spa} = user.v.stats;
+    if (ability?.doubleAtk) {
+      atk <<= 1;
+    }
+
+    if (item?.typeBoost && item.typeBoost.type === type) {
+      if (isSpecialType(type)) {
+        spa = idiv(spa * (100 + item.typeBoost.percent), 100);
+      } else {
+        atk = idiv(atk * (100 + item.typeBoost.percent), 100);
+      }
+    }
+
+    if (item?.choice === "atk") {
+      atk = idiv(atk * 150, 100);
+    } else if (item?.boostStats?.[user.base.speciesId]) {
+      // soul dew, deep sea tooth, light ball, thick club
+      const boost = item.boostStats[user.base.speciesId]!;
+      // Technically this will result in an (A * 200 / 100) operation where the game actually does (A * 2),
+      // but since the multiplication will not overflow in JS at the 32 bit boundary it will be identical.
+      if (boost.stats.includes("atk")) {
+        spa = idiv(spa * (100 + boost.percent), 100);
+      } else if (boost.stats.includes("spa")) {
+        spa = idiv(spa * (100 + boost.percent), 100);
+      }
+    }
+
+    if (abilityId === "hustle" || (abilityId === "guts" && user.base.status)) {
+      atk = idiv(atk * 150, 100);
+    } else if (
+      abilityId === "plus" &&
+      battle.allActive.some(poke => poke.getAbilityId() === "minus")
+    ) {
+      spa = idiv(spa * 150, 100);
+    } else if (
+      abilityId === "minus" &&
+      battle.allActive.some(poke => poke.getAbilityId() === "plus")
+    ) {
+      spa = idiv(spa * 150, 100);
+    }
+
+    if (target.getAbilityId() === "thickfat" && (type === "ice" || type === "fire")) {
+      spa >>= 1;
+    }
+
+    return {atk, spa};
+  }
+
+  private static getBoostedDefense(target: ActivePokemon) {
+    const abilityId = target.getAbilityId();
+    const item = target.base.item;
+
+    let {def, spd} = target.v.stats;
+    if (item?.boostStats?.[target.base.speciesId]) {
+      // soul dew, deep sea scale, metal powder
+      const boost = item.boostStats[target.base.speciesId]!;
+      if (boost.stats.includes("def")) {
+        def = idiv(def * (100 + boost.percent), 100);
+      } else if (boost.stats.includes("spd")) {
+        spd = idiv(spd * (100 + boost.percent), 100);
+      }
+    }
+
+    if (abilityId === "marvelscale" && target.base.status) {
+      def = idiv(def * 150, 100);
+    }
+    return {def, spd};
+  }
+
+  private static getBoostedPower(battle: Battle, user: ActivePokemon, type: Type, power: number) {
+    if (type === "electric" && battle.allActive.some(poke => poke.v.hasFlag(VF.mudSport))) {
+      power >>= 1;
+    } else if (type === "fire" && battle.allActive.some(poke => poke.v.hasFlag(VF.waterSport))) {
+      power >>= 1;
+    }
+
+    if (user.base.belowHp(3) && user.getAbility()?.pinchBoostType === type) {
+      power = idiv(power * 150, 100);
+    }
+    return power;
+  }
+
+  // CalculateBaseDamage
+  static calcBaseDamage({
+    power,
+    type,
+    battle,
+    move,
+    user,
+    target,
+    isCrit,
+    explosion,
+  }: BaseDamageParams) {
+    type ??= move.type;
+    const level = user.base.level;
+    const attacks = DamageCalc.getBoostedAttack(battle, user, target, type);
+    const defenses = DamageCalc.getBoostedDefense(target);
+    power = DamageCalc.getBoostedPower(battle, user, type, power);
+
+    // The explosion check uses gCurrentMove instead of the move that was passed in
+    if (explosion) {
+      defenses.def >>= 1;
+    }
+
+    const special = isSpecialType(type);
+    const [atks, defs] = special ? (["spa", "spd"] as const) : (["atk", "def"] as const);
+    if (!isCrit || user.v.stages[atks] < 0) {
+      attacks[atks] = applyStatStages(user, attacks[atks], atks);
+    }
+
+    if (!isCrit || target.v.stages[defs] > 0) {
+      defenses[defs] = applyStatStages(target, defenses[defs], defs);
+    }
+
+    let damage = idiv(idiv(attacks[atks] * power * (idiv(2 * level, 5) + 2), defenses[defs]), 50);
+    if (!special && user.base.status === "brn" && user.getAbilityId() !== "guts") {
+      damage >>= 1;
+    }
+
+    const targetAlive = target.owner.active.reduce((acc, poke) => acc + Number(!!poke.base.hp), 0);
+    if (!isCrit && target.owner.screens[special ? "light_screen" : "reflect"]) {
+      if (targetAlive > 1) {
+        damage = 2 * idiv(damage, 3);
+      } else {
+        damage >>= 1;
+      }
+    }
+
+    if (move.range === Range.AllAdjacentFoe && targetAlive > 1) {
+      // Moves that hit both targets but not your ally (like Surf in this generation) have damage
+      // halved against two targets.
+      damage >>= 1;
+    }
+
+    if (!special) {
+      damage = Math.max(damage, 1);
+    } else {
+      const weather = battle.getWeather();
+      let modifier = weatherModifier[weather!]?.[type] ?? TypeMod.EFFECTIVE;
+      if (move.charge === "sun" && weather && weather !== "sun") {
+        modifier = TypeMod.NOT_VERY_EFFECTIVE;
+      }
+
+      if (modifier === TypeMod.NOT_VERY_EFFECTIVE) {
+        damage >>= 1;
+      } else if (modifier === TypeMod.MORE_EFFECTIVE) {
+        damage = idiv(damage * 15, 10);
+      }
+
+      if (user.v.hasFlag(VF.flashFire) && type === "fire") {
+        damage = idiv(damage * 15, 10);
+      }
+
+      // XXX: The game forgets to apply a minimum damage of 1 here for special moves.
+    }
+
+    return damage + 2;
+  }
+
+  static calcBaseDamageBeatUp(user: Pokemon, target: ActivePokemon, power: number) {
+    const level = user.level;
+    const A = user.species.stats.atk;
+    const D = target.base.species.stats.def;
+    return idiv(idiv(A * power * (idiv(2 * level, 5) + 2), D), 50) + 2;
+  }
+
+  // in Cmd_damagecalc, Cmd_stockpiletobasedamage, Cmd_trysetfutureattack
+  static applyMiscModifiers(dmg: number, {isCrit, battle, user, target, move}: MiscModsParams) {
+    if (move.flag !== "futuresight" && move.id !== "struggle" && move.id !== "spitup") {
+      if (isCrit) {
+        dmg <<= 1;
+      }
+
+      let doubleDmg = false;
+      // This is the combination of many different battle scripts
+      // Look in `data/battle_scripts_1.s` for `setbyte sDMG_MULTIPLIER, 2`,
+      // or in `src/battle_script_commands.c` for `gBattleScripting.dmgMultiplier`
+      if (
+        move.flag === "revenge" &&
+        user.v.lastHitBy?.poke === target &&
+        target.choice?.move.kind === "damage" &&
+        target.choice?.executed
+      ) {
+        // Cmd_doubledamagedealtifdamaged
+        // TODO: the game keeps track of the last hit for physical and special moves separately.
+        // lastHitBy needs to be updated to model this
+        doubleDmg = true;
+      } else if (
+        user.v.inPursuit ||
+        (move.id === "weatherball" && battle.getWeather()) ||
+        (move.id === "facade" && user.base.status) ||
+        (move.id === "smellingsalt" && !target.v.substitute && target.base.status === "par") ||
+        (move.flag === "minimize" && target.v.usedMinimize) ||
+        (move.punish && target.v.charging && move.ignore?.includes(target.v.charging.move.id))
+      ) {
+        doubleDmg = true;
+      }
+
+      if (doubleDmg) {
+        dmg <<= 1;
+      }
+
+      // Charge checks `gBattleMoves[gCurrentMove].type` instead of gBattleStruct->dynamicMoveType
+      if (user.v.hasFlag(VF.charge) && move.type === "electric") {
+        dmg <<= 1;
+      }
+    } else if (move.id === "spitup") {
+      dmg *= user.v.stockpile;
+      battle.sv([user.setVolatile("stockpile", 0)]);
+    }
+
+    if (user.v.hasFlag(VF.helpingHand)) {
+      dmg = idiv(dmg * 15, 10); // The game uses dmg * 15 / 10 instead of dmg * 150 / 100 here
+    }
+    return dmg;
+  }
+
+  // Cmd_typecalc
+  static applyTypeModifier(dmg: number, {type, user, target, gen}: StabParams) {
+    if (user.v.hasAnyType(type)) {
+      dmg = idiv(dmg * 15, 10);
+    }
+
+    let eff = 1;
+    for (const [atktype, deftype, modifier] of gen.typeMatchupTable) {
+      if (deftype === target.v.identified?.removeImmunities && modifier === TypeMod.NO_EFFECT) {
+        break;
+      } else if (atktype === type && target.v.hasAnyType(deftype)) {
+        eff *= modifier / TypeMod.EFFECTIVE;
+        if (modifier === TypeMod.NO_EFFECT) {
+          dmg = 0;
+          break;
+        }
+
+        dmg = Math.max(1, idiv(dmg * modifier, 10));
+      }
+    }
+    return {dmg, eff};
+  }
+
+  // ApplyRandomDmgMultiplier
+  static randomizeDamage(dmg: number, rng: Random | number) {
+    if (dmg === 0) {
+      return dmg;
+    }
+
+    const rand = typeof rng === "number" ? rng : rng.int(0, 15);
+    return Math.max(1, idiv(dmg * (100 - rand), 100));
+  }
+}
+
 export class Generation3 extends Generation2 {
   static override Rng = Rng;
 
@@ -116,18 +412,6 @@ export class Generation3 extends Generation2 {
     this.move = merge(this.move, {scripts: moveScripts, overrides: moveOverrides});
   }
 
-  override getDamageVariables(
-    spc: bool,
-    battle: Battle,
-    user: ActivePokemon,
-    target: ActivePokemon,
-    isCrit: bool,
-  ) {
-    const atk = user.base.gen.getStat(battle, user, spc ? "spa" : "atk", isCrit);
-    const def = user.base.gen.getStat(battle, target, spc ? "spd" : "def", isCrit, true);
-    return [atk, def] as const;
-  }
-
   override handleCrashDamage(
     battle: Battle,
     user: ActivePokemon,
@@ -138,41 +422,113 @@ export class Generation3 extends Generation2 {
     user.damage(Math.floor(dmg / 2), user, battle, false, "crash", true);
   }
 
-  override canOHKOHit() {
-    return true;
+  override getDamage({battle, user, target, move, isCrit, power, rng, beatUp}: GetDamageParams) {
+    if (
+      (move.id === "dreameater" && (target.v.substitute || target.base.status !== "slp")) ||
+      (move.id === "spitup" && !user.v.stockpile)
+    ) {
+      return {dmg: 0, eff: 1, miss: true, type: move.type};
+    }
+
+    let res;
+    if ((res = this.getFixedDamage(battle, user, target, move))) {
+      return res;
+    }
+
+    const type = this.getMoveType(move, user.base, battle.getWeather());
+
+    power ??= this.getMoveBasePower(move, user.base, target.base);
+    if (move.id === "present") {
+      const result = randChoiceWeighted(battle.rng, [40, 80, 120, -4], [40, 30, 10, 20]);
+      if (result < 0) {
+        return {dmg: -Math.max(idiv(target.base.stats.hp, 4), 1), eff: 1, miss: false, type};
+      }
+      power = result;
+    }
+
+    if (move.id === "furycutter") {
+      if (user.v.furyCutter < 5) {
+        user.v.furyCutter++;
+      }
+
+      power <<= user.v.furyCutter - 1;
+    } else if (move.flag === "rollout") {
+      const count = 5 - (user.v.thrashing?.turns ?? 5) + +user.v.usedDefenseCurl;
+      power <<= count;
+    }
+
+    let dmg;
+    if (beatUp) {
+      dmg = DamageCalc.calcBaseDamageBeatUp(beatUp, target, power);
+    } else {
+      dmg = DamageCalc.calcBaseDamage({
+        power,
+        type,
+        battle,
+        move,
+        user,
+        target,
+        isCrit,
+        explosion: move.flag === "explosion",
+      });
+    }
+
+    dmg = DamageCalc.applyMiscModifiers(dmg, {isCrit, battle, user, target, move});
+    let eff = 1;
+    if (move.id !== "struggle" && move.flag !== "futuresight" && !beatUp) {
+      ({dmg, eff} = DamageCalc.applyTypeModifier(dmg, {type, user, target, gen: this}));
+    }
+
+    const random = rng === undefined ? battle.rng : rng;
+    if (random !== null) {
+      dmg = DamageCalc.randomizeDamage(dmg, random);
+    }
+
+    return {dmg, eff, type, miss: false};
   }
 
-  override getStat(
-    battle: Battle,
-    poke: ActivePokemon,
-    stat: StatStageId,
-    isCrit: boolean | undefined,
-  ) {
-    const def = stat === "def" || stat === "spd";
-    const [num, div] = poke.base.gen.stageMultipliers[poke.v.stages[stat]];
-    let value = idiv(poke.base.stats[stat] * num, div);
-
-    if (poke.base.status === "brn" && stat === "atk" && !poke.hasAbility("guts")) {
-      value = Math.max(idiv(value, 2), 1);
-    } else if (poke.base.status === "par" && stat === "spe") {
-      value = Math.max(idiv(value, 4), 1);
-    }
-
-    if (isCrit && def && poke.v.stages[stat] > 0) {
-      value = poke.base.stats[stat];
-    }
-    if (isCrit && !def && poke.v.stages[stat] < 0) {
-      value = poke.base.stats[stat];
-      if (poke.base.status === "brn" && stat === "atk") {
-        value = Math.max(idiv(value, 2), 1);
+  override getConfusionSelfDamage(battle: Battle, user: ActivePokemon) {
+    let dmg = DamageCalc.calcBaseDamage({
+      power: 40,
+      type: "???",
+      battle,
+      user,
+      target: user,
+      isCrit: false,
+      move: this.moveList.pound as DamagingMove,
+      explosion: user.choice?.move?.kind === "damage" && user.choice?.move?.flag === "explosion",
+    });
+    dmg = DamageCalc.randomizeDamage(dmg, battle.rng);
+    let endure;
+    if (dmg >= user.base.hp) {
+      if (user.v.hasFlag(VF.endure)) {
+        dmg = user.base.hp - 1;
+        endure = Endure.Endure;
+      } else if (this.rng.tryFocusBand(battle)) {
+        dmg = user.base.hp - 1;
+        endure = Endure.FocusBand;
       }
     }
-    if (stat === "spe" && poke.owner.screens.tailwind) {
-      value *= 2;
+    return {dmg, endure};
+  }
+
+  override getSpeed(battle: Battle, user: ActivePokemon) {
+    // GetWhoStrikesFirst
+    const ability = user.getAbility();
+    const item = user.base.item;
+    let speed = user.v.stats.spe;
+    if (ability && ability.weatherSpeedBoost === battle.getWeather()) {
+      speed <<= 1;
     }
 
-    value = poke.applyAbilityStatBoost(battle, stat, value);
-    return applyItemStatBoost(poke.base, stat, value);
+    speed = applyStatStages(user, speed, "spe");
+    if (item?.halveSpeed) {
+      speed >>= 1;
+    }
+    if (user.base.status === "par") {
+      speed >>= 2;
+    }
+    return speed;
   }
 
   override getHpIv(ivs: Partial<Stats> | undefined) {
@@ -638,98 +994,66 @@ export class Generation3 extends Generation2 {
     }
   }
 
-  override calcDamage({
-    lvl,
-    pow,
-    atk,
-    def,
-    eff,
-    isCrit,
-    hasStab,
-    rand,
-    itemBonus,
-    weather,
-    tripleKick,
-    flashFire,
-    moveMod,
-    doubleDmg,
-    stockpile,
-    helpingHand,
-    screen,
-    spread,
-  }: CalcDamageParams) {
-    pow = Math.floor(pow * (moveMod || 1));
-    pow = Math.floor(pow * (itemBonus || 1));
-    pow = Math.floor(pow * (tripleKick || 1));
-    pow = Math.floor(pow * (flashFire ? 1.5 : 1));
-
-    let dmg = idiv(idiv((idiv(2 * lvl, 5) + 2) * pow * atk, def), 50);
-    // TODO: brn should be applied here
-    if (screen && !isCrit) {
-      if (spread) {
-        dmg = idiv(dmg, 3) * 2;
-      } else {
-        dmg = idiv(dmg, 2);
-      }
-    }
-
-    if (spread) {
-      dmg = idiv(dmg, 2);
-    }
-
-    if (weather === "penalty") {
-      dmg = idiv(dmg, 2);
-    } else if (weather === "bonus") {
-      dmg += idiv(dmg, 2);
-    }
-
-    // TODO: for physical attacks only???
-    dmg = Math.max(dmg, 1);
-    dmg += 2;
-
-    if (isCrit) {
-      dmg *= 2;
-    }
-    if (doubleDmg) {
-      dmg *= 2;
-    }
-    dmg *= stockpile || 1;
-    if (helpingHand) {
-      dmg += idiv(dmg, 2);
-    }
-    if (hasStab) {
-      dmg += idiv(dmg, 2);
-    }
-    dmg = Math.floor(dmg * eff);
-    const r = typeof rand === "number" ? rand : rand ? rand.int(85, 100) : 100;
-    dmg = Math.max(1, idiv(dmg * r, 100));
-
-    if (import.meta.dev) {
-      debugLog(
-        `flag: ${dmgFlags({
-          crit: isCrit,
-          stab: hasStab,
-          ff: flashFire,
-          double: doubleDmg,
-          hh: helpingHand,
-          screen: screen,
-          spread: spread,
-          [`item:${itemBonus}`]: (itemBonus || 1) > 1,
-          [`weather:${weather}`]: !!weather,
-          [`TK:${tripleKick}`]: (tripleKick || 1) > 1,
-          [`MM:${moveMod}`]: (moveMod || 1) > 1,
-          [`SP:${stockpile}`]: (stockpile || 1) > 1,
-        })}`,
-      );
-      debugLog("vars:", {dmg, lvl, pow, atk, def, eff, r});
-    }
-    return dmg;
-  }
-
   override handleRage(battle: Battle, poke: ActivePokemon) {
     if (poke.v.lastMove?.kind === "damage" && poke.v.lastMove.flag === "rage") {
       battle.info(poke, "rage");
       poke.modStages([["atk", +1]], battle);
     }
   }
+
+  override applyStatusDebuff() {}
+
+  override recalculateStat() {}
+
+  override tryAbilityImmunity(
+    battle: Battle,
+    user: ActivePokemon,
+    target: ActivePokemon,
+    self: Move,
+    type: Type,
+    eff: number,
+  ) {
+    const targetAbility = target.getAbilityId();
+    const skipsTypeCheck = self.id === "beatup" || self.id === "struggle";
+    if (self.sound && targetAbility === "soundproof") {
+      battle.ability(target, [target.setFlag(VF.flashFire)]);
+      battle.info(target, "immune");
+      return true;
+    } else if (
+      self.kind === "damage" &&
+      ((skipsTypeCheck && eff <= 1 && targetAbility === "wonderguard") ||
+        (type === "ground" && targetAbility === "levitate") ||
+        (type === "electric" && targetAbility === "voltabsorb") ||
+        (type === "water" && targetAbility === "waterabsorb") ||
+        (type === "fire" && targetAbility === "flashfire" && target.base.status !== "frz"))
+    ) {
+      battle.ability(
+        target,
+        targetAbility === "flashfire" ? [target.setFlag(VF.flashFire)] : undefined,
+      );
+      battle.info(target, "immune");
+
+      if (targetAbility === "waterabsorb" || targetAbility === "voltabsorb") {
+        target.recover(Math.max(1, idiv(target.base.stats.hp, 4)), user, battle, "none");
+      }
+      return true;
+    }
+    return false;
+  }
 }
+
+const applyStatStages = (poke: ActivePokemon, stat: number, statId: StatStageId) => {
+  const [num, div] = poke.base.gen.stageMultipliers[poke.v.stages[statId]];
+  return idiv(stat * num, div);
+};
+
+const weatherModifier: Partial<Record<Weather, Partial<Record<Type, number>>>> = {
+  rain: {
+    water: TypeMod.MORE_EFFECTIVE,
+    fire: TypeMod.NOT_VERY_EFFECTIVE,
+  },
+  sun: {
+    fire: TypeMod.MORE_EFFECTIVE,
+    water: TypeMod.NOT_VERY_EFFECTIVE,
+  },
+};

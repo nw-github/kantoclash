@@ -39,6 +39,7 @@ export type Ability = {
   contactStatus?: Status | "attract";
   preventsStatDrop?: StageId | "all";
   moldBreaker?: bool;
+  doubleAtk?: bool;
 };
 
 export const speciesList = __speciesList as Record<SpeciesId, Species>;
