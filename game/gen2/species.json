@@ -580,7 +580,7 @@
     "genderRatio": 50
   },
   "butterfree": {
-    "stats": {"hp": 60, "atk": 45, "def": 50, "spa": 90, "spd": 80, "spe": 70},
+    "stats": {"hp": 60, "atk": 45, "def": 50, "spa": 80, "spd": 80, "spe": 70},
     "moves": [
       "tackle",
       "stringshot",
@@ -639,7 +639,7 @@
     "genderRatio": 50
   },
   "beedrill": {
-    "stats": {"hp": 65, "atk": 90, "def": 40, "spa": 45, "spd": 80, "spe": 75},
+    "stats": {"hp": 65, "atk": 80, "def": 40, "spa": 45, "spd": 80, "spe": 75},
     "moves": [
       "poisonsting",
       "stringshot",
@@ -777,7 +777,7 @@
     "genderRatio": 50
   },
   "pidgeot": {
-    "stats": {"hp": 83, "atk": 80, "def": 75, "spa": 70, "spd": 70, "spe": 101},
+    "stats": {"hp": 83, "atk": 80, "def": 75, "spa": 70, "spd": 70, "spe": 91},
     "moves": [
       "razorwind",
       "gust",
@@ -1093,7 +1093,7 @@
     "genderRatio": 50
   },
   "arbok": {
-    "stats": {"hp": 60, "atk": 95, "def": 69, "spa": 65, "spd": 79, "spe": 80},
+    "stats": {"hp": 60, "atk": 85, "def": 69, "spa": 65, "spd": 79, "spe": 80},
     "moves": [
       "bodyslam",
       "wrap",
@@ -1145,7 +1145,7 @@
     "genderRatio": 50
   },
   "pikachu": {
-    "stats": {"hp": 35, "atk": 55, "def": 40, "spa": 50, "spd": 50, "spe": 90},
+    "stats": {"hp": 35, "atk": 55, "def": 30, "spa": 50, "spd": 40, "spe": 90},
     "moves": [
       "doubleslap",
       "headbutt",
@@ -1210,7 +1210,7 @@
     "evolvesFrom": "pichu"
   },
   "raichu": {
-    "stats": {"hp": 60, "atk": 90, "def": 55, "spa": 90, "spd": 80, "spe": 110},
+    "stats": {"hp": 60, "atk": 90, "def": 55, "spa": 90, "spd": 80, "spe": 100},
     "moves": [
       "doubleslap",
       "headbutt",
@@ -1513,7 +1513,7 @@
     "genderRatio": 0
   },
   "nidoqueen": {
-    "stats": {"hp": 90, "atk": 92, "def": 87, "spa": 75, "spd": 85, "spe": 76},
+    "stats": {"hp": 90, "atk": 82, "def": 87, "spa": 75, "spd": 85, "spe": 76},
     "moves": [
       "scratch",
       "doublekick",
@@ -1713,7 +1713,7 @@
     "genderRatio": 100
   },
   "nidoking": {
-    "stats": {"hp": 81, "atk": 102, "def": 77, "spa": 85, "spd": 75, "spe": 85},
+    "stats": {"hp": 81, "atk": 92, "def": 77, "spa": 85, "spd": 75, "spe": 85},
     "moves": [
       "doublekick",
       "hornattack",
@@ -1879,7 +1879,7 @@
     "evolvesFrom": "cleffa"
   },
   "clefable": {
-    "stats": {"hp": 95, "atk": 70, "def": 73, "spa": 95, "spd": 90, "spe": 60},
+    "stats": {"hp": 95, "atk": 70, "def": 73, "spa": 85, "spd": 90, "spe": 60},
     "moves": [
       "pound",
       "headbutt",
@@ -2133,7 +2133,7 @@
     "evolvesFrom": "igglybuff"
   },
   "wigglytuff": {
-    "stats": {"hp": 140, "atk": 70, "def": 45, "spa": 85, "spd": 50, "spe": 45},
+    "stats": {"hp": 140, "atk": 70, "def": 45, "spa": 75, "spd": 50, "spe": 45},
     "moves": [
       "pound",
       "headbutt",
@@ -2397,7 +2397,7 @@
     "evolvesTo": "bellossom"
   },
   "vileplume": {
-    "stats": {"hp": 75, "atk": 80, "def": 85, "spa": 110, "spd": 90, "spe": 50},
+    "stats": {"hp": 75, "atk": 80, "def": 85, "spa": 100, "spd": 90, "spe": 50},
     "moves": [
       "swordsdance",
       "cut",
@@ -3367,7 +3367,7 @@
     "evolvesTo": "politoed"
   },
   "poliwrath": {
-    "stats": {"hp": 90, "atk": 95, "def": 95, "spa": 70, "spd": 90, "spe": 70},
+    "stats": {"hp": 90, "atk": 85, "def": 95, "spa": 70, "spd": 90, "spe": 70},
     "moves": [
       "doubleslap",
       "bodyslam",
@@ -3557,7 +3557,7 @@
     "genderRatio": 75
   },
   "alakazam": {
-    "stats": {"hp": 55, "atk": 50, "def": 45, "spa": 135, "spd": 95, "spe": 120},
+    "stats": {"hp": 55, "atk": 50, "def": 45, "spa": 135, "spd": 85, "spe": 120},
     "moves": [
       "megapunch",
       "megakick",
@@ -3913,7 +3913,7 @@
     "genderRatio": 50
   },
   "victreebel": {
-    "stats": {"hp": 80, "atk": 105, "def": 65, "spa": 100, "spd": 70, "spe": 70},
+    "stats": {"hp": 80, "atk": 105, "def": 65, "spa": 100, "spd": 60, "spe": 70},
     "moves": [
       "swordsdance",
       "cut",
@@ -4181,7 +4181,7 @@
     "genderRatio": 50
   },
   "golem": {
-    "stats": {"hp": 80, "atk": 120, "def": 130, "spa": 55, "spd": 65, "spe": 45},
+    "stats": {"hp": 80, "atk": 110, "def": 130, "spa": 55, "spd": 65, "spe": 45},
     "moves": [
       "megapunch",
       "tackle",
@@ -4570,7 +4570,7 @@
     ]
   },
   "farfetchd": {
-    "stats": {"hp": 52, "atk": 90, "def": 55, "spa": 58, "spd": 62, "spe": 60},
+    "stats": {"hp": 52, "atk": 65, "def": 55, "spa": 58, "spd": 62, "spe": 60},
     "moves": [
       "razorwind",
       "swordsdance",
@@ -4675,7 +4675,7 @@
     "genderRatio": 50
   },
   "dodrio": {
-    "stats": {"hp": 60, "atk": 110, "def": 70, "spa": 60, "spd": 60, "spe": 110},
+    "stats": {"hp": 60, "atk": 110, "def": 70, "spa": 60, "spd": 60, "spe": 100},
     "moves": [
       "whirlwind",
       "fly",
@@ -5519,7 +5519,7 @@
     ]
   },
   "electrode": {
-    "stats": {"hp": 60, "atk": 50, "def": 70, "spa": 80, "spd": 80, "spe": 150},
+    "stats": {"hp": 60, "atk": 50, "def": 70, "spa": 80, "spd": 80, "spe": 140},
     "moves": [
       "tackle",
       "takedown",
@@ -5617,7 +5617,7 @@
     "genderRatio": 50
   },
   "exeggutor": {
-    "stats": {"hp": 95, "atk": 95, "def": 85, "spa": 125, "spd": 75, "spe": 55},
+    "stats": {"hp": 95, "atk": 95, "def": 85, "spa": 125, "spd": 65, "spe": 55},
     "moves": [
       "takedown",
       "doubleedge",
