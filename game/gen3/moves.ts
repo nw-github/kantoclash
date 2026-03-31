@@ -5,7 +5,7 @@ import {
   type MoveId,
   type MovePropOverrides,
 } from "../moves";
-import {HP_TYPES, idiv, VF, Range} from "../utils";
+import {HP_TYPES, idiv, VF, Range, DMF} from "../utils";
 
 export const moveScripts: Partial<MoveScripts> = {
   weather(battle, user) {
@@ -167,7 +167,7 @@ export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
   earthquake: {kingsRock: true},
   endure: {priority: +3},
   firespin: {kingsRock: true},
-  flail: {flag: "none"},
+  flail: {flag: DMF.none},
   gigadrain: {kingsRock: false},
   gust: {kingsRock: true},
   hyperbeam: {kingsRock: true},
@@ -188,10 +188,10 @@ export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
   protect: {priority: +3},
   pursuit: {kingsRock: false},
   razorwind: {acc: 100},
-  reversal: {flag: "none"},
+  reversal: {flag: DMF.none},
   roar: {priority: -6},
   rollingkick: {kingsRock: true},
-  skyattack: {flag: "high_crit", effect: [30, "flinch"]},
+  skyattack: {flag: DMF.high_crit, effect: [30, "flinch"]},
   sleeptalk: {noEncore: false},
   spiderweb: {protect: true},
   spikes: {max: 3},

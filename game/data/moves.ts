@@ -91,7 +91,6 @@ export const rawMoveList = {
     power: 0,
     noSleepTalk: true,
     kingsRock: true,
-    flag: "bide",
     contact: true,
   },
   bind: {
@@ -394,7 +393,7 @@ export const rawMoveList = {
     category: "special",
     power: 100,
     acc: 100,
-    flag: "dream_eater",
+    flag: "drain",
   },
   drillpeck: {
     kind: "damage",
@@ -975,7 +974,6 @@ export const rawMoveList = {
     category: "physical",
     power: 40,
     acc: 100,
-    flag: "payday",
     kingsRock: true,
   },
   peck: {
@@ -1113,7 +1111,6 @@ export const rawMoveList = {
     category: "physical",
     acc: 100,
     power: 20,
-    flag: "rage",
     kingsRock: true,
     contact: true,
   },
@@ -1877,7 +1874,6 @@ export const rawMoveList = {
     acc: 100,
     kingsRock: true,
     noTechnician: true,
-    flag: "beatup",
   },
   bellydrum: {
     kind: "bellydrum",
@@ -2040,7 +2036,6 @@ export const rawMoveList = {
     category: "physical",
     power: 40,
     acc: 100,
-    flag: "false_swipe",
     kingsRock: true,
     contact: true,
   },
@@ -2112,7 +2107,6 @@ export const rawMoveList = {
     category: "physical",
     power: 10,
     acc: 95,
-    flag: "fury_cutter",
     kingsRock: true,
     contact: true,
   },
@@ -2206,7 +2200,6 @@ export const rawMoveList = {
     category: "physical",
     power: 0,
     acc: 100,
-    flag: "magnitude",
     ignore: ["dig"],
     punish: true,
     kingsRock: true,
@@ -2366,7 +2359,6 @@ export const rawMoveList = {
     range: "Adjacent",
     category: "physical",
     acc: 90,
-    flag: "present",
     kingsRock: true,
   },
   protect: {
@@ -2416,7 +2408,7 @@ export const rawMoveList = {
     category: "physical",
     power: 20,
     acc: 100,
-    flag: "rapid_spin",
+    flag: "remove_hazards",
     kingsRock: true,
     contact: true,
   },
@@ -3044,7 +3036,6 @@ export const rawMoveList = {
     category: "physical",
     power: 70,
     acc: 100,
-    flag: "facade",
     kingsRock: true,
     contact: true,
   },
@@ -3625,7 +3616,6 @@ export const rawMoveList = {
     acc: 100,
     kingsRock: true,
     contact: true,
-    flag: "smellingsalt",
   },
   snatch: {
     kind: "volatile",
@@ -3646,7 +3636,6 @@ export const rawMoveList = {
     power: 100,
     acc: 100,
     kingsRock: true,
-    flag: "spitup",
   },
   stockpile: {
     kind: "stockpile",
@@ -3741,7 +3730,6 @@ export const rawMoveList = {
     power: 50,
     acc: 100,
     sound: true,
-    flag: "uproar",
     noSleepTalk: true,
   },
   volttackle: {

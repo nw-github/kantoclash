@@ -9,6 +9,7 @@ import type {Species, SpeciesId} from "../species";
 import {
   clamp,
   debugLog,
+  DMF,
   idiv,
   randChoiceWeighted,
   TypeMod,
@@ -364,8 +365,9 @@ export class Generation2 extends Generation1 {
     }
 
     let chance = DamageCalc.P(acc0);
-    if (move.kind === "damage" && move.flag === "ohko") {
+    if (move.kind === "damage" && move.flag === DMF.ohko) {
       if (target.base.level > user.base.level) {
+        battle.miss(user, target);
         return false;
       }
 
@@ -396,7 +398,10 @@ export class Generation2 extends Generation1 {
     tripleKick,
     beatUp,
   }: GetDamageParams) {
-    if ((move.flag === "drain" || move.flag === "dream_eater") && target.v.substitute) {
+    if (
+      (move.flag === DMF.drain && target.v.substitute) ||
+      (move.id === "dreameater" && target.base.status !== "slp")
+    ) {
       return {dmg: 0, eff: 1, miss: true, type: move.type};
     }
 
@@ -424,7 +429,7 @@ export class Generation2 extends Generation1 {
 
     power ??= this.getMoveBasePower(move, user.base, target.base);
 
-    if (move.flag === "present") {
+    if (move.id === "present") {
       const result = randChoiceWeighted(battle.rng, [40, 80, 120, -4], [40, 30, 10, 20]);
       if (result < 0) {
         return {dmg: -Math.max(idiv(target.base.stats.hp, 4), 1), eff: 1, miss: false, type};
@@ -438,7 +443,7 @@ export class Generation2 extends Generation1 {
       level,
       isCrit,
       power,
-      explosion: move.flag === "explosion",
+      explosion: move.flag === DMF.explosion,
       typeboost: getTypeBoost(user, type),
     });
 
@@ -448,7 +453,7 @@ export class Generation2 extends Generation1 {
     }
 
     let eff = 1;
-    if (move.id !== "struggle" && move.flag !== "futuresight") {
+    if (move.id !== "struggle" && move.flag !== DMF.futuresight) {
       ({dmg, eff} = DamageCalc.applyTypeModifiers(dmg, {
         weather: battle.getWeather(),
         type,
@@ -458,28 +463,28 @@ export class Generation2 extends Generation1 {
       }));
     }
 
-    if (move.flag === "fury_cutter" && user.v.furyCutter) {
+    if (move.id === "furycutter" && user.v.furyCutter) {
       // command furycutter
       user.v.furyCutter = (user.v.furyCutter + 1) & 0xff;
       dmg = Math.min(dmg << Math.min(user.v.furyCutter, 5), 0xffff);
-    } else if (move.flag === "rollout") {
+    } else if (move.flag === DMF.rollout) {
       // command rolloutpower
       const count = 5 - (user.v.thrashing?.turns ?? 5) + +user.v.usedDefenseCurl;
       dmg = Math.min(dmg << count, 0xffff);
-    } else if (move.flag === "rage") {
+    } else if (move.id === "rage") {
       // command ragedamage
       dmg = Math.min(dmg * user.v.rage, 0xffff);
     }
 
     const random = !rng && rng !== null ? battle.rng : rng;
-    if (random) {
+    if (random && move.flag !== DMF.norand) {
       dmg = DamageCalc.randomizeDamage(dmg, random);
     }
 
     // commands doubleundergrounddamage, doubleflyingdamage, doubleminimizedamage, pursuit
     if (
       user.v.inPursuit ||
-      (move.flag === "minimize" && target.v.usedMinimize) ||
+      (move.flag === DMF.minimize && target.v.usedMinimize) ||
       (move.punish && target.v.charging && move.ignore?.includes(target.v.charging.move.id))
     ) {
       dmg = Math.min(dmg << 1, 0xffff);
@@ -507,7 +512,7 @@ export class Generation2 extends Generation1 {
     if (move.fixedDamage || this.move.overrides.dmg[move.id!]) {
       return false;
     }
-    return this.rng.tryCrit(battle, user, move.flag === "high_crit");
+    return this.rng.tryCrit(battle, user, move.flag === DMF.high_crit);
   }
 
   override getConfusionSelfDamage(_battle: Battle, user: ActivePokemon) {
@@ -523,7 +528,7 @@ export class Generation2 extends Generation1 {
       level: user.base.level,
       isCrit: false,
       power: 40,
-      explosion: user.choice?.move?.kind === "damage" && user.choice?.move?.flag === "explosion",
+      explosion: user.choice?.move?.kind === "damage" && user.choice?.move?.flag === DMF.explosion,
       typeboost: getTypeBoost(user, user.choice?.move?.type ?? "???"),
     });
     return {dmg};
@@ -562,7 +567,7 @@ export class Generation2 extends Generation1 {
   override tryDamage = tryDamage;
 
   override handleRage(battle: Battle, poke: ActivePokemon) {
-    if (poke.v.lastMove?.kind === "damage" && poke.v.lastMove.flag === "rage") {
+    if (poke.v.lastMove?.kind === "damage" && poke.v.lastMove.id === "rage") {
       battle.info(poke, "rage");
       poke.v.rage++;
     }

@@ -25,6 +25,7 @@ import {
   type Weather,
   Endure,
   randChoiceWeighted,
+  DMF,
 } from "../utils";
 import {moveScripts, moveOverrides, movePatches} from "./moves";
 import speciesPatches from "./species.json";
@@ -305,7 +306,7 @@ class DamageCalc {
 
   // in Cmd_damagecalc, Cmd_stockpiletobasedamage, Cmd_trysetfutureattack
   static applyMiscModifiers(dmg: number, {isCrit, battle, user, target, move}: MiscModsParams) {
-    if (move.flag !== "futuresight" && move.id !== "struggle" && move.id !== "spitup") {
+    if (move.flag !== DMF.futuresight && move.id !== "struggle" && move.id !== "spitup") {
       if (isCrit) {
         dmg <<= 1;
       }
@@ -315,7 +316,7 @@ class DamageCalc {
       // Look in `data/battle_scripts_1.s` for `setbyte sDMG_MULTIPLIER, 2`,
       // or in `src/battle_script_commands.c` for `gBattleScripting.dmgMultiplier`
       if (
-        move.flag === "revenge" &&
+        move.flag === DMF.revenge &&
         user.v.lastHitBy?.poke === target &&
         target.choice?.move.kind === "damage" &&
         target.choice?.executed
@@ -329,7 +330,7 @@ class DamageCalc {
         (move.id === "weatherball" && battle.getWeather()) ||
         (move.id === "facade" && user.base.status) ||
         (move.id === "smellingsalt" && !target.v.substitute && target.base.status === "par") ||
-        (move.flag === "minimize" && target.v.usedMinimize) ||
+        (move.flag === DMF.minimize && target.v.usedMinimize) ||
         (move.punish && target.v.charging && move.ignore?.includes(target.v.charging.move.id))
       ) {
         doubleDmg = true;
@@ -452,7 +453,7 @@ export class Generation3 extends Generation2 {
       }
 
       power <<= user.v.furyCutter - 1;
-    } else if (move.flag === "rollout") {
+    } else if (move.flag === DMF.rollout) {
       const count = 5 - (user.v.thrashing?.turns ?? 5) + +user.v.usedDefenseCurl;
       power <<= count;
     }
@@ -469,18 +470,18 @@ export class Generation3 extends Generation2 {
         user,
         target,
         isCrit,
-        explosion: move.flag === "explosion",
+        explosion: move.flag === DMF.explosion,
       });
     }
 
     dmg = DamageCalc.applyMiscModifiers(dmg, {isCrit, battle, user, target, move});
     let eff = 1;
-    if (move.id !== "struggle" && move.flag !== "futuresight" && !beatUp) {
+    if (move.id !== "struggle" && move.flag !== DMF.futuresight && !beatUp) {
       ({dmg, eff} = DamageCalc.applyTypeModifier(dmg, {type, user, target, gen: this}));
     }
 
     const random = rng === undefined ? battle.rng : rng;
-    if (random !== null) {
+    if (random !== null && move.flag !== DMF.norand) {
       dmg = DamageCalc.randomizeDamage(dmg, random);
     }
 
@@ -496,7 +497,7 @@ export class Generation3 extends Generation2 {
       target: user,
       isCrit: false,
       move: this.moveList.pound as DamagingMove,
-      explosion: user.choice?.move?.kind === "damage" && user.choice?.move?.flag === "explosion",
+      explosion: user.choice?.move?.kind === "damage" && user.choice?.move?.flag === DMF.explosion,
     });
     dmg = DamageCalc.randomizeDamage(dmg, battle.rng);
     let endure;
@@ -616,7 +617,7 @@ export class Generation3 extends Generation2 {
       return true;
     }
 
-    if (move.kind === "damage" && move.flag === "ohko") {
+    if (move.kind === "damage" && move.flag === DMF.ohko) {
       if (target.hasAbility("sturdy")) {
         battle.ability(target);
         battle.info(target, "immune");
@@ -843,7 +844,7 @@ export class Generation3 extends Generation2 {
     // A bunch of stuff
     if (battle.betweenTurns < BetweenTurns.PartialTrapping) {
       let someoneDied = false;
-      const hasUproar = battle.allActive.some(p => p.v.thrashing?.move?.flag === "uproar");
+      const hasUproar = battle.allActive.some(p => p.v.thrashing?.move?.id === "uproar");
       for (const poke of turnOrder) {
         const ability = poke.getAbilityId();
         if (!poke.v.fainted) {
@@ -889,12 +890,12 @@ export class Generation3 extends Generation2 {
 
           if (poke.v.thrashing) {
             const done = --poke.v.thrashing.turns === 0;
-            if (poke.v.thrashing.move.flag === "uproar") {
+            if (poke.v.thrashing.move.id === "uproar") {
               battle.info(poke, done ? "uproar_end" : "uproar_continue");
             }
 
             if (done) {
-              if (poke.v.thrashing.move.flag === "multi_turn" && ability !== "owntempo") {
+              if (poke.v.thrashing.move.flag === DMF.multi_turn && ability !== "owntempo") {
                 poke.confuse(battle, "fatigue_confuse_max");
               }
               poke.v.thrashing = undefined;
@@ -995,7 +996,7 @@ export class Generation3 extends Generation2 {
   }
 
   override handleRage(battle: Battle, poke: ActivePokemon) {
-    if (poke.v.lastMove?.kind === "damage" && poke.v.lastMove.flag === "rage") {
+    if (poke.v.lastMove?.kind === "damage" && poke.v.lastMove.id === "rage") {
       battle.info(poke, "rage");
       poke.modStages([["atk", +1]], battle);
     }

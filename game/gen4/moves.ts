@@ -1,5 +1,5 @@
 import type {Move, MoveScripts, MoveId, MovePropOverrides} from "../moves";
-import {Range} from "../utils";
+import {DMF, Range} from "../utils";
 
 /**
  * TODO:
@@ -24,7 +24,7 @@ export const moveOverrides: Partial<MovePropOverrides> = {
 export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
   acid: {effect: [10, [["spd", -1]]]},
   ancientpower: {contact: false},
-  astonish: {flag: "none"},
+  astonish: {flag: DMF.none},
   bide: {ignoreType: true, acc: 0, priority: +1},
   covet: {contact: true},
   crunch: {effect: [20, [["def", -1]]]},
@@ -32,7 +32,7 @@ export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
   disable: {acc: 80},
   dive: {power: 80},
   dragonrage: {kingsRock: false},
-  extrasensory: {flag: "none"},
+  extrasensory: {flag: DMF.none},
   fakeout: {contact: true},
   feintattack: {contact: true},
   flash: {acc: 100},
@@ -48,7 +48,7 @@ export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
   memento: {acc: 100},
   mindreader: {acc: 0},
   naturepower: {calls: "triattack"},
-  needlearm: {flag: "none"},
+  needlearm: {flag: DMF.none},
   nightmare: {acc: 100},
   odorsleuth: {acc: 0},
   outrage: {power: 120},

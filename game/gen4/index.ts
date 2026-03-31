@@ -1,11 +1,10 @@
 import speciesPatches from "./species.json";
 import items from "./items.json";
-import type {CalcDamageParams} from "../gen1";
 import type {Species, SpeciesId} from "../species";
 import {merge} from "../gen2";
 import {moveScripts, movePatches, moveOverrides} from "./moves";
 import {Generation3, createItemMergeList} from "../gen3";
-import {Range, dmgFlags, debugLog, idiv, MC, screens, VF} from "../utils";
+import {Range, dmgFlags, debugLog, idiv, MC, screens, VF, DMF} from "../utils";
 import {type ActivePokemon, type Battle, TurnType} from "../battle";
 import {tryDamage} from "./damaging";
 import type {Move} from "../moves";
@@ -188,7 +187,7 @@ export class Generation4 extends Generation3 {
     // TODO: Gravity
 
     // A bunch of stuff
-    const hasUproar = battle.allActive.some(p => p.v.thrashing?.move?.flag === "uproar");
+    const hasUproar = battle.allActive.some(p => p.v.thrashing?.move?.id === "uproar");
     for (const poke of turnOrder) {
       const ability = poke.getAbilityId();
       if (!poke.v.fainted) {
@@ -238,12 +237,12 @@ export class Generation4 extends Generation3 {
       if (poke.base.hp) {
         if (poke.v.thrashing) {
           const done = --poke.v.thrashing.turns === 0;
-          if (poke.v.thrashing.move.flag === "uproar") {
+          if (poke.v.thrashing.move.id === "uproar") {
             battle.info(poke, done ? "uproar_end" : "uproar_continue");
           }
 
           if (done) {
-            if (poke.v.thrashing.move.flag === "multi_turn" && ability !== "owntempo") {
+            if (poke.v.thrashing.move.flag === DMF.multi_turn && ability !== "owntempo") {
               poke.confuse(battle, "fatigue_confuse_max");
             }
             poke.v.thrashing = undefined;

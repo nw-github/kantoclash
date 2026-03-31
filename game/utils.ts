@@ -160,6 +160,32 @@ export enum Range {
   Field,
 }
 
+export enum DMF {
+  none,
+  high_crit,
+  drain,
+  explosion,
+  recharge,
+  crash,
+  double,
+  triple,
+  multi,
+  multi_turn,
+  trap,
+  ohko,
+  uturn,
+  norand,
+  rollout,
+  minimize,
+  remove_hazards,
+  remove_screens,
+  remove_protect,
+  revenge,
+  bugbite,
+  futuresight,
+  assurance,
+}
+
 export const isSpreadMove = (range: Range) => range >= Range.All;
 
 export const clamp = (num: number, min: number, max: number) => Math.max(Math.min(num, max), min);

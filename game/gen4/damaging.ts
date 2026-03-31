@@ -2,7 +2,7 @@ import type {ActivePokemon, Battle} from "../battle";
 import type {DamagingMove} from "../moves";
 import type {Status} from "../pokemon";
 import {abilityList} from "../species";
-import {hazards, idiv, randChoiceWeighted, VF, Range, type Type} from "../utils";
+import {hazards, idiv, randChoiceWeighted, VF, Range, type Type, DMF} from "../utils";
 
 export const tryDamage = (
   self: DamagingMove,
@@ -116,10 +116,10 @@ export const tryDamage = (
 
   // eslint-disable-next-line prefer-const
   let {eff, fail, type, abilityImmunity} = checkUsefulness(self, battle, user, target);
-  if (self.flag === "explosion") {
+  if (self.flag === DMF.explosion) {
     // Explosion into destiny bond, who dies first?
     user.damage(user.base.hp, user, battle, false, "explosion", true);
-  } else if (self.flag === "remove_screens") {
+  } else if (self.flag === DMF.remove_screens) {
     for (const screen of ["light_screen", "reflect"] as const) {
       if (target.owner.screens[screen]) {
         target.owner.screens[screen] = 0;
@@ -128,7 +128,7 @@ export const tryDamage = (
     }
   }
 
-  if (self.flag === "dream_eater" && target.v.substitute) {
+  if (self.id === "dreameater" && target.v.substitute) {
     fail = true;
   }
 
@@ -137,7 +137,7 @@ export const tryDamage = (
   if (eff === 0 || fail || protect || !battle.checkAccuracy(self, user, target, !special)) {
     user.v.furyCutter = 0;
     user.v.thrashing = undefined;
-    if (self.flag === "spitup") {
+    if (self.id === "spitup") {
       battle.sv([user.setVolatile("stockpile", 0)]);
     }
     if (eff === 0) {
@@ -159,7 +159,7 @@ export const tryDamage = (
       if (protect) {
         battle.info(target, "protect");
       }
-      if (self.flag === "crash") {
+      if (self.flag === DMF.crash) {
         const {dmg} = getDamage(self, battle, user, target, {});
         battle.gen.handleCrashDamage(battle, user, target, dmg);
       }
@@ -167,7 +167,7 @@ export const tryDamage = (
     return 0;
   }
 
-  if (self.flag === "present") {
+  if (self.id === "present") {
     const result = randChoiceWeighted(battle.rng, [40, 80, 120, -4], [40, 30, 10, 20]);
     if (result < 0) {
       if (target.base.isMaxHp()) {
@@ -188,7 +188,7 @@ export const tryDamage = (
     endured = false,
     band = false;
 
-  if (self.flag === "beatup") {
+  if (self.id === "beatup") {
     let dmg, isCrit, tmpDealt;
     for (const poke of user.owner.team) {
       if (poke.status || !poke.hp) {
@@ -216,12 +216,12 @@ export const tryDamage = (
         break;
       }
     }
-  } else if (self.flag === "double" || self.flag === "triple" || self.flag === "multi") {
+  } else if (self.flag === DMF.double || self.flag === DMF.triple || self.flag === DMF.multi) {
     // Skill link doesn't affect Triple Kick until Gen V
     const counts = {
-      double: 2,
-      triple: 3,
-      multi: user.hasAbility("skilllink") ? 5 : battle.gen.rng.multiHitCount(battle),
+      [DMF.double]: 2,
+      [DMF.triple]: 3,
+      [DMF.multi]: user.hasAbility("skilllink") ? 5 : battle.gen.rng.multiHitCount(battle),
     };
 
     const wasSleeping = user.base.status === "slp";
@@ -229,7 +229,7 @@ export const tryDamage = (
     let dmg, isCrit, tmpDealt;
     for (let hits = 0; !dead && user.base.hp && !endured && hits < count; hits++) {
       if (
-        self.flag === "triple" &&
+        self.flag === DMF.triple &&
         hits !== 0 &&
         !battle.checkAccuracy(self, user, target, !special)
       ) {
@@ -240,7 +240,7 @@ export const tryDamage = (
 
       hadSub = target.v.substitute !== 0;
       ({dmg, isCrit, endured, band} = getDamage(self, battle, user, target, {
-        tripleKick: self.flag === "triple" ? hits + 1 : 1,
+        tripleKick: self.flag === DMF.triple ? hits + 1 : 1,
         band,
         power,
       }));
@@ -275,7 +275,7 @@ export const tryDamage = (
       user,
       battle,
       isCrit,
-      self.flag === "ohko" ? "ohko" : "attacked",
+      self.flag === DMF.ohko ? "ohko" : "attacked",
       false,
       eff,
     ));
@@ -285,7 +285,7 @@ export const tryDamage = (
     }
   }
 
-  if (self.flag === "remove_protect") {
+  if (self.flag === DMF.remove_protect) {
     battle.sv([target.clearFlag(VF.protect)]);
   }
 
@@ -304,11 +304,11 @@ export const tryDamage = (
     user.damage(Math.max(Math.floor(dealt / self.recoil), 1), user, battle, false, "recoil", true);
   }
 
-  if (user.base.hp && (self.flag === "drain" || self.flag === "dream_eater")) {
+  if (user.base.hp && self.flag === DMF.drain) {
     user.recover(Math.max(Math.floor(dealt / 2), 1), target, battle, "drain");
-  } else if (self.flag === "payday") {
+  } else if (self.id === "payday") {
     battle.info(user, "payday");
-  } else if (self.flag === "rapid_spin" && user.base.hp) {
+  } else if (self.flag === DMF.remove_hazards && user.base.hp) {
     for (const hazard of hazards) {
       if (user.owner.hazards[hazard]) {
         user.owner.hazards[hazard] = 0;
@@ -332,7 +332,7 @@ export const tryDamage = (
       });
       user.v.trapped = undefined;
     }
-  } else if (self.flag === "smellingsalt" && !hadSub && target.base.status === "par") {
+  } else if (self.id === "smellingsalt" && !hadSub && target.base.status === "par") {
     target.base.status = undefined;
     battle.event({
       type: "cure",
@@ -352,7 +352,7 @@ export const tryDamage = (
     }
   }
 
-  if (self.flag === "recharge") {
+  if (self.flag === DMF.recharge) {
     user.v.recharge = {move: self, target};
   }
 
@@ -363,7 +363,7 @@ export const tryDamage = (
     target.v.hasFocus = false;
   }
 
-  if (self.flag === "trap" && !hadSub && target.base.hp) {
+  if (self.flag === DMF.trap && !hadSub && target.base.hp) {
     target.v.trapped = {user, move: self, turns: battle.gen.rng.bindingMoveTurns(battle, user)};
     const move = self.id!;
     battle.event({
@@ -374,10 +374,10 @@ export const tryDamage = (
       move,
       volatiles: [{id: target.id, v: {trapped: move}}],
     });
-  } else if (self.flag === "uproar" && !user.v.thrashing) {
+  } else if (self.id === "uproar" && !user.v.thrashing) {
     user.v.thrashing = {move: self, turns: battle.gen.rng.thrashDuration(battle), max: false};
     battle.info(user, "uproar");
-  } else if (self.flag === "uturn" && user.base.hp && user.canBatonPass()) {
+  } else if (self.flag === DMF.uturn && user.base.hp && user.canBatonPass()) {
     user.v.inBatonPass = "uturn";
   }
 

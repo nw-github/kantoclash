@@ -1,5 +1,5 @@
 import {rawMoveList} from "./data/moves";
-import {VF, MC, Range, stageKeys, idiv, stageStatKeys, HP_TYPES, TypeMod} from "./utils";
+import {VF, MC, Range, stageKeys, idiv, stageStatKeys, HP_TYPES, TypeMod, DMF} from "./utils";
 import type {FailReason, InfoReason, RecoveryReason} from "./events";
 import type {Pokemon, Status} from "./pokemon";
 import type {StageId, Type, Weather, ScreenId, HazardId} from "./utils";
@@ -166,7 +166,7 @@ export interface DamagingMove extends BaseMove {
   readonly kind: "damage";
   readonly power: number;
   readonly category: MC.physical | MC.special;
-  readonly flag?: Flag;
+  readonly flag?: DMF;
   readonly effect?: [number, Effect] | [number, Effect, true];
   readonly effect2?: DamagingMove["effect"];
   /** Recoil: max(1 / recoil, 1) */
@@ -229,44 +229,6 @@ type Effect =
   | "tri_attack"
   | "knockoff";
 
-type Flag =
-  | "none"
-  | "high_crit"
-  | "drain"
-  | "explosion"
-  | "recharge"
-  | "crash"
-  | "double"
-  | "triple"
-  | "multi"
-  | "dream_eater"
-  | "bide"
-  | "payday"
-  | "multi_turn"
-  | "rage"
-  | "trap"
-  | "ohko"
-  | "uturn"
-  | "norand"
-  | "magnitude"
-  | "false_swipe"
-  | "rapid_spin"
-  | "fury_cutter"
-  | "rollout"
-  | "minimize"
-  | "present"
-  | "beatup"
-  | "facade"
-  | "remove_screens"
-  | "remove_protect"
-  | "smellingsalt"
-  | "spitup"
-  | "uproar"
-  | "revenge"
-  | "bugbite"
-  | "futuresight"
-  | "assurance";
-
 const createMoveList = (list: any) => {
   let idx = 0;
   for (const moveId in list) {
@@ -275,9 +237,21 @@ const createMoveList = (list: any) => {
     move.idx = idx++;
     move.range = Range[move.range];
     if (move.kind === "volatile") {
+      if (VF[move.flag] === undefined) {
+        console.log(`Move ${moveId} has invalid VF ${move.flag}`);
+      }
       move.flag = VF[move.flag];
     }
+    if (move.kind === "damage" && move.flag) {
+      if (DMF[move.flag] === undefined) {
+        console.log(`Move ${moveId} has invalid DMF ${move.flag}`);
+      }
+      move.flag = DMF[move.flag];
+    }
     if (move.category) {
+      if (MC[move.category] === undefined) {
+        console.log(`Move ${moveId} has invalid MC ${move.category}`);
+      }
       move.category = MC[move.category];
     }
   }
@@ -459,17 +433,17 @@ export const moveScripts: MoveScripts = {
     }
 
     let power: number | undefined;
-    if (this.flag === "multi_turn" && !user.v.thrashing) {
+    if (this.flag === DMF.multi_turn && !user.v.thrashing) {
       // when called by sleep talk, thrashing moves don't lock the user in
       if (user.lastChosenMove !== battle.gen.moveList.sleeptalk) {
         user.v.thrashing = {move: this, turns: battle.gen.rng.thrashDuration(battle), max: false};
         user.v.thrashing.max = user.v.thrashing.turns === battle.gen.rng.maxThrash;
       }
-    } else if (this.flag === "rollout" && !user.v.thrashing) {
+    } else if (this.flag === DMF.rollout && !user.v.thrashing) {
       if (user.lastChosenMove !== battle.gen.moveList.sleeptalk) {
         user.v.thrashing = {move: this, turns: 5, max: false};
       }
-    } else if (this.flag === "bide") {
+    } else if (this.id === "bide") {
       if (!user.v.bide) {
         user.v.bide = {move: this, turns: battle.gen.rng.bideDuration(battle), dmg: 0};
         return;
@@ -481,11 +455,11 @@ export const moveScripts: MoveScripts = {
       }
 
       battle.info(user, "bide");
-    } else if (this.flag === "magnitude") {
+    } else if (this.id === "magnitude") {
       const magnitude = battle.rng.int(4, 10);
       power = [10, 30, 50, 70, 90, 110, 150][magnitude - 4];
       battle.event({type: "magnitude", magnitude});
-    } else if (this.flag === "futuresight") {
+    } else if (this.flag === DMF.futuresight) {
       const [target] = targets;
       if (target.futureSight) {
         return battle.info(user, "fail_generic");
@@ -541,7 +515,7 @@ export const moveScripts: MoveScripts = {
     user.handleShellBell(battle, dealt);
     battle.sv([user.clearFlag(VF.charge)]);
 
-    if (this.flag === "bide") {
+    if (this.id === "bide") {
       user.v.bide = undefined;
     } else if (user.v.inBatonPass) {
       battle.checkFaint(user);

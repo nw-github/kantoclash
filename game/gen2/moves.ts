@@ -1,6 +1,6 @@
 import type {Move, MoveScripts, MoveId, MovePropOverrides} from "../moves";
 import {thunderAccOverride} from "../moves";
-import {stageKeys, Range} from "../utils";
+import {stageKeys, Range, DMF} from "../utils";
 
 export const moveScripts: Partial<MoveScripts> = {
   recover(battle, user) {
@@ -193,14 +193,14 @@ export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
   karatechop: {type: "fight"},
   poisonsting: {effect: [30, "psn"]},
   psychic: {effect: [10, [["spd", -1]]]},
-  razorwind: {flag: "high_crit"},
+  razorwind: {flag: DMF.high_crit},
   rockslide: {effect: [30, "flinch"]},
   rockthrow: {acc: 90},
   sandattack: {type: "ground"},
   selfdestruct: {power: 200},
   skullbash: {charge: [["def", +1]]},
   sludge: {effect: [30, "psn"]},
-  stomp: {flag: "minimize"},
+  stomp: {flag: DMF.minimize},
   struggle: {recoil: 4, pp: 1},
   thunder: {ignore: ["fly", "bounce", "skydrop"], effect: [30, "par"]},
   triattack: {effect: [20, "tri_attack"]},

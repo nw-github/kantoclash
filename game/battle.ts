@@ -510,7 +510,7 @@ export class Battle {
   hasUproar(user: ActivePokemon) {
     return (
       !user.hasAbility("soundproof") &&
-      this.allActive.some(p => p.v.thrashing?.move?.flag === "uproar")
+      this.allActive.some(p => p.v.thrashing?.move?.id === "uproar")
     );
   }
 

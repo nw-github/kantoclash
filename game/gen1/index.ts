@@ -23,6 +23,7 @@ import {
   TypeMod,
   isSpecialType,
   type Endure,
+  DMF,
 } from "../utils";
 import {itemList, type ItemId} from "../item";
 import {UNOWN_FORM, type Pokemon, type FormId, type Gender, type Nature} from "../pokemon";
@@ -160,7 +161,7 @@ export class DamageCalc {
   }
 
   static calcBaseDamage({power, level, A, D, move}: BaseDamageParams) {
-    if (move?.flag === "explosion") {
+    if (move?.flag === DMF.explosion) {
       D = Math.max(D >> 1, 1);
     }
 
@@ -365,11 +366,8 @@ export class Generation1 {
   ) {
     if (!move.acc) {
       return true;
-    } else if (
-      move.kind === "damage" &&
-      move.flag === "dream_eater" &&
-      target.base.status !== "slp"
-    ) {
+    } else if (move.id === "dreameater" && target.base.status !== "slp") {
+      battle.miss(user, target);
       return false;
     }
 
@@ -419,7 +417,7 @@ export class Generation1 {
     if (move.fixedDamage) {
       const dmg = move.fixedDamage;
       // in the real game, this is handled inside calcBaseDamage
-      const miss = move.flag === "ohko" && user.v.stats.spe < target.v.stats.spe;
+      const miss = move.flag === DMF.ohko && user.v.stats.spe < target.v.stats.spe;
       return {dmg, miss, eff: 1, type: move.type};
     } else if (this.move.overrides.dmg[move.id!]) {
       // Counter, Bide
@@ -474,7 +472,7 @@ export class Generation1 {
     if (move.fixedDamage || move.id === "bide") {
       return false;
     }
-    return this.rng.tryCrit(battle, user, move.flag === "high_crit");
+    return this.rng.tryCrit(battle, user, move.flag === DMF.high_crit);
   }
 
   calcStat(
@@ -851,7 +849,7 @@ export function tryDamage(
 ): number {
   const checkThrashing = () => {
     if (user.v.thrashing && user.v.thrashing.turns !== -1 && --user.v.thrashing.turns === 0) {
-      if (!user.owner.screens.safeguard && self.flag === "multi_turn") {
+      if (!user.owner.screens.safeguard && self.flag === DMF.multi_turn) {
         user.confuse(battle, user.v.thrashing.max ? "fatigue_confuse_max" : "fatigue_confuse");
       }
       user.v.thrashing = undefined;
@@ -863,7 +861,7 @@ export function tryDamage(
     user.v.trapping = {move: self, turns: battle.gen.rng.bindingMoveTurns(battle, user)};
   };
 
-  if (self.flag === "trap") {
+  if (self.flag === DMF.trap) {
     target.v.recharge = undefined;
   }
 
@@ -878,18 +876,18 @@ export function tryDamage(
         battle.miss(user, target);
       } else {
         battle.info(target, "immune");
-        if (self.flag === "trap") {
+        if (self.flag === DMF.trap) {
           trapTarget();
-        } else if (self.flag === "crash") {
+        } else if (self.flag === DMF.crash) {
           checkThrashing();
           return 0;
         }
       }
     }
 
-    if (self.flag === "crash") {
+    if (self.flag === DMF.crash) {
       battle.gen.handleCrashDamage(battle, user, target, dmg);
-    } else if (self.flag === "explosion") {
+    } else if (self.flag === DMF.explosion) {
       // according to showdown, explosion also boosts rage even on miss/failure
       target.handleRage(battle);
       user.damage(user.base.hp, user, battle, false, "explosion", true);
@@ -901,7 +899,7 @@ export function tryDamage(
   target.v.lastHitBy = {move: self, poke: user, type};
 
   checkThrashing();
-  if (self.flag === "rage") {
+  if (self.id === "rage") {
     user.v.thrashing = {move: self, max: false, turns: -1};
   }
 
@@ -912,12 +910,12 @@ export function tryDamage(
     user,
     battle,
     isCrit,
-    self.flag === "ohko" ? "ohko" : "attacked",
+    self.flag === DMF.ohko ? "ohko" : "attacked",
     false,
     eff,
   );
 
-  if (self.flag === "multi" || self.flag === "double") {
+  if (self.flag === DMF.multi || self.flag === DMF.double) {
     event.hitCount = 1;
   }
 
@@ -934,16 +932,16 @@ export function tryDamage(
         ).dead || dead;
     }
 
-    if (self.flag === "drain" || self.flag === "dream_eater") {
+    if (self.flag === DMF.drain) {
       // https://www.smogon.com/forums/threads/past-gens-research-thread.3506992/#post-5878612
       //  - DRAIN HP SIDE EFFECT
       const dmg = Math.max(Math.floor(dealt / 2), 1);
       battle.gen1LastDamage = dmg;
       user.recover(dmg, target, battle, "drain");
-    } else if (self.flag === "explosion") {
+    } else if (self.flag === DMF.explosion) {
       dead = user.damage(user.base.hp, user, battle, false, "explosion", true).dead || dead;
-    } else if (self.flag === "double" || self.flag === "multi") {
-      const count = self.flag === "double" ? 2 : battle.gen.rng.multiHitCount(battle);
+    } else if (self.flag === DMF.double || self.flag === DMF.multi) {
+      const count = self.flag === DMF.double ? 2 : battle.gen.rng.multiHitCount(battle);
       for (let hits = 1; !dead && !brokeSub && hits < count; hits++) {
         event.hitCount = 0;
         ({dead, brokeSub, event} = target.damage(
@@ -957,7 +955,7 @@ export function tryDamage(
         ));
         event.hitCount = hits + 1;
       }
-    } else if (self.flag === "payday") {
+    } else if (self.id === "payday") {
       battle.info(user, "payday");
     }
   }
@@ -966,9 +964,9 @@ export function tryDamage(
     return dealt;
   }
 
-  if (self.flag === "recharge") {
+  if (self.flag === DMF.recharge) {
     user.v.recharge = {move: self, target};
-  } else if (self.flag === "trap") {
+  } else if (self.flag === DMF.trap) {
     trapTarget();
   }
 

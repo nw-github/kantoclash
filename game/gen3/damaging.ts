@@ -2,7 +2,7 @@ import type {ActivePokemon, Battle} from "../battle";
 import type {DamagingMove} from "../moves";
 import type {Status} from "../pokemon";
 import {abilityList} from "../species";
-import {Endure, hazards, VF, type Type} from "../utils";
+import {DMF, Endure, hazards, VF, type Type} from "../utils";
 
 export const tryDamage = (
   self: DamagingMove,
@@ -103,10 +103,10 @@ export const tryDamage = (
     }
   };
 
-  if (self.flag === "explosion") {
+  if (self.flag === DMF.explosion) {
     // Explosion into destiny bond, who dies first?
     user.damage(user.base.hp, user, battle, false, "explosion", true);
-  } else if (self.flag === "remove_screens") {
+  } else if (self.flag === DMF.remove_screens) {
     // In Gen 3, light screen removes from the opponent even if you target an ally, or the target is
     // immune
     const opp = battle.opponentOf(user.owner);
@@ -134,7 +134,7 @@ export const tryDamage = (
   if (eff === 0 || miss || protect || !battle.checkAccuracy(self, user, target, !special)) {
     user.v.furyCutter = 0;
     user.v.thrashing = undefined;
-    if (self.flag === "spitup") {
+    if (self.id === "spitup") {
       battle.sv([user.setVolatile("stockpile", 0)]);
     }
     // TODO: verify this processing order
@@ -147,7 +147,7 @@ export const tryDamage = (
         if (protect) {
           battle.info(target, "protect");
         }
-        if (self.flag === "crash") {
+        if (self.flag === DMF.crash) {
           battle.gen.handleCrashDamage(battle, user, target, dmg);
         }
       }
@@ -165,7 +165,7 @@ export const tryDamage = (
     endured = false,
     band = false,
     beatUpFail = false;
-  let why = self.flag === "ohko" ? ("ohko" as const) : ("attacked" as const);
+  let why = self.flag === DMF.ohko ? ("ohko" as const) : ("attacked" as const);
   const wasSleeping = user.base.status === "slp";
 
   const applyDamage = (dmg: number, doShellBell: bool) => {
@@ -179,7 +179,7 @@ export const tryDamage = (
     }
 
     // command falseswipe BattleCommand_FalseSwipe
-    if (band || endured || (self.flag === "false_swipe" && dmg >= target.base.hp)) {
+    if (band || endured || (self.id === "falseswipe" && dmg >= target.base.hp)) {
       dmg = target.base.hp - 1;
       why = "attacked";
     }
@@ -190,7 +190,7 @@ export const tryDamage = (
       src: user,
       why,
       isCrit,
-      eff: self.flag === "beatup" ? 1 : eff,
+      eff: self.id === "beatup" ? 1 : eff,
     }));
 
     if (doShellBell) {
@@ -208,7 +208,7 @@ export const tryDamage = (
     };
   };
 
-  if (self.flag === "beatup") {
+  if (self.id === "beatup") {
     beatUpFail = true;
     for (const poke of user.owner.team) {
       if (poke.status || !poke.hp) {
@@ -223,11 +223,11 @@ export const tryDamage = (
         break;
       }
     }
-  } else if (self.flag === "double" || self.flag === "triple" || self.flag === "multi") {
+  } else if (self.flag === DMF.double || self.flag === DMF.triple || self.flag === DMF.multi) {
     const counts = {
-      double: 2,
-      triple: 3,
-      multi: battle.gen.rng.multiHitCount(battle),
+      [DMF.double]: 2,
+      [DMF.triple]: 3,
+      [DMF.multi]: battle.gen.rng.multiHitCount(battle),
     };
 
     const count = counts[self.flag];
@@ -242,7 +242,7 @@ export const tryDamage = (
       }
       ({event, stop} = applyDamage(dmg, true));
       event.hitCount = hits + 1;
-      if (self.flag === "triple" && !stop) {
+      if (self.flag === DMF.triple && !stop) {
         if (!battle.checkAccuracy(self, user, target, !special)) {
           // TODO: lazy
           battle.events.splice(-1, 1);
@@ -273,11 +273,11 @@ export const tryDamage = (
     user.damage(Math.max(Math.floor(dealt / self.recoil), 1), user, battle, false, "recoil", true);
   }
 
-  if (user.base.hp && (self.flag === "drain" || self.flag === "dream_eater")) {
+  if (user.base.hp && self.flag === DMF.drain) {
     user.recover(Math.max(Math.floor(dealt / 2), 1), target, battle, "drain");
-  } else if (self.flag === "payday") {
+  } else if (self.id === "payday") {
     battle.info(user, "payday");
-  } else if (self.flag === "rapid_spin" && user.base.hp) {
+  } else if (self.flag === DMF.remove_hazards && user.base.hp) {
     for (const hazard of hazards) {
       if (user.owner.hazards[hazard]) {
         user.owner.hazards[hazard] = 0;
@@ -301,7 +301,7 @@ export const tryDamage = (
       });
       user.v.trapped = undefined;
     }
-  } else if (self.flag === "smellingsalt" && !hadSub && target.base.status === "par") {
+  } else if (self.id === "smellingsalt" && !hadSub && target.base.status === "par") {
     target.base.status = undefined;
     battle.event({
       type: "cure",
@@ -317,7 +317,7 @@ export const tryDamage = (
     target.handleEndure(battle, Endure.FocusBand);
   }
 
-  if (self.flag === "recharge") {
+  if (self.flag === DMF.recharge) {
     user.v.recharge = {move: self, target};
   }
 
@@ -328,7 +328,7 @@ export const tryDamage = (
     target.v.hasFocus = false;
   }
 
-  if (self.flag === "trap" && !hadSub && target.base.hp) {
+  if (self.flag === DMF.trap && !hadSub && target.base.hp) {
     target.v.trapped = {user, move: self, turns: battle.gen.rng.bindingMoveTurns(battle, user)};
     const move = self.id!;
     battle.event({
@@ -341,7 +341,7 @@ export const tryDamage = (
     });
   }
 
-  if (self.flag === "uproar" && !user.v.thrashing) {
+  if (self.id === "uproar" && !user.v.thrashing) {
     user.v.thrashing = {move: self, turns: battle.gen.rng.thrashDuration(battle), max: false};
     battle.info(user, "uproar");
   }
