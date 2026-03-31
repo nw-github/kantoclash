@@ -516,9 +516,10 @@ export class Generation3 extends Generation2 {
   override getSpeed(battle: Battle, user: ActivePokemon) {
     // GetWhoStrikesFirst
     const ability = user.getAbility();
+    const weather = battle.getWeather();
     const item = user.base.item;
     let speed = user.v.stats.spe;
-    if (ability && ability.weatherSpeedBoost === battle.getWeather()) {
+    if (weather && ability?.weatherSpeedBoost === weather) {
       speed <<= 1;
     }
 
