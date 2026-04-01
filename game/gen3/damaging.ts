@@ -1,4 +1,5 @@
 import type {ActivePokemon, Battle} from "../battle";
+import {doBeatUp} from "../gen2/damaging";
 import type {DamagingMove} from "../moves";
 import type {Status} from "../pokemon";
 import {abilityList} from "../species";
@@ -164,22 +165,24 @@ export const tryDamage = (
     dealt = 0,
     endured = false,
     band = false,
-    beatUpFail = false;
+    beatUpFail = false,
+    handledShellBell = false;
   let why = self.flag === DMF.ohko ? ("ohko" as const) : ("attacked" as const);
   const wasSleeping = user.base.status === "slp";
 
   const applyDamage = (dmg: number, doShellBell: bool) => {
     hadSub = target.v.substitute !== 0;
-    if (!band && user.base.itemId === "focusband") {
+    const deadly = dmg >= target.base.hp;
+    if (deadly && !band && target.base.itemId === "focusband") {
       band = battle.gen.rng.tryFocusBand(battle);
     }
 
-    if (target.v.hasFlag(VF.endure) && dmg >= target.base.hp) {
+    if (deadly && target.v.hasFlag(VF.endure)) {
       endured = true;
     }
 
     // command falseswipe BattleCommand_FalseSwipe
-    if (band || endured || (self.id === "falseswipe" && dmg >= target.base.hp)) {
+    if (band || endured || (self.id === "falseswipe" && deadly)) {
       dmg = target.base.hp - 1;
       why = "attacked";
     }
@@ -195,7 +198,7 @@ export const tryDamage = (
 
     if (doShellBell) {
       user.handleShellBell(battle, dealt);
-      dealt = 0;
+      handledShellBell = true;
     }
 
     if (dealt !== 0) {
@@ -209,20 +212,7 @@ export const tryDamage = (
   };
 
   if (self.id === "beatup") {
-    beatUpFail = true;
-    for (const poke of user.owner.team) {
-      if (poke.status || !poke.hp) {
-        continue;
-      }
-
-      beatUpFail = false;
-      isCrit = false;
-      battle.event({type: "beatup", name: poke.name});
-      const {dmg} = battle.gen.getDamage({battle, user, target, move: self, isCrit});
-      if (applyDamage(dmg, true).stop) {
-        break;
-      }
-    }
+    beatUpFail = doBeatUp(self, battle, user, target, dmg => applyDamage(dmg, true));
   } else if (self.flag === DMF.double || self.flag === DMF.triple || self.flag === DMF.multi) {
     const counts = {
       [DMF.double]: 2,
@@ -240,7 +230,7 @@ export const tryDamage = (
         event.hitCount = 0;
       }
       ({event, stop} = applyDamage(dmg, true));
-      event.hitCount = hits + 1;
+      event.hitCount = hits;
       if (self.flag === DMF.triple && !stop) {
         if (!battle.checkAccuracy(self, user, target, !special)) {
           // TODO: lazy
@@ -252,7 +242,7 @@ export const tryDamage = (
 
       isCrit = battle.gen.rollCrit(battle, user, target, self);
       ({dmg} = battle.gen.getDamage({battle, user, target, move: self, isCrit, power}));
-    } while (!stop && hits++ <= count);
+    } while (!stop && ++hits <= count);
   } else {
     applyDamage(dmg, false);
   }
@@ -343,6 +333,10 @@ export const tryDamage = (
   if (self.id === "uproar" && !user.v.thrashing) {
     user.v.thrashing = {move: self, turns: battle.gen.rng.thrashDuration(battle), max: false};
     battle.info(user, "uproar");
+  }
+
+  if (handledShellBell) {
+    dealt = 0;
   }
 
   if (!self.effect) {

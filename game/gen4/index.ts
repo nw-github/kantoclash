@@ -317,10 +317,10 @@ class DamageCalc {
     const level = partyMon.level;
     const A = partyMon.species.stats.atk;
     const D = target.base.species.stats.def;
-    const dmg = idiv(idiv(A * power * (idiv(2 * level, 5) + 2), D), 50) + 2;
+    let dmg = idiv(idiv(A * power * (idiv(2 * level, 5) + 2), D), 50) + 2;
     // Beat up has a special damage calculation routine and uses the Gen 3 method of applying helping hand
     if (user.v.hasFlag(VF.helpingHand)) {
-      power = idiv(power * 15, 10);
+      dmg = idiv(dmg * 15, 10);
     }
     return dmg;
   }

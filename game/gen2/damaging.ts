@@ -2,6 +2,30 @@ import type {ActivePokemon, Battle} from "../battle";
 import type {DamagingMove} from "../moves";
 import {DMF, hazards, VF} from "../utils";
 
+export function doBeatUp(
+  move: DamagingMove,
+  battle: Battle,
+  user: ActivePokemon,
+  target: ActivePokemon,
+  applyDamage: (dmg: number) => {stop: bool},
+) {
+  let beatUpFail = true;
+  for (const poke of user.owner.team) {
+    if (poke.status || !poke.hp) {
+      continue;
+    }
+
+    battle.event({type: "beatup", name: poke.name});
+
+    beatUpFail = false;
+    const {dmg} = battle.gen.getDamage({battle, user, target, move, isCrit: false, beatUp: poke});
+    if (applyDamage(dmg).stop) {
+      break;
+    }
+  }
+  return beatUpFail;
+}
+
 export const tryDamage = (
   self: DamagingMove,
   battle: Battle,
@@ -87,16 +111,17 @@ export const tryDamage = (
   // command BattleCommand_ApplyDamage
   const applyDamage = (dmg: number) => {
     hadSub = target.v.substitute !== 0;
-    if (!band && user.base.itemId === "focusband") {
+    const deadly = dmg >= target.base.hp;
+    if (deadly && !band && target.base.itemId === "focusband") {
       band = battle.gen.rng.tryFocusBand(battle);
     }
 
-    if (target.v.hasFlag(VF.endure) && dmg >= target.base.hp) {
+    if (deadly && target.v.hasFlag(VF.endure)) {
       endured = true;
     }
 
     // command falseswipe BattleCommand_FalseSwipe
-    if (band || endured || (self.id === "falseswipe" && dmg >= target.base.hp)) {
+    if (band || endured || (self.id === "falseswipe" && deadly)) {
       dmg = target.base.hp - 1;
       why = "attacked";
     }
@@ -109,30 +134,11 @@ export const tryDamage = (
       isCrit,
       eff: self.id === "beatup" ? 1 : eff,
     }));
-    return {dead, event};
+    return {stop: dead, event};
   };
 
   if (self.id === "beatup") {
-    beatUpFail = true;
-    for (const poke of user.owner.team) {
-      if (poke.status || !poke.hp) {
-        continue;
-      }
-
-      battle.event({type: "beatup", name: poke.name});
-
-      isCrit = false;
-      beatUpFail = false;
-      const {dmg} = battle.gen.getDamage({battle, user, target, move: self, isCrit, beatUp: poke});
-      if (applyDamage(dmg).dead) {
-        break;
-      }
-    }
-
-    if (!hadSub && target.v.bide) {
-      target.v.bide.dmg += dealt;
-    }
-    dealt = 0;
+    beatUpFail = doBeatUp(self, battle, user, target, applyDamage);
   } else if (self.flag === DMF.double || self.flag === DMF.triple || self.flag === DMF.multi) {
     const counts = {
       [DMF.double]: 2,
@@ -141,8 +147,10 @@ export const tryDamage = (
     };
 
     const count = counts[self.flag];
-    let dmg, event;
-    for (let hits = 1; !dead && hits <= count; hits++) {
+    let dmg,
+      event,
+      stop = false;
+    for (let hits = 1; !stop && hits <= count; hits++) {
       isCrit = battle.gen.rollCrit(battle, user, target, self);
       ({dmg} = battle.gen.getDamage({
         battle,
@@ -156,19 +164,15 @@ export const tryDamage = (
       if (event) {
         event.hitCount = 0;
       }
-      ({dead, event} = applyDamage(dmg));
+      ({stop, event} = applyDamage(dmg));
       event.hitCount = hits + 1;
     }
-
-    if (!hadSub && target.v.bide) {
-      target.v.bide.dmg += dealt;
-    }
-    dealt = 0;
   } else {
     applyDamage(dmg);
-    if (!hadSub && target.v.bide) {
-      target.v.bide.dmg += dealt;
-    }
+  }
+
+  if (!hadSub && target.v.bide) {
+    target.v.bide.dmg += dealt;
   }
 
   target.v.lastHitBy = {move: self, poke: user, type};
