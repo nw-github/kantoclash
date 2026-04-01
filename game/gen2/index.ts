@@ -342,7 +342,8 @@ export class Generation2 extends Generation1 {
     } else if (
       user.v.hasFlag(VF.torment) &&
       i === user.v.lastMoveIndex &&
-      user.v.lastMove !== user.v.thrashing?.move
+      user.v.lastMove !== user.v.thrashing?.move &&
+      user.v.lastMove?.id !== "struggle"
     ) {
       return false;
     }

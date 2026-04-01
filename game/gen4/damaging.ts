@@ -372,7 +372,8 @@ export const tryDamage = (
     self.recoil &&
     (self === battle.gen.moveList.struggle || !user.hasAbility("rockhead"))
   ) {
-    user.damage(Math.max(Math.floor(dealt / self.recoil), 1), user, battle, false, "recoil", true);
+    const recoil = self.id === "struggle" ? idiv(user.base.stats.hp, 4) : idiv(dealt, self.recoil);
+    user.damage(Math.max(recoil, 1), user, battle, false, "recoil", true);
   }
 
   if (user.base.hp && self.flag === DMF.drain) {
