@@ -209,6 +209,7 @@ export const rawMoveList = {
     flag: "multi",
     kingsRock: true,
     contact: true,
+    punch: true,
   },
   confuseray: {
     kind: "confuse",
@@ -324,6 +325,7 @@ export const rawMoveList = {
     power: 70,
     acc: 100,
     contact: true,
+    punch: true,
   },
   doubleedge: {
     kind: "damage",
@@ -474,6 +476,7 @@ export const rawMoveList = {
     acc: 100,
     effect: [10, "brn"],
     contact: true,
+    punch: true,
   },
   firespin: {
     kind: "damage",
@@ -748,6 +751,7 @@ export const rawMoveList = {
     acc: 100,
     effect: [10, "frz"],
     contact: true,
+    punch: true,
   },
   jumpkick: {
     kind: "damage",
@@ -904,6 +908,7 @@ export const rawMoveList = {
     acc: 85,
     kingsRock: true,
     contact: true,
+    punch: true,
   },
   metronome: {
     kind: "metronome",
@@ -1665,6 +1670,7 @@ export const rawMoveList = {
     acc: 100,
     effect: [10, "par"],
     contact: true,
+    punch: true,
   },
   thundershock: {
     kind: "damage",
@@ -1992,6 +1998,7 @@ export const rawMoveList = {
     acc: 50,
     effect: [100, "confusion"],
     contact: true,
+    punch: true,
   },
   encore: {
     kind: "encore",
@@ -2190,6 +2197,7 @@ export const rawMoveList = {
     priority: 1,
     kingsRock: true,
     contact: true,
+    punch: true,
   },
   magnitude: {
     kind: "damage",
@@ -3095,6 +3103,7 @@ export const rawMoveList = {
     contact: true,
     kingsRock: true,
     noSleepTalk: true,
+    punch: true,
   },
   followme: {
     kind: "volatile",
@@ -3316,6 +3325,7 @@ export const rawMoveList = {
     acc: 85,
     kingsRock: true,
     contact: true,
+    punch: true,
     effect: [20, [["atk", 1]], true],
   },
   mistball: {
@@ -3524,6 +3534,7 @@ export const rawMoveList = {
     power: 60,
     kingsRock: true,
     contact: true,
+    punch: true,
   },
   sheercold: {
     kind: "damage",
@@ -3594,6 +3605,7 @@ export const rawMoveList = {
     acc: 90,
     kingsRock: true,
     contact: true,
+    punch: true,
     ignore: ["bounce", "fly", "skydrop"],
   },
   slackoff: {
@@ -3636,6 +3648,7 @@ export const rawMoveList = {
     power: 100,
     acc: 100,
     kingsRock: true,
+    flag: "norand",
   },
   stockpile: {
     kind: "stockpile",
@@ -3970,6 +3983,7 @@ export const rawMoveList = {
     priority: 1,
     kingsRock: true,
     contact: true,
+    punch: true,
   },
   captivate: {
     kind: "stage",
@@ -4172,6 +4186,7 @@ export const rawMoveList = {
     flag: "drain",
     kingsRock: true,
     contact: true,
+    punch: true,
   },
   earthpower: {
     kind: "damage",
@@ -4368,6 +4383,7 @@ export const rawMoveList = {
     acc: 90,
     kingsRock: true,
     contact: true,
+    punch: true,
     effect: [100, [["spe", -1]], true],
   },
   headsmash: {
@@ -4996,12 +5012,16 @@ export const rawMoveList = {
     kingsRock: true,
   },
   wakeupslap: {
-    kind: "fail",
+    kind: "damage",
     name: "Wake-Up Slap",
-    pp: 1,
-    type: "normal",
+    pp: 10,
+    type: "fight",
     range: "Adjacent",
-    why: "fail_unimplemented",
+    category: "physical",
+    power: 60,
+    acc: 100,
+    kingsRock: true,
+    contact: true,
   },
   woodhammer: {
     kind: "damage",

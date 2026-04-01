@@ -58,7 +58,7 @@ const descriptions: Partial<Record<number, Partial<Record<MoveId, string>>>> = {
     beatup:
       "Hits with a typeless 10 power attack for each Pokémon in the user's party without a non-volatile status condition. ",
     facade: "Doubles damage when poisoned, paralyzed or burned.",
-    smellingsalt: "Doubles power against paralyzed a paralyzed target, but cures its paralysis. ",
+    smellingsalt: "Doubles damage against paralyzed a paralyzed target, but cures its paralysis. ",
     spitup:
       "Damage multiplied by number of stockpiles, which is reset after use of this move. Fails if the user has not used stockpile yet.",
     uproar:
@@ -133,7 +133,7 @@ const descriptions: Partial<Record<number, Partial<Record<MoveId, string>>>> = {
       "Heals 25%, 50%, or 100% of the user's HP, based on the number of stockpiles, which is reset " +
       "after use of this move. Fails if the user has not used stockpile yet.",
     stockpile: "+1 stockpile, changing the properties of Spit Up and Swallow. Max 3.",
-    weatherball: "Power doubles if weather is active. Changes type with the weather. ",
+    weatherball: "Doubled damage if weather is active. Changes type with the weather. ",
     watersport: "Reduces power of Fire-type attacks by 50% until the user switches out. ",
     mudsport: "Reduces power of Electric-type attacks by 50% until the user switches out. ",
     snatch: "Steals the next beneficial status move used by any Pokémon this turn. ",

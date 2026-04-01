@@ -225,7 +225,7 @@
   },
   "leftovers": {"exists": true},
   "dragonscale": {"exists": true},
-  "lightball": {"exists": true},
+  "lightball": {"exists": true, "boostStats": null},
   "softsand": {
     "exists": true,
     "typeBoost": {"percent": 20},

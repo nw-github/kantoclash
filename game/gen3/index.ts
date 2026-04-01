@@ -111,7 +111,7 @@ type StabParams = {
 type BaseDamageParams = {
   move: DamagingMove;
   power: number;
-  type?: Type;
+  type: Type;
   battle: Battle;
   user: ActivePokemon;
   target: ActivePokemon;
@@ -127,7 +127,7 @@ type MiscModsParams = {
   move: DamagingMove;
 };
 
-class DamageCalc {
+export class DamageCalc {
   private static getBoostedAttack(
     battle: Battle,
     user: ActivePokemon,
@@ -159,7 +159,7 @@ class DamageCalc {
       // Technically this will result in an (A * 200 / 100) operation where the game actually does (A * 2),
       // but since the multiplication will not overflow in JS at the 32 bit boundary it will be identical.
       if (boost.stats.includes("atk")) {
-        spa = idiv(spa * (100 + boost.percent), 100);
+        atk = idiv(atk * (100 + boost.percent), 100);
       } else if (boost.stats.includes("spa")) {
         spa = idiv(spa * (100 + boost.percent), 100);
       }
@@ -169,12 +169,12 @@ class DamageCalc {
       atk = idiv(atk * 150, 100);
     } else if (
       abilityId === "plus" &&
-      battle.allActive.some(poke => poke.getAbilityId() === "minus")
+      battle.allActive.some(poke => !poke.v.fainted && poke.getAbilityId() === "minus")
     ) {
       spa = idiv(spa * 150, 100);
     } else if (
       abilityId === "minus" &&
-      battle.allActive.some(poke => poke.getAbilityId() === "plus")
+      battle.allActive.some(poke => !poke.v.fainted && poke.getAbilityId() === "plus")
     ) {
       spa = idiv(spa * 150, 100);
     }
@@ -220,6 +220,41 @@ class DamageCalc {
     return power;
   }
 
+  static gen34DoubleDmgOrPower(
+    battle: Battle,
+    user: ActivePokemon,
+    target: ActivePokemon,
+    move: DamagingMove,
+  ) {
+    // Gen 3:
+    // This is the combination of many different battle scripts
+    // Look in `data/battle_scripts_1.s` for `setbyte sDMG_MULTIPLIER, 2`,
+    // or in `src/battle_script_commands.c` for `gBattleScripting.dmgMultiplier`
+    // + Cmd_doubledamagedealtifdamaged
+
+    // TODO: the game keeps track of the last hit for physical and special moves separately.
+    // lastHitBy needs to be updated to model this
+    const revenge =
+      move.flag === DMF.revenge &&
+      user.v.lastHitBy?.poke === target &&
+      target.choice?.move.kind === "damage" &&
+      target.choice?.executed;
+
+    return (
+      user.v.inPursuit ||
+      revenge ||
+      (move.id === "weatherball" && battle.getWeather()) ||
+      (move.id === "facade" && user.base.status) ||
+      (move.clearTargetStatus &&
+        !target.v.substitute &&
+        target.base.status === move.clearTargetStatus) ||
+      (move.id === "wakeupslap" && !target.v.substitute && target.base.status === "slp") ||
+      (move.flag === DMF.minimize && target.v.usedMinimize) ||
+      (move.punish && target.v.charging && move.ignore?.includes(target.v.charging.move.id)) ||
+      (move.id === "brine" && target.base.belowHp(2))
+    );
+  }
+
   // CalculateBaseDamage
   static calcBaseDamage({
     power,
@@ -231,7 +266,6 @@ class DamageCalc {
     isCrit,
     explosion,
   }: BaseDamageParams) {
-    type ??= move.type;
     const level = user.base.level;
     const attacks = DamageCalc.getBoostedAttack(battle, user, target, type);
     const defenses = DamageCalc.getBoostedDefense(target);
@@ -294,6 +328,10 @@ class DamageCalc {
       // XXX: The game forgets to apply a minimum damage of 1 here for special moves.
     }
 
+    debugLog(`\n${c(user.base.name, 32)} => ${c(target.base.name, 31)} (${c(move.name, 34)})`);
+    debugLog(
+      `- P: ${n(power)} | A: ${n(attacks[atks])} | D: ${n(defenses[defs])} | L: ${n(level)}`,
+    );
     return damage + 2;
   }
 
@@ -306,37 +344,12 @@ class DamageCalc {
 
   // in Cmd_damagecalc, Cmd_stockpiletobasedamage, Cmd_trysetfutureattack
   static applyMiscModifiers(dmg: number, {isCrit, battle, user, target, move}: MiscModsParams) {
+    if (move.flag !== DMF.futuresight && move.id !== "spitup" && isCrit) {
+      dmg <<= 1;
+    }
+
     if (move.flag !== DMF.futuresight && move.id !== "struggle" && move.id !== "spitup") {
-      if (isCrit) {
-        dmg <<= 1;
-      }
-
-      let doubleDmg = false;
-      // This is the combination of many different battle scripts
-      // Look in `data/battle_scripts_1.s` for `setbyte sDMG_MULTIPLIER, 2`,
-      // or in `src/battle_script_commands.c` for `gBattleScripting.dmgMultiplier`
-      if (
-        move.flag === DMF.revenge &&
-        user.v.lastHitBy?.poke === target &&
-        target.choice?.move.kind === "damage" &&
-        target.choice?.executed
-      ) {
-        // Cmd_doubledamagedealtifdamaged
-        // TODO: the game keeps track of the last hit for physical and special moves separately.
-        // lastHitBy needs to be updated to model this
-        doubleDmg = true;
-      } else if (
-        user.v.inPursuit ||
-        (move.id === "weatherball" && battle.getWeather()) ||
-        (move.id === "facade" && user.base.status) ||
-        (move.id === "smellingsalt" && !target.v.substitute && target.base.status === "par") ||
-        (move.flag === DMF.minimize && target.v.usedMinimize) ||
-        (move.punish && target.v.charging && move.ignore?.includes(target.v.charging.move.id))
-      ) {
-        doubleDmg = true;
-      }
-
-      if (doubleDmg) {
+      if (DamageCalc.gen34DoubleDmgOrPower(battle, user, target, move)) {
         dmg <<= 1;
       }
 
@@ -445,9 +458,7 @@ export class Generation3 extends Generation2 {
         return {dmg: -Math.max(idiv(target.base.stats.hp, 4), 1), eff: 1, miss: false, type};
       }
       power = result;
-    }
-
-    if (move.id === "furycutter") {
+    } else if (move.id === "furycutter") {
       if (user.v.furyCutter < 5) {
         user.v.furyCutter++;
       }
@@ -485,6 +496,7 @@ export class Generation3 extends Generation2 {
       dmg = DamageCalc.randomizeDamage(dmg, random);
     }
 
+    debugLog(`- DMG: ${n(dmg)} | EFF: ${n(eff)} | CRIT: ${n(isCrit)} | Type: ${n(type)}`);
     return {dmg, eff, type, miss: false};
   }
 
@@ -530,6 +542,7 @@ export class Generation3 extends Generation2 {
     if (user.base.status === "par") {
       speed >>= 2;
     }
+    debugLog(`[${user.base.name}] Speed is ${speed}`);
     return speed;
   }
 
@@ -664,7 +677,7 @@ export class Generation3 extends Generation2 {
       acc = Math.floor((acc * 4) / 5);
     }
 
-    // debugLog(`[${user.base.name}] ${move.name} (Acc ${acc}/255)`);
+    // debugLog(`[${user.base.name}] ${move.name} (Acc ${acc}/100)`);
     if (!battle.rand100(acc)) {
       battle.miss(user, target);
       return false;
@@ -1024,7 +1037,7 @@ export class Generation3 extends Generation2 {
     } else if (
       self.kind === "damage" &&
       ((skipsTypeCheck && eff <= 1 && targetAbility === "wonderguard") ||
-        (type === "ground" && targetAbility === "levitate") ||
+        (type === "ground" && targetAbility === "levitate" && !target.isGrounded()) ||
         (type === "electric" && targetAbility === "voltabsorb") ||
         (type === "water" && targetAbility === "waterabsorb") ||
         (type === "fire" && targetAbility === "flashfire" && target.base.status !== "frz"))
@@ -1059,3 +1072,6 @@ const weatherModifier: Partial<Record<Weather, Partial<Record<Type, number>>>> =
     water: TypeMod.NOT_VERY_EFFECTIVE,
   },
 };
+
+const c = (v: any, c: number) => `\x1b[0;${c}m${v}\x1b[0m`;
+const n = (v: any) => c(v, 33);

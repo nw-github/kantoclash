@@ -32,6 +32,7 @@ import {
   type Type,
   type Weather,
   Endure,
+  IGNORABLE_ABILITIES,
 } from "./utils";
 import {TurnType, type Battle, type MoveOption, type Options, type Player} from "./battle";
 import {abilityList, type AbilityId} from "./species";
@@ -284,7 +285,7 @@ export class ActivePokemon {
     // TODO: is this right? or should you continue to be locked into the move if the transform
     // moveset has it?
     this.v.choiceLock = undefined;
-
+    this.v.stats = {...target.v.stats};
     for (const k of stageKeys) {
       this.v.stages[k] = target.v.stages[k];
       if (stageStatKeys.includes(k)) {
@@ -1101,23 +1102,34 @@ export class ActivePokemon {
   }
 
   isGrounded() {
-    return !this.v.types.includes("flying") && !this.hasAbility("levitate");
+    if (this.base.item?.groundsUser) {
+      return true;
+    }
+    const isFlying = this.v.types.includes("flying") && !this.v.roost;
+    return !isFlying && !this.hasAbility("levitate");
   }
 
-  hasAbility(ability: AbilityId) {
-    return this.getAbilityId() === ability;
+  hasAbility(ability: AbilityId, user?: ActivePokemon) {
+    return this.getAbilityId(user) === ability;
   }
 
   hasAnyAbility(...ability: AbilityId[]) {
     return ability.includes(this.getAbilityId());
   }
 
-  getAbilityId() {
+  getAbilityId(user?: ActivePokemon) {
+    if (
+      this.v.ability &&
+      user?.getAbility()?.moldBreaker &&
+      IGNORABLE_ABILITIES.has(this.v.ability)
+    ) {
+      return;
+    }
     return !this.v.hasFlag(VF.gastroAcid) ? this.v.ability : undefined;
   }
 
-  getAbility() {
-    const ability = this.getAbilityId();
+  getAbility(user?: ActivePokemon) {
+    const ability = this.getAbilityId(user);
     return ability && abilityList[ability];
   }
 
@@ -1237,6 +1249,9 @@ class Volatiles {
   usedMinimize = false;
   usedIntimidate = false;
   usedTrace = false;
+  roost = false;
+  metronomeCount = 0;
+  slowStartTurns = 0;
   canSpeedBoost = false;
   canFakeOut = true;
   justSwitched = true;
@@ -1270,6 +1285,7 @@ class Volatiles {
   flags = VF.none;
 
   constructor(base: Pokemon) {
+    this.form = base.form;
     this.types =
       base.ability === "multitype" && HP_TYPES.includes(this.form)
         ? [this.form]
@@ -1277,7 +1293,6 @@ class Volatiles {
     this.stats = {...base.stats};
     this.ability = base.ability;
     this.counter = base.status === "tox" ? 1 : 0;
-    this.form = base.form;
   }
 
   hasAnyType(...types: Type[]) {

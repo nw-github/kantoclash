@@ -21,6 +21,7 @@ import {
 } from "./utils";
 import type {Generation} from "./gen";
 import {ActivePokemon} from "./active";
+import type {AbilityId} from "./species";
 
 export {ActivePokemon};
 
@@ -136,6 +137,10 @@ export class Player {
 
   areAllDead() {
     return this.team.every(poke => poke.hp === 0);
+  }
+
+  sideHasAbility(ability: AbilityId) {
+    return this.active.some(poke => poke.base.hp && poke.getAbilityId() === ability);
   }
 }
 
@@ -553,7 +558,7 @@ export class Battle {
   }
 
   getWeather() {
-    if (this.allActive.some(p => p.getAbility()?.negatesWeather)) {
+    if (this.allActive.some(p => p.base.hp && p.getAbility()?.negatesWeather)) {
       return;
     }
     return this.weather?.kind;

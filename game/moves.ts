@@ -183,6 +183,10 @@ export interface DamagingMove extends BaseMove {
   readonly kingsRock?: bool;
   /** The amount of damage the move should do */
   readonly fixedDamage?: number;
+  /** Affected by Iron Fist */
+  readonly punch?: bool;
+  /** Removes a target's status if hit (Smelling Salt/Wake Up Slap) */
+  readonly clearTargetStatus?: Status;
 }
 
 interface NaturePowerMove extends BaseMove {
@@ -1360,8 +1364,8 @@ export const moveOverrides: MovePropOverrides = {
     },
     return: user => idiv(user.friendship, 2.5),
     reversal: getFlailPower,
-    eruption: user => Math.max(1, Math.floor((user.hp * 150) / user.stats.hp)),
-    waterspout: user => Math.max(1, Math.floor((user.hp * 150) / user.stats.hp)),
+    eruption: getHPFalloffPower,
+    waterspout: getHPFalloffPower,
     // Gen IV
     crushgrip: getCrushGripPower,
     grassknot: (_user, target) => getLowKickPower(target.species.weight),
@@ -1369,9 +1373,6 @@ export const moveOverrides: MovePropOverrides = {
     // Gen V
     acrobatics(user) {
       return !user.itemId ? this.power * 2 : this.power;
-    },
-    brine(_user, target) {
-      return target.belowHp(2) ? this.power * 2 : this.power;
     },
     hex(_, target) {
       return target.status ? this.power * 2 : this.power;
@@ -1492,6 +1493,10 @@ function getFlailPower(user: Pokemon) {
   } else {
     return 200;
   }
+}
+
+function getHPFalloffPower(this: DamagingMove, user: Pokemon) {
+  return Math.max(1, idiv(this.power * user.hp, user.stats.hp));
 }
 
 function getCrushGripPower(_user: Pokemon, target?: Pokemon) {

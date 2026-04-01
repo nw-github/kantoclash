@@ -1,6 +1,6 @@
 import type {Move, MoveScripts, MoveId, MovePropOverrides} from "../moves";
 import type {Pokemon} from "../pokemon";
-import {Range} from "../utils";
+import {DMF, Range} from "../utils";
 
 export const moveScripts: Partial<MoveScripts> = {};
 
@@ -59,6 +59,7 @@ export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
   rockblast: {acc: 90},
   sandtomb: {power: 35, acc: 85},
   scaryface: {acc: 100},
+  spitup: {flag: DMF.none},
   struggle: {noTechnician: false},
   tackle: {power: 50, acc: 100},
   tailglow: {stages: [["spa", +3]]},

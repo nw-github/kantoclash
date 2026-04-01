@@ -2,14 +2,14 @@ import type {ActivePokemon, Battle} from "../battle";
 import type {DamagingMove} from "../moves";
 import type {Status} from "../pokemon";
 import {abilityList} from "../species";
-import {hazards, idiv, randChoiceWeighted, VF, Range, type Type, DMF} from "../utils";
+import {DMF, Endure, hazards, idiv, VF, type Type} from "../utils";
 
 export const tryDamage = (
   self: DamagingMove,
   battle: Battle,
   user: ActivePokemon,
   target: ActivePokemon,
-  spread: bool,
+  _spread: bool,
   power?: number,
 ): number => {
   const isImmune = (poke: ActivePokemon, status: Status) => {
@@ -30,13 +30,14 @@ export const tryDamage = (
     }
   };
 
-  const onHit = (type: Type, hadSub: bool, isCrit: bool) => {
-    const targetAbility = target.getAbilityId();
+  const tryContactAbility = (type: Type, hadSub: bool) => {
+    const targetAbilityId = target.getAbilityId(user);
+    const targetAbility = abilityList[targetAbilityId!];
     if (
       user.base.item?.kingsRock &&
       self.kingsRock &&
       !hadSub &&
-      targetAbility !== "innerfocus" &&
+      targetAbilityId !== "innerfocus" &&
       target.base.status !== "frz" &&
       target.base.status !== "slp" &&
       battle.gen.rng.tryKingsRock(battle)
@@ -45,7 +46,7 @@ export const tryDamage = (
     }
 
     // In Gen IV, Anger Point works even if the crit hits a substitute
-    if (isCrit && target.base.hp && targetAbility === "angerpoint" && target.v.stages.atk < 6) {
+    if (isCrit && target.base.hp && targetAbilityId === "angerpoint" && target.v.stages.atk < 6) {
       battle.ability(target);
       battle.info(target, "atk_maximize", target.setStage("atk", +6, battle, false));
       return;
@@ -55,7 +56,7 @@ export const tryDamage = (
     if (
       !hadSub &&
       target.base.hp &&
-      targetAbility === "colorchange" &&
+      targetAbilityId === "colorchange" &&
       type !== "???" &&
       !target.v.types.includes(type)
     ) {
@@ -73,8 +74,8 @@ export const tryDamage = (
       return;
     }
 
-    let status = abilityList[targetAbility!]?.contactStatus;
-    if (targetAbility === "effectspore") {
+    let status = targetAbility?.contactStatus;
+    if (targetAbilityId === "effectspore") {
       status = battle.rand100(10) ? battle.rng.choice(["psn", "par", "slp"])! : undefined;
     } else if (!battle.gen.rng.tryContactStatus(battle)) {
       status = undefined;
@@ -100,22 +101,112 @@ export const tryDamage = (
           user.status(status, battle, target, {ignoreSafeguard: true});
         }
       }
-    } else if (targetAbility === "roughskin") {
+    } else if (targetAbility?.roughSkin) {
       battle.ability(target);
       user.damage2(battle, {
-        dmg: Math.max(1, Math.floor(user.base.stats.hp / 8)),
+        dmg: Math.max(1, idiv(user.base.stats.hp, 8)),
         src: target,
         why: "roughskin",
       });
     }
   };
 
-  if (self.range === Range.AllAdjacent) {
-    spread = false;
-  }
+  const rollEffects = (hadSub: bool) => {
+    for (const eff of [self.effect, self.effect2]) {
+      if (!eff) {
+        continue;
+      }
 
-  // eslint-disable-next-line prefer-const
-  let {eff, fail, type, abilityImmunity} = checkUsefulness(self, battle, user, target);
+      // eslint-disable-next-line prefer-const
+      let [chance, effect, effectSelf] = eff;
+      if ((!effectSelf && !target.base.hp) || (effectSelf && !user.base.hp)) {
+        continue;
+      }
+
+      if (user.hasAbility("serenegrace")) {
+        chance *= 2;
+      }
+      if (target.hasAbility("shielddust", user) && !effectSelf && effect !== "thief") {
+        continue;
+      }
+
+      if (effect === "tri_attack") {
+        effect = battle.rng.choice(["brn", "par", "frz"] as const)!;
+      }
+
+      // Fire-type hidden power does not thaw in Gen 3
+      if (self.type === "fire" && target.base.status === "frz") {
+        target.unstatus(battle, "thaw");
+        // TODO: can you thaw and then burn?
+        continue;
+      } else if (!battle.rand100(chance) || (hadSub && !effectSelf)) {
+        continue;
+      }
+
+      if (effect === "confusion") {
+        if (
+          !target.v.confusion &&
+          !user.owner.screens.safeguard &&
+          !target.hasAbility("owntempo", user)
+        ) {
+          target.confuse(battle);
+        }
+      } else if (Array.isArray(effect)) {
+        if (effectSelf || !target.owner.screens.mist) {
+          (effectSelf ? user : target).modStages(effect, battle, user, true);
+        }
+      } else if (effect === "flinch") {
+        if (target.base.status === "frz" || target.base.status === "slp") {
+          return dealt;
+        }
+
+        if (!target.hasAbility("innerfocus", user)) {
+          target.v.flinch = true;
+        } else if (chance === 100) {
+          battle.ability(target);
+          battle.info(target, "wont_flinch");
+        }
+      } else if (effect === "thief") {
+        if (
+          user.base.itemId ||
+          !target.base.itemId ||
+          target.base.itemId.includes("mail") ||
+          target.base.itemId === "griseousorb" ||
+          target.hasAnyAbility("stickyhold", "multitype")
+        ) {
+          return dealt;
+        }
+
+        battle.event({
+          type: "thief",
+          src: user.id,
+          target: target.id,
+          item: target.base.itemId,
+        });
+        user.manipulateItem(poke => (poke.itemId = target.base.itemId));
+        target.manipulateItem(poke => (poke.itemId = undefined));
+      } else if (effect === "knockoff") {
+        if (
+          target.base.itemId &&
+          target.base.itemId !== "griseousorb" &&
+          !target.hasAnyAbility("stickyhold", "multitype")
+        ) {
+          battle.event({
+            type: "knockoff",
+            src: user.id,
+            target: target.id,
+            item: target.base.itemId,
+          });
+          target.manipulateItem(poke => (poke.itemUnusable = true));
+        }
+      } else {
+        if (!target.owner.screens.safeguard && !isImmune(target, effect)) {
+          target.status(effect, battle, user, {});
+        }
+      }
+    }
+  };
+
   if (self.flag === DMF.explosion) {
     // Explosion into destiny bond, who dies first?
     user.damage(user.base.hp, user, battle, false, "explosion", true);
@@ -128,91 +219,111 @@ export const tryDamage = (
     }
   }
 
-  if (self.id === "dreameater" && target.v.substitute) {
-    fail = true;
-  }
-
   const protect = target.v.hasFlag(VF.protect) && self.protect !== false;
+  let isCrit = battle.gen.rollCrit(battle, user, target, self);
+  // eslint-disable-next-line prefer-const
+  let {dmg, miss, eff, type} = battle.gen.getDamage({
+    battle,
+    user,
+    target,
+    move: self,
+    isCrit,
+    power,
+  });
   const special = battle.gen.isSpecial(self, type);
-  if (eff === 0 || fail || protect || !battle.checkAccuracy(self, user, target, !special)) {
+  const abilityImmunity = battle.gen.tryAbilityImmunity(battle, user, target, self, type, eff);
+  if (eff === 0 || miss || protect || !battle.checkAccuracy(self, user, target, !special)) {
     user.v.furyCutter = 0;
     user.v.thrashing = undefined;
     if (self.id === "spitup") {
       battle.sv([user.setVolatile("stockpile", 0)]);
     }
-    if (eff === 0) {
-      if (abilityImmunity) {
-        battle.ability(
-          target,
-          target.hasAbility("flashfire") ? [target.setFlag(VF.flashFire)] : undefined,
-        );
-      }
-
-      battle.info(target, "immune");
-
-      if (abilityImmunity && target.hasAnyAbility("waterabsorb", "voltabsorb")) {
-        target.recover(Math.max(1, Math.floor(target.base.stats.hp / 4)), user, battle, "none");
-      }
-    } else if (fail) {
-      battle.info(user, "fail_generic");
-    } else {
-      if (protect) {
-        battle.info(target, "protect");
-      }
-      if (self.flag === DMF.crash) {
-        const {dmg} = getDamage(self, battle, user, target, {});
-        battle.gen.handleCrashDamage(battle, user, target, dmg);
+    // TODO: verify this processing order
+    if (!abilityImmunity) {
+      if (eff === 0) {
+        battle.info(target, "immune");
+        if (self.flag === DMF.crash) {
+          battle.gen.handleCrashDamage(battle, user, target, dmg);
+        }
+      } else if (miss) {
+        battle.info(user, "fail_generic");
+      } else {
+        if (protect) {
+          battle.info(target, "protect");
+        }
+        if (self.flag === DMF.crash) {
+          battle.gen.handleCrashDamage(battle, user, target, dmg);
+        }
       }
     }
     return 0;
-  }
-
-  if (self.id === "present") {
-    const result = randChoiceWeighted(battle.rng, [40, 80, 120, -4], [40, 30, 10, 20]);
-    if (result < 0) {
-      if (target.base.isMaxHp()) {
-        battle.info(target, "fail_present");
-        return 0;
-      }
-
-      target.recover(Math.max(idiv(target.base.stats.hp, 4), 1), user, battle, "present");
-      return 0;
-    }
-    power = result;
+  } else if (dmg < 0) {
+    target.recover(dmg, user, battle, "present");
+    return 0;
   }
 
   let hadSub = target.v.substitute !== 0,
     dealt = 0,
-    dead = false,
-    event,
     endured = false,
-    band = false;
+    band = false,
+    beatUpFail = false;
+  let why = self.flag === DMF.ohko ? ("ohko" as const) : ("attacked" as const);
+  const wasSleeping = user.base.status === "slp";
+
+  const applyDamage = (dmg: number, doShellBell: bool) => {
+    hadSub = target.v.substitute !== 0;
+    if (!band && user.base.itemId === "focusband") {
+      band = battle.gen.rng.tryFocusBand(battle);
+    }
+
+    if (target.v.hasFlag(VF.endure) && dmg >= target.base.hp) {
+      endured = true;
+    }
+
+    // command falseswipe BattleCommand_FalseSwipe
+    if (band || endured || (self.id === "falseswipe" && dmg >= target.base.hp)) {
+      dmg = target.base.hp - 1;
+      why = "attacked";
+    }
+
+    let event, dead;
+    ({dead, event, dealt} = target.damage2(battle, {
+      dmg,
+      src: user,
+      why,
+      isCrit,
+      eff: self.id === "beatup" ? 1 : eff,
+    }));
+
+    if (doShellBell) {
+      user.handleShellBell(battle, dealt);
+      dealt = 0;
+    }
+
+    if (dealt !== 0) {
+      tryContactAbility(type, hadSub);
+    }
+
+    rollEffects(hadSub);
+
+    return {
+      stop: dead || user.base.hp === 0 || (user.base.status === "slp" && !wasSleeping),
+      event,
+    };
+  };
 
   if (self.id === "beatup") {
-    let dmg, isCrit, tmpDealt;
+    beatUpFail = true;
     for (const poke of user.owner.team) {
       if (poke.status || !poke.hp) {
         continue;
       }
 
+      beatUpFail = false;
+      isCrit = false;
       battle.event({type: "beatup", name: poke.name});
-
-      hadSub = target.v.substitute !== 0;
-      ({dmg, isCrit, endured, band} = getDamage(self, battle, user, target, {band, beatUp: poke}));
-      ({
-        dead,
-        event,
-        dealt: tmpDealt,
-      } = target.damage2(battle, {dmg, src: user, why: "attacked", isCrit}));
-
-      if (!hadSub) {
-        dealt += tmpDealt;
-      }
-
-      if (dealt !== 0) {
-        onHit(type, hadSub, isCrit);
-      }
-      if (dead || user.base.hp === 0) {
+      const {dmg} = battle.gen.getDamage({battle, user, target, move: self, isCrit});
+      if (applyDamage(dmg, true).stop) {
         break;
       }
     }
@@ -224,65 +335,31 @@ export const tryDamage = (
       [DMF.multi]: user.hasAbility("skilllink") ? 5 : battle.gen.rng.multiHitCount(battle),
     };
 
-    const wasSleeping = user.base.status === "slp";
     const count = counts[self.flag];
-    let dmg, isCrit, tmpDealt;
-    for (let hits = 0; !dead && user.base.hp && !endured && hits < count; hits++) {
-      if (
-        self.flag === DMF.triple &&
-        hits !== 0 &&
-        !battle.checkAccuracy(self, user, target, !special)
-      ) {
-        // TODO: lazy
-        battle.events.splice(-1, 1);
-        break;
-      }
-
-      hadSub = target.v.substitute !== 0;
-      ({dmg, isCrit, endured, band} = getDamage(self, battle, user, target, {
-        tripleKick: self.flag === DMF.triple ? hits + 1 : 1,
-        band,
-        power,
-      }));
-
+    let power = self.power;
+    let event;
+    let stop = false;
+    let hits = 1;
+    do {
       if (event) {
         event.hitCount = 0;
       }
-      ({
-        dead,
-        event,
-        dealt: tmpDealt,
-      } = target.damage(dmg, user, battle, isCrit, "attacked", false, eff));
+      ({event, stop} = applyDamage(dmg, true));
       event.hitCount = hits + 1;
-
-      if (!hadSub) {
-        dealt += tmpDealt;
-      }
-
-      if (dealt !== 0) {
-        onHit(type, hadSub, isCrit);
-
-        if (user.base.status === "slp" && !wasSleeping) {
+      if (self.flag === DMF.triple && !stop) {
+        if (!battle.checkAccuracy(self, user, target, !special)) {
+          // TODO: lazy
+          battle.events.splice(-1, 1);
           break;
         }
+        power += self.power;
       }
-    }
-  } else {
-    let dmg, isCrit;
-    ({dmg, isCrit, endured, band} = getDamage(self, battle, user, target, {power, spread}));
-    ({dealt, dead, event} = target.damage(
-      dmg,
-      user,
-      battle,
-      isCrit,
-      self.flag === DMF.ohko ? "ohko" : "attacked",
-      false,
-      eff,
-    ));
 
-    if (dmg !== 0) {
-      onHit(type, hadSub, isCrit);
-    }
+      isCrit = battle.gen.rollCrit(battle, user, target, self);
+      ({dmg} = battle.gen.getDamage({battle, user, target, move: self, isCrit, power}));
+    } while (!stop && hits++ <= count);
+  } else {
+    applyDamage(dmg, false);
   }
 
   if (self.flag === DMF.remove_protect) {
@@ -332,31 +409,27 @@ export const tryDamage = (
       });
       user.v.trapped = undefined;
     }
-  } else if (self.id === "smellingsalt" && !hadSub && target.base.status === "par") {
+  } else if (self.clearTargetStatus && !hadSub && target.base.status === self.clearTargetStatus) {
     target.base.status = undefined;
     battle.event({
       type: "cure",
       src: target.id,
-      status: "par",
+      status: self.clearTargetStatus,
       volatiles: [{id: target.id, v: {status: null, stats: target.clientStats(battle)}}],
     });
   }
 
   if (endured) {
-    battle.info(target, "endure_hit");
+    target.handleEndure(battle, Endure.Endure);
   } else if (band) {
-    if (target.base.itemId === "focussash") {
-      target.consumeItem(battle);
-    } else {
-      battle.info(target, "endure_band");
-    }
+    target.handleEndure(battle, Endure.FocusBand);
   }
 
   if (self.flag === DMF.recharge) {
     user.v.recharge = {move: self, target};
   }
 
-  if (!event) {
+  if (beatUpFail) {
     // beat up failure
     battle.info(user, "fail_generic");
   } else if (!hadSub) {
@@ -379,96 +452,6 @@ export const tryDamage = (
     battle.info(user, "uproar");
   } else if (self.flag === DMF.uturn && user.base.hp && user.canBatonPass()) {
     user.v.inBatonPass = "uturn";
-  }
-
-  for (const eff of [self.effect, self.effect2]) {
-    if (!eff) {
-      continue;
-    }
-
-    // eslint-disable-next-line prefer-const
-    let [chance, effect, effectSelf] = eff;
-    if ((!effectSelf && !target.base.hp) || (effectSelf && !user.base.hp)) {
-      continue;
-    }
-
-    if (user.hasAbility("serenegrace")) {
-      chance *= 2;
-    }
-    if (target.hasAbility("shielddust") && !effectSelf && effect !== "thief") {
-      continue;
-    }
-
-    if (effect === "tri_attack") {
-      effect = battle.rng.choice(["brn", "par", "frz"] as const)!;
-    }
-
-    // Fire-type hidden power does not thaw in Gen 3
-    if (self.type === "fire" && target.base.status === "frz") {
-      target.unstatus(battle, "thaw");
-      // TODO: can you thaw and then burn?
-      continue;
-    } else if (!battle.rand100(chance) || (hadSub && !effectSelf)) {
-      continue;
-    }
-
-    if (effect === "confusion") {
-      if (!target.v.confusion && !user.owner.screens.safeguard && !target.hasAbility("owntempo")) {
-        target.confuse(battle);
-      }
-    } else if (Array.isArray(effect)) {
-      if (effectSelf || !target.owner.screens.mist) {
-        (effectSelf ? user : target).modStages(effect, battle, user, true);
-      }
-    } else if (effect === "flinch") {
-      if (target.base.status === "frz" || target.base.status === "slp") {
-        return dealt;
-      }
-
-      if (!target.hasAbility("innerfocus")) {
-        target.v.flinch = true;
-      } else if (chance === 100) {
-        battle.ability(target);
-        battle.info(target, "wont_flinch");
-      }
-    } else if (effect === "thief") {
-      if (
-        user.base.itemId ||
-        !target.base.itemId ||
-        target.base.itemId.includes("mail") ||
-        target.base.itemId === "griseousorb" ||
-        target.hasAnyAbility("stickyhold", "multitype")
-      ) {
-        return dealt;
-      }
-
-      battle.event({
-        type: "thief",
-        src: user.id,
-        target: target.id,
-        item: target.base.itemId,
-      });
-      user.manipulateItem(poke => (poke.itemId = target.base.itemId));
-      target.manipulateItem(poke => (poke.itemId = undefined));
-    } else if (effect === "knockoff") {
-      if (
-        target.base.itemId &&
-        target.base.itemId !== "griseousorb" &&
-        !target.hasAnyAbility("stickyhold", "multitype")
-      ) {
-        battle.event({
-          type: "knockoff",
-          src: user.id,
-          target: target.id,
-          item: target.base.itemId,
-        });
-        target.manipulateItem(poke => (poke.itemUnusable = true));
-      }
-    } else {
-      if (!target.owner.screens.safeguard && !isImmune(target, effect)) {
-        target.status(effect, battle, user, {});
-      }
-    }
   }
 
   return dealt;

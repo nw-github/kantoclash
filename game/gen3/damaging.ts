@@ -236,7 +236,6 @@ export const tryDamage = (
     let stop = false;
     let hits = 1;
     do {
-      hadSub = target.v.substitute !== 0;
       if (event) {
         event.hitCount = 0;
       }
@@ -301,12 +300,12 @@ export const tryDamage = (
       });
       user.v.trapped = undefined;
     }
-  } else if (self.id === "smellingsalt" && !hadSub && target.base.status === "par") {
+  } else if (self.clearTargetStatus && !hadSub && target.base.status === self.clearTargetStatus) {
     target.base.status = undefined;
     battle.event({
       type: "cure",
       src: target.id,
-      status: "par",
+      status: self.clearTargetStatus,
       volatiles: [{id: target.id, v: {status: null, stats: target.clientStats(battle)}}],
     });
   }

@@ -812,11 +812,15 @@
   "jabocaberry": {"name": "Jaboca Berry", "fling": 10},
   "rowapberry": {"name": "Rowap Berry", "fling": 10},
   "widelens": {"name": "Wide Lens", "fling": 10, "desc": "Boosts accuracy by 10%.", "boostAcc": 10},
-  "muscleband": {"name": "Muscle Band", "fling": 10},
-  "wiseglasses": {"name": "Wise Glasses", "fling": 10},
-  "expertbelt": {"name": "Expert Belt", "fling": 10},
+  "muscleband": {"name": "Muscle Band", "fling": 10, "desc": "Boosts physical attacks by 10%."},
+  "wiseglasses": {"name": "Wise Glasses", "fling": 10, "desc": "Boosts special attacks by 10%."},
+  "expertbelt": {
+    "name": "Expert Belt",
+    "fling": 10,
+    "desc": "Boosts super effective attacks by 20%."
+  },
   "lightclay": {"name": "Light Clay", "fling": 30},
-  "lifeorb": {"name": "Life Orb", "fling": 30},
+  "lifeorb": {"name": "Life Orb", "fling": 30, "desc": "Boosts damage, but hurts the user."},
   "powerherb": {"name": "Power Herb", "fling": 70},
   "toxicorb": {
     "name": "Toxic Orb",
@@ -839,7 +843,7 @@
   "focussash": {"name": "Focus Sash", "fling": 10, "desc": "Endures fatal hits from full HP."},
   "zoomlens": {"name": "Zoom Lens", "fling": 10, "desc": "Boosts accuracy by 20%.", "boostAcc": 20},
   "metronome": {"name": "Metronome", "fling": 30},
-  "ironball": {"name": "Iron Ball", "fling": 130},
+  "ironball": {"name": "Iron Ball", "fling": 130, "halveSpeed": true, "groundsUser": true},
   "laggingtail": {
     "name": "Lagging Tail",
     "fling": 10,

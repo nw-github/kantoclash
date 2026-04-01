@@ -26,6 +26,7 @@ export type ItemData = {
   raiseCrit?: number;
   kingsRock?: bool;
   halveSpeed?: bool;
+  groundsUser?: bool;
   laggingTail?: bool;
   reduceType?: Type;
   extendWeather?: Weather;
