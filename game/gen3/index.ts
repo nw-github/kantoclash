@@ -27,11 +27,10 @@ import {
   randChoiceWeighted,
   DMF,
 } from "../utils";
-import {moveScripts, moveOverrides, movePatches} from "./moves";
+import {moveScripts, moveOverrides, movePatches, tryDamage} from "./moves";
 import speciesPatches from "./species.json";
 import items from "./items.json";
 import {itemList, type ItemId} from "../item";
-import {tryDamage} from "./damaging";
 import type {ActivePokemon} from "../active";
 import {TurnType, type Battle} from "../battle";
 import type {DamagingMove, Move, MoveId} from "../moves";

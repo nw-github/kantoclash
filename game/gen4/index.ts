@@ -2,7 +2,7 @@ import speciesPatches from "./species.json";
 import items from "./items.json";
 import type {Species, SpeciesId} from "../species";
 import {merge} from "../gen2";
-import {moveScripts, movePatches, moveOverrides} from "./moves";
+import {moveScripts, movePatches, moveOverrides, tryDamage} from "./moves";
 import {Generation3, DamageCalc as Gen3DamageCalc, createItemMergeList} from "../gen3";
 import {
   Range,
@@ -18,7 +18,6 @@ import {
   randChoiceWeighted,
 } from "../utils";
 import {type ActivePokemon, type Battle, TurnType} from "../battle";
-import {tryDamage} from "./damaging";
 import type {DamagingMove, Move} from "../moves";
 import type {GetDamageParams} from "../gen1";
 import type {Pokemon} from "../pokemon";

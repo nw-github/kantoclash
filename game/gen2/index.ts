@@ -19,13 +19,12 @@ import {
   type Type,
   type Weather,
 } from "../utils";
-import {moveOverrides, moveScripts, movePatches} from "./moves";
+import {moveOverrides, moveScripts, movePatches, tryDamage} from "./moves";
 import speciesPatches from "./species.json";
+import items from "./items.json";
 import type {ActivePokemon, Battle} from "../battle";
 import type {DamagingMove, Move, MoveId} from "../moves";
-import items from "./items.json";
 import type {Gender} from "../pokemon";
-import {tryDamage} from "./damaging";
 import type {ItemData, ItemId} from "../item";
 
 const critStages: Record<number, number> = {
