@@ -418,6 +418,36 @@ export class Generation2 extends Generation1 {
       A = beatUp.stats.atk;
       D = target.base.stats.def;
       level = beatUp.level;
+    } else if (move.id === "present") {
+      // https://github.com/pret/pokecrystal/blob/c73ab9e9c9a8b6eaee38f19fdcf956c1baf268ea/engine/battle/move_effects/present.asm#L2
+      //
+      // In GS and Crystal link battles, BattleCommand_Present calls BattleCommand_Stab without
+      // preserving bc and de. (at this point, b = attack, c = defense, d = power, e = level)
+      //
+      // BattleCommand_Stab clobbers bc and de, so this ends up with:
+      // b = [wTypeMatchup]  ; Present is normal type, so it will only be 0/5/10
+      // c = attacker type 2 ; if the Pokémon has one type, both types have the same value
+      //  - Note:
+      //          I haven't tested this theory, but BattleCommand_Stab loads the attacker's second type into
+      //          `c` very early into the function. It is preserved to the end of call *unless* the STAB check
+      //          passes, in which case `bc` gets overwritten with `wCurDamage` and shifted right 1.
+      //
+      //          Before Present's script calls BattleCommand_Present, it calls BattleCommand_DamageStats,
+      //          which zeroes out the wCurDamage. (and loads the damage variables into b, c, and d in the first place)
+      //
+      //          Ultimately, this results in 0 going into `c`, which is the same as if we had used
+      //          attacker type 2, since there aren't any Present users that have normal as a first
+      //          type and something else as a secondary type.
+      //
+      //          If someone wants to test this, try hacking Present onto Girafarig and attacking a non steel/rock type.
+      //          If this theory is correct   b = 10, c = 0   ((wCurDamage >> 1) & 0xff)
+      //          Otherwise                   b = 10, c = 24  (index of type psychic)
+      // e = defender type 2
+      //
+      // The power gets randomly determined after this, so that isn't affected by the bug
+      A = target.v.hasAnyType("rock", "steel") ? TypeMod.NOT_VERY_EFFECTIVE : TypeMod.EFFECTIVE;
+      D = typeIndexNumber[user.v.types[1] ?? user.v.types[0]];
+      level = typeIndexNumber[target.v.types[1] ?? target.v.types[0]];
     } else {
       ({A, D, level} = DamageCalc.getDamageVariables(
         user,
@@ -697,6 +727,27 @@ const typeMatchupTable: [Type, Type, number][] = [
   ["normal", "ghost", TypeMod.NO_EFFECT],
   ["fight", "ghost", TypeMod.NO_EFFECT],
 ] as const;
+
+const typeIndexNumber: Record<Type, number> = {
+  normal: 0,
+  fight: 1,
+  flying: 2,
+  poison: 3,
+  ground: 4,
+  rock: 5,
+  bug: 7,
+  ghost: 8,
+  steel: 9,
+  "???": 19,
+  fire: 20,
+  water: 21,
+  grass: 22,
+  electric: 23,
+  psychic: 24,
+  ice: 25,
+  dragon: 26,
+  dark: 27,
+};
 
 const getTypeBoost = (user: ActivePokemon, type: Type) => {
   if (user.base.item?.typeBoost?.type === type) {
