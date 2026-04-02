@@ -120,7 +120,7 @@ export class ActivePokemon {
     battle.event({
       type: "switch",
       speciesId: next.speciesId,
-      hpPercent: hpPercent(next.hp, next.stats.hp),
+      hpPercent: hpPercent(next.hp, next.maxHp),
       hp: next.hp,
       src: this.id,
       name: next.name,
@@ -145,7 +145,7 @@ export class ActivePokemon {
 
     if (old.hwish) {
       battle.info(this, old.hwish.restorePP ? "lunardance" : "healingwish");
-      this.recover(this.base.stats.hp - this.base.hp, this, battle, "recover");
+      this.recover(this.base.maxHp - this.base.hp, this, battle, "recover");
       this.unstatus(battle);
       if (old.hwish.restorePP) {
         this.base.moves.forEach((move, i) => (this.base.pp[i] = battle.gen.getMaxPP(move)));
@@ -174,7 +174,7 @@ export class ActivePokemon {
 
       if (this.owner.hazards.spikes && this.isGrounded()) {
         const mod = 8 - (this.owner.hazards.spikes - 1) * 2;
-        const dmg = Math.max(1, Math.floor(this.base.stats.hp / mod));
+        const dmg = Math.max(1, Math.floor(this.base.maxHp / mod));
         this.damage(dmg, this, battle, false, "spikes", true);
         if (this.base.hp === 0) {
           return;
@@ -184,7 +184,7 @@ export class ActivePokemon {
 
     if (this.owner.hazards.rocks) {
       const eff = battle.gen.getEffectiveness("rock", this.v.types);
-      const dmg = Math.max(1, Math.floor(this.base.stats.hp * (0.125 * eff)));
+      const dmg = Math.max(1, Math.floor(this.base.maxHp * (0.125 * eff)));
       this.damage(dmg, this, battle, false, "rocks", true);
       if (this.base.hp === 0) {
         return;
@@ -375,8 +375,8 @@ export class ActivePokemon {
         type: "damage",
         src: src.id,
         target: this.id,
-        hpPercentBefore: hpPercent(hpBefore, this.base.stats.hp),
-        hpPercentAfter: hpPercent(this.base.hp, this.base.stats.hp),
+        hpPercentBefore: hpPercent(hpBefore, this.base.maxHp),
+        hpPercentAfter: hpPercent(this.base.hp, this.base.maxHp),
         hpBefore,
         hpAfter: this.base.hp,
         why,
@@ -403,7 +403,7 @@ export class ActivePokemon {
     }
 
     const hpBefore = this.base.hp;
-    this.base.hp = Math.min(this.base.hp + amount, this.base.stats.hp);
+    this.base.hp = Math.min(this.base.hp + amount, this.base.maxHp);
     if (this.base.hp === hpBefore) {
       return;
     }
@@ -420,8 +420,8 @@ export class ActivePokemon {
       type: "recover",
       src: src.id,
       target: this.id,
-      hpPercentBefore: hpPercent(hpBefore, this.base.stats.hp),
-      hpPercentAfter: hpPercent(this.base.hp, this.base.stats.hp),
+      hpPercentBefore: hpPercent(hpBefore, this.base.maxHp),
+      hpPercentAfter: hpPercent(this.base.hp, this.base.maxHp),
       hpBefore,
       hpAfter: this.base.hp,
       why,
@@ -767,7 +767,7 @@ export class ActivePokemon {
 
   handleLeftovers(battle: Battle) {
     if (!this.v.fainted && this.base.itemId === "leftovers") {
-      this.recover(Math.max(1, idiv(this.base.stats.hp, 16)), this, battle, "leftovers");
+      this.recover(Math.max(1, idiv(this.base.maxHp, 16)), this, battle, "leftovers");
     }
   }
 
@@ -855,7 +855,7 @@ export class ActivePokemon {
           this.recover(healFixed, this, battle, "item");
         } else if (healPinch) {
           this.consumeItem(battle);
-          this.recover(Math.max(1, Math.floor(this.base.stats.hp / 8)), this, battle, "item");
+          this.recover(Math.max(1, Math.floor(this.base.maxHp / 8)), this, battle, "item");
           if (this.base.nature !== undefined) {
             const [, minus] = Object.keys(natureTable[this.base.nature]);
             if (minus === healPinch && !this.hasAbility("owntempo")) {
@@ -864,7 +864,7 @@ export class ActivePokemon {
           }
         } else if (healSitrus) {
           this.consumeItem(battle);
-          this.recover(Math.max(1, Math.floor(this.base.stats.hp / 4)), this, battle, "item");
+          this.recover(Math.max(1, Math.floor(this.base.maxHp / 4)), this, battle, "item");
         }
       }
 
@@ -914,7 +914,7 @@ export class ActivePokemon {
     }
 
     const d = battle.gen.id <= 2 ? 8 : 16;
-    const dmg = Math.max(idiv(this.base.stats.hp, d), 1);
+    const dmg = Math.max(idiv(this.base.maxHp, d), 1);
     this.damage(dmg, this, battle, false, weather as "hail" | "sand", true);
   }
 
@@ -935,7 +935,7 @@ export class ActivePokemon {
       });
       this.v.trapped = undefined;
     } else {
-      const dmg = Math.max(idiv(this.base.stats.hp, 16), 1);
+      const dmg = Math.max(idiv(this.base.maxHp, 16), 1);
       this.damage2(battle, {dmg, src: this, why: "trap_eot", move, direct: true});
     }
   }

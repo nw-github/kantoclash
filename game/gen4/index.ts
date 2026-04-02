@@ -525,7 +525,7 @@ export class Generation4 extends Generation3 {
       if (poke.wish && --poke.wish.turns === 0) {
         if (!poke.v.fainted) {
           poke.recover(
-            Math.max(1, Math.floor(poke.base.stats.hp / 2)),
+            Math.max(1, Math.floor(poke.base.maxHp / 2)),
             poke,
             battle,
             `wish:${poke.base.name}`,
@@ -567,7 +567,7 @@ export class Generation4 extends Generation3 {
           (weather === "hail" && ability === "icebody"))
       ) {
         battle.ability(poke);
-        poke.recover(Math.max(1, idiv(poke.base.stats.hp, 16)), poke, battle, "recover");
+        poke.recover(Math.max(1, idiv(poke.base.maxHp, 16)), poke, battle, "recover");
       } else if (weather === "rain" && ability === "hydration" && poke.base.status) {
         battle.ability(poke);
         poke.unstatus(battle);
@@ -584,7 +584,7 @@ export class Generation4 extends Generation3 {
       const ability = poke.getAbilityId();
       if (!poke.v.fainted) {
         if (poke.v.hasFlag(VF.ingrain)) {
-          poke.recover(Math.max(1, idiv(poke.base.stats.hp, 16)), poke, battle, "ingrain");
+          poke.recover(Math.max(1, idiv(poke.base.maxHp, 16)), poke, battle, "ingrain");
         }
 
         if (ability === "speedboost" && poke.v.canSpeedBoost && poke.v.stages.spe < 6) {
@@ -618,7 +618,7 @@ export class Generation4 extends Generation3 {
         if (opp) {
           battle.ability(opp);
           poke.damage2(battle, {
-            dmg: Math.max(1, idiv(poke.base.stats.hp, 8)),
+            dmg: Math.max(1, idiv(poke.base.maxHp, 8)),
             src: opp,
             why: "baddreams",
             direct: true,
@@ -714,7 +714,7 @@ export class Generation4 extends Generation3 {
     if (move.id === "present") {
       const result = randChoiceWeighted(battle.rng, [40, 80, 120, -4], [40, 30, 10, 20]);
       if (result < 0) {
-        return {dmg: -Math.max(idiv(target.base.stats.hp, 4), 1), eff: 1, miss: false, type};
+        return {dmg: -Math.max(idiv(target.base.maxHp, 4), 1), eff: 1, miss: false, type};
       }
       power = result;
     } else if (move.id === "furycutter") {
@@ -776,7 +776,7 @@ export class Generation4 extends Generation3 {
       } else if (this.rng.tryFocusBand(battle)) {
         dmg = user.base.hp - 1;
         endure = Endure.FocusBand;
-      } else if (user.base.itemId === "focussash" && user.base.hp === user.base.stats.hp) {
+      } else if (user.base.itemId === "focussash" && user.base.hp === user.base.maxHp) {
         dmg = user.base.hp - 1;
         endure = Endure.FocusSash;
       }

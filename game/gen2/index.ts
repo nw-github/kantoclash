@@ -464,7 +464,7 @@ export class Generation2 extends Generation1 {
     if (move.id === "present") {
       const result = randChoiceWeighted(battle.rng, [40, 80, 120, -4], [40, 30, 10, 20]);
       if (result < 0) {
-        return {dmg: -Math.max(idiv(target.base.stats.hp, 4), 1), eff: 1, miss: false, type};
+        return {dmg: -Math.max(idiv(target.base.maxHp, 4), 1), eff: 1, miss: false, type};
       }
       power = result;
     }

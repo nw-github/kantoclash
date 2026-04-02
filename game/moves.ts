@@ -336,7 +336,7 @@ export const moveScripts: MoveScripts = {
     }
   },
   recover(battle, user) {
-    const diff = user.base.stats.hp - user.base.hp;
+    const diff = user.base.maxHp - user.base.hp;
     if (diff === 0 || diff % 255 === 0) {
       return battle.info(user, "fail_generic");
     }
@@ -354,7 +354,7 @@ export const moveScripts: MoveScripts = {
       user.recover(diff, user, battle, this.why, true);
       // In gen 1, Rest doesn't reset the toxic counter or par/brn stat drops
     } else {
-      user.recover(Math.floor(user.base.stats.hp / 2), user, battle, this.why);
+      user.recover(Math.floor(user.base.maxHp / 2), user, battle, this.why);
     }
   },
   stage(battle, user, targets) {
@@ -854,7 +854,7 @@ export const moveScripts: MoveScripts = {
     return battle.callMove(lastHitBy.move, user);
   },
   substitute(battle, user) {
-    const hp = Math.floor(user.base.stats.hp / 4);
+    const hp = Math.floor(user.base.maxHp / 4);
     if (user.v.substitute) {
       return battle.info(user, "has_substitute");
     } else if (hp > user.base.hp) {
@@ -904,7 +904,7 @@ export const moveScripts: MoveScripts = {
       return;
     }
 
-    const dmg = idiv(user.base.stats.hp, 2);
+    const dmg = idiv(user.base.maxHp, 2);
     if (user.base.hp < dmg) {
       battle.info(user, "fail_generic");
 
@@ -975,16 +975,9 @@ export const moveScripts: MoveScripts = {
         return;
       }
 
-      user.damage(
-        idiv(user.base.stats.hp, 2),
-        target,
-        battle,
-        false,
-        "set_curse",
-        true,
-        undefined,
-        [target.setFlag(VF.curse)],
-      );
+      user.damage(idiv(user.base.maxHp, 2), target, battle, false, "set_curse", true, undefined, [
+        target.setFlag(VF.curse),
+      ]);
     }
   },
   encore(battle, user, [target]) {
@@ -1280,7 +1273,7 @@ export const moveScripts: MoveScripts = {
     }
 
     const d = {3: 1, 2: 2, 1: 4}[user.v.stockpile] ?? 4;
-    user.recover(Math.max(1, idiv(user.base.stats.hp, d)), user, battle, "recover");
+    user.recover(Math.max(1, idiv(user.base.maxHp, d)), user, battle, "recover");
     battle.sv([user.setVolatile("stockpile", 0)]);
   },
   taunt(battle, user, [target]) {
@@ -1497,11 +1490,11 @@ function getFlailPower(user: Pokemon) {
 }
 
 function getHPFalloffPower(this: DamagingMove, user: Pokemon) {
-  return Math.max(1, idiv(this.power * user.hp, user.stats.hp));
+  return Math.max(1, idiv(this.power * user.hp, user.maxHp));
 }
 
-function getCrushGripPower(_user: Pokemon, target?: Pokemon) {
-  return target ? 1 + Math.floor(120 * (target.hp / target.stats.hp)) : 0;
+function getCrushGripPower(_user: Pokemon, target: Pokemon) {
+  return 1 + idiv(target.hp * 120, target.maxHp);
 }
 
 export function getLowKickPower(weight: number): number {

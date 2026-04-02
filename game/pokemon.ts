@@ -272,6 +272,10 @@ export class Pokemon {
     return this.stats.hp === this.hp;
   }
 
+  get maxHp() {
+    return this.stats.hp;
+  }
+
   get hpPercent() {
     return (this.hp / this.stats.hp) * 100;
   }
@@ -306,7 +310,7 @@ export class Pokemon {
 class TransformedPokemon extends Pokemon {
   constructor(readonly base: Pokemon, target: Pokemon) {
     super({
-      stats: {...target.stats, hp: base.stats.hp},
+      stats: {...target.stats, hp: base.maxHp},
       speciesId: target.speciesId,
       moves: [...target.moves],
       pp: target.moves.map(move => Math.min(base.gen.getMaxPP(move), 5)),

@@ -171,7 +171,7 @@ export const tryDamage = (
     } else if (targetAbility?.roughSkin) {
       battle.ability(target);
       user.damage2(battle, {
-        dmg: Math.max(1, idiv(user.base.stats.hp, 8)),
+        dmg: Math.max(1, idiv(user.base.maxHp, 8)),
         src: target,
         why: "roughskin",
       });
@@ -336,7 +336,7 @@ export const tryDamage = (
     handledShellBell = false;
   let why = self.flag === DMF.ohko ? ("ohko" as const) : ("attacked" as const);
   const wasSleeping = user.base.status === "slp";
-  const wasFullHp = target.base.hp === target.base.stats.hp;
+  const wasFullHp = target.base.hp === target.base.maxHp;
 
   const applyDamage = (dmg: number, doShellBell: bool) => {
     hadSub = target.v.substitute !== 0;
@@ -437,7 +437,7 @@ export const tryDamage = (
     self.recoil &&
     (self === battle.gen.moveList.struggle || !user.hasAbility("rockhead"))
   ) {
-    const recoil = self.id === "struggle" ? idiv(user.base.stats.hp, 4) : idiv(dealt, self.recoil);
+    const recoil = self.id === "struggle" ? idiv(user.base.maxHp, 4) : idiv(dealt, self.recoil);
     user.damage(Math.max(recoil, 1), user, battle, false, "recoil", true);
   }
 

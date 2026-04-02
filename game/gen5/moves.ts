@@ -1,6 +1,6 @@
 import type {Move, MoveScripts, MoveId, MovePropOverrides} from "../moves";
 import type {Pokemon} from "../pokemon";
-import {DMF, Range} from "../utils";
+import {DMF, idiv, Range} from "../utils";
 
 export const moveScripts: Partial<MoveScripts> = {};
 
@@ -72,5 +72,5 @@ export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
 };
 
 function getCrushGripPower(_user: Pokemon, target: Pokemon) {
-  return Math.max(1, Math.floor(120 * (target.hp / target.stats.hp)));
+  return Math.max(1, idiv(target.hp * 120, target.maxHp));
 }

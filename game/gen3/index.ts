@@ -456,7 +456,7 @@ export class Generation3 extends Generation2 {
     if (move.id === "present") {
       const result = randChoiceWeighted(battle.rng, [40, 80, 120, -4], [40, 30, 10, 20]);
       if (result < 0) {
-        return {dmg: -Math.max(idiv(target.base.stats.hp, 4), 1), eff: 1, miss: false, type};
+        return {dmg: -Math.max(idiv(target.base.maxHp, 4), 1), eff: 1, miss: false, type};
       }
       power = result;
     } else if (move.id === "furycutter") {
@@ -825,7 +825,7 @@ export class Generation3 extends Generation2 {
         if (poke.wish && --poke.wish.turns === 0) {
           if (!poke.v.fainted) {
             poke.recover(
-              Math.max(1, Math.floor(poke.base.stats.hp / 2)),
+              Math.max(1, Math.floor(poke.base.maxHp / 2)),
               poke,
               battle,
               `wish:${poke.base.name}`,
@@ -867,12 +867,12 @@ export class Generation3 extends Generation2 {
         const ability = poke.getAbilityId();
         if (!poke.v.fainted) {
           if (poke.v.hasFlag(VF.ingrain)) {
-            poke.recover(Math.max(1, idiv(poke.base.stats.hp, 16)), poke, battle, "ingrain");
+            poke.recover(Math.max(1, idiv(poke.base.maxHp, 16)), poke, battle, "ingrain");
           }
 
           if (battle.hasWeather("rain") && ability === "raindish" && !poke.base.isMaxHp()) {
             battle.ability(poke);
-            poke.recover(Math.max(1, idiv(poke.base.stats.hp, 16)), poke, battle, "recover");
+            poke.recover(Math.max(1, idiv(poke.base.maxHp, 16)), poke, battle, "recover");
           }
 
           if (ability === "speedboost" && poke.v.canSpeedBoost && poke.v.stages.spe < 6) {
@@ -1053,7 +1053,7 @@ export class Generation3 extends Generation2 {
       battle.info(target, "immune");
 
       if (targetAbility === "waterabsorb" || targetAbility === "voltabsorb") {
-        target.recover(Math.max(1, idiv(target.base.stats.hp, 4)), user, battle, "none");
+        target.recover(Math.max(1, idiv(target.base.maxHp, 4)), user, battle, "none");
       }
       return true;
     }

@@ -5,7 +5,7 @@ import type {ActivePokemon, Battle} from "../battle";
 
 export const moveScripts: Partial<MoveScripts> = {
   recover(battle, user) {
-    const diff = user.base.stats.hp - user.base.hp;
+    const diff = user.base.maxHp - user.base.hp;
     if (diff === 0) {
       return battle.info(user, "fail_generic");
     }
@@ -16,11 +16,11 @@ export const moveScripts: Partial<MoveScripts> = {
       user.v.counter = 0;
       user.recover(diff, user, battle, this.why, true);
     } else {
-      let amount = Math.floor(user.base.stats.hp / 2);
+      let amount = Math.floor(user.base.maxHp / 2);
       if (this.weather && !battle.getWeather()) {
-        amount = Math.floor(user.base.stats.hp / 4);
+        amount = Math.floor(user.base.maxHp / 4);
       } else if (this.weather && !battle.hasWeather("sun")) {
-        amount = Math.floor(user.base.stats.hp / 8);
+        amount = Math.floor(user.base.maxHp / 8);
       }
       user.recover(Math.max(1, amount), user, battle, this.why);
     }
@@ -60,7 +60,7 @@ export const moveScripts: Partial<MoveScripts> = {
   },
   //
   substitute(battle, user) {
-    const hp = Math.floor(user.base.stats.hp / 4);
+    const hp = Math.floor(user.base.maxHp / 4);
     if (user.v.substitute) {
       return battle.info(user, "has_substitute");
     } else if (hp >= user.base.hp) {

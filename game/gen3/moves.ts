@@ -20,7 +20,7 @@ export const moveScripts: Partial<MoveScripts> = {
     battle.setWeather(this.weather, 5);
   },
   recover(battle, user) {
-    const diff = user.base.stats.hp - user.base.hp;
+    const diff = user.base.maxHp - user.base.hp;
     if (diff === 0) {
       return battle.info(user, "fail_generic");
     }
@@ -40,13 +40,13 @@ export const moveScripts: Partial<MoveScripts> = {
       user.v.counter = 0;
       user.recover(diff, user, battle, this.why, true);
     } else {
-      let amount = Math.floor(user.base.stats.hp / 2);
+      let amount = Math.floor(user.base.maxHp / 2);
       if (this.weather) {
         const weather = battle.getWeather();
         if (weather === "sun") {
-          amount = Math.floor((user.base.stats.hp * 2) / 3);
+          amount = Math.floor((user.base.maxHp * 2) / 3);
         } else if (weather) {
-          amount = Math.floor(user.base.stats.hp / 4);
+          amount = Math.floor(user.base.maxHp / 4);
         }
       }
       user.recover(amount, user, battle, this.why);
@@ -303,7 +303,7 @@ export const tryDamage = (
     } else if (targetAbility === "roughskin") {
       battle.ability(target);
       user.damage2(battle, {
-        dmg: Math.max(1, Math.floor(user.base.stats.hp / 16)),
+        dmg: Math.max(1, Math.floor(user.base.maxHp / 16)),
         src: target,
         why: "roughskin",
       });

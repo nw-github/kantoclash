@@ -594,12 +594,12 @@ export class Generation1 {
 
       let dead = false;
       if (why === "psn" && poke.hasAbility("poisonheal")) {
-        if (poke.base.hp < poke.base.stats.hp) {
+        if (poke.base.hp < poke.base.maxHp) {
           battle.ability(poke);
-          poke.recover(Math.max(Math.floor(poke.base.stats.hp / 8), 1), poke, battle, "recover");
+          poke.recover(Math.max(Math.floor(poke.base.maxHp / 8), 1), poke, battle, "recover");
         }
       } else {
-        const dmg = Math.max(Math.floor((m * poke.base.stats.hp) / d), 1);
+        const dmg = Math.max(Math.floor((m * poke.base.maxHp) / d), 1);
         dead = poke.damage(dmg, poke, battle, false, why, true).dead;
         if (why === "seeded" && poke.v.seededBy) {
           poke.v.seededBy.recover(dmg, poke, battle, "seeder");
@@ -623,7 +623,7 @@ export class Generation1 {
     } else if (
       poke.v.hasFlag(VF.nightmare) &&
       poke.damage2(battle, {
-        dmg: Math.max(1, idiv(poke.base.stats.hp, 4)),
+        dmg: Math.max(1, idiv(poke.base.maxHp, 4)),
         src: poke,
         why: "nightmare",
         direct: true,
@@ -633,7 +633,7 @@ export class Generation1 {
     } else if (
       poke.v.hasFlag(VF.curse) &&
       poke.damage2(battle, {
-        dmg: Math.max(1, idiv(poke.base.stats.hp, 4)),
+        dmg: Math.max(1, idiv(poke.base.maxHp, 4)),
         src: poke,
         why: "curse",
         direct: true,
@@ -727,7 +727,7 @@ export class Generation1 {
       }
 
       if (poke.base.itemId === "leftovers") {
-        poke.recover(Math.max(1, idiv(poke.base.stats.hp, 16)), poke, battle, "leftovers");
+        poke.recover(Math.max(1, idiv(poke.base.maxHp, 16)), poke, battle, "leftovers");
       }
       poke.handleBerry(battle, {pp: true});
     }
