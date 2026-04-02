@@ -178,6 +178,18 @@ export const tryDamage = (
     }
   };
 
+  const didMiss = (crash: bool, dmg: number) => {
+    user.v.furyCutter = 0;
+    user.v.thrashing = undefined;
+    if (self.id === "spitup") {
+      battle.sv([user.setVolatile("stockpile", 0)]);
+    }
+    if (crash && self.flag === DMF.crash) {
+      battle.gen.handleCrashDamage(battle, user, target, dmg);
+    }
+    return 0;
+  };
+
   const rollEffects = (hadSub: bool) => {
     for (const eff of [self.effect, self.effect2]) {
       if (!eff) {
@@ -298,32 +310,19 @@ export const tryDamage = (
     power,
   });
   const special = battle.gen.isSpecial(self, type);
-  const abilityImmunity = battle.gen.tryAbilityImmunity(battle, user, target, self, type, eff);
-  if (eff === 0 || miss || protect || !battle.checkAccuracy(self, user, target, !special)) {
-    user.v.furyCutter = 0;
-    user.v.thrashing = undefined;
-    if (self.id === "spitup") {
-      battle.sv([user.setVolatile("stockpile", 0)]);
-    }
-    // TODO: verify this processing order
-    if (!abilityImmunity) {
-      if (eff === 0) {
-        battle.info(target, "immune");
-        if (self.flag === DMF.crash) {
-          battle.gen.handleCrashDamage(battle, user, target, dmg);
-        }
-      } else if (miss) {
-        battle.info(user, "fail_generic");
-      } else {
-        if (protect) {
-          battle.info(target, "protect");
-        }
-        if (self.flag === DMF.crash) {
-          battle.gen.handleCrashDamage(battle, user, target, dmg);
-        }
-      }
-    }
-    return 0;
+  if (miss) {
+    battle.info(user, "fail_generic");
+    return didMiss(false, 0);
+  } else if (protect) {
+    battle.info(target, "protect");
+    return didMiss(true, dmg);
+  } else if (battle.gen.tryAbilityImmunity(battle, user, target, self, type, eff)) {
+    return didMiss(true, dmg);
+  } else if (eff === 0) {
+    battle.info(target, "immune");
+    return didMiss(true, dmg);
+  } else if (!battle.checkAccuracy(self, user, target, !special)) {
+    return didMiss(true, dmg);
   } else if (dmg < 0) {
     target.recover(dmg, user, battle, "present");
     return 0;

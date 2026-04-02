@@ -369,6 +369,14 @@ export class Generation1 {
     } else if (move.id === "dreameater" && target.base.status !== "slp") {
       battle.miss(user, target);
       return false;
+    } else if (
+      move.kind === "damage" &&
+      move.flag === DMF.ohko &&
+      user.v.stats.spe < target.v.stats.spe
+    ) {
+      // in the real game, this is handled inside calcBaseDamage
+      battle.miss(user, target);
+      return false;
     }
 
     const chance = scaleAccuracy255(user.v.thrashing?.acc ?? DamageCalc.P(move.acc), user, target);
@@ -415,10 +423,7 @@ export class Generation1 {
     move: DamagingMove,
   ) {
     if (move.fixedDamage) {
-      const dmg = move.fixedDamage;
-      // in the real game, this is handled inside calcBaseDamage
-      const miss = move.flag === DMF.ohko && user.v.stats.spe < target.v.stats.spe;
-      return {dmg, miss, eff: 1, type: move.type};
+      return {dmg: move.fixedDamage, miss: false, eff: 1, type: move.type};
     } else if (this.move.overrides.dmg[move.id!]) {
       // Counter, Bide
       const dmg = this.getMoveDamage(move, battle, user, target) ?? 0;

@@ -500,7 +500,7 @@ export class Generation2 extends Generation1 {
     dmg: number,
   ) {
     dmg = Math.min(dmg, target.base.hp);
-    user.damage(idiv(dmg, 8), user, battle, false, "crash", true);
+    user.damage(Math.max(1, idiv(dmg, 8)), user, battle, false, "crash", true);
   }
 
   override rollCrit(

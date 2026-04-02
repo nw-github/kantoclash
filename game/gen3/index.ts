@@ -432,7 +432,7 @@ export class Generation3 extends Generation2 {
     dmg: number,
   ) {
     dmg = Math.min(dmg, target.base.hp);
-    user.damage(Math.floor(dmg / 2), user, battle, false, "crash", true);
+    user.damage(Math.max(1, idiv(dmg, 2)), user, battle, false, "crash", true);
   }
 
   override getDamage({battle, user, target, move, isCrit, power, rng, beatUp}: GetDamageParams) {

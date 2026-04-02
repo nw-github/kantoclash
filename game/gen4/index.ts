@@ -800,12 +800,10 @@ export class Generation4 extends Generation3 {
       speed <<= 1;
     }
 
-    // metal powder
-    if (item?.boostStats?.[user.base.speciesId]) {
-      const boost = item.boostStats[user.base.speciesId]!;
-      if (boost.stats.includes("spe")) {
-        speed = idiv(speed * (100 + boost.percent), 100);
-      }
+    // quick powder
+    const boost = item?.boostStats?.[user.base.speciesId];
+    if (boost && boost.stats.includes("spe")) {
+      speed = idiv(speed * (100 + boost.percent), 100);
     }
 
     if (abilityId === "quickfeet" && user.base.status) {
