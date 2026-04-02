@@ -1,7 +1,7 @@
 import type {Move, MoveScripts, MoveId, MovePropOverrides, DamagingMove} from "../moves";
 import type {ActivePokemon, Battle} from "../battle";
 import type {Status} from "../pokemon";
-import {DMF, Range, Endure, hazards, idiv, VF, type Type} from "../utils";
+import {DMF, Range, Endure, hazards, VF, type Type, idiv1} from "../utils";
 import {doBeatUp} from "../gen2/moves";
 import {abilityList} from "../species";
 
@@ -170,11 +170,7 @@ export const tryDamage = (
       }
     } else if (targetAbility?.roughSkin) {
       battle.ability(target);
-      user.damage2(battle, {
-        dmg: Math.max(1, idiv(user.base.maxHp, 8)),
-        src: target,
-        why: "roughskin",
-      });
+      user.damage2(battle, {dmg: idiv1(user.base.maxHp, 8), src: target, why: "roughskin"});
     }
   };
 
@@ -437,12 +433,12 @@ export const tryDamage = (
     self.recoil &&
     (self === battle.gen.moveList.struggle || !user.hasAbility("rockhead"))
   ) {
-    const recoil = self.id === "struggle" ? idiv(user.base.maxHp, 4) : idiv(dealt, self.recoil);
-    user.damage(Math.max(recoil, 1), user, battle, false, "recoil", true);
+    const recoil = self.id === "struggle" ? idiv1(user.base.maxHp, 4) : idiv1(dealt, self.recoil);
+    user.damage(recoil, user, battle, false, "recoil", true);
   }
 
   if (user.base.hp && self.flag === DMF.drain) {
-    user.recover(Math.max(Math.floor(dealt / 2), 1), target, battle, "drain");
+    user.recover(idiv1(dealt, 2), target, battle, "drain");
   } else if (self.id === "payday") {
     battle.info(user, "payday");
   } else if (self.flag === DMF.remove_hazards && user.base.hp) {

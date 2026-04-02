@@ -1,5 +1,16 @@
 import {rawMoveList} from "./data/moves";
-import {VF, MC, Range, stageKeys, idiv, stageStatKeys, HP_TYPES, TypeMod, DMF} from "./utils";
+import {
+  VF,
+  MC,
+  Range,
+  stageKeys,
+  idiv,
+  stageStatKeys,
+  HP_TYPES,
+  TypeMod,
+  DMF,
+  idiv1,
+} from "./utils";
 import type {FailReason, InfoReason, RecoveryReason} from "./events";
 import type {Pokemon, Status} from "./pokemon";
 import type {StageId, Type, Weather, ScreenId, HazardId} from "./utils";
@@ -354,7 +365,7 @@ export const moveScripts: MoveScripts = {
       user.recover(diff, user, battle, this.why, true);
       // In gen 1, Rest doesn't reset the toxic counter or par/brn stat drops
     } else {
-      user.recover(Math.floor(user.base.maxHp / 2), user, battle, this.why);
+      user.recover(idiv(user.base.maxHp, 2), user, battle, this.why);
     }
   },
   stage(battle, user, targets) {
@@ -854,7 +865,7 @@ export const moveScripts: MoveScripts = {
     return battle.callMove(lastHitBy.move, user);
   },
   substitute(battle, user) {
-    const hp = Math.floor(user.base.maxHp / 4);
+    const hp = idiv(user.base.maxHp, 4);
     if (user.v.substitute) {
       return battle.info(user, "has_substitute");
     } else if (hp > user.base.hp) {
@@ -1273,7 +1284,7 @@ export const moveScripts: MoveScripts = {
     }
 
     const d = {3: 1, 2: 2, 1: 4}[user.v.stockpile] ?? 4;
-    user.recover(Math.max(1, idiv(user.base.maxHp, d)), user, battle, "recover");
+    user.recover(idiv1(user.base.maxHp, d), user, battle, "recover");
     battle.sv([user.setVolatile("stockpile", 0)]);
   },
   taunt(battle, user, [target]) {
@@ -1412,7 +1423,7 @@ export const moveOverrides: MovePropOverrides = {
       return battle.rng.int(1, upperBound);
     },
     seismictoss: (_, user) => user.base.level,
-    superfang: (_battle, _, target) => Math.max(Math.floor(target.base.hp / 2), 1),
+    superfang: (_battle, _, target) => Math.max(target.base.hp >> 1, 1),
     mirrorcoat(battle, user) {
       const lastHit = user.v.lastHitBy;
       if (!lastHit || !battle.gen.isSpecial(lastHit.move, lastHit.type, true)) {
@@ -1490,7 +1501,7 @@ function getFlailPower(user: Pokemon) {
 }
 
 function getHPFalloffPower(this: DamagingMove, user: Pokemon) {
-  return Math.max(1, idiv(this.power * user.hp, user.maxHp));
+  return idiv1(this.power * user.hp, user.maxHp);
 }
 
 function getCrushGripPower(_user: Pokemon, target: Pokemon) {

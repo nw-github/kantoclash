@@ -11,6 +11,7 @@ import {
   clamp,
   debugLog,
   DMF,
+  idiv1,
   idiv,
   n,
   randChoiceWeighted,
@@ -214,7 +215,7 @@ class DamageCalc extends Gen1DamageCalc {
           break;
         }
 
-        dmg = Math.max(1, idiv(dmg * modifier, 10));
+        dmg = idiv1(dmg * modifier, 10);
       }
     }
     return {dmg, eff, miss: false};
@@ -464,7 +465,7 @@ export class Generation2 extends Generation1 {
     if (move.id === "present") {
       const result = randChoiceWeighted(battle.rng, [40, 80, 120, -4], [40, 30, 10, 20]);
       if (result < 0) {
-        return {dmg: -Math.max(idiv(target.base.maxHp, 4), 1), eff: 1, miss: false, type};
+        return {dmg: -idiv1(target.base.maxHp, 4), eff: 1, miss: false, type};
       }
       power = result;
     }
@@ -535,7 +536,7 @@ export class Generation2 extends Generation1 {
     dmg: number,
   ) {
     dmg = Math.min(dmg, target.base.hp);
-    user.damage(Math.max(1, idiv(dmg, 8)), user, battle, false, "crash", true);
+    user.damage(idiv1(dmg, 8), user, battle, false, "crash", true);
   }
 
   override rollCrit(

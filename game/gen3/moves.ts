@@ -6,7 +6,7 @@ import {
   type MovePropOverrides,
   type DamagingMove,
 } from "../moves";
-import {HP_TYPES, idiv, VF, Range, DMF, Endure, hazards, type Type} from "../utils";
+import {HP_TYPES, VF, Range, DMF, Endure, hazards, type Type, idiv1, idiv} from "../utils";
 import type {ActivePokemon, Battle} from "../battle";
 import {doBeatUp} from "../gen2/moves";
 import type {Status} from "../pokemon";
@@ -40,13 +40,13 @@ export const moveScripts: Partial<MoveScripts> = {
       user.v.counter = 0;
       user.recover(diff, user, battle, this.why, true);
     } else {
-      let amount = Math.floor(user.base.maxHp / 2);
+      let amount = idiv1(user.base.maxHp, 2);
       if (this.weather) {
         const weather = battle.getWeather();
         if (weather === "sun") {
-          amount = Math.floor((user.base.maxHp * 2) / 3);
+          amount = idiv1(user.base.maxHp * 2, 3);
         } else if (weather) {
-          amount = Math.floor(user.base.maxHp / 4);
+          amount = idiv1(user.base.maxHp, 4);
         }
       }
       user.recover(amount, user, battle, this.why);
@@ -126,11 +126,11 @@ export const moveScripts: Partial<MoveScripts> = {
 export const moveOverrides: Partial<MovePropOverrides> = {
   dmg: {
     psywave(battle, user) {
-      return Math.max(1, Math.floor((user.base.level * (10 * battle.rng.int(0, 10) + 50)) / 100));
+      return idiv1(user.base.level * (10 * battle.rng.int(0, 10) + 50), 100);
     },
   },
   pow: {
-    frustration: user => Math.max(1, idiv(255 - user.friendship, 2.5)),
+    frustration: user => idiv1(255 - user.friendship, 2.5),
     hiddenpower(user) {
       const v =
         ((user.ivs.hp >> 1) & 1) |
@@ -139,10 +139,10 @@ export const moveOverrides: Partial<MovePropOverrides> = {
         (((user.ivs.spe >> 1) & 1) << 3) |
         (((user.ivs.spa >> 1) & 1) << 4) |
         (((user.ivs.spd >> 1) & 1) << 5);
-      return Math.floor((v * 40) / 63) + 30;
+      return idiv(v * 40, 63) + 30;
     },
     lowkick: (_user, target) => getLowKickPower(target.species.weight),
-    return: user => Math.max(1, idiv(user.friendship, 2.5)),
+    return: user => idiv1(user.friendship, 2.5),
   },
   type: {
     hiddenpower(user) {
@@ -153,7 +153,7 @@ export const moveOverrides: Partial<MovePropOverrides> = {
         ((user.ivs.spe & 1) << 3) |
         ((user.ivs.spa & 1) << 4) |
         ((user.ivs.spd & 1) << 5);
-      return HP_TYPES[Math.floor((v * 15) / 63) % HP_TYPES.length];
+      return HP_TYPES[idiv(v * 15, 63) % HP_TYPES.length];
     },
   },
 };
@@ -302,11 +302,7 @@ export const tryDamage = (
       }
     } else if (targetAbility === "roughskin") {
       battle.ability(target);
-      user.damage2(battle, {
-        dmg: Math.max(1, Math.floor(user.base.maxHp / 16)),
-        src: target,
-        why: "roughskin",
-      });
+      user.damage2(battle, {dmg: idiv1(user.base.maxHp, 16), src: target, why: "roughskin"});
     }
   };
 
@@ -467,11 +463,11 @@ export const tryDamage = (
     self.recoil &&
     (self === battle.gen.moveList.struggle || !user.hasAbility("rockhead"))
   ) {
-    user.damage(Math.max(Math.floor(dealt / self.recoil), 1), user, battle, false, "recoil", true);
+    user.damage(idiv1(dealt, self.recoil), user, battle, false, "recoil", true);
   }
 
   if (user.base.hp && self.flag === DMF.drain) {
-    user.recover(Math.max(Math.floor(dealt / 2), 1), target, battle, "drain");
+    user.recover(idiv1(dealt, 2), target, battle, "drain");
   } else if (self.id === "payday") {
     battle.info(user, "payday");
   } else if (self.flag === DMF.remove_hazards && user.base.hp) {

@@ -24,6 +24,7 @@ import {
   isSpecialType,
   type Endure,
   DMF,
+  idiv1,
 } from "../utils";
 import {itemList, type ItemId} from "../item";
 import {UNOWN_FORM, type Pokemon, type FormId, type Gender, type Nature} from "../pokemon";
@@ -80,9 +81,9 @@ class Rng {
     const baseSpe = user.base.species.stats.spe;
     const focus = user.v.hasFlag(VF.focusEnergy);
     if (hc) {
-      return battle.rand255(focus ? 4 * Math.floor(baseSpe / 4) : 8 * Math.floor(baseSpe / 2));
+      return battle.rand255(focus ? 4 * idiv(baseSpe, 4) : 8 * idiv(baseSpe, 2));
     } else {
-      return battle.rand255(Math.floor(focus ? baseSpe / 8 : baseSpe / 2));
+      return battle.rand255(idiv(baseSpe, focus ? 8 : 2));
     }
   }
   tryFullPara(battle: Battle) { return battle.rand100(25); }
@@ -447,9 +448,9 @@ export class Generation1 {
 
   applyStatusDebuff(poke: ActivePokemon) {
     if (poke.base.status === "brn") {
-      poke.v.stats.atk = Math.max(Math.floor(poke.v.stats.atk / 2), 1);
+      poke.v.stats.atk = idiv1(poke.v.stats.atk, 2);
     } else if (poke.base.status === "par") {
-      poke.v.stats.spe = Math.max(Math.floor(poke.v.stats.spe / 4), 1);
+      poke.v.stats.spe = idiv1(poke.v.stats.spe, 4);
     }
   }
 
@@ -515,7 +516,7 @@ export class Generation1 {
 
   getMaxPP(move: Move | MoveId) {
     move = typeof move === "string" ? this.moveList[move] : move;
-    return move.pp === 1 ? 1 : Math.min(Math.floor((move.pp * 8) / 5), 61);
+    return move.pp === 1 ? 1 : Math.min(idiv(move.pp * 8, 5), 61);
   }
 
   getSpeed(_battle: Battle, user: ActivePokemon) {
@@ -596,10 +597,10 @@ export class Generation1 {
       if (why === "psn" && poke.hasAbility("poisonheal")) {
         if (poke.base.hp < poke.base.maxHp) {
           battle.ability(poke);
-          poke.recover(Math.max(Math.floor(poke.base.maxHp / 8), 1), poke, battle, "recover");
+          poke.recover(idiv1(poke.base.maxHp, 8), poke, battle, "recover");
         }
       } else {
-        const dmg = Math.max(Math.floor((m * poke.base.maxHp) / d), 1);
+        const dmg = idiv1(m * poke.base.maxHp, d);
         dead = poke.damage(dmg, poke, battle, false, why, true).dead;
         if (why === "seeded" && poke.v.seededBy) {
           poke.v.seededBy.recover(dmg, poke, battle, "seeder");
@@ -623,7 +624,7 @@ export class Generation1 {
     } else if (
       poke.v.hasFlag(VF.nightmare) &&
       poke.damage2(battle, {
-        dmg: Math.max(1, idiv(poke.base.maxHp, 4)),
+        dmg: idiv1(poke.base.maxHp, 4),
         src: poke,
         why: "nightmare",
         direct: true,
@@ -633,7 +634,7 @@ export class Generation1 {
     } else if (
       poke.v.hasFlag(VF.curse) &&
       poke.damage2(battle, {
-        dmg: Math.max(1, idiv(poke.base.maxHp, 4)),
+        dmg: idiv1(poke.base.maxHp, 4),
         src: poke,
         why: "curse",
         direct: true,
@@ -727,7 +728,7 @@ export class Generation1 {
       }
 
       if (poke.base.itemId === "leftovers") {
-        poke.recover(Math.max(1, idiv(poke.base.maxHp, 16)), poke, battle, "leftovers");
+        poke.recover(idiv1(poke.base.maxHp, 16), poke, battle, "leftovers");
       }
       poke.handleBerry(battle, {pp: true});
     }
@@ -927,20 +928,13 @@ export function tryDamage(
   if (!brokeSub) {
     if (self.recoil) {
       dead =
-        user.damage(
-          Math.max(Math.floor(dealt / self.recoil), 1),
-          user,
-          battle,
-          false,
-          "recoil",
-          true,
-        ).dead || dead;
+        user.damage(idiv1(dealt, self.recoil), user, battle, false, "recoil", true).dead || dead;
     }
 
     if (self.flag === DMF.drain) {
       // https://www.smogon.com/forums/threads/past-gens-research-thread.3506992/#post-5878612
       //  - DRAIN HP SIDE EFFECT
-      const dmg = Math.max(Math.floor(dealt / 2), 1);
+      const dmg = idiv1(dealt, 2);
       battle.gen1LastDamage = dmg;
       user.recover(dmg, target, battle, "drain");
     } else if (self.flag === DMF.explosion) {

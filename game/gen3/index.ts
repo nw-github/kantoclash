@@ -28,6 +28,7 @@ import {
   Endure,
   randChoiceWeighted,
   DMF,
+  idiv1,
 } from "../utils";
 import {moveScripts, moveOverrides, movePatches, tryDamage} from "./moves";
 import speciesPatches from "./species.json";
@@ -386,7 +387,7 @@ export class DamageCalc {
           break;
         }
 
-        dmg = Math.max(1, idiv(dmg * modifier, 10));
+        dmg = idiv1(dmg * modifier, 10);
       }
     }
     return {dmg, eff};
@@ -399,7 +400,7 @@ export class DamageCalc {
     }
 
     const rand = typeof rng === "number" ? rng : rng.int(0, 15);
-    return Math.max(1, idiv(dmg * (100 - rand), 100));
+    return idiv1(dmg * (100 - rand), 100);
   }
 }
 
@@ -434,7 +435,7 @@ export class Generation3 extends Generation2 {
     dmg: number,
   ) {
     dmg = Math.min(dmg, target.base.hp);
-    user.damage(Math.max(1, idiv(dmg, 2)), user, battle, false, "crash", true);
+    user.damage(idiv1(dmg, 2), user, battle, false, "crash", true);
   }
 
   override getDamage({battle, user, target, move, isCrit, power, rng, beatUp}: GetDamageParams) {
@@ -456,7 +457,7 @@ export class Generation3 extends Generation2 {
     if (move.id === "present") {
       const result = randChoiceWeighted(battle.rng, [40, 80, 120, -4], [40, 30, 10, 20]);
       if (result < 0) {
-        return {dmg: -Math.max(idiv(target.base.maxHp, 4), 1), eff: 1, miss: false, type};
+        return {dmg: -idiv1(target.base.maxHp, 4), eff: 1, miss: false, type};
       }
       power = result;
     } else if (move.id === "furycutter") {
@@ -603,7 +604,7 @@ export class Generation3 extends Generation2 {
 
   override getMaxPP(move: Move | MoveId) {
     move = typeof move === "string" ? this.moveList[move] : move;
-    return move.pp === 1 ? 1 : Math.floor((move.pp * 8) / 5);
+    return move.pp === 1 ? 1 : idiv(move.pp * 8, 5);
   }
 
   override checkAccuracy(
@@ -655,33 +656,32 @@ export class Generation3 extends Generation2 {
     let acc = idiv(chance * num, div);
     const targetItem = target.base.item;
     if (targetItem?.reduceAcc) {
-      acc -= idiv(acc * (100 + targetItem.reduceAcc), 100);
+      acc = idiv(acc * (100 - targetItem.reduceAcc), 100);
     }
 
     const userItem = user.base.item;
     if (userItem?.boostAcc) {
-      acc += idiv(acc * (100 + userItem.boostAcc), 100);
+      acc = idiv(acc * (100 + userItem.boostAcc), 100);
     }
 
     if (user.base.itemId === "zoomlens" && target.choice?.executed) {
-      acc += idiv(acc * 120, 100);
+      acc = idiv(acc * 120, 100);
     }
 
     if (user.hasAbility("compoundeyes")) {
-      acc += Math.floor(acc * 0.3);
+      acc = idiv(acc * 130, 100);
     }
 
-    phys ??= battle.gen.getCategory(move) === MC.physical;
-    if (user.hasAbility("hustle") && phys) {
-      acc -= Math.floor(acc * 0.2);
+    if (user.hasAbility("hustle") && (phys ?? battle.gen.getCategory(move) === MC.physical)) {
+      acc = idiv(acc * 80, 100);
     }
 
     const weatherEva = target.getAbility()?.weatherEva;
     if (weatherEva && battle.getWeather() === weatherEva) {
-      acc = Math.floor((acc * 4) / 5);
+      acc = idiv(acc * 4, 5);
     }
 
-    // debugLog(`[${user.base.name}] ${move.name} (Acc ${acc}/100)`);
+    debugLog(`[${user.base.name}] ${move.name} (Acc ${acc}/100)`);
     if (!battle.rand100(acc)) {
       battle.miss(user, target);
       return false;
@@ -824,12 +824,7 @@ export class Generation3 extends Generation2 {
       for (const poke of turnOrder) {
         if (poke.wish && --poke.wish.turns === 0) {
           if (!poke.v.fainted) {
-            poke.recover(
-              Math.max(1, Math.floor(poke.base.maxHp / 2)),
-              poke,
-              battle,
-              `wish:${poke.base.name}`,
-            );
+            poke.recover(idiv1(poke.base.maxHp, 2), poke, battle, `wish:${poke.base.name}`);
           }
           poke.wish = undefined;
         }
@@ -867,12 +862,12 @@ export class Generation3 extends Generation2 {
         const ability = poke.getAbilityId();
         if (!poke.v.fainted) {
           if (poke.v.hasFlag(VF.ingrain)) {
-            poke.recover(Math.max(1, idiv(poke.base.maxHp, 16)), poke, battle, "ingrain");
+            poke.recover(idiv1(poke.base.maxHp, 16), poke, battle, "ingrain");
           }
 
           if (battle.hasWeather("rain") && ability === "raindish" && !poke.base.isMaxHp()) {
             battle.ability(poke);
-            poke.recover(Math.max(1, idiv(poke.base.maxHp, 16)), poke, battle, "recover");
+            poke.recover(idiv1(poke.base.maxHp, 16), poke, battle, "recover");
           }
 
           if (ability === "speedboost" && poke.v.canSpeedBoost && poke.v.stages.spe < 6) {
@@ -1053,7 +1048,7 @@ export class Generation3 extends Generation2 {
       battle.info(target, "immune");
 
       if (targetAbility === "waterabsorb" || targetAbility === "voltabsorb") {
-        target.recover(Math.max(1, idiv(target.base.maxHp, 4)), user, battle, "none");
+        target.recover(idiv1(target.base.maxHp, 4), user, battle, "none");
       }
       return true;
     }

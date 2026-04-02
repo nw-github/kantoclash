@@ -202,6 +202,7 @@ export const hpPercent = (current: number, max: number) => {
 };
 
 export const idiv = (a: number, b: number) => (a / b) | 0;
+export const idiv1 = (a: number, b: number) => Math.max(1, (a / b) | 0);
 
 export const arraysEqual = <T>(a: readonly T[], b: readonly T[]) => {
   return a.length === b.length && a.every((item, i) => b[i] === item);

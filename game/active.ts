@@ -22,7 +22,6 @@ import {
   CVF,
   HP_TYPES,
   hpPercent,
-  idiv,
   stageKeys,
   stageStatKeys,
   VF,
@@ -33,6 +32,8 @@ import {
   type Weather,
   Endure,
   IGNORABLE_ABILITIES,
+  idiv1,
+  idiv,
 } from "./utils";
 import {TurnType, type Battle, type MoveOption, type Options, type Player} from "./battle";
 import {abilityList, type AbilityId} from "./species";
@@ -173,8 +174,7 @@ export class ActivePokemon {
       }
 
       if (this.owner.hazards.spikes && this.isGrounded()) {
-        const mod = 8 - (this.owner.hazards.spikes - 1) * 2;
-        const dmg = Math.max(1, Math.floor(this.base.maxHp / mod));
+        const dmg = idiv1(this.base.maxHp, 8 - (this.owner.hazards.spikes - 1) * 2);
         this.damage(dmg, this, battle, false, "spikes", true);
         if (this.base.hp === 0) {
           return;
@@ -469,7 +469,7 @@ export class ActivePokemon {
       }
       this.base.sleepTurns = battle.gen.rng.sleepTurns(battle);
       if (this.hasAbility("earlybird")) {
-        this.base.sleepTurns = Math.floor(this.base.sleepTurns / 2);
+        this.base.sleepTurns = idiv(this.base.sleepTurns, 2);
       }
 
       opp.sleepClausePoke = this.base;
@@ -761,13 +761,13 @@ export class ActivePokemon {
 
   handleShellBell(battle: Battle, dmg: number) {
     if (this.base.hp && dmg !== 0 && !this.v.fainted && this.base.itemId === "shellbell") {
-      this.recover(Math.max(1, Math.floor(dmg / 8)), this, battle, "shellbell", false);
+      this.recover(idiv1(dmg, 8), this, battle, "shellbell", false);
     }
   }
 
   handleLeftovers(battle: Battle) {
     if (!this.v.fainted && this.base.itemId === "leftovers") {
-      this.recover(Math.max(1, idiv(this.base.maxHp, 16)), this, battle, "leftovers");
+      this.recover(idiv1(this.base.maxHp, 16), this, battle, "leftovers");
     }
   }
 
@@ -855,7 +855,7 @@ export class ActivePokemon {
           this.recover(healFixed, this, battle, "item");
         } else if (healPinch) {
           this.consumeItem(battle);
-          this.recover(Math.max(1, Math.floor(this.base.maxHp / 8)), this, battle, "item");
+          this.recover(idiv1(this.base.maxHp, 8), this, battle, "item");
           if (this.base.nature !== undefined) {
             const [, minus] = Object.keys(natureTable[this.base.nature]);
             if (minus === healPinch && !this.hasAbility("owntempo")) {
@@ -864,7 +864,7 @@ export class ActivePokemon {
           }
         } else if (healSitrus) {
           this.consumeItem(battle);
-          this.recover(Math.max(1, Math.floor(this.base.maxHp / 4)), this, battle, "item");
+          this.recover(idiv1(this.base.maxHp, 4), this, battle, "item");
         }
       }
 
@@ -913,8 +913,7 @@ export class ActivePokemon {
       return;
     }
 
-    const d = battle.gen.id <= 2 ? 8 : 16;
-    const dmg = Math.max(idiv(this.base.maxHp, d), 1);
+    const dmg = idiv1(this.base.maxHp, battle.gen.id <= 2 ? 8 : 16);
     this.damage(dmg, this, battle, false, weather as "hail" | "sand", true);
   }
 
@@ -935,7 +934,7 @@ export class ActivePokemon {
       });
       this.v.trapped = undefined;
     } else {
-      const dmg = Math.max(idiv(this.base.maxHp, 16), 1);
+      const dmg = idiv1(this.base.maxHp, 16);
       this.damage2(battle, {dmg, src: this, why: "trap_eot", move, direct: true});
     }
   }

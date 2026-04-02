@@ -1,6 +1,6 @@
 import type {Move, MoveScripts, MoveId, MovePropOverrides, DamagingMove} from "../moves";
 import {thunderAccOverride} from "../moves";
-import {stageKeys, Range, DMF, hazards, VF} from "../utils";
+import {stageKeys, Range, DMF, hazards, VF, idiv1, idiv} from "../utils";
 import type {ActivePokemon, Battle} from "../battle";
 
 export const moveScripts: Partial<MoveScripts> = {
@@ -16,13 +16,13 @@ export const moveScripts: Partial<MoveScripts> = {
       user.v.counter = 0;
       user.recover(diff, user, battle, this.why, true);
     } else {
-      let amount = Math.floor(user.base.maxHp / 2);
+      let amount = idiv1(user.base.maxHp, 2);
       if (this.weather && !battle.getWeather()) {
-        amount = Math.floor(user.base.maxHp / 4);
+        amount = idiv1(user.base.maxHp, 4);
       } else if (this.weather && !battle.hasWeather("sun")) {
-        amount = Math.floor(user.base.maxHp / 8);
+        amount = idiv1(user.base.maxHp, 8);
       }
-      user.recover(Math.max(1, amount), user, battle, this.why);
+      user.recover(amount, user, battle, this.why);
     }
   },
   status(battle, user, targets) {
@@ -60,7 +60,7 @@ export const moveScripts: Partial<MoveScripts> = {
   },
   //
   substitute(battle, user) {
-    const hp = Math.floor(user.base.maxHp / 4);
+    const hp = idiv(user.base.maxHp, 4);
     if (user.v.substitute) {
       return battle.info(user, "has_substitute");
     } else if (hp >= user.base.hp) {
@@ -385,11 +385,11 @@ export const tryDamage = (
 
   checkThrashing();
   if (user.base.hp && self.recoil) {
-    user.damage(Math.max(Math.floor(dealt / self.recoil), 1), user, battle, false, "recoil", true);
+    user.damage(idiv1(dealt, self.recoil), user, battle, false, "recoil", true);
   }
 
   if (self.flag === DMF.drain) {
-    user.recover(Math.max(Math.floor(dealt / 2), 1), target, battle, "drain");
+    user.recover(idiv1(dealt, 2), target, battle, "drain");
   } else if (self.id === "payday") {
     battle.info(user, "payday");
   } else if (self.flag === DMF.remove_hazards) {
