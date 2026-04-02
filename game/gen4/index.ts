@@ -16,13 +16,16 @@ import {
   TypeMod,
   type Weather,
   randChoiceWeighted,
+  c,
+  n,
+  debugLog,
+  clamp,
 } from "../utils";
 import {type ActivePokemon, type Battle, TurnType} from "../battle";
 import type {DamagingMove, Move} from "../moves";
 import type {GetDamageParams} from "../gen1";
 import type {Pokemon} from "../pokemon";
 import type {Random} from "random";
-import {clamp} from "motion-v";
 
 // prettier-ignore
 class Rng extends Generation3.Rng {
@@ -302,6 +305,10 @@ class DamageCalc {
       damage = idiv(damage * 15, 10);
     }
 
+    debugLog(`\n${c(user.base.name, 32)} => ${c(target.base.name, 31)} (${c(move.name, 34)})`);
+    debugLog(
+      `- P: ${n(power)} | A: ${n(attacks[atks])} | D: ${n(defenses[defs])} | L: ${n(level)}`,
+    );
     return damage + 2;
   }
 
@@ -746,7 +753,7 @@ export class Generation4 extends Generation3 {
       ({dmg, eff} = DamageCalc.applyTypeModifier(dmg, {type, battle, user, target}));
     }
 
-    // debugLog(`- DMG: ${n(dmg)} | EFF: ${n(eff)} | CRIT: ${n(isCrit)} | Type: ${n(type)}`);
+    debugLog(`- DMG: ${n(dmg)} | EFF: ${n(eff)} | CRIT: ${n(isCrit)} | Type: ${n(type)}`);
     return {dmg, eff, type, miss: false};
   }
 

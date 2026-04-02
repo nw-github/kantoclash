@@ -7,10 +7,12 @@ import {
 } from "../gen1";
 import type {Species, SpeciesId} from "../species";
 import {
+  c,
   clamp,
   debugLog,
   DMF,
   idiv,
+  n,
   randChoiceWeighted,
   TypeMod,
   VF,
@@ -520,6 +522,9 @@ export class Generation2 extends Generation1 {
       dmg = Math.min(dmg << 1, 0xffff);
     }
 
+    debugLog(`\n${c(user.base.name, 32)} => ${c(target.base.name, 31)} (${c(move.name, 34)})`);
+    debugLog(`- P: ${n(power)} | A: ${n(A)} | D: ${n(D)} | L: ${n(level)}`);
+    debugLog(`- DMG: ${n(dmg)} | EFF: ${n(eff)} | CRIT: ${n(isCrit)} | Type: ${n(type)}`);
     return {dmg, miss: false, eff, type};
   }
 

@@ -450,6 +450,7 @@ export const moveScripts: MoveScripts = {
     } else if (this.id === "bide") {
       if (!user.v.bide) {
         user.v.bide = {move: this, turns: battle.gen.rng.bideDuration(battle), dmg: 0};
+        battle.info(user, "bide_store");
         return;
       }
 

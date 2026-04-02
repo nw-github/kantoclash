@@ -227,6 +227,10 @@ export const playerId = (poke: PokeId): PlayerId => poke.split(":")[0];
 
 export const debugLog = import.meta.dev ? console.debug : (..._args: any[]) => {};
 
+export const c = (v: any, c: number) => `\x1b[0;${c}m${v}\x1b[0m`;
+
+export const n = (v: any) => c(v, 33);
+
 export const isSpecialType = (type: Type) => {
   switch (type) {
     case "normal":

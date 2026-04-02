@@ -11,6 +11,8 @@ import {
 import {abilityList, type Species, type SpeciesId} from "../species";
 import {
   clamp,
+  c,
+  n,
   debugLog,
   idiv,
   MC,
@@ -541,7 +543,6 @@ export class Generation3 extends Generation2 {
     if (user.base.status === "par") {
       speed >>= 2;
     }
-    debugLog(`[${user.base.name}] Speed is ${speed}`);
     return speed;
   }
 
@@ -628,9 +629,8 @@ export class Generation3 extends Generation2 {
     const chance = this.getMoveAcc(move, battle.getWeather());
     if (!chance || user.v.inPursuit) {
       return true;
-    }
-
-    if (move.kind === "damage" && move.flag === DMF.ohko) {
+    } else if (move.kind === "damage" && move.flag === DMF.ohko) {
+      // In Gen 3/4, the type immunity message takes priority over the sturdy one
       if (target.hasAbility("sturdy")) {
         battle.ability(target);
         battle.info(target, "immune");
@@ -642,6 +642,7 @@ export class Generation3 extends Generation2 {
         battle.miss(user, target);
         return false;
       }
+      return true;
     }
 
     let eva = target.v.stages.eva;
@@ -1027,7 +1028,7 @@ export class Generation3 extends Generation2 {
     type: Type,
     eff: number,
   ) {
-    const targetAbility = target.getAbilityId();
+    const targetAbility = target.getAbilityId(user);
     const skipsTypeCheck = self.id === "beatup" || self.id === "struggle";
     if (self.sound && targetAbility === "soundproof") {
       battle.ability(target, [target.setFlag(VF.flashFire)]);
@@ -1071,6 +1072,3 @@ const weatherModifier: Partial<Record<Weather, Partial<Record<Type, number>>>> =
     water: TypeMod.NOT_VERY_EFFECTIVE,
   },
 };
-
-const c = (v: any, c: number) => `\x1b[0;${c}m${v}\x1b[0m`;
-const n = (v: any) => c(v, 33);

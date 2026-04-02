@@ -319,8 +319,10 @@ export class Battle {
           // effects like choice scarf
           if (poke.choice.move.kind === "switch" && isLead) {
             poke.base = poke.choice.move.poke;
+            poke.v.stats = {...poke.choice.move.poke.stats};
           }
           poke.choice.spe = this.gen.getSpeed(this, poke);
+          debugLog(`[${poke.base.name}] speed is ${poke.choice.spe}`);
         }
       }
     }
