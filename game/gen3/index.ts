@@ -655,12 +655,16 @@ export class Generation3 extends Generation2 {
     let acc = idiv(chance * num, div);
     const targetItem = target.base.item;
     if (targetItem?.reduceAcc) {
-      acc -= Math.floor(acc * (targetItem.reduceAcc / 100));
+      acc -= idiv(acc * (100 + targetItem.reduceAcc), 100);
     }
 
     const userItem = user.base.item;
     if (userItem?.boostAcc) {
-      acc += Math.floor(acc * (userItem.boostAcc / 100));
+      acc += idiv(acc * (100 + userItem.boostAcc), 100);
+    }
+
+    if (user.base.itemId === "zoomlens" && target.choice?.executed) {
+      acc += idiv(acc * 120, 100);
     }
 
     if (user.hasAbility("compoundeyes")) {

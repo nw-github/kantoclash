@@ -841,7 +841,11 @@
     "boostStats": {"ditto": {"stats": ["spe"], "transformed": false, "percent": 100}}
   },
   "focussash": {"name": "Focus Sash", "fling": 10, "desc": "Endures fatal hits from full HP."},
-  "zoomlens": {"name": "Zoom Lens", "fling": 10, "desc": "Boosts accuracy by 20%.", "boostAcc": 20},
+  "zoomlens": {
+    "name": "Zoom Lens",
+    "fling": 10,
+    "desc": "Boosts accuracy by 20% against targets that have already attacked."
+  },
   "metronome": {"name": "Metronome", "fling": 30},
   "ironball": {"name": "Iron Ball", "fling": 130, "halveSpeed": true, "groundsUser": true},
   "laggingtail": {
