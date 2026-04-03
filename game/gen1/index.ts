@@ -25,6 +25,7 @@ import {
   type Endure,
   DMF,
   idiv1,
+  TypeEffectiveness,
 } from "../utils";
 import {itemList, type ItemId} from "../item";
 import {UNOWN_FORM, type Pokemon, type FormId, type Gender, type Nature} from "../pokemon";
@@ -175,11 +176,11 @@ export class DamageCalc {
       dmg = (dmg + (dmg >> 1)) & 0xffff;
     }
 
-    let eff = 1;
+    const eff = new TypeEffectiveness();
     for (const [atktype, deftype, modifier] of typeMatchupTable) {
       if (atktype === type && target.v.hasAnyType(deftype)) {
         dmg = idiv(dmg * modifier, TypeMod.EFFECTIVE);
-        eff *= modifier / TypeMod.EFFECTIVE;
+        eff.modify(modifier);
         if (dmg === 0) {
           return {dmg: 0, eff, miss: true};
         }
@@ -395,17 +396,16 @@ export class Generation1 {
   }
 
   getDamage({battle, user, target, move, isCrit, rng}: GetDamageParams) {
-    let eff = 1,
-      dmg = 0,
-      miss = false,
-      res;
+    let res;
     if ((res = this.getFixedDamage(battle, user, target, move))) {
-      battle.gen1LastDamage = dmg;
+      battle.gen1LastDamage = res.dmg;
       return res;
     }
 
     const {A, D, level} = DamageCalc.getDamageVariables(user, target, this.isSpecial(move), isCrit);
-    dmg = DamageCalc.calcBaseDamage({level, A, D, power: move.power, move});
+    let eff,
+      miss = false;
+    let dmg = DamageCalc.calcBaseDamage({level, A, D, power: move.power, move});
     ({dmg, miss, eff} = DamageCalc.applyTypeModifiers(dmg, {type: move.type, user, target}));
 
     const random = !rng && rng !== null ? battle.rng : rng;
@@ -414,7 +414,7 @@ export class Generation1 {
     }
 
     battle.gen1LastDamage = dmg;
-    return {dmg, miss, eff, type: move.type};
+    return {dmg, miss, eff: eff.toFloat(), type: move.type};
   }
 
   protected getFixedDamage(
@@ -804,14 +804,8 @@ export class Generation1 {
     return this.move.overrides.dmg[move.id!]?.call(move, battle, user, target);
   }
 
-  getEffectiveness(atk: Type, def: readonly Type[]) {
-    let eff = 1;
-    for (const [atktype, deftype, modifier] of this.typeMatchupTable) {
-      if (atktype === atk && def.includes(deftype)) {
-        eff *= modifier / 10;
-      }
-    }
-    return eff;
+  getEffectiveness(type: Type, target: ActivePokemon) {
+    return DamageCalc.applyTypeModifiers(0, {type, user: target, target}).eff;
   }
 
   tryAbilityImmunity(

@@ -183,7 +183,7 @@ export class ActivePokemon {
     }
 
     if (this.owner.hazards.rocks) {
-      const eff = battle.gen.getEffectiveness("rock", this.v.types);
+      const eff = battle.gen.getEffectiveness("rock", this).toFloat();
       const dmg = Math.max(1, Math.floor(this.base.maxHp * (0.125 * eff)));
       this.damage(dmg, this, battle, false, "rocks", true);
       if (this.base.hp === 0) {
@@ -1114,6 +1114,12 @@ export class ActivePokemon {
 
   hasAnyAbility(...ability: AbilityId[]) {
     return ability.includes(this.getAbilityId());
+  }
+
+  hasAllyAbility(user: ActivePokemon | null, ...abilities: AbilityId[]): any {
+    return this.owner.active.some(
+      p => p.base.hp && p !== this && abilities.includes(p.getAbilityId(user || undefined)),
+    );
   }
 
   getAbilityId(user?: ActivePokemon) {

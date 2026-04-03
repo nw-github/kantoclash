@@ -195,14 +195,17 @@
   "zenmode": {"name": "Zen Mode", "desc": "Unimplemented"},
   "moody": {"name": "Moody", "desc": "Unimplemented"},
   "rattled": {"name": "Rattled", "desc": "Unimplemented"},
-  "analytic": {"name": "Analytic", "desc": "Unimplemented"},
+  "analytic": {"name": "Analytic", "desc": "Increases move power by 50% if holder moves last."},
   "bigpecks": {"name": "Big Pecks", "desc": "Unimplemented"},
   "contrary": {"name": "Contrary", "desc": "Unimplemented"},
   "cursedbody": {"name": "Cursed Body", "desc": "Unimplemented"},
-  "defeatist": {"name": "Defeatist", "desc": "Unimplemented"},
+  "defeatist": {"name": "Defeatist", "desc": "Decreases Atk and SpA by 50% below 50% HP."},
   "defiant": {"name": "Defiant", "desc": "Unimplemented"},
-  "flareboost": {"name": "Flare Boost", "desc": "Unimplemented"},
-  "friendguard": {"name": "Friend Guard", "desc": "Unimplemented"},
+  "flareboost": {
+    "name": "Flare Boost",
+    "desc": "50% damage increase to special moves when burned."
+  },
+  "friendguard": {"name": "Friend Guard", "desc": "Decreases damage taken for allies by 25%."},
   "harvest": {"name": "Harvest", "desc": "Unimplemented"},
   "healer": {"name": "Healer", "desc": "Unimplemented"},
   "heavymetal": {"name": "Heavy Metal", "desc": "Unimplemented"},
@@ -211,26 +214,29 @@
   "justified": {"name": "Justified", "desc": "Unimplemented"},
   "lightmetal": {"name": "Light Metal", "desc": "Unimplemented"},
   "moxie": {"name": "Moxie", "desc": "Unimplemented"},
-  "multiscale": {"name": "Multiscale", "desc": "Unimplemented"},
+  "multiscale": {"name": "Multiscale", "desc": "Halves damage taken at full HP."},
   "mummy": {"name": "Mummy", "desc": "Unimplemented"},
   "pickpocket": {"name": "Pickpocket", "desc": "Unimplemented"},
   "poisontouch": {"name": "Poison Touch", "desc": "Unimplemented"},
   "prankster": {"name": "Prankster", "desc": "Unimplemented"},
   "regenerator": {"name": "Regenerator", "desc": "Unimplemented"},
-  "sandforce": {"name": "Sand Force", "desc": "Unimplemented"},
+  "sandforce": {
+    "name": "Sand Force",
+    "desc": "Increases power of Rock-, Ground, and Steel- type moves in Sandstorm."
+  },
   "sandrush": {
     "name": "Sand Rush",
     "desc": "Doubles Spe in sandstorm.",
     "weatherSpeedBoost": "sand"
   },
-  "sheerforce": {"name": "Sheer Force", "desc": "Unimplemented"},
+  "sheerforce": {"name": "Sheer Force", "desc": "Increases power of moves with secondary effects."},
   "telepathy": {"name": "Telepathy", "desc": "Unimplemented"},
   "teravolt": {
     "name": "Teravolt",
     "desc": "Moves used by this Pokémon ignore target abilities.",
     "moldBreaker": true
   },
-  "toxicboost": {"name": "Toxic Boost", "desc": "Unimplemented"},
+  "toxicboost": {"name": "Toxic Boost", "desc": "Increases power of moves when poisoned."},
   "turboblaze": {
     "name": "Turboblaze",
     "desc": "Moves used by this Pokémon ignore target abilities.",

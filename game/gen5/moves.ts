@@ -1,4 +1,4 @@
-import type {Move, MoveScripts, MoveId, MovePropOverrides} from "../moves";
+import type {Move, MoveScripts, MoveId, MovePropOverrides, DamagingMove} from "../moves";
 import type {Pokemon} from "../pokemon";
 import {DMF, idiv1, Range} from "../utils";
 
@@ -74,3 +74,21 @@ export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
 function getCrushGripPower(_user: Pokemon, target: Pokemon) {
   return idiv1(target.hp * 120, target.maxHp);
 }
+
+export const isAffectedBySheerForce = (move: DamagingMove) => {
+  const doesEffectCount = (effect?: DamagingMove["effect"]) => {
+    if (!effect) {
+      return false;
+    }
+
+    const [_chance, effectKind, effectSelf] = effect;
+    if (effectKind === "knockoff" || effectKind === "thief") {
+      return false;
+    } else if (effectSelf && Array.isArray(effectKind) && effectKind.every(eff => eff[1] < 0)) {
+      // Reducing user's own stats
+      return false;
+    }
+    return true;
+  };
+  return doesEffectCount(move.effect) || doesEffectCount(move.effect2);
+};

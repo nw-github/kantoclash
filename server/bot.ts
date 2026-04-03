@@ -6,7 +6,7 @@ import type {Choice, ClientMessage, JoinRoomResponse, ServerMessage} from "./gam
 import type {BattleEvent} from "~~/game/events";
 import type {Options} from "~~/game/battle";
 import type {Pokemon} from "~~/game/pokemon";
-import {CVF, playerId, VF} from "~~/game/utils";
+import {CVF, playerId, TypeEffectiveness, VF} from "~~/game/utils";
 import type {MoveId} from "~~/game/moves";
 import {type Generation, GENERATIONS} from "~~/game/gen";
 
@@ -456,16 +456,18 @@ const botFunctions = {
       const opponentPoke = opponentActive.base;
       const move = gen.moveList[id];
       if (move.kind === "damage") {
-        const eff = gen.getEffectiveness(
-          gen.getMoveType(move, active.base, mgr.weather),
-          opponentActive.v.types ?? opponentPoke.species.types,
-        );
+        // FIXME
+        // const eff = gen.getEffectiveness(
+        //   gen.getMoveType(move, active.base, mgr.weather),
+        //   opponentActive.v.types ?? opponentPoke.species.types,
+        // );
+        const eff = new TypeEffectiveness();
         let score = 10;
-        if (eff > 1) {
+        if (eff.superEffective()) {
           score = 15;
-        } else if (eff < 1) {
+        } else if (eff.notVeryEffective()) {
           score = 5;
-        } else if (eff === 0) {
+        } else if (eff.immune()) {
           score = 0;
         }
         if (move.kind === "damage" && move.charge) {

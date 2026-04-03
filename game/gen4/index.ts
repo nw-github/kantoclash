@@ -21,12 +21,14 @@ import {
   debugLog,
   clamp,
   idiv1,
+  TypeEffectiveness,
 } from "../utils";
 import {type ActivePokemon, type Battle, TurnType} from "../battle";
 import type {DamagingMove, Move} from "../moves";
 import type {GetDamageParams} from "../gen1";
 import type {Pokemon} from "../pokemon";
 import type {Random} from "random";
+import type {Generation} from "../gen";
 
 // prettier-ignore
 class Rng extends Generation3.Rng {
@@ -41,7 +43,7 @@ class Rng extends Generation3.Rng {
 
 type StabParams = {
   type: Type;
-  battle: Battle;
+  gen: Generation;
   user: ActivePokemon;
   target: ActivePokemon;
 };
@@ -355,7 +357,7 @@ class DamageCalc {
   }
 
   // DoApplyTypeEffectiveness
-  static applyTypeModifier(dmg: number, {type, battle, user, target}: StabParams) {
+  static applyTypeModifier(dmg: number, {type, gen, user, target}: StabParams) {
     // ov12_02251C74, modified
     const shouldUse = (deftype: Type, modifier: number) => {
       const immunity = modifier === TypeMod.NO_EFFECT;
@@ -384,12 +386,12 @@ class DamageCalc {
 
     // Technically levitate, magnet rise, wonder guard get checked here
 
-    let eff = 1;
-    for (const [atktype, deftype, modifier] of battle.gen.typeMatchupTable) {
+    const eff = new TypeEffectiveness();
+    for (const [atktype, deftype, modifier] of gen.typeMatchupTable) {
       if (!shouldUse(deftype, modifier)) {
         continue;
       } else if (atktype === type && target.v.hasAnyType(deftype)) {
-        eff *= modifier / TypeMod.EFFECTIVE;
+        eff.modify(modifier);
         if (modifier === TypeMod.NO_EFFECT) {
           dmg = 0;
           break;
@@ -399,13 +401,13 @@ class DamageCalc {
       }
     }
 
-    if (user.base.itemId === "expertbelt" && eff > 1) {
+    if (user.base.itemId === "expertbelt" && eff.superEffective()) {
       dmg = idiv(dmg * 120, 100);
     }
-    if (target.getAbility(user)?.reduceSE && eff > 1) {
+    if (target.getAbility(user)?.reduceSE && eff.superEffective()) {
       dmg = idiv1(dmg * 3, 4);
     }
-    if (abilityId === "tintedlens" && eff < 1) {
+    if (abilityId === "tintedlens" && eff.notVeryEffective()) {
       dmg <<= 1;
     }
 
@@ -744,13 +746,13 @@ export class Generation4 extends Generation3 {
 
     const random = rng === undefined ? battle.rng : rng;
     dmg = DamageCalc.applyMiscModifiers(dmg, {isCrit, user, move, rng: random});
-    let eff = 1;
+    let eff = new TypeEffectiveness();
     if (move.id !== "struggle" && move.flag !== DMF.futuresight && !beatUp) {
-      ({dmg, eff} = DamageCalc.applyTypeModifier(dmg, {type, battle, user, target}));
+      ({dmg, eff} = DamageCalc.applyTypeModifier(dmg, {type, gen: this, user, target}));
     }
 
     debugLog(`- DMG: ${n(dmg)} | EFF: ${n(eff)} | CRIT: ${n(isCrit)} | Type: ${n(type)}`);
-    return {dmg, eff, type, miss: false};
+    return {dmg, eff: eff.toFloat(), type, miss: false};
   }
 
   override getConfusionSelfDamage(battle: Battle, user: ActivePokemon) {
@@ -782,6 +784,10 @@ export class Generation4 extends Generation3 {
 
   override handleCrashDamage(battle: Battle, user: ActivePokemon, target: ActivePokemon) {
     user.damage(idiv1(target.base.maxHp, 2), user, battle, false, "crash", true);
+  }
+
+  override getEffectiveness(type: Type, target: ActivePokemon) {
+    return DamageCalc.applyTypeModifier(0, {type, user: target, target, gen: this}).eff;
   }
 
   // CheckSortSpeed

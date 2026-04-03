@@ -29,6 +29,7 @@ import {
   randChoiceWeighted,
   DMF,
   idiv1,
+  TypeEffectiveness,
 } from "../utils";
 import {moveScripts, moveOverrides, movePatches, tryDamage} from "./moves";
 import speciesPatches from "./species.json";
@@ -376,12 +377,12 @@ export class DamageCalc {
       dmg = idiv(dmg * 15, 10);
     }
 
-    let eff = 1;
+    const eff = new TypeEffectiveness();
     for (const [atktype, deftype, modifier] of gen.typeMatchupTable) {
       if (deftype === target.v.identified?.removeImmunities && modifier === TypeMod.NO_EFFECT) {
         break;
       } else if (atktype === type && target.v.hasAnyType(deftype)) {
-        eff *= modifier / TypeMod.EFFECTIVE;
+        eff.modify(modifier);
         if (modifier === TypeMod.NO_EFFECT) {
           dmg = 0;
           break;
@@ -488,7 +489,7 @@ export class Generation3 extends Generation2 {
     }
 
     dmg = DamageCalc.applyMiscModifiers(dmg, {isCrit, battle, user, target, move});
-    let eff = 1;
+    let eff = new TypeEffectiveness();
     if (move.id !== "struggle" && move.flag !== DMF.futuresight && !beatUp) {
       ({dmg, eff} = DamageCalc.applyTypeModifier(dmg, {type, user, target, gen: this}));
     }
@@ -499,7 +500,7 @@ export class Generation3 extends Generation2 {
     }
 
     debugLog(`- DMG: ${n(dmg)} | EFF: ${n(eff)} | CRIT: ${n(isCrit)} | Type: ${n(type)}`);
-    return {dmg, eff, type, miss: false};
+    return {dmg, eff: eff.toFloat(), type, miss: false};
   }
 
   override getConfusionSelfDamage(battle: Battle, user: ActivePokemon) {
@@ -1013,6 +1014,10 @@ export class Generation3 extends Generation2 {
       battle.info(poke, "rage");
       poke.modStages([["atk", +1]], battle);
     }
+  }
+
+  override getEffectiveness(type: Type, target: ActivePokemon) {
+    return DamageCalc.applyTypeModifier(0, {type, user: target, target, gen: this}).eff;
   }
 
   override applyStatusDebuff() {}

@@ -421,7 +421,7 @@ export const moveScripts: MoveScripts = {
     if (target.v.substitute && this.status !== "par" && this.status !== "slp") {
       return battle.info(target, "fail_generic");
     } else if (
-      (this.type === "electric" && battle.gen.getEffectiveness(this.type, target.v.types) === 0) ||
+      (this.type === "electric" && battle.gen.getEffectiveness(this.type, target).immune()) ||
       (this.type === "poison" && target.v.types.includes("poison")) ||
       (this.type === "fire" && target.v.types.includes("fire"))
     ) {
@@ -1381,9 +1381,6 @@ export const moveOverrides: MovePropOverrides = {
     },
     hex(_, target) {
       return target.status ? this.power * 2 : this.power;
-    },
-    venoshock(_user, target) {
-      return target.status === "psn" || target.status === "tox" ? this.power * 2 : this.power;
     },
   },
   dmg: {

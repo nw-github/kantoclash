@@ -21,6 +21,7 @@ import {
   type StatStageId,
   type Type,
   type Weather,
+  TypeEffectiveness,
 } from "../utils";
 import {moveOverrides, moveScripts, movePatches, tryDamage} from "./moves";
 import speciesPatches from "./species.json";
@@ -204,12 +205,12 @@ class DamageCalc extends Gen1DamageCalc {
       dmg = (dmg + (dmg >> 1)) & 0xffff;
     }
 
-    let eff = 1;
+    const eff = new TypeEffectiveness();
     for (const [atktype, deftype, modifier] of typeMatchupTable) {
       if (deftype === "ghost" && modifier === TypeMod.NO_EFFECT && target.v.identified) {
         break;
       } else if (atktype === type && target.v.hasAnyType(deftype)) {
-        eff *= modifier / TypeMod.EFFECTIVE;
+        eff.modify(modifier);
         if (modifier === TypeMod.NO_EFFECT) {
           dmg = 0;
           break;
@@ -485,7 +486,7 @@ export class Generation2 extends Generation1 {
       dmg = Math.min(dmg * tripleKick, 0xffff);
     }
 
-    let eff = 1;
+    let eff = new TypeEffectiveness();
     if (move.id !== "struggle" && move.flag !== DMF.futuresight) {
       ({dmg, eff} = DamageCalc.applyTypeModifiers(dmg, {
         weather: battle.getWeather(),
@@ -526,7 +527,7 @@ export class Generation2 extends Generation1 {
     debugLog(`\n${c(user.base.name, 32)} => ${c(target.base.name, 31)} (${c(move.name, 34)})`);
     debugLog(`- P: ${n(power)} | A: ${n(A)} | D: ${n(D)} | L: ${n(level)}`);
     debugLog(`- DMG: ${n(dmg)} | EFF: ${n(eff)} | CRIT: ${n(isCrit)} | Type: ${n(type)}`);
-    return {dmg, miss: false, eff, type};
+    return {dmg, miss: false, eff: eff.toFloat(), type};
   }
 
   override handleCrashDamage(
@@ -596,6 +597,15 @@ export class Generation2 extends Generation1 {
       dvs.spa === 10 &&
       [2, 3, 6, 7, 10, 11, 14, 15].includes(dvs.atk)
     );
+  }
+
+  override getEffectiveness(type: Type, target: ActivePokemon) {
+    return DamageCalc.applyTypeModifiers(0, {
+      type,
+      user: target,
+      target,
+      move: this.moveList.pound as DamagingMove /* only used for solarbeam */,
+    }).eff;
   }
 
   override accumulateBide() {}

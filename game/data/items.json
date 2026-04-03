@@ -1245,7 +1245,11 @@
   "bridgemailv": {"name": "BridgeMail V"},
   "bridgemailm": {"name": "BridgeMail M"},
   "prismscale": {"name": "Prism Scale", "fling": 30},
-  "eviolite": {"name": "Eviolite", "fling": 40},
+  "eviolite": {
+    "name": "Eviolite",
+    "fling": 40,
+    "desc": "Boosts Def and SpD for Pokémon that can evolve."
+  },
   "floatstone": {"name": "Float Stone", "fling": 30},
   "rockyhelmet": {"name": "Rocky Helmet", "fling": 60},
   "airballoon": {"name": "Air Balloon", "fling": 10},

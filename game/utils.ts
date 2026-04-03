@@ -184,6 +184,7 @@ export enum DMF {
   bugbite,
   futuresight,
   assurance,
+  hits_defense,
 }
 
 export const isSpreadMove = (range: Range) => range >= Range.All;
@@ -296,4 +297,45 @@ declare global {
   }
 
   type bool = boolean;
+}
+
+export class TypeEffectiveness {
+  shifts = 0;
+
+  modify(mod: number) {
+    // prettier-ignore
+    switch (mod) {
+    case TypeMod.SUPER_EFFECTIVE: this.shifts++; break;
+    case TypeMod.NOT_VERY_EFFECTIVE: this.shifts--; break;
+    case TypeMod.NO_EFFECT: this.shifts = NaN; break;
+    }
+  }
+
+  superEffective() {
+    return this.shifts > 0;
+  }
+
+  notVeryEffective() {
+    return this.shifts < 0;
+  }
+
+  immune() {
+    return Number.isNaN(this.shifts);
+  }
+
+  toFloat() {
+    if (this.immune()) {
+      return 0;
+    } else if (this.superEffective()) {
+      return this.shifts * 2;
+    } else if (this.notVeryEffective()) {
+      return this.shifts * 0.5;
+    } else {
+      return 1;
+    }
+  }
+
+  toString() {
+    return this.immune() ? "Immune" : `${Math.abs(this.toFloat())}x`;
+  }
 }
