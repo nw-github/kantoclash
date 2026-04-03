@@ -6,7 +6,7 @@ import {movePatches, moveScripts, moveOverrides} from "./moves";
 import {createItemMergeList} from "../gen3";
 import {Generation4} from "../gen4";
 import type {ActivePokemon, Battle} from "../battle";
-import {randChoiceWeighted} from "../utils";
+import {idiv1, randChoiceWeighted} from "../utils";
 
 // prettier-ignore
 class Rng extends Generation4.Rng {
@@ -37,5 +37,9 @@ export class Generation5 extends Generation4 {
     this.moveList = merge(this.moveList, movePatches);
     this.items = merge(this.items, createItemMergeList(items));
     this.move = merge(this.move, {scripts: moveScripts, overrides: moveOverrides});
+  }
+
+  override handleCrashDamage(battle: Battle, user: ActivePokemon) {
+    user.damage(idiv1(user.base.maxHp, 2), user, battle, false, "crash", true);
   }
 }

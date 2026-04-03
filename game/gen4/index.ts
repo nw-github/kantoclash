@@ -780,6 +780,10 @@ export class Generation4 extends Generation3 {
     return {dmg, endure};
   }
 
+  override handleCrashDamage(battle: Battle, user: ActivePokemon, target: ActivePokemon) {
+    user.damage(idiv1(target.base.maxHp, 2), user, battle, false, "crash", true);
+  }
+
   // CheckSortSpeed
   override getSpeed(battle: Battle, user: ActivePokemon) {
     const ability = user.getAbility();
