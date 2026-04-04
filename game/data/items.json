@@ -1259,23 +1259,83 @@
   "absorbbulb": {"name": "Absorb Bulb", "fling": 30},
   "cellbattery": {"name": "Cell Battery", "fling": 30},
   "ejectbutton": {"name": "Eject Button", "fling": 30},
-  "firegem": {"name": "Fire Gem"},
-  "watergem": {"name": "Water Gem"},
-  "electricgem": {"name": "Electric Gem"},
-  "grassgem": {"name": "Grass Gem"},
-  "icegem": {"name": "Ice Gem"},
-  "fightinggem": {"name": "Fighting Gem"},
-  "poisongem": {"name": "Poison Gem"},
-  "groundgem": {"name": "Ground Gem"},
-  "flyinggem": {"name": "Flying Gem"},
-  "psychicgem": {"name": "Psychic Gem"},
-  "buggem": {"name": "Bug Gem"},
-  "rockgem": {"name": "Rock Gem"},
-  "ghostgem": {"name": "Ghost Gem"},
-  "dragongem": {"name": "Dragon Gem"},
-  "darkgem": {"name": "Dark Gem"},
-  "steelgem": {"name": "Steel Gem"},
-  "normalgem": {"name": "Normal Gem"},
+  "firegem": {
+    "name": "Fire Gem",
+    "gem": "fire",
+    "desc": "One-time damage boost to a Fire-type move."
+  },
+  "watergem": {
+    "name": "Water Gem",
+    "gem": "water",
+    "desc": "One-time damage boost to a Water-type move."
+  },
+  "electricgem": {
+    "name": "Electric Gem",
+    "gem": "electric",
+    "desc": "One-time damage boost to an Electric-type move."
+  },
+  "grassgem": {
+    "name": "Grass Gem",
+    "gem": "grass",
+    "desc": "One-time damage boost to a Grass-type move."
+  },
+  "icegem": {"name": "Ice Gem", "gem": "ice", "desc": "One-time damage boost to an Ice-type move."},
+  "fightinggem": {
+    "name": "Fighting Gem",
+    "gem": "fight",
+    "desc": "One-time damage boost to a Fight-type move."
+  },
+  "poisongem": {
+    "name": "Poison Gem",
+    "gem": "poison",
+    "desc": "One-time damage boost to a Poison-type move."
+  },
+  "groundgem": {
+    "name": "Ground Gem",
+    "gem": "ground",
+    "desc": "One-time damage boost to a Ground-type move."
+  },
+  "flyinggem": {
+    "name": "Flying Gem",
+    "gem": "flying",
+    "desc": "One-time damage boost to a Flying-type move."
+  },
+  "psychicgem": {
+    "name": "Psychic Gem",
+    "gem": "psychic",
+    "desc": "One-time damage boost to a Psychic-type move."
+  },
+  "buggem": {"name": "Bug Gem", "gem": "bug", "desc": "One-time damage boost to a Bug-type move."},
+  "rockgem": {
+    "name": "Rock Gem",
+    "gem": "rock",
+    "desc": "One-time damage boost to a Rock-type move."
+  },
+  "ghostgem": {
+    "name": "Ghost Gem",
+    "gem": "ghost",
+    "desc": "One-time damage boost to a Ghost-type move."
+  },
+  "dragongem": {
+    "name": "Dragon Gem",
+    "gem": "dragon",
+    "desc": "One-time damage boost to a Dragon-type move."
+  },
+  "darkgem": {
+    "name": "Dark Gem",
+    "gem": "dark",
+    "desc": "One-time damage boost to a Dark-type move."
+  },
+  "steelgem": {
+    "name": "Steel Gem",
+    "gem": "steel",
+    "desc": "One-time damage boost to a Steel-type move."
+  },
+  "normalgem": {
+    "name": "Normal Gem",
+    "gem": "normal",
+    "desc": "One-time damage boost to a Normal-type move."
+  },
   "healthwing": {"name": "Health Wing"},
   "musclewing": {"name": "Muscle Wing"},
   "resistwing": {"name": "Resist Wing"},
@@ -1289,7 +1349,7 @@
   "dreamball": {"name": "Dream Ball"},
   "poketoy": {"name": "Poké Toy", "fling": 30},
   "balmmushroom": {"name": "BalmMushroom", "fling": 30},
-  "bignugget": {"name": "Big Nugget"},
+  "bignugget": {"name": "Big Nugget", "fling": 30},
   "pearlstring": {"name": "Pearl String", "fling": 30},
   "cometshard": {"name": "Comet Shard", "fling": 30},
   "reliccopper": {"name": "Relic Copper", "fling": 30},
@@ -1300,7 +1360,7 @@
   "relicstatue": {"name": "Relic Statue", "fling": 30},
   "reliccrown": {"name": "Relic Crown", "fling": 30},
   "casteliacone": {"name": "Casteliacone", "fling": 30},
-  "direhit2": {"name": "Dire Hit 2"},
+  "direhit2": {"name": "Dire Hit 2", "fling": 30},
   "xspeed2": {"name": "X Speed 2", "fling": 30},
   "xspecial2": {"name": "X Special 2", "fling": 30},
   "xspdef2": {"name": "X Sp. Def 2", "fling": 30},
@@ -1323,7 +1383,7 @@
   "itemdrop": {"name": "Item Drop"},
   "itemurge": {"name": "Item Urge"},
   "reseturge": {"name": "Reset Urge"},
-  "direhit3": {"name": "Dire Hit 3"},
+  "direhit3": {"name": "Dire Hit 3", "fling": 30},
   "tm93": {"name": "TM93"},
   "tm94": {"name": "TM94"},
   "tm95": {"name": "TM95"},

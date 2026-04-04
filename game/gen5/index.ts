@@ -78,16 +78,14 @@ class DamageCalc {
 
     const special = move.category === MC.special;
     const atks = special ? "spa" : "atk";
-    let statChange = user.v.stages[atks];
+
+    const statSource = move.id === "foulplay" ? target : user;
+    let statChange = statSource.v.stages[atks];
     if (targetAbilityId === "unaware" || (isCrit && statChange < 0)) {
       statChange = 0;
     }
 
-    const A = applyStatStages(
-      battle.gen,
-      (move.id === "foulplay" ? target : user).v.stats[atks],
-      statChange,
-    );
+    const A = applyStatStages(battle.gen, statSource.v.stats[atks], statChange);
     const hustle = !special && userAbilityId === "hustle" ? Mod.ATK_HUSTLE : Mod.NONE;
     let mod = Mod.NONE;
     // prettier-ignore
@@ -116,7 +114,11 @@ class DamageCalc {
     // TODO: Apply Wonder Room here
     const defs = special && move.flag !== DMF.hits_defense ? "spd" : "def";
     let statChange = target.v.stages[defs];
-    if (user.getAbilityId() === "unaware" || (isCrit && statChange > 0) || move.id === "chipaway") {
+    if (
+      user.getAbilityId() === "unaware" ||
+      (isCrit && statChange > 0) ||
+      move.flag === DMF.ignore_defeva
+    ) {
       statChange = 0;
     }
 

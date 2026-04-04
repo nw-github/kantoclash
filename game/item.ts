@@ -29,6 +29,7 @@ export type ItemData = {
   groundsUser?: bool;
   laggingTail?: bool;
   reduceType?: Type;
+  gem?: Type;
   extendWeather?: Weather;
   statusOrb?: Status;
   boostStats?: Partial<

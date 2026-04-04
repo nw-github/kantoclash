@@ -61,7 +61,7 @@ export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
   pound: {kingsRock: false},
   recover: {pp: 10},
   rocksmash: {power: 40},
-  struggle: {acc: 0},
+  struggle: {acc: 0, recoil: 0},
   surf: {range: Range.AllAdjacent},
   tickle: {ignoreSub: false},
   transform: {noMimic: false},
@@ -428,13 +428,10 @@ export const tryDamage = (
 
   target.v.lastHitBy = {move: self, poke: user, type};
 
-  if (
-    user.base.hp &&
-    self.recoil &&
-    (self === battle.gen.moveList.struggle || !user.hasAbility("rockhead"))
-  ) {
-    const recoil = self.id === "struggle" ? idiv1(user.base.maxHp, 4) : idiv1(dealt, self.recoil);
-    user.damage(recoil, user, battle, false, "recoil", true);
+  if (self.id === "struggle") {
+    user.damage(idiv1(user.base.maxHp, 4), user, battle, false, "recoil", true);
+  } else if (user.base.hp && self.recoil && !user.hasAbility("rockhead")) {
+    user.damage(idiv1(dealt, self.recoil), user, battle, false, "recoil", true);
   }
 
   if (user.base.hp && self.flag === DMF.drain) {

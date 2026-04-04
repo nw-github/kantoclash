@@ -185,6 +185,7 @@ export enum DMF {
   futuresight,
   assurance,
   hits_defense,
+  ignore_defeva,
 }
 
 export const isSpreadMove = (range: Range) => range >= Range.All;

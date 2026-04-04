@@ -58,7 +58,7 @@ const descriptions: Partial<Record<number, Partial<Record<MoveId, string>>>> = {
     beatup:
       "Hits with a typeless 10 power attack for each Pokémon in the user's party without a non-volatile status condition. ",
     facade: "Doubles damage when poisoned, paralyzed or burned.",
-    smellingsalt: "Doubles damage against paralyzed a paralyzed target, but cures its paralysis. ",
+    smellingsalt: "Doubles damage against a paralyzed target, but cures its paralysis. ",
     spitup:
       "Damage multiplied by number of stockpiles, which is reset after use of this move. Fails if the user has not used stockpile yet.",
     uproar:
@@ -157,6 +157,8 @@ const descriptions: Partial<Record<number, Partial<Record<MoveId, string>>>> = {
       "Suppresses the target's ability until it switches out. Fails on Pokémon with Multitype. ",
     captivate:
       "Drops the target's Special Attack by 2 stages. Fails if the target is not of the opposite gender. ",
+    foulplay: "Damage calculation uses the target's Attack stat.",
+    wakeupslap: "Doubles damage against a sleeping target, but wakes it up. ",
   },
   [2]: {
     conversion:
@@ -208,6 +210,8 @@ const flagDesc: Record<NonNullable<DMF>, string> = {
   [DMF.assurance]: "Doubles damage if the target has already taken damage this turn. ",
   [DMF.uturn]: "Switches the user out. ",
   [DMF.futuresight]: "After two turns, the target is hit with an attack. Damage is calculated upon use of the move. ",
+  [DMF.hits_defense]: "Damage calculation uses the target's Defense stat.",
+  [DMF.ignore_defeva]: "Ignores changes to Defense and Evasion.",
 };
 
 const groupWithComma = (items: readonly string[]) => {
