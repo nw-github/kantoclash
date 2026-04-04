@@ -482,7 +482,7 @@ export const moveScripts: MoveScripts = {
       }
 
       const {dmg} = battle.gen.getDamage({user, target, battle, move: this, isCrit: false});
-      target.futureSight = {damage: dmg, turns: 3, move: this};
+      target.futureSight = {damage: dmg, turns: 3, move: this, user};
       return battle.event({type: "futuresight", src: user.id, move: this.id!, release: false});
     }
 

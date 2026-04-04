@@ -818,6 +818,17 @@ export class Generation1 {
   ) {
     return false;
   }
+
+  handleFutureSight(battle: Battle, poke: ActivePokemon, fs: ActivePokemon["futureSight"] & {}) {
+    battle.event({type: "futuresight", src: poke.id, move: fs.move.id!, release: true});
+    if (!battle.checkAccuracy(fs.move, poke, poke)) {
+      // FIXME: this is lazy
+      battle.events.splice(-1, 1);
+      battle.info(poke, "fail_generic");
+    } else {
+      poke.damage(fs.damage, poke, battle, false, "future_sight");
+    }
+  }
 }
 
 export const shouldReturn = (battle: Battle, pursuit: bool) => {

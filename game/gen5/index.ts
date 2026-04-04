@@ -5,7 +5,7 @@ import {merge} from "../gen2";
 import {movePatches, moveScripts, moveOverrides, isAffectedBySheerForce} from "./moves";
 import {DamageCalc as Gen3DamageCalc, createItemMergeList} from "../gen3";
 import {Generation4} from "../gen4";
-import type {ActivePokemon, Battle} from "../battle";
+import {ActivePokemon, type Battle} from "../battle";
 import {
   c,
   clamp,
@@ -350,6 +350,40 @@ export class Generation5 extends Generation4 {
   }
 
   // override getConfusionSelfDamage(battle: Battle, user: ActivePokemon) {}
+
+  override handleFutureSight(
+    battle: Battle,
+    target: ActivePokemon,
+    {move, user}: ActivePokemon["futureSight"] & {},
+  ) {
+    if (user === target) {
+      return;
+    }
+
+    battle.event({type: "futuresight", src: target.id, move: move.id!, release: true});
+
+    if (user.v.fainted) {
+      // Ignore user ability and item if it fainted
+      const oldUser = user;
+      user = new ActivePokemon(user.base, user.owner, 0);
+      user.id = oldUser.id;
+      user.v.ability = undefined;
+      // TODO: ignore user item
+    }
+
+    const isCrit = this.rollCrit(battle, user, target, move);
+    const {dmg, eff, type} = this.getDamage({battle, user, target, isCrit, move});
+    if (eff === 0) {
+      return battle.info(target, "immune");
+    } else if (this.tryAbilityImmunity(battle, user, target, move, type, eff)) {
+      return;
+    } else if (!battle.checkAccuracy(move, target, target)) {
+      return;
+    }
+
+    target.damage2(battle, {dmg, src: user, isCrit, eff, why: "future_sight"});
+    // TODO: endure/sturdy/focus sash/focus band
+  }
 }
 
 const applyStatStages = (gen: Generation, stat: number, stages: number) => {

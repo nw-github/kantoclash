@@ -62,7 +62,7 @@ export type ChosenMove = {
 export class ActivePokemon {
   v: Volatiles;
   lastChosenMove?: Move;
-  futureSight?: {move: DamagingMove; damage: number; turns: number};
+  futureSight?: {move: DamagingMove; damage: number; turns: number; user: ActivePokemon};
   wish?: {user: Pokemon; turns: number};
   choice?: ChosenMove;
   options?: {switches: number[]; moves: MoveOption[]; id: PokeId};
@@ -953,19 +953,7 @@ export class ActivePokemon {
   handleFutureSight(battle: Battle) {
     if (this.futureSight && --this.futureSight.turns === 0) {
       if (!this.v.fainted) {
-        battle.event({
-          type: "futuresight",
-          src: this.id,
-          move: this.futureSight.move.id!,
-          release: true,
-        });
-        if (!battle.checkAccuracy(battle.gen.moveList.futuresight, this, this)) {
-          // FIXME: this is lazy
-          battle.events.splice(-1, 1);
-          battle.info(this, "fail_generic");
-        } else {
-          this.damage(this.futureSight.damage, this, battle, false, "future_sight");
-        }
+        battle.gen.handleFutureSight(battle, this, this.futureSight);
       }
 
       this.futureSight = undefined;
