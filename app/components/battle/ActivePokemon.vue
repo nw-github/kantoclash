@@ -394,6 +394,10 @@ const badges: {cond: () => bool; props: BadgeProps}[] = [
     cond: fc(VF.ingrain),
     props: {color: "old-lime", icon: "tabler:prison", variant: "subtle", label: "Ingrain"},
   },
+  {
+    cond: fc(VF.roost),
+    props: {color: "neutral", label: "Roost", icon: "mdi:feather", variant: "subtle"},
+  },
   {cond: fc(VF.focusEnergy), props: {color: "old-emerald", label: "Focus Energy"}},
   {cond: fc(VF.mist), props: {color: "old-teal", label: "Mist"}},
   {cond: fc(VF.destinyBond), props: {color: "neutral", label: "Destiny Bond", variant: "subtle"}},

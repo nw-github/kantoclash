@@ -1353,6 +1353,14 @@ export const moveScripts: MoveScripts = {
 
     return battle.info(target, "gastroAcid", [target.setFlag(VF.gastroAcid)]);
   },
+  roost(battle, user) {
+    if (user.base.maxHp === user.base.hp) {
+      return battle.info(user, "fail_generic");
+    }
+
+    battle.sv([user.setFlag(VF.roost)]);
+    user.recover(idiv1(user.base.maxHp, 2), user, battle, "recover");
+  },
 };
 
 export const moveOverrides: MovePropOverrides = {

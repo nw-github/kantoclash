@@ -61,7 +61,7 @@ export enum VF {
   protect      = 0x0000_0040,
   endure       = 0x0000_0080,
   nightmare    = 0x0000_0100,
-  // identified   = 0x0000_0200,
+  roost        = 0x0000_0200,
   lockon       = 0x0000_0400,
   grudge       = 0x0000_0800,
   helpingHand  = 0x0000_1000,

@@ -366,7 +366,7 @@ class DamageCalc {
       } else if (deftype === "ghost" && immunity && user.getAbilityId() === "scrappy") {
         return false;
       } else if (deftype === "flying") {
-        if (target.v.roost) {
+        if (target.v.hasFlag(VF.roost)) {
           return false;
         } else if (immunity && target.isGrounded()) {
           return false;
@@ -487,7 +487,13 @@ export class Generation4 extends Generation3 {
         }
 
         const flags =
-          VF.protect | VF.endure | VF.helpingHand | VF.followMe | VF.snatch | VF.magicCoat;
+          VF.protect |
+          VF.endure |
+          VF.helpingHand |
+          VF.followMe |
+          VF.snatch |
+          VF.magicCoat |
+          VF.roost;
         if (poke.v.hasFlag(flags)) {
           battle.event({type: "sv", volatiles: [poke.clearFlag(flags)]});
         }

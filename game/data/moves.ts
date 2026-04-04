@@ -4813,12 +4813,12 @@ export const rawMoveList = {
     kingsRock: true,
   },
   roost: {
-    kind: "fail",
+    kind: "roost",
     name: "Roost",
-    pp: 1,
-    type: "normal",
-    range: "Adjacent",
-    why: "fail_unimplemented",
+    pp: 10,
+    type: "flying",
+    range: "Self",
+    snatch: true,
   },
   seedbomb: {
     kind: "damage",

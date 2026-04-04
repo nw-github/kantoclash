@@ -1092,7 +1092,7 @@ export class ActivePokemon {
     if (this.base.item?.groundsUser) {
       return true;
     }
-    const isFlying = this.v.types.includes("flying") && !this.v.roost;
+    const isFlying = this.v.types.includes("flying") && !this.v.hasFlag(VF.roost);
     return !isFlying && !this.hasAbility("levitate");
   }
 
@@ -1242,7 +1242,6 @@ class Volatiles {
   usedMinimize = false;
   usedIntimidate = false;
   usedTrace = false;
-  roost = false;
   metronomeCount = 0;
   slowStartTurns = 0;
   canSpeedBoost = false;
