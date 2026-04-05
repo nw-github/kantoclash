@@ -2,7 +2,7 @@
   <div class="all w-full flex flex-col items-center">
     <div
       class="flex flex-col gap-0.5 sm:gap-1 text-sm z-40"
-      :class="[(!poke || poke.hidden) && 'invisible', !isSingles ? 'w-16 sm:w-32' : 'w-28 sm:w-40']"
+      :class="[!poke?.visible && 'invisible', !isSingles ? 'w-16 sm:w-32' : 'w-28 sm:w-40']"
     >
       <div class="flex justify-between flex-col sm:flex-row gap-1">
         <div class="font-bold flex items-center grow overflow-hidden">
@@ -43,10 +43,10 @@
           />
 
           <UBadge
-            v-if="poke.v.status"
-            :color="statusColor[poke.v.status].color"
-            :variant="statusColor[poke.v.status].variant"
-            :label="poke.v.status.toUpperCase()"
+            v-if="poke.base.status"
+            :color="statusColor[poke.base.status].color"
+            :variant="statusColor[poke.base.status].variant"
+            :label="poke.base.status.toUpperCase()"
           />
 
           <template v-if="!poke.base.species.types.every((ty, i) => ty === poke.v.types?.[i])">
@@ -55,15 +55,15 @@
 
           <TypeBadge
             v-if="poke.v.charging"
-            :type="poke.base.gen.moveList[poke.v.charging].type"
-            :label="poke.base.gen.moveList[poke.v.charging].name"
+            :type="poke.v.charging.move.type"
+            :label="poke.v.charging.move.name"
           />
 
           <UBadge
             v-if="poke.v.trapped"
             color="error"
             icon="tabler:prison"
-            :label="poke.base.gen.moveList[poke.v.trapped].name"
+            :label="poke.v.trapped.move.name"
             variant="subtle"
           />
 
@@ -112,7 +112,7 @@
           <div
             ref="sprite"
             class="sprite relative z-20 flex justify-center h-28 sm:h-56"
-            :class="!poke && 'invisible'"
+            :class="!poke?.visible && 'invisible'"
             :data-poke-id="pokeId"
           >
             <div
@@ -123,20 +123,20 @@
                 :species-id="poke?.base?.speciesId"
                 :scale="lessThanSm ? 0.95 : 1.75"
                 :shiny="poke?.base?.shiny"
-                :form="poke?.base?.form"
+                :form="poke?.v?.form"
                 :gender="poke?.base?.gender"
                 :back
               />
 
               <img
-                v-if="poke && !poke.fainted && poke.confused"
+                v-if="poke && !poke.v.fainted && poke.v.confusion"
                 class="absolute size-10 sm:size-20 -top-3 sm:top-0 z-30 dark:invisible"
                 src="/dizzy-light.gif"
                 alt="confused"
               />
 
               <img
-                v-if="poke && !poke.fainted && poke.confused"
+                v-if="poke && !poke.v.fainted && poke.v.confusion"
                 class="absolute size-10 sm:size-20 -top-3 sm:top-0 z-30 invisible dark:visible"
                 src="/dizzy.gif"
                 alt="confused"
@@ -144,7 +144,7 @@
 
               <AnimatePresence>
                 <motion.img
-                  v-if="poke?.v.status === 'slp'"
+                  v-if="poke?.base?.status === 'slp'"
                   class="absolute size-6 sm:size-10 top-6 z-30 invert dark:invert-0 rotate-180 ml-24"
                   src="/zzz.gif"
                   alt="sleeping"
@@ -157,7 +157,7 @@
             </div>
           </div>
 
-          <template v-if="poke && !poke.hidden" #content>
+          <template v-if="poke?.visible" #content>
             <PokemonTTContent v-if="poke.owned && !poke.base.transformed" :poke :weather />
             <UnknownPokeTTContent v-else :poke />
           </template>
@@ -280,8 +280,8 @@ const scrColor = {
   mist: "bg-sky-400",
 };
 
-const flags = computed(() => poke?.v.flags?.lo ?? 0);
-const cflags = computed(() => poke?.v.flags?.hi ?? 0);
+const flags = computed(() => poke?.v.flags ?? 0);
+const cflags = computed(() => poke?.cflags ?? 0);
 
 const screens = computed(() => {
   const screens: {name: string; clazz: string}[] = [];
@@ -298,7 +298,7 @@ const screens = computed(() => {
   }
 
   for (const screen in scrColor) {
-    if (player?.screens?.[screen as ScreenId]) {
+    if (player?.bp?.screens?.[screen as ScreenId]) {
       screens.push({name: screen, clazz: scrColor[screen as keyof typeof scrColor]});
     }
   }
@@ -374,7 +374,7 @@ const badges: {cond: () => bool; props: BadgeProps}[] = [
     },
   },
   {
-    cond: cfc(CVF.identified),
+    cond: () => !!poke?.v?.identified,
     props: {color: "old-violet", icon: "material-symbols:search-rounded", variant: "subtle"},
   },
   {
@@ -405,7 +405,7 @@ const badges: {cond: () => bool; props: BadgeProps}[] = [
   {cond: fc(VF.protect), props: {color: "neutral", label: "Protect"}},
   {cond: fc(VF.endure), props: {color: "neutral", label: "Endure"}},
   {cond: fc(VF.nightmare), props: {color: "neutral", label: "Nightmare"}},
-  {cond: cfc(CVF.drowsy), props: {color: "neutral", label: "Drowsy"}},
+  {cond: () => !!poke?.v?.drowsy, props: {color: "neutral", label: "Drowsy"}},
   {cond: fc(VF.waterSport), props: {color: "old-sky", label: "Water Sport"}},
   {cond: fc(VF.mudSport), props: {color: "old-orange", label: "Mud Sport"}},
 ];

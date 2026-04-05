@@ -300,7 +300,7 @@ export class Generation2 extends Generation1 {
 
     if (user.v.disabled && --user.v.disabled.turns === 0) {
       user.v.disabled = undefined;
-      battle.info(user, "disable_end", [{id: user.id, v: {flags: user.v.cflags}}]);
+      battle.info(user, "disable_end");
     }
 
     if (user.handleConfusion(battle)) {

@@ -362,7 +362,8 @@ export class DamageCalc {
       }
     } else if (move.id === "spitup") {
       dmg *= user.v.stockpile;
-      battle.sv([user.setVolatile("stockpile", 0)]);
+      user.v.stockpile = 0;
+      battle.syncVolatiles();
     }
 
     if (user.v.hasFlag(VF.helpingHand)) {
@@ -918,20 +919,20 @@ export class Generation3 extends Generation2 {
 
           if (poke.v.disabled && --poke.v.disabled.turns === 0) {
             poke.v.disabled = undefined;
-            battle.info(poke, "disable_end", [{id: poke.id, v: {flags: poke.v.cflags}}]);
+            battle.info(poke, "disable_end");
           }
 
           poke.handleEncore(battle);
 
           if (poke.v.tauntTurns && --poke.v.tauntTurns === 0) {
-            battle.info(poke, "taunt_end", [{id: poke.id, v: {flags: poke.v.cflags}}]);
+            battle.info(poke, "taunt_end");
           }
         }
 
         // TODO: lockon/mind reader?
 
         if (poke.base.hp && poke.v.drowsy && --poke.v.drowsy === 0) {
-          battle.event({type: "sv", volatiles: [{id: poke.id, v: {flags: poke.v.cflags}}]});
+          battle.syncVolatiles();
           if (!poke.base.status && abilityList[ability!]?.preventsStatus !== "slp") {
             poke.status("slp", battle, poke, {ignoreSafeguard: true});
           }
@@ -993,7 +994,8 @@ export class Generation3 extends Generation2 {
       const flags =
         VF.protect | VF.endure | VF.helpingHand | VF.followMe | VF.snatch | VF.magicCoat;
       if (poke.v.hasFlag(flags)) {
-        battle.event({type: "sv", volatiles: [poke.clearFlag(flags)]});
+        poke.v.clearFlag(flags);
+        battle.syncVolatiles();
       }
     }
 
@@ -1035,7 +1037,7 @@ export class Generation3 extends Generation2 {
     const targetAbility = target.getAbilityId(user);
     const skipsTypeCheck = self.id === "beatup" || self.id === "struggle";
     if (self.sound && targetAbility === "soundproof") {
-      battle.ability(target, [target.setFlag(VF.flashFire)]);
+      battle.ability(target);
       battle.info(target, "immune");
       return true;
     } else if (
@@ -1046,10 +1048,10 @@ export class Generation3 extends Generation2 {
         (type === "water" && targetAbility === "waterabsorb") ||
         (type === "fire" && targetAbility === "flashfire" && target.base.status !== "frz"))
     ) {
-      battle.ability(
-        target,
-        targetAbility === "flashfire" ? [target.setFlag(VF.flashFire)] : undefined,
-      );
+      if (targetAbility === "flashfire") {
+        target.v.setFlag(VF.flashFire);
+      }
+      battle.ability(target);
       battle.info(target, "immune");
 
       if (targetAbility === "waterabsorb" || targetAbility === "voltabsorb") {

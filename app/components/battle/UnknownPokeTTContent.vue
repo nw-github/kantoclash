@@ -26,7 +26,7 @@
           {{ poke.base.hp }}/{{ poke.base.stats.hp }} HP ({{ roundTo(poke.base.hpPercent, 2) }}%)
         </span>
 
-        <StatusOrFaint :poke="poke.base" :faint="poke.fainted" />
+        <StatusOrFaint :poke="poke.base" :faint="poke.v.fainted" />
       </div>
     </div>
     <div class="pt-1.5">

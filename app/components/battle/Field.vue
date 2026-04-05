@@ -1,10 +1,10 @@
 <template>
   <div class="flex w-full px-4 justify-around relative" :class="isSingles && 'gap-8'">
     <template v-for="(player, id) in players.items" :key="id">
-      <div v-if="!player.isSpectator" :class="[id !== perspective ? 'order-2' : 'pt-10 sm:pt-14']">
+      <div v-if="player.bp" :class="[id !== perspective ? 'order-2' : 'pt-10 sm:pt-14']">
         <div class="flex gap-2 sm:gap-4" :class="id !== perspective && 'flex-row-reverse'">
           <ActivePokemon
-            v-for="(poke, i) in player.active"
+            v-for="(poke, i) in player.bp.active"
             :key="i"
             ref="activePokemon"
             :class="(id !== perspective ? i === 0 : i !== 0) && 'pt-2 sm:pt-4'"
@@ -23,19 +23,19 @@
           />
 
           <img
-            v-if="(player.hazards?.spikes || 0) >= 1"
+            v-if="(player.bp.hazards.spikes || 0) >= 1"
             class="absolute size-4 sm:size-7 bottom-10 sm:bottom-14 opacity-80 pointer-events-none"
             src="/caltrop.svg"
           />
 
           <img
-            v-if="(player.hazards?.spikes || 0) >= 2"
+            v-if="(player.bp.hazards.spikes || 0) >= 2"
             class="absolute size-4 sm:size-7 bottom-11 sm:bottom-16 right-10 opacity-80 pointer-events-none"
             src="/caltrop.svg"
           />
 
           <img
-            v-if="(player.hazards?.spikes || 0) >= 3"
+            v-if="(player.bp.hazards.spikes || 0) >= 3"
             class="absolute size-4 sm:size-7 bottom-11 sm:bottom-16 left-10 opacity-80 pointer-events-none"
             src="/caltrop.svg"
           />

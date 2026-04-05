@@ -26,7 +26,7 @@
     <UProgress :model-value="poke.hp" :max="poke.stats.hp" />
     <div class="flex justify-between gap-4">
       <span>{{ poke.hp }}/{{ poke.stats.hp }} HP ({{ roundTo(poke.hpPercent, 2) }}%)</span>
-      <StatusOrFaint :poke="poke" :faint="!active || active.fainted" />
+      <StatusOrFaint :poke="poke" :faint="!active || active.v.fainted" />
     </div>
 
     <div class="flex gap-1 justify-center">

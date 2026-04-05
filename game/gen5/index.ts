@@ -333,7 +333,8 @@ export class Generation5 extends Generation4 {
       power <<= count;
     } else if (move.id === "spitup") {
       power *= user.v.stockpile;
-      battle.sv([user.setVolatile("stockpile", 0)]);
+      user.v.stockpile = 0;
+      battle.syncVolatiles();
     }
 
     const {eff, dmg} = DamageCalc.calcDamage({

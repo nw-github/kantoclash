@@ -38,7 +38,7 @@ export const moveScripts: Partial<MoveScripts> = {
         user.base.sleepTurns--;
       }
       user.v.counter = 0;
-      user.recover(diff, user, battle, this.why, true);
+      user.recover(diff, user, battle, this.why);
     } else {
       let amount = idiv1(user.base.maxHp, 2);
       if (this.weather) {
@@ -83,11 +83,11 @@ export const moveScripts: Partial<MoveScripts> = {
     }
 
     user.v.protectCount++;
-    if (!this.endure) {
-      battle.info(user, "protect", [user.setFlag(VF.protect)]);
-    } else {
-      battle.info(user, "endure", [user.setFlag(VF.endure)]);
-    }
+    const [flag, msg] = this.endure
+      ? ([VF.endure, "endure"] as const)
+      : ([VF.protect, "protect"] as const);
+    user.v.setFlag(flag);
+    battle.info(user, msg);
   },
   //
   psychup(battle, user, [target]) {
@@ -96,12 +96,7 @@ export const moveScripts: Partial<MoveScripts> = {
     }
 
     user.v.stages = {...target.v.stages};
-    battle.event({
-      type: "psych_up",
-      src: user.id,
-      target: target.id,
-      volatiles: [{id: user.id, v: {stats: user.clientStats(battle), stages: {...user.v.stages}}}],
-    });
+    battle.event({type: "psych_up", src: user.id, target: target.id});
   },
   spite(battle, user, [target]) {
     if (!battle.checkAccuracy(this, user, target)) {
@@ -260,12 +255,8 @@ export const tryDamage = (
       !target.v.types.includes(type)
     ) {
       battle.ability(target);
-      battle.event({
-        type: "conversion",
-        src: target.id,
-        types: [type],
-        volatiles: [target.setVolatile("types", [type])],
-      });
+      target.v.types = [type];
+      battle.event({type: "conversion", src: target.id, types: [type]});
       return;
     }
 
@@ -293,7 +284,7 @@ export const tryDamage = (
 
         battle.ability(target);
         user.v.attract = target;
-        battle.info(user, "attract", [{id: user.id, v: {flags: user.v.cflags}}]);
+        battle.info(user, "attract");
       } else if (!user.base.status) {
         if (!isImmune(user, status)) {
           battle.ability(target);
@@ -310,7 +301,8 @@ export const tryDamage = (
     user.v.furyCutter = 0;
     user.v.thrashing = undefined;
     if (self.id === "spitup") {
-      battle.sv([user.setVolatile("stockpile", 0)]);
+      user.v.stockpile = 0;
+      battle.syncVolatiles();
     }
     if (crash && self.flag === DMF.crash) {
       battle.gen.handleCrashDamage(battle, user, target, dmg);
@@ -480,28 +472,17 @@ export const tryDamage = (
 
     if (user.v.seededBy) {
       user.v.seededBy = undefined;
-      battle.event({type: "sv", volatiles: [{id: user.id, v: {flags: user.v.cflags}}]});
+      battle.syncVolatiles();
     }
 
     if (user.v.trapped) {
-      battle.event({
-        type: "trap",
-        src: user.id,
-        target: user.id,
-        kind: "end",
-        move: user.v.trapped.move.id!,
-        volatiles: [{id: user.id, v: {trapped: null}}],
-      });
+      const move = user.v.trapped.move.id!;
       user.v.trapped = undefined;
+      battle.event({type: "trap", src: user.id, target: user.id, kind: "end", move});
     }
   } else if (self.clearTargetStatus && !hadSub && target.base.status === self.clearTargetStatus) {
     target.base.status = undefined;
-    battle.event({
-      type: "cure",
-      src: target.id,
-      status: self.clearTargetStatus,
-      volatiles: [{id: target.id, v: {status: null, stats: target.clientStats(battle)}}],
-    });
+    battle.event({type: "cure", src: target.id, status: self.clearTargetStatus});
   }
 
   if (endured) {
@@ -523,15 +504,7 @@ export const tryDamage = (
 
   if (self.flag === DMF.trap && !hadSub && target.base.hp) {
     target.v.trapped = {user, move: self, turns: battle.gen.rng.bindingMoveTurns(battle, user)};
-    const move = self.id!;
-    battle.event({
-      type: "trap",
-      src: user.id,
-      target: target.id,
-      kind: "start",
-      move,
-      volatiles: [{id: target.id, v: {trapped: move}}],
-    });
+    battle.event({type: "trap", src: user.id, target: target.id, kind: "start", move: self.id!});
   }
 
   if (self.id === "uproar" && !user.v.thrashing) {

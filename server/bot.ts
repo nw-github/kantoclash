@@ -6,20 +6,19 @@ import type {Choice, ClientMessage, JoinRoomResponse, ServerMessage} from "./gam
 import type {BattleEvent} from "~~/game/events";
 import type {Options} from "~~/game/battle";
 import type {Pokemon} from "~~/game/pokemon";
-import {CVF, playerId, TypeEffectiveness, VF} from "~~/game/utils";
+import {playerId, TypeEffectiveness, VF} from "~~/game/utils";
 import type {MoveId} from "~~/game/moves";
 import {type Generation, GENERATIONS} from "~~/game/gen";
 
 import {type FormatId, formatInfo, tryReconnect} from "~/utils/shared";
 import {convertTeam, parseTeams, type Team} from "~/utils/pokemon";
-import {ClientManager, Players} from "~/utils/client";
+import {ClientManager} from "~/utils/client";
 
 import {randoms} from "./utils/formats";
 import type {InfoMessage} from "./utils/info";
 
 export type BotParams = {
   options: Options[];
-  players: Players;
   me: string;
   opponent: string;
   gen: Generation;
@@ -191,17 +190,9 @@ export async function startBot(botType: BotType, format?: FormatId) {
     {team: teamDesc, options, chats, events, battlers, format}: JoinRoomResponse,
     gameOver: () => void,
   ) {
-    const players = new Players();
     const fmt = formatInfo[format];
     const gen = GENERATIONS[fmt.generation]!;
-    const mgr = new ClientManager({
-      playCry() {},
-      playShiny() {},
-      playDmg() {},
-      preloadSprite() {},
-      playAnimation: (_, params) => void params.cb?.exec(),
-      displayEvent() {},
-    });
+    const mgr = new ClientManager(gen);
     let eventNo = 0;
     let opponent = "";
     let debugMode = false;
@@ -223,7 +214,6 @@ export async function startBot(botType: BotType, format?: FormatId) {
 
       const choices = botFunctions[aiMode]({
         options,
-        players,
         me: myId,
         opponent,
         gen,
@@ -235,7 +225,7 @@ export async function startBot(botType: BotType, format?: FormatId) {
         $conn.emit("choose", room, eventNo, choice, err => {
           if (err) {
             if (choice.type === "switch") {
-              const poke = {...players.get(myId).team[choice.pokeIndex], gen: undefined};
+              const poke = {...mgr.players.getBP(myId).team[choice.pokeIndex], gen: undefined};
               console.error(`[${name}] bad switch '${err}' (to: ${choice.pokeIndex}|`, poke, ")");
             } else if (choice.type === "move") {
               console.error(
@@ -252,51 +242,28 @@ export async function startBot(botType: BotType, format?: FormatId) {
 
     const processMessage = (message: InfoMessage) => {
       if (message.type === "userJoin") {
-        const {name, isSpectator, nPokemon, id, admin} = message;
-        if (players.get(id)) {
-          return;
-        }
-
-        players.add(id, {
-          name,
-          isSpectator,
-          connected: true,
-          nPokemon,
-          nFainted: players.get(id)?.nFainted ?? 0,
-          active: [],
-          team: [],
-          teamDesc: [],
-          admin,
-        });
+        mgr.players.add(message);
       } else if (message.type === "userLeave") {
-        players.get(message.id).connected = false;
+        mgr.players.get(message.id).connected = false;
       }
     };
 
-    for (const {id, name, nPokemon, admin} of battlers) {
-      players.add(id, {
-        name,
-        isSpectator: false,
-        connected: false,
-        nPokemon,
-        nFainted: 0,
-        active: Array(fmt.doubles ? 2 : 1),
-        team: [],
-        teamDesc: id === myId ? teamDesc! : [],
-        admin,
-      });
-      if (id !== myId) {
-        opponent = id;
+    for (const message of battlers) {
+      const player = mgr.players.add(message);
+      if (message.id !== myId) {
+        opponent = message.id;
+      } else {
+        player.teamDesc = teamDesc;
       }
     }
 
-    mgr.reset(players, gen);
+    mgr.reset(gen, formatInfo[format].doubles);
     games[room] = {
       async nextTurn(turn, options) {
         let done = false;
         eventNo += turn.length;
         for (const event of turn) {
-          await mgr.handleEvent(event, players, gen);
+          await mgr.handleEvent(event);
           if (event.type === "end") {
             done = true;
           }
@@ -315,7 +282,7 @@ export async function startBot(botType: BotType, format?: FormatId) {
         const dox = (a: Pokemon) => {
           const name = (m: MoveId) => {
             if (gen.move.overrides.type[m]) {
-              return m + gen.getMoveType(gen.moveList[m], a, mgr.weather);
+              return m + gen.getMoveType(gen.moveList[m], a, mgr.battle.weather?.kind);
             }
             return m;
           };
@@ -327,16 +294,16 @@ export async function startBot(botType: BotType, format?: FormatId) {
           sendChatMessage(`- ${a.moves.map(name).join(", ")}`);
         };
 
-        if (message.id === myId || message.type !== "chat" || !players.get(message.id)?.admin) {
+        if (message.id === myId || message.type !== "chat" || !mgr.players.get(message.id)?.admin) {
           return;
         }
 
         const msg = message.message.toLowerCase();
         if (msg.startsWith("/dox")) {
           if (msg.includes("team")) {
-            players.get(myId).team.forEach(dox);
+            mgr.players.getBP(myId).team.forEach(dox);
           } else {
-            for (const poke of players.get(myId).active) {
+            for (const poke of mgr.players.getBP(myId).active) {
               if (poke?.base) {
                 dox(poke.base);
               }
@@ -426,14 +393,14 @@ const botFunctions = {
     return choices;
   },
   rank(params: BotParams): Choice[] {
-    const {options, players, opponent, me, gen, mgr} = params;
-    if (params.players.get(me).active.length !== 1) {
+    const {options, opponent, me, gen, mgr} = params;
+    const selfP = mgr.players.getBP(me);
+    if (selfP.active.length !== 1) {
       return this.random(params);
     }
 
-    const selfP = players.get(me);
     const active = selfP.active![0]!;
-    const opponentActive = players.get(opponent).active![0]!;
+    const opponentActive = mgr.players.getBP(opponent).active![0]!;
     const opts = options[0];
 
     const rank = <T>(arr: T[], getScore: (t: T) => number, name: (t: T) => string) => {
@@ -484,19 +451,19 @@ const botFunctions = {
         }
       }
 
-      const confused = opponentActive.confused;
-      const seeded = (opponentActive.v.flags?.hi || 0) & CVF.seeded;
-      const cursed = (opponentActive.v.flags?.lo || 0) & VF.curse;
-      const dbond = (active.v.flags?.lo || 0) & VF.destinyBond;
-      const sub = opponentActive.substitute;
+      const confused = !!opponentActive.v.confusion;
+      const seeded = opponentActive.v.seededBy;
+      const cursed = opponentActive.v.hasFlag(VF.curse);
+      const dbond = active.v.hasFlag(VF.destinyBond);
+      const sub = !!opponentActive.v.substitute;
 
       // prettier-ignore
       const useless = ((move.kind === "confuse" || move.kind === "swagger") && confused) ||
-          (move.kind === "status" && (opponentActive.v.status || (gen.id > 1 && sub))) ||
+          (move.kind === "status" && (opponentActive.base.status || (gen.id > 1 && sub))) ||
           (id === "leechseed" && (seeded || opponentPoke.species.types.includes("grass"))) ||
           (id === "curse" && cursed) ||
           (id === "destinybond" && dbond) ||
-          (id === "substitute" && active.substitute) ||
+          (id === "substitute" && !!active.v.substitute) ||
           (move.kind === "stage" && move.acc && sub);
       if (useless) {
         return 0;

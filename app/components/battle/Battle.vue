@@ -3,21 +3,26 @@
     <div class="flex flex-col w-full items-center overflow-x-hidden overflow-y-auto">
       <!-- Top Bar -->
       <div v-if="perspective && opponent" class="flex w-full justify-between items-start">
-        <TeamDisplay :player="players.get(perspective)" />
-        <TeamDisplay :player="players.get(opponent)" reverse />
+        <TeamDisplay :player="mgr.players.get(perspective)" />
+        <TeamDisplay :player="mgr.players.get(opponent)" reverse />
       </div>
 
       <div v-if="showTeamPreview" class="w-full relative">
         <div class="absolute grid grid-cols-2 w-full gap-2 p-1 sm:p-4">
-          <TeamPreview :gen :format :preview="players.get(perspective)?.teamPreview ?? []" />
-          <TeamPreview :gen :format :preview="players.get(opponent)?.teamPreview ?? []" reverse />
+          <TeamPreview :gen :format :preview="mgr.players.get(perspective)?.teamPreview ?? []" />
+          <TeamPreview
+            :gen
+            :format
+            :preview="mgr.players.get(opponent)?.teamPreview ?? []"
+            reverse
+          />
         </div>
       </div>
 
       <Field
         ref="field"
         :class="showTeamPreview && 'invisible'"
-        :players
+        :players="mgr.players"
         :perspective
         :is-singles
         :weather
@@ -44,13 +49,13 @@
               :transition="{duration: 0.5, ease: 'easeOut'}"
               layout
             >
-              <Event class="first:pt-0" :e :my-id :players :perspective :gen />
+              <Event class="first:pt-0" :e :my-id :players="mgr.players" :perspective :gen />
             </motion.div>
           </AnimatePresence>
         </div>
 
         <div class="absolute bottom-0 z-0 flex flex-row pb-2 justify-end w-full gap-2 items-center">
-          <!-- <TouchTooltip v-if="clientMgr.trickRoom" text="Trick Room">
+          <!-- <TouchTooltip v-if="mgr.trickRoom" text="Trick Room">
             <UIcon class="size-6 text-pink-400" name="material-symbols:swap-calls" />
           </TouchTooltip> -->
 
@@ -97,7 +102,7 @@
         <div v-if="!playingEvents && isBattler && !isBattleOver">
           <OptionSelector
             :options="currOptions"
-            :players
+            :players="mgr.players"
             :my-id
             :opponent
             :weather
@@ -169,9 +174,9 @@
 
     <div v-if="!textBoxHidden" class="h-full w-3/5">
       <Textbox
-        :players
+        :players="mgr.players"
         :chats
-        :victor="clientMgr.victor"
+        :victor="mgr.victor"
         :perspective
         :format
         :smooth-scroll
@@ -189,9 +194,9 @@
       <template #content>
         <Textbox
           class="rounded-none"
-          :players
+          :players="mgr.players"
           :chats
-          :victor="clientMgr.victor"
+          :victor="mgr.victor"
           :perspective
           :format
           :smooth-scroll
@@ -235,9 +240,9 @@ const emit = defineEmits<{
   choice: [Choice];
   rewind: [turn: number];
 }>();
-const {options, players, events, chats, finished, format, ready, myId, localMode} = defineProps<{
+const {options, mgr, events, chats, finished, format, ready, myId, localMode} = defineProps<{
   options: Partial<Record<number, Options[]>>;
-  players: Players;
+  mgr: ClientManager;
   events: BattleEvent[];
   chats: InfoRecord;
   finished: bool;
@@ -256,7 +261,7 @@ const slideoverOpen = ref(false);
 const smoothScroll = ref(true);
 const skipToEvent = ref(0);
 const currentTurnNo = ref(0);
-const weather = computed(() => clientMgr.weather);
+const weather = computed(() => mgr.battle.weather?.kind);
 const field = useTemplateRef("field");
 
 const goToTurnModal = useOverlay().create(GoToTurnModal);
@@ -266,24 +271,22 @@ const playToIndex = ref(0);
 const paused = ref(false);
 const playingEvents = ref(true);
 
-const isBattleOver = computed(() => finished || !!clientMgr.victor);
-const isBattler = computed(() => players.get(myId) && !players.get(myId).isSpectator);
+const isBattleOver = computed(() => finished || !!mgr.victor);
+const isBattler = computed(() => !!mgr.players.getBP(myId));
 const perspective = ref("");
-const isSingles = computed(() => players.get(perspective.value)?.active?.length === 1);
+const isSingles = computed(() => !formatInfo[format].doubles);
 
-const showTeamPreview = computed(
-  () =>
-    players.get(perspective.value)?.active?.every(a => !a) &&
-    !!players.get(perspective.value)?.teamPreview &&
-    !events.length,
-);
+const showTeamPreview = computed(() => {
+  const self = mgr.players.get(perspective.value);
+  return self?.bp?.active?.every(a => !a.initialized) && !!self?.teamPreview && !events.length;
+});
 
 const mediaQuery = computed(() => (isSingles.value ? "(max-width: 900px)" : "(max-width: 1100px)"));
 const textBoxHidden = useMediaQuery(mediaQuery);
 
 const opponent = computed(() => {
-  for (const id in players.items) {
-    if (!players.get(id).isSpectator && id !== perspective.value) {
+  for (const id in mgr.players.items) {
+    if (!mgr.players.get(id).isSpectator && id !== perspective.value) {
       return id;
     }
   }
@@ -316,8 +319,95 @@ watchDeep(chats, () => {
 
 const isLive = () => skipToEvent.value < nextEvent.value && isMounted.value;
 
-const clientMgr = reactive(
-  new ClientManager({
+const goToTurn = async () => {
+  const max = events.findLast(ev => ev.type === "next_turn")?.turn;
+  const result = await goToTurnModal.open({localMode, max});
+  if (result?.why === "go") {
+    skipToTurn(result.turn);
+  } else if (result?.why === "rewind") {
+    emit("rewind", result.turn);
+  }
+};
+
+const animations: AnimationPlaybackControls[] = [];
+
+const updatePerspective = () => {
+  perspective.value = isBattler.value
+    ? myId
+    : randChoice(Object.keys(mgr.players.items).filter(id => !mgr.players.get(id).isSpectator)) ??
+      "";
+};
+
+const skipToTurn = (turn: number) => {
+  // console.log(`skipTo() | index: ${index} currentTurn: ${currentTurn}`);
+  let index = 0;
+  if (turn < 0) {
+    index = events.length + 1;
+  } else if (turn !== 0) {
+    index = events.findIndex(event => event.type === "next_turn" && event.turn === turn);
+    if (index === -1) {
+      index = events.length + 1;
+    } else {
+      index++;
+    }
+  }
+
+  // TODO: mute current sounds
+  if (index < nextEvent.value) {
+    nextEvent.value = 0;
+  }
+
+  liveEvents.value.length = 0;
+  skipToEvent.value = index;
+  if (paused.value) {
+    playToIndex.value = index;
+  }
+
+  animations.forEach(anim => anim.complete());
+  animations.length = 0;
+};
+
+watchImmediate([isBattler, () => mgr.players, () => myId], updatePerspective);
+
+watchImmediate([paused, () => events.length], ([paused, nEvents]) => {
+  if (!paused) {
+    playToIndex.value = nEvents;
+  } else {
+    playToIndex.value = nextEvent.value;
+  }
+});
+
+onMounted(async () => {
+  const runEvent = async (e: BattleEvent) => {
+    if (e.type === "next_turn") {
+      currentTurnNo.value = e.turn;
+      htmlTurns.value.push([]);
+      liveEvents.value.length = 0;
+      if (isLive() && isBattleOver.value) {
+        await delay(450);
+      }
+      return;
+    }
+
+    smoothScroll.value = isLive();
+
+    await mgr.handleEvent(e);
+
+    if (
+      isLive() &&
+      e.type !== "sv" &&
+      e.type !== "beatup" &&
+      !(e.type === "info" && e.why === "uturn")
+    ) {
+      await delay(e.type === "weather" && e.kind === "continue" ? 450 : 250);
+    }
+
+    if ((e.type === "end" || e.type === "forfeit") && useAutoMuteMusic().value) {
+      fadeOut();
+    }
+  };
+
+  mgr.listen({
     playCry(speciesId, pitchDown) {
       if (isLive()) {
         const species = gen.value.speciesList[speciesId];
@@ -366,10 +456,10 @@ const clientMgr = reactive(
     displayEvent(e) {
       const ev = {...e, time: Date.now()} as UIBattleEvent;
       if ("src" in ev && ev.src) {
-        ev[ev.src] = players.poke(ev.src as PokeId)!.base.name;
+        ev[ev.src] = mgr.players.poke(ev.src as PokeId)!.base.name;
       }
       if ("target" in ev && ev.target) {
-        ev[ev.target] = players.poke(ev.target as PokeId)!.base.name;
+        ev[ev.target] = mgr.players.poke(ev.target as PokeId)!.base.name;
       }
 
       htmlTurns.value.at(-1)!.push(ev);
@@ -383,100 +473,12 @@ const clientMgr = reactive(
       img.src = getSpritePath(speciesId, female, shiny, back, form);
       return img;
     },
-  }),
-);
-
-const goToTurn = async () => {
-  const max = events.findLast(ev => ev.type === "next_turn")?.turn;
-  const result = await goToTurnModal.open({localMode, max});
-  if (result?.why === "go") {
-    skipToTurn(result.turn);
-  } else if (result?.why === "rewind") {
-    emit("rewind", result.turn);
-  }
-};
-
-const animations: AnimationPlaybackControls[] = [];
-
-const updatePerspective = () => {
-  perspective.value = isBattler.value
-    ? myId
-    : randChoice(Object.keys(players.items).filter(id => !players.get(id).isSpectator)) ?? "";
-};
-
-const skipToTurn = (turn: number) => {
-  // console.log(`skipTo() | index: ${index} currentTurn: ${currentTurn}`);
-  let index = 0;
-  if (turn < 0) {
-    index = events.length + 1;
-  } else if (turn !== 0) {
-    index = events.findIndex(event => event.type === "next_turn" && event.turn === turn);
-    if (index === -1) {
-      index = events.length + 1;
-    } else {
-      index++;
-    }
-  }
-
-  // TODO: mute current sounds
-  if (index < nextEvent.value) {
-    nextEvent.value = 0;
-  }
-
-  liveEvents.value.length = 0;
-  skipToEvent.value = index;
-  if (paused.value) {
-    playToIndex.value = index;
-  }
-
-  animations.forEach(anim => anim.complete());
-  animations.length = 0;
-};
-
-watchImmediate([isBattler, () => players.items, () => myId], updatePerspective);
-
-watchImmediate([paused, () => events.length], ([paused, nEvents]) => {
-  if (!paused) {
-    playToIndex.value = nEvents;
-  } else {
-    playToIndex.value = nextEvent.value;
-  }
-});
-
-onMounted(async () => {
-  const runEvent = async (e: BattleEvent) => {
-    if (e.type === "next_turn") {
-      currentTurnNo.value = e.turn;
-      htmlTurns.value.push([]);
-      liveEvents.value.length = 0;
-      if (isLive() && isBattleOver.value) {
-        await delay(450);
-      }
-      return;
-    }
-
-    smoothScroll.value = isLive();
-
-    await clientMgr.handleEvent(e, players, gen.value);
-
-    if (
-      isLive() &&
-      e.type !== "sv" &&
-      e.type !== "beatup" &&
-      !(e.type === "info" && e.why === "uturn")
-    ) {
-      await delay(e.type === "weather" && e.kind === "continue" ? 450 : 250);
-    }
-
-    if ((e.type === "end" || e.type === "forfeit") && useAutoMuteMusic().value) {
-      fadeOut();
-    }
-  };
+  });
 
   const reset = () => {
     htmlTurns.value = [[]];
     currentTurnNo.value = 0;
-    clientMgr.reset(players, gen.value);
+    mgr.reset(gen.value, formatInfo[format].doubles);
   };
 
   await until(() => ready).toBe(true);
@@ -505,7 +507,7 @@ onMounted(async () => {
       for (const opt of options[idx] ?? []) {
         for (const {pp, indexInMoves} of opt.moves) {
           if (indexInMoves !== undefined && pp !== undefined) {
-            const poke = players.poke(opt.id);
+            const poke = mgr.players.poke(opt.id);
             if (poke?.owned) {
               poke.base.pp[indexInMoves] = pp;
             }
@@ -517,6 +519,10 @@ onMounted(async () => {
 
     await until([playToIndex, nextEvent, isMounted]).changed();
   }
+});
+
+onUnmounted(() => {
+  mgr.unlisten();
 });
 
 defineExpose({skipToTurn});

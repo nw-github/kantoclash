@@ -64,7 +64,7 @@
 </template>
 
 <script setup lang="ts">
-import type {MoveOption} from "~~/game/battle";
+import type {MoveOption, Player} from "~~/game/battle";
 import {abilityList} from "~~/game/species";
 import {MC, Range, type Type, type Weather} from "~~/game/utils";
 import type {ItemData} from "~~/game/item";
@@ -81,7 +81,7 @@ const {option, user, weather, opponent} = defineProps<{
   option: MoveOption;
   user: ClientActivePokemon;
   weather?: Weather;
-  opponent?: ClientPlayer;
+  opponent?: Player;
   ui?: string;
 }>();
 const move = computed(() => user.base.gen.moveList[option.move]);
@@ -90,7 +90,7 @@ const info = computed(() => {
   const powers: {pokes: Pokemon[]; pow?: number; acc?: number}[] = [];
   const item = user.base.item;
   for (const opp of opponent?.active?.toReversed() ?? []) {
-    if (!opp || opp.fainted) {
+    if (!opp || opp.v.fainted) {
       continue;
     }
 

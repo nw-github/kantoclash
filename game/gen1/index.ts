@@ -284,12 +284,11 @@ export class Generation1 {
 
     if (user.v.disabled && --user.v.disabled.turns === 0) {
       user.v.disabled = undefined;
-      battle.info(user, "disable_end", [{id: user.id, v: {flags: user.v.cflags}}]);
+      battle.info(user, "disable_end");
     }
 
     if (user.v.confusion) {
-      const event = --user.v.confusion === 0 ? "confused_end" : "confused";
-      battle.info(user, event, [{id: user.id, v: {flags: user.v.cflags}}]);
+      battle.info(user, --user.v.confusion === 0 ? "confused_end" : "confused");
     }
 
     const confuse = user.v.confusion && battle.rng.bool();
@@ -654,10 +653,8 @@ export class Generation1 {
         poke.v.trapped = undefined;
       }
       if (poke.v.hasFlag(VF.protect | VF.endure | VF.helpingHand)) {
-        battle.event({
-          type: "sv",
-          volatiles: [poke.clearFlag(VF.protect | VF.endure | VF.helpingHand)],
-        });
+        poke.v.clearFlag(VF.protect | VF.endure | VF.helpingHand);
+        battle.syncVolatiles();
       }
     }
 

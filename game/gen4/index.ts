@@ -495,7 +495,8 @@ export class Generation4 extends Generation3 {
           VF.magicCoat |
           VF.roost;
         if (poke.v.hasFlag(flags)) {
-          battle.event({type: "sv", volatiles: [poke.clearFlag(flags)]});
+          poke.v.clearFlag(flags);
+          battle.syncVolatiles();
         }
       }
     }
@@ -515,16 +516,7 @@ export class Generation4 extends Generation3 {
     for (const player of battle.players) {
       for (const screen of screens) {
         if (player.screens[screen] && --player.screens[screen] === 0) {
-          battle.event({
-            type: "screen",
-            user: player.id,
-            screen,
-            kind: "end",
-            volatiles:
-              screen === "tailwind"
-                ? player.active.map(p => ({id: p.id, v: {stats: p.clientStats(battle)}}))
-                : undefined,
-          });
+          battle.event({type: "screen", user: player.id, screen, kind: "end"});
         }
       }
     }
@@ -651,13 +643,13 @@ export class Generation4 extends Generation3 {
 
         if (poke.v.disabled && --poke.v.disabled.turns === 0) {
           poke.v.disabled = undefined;
-          battle.info(poke, "disable_end", [{id: poke.id, v: {flags: poke.v.cflags}}]);
+          battle.info(poke, "disable_end");
         }
 
         poke.handleEncore(battle);
 
         if (poke.v.tauntTurns && --poke.v.tauntTurns === 0) {
-          battle.info(poke, "taunt_end", [{id: poke.id, v: {flags: poke.v.cflags}}]);
+          battle.info(poke, "taunt_end");
         }
 
         // TODO: magnet rise, heal block, embargo
@@ -666,7 +658,7 @@ export class Generation4 extends Generation3 {
       // TODO: lockon/mind reader?
 
       if (poke.base.hp && poke.v.drowsy && --poke.v.drowsy === 0) {
-        battle.event({type: "sv", volatiles: [{id: poke.id, v: {flags: poke.v.cflags}}]});
+        battle.syncVolatiles();
         if (!poke.base.status && poke.getAbility()?.preventsStatus !== "slp") {
           poke.status("slp", battle, poke, {ignoreSafeguard: true});
         }
@@ -732,7 +724,8 @@ export class Generation4 extends Generation3 {
       power <<= count;
     } else if (move.id === "spitup") {
       power *= user.v.stockpile;
-      battle.sv([user.setVolatile("stockpile", 0)]);
+      user.v.stockpile = 0;
+      battle.syncVolatiles();
     }
 
     let dmg;

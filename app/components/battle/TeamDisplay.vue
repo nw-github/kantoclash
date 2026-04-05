@@ -54,7 +54,7 @@
       </div>
     </div>
 
-    <template v-for="(screen, name) in player?.screens">
+    <template v-for="(screen, name) in player?.bp?.screens">
       <TouchTooltip v-if="screen && screens[name]" :key="name" :text="screens[name].name">
         <UIcon
           :name="screens[name].icon"

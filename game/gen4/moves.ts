@@ -115,7 +115,8 @@ export const tryDamage = (
     // In Gen IV, Anger Point works even if the crit hits a substitute
     if (isCrit && target.base.hp && targetAbilityId === "angerpoint" && target.v.stages.atk < 6) {
       battle.ability(target);
-      battle.info(target, "atk_maximize", target.setStage("atk", +6, battle, false));
+      target.setStage("atk", +6, battle, false);
+      battle.info(target, "atk_maximize");
       return;
     }
 
@@ -128,12 +129,8 @@ export const tryDamage = (
       !target.v.types.includes(type)
     ) {
       battle.ability(target);
-      battle.event({
-        type: "conversion",
-        src: target.id,
-        types: [type],
-        volatiles: [target.setVolatile("types", [type])],
-      });
+      target.v.types = [type];
+      battle.event({type: "conversion", src: target.id, types: [type]});
       return;
     }
 
@@ -161,7 +158,7 @@ export const tryDamage = (
 
         battle.ability(target);
         user.v.attract = target;
-        battle.info(user, "attract", [{id: user.id, v: {flags: user.v.cflags}}]);
+        battle.info(user, "attract");
       } else if (!user.base.status) {
         if (!isImmune(user, status)) {
           battle.ability(target);
@@ -178,7 +175,8 @@ export const tryDamage = (
     user.v.furyCutter = 0;
     user.v.thrashing = undefined;
     if (self.id === "spitup") {
-      battle.sv([user.setVolatile("stockpile", 0)]);
+      user.v.stockpile = 0;
+      battle.syncVolatiles();
     }
     if (crash && self.flag === DMF.crash) {
       battle.gen.handleCrashDamage(battle, user, target, dmg);
@@ -418,7 +416,8 @@ export const tryDamage = (
   }
 
   if (self.flag === DMF.remove_protect) {
-    battle.sv([target.clearFlag(VF.protect)]);
+    user.v.stockpile = 0;
+    battle.syncVolatiles();
   }
 
   // TODO: should bide include damage taken by a substitute?
@@ -448,28 +447,17 @@ export const tryDamage = (
 
     if (user.v.seededBy) {
       user.v.seededBy = undefined;
-      battle.event({type: "sv", volatiles: [{id: user.id, v: {flags: user.v.cflags}}]});
+      battle.syncVolatiles();
     }
 
     if (user.v.trapped) {
-      battle.event({
-        type: "trap",
-        src: user.id,
-        target: user.id,
-        kind: "end",
-        move: user.v.trapped.move.id!,
-        volatiles: [{id: user.id, v: {trapped: null}}],
-      });
+      const move = user.v.trapped.move.id!;
       user.v.trapped = undefined;
+      battle.event({type: "trap", src: user.id, target: user.id, kind: "end", move});
     }
   } else if (self.clearTargetStatus && !hadSub && target.base.status === self.clearTargetStatus) {
     target.base.status = undefined;
-    battle.event({
-      type: "cure",
-      src: target.id,
-      status: self.clearTargetStatus,
-      volatiles: [{id: target.id, v: {status: null, stats: target.clientStats(battle)}}],
-    });
+    battle.event({type: "cure", src: target.id, status: self.clearTargetStatus});
   }
 
   if (endured) {
@@ -495,15 +483,7 @@ export const tryDamage = (
 
   if (self.flag === DMF.trap && !hadSub && target.base.hp) {
     target.v.trapped = {user, move: self, turns: battle.gen.rng.bindingMoveTurns(battle, user)};
-    const move = self.id!;
-    battle.event({
-      type: "trap",
-      src: user.id,
-      target: target.id,
-      kind: "start",
-      move,
-      volatiles: [{id: target.id, v: {trapped: move}}],
-    });
+    battle.event({type: "trap", src: user.id, target: target.id, kind: "start", move: self.id!});
   } else if (self.id === "uproar" && !user.v.thrashing) {
     user.v.thrashing = {move: self, turns: battle.gen.rng.thrashDuration(battle), max: false};
     battle.info(user, "uproar");

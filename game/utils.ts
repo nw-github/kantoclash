@@ -2,6 +2,8 @@ import type {Random} from "random";
 import type {PlayerId, PokeId} from "./events";
 import type {AbilityId} from "./species";
 
+export type NonEmptyArray<T> = [T, ...T[]];
+
 export type Weather = "rain" | "sun" | "sand" | "hail";
 
 export type Type =
@@ -90,8 +92,6 @@ export enum CVF {
   meanLook   = 0x0000_0010,
   seeded     = 0x0000_0020,
   taunt      = 0x0000_0040,
-  drowsy     = 0x0000_0080,
-  identified = 0x0000_0100,
 }
 
 export enum Endure {
@@ -340,3 +340,13 @@ export class TypeEffectiveness {
     return this.immune() ? "Immune" : `${Math.abs(this.toFloat())}x`;
   }
 }
+
+export const deepFreeze = <T>(obj: T): T => {
+  if (typeof obj !== "object" || !obj || Object.isFrozen(obj)) {
+    return obj;
+  }
+  for (const k in obj) {
+    obj[k as keyof T] = deepFreeze(obj[k as keyof T]);
+  }
+  return Object.freeze(obj);
+};

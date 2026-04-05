@@ -14,7 +14,7 @@ export const moveScripts: Partial<MoveScripts> = {
       user.base.status = "slp";
       user.base.sleepTurns = 3;
       user.v.counter = 0;
-      user.recover(diff, user, battle, this.why, true);
+      user.recover(diff, user, battle, this.why);
     } else {
       let amount = idiv1(user.base.maxHp, 2);
       if (this.weather && !battle.getWeather()) {
@@ -68,9 +68,7 @@ export const moveScripts: Partial<MoveScripts> = {
     }
 
     user.v.substitute = hp;
-    user.damage(hp, user, battle, false, "substitute", true, undefined, [
-      {id: user.id, v: {flags: user.v.cflags}},
-    ]);
+    user.damage(hp, user, battle, false, "substitute", true, undefined);
   },
   conversion(battle, user) {
     const type = battle.rng.choice(
@@ -83,8 +81,8 @@ export const moveScripts: Partial<MoveScripts> = {
       return;
     }
 
-    const v = user.setVolatile("types", [type]);
-    battle.event({type: "conversion", src: user.id, types: [type], volatiles: [v]});
+    user.v.types = [type];
+    battle.event({type: "conversion", src: user.id, types: [type]});
   },
   disable(this: Move, battle, user, [target]) {
     if (target.v.disabled || !target.v.lastMove || target.v.lastMove.id === "struggle") {
@@ -97,12 +95,7 @@ export const moveScripts: Partial<MoveScripts> = {
     const indexInMoves = target.v.lastMoveIndex!;
 
     target.v.disabled = {indexInMoves, turns: battle.gen.rng.disableTurns(battle)};
-    battle.event({
-      type: "disable",
-      src: target.id,
-      move: target.base.moves[indexInMoves],
-      volatiles: [{id: target.id, v: {flags: target.v.cflags}}],
-    });
+    battle.event({type: "disable", src: target.id, move: target.base.moves[indexInMoves]});
   },
   haze(battle, user, targets) {
     for (const target of targets) {
@@ -112,11 +105,7 @@ export const moveScripts: Partial<MoveScripts> = {
       }
     }
 
-    battle.info(
-      user,
-      "haze",
-      targets.map(t => ({id: t.id, v: {stages: null, stats: t.clientStats(battle)}})),
-    );
+    battle.info(user, "haze");
   },
   transform(this: Move, battle, user, [target]) {
     if (target.base.transformed) {
@@ -402,19 +391,13 @@ export const tryDamage = (
 
     if (user.v.seededBy) {
       user.v.seededBy = undefined;
-      battle.event({type: "sv", volatiles: [{id: user.id, v: {flags: user.v.cflags}}]});
+      battle.syncVolatiles();
     }
 
     if (user.v.trapped) {
-      battle.event({
-        type: "trap",
-        src: user.id,
-        target: user.id,
-        kind: "end",
-        move: user.v.trapped.move.id!,
-        volatiles: [{id: user.id, v: {trapped: null}}],
-      });
+      const move = user.v.trapped.move.id!;
       user.v.trapped = undefined;
+      battle.event({type: "trap", src: user.id, target: user.id, kind: "end", move});
     }
   }
 
@@ -455,15 +438,7 @@ export const tryDamage = (
 
   if (self.flag === DMF.trap && !hadSub) {
     target.v.trapped = {user, move: self, turns: battle.gen.rng.bindingMoveTurns(battle, user)};
-    const move = self.id!;
-    battle.event({
-      type: "trap",
-      src: user.id,
-      target: target.id,
-      kind: "start",
-      move,
-      volatiles: [{id: target.id, v: {trapped: move}}],
-    });
+    battle.event({type: "trap", src: user.id, target: target.id, kind: "start", move: self.id!});
   }
 
   if (!self.effect) {

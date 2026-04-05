@@ -1,12 +1,5 @@
 import {Random} from "random";
-import type {
-  BattleEvent,
-  PlayerId,
-  InfoReason,
-  EndBattleEvent,
-  ChangedVolatiles,
-  PokeId,
-} from "./events";
+import type {BattleEvent, PlayerId, InfoReason, EndBattleEvent, PokeId} from "./events";
 import type {MoveId, Move} from "./moves";
 import type {Pokemon} from "./pokemon";
 import {
@@ -18,6 +11,7 @@ import {
   type Weather,
   type ScreenId,
   type HazardId,
+  type NonEmptyArray,
 } from "./utils";
 import type {Generation} from "./gen";
 import {ActivePokemon} from "./active";
@@ -37,8 +31,6 @@ export type MoveOption = {
 export type Options = NonNullable<ActivePokemon["options"]>;
 
 type PlayerParams = {readonly id: PlayerId; readonly team: Pokemon[]};
-
-type NonEmptyArray<T> = [T, ...T[]];
 
 export class Player {
   readonly id: PlayerId;
@@ -218,20 +210,21 @@ export class Battle {
   }
 
   event<T extends BattleEvent = BattleEvent>(event: BattleEvent) {
+    event.volatiles = this.allActive.map(poke => ({id: poke.id, v: poke.changedVolatiles()}));
     this.events.push(event);
     return event as T;
   }
 
-  info(src: ActivePokemon, why: InfoReason, volatiles?: ChangedVolatiles) {
-    return this.event({type: "info", src: src.id, why, volatiles});
+  info(src: ActivePokemon, why: InfoReason) {
+    return this.event({type: "info", src: src.id, why});
   }
 
-  sv(volatiles?: ChangedVolatiles) {
-    this.event({type: "sv", volatiles});
+  syncVolatiles() {
+    return this.event({type: "sv"});
   }
 
-  ability(src: ActivePokemon, volatiles?: ChangedVolatiles) {
-    return this.event({type: "proc_ability", src: src.id, ability: src.v.ability!, volatiles});
+  ability(src: ActivePokemon) {
+    return this.event({type: "proc_ability", src: src.id, ability: src.v.ability!});
   }
 
   miss(user: ActivePokemon, target: ActivePokemon) {
@@ -497,8 +490,8 @@ export class Battle {
 
   checkAccuracy(move: Move, user: ActivePokemon, target: ActivePokemon, physical?: bool) {
     if (target.v.hasFlag(VF.lockon)) {
-      this.event({type: "sv", volatiles: [target.clearFlag(VF.lockon)]});
-
+      target.v.clearFlag(VF.lockon);
+      this.syncVolatiles();
       if (this.gen.id === 2) {
         const moveId = move.id;
         if (moveId === "earthquake" || moveId === "fissure" || moveId === "magnitude") {
@@ -568,12 +561,7 @@ export class Battle {
 
   setWeather(weather: Weather, turns: number) {
     this.weather = {turns, kind: weather};
-    this.event({
-      type: "weather",
-      kind: "start",
-      weather,
-      volatiles: this.allActive.map(a => ({id: a.id, v: {stats: a.clientStats(this)}})),
-    });
+    this.event({type: "weather", kind: "start", weather});
 
     // TODO: not sure if this is the right order
     for (const poke of this.switchOrder()) {
@@ -605,7 +593,8 @@ export class Battle {
       }
 
       if (user.v.hasFlag(VF.destinyBond | VF.grudge)) {
-        this.event({type: "sv", volatiles: [user.clearFlag(VF.destinyBond | VF.grudge)]});
+        user.v.clearFlag(VF.destinyBond | VF.grudge);
+        this.syncVolatiles();
       }
 
       if (move.kind !== "switch" && user.v.encore && indexInMoves !== undefined) {
@@ -774,7 +763,8 @@ export class Battle {
           if (move.charge !== "sun" || !this.hasWeather("sun")) {
             user.v.charging = {move, targets: originalTargets};
             user.v.invuln = move.charge === "invuln" || user.v.invuln;
-            this.sv([user.clearFlag(VF.charge)]);
+            user.v.clearFlag(VF.charge);
+            this.syncVolatiles();
             return;
           }
         }
@@ -789,13 +779,15 @@ export class Battle {
           targets = [this.rng.choice(this.getTargets(user, Range.AllAdjacentFoe))!];
         }
       } else {
-        this.sv([user.clearFlag(VF.charge)]);
+        user.v.clearFlag(VF.charge);
+        this.syncVolatiles();
       }
 
       if (moveId === user.base.moves[user.v.disabled?.indexInMoves ?? -1]) {
         this.event({move: moveId, type: "move", src: user.id, disabled: true});
         user.v.charging = undefined;
-        this.sv([user.clearFlag(VF.charge)]);
+        user.v.clearFlag(VF.charge);
+        this.syncVolatiles();
         return;
       }
 
@@ -838,12 +830,8 @@ export class Battle {
       if (move.snatch) {
         for (const snatcher of this.turnOrder) {
           if (!snatcher.v.fainted && snatcher.v.hasFlag(VF.snatch)) {
-            this.event({
-              type: "snatch",
-              src: snatcher.id,
-              target: user.id,
-              volatiles: [snatcher.clearFlag(VF.snatch)],
-            });
+            snatcher.v.clearFlag(VF.snatch);
+            this.event({type: "snatch", src: snatcher.id, target: user.id});
             // psych up targets the pokémon snatch stole from, even if its another snatch user
             // a snatched acupressure (only possible in gen 4) always targets the snatcher
             targets = move.range === Range.Adjacent ? [user] : [snatcher];
@@ -857,7 +845,8 @@ export class Battle {
         return this.info(user, "fail_generic");
       } else if (!targets.length) {
         user.v.charging = undefined;
-        this.sv([user.clearFlag(VF.charge)]);
+        user.v.clearFlag(VF.charge);
+        this.syncVolatiles();
         return this.info(user, "fail_notarget");
       }
 
