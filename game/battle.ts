@@ -97,9 +97,7 @@ export class Player {
     }
 
     const poke = this.team[index];
-    if (
-      this.active.some(a => a.choice?.move?.kind === "switch" && a.choice.move.poke.real === poke)
-    ) {
+    if (this.active.some(a => a.choice?.move?.kind === "switch" && a.choice.move.poke === poke)) {
       return false;
     }
 
@@ -800,18 +798,15 @@ export class Battle {
       }
 
       if (moveIndex !== undefined && !user.v.thrashing && !user.v.bide) {
-        user.base.pp[moveIndex]--;
-        if (user.base.pp[moveIndex] < 0) {
-          user.base.pp[moveIndex] = 63;
-        }
-
         const tr = move.range === Range.Field ? this.allActive : targets;
+        let pp = 1;
         for (const poke of tr) {
           if (poke.hasAbility("pressure") && poke !== user) {
-            user.base.pp[moveIndex] = Math.max(0, user.base.pp[moveIndex] - 1);
+            pp++;
           }
         }
 
+        user.deductPP(moveIndex, pp);
         if (user.v.lastMoveIndex !== moveIndex) {
           user.v.rage = 1;
           user.v.furyCutter = 0;

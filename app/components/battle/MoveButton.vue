@@ -119,7 +119,7 @@ const targeting = computed(() => targetingMap[move.value.range]);
 const applyPowerModifiers = (pow: number, type: Type, item?: ItemData) => {
   if (
     item?.typeBoost?.type === type &&
-    (!item.typeBoost.species || item.typeBoost.species.includes(user.base.speciesId))
+    (!item.typeBoost.species || item.typeBoost.species.includes(user.v.speciesId))
   ) {
     pow += Math.floor(pow * (item.typeBoost.percent / 100));
   }

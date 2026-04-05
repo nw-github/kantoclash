@@ -4,7 +4,7 @@
       Choose your lead
     </div>
     <div v-else-if="currOptionPoke" class="pb-2 flex gap-1 items-center w-[90%]">
-      <BoxSprite :species-id="currOptionPoke.base.speciesId" :form="currOptionPoke.base.form" />
+      <BoxSprite :species-id="currOptionPoke.v.speciesId" :form="currOptionPoke.v.form" />
 
       <span v-if="currOptionPoke.v.fainted">
         Choose a Pokémon to replace

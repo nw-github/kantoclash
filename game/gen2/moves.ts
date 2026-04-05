@@ -108,7 +108,7 @@ export const moveScripts: Partial<MoveScripts> = {
     battle.info(user, "haze");
   },
   transform(this: Move, battle, user, [target]) {
-    if (target.base.transformed) {
+    if (target.v.transformed) {
       return battle.info(user, "fail_generic");
     } else if (!battle.checkAccuracy(this, user, target)) {
       return;

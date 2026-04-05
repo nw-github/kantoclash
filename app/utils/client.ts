@@ -1,5 +1,5 @@
 import type {BattleEvent, PlayerId, PokeId, SwitchEvent} from "~~/game/events";
-import {Pokemon, transform, type ValidatedPokemonDesc} from "~~/game/pokemon";
+import {Pokemon, type ValidatedPokemonDesc} from "~~/game/pokemon";
 import type {SpeciesId} from "~~/game/species";
 import type {Generation} from "~~/game/gen";
 import type {AnimationParams} from "~/components/battle/ActivePokemon.vue";
@@ -188,7 +188,7 @@ export class ClientManager {
         const ev = e as UIDamageEvent | UIRecoverEvent;
         target.base.hp = e.hpAfter;
         if (target.owned) {
-          ev.maxHp = target.base.stats.hp;
+          ev.maxHp = target.base.maxHp;
         }
 
         if (e.why !== "substitute") {
@@ -244,7 +244,7 @@ export class ClientManager {
 
       if (e.why === "faint") {
         const poke = this.players.poke(e.src)!;
-        this.cb.playCry(poke.base.speciesId, true);
+        this.cb.playCry(poke.v.speciesId, true);
         this.cb.displayEvent(e);
         await this.cb.playAnimation(e.src, {anim: "faint"});
 
@@ -280,7 +280,7 @@ export class ClientManager {
     } else if (e.type === "transform") {
       this.cb.displayEvent(e);
 
-      await this.cb.playAnimation(e.src, {
+      return await this.cb.playAnimation(e.src, {
         anim: "transform",
         cb: new AnimCallback(() => {
           this.handleVolatiles(e);
@@ -291,18 +291,15 @@ export class ClientManager {
             if (e.ability) {
               src.base.ability = e.ability;
             }
+            src.base.recalculateStats();
           }
 
-          if (e.target) {
-            src.base = transform(src.base.real, this.players.poke(e.target)!.base);
-          }
           src.base.form = src.v.form;
           if (e.ability) {
             src.v.ability = e.ability;
           }
         }),
       });
-      return;
     } else if (e.type === "hit_sub") {
       if (e.confusion) {
         await Promise.allSettled([
@@ -355,8 +352,8 @@ export class ClientManager {
       src.itemUnusable = false;
     } else if (e.type === "sketch") {
       const src = this.players.poke(e.src)!;
-      if (src.owned) {
-        src.base.moves[src.base.moves.indexOf("sketch")] = e.move;
+      if (src.owned && e.moveIndex !== -1) {
+        src.base.moves[e.moveIndex] = e.move;
       }
     } else if (e.type === "hazard") {
       const player = this.players.get(e.player).bp!;
@@ -463,6 +460,7 @@ export class ClientManager {
       gender: e.gender,
       stats: {hp: 100, atk: 0, def: 0, spa: 0, spd: 0, spe: 0},
       ivs: {hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0},
+      evs: {},
       moves: [],
       pp: [],
       friendship: 0,
@@ -492,6 +490,10 @@ export class ClientManager {
         poke.v.types = v.types.filter(ty => !!ty);
       }
       apply(poke.v, v, "form");
+      apply(poke.v, v, "speciesId");
+      apply(poke.v, v, "gender");
+      apply(poke.v, v, "shiny");
+      apply(poke.v, v, "transformed");
       apply(poke.v, v, "stockpile");
       apply(poke.v, v, "perishCount");
       apply(poke.v, v, "flags");

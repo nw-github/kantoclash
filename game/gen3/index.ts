@@ -91,7 +91,7 @@ class Rng extends Generation2.Rng {
       stages += 2;
     }
     stages += user.base.item?.raiseCrit ?? 0;
-    if (user.base.item?.boostCrit && user.base.item?.boostCrit === user.base.real.speciesId) {
+    if (user.base.item?.boostCrit && user.base.item?.boostCrit === user.v.speciesId) {
       stages += 2;
     }
     if (user.hasAbility("superluck")) {
@@ -156,9 +156,9 @@ export class DamageCalc {
 
     if (item?.choice === "atk") {
       atk = idiv(atk * 150, 100);
-    } else if (item?.boostStats?.[user.base.speciesId]) {
+    } else if (item?.boostStats?.[user.v.speciesId]) {
       // soul dew, deep sea tooth, light ball, thick club
-      const boost = item.boostStats[user.base.speciesId]!;
+      const boost = item.boostStats[user.v.speciesId]!;
       // Technically this will result in an (A * 200 / 100) operation where the game actually does (A * 2),
       // but since the multiplication will not overflow in JS at the 32 bit boundary it will be identical.
       if (boost.stats.includes("atk")) {
@@ -194,9 +194,9 @@ export class DamageCalc {
     const item = target.base.item;
 
     let {def, spd} = target.v.stats;
-    if (item?.boostStats?.[target.base.speciesId]) {
+    if (item?.boostStats?.[target.v.speciesId]) {
       // soul dew, deep sea scale, metal powder
-      const boost = item.boostStats[target.base.speciesId]!;
+      const boost = item.boostStats[target.v.speciesId]!;
       if (boost.stats.includes("def")) {
         def = idiv(def * (100 + boost.percent), 100);
       } else if (boost.stats.includes("spd")) {
@@ -341,7 +341,7 @@ export class DamageCalc {
   static calcBaseDamageBeatUp(user: Pokemon, target: ActivePokemon, power: number) {
     const level = user.level;
     const A = user.species.stats.atk;
-    const D = target.base.species.stats.def;
+    const D = target.v.species.stats.def;
     return idiv(idiv(A * power * (idiv(2 * level, 5) + 2), D), 50) + 2;
   }
 

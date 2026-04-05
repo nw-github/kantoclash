@@ -2,10 +2,10 @@
   <div class="p-2 flex flex-col items-center">
     <div class="flex gap-10">
       <div class="flex gap-0.5 items-center justify-center">
-        {{ poke.base.species.name }}
-        <span v-if="poke.base.transformed">(Was: {{ poke.base.real.species.name }})</span>
+        {{ poke.v.species.name }}
+        <span v-if="poke.v.transformed">(was {{ poke.base.species.name }})</span>
 
-        <template v-if="poke.owned && poke.base.transformed && poke.base._itemId">
+        <template v-if="poke.owned && poke.v.transformed && poke.base._itemId">
           <ItemSprite :item="poke.base._itemId" :gen="poke.base.gen" />
           <span
             class="text-xs"
@@ -16,14 +16,14 @@
         </template>
       </div>
       <div class="flex gap-1 items-center">
-        <TypeBadge v-for="type in poke.base.species.types" :key="type" :type image />
+        <TypeBadge v-for="type in poke.v.species.types" :key="type" :type image />
       </div>
     </div>
-    <div v-if="poke.owned && poke.base.transformed" class="pt-1.5 space-y-1.5 w-full">
-      <UProgress :model-value="poke.base.hp" :max="poke.base.stats.hp" />
+    <div v-if="poke.owned && poke.v.transformed" class="pt-1.5 space-y-1.5 w-full">
+      <UProgress :model-value="poke.base.hp" :max="poke.base.maxHp" />
       <div class="flex justify-between gap-4">
         <span>
-          {{ poke.base.hp }}/{{ poke.base.stats.hp }} HP ({{ roundTo(poke.base.hpPercent, 2) }}%)
+          {{ poke.base.hp }}/{{ poke.base.maxHp }} HP ({{ roundTo(poke.base.hpPercent, 2) }}%)
         </span>
 
         <StatusOrFaint :poke="poke.base" :faint="poke.v.fainted" />
@@ -39,7 +39,7 @@
         </span>
       </span>
       <span v-else-if="poke.base.gen.id >= 3">
-        {{ poke.base.species.abilities.map(a => abilityList[a].name).join(", ") }}
+        {{ poke.v.species.abilities.map(a => abilityList[a].name).join(", ") }}
       </span>
     </div>
     <span class="pt-5 italic text-center">{{ minSpe }} to {{ maxSpe }} Spe</span>
@@ -71,7 +71,7 @@ const {poke} = defineProps<{poke: ClientActivePokemon}>();
 const minSpe = computed(() =>
   poke.base.gen.calcStat(
     "spe",
-    poke.base.species.stats,
+    poke.v.species.stats,
     poke.base.level,
     {spe: 0},
     {spe: 0},
@@ -81,7 +81,7 @@ const minSpe = computed(() =>
 const maxSpe = computed(() =>
   poke.base.gen.calcStat(
     "spe",
-    poke.base.species.stats,
+    poke.v.species.stats,
     poke.base.level,
     {spe: poke.base.gen.maxIv},
     {spe: poke.base.gen.maxEv},

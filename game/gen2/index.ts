@@ -80,7 +80,7 @@ class Rng extends Generation1.Rng {
       stages++;
     }
     stages += user.base.item?.raiseCrit ?? 0;
-    if (user.base.item?.boostCrit && user.base.item?.boostCrit === user.base.real.speciesId) {
+    if (user.base.item?.boostCrit && user.base.item?.boostCrit === user.v.speciesId) {
       stages += 2;
     }
     return battle.rand255Good(DamageCalc.P(critStages[Math.min(stages, 4)] * 100));
@@ -153,13 +153,13 @@ class DamageCalc extends Gen1DamageCalc {
 
     // TODO: > or >=?
     if (isCrit && target.v.stages[defs] > user.v.stages[atks]) {
-      A = user.base.stats[atks];
-      D = target.base.stats[defs];
+      A = user.v.baseStats[atks];
+      D = target.v.baseStats[defs];
     }
 
     [A, D] = DamageCalc.truncate(A, D);
     // Metal powder works for both transformed and untransformed Ditto in gen 2
-    if (target.base.speciesId === "ditto" || target.base.real.speciesId === "ditto") {
+    if (target.base.speciesId === "ditto") {
       [A, D] = applyMetalPowder(A, D);
     }
 
@@ -419,8 +419,8 @@ export class Generation2 extends Generation1 {
     let A, D, level;
     if (beatUp) {
       // These stats are already byte values
-      A = beatUp.stats.atk;
-      D = target.base.stats.def;
+      A = beatUp.species.stats.atk;
+      D = target.v.species.stats.def;
       level = beatUp.level;
     } else if (move.id === "present") {
       // https://github.com/pret/pokecrystal/blob/c73ab9e9c9a8b6eaee38f19fdcf956c1baf268ea/engine/battle/move_effects/present.asm#L2
@@ -573,7 +573,7 @@ export class Generation2 extends Generation1 {
 
   override recalculateStat(poke: ActivePokemon, battle: Battle, stat: StatStageId) {
     const [num, div] = battle.gen.stageMultipliers[poke.v.stages[stat]];
-    poke.v.stats[stat] = clamp(idiv(poke.base.stats[stat] * num, div), 1, 999);
+    poke.v.stats[stat] = clamp(idiv(poke.v.baseStats[stat] * num, div), 1, 999);
   }
 
   override getGender(

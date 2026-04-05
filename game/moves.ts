@@ -390,9 +390,9 @@ export const moveScripts: MoveScripts = {
             battle.info(target, "immune");
             continue;
           } else if (
-            user.base.gender === target.base.gender ||
-            user.base.gender === "N" ||
-            target.base.gender === "N"
+            user.v.gender === target.v.gender ||
+            user.v.gender === "N" ||
+            target.v.gender === "N"
           ) {
             continue;
           }
@@ -556,7 +556,7 @@ export const moveScripts: MoveScripts = {
   },
   phaze(battle, user, [target]) {
     const next = battle.rng.choice(
-      target.owner.team.filter(p => p.hp && target.owner.active.every(a => p !== a.base.real)),
+      target.owner.team.filter(p => p.hp && target.owner.active.every(a => p !== a.base)),
     );
     if (!next || !target.choice?.executed) {
       return battle.info(user, "fail_generic");
@@ -625,7 +625,7 @@ export const moveScripts: MoveScripts = {
     for (const poke of user.owner.team) {
       if (this.sound && poke.ability === "soundproof") {
         continue;
-      } else if (user.owner.active.some(p => p.base.real === poke)) {
+      } else if (user.owner.active.some(p => p.base === poke)) {
         continue;
       }
 
@@ -715,7 +715,7 @@ export const moveScripts: MoveScripts = {
     battle.info(user, this.message);
   },
   hwish(battle, user) {
-    if (!user.owner.team.some(p => p.hp && user.owner.active.every(a => p !== a.base.real))) {
+    if (!user.owner.team.some(p => p.hp && user.owner.active.every(a => p !== a.base))) {
       return battle.info(user, "fail_generic");
     }
 
@@ -758,7 +758,7 @@ export const moveScripts: MoveScripts = {
       target.v.confusion = 0;
       target.v.disabled = undefined;
       target.v.seededBy = undefined;
-      target.v.stats = {...target.base.stats};
+      target.v.stats = {...target.v.baseStats};
       if (target === user) {
         continue;
       }
@@ -820,7 +820,7 @@ export const moveScripts: MoveScripts = {
   mirrormove(battle, user) {
     battle.gen1LastDamage = 0;
     const lastHitBy = user.v.lastHitBy;
-    if (user.base.transformed && battle.gen.id === 2) {
+    if (user.v.transformed && battle.gen.id === 2) {
       return battle.info(user, "fail_generic");
     } else if (!lastHitBy || lastHitBy.poke.v.lastMove !== lastHitBy.move) {
       return battle.info(user, "fail_generic");
@@ -848,9 +848,9 @@ export const moveScripts: MoveScripts = {
       battle.ability(target);
       return battle.info(target, "immune");
     } else if (
-      user.base.gender === "N" ||
-      target.base.gender === "N" ||
-      user.base.gender === target.base.gender ||
+      user.v.gender === "N" ||
+      target.v.gender === "N" ||
+      user.v.gender === target.v.gender ||
       target.v.attract
     ) {
       battle.info(user, "fail_generic");
@@ -1045,7 +1045,7 @@ export const moveScripts: MoveScripts = {
 
     user.base.moves[moveIndex] = id;
     user.base.pp[moveIndex] = battle.gen.getMaxPP(target.v.lastMove);
-    battle.event({type: "sketch", src: user.id, move: id});
+    battle.event({type: "sketch", src: user.id, move: id, moveIndex});
   },
   sleeptalk(battle, user) {
     const m = battle.rng.choice(
@@ -1084,7 +1084,7 @@ export const moveScripts: MoveScripts = {
   },
   assist(battle, user) {
     const moves = user.owner.team
-      .flatMap(p => (p !== user.base.real ? p.moves : []))
+      .flatMap(p => (p !== user.base ? p.moves : []))
       .map(move => battle.gen.moveList[move])
       .filter(move => !move.noAssist);
     const move = battle.rng.choice(moves);

@@ -54,7 +54,7 @@ export const moveScripts: Partial<MoveScripts> = {
   },
   phaze(battle, user, [target]) {
     const next = battle.rng.choice(
-      target.owner.team.filter(p => p.hp && target.owner.active.every(a => p !== a.base.real)),
+      target.owner.team.filter(p => p.hp && target.owner.active.every(a => p !== a.base)),
     );
     if (!next) {
       return battle.info(user, "fail_generic");
@@ -275,9 +275,9 @@ export const tryDamage = (
       if (status === "attract") {
         if (
           user.v.attract ||
-          target.base.gender === "N" ||
-          user.base.gender === "N" ||
-          target.base.gender === user.base.gender
+          target.v.gender === "N" ||
+          user.v.gender === "N" ||
+          target.v.gender === user.v.gender
         ) {
           return;
         }

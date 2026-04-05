@@ -9,7 +9,7 @@
           <span class="truncate text-xs">{{ poke?.base?.name || "--" }}</span>
           <GenderIcon
             class="size-4 hidden sm:block"
-            :gender="gen1Gender[poke?.base?.speciesId!] ?? poke?.base?.gender"
+            :gender="gen1Gender[poke?.v?.speciesId!] ?? poke?.v?.gender"
           />
         </div>
         <div class="flex items-center">
@@ -18,7 +18,7 @@
           </span>
           <GenderIcon
             class="size-4 sm:hidden"
-            :gender="gen1Gender[poke?.base?.speciesId!] ?? poke?.base?.gender"
+            :gender="gen1Gender[poke?.v?.speciesId!] ?? poke?.v?.gender"
           />
         </div>
       </div>
@@ -35,12 +35,7 @@
           v-if="poke"
           class="flex gap-1 flex-wrap absolute *:px-[0.2rem] *:py-[0.1rem] *:text-[0.6rem] *:leading-3 sm:*:text-xs"
         >
-          <UBadge
-            v-if="poke.base.transformed"
-            color="neutral"
-            label="Transformed"
-            variant="subtle"
-          />
+          <UBadge v-if="poke.v.transformed" color="neutral" label="Transformed" variant="subtle" />
 
           <UBadge
             v-if="poke.base.status"
@@ -49,7 +44,7 @@
             :label="poke.base.status.toUpperCase()"
           />
 
-          <template v-if="!poke.base.species.types.every((ty, i) => ty === poke.v.types?.[i])">
+          <template v-if="!poke.v.species.types.every((ty, i) => ty === poke.v.types?.[i])">
             <TypeBadge v-for="type in poke.v.types" :key="type" :type />
           </template>
 
@@ -119,12 +114,12 @@
               class="absolute w-[128px] h-[117px] sm:w-[256px] sm:h-[234px] flex justify-center items-center select-none"
             >
               <Sprite
-                v-show="poke?.base?.speciesId"
-                :species-id="poke?.base?.speciesId"
+                v-show="poke?.v?.speciesId"
+                :species-id="poke?.v?.speciesId"
                 :scale="lessThanSm ? 0.95 : 1.75"
-                :shiny="poke?.base?.shiny"
+                :shiny="poke?.v?.shiny"
                 :form="poke?.v?.form"
-                :gender="poke?.base?.gender"
+                :gender="poke?.v?.gender"
                 :back
               />
 
@@ -158,7 +153,7 @@
           </div>
 
           <template v-if="poke?.visible" #content>
-            <PokemonTTContent v-if="poke.owned && !poke.base.transformed" :poke :weather />
+            <PokemonTTContent v-if="poke.owned && !poke.v.transformed" :poke :weather />
             <UnknownPokeTTContent v-else :poke />
           </template>
         </TouchPopover>

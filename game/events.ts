@@ -313,7 +313,7 @@ type SpikesEvent = {
 
 type DisableEvent = {type: "disable"; src: PokeId; move: MoveId};
 type ChargeEvent = {type: "charge"; src: PokeId; move: MoveId; called?: bool};
-type SketchEvent = {type: "sketch"; src: PokeId; move: MoveId};
+type SketchEvent = {type: "sketch"; src: PokeId; move: MoveId; moveIndex: number};
 type MimicEvent = {type: "mimic"; src: PokeId; move: MoveId};
 type CantUseEvent = {type: "cantuse"; src: PokeId; move: MoveId};
 type TauntEvent = {type: "cantusetaunt"; src: PokeId; move: MoveId};

@@ -149,9 +149,9 @@ export const tryDamage = (
       if (status === "attract") {
         if (
           user.v.attract ||
-          target.base.gender === "N" ||
-          user.base.gender === "N" ||
-          target.base.gender === user.base.gender
+          target.v.gender === "N" ||
+          user.v.gender === "N" ||
+          target.v.gender === user.v.gender
         ) {
           return;
         }

@@ -2,7 +2,7 @@ import type {DamageReason, RecoveryReason, InfoReason, PokeId} from "./events";
 import type {MoveId, Move, DamagingMove, HealingWishMove, ForesightMove} from "./moves";
 import {
   natureTable,
-  transform,
+  type Gender,
   type CastformForm,
   type FormId,
   type Pokemon,
@@ -28,9 +28,10 @@ import {
   idiv,
 } from "./utils";
 import {TurnType, type Battle, type MoveOption, type Options, type Player} from "./battle";
-import {abilityList, type AbilityId} from "./species";
+import {abilityList, type SpeciesId, type AbilityId} from "./species";
 import type {ItemId} from "./item";
 import dirty, {type Diff} from "./dirty";
+import type {Generation} from "./gen";
 
 export type DamageParams = {
   dmg: number;
@@ -61,6 +62,7 @@ export class ActivePokemon {
   consumed?: ItemId;
   initialized?: bool;
   id: PokeId;
+  originalMoveset?: [MoveId[], number[]];
 
   constructor(public base: Pokemon, public readonly owner: Player, idx: number) {
     this.v = new Volatiles(base);
@@ -80,6 +82,12 @@ export class ActivePokemon {
     if (this.base.status && this.hasAbility("naturalcure") && !this.v.fainted) {
       battle.ability(this);
       this.unstatus(battle);
+    }
+
+    if (this.originalMoveset) {
+      this.base.moves = this.originalMoveset[0];
+      this.base.pp = this.originalMoveset[1];
+      this.originalMoveset = undefined;
     }
 
     const old = this.v;
@@ -200,7 +208,7 @@ export class ActivePokemon {
   }
 
   canBatonPass() {
-    return this.owner.team.some(p => p.hp && !this.owner.active.some(a => a.base.real === p));
+    return this.owner.team.some(p => p.hp && !this.owner.active.some(a => a.base === p));
   }
 
   faintIfNeeded(battle: Battle) {
@@ -249,11 +257,25 @@ export class ActivePokemon {
   }
 
   transform(battle: Battle, target: ActivePokemon) {
-    this.base = transform(this.base.real, target.base);
+    if (!this.originalMoveset) {
+      this.originalMoveset = [this.base.moves, this.base.pp];
+    }
+    this.base.moves = [...target.base.moves];
+    this.base.pp = target.base.moves.map(move => Math.min(battle.gen.getMaxPP(move), 5));
+
     // TODO: is this right? or should you continue to be locked into the move if the transform
     // moveset has it?
     this.v.choiceLock = undefined;
+    this.v.transformed = true;
+    this.v.types = [...target.v.types];
+    this.v.speciesId = target.v.speciesId;
+    this.v.form = target.v.form;
+    this.v.shiny = target.v.shiny;
+    this.v.ability = target.v.ability;
     this.v.stats = {...target.v.stats};
+    this.v.baseStats = {...target.v.baseStats};
+    this.v.gender = battle.gen.id <= 5 ? this.v.gender : target.v.gender;
+    this.v.mimic = target.v.mimic && {...target.v.mimic, pp: target.v.mimic.pp && 5};
     for (const k of stageKeys) {
       this.v.stages[k] = target.v.stages[k];
       if (stageStatKeys.includes(k)) {
@@ -261,11 +283,7 @@ export class ActivePokemon {
       }
     }
 
-    this.v.types = [...target.v.types];
-    this.v.form = target.v.form;
-    this.v.ability = target.v.ability;
-
-    if (target.base.speciesId === "arceus" && target.hasAbility("multitype")) {
+    if (target.v.speciesId === "arceus" && target.hasAbility("multitype")) {
       const type = this.base.item?.plate ?? "normal";
       this.v.form = type;
       this.v.types = [type];
@@ -275,9 +293,10 @@ export class ActivePokemon {
       type: "transform",
       src: this.id,
       target: target.id,
-      speciesId: this.base.speciesId,
-      shiny: this.base.shiny,
-      gender: this.base.gender,
+      speciesId: this.v.speciesId,
+      shiny: this.v.shiny,
+      gender: this.v.gender,
+      form: this.v.form,
     });
   }
 
@@ -454,17 +473,21 @@ export class ActivePokemon {
       }
     }
 
-    if (status === "frz" && this.base.speciesId === "shayminsky" && !this.base.transformed) {
+    // will a shaymin sky transformed into a shaymin sky revert when frozen?
+    if (status === "frz" && this.base.speciesId === "shayminsky" && !this.v.transformed) {
       // Getting frozen transforms shaymin for the rest of the battle. Freezing a pokémon
       // transformed into shaymin-sky does nothing
-      this.base.speciesId = "shaymin";
-      this.base.ability = this.v.ability = "naturalcure";
+      this.v.speciesId = this.base.speciesId = "shaymin";
+      this.v.ability = this.base.ability = "naturalcure";
+      this.base.recalculateStats();
+      this.v.stats = {...this.base.stats};
+      this.v.baseStats = {...this.base.stats};
       battle.event({
         type: "transform",
         src: this.id,
-        speciesId: this.base.speciesId,
-        shiny: this.base.shiny,
-        gender: this.base.gender,
+        speciesId: this.v.speciesId,
+        shiny: this.v.shiny,
+        gender: this.v.gender,
         ability: this.v.ability,
         permanent: true,
       });
@@ -600,19 +623,20 @@ export class ActivePokemon {
   }
 
   handleForecast(battle: Battle) {
-    if (this.base.speciesId === "cherrim") {
+    if (this.v.speciesId === "cherrim") {
       const form: FormId | undefined = battle.getWeather() === "sun" ? "sunshine" : undefined;
       if (form !== this.v.form) {
         this.v.form = form;
         battle.event({
           type: "transform",
           src: this.id,
-          speciesId: this.base.speciesId,
-          shiny: this.base.shiny,
-          gender: this.base.gender,
+          speciesId: this.v.speciesId,
+          shiny: this.v.shiny,
+          gender: this.v.gender,
+          form: this.v.form,
         });
       }
-    } else if (this.hasAbility("forecast") && this.base.speciesId === "castform") {
+    } else if (this.hasAbility("forecast") && this.v.speciesId === "castform") {
       const types: Record<Weather, Type> = {
         sand: "normal",
         hail: "ice",
@@ -633,9 +657,10 @@ export class ActivePokemon {
         battle.event({
           type: "transform",
           src: this.id,
-          speciesId: this.base.speciesId,
-          shiny: this.base.shiny,
-          gender: this.base.gender,
+          speciesId: this.v.speciesId,
+          shiny: this.v.shiny,
+          gender: this.v.gender,
+          form: this.v.form,
         });
       }
     }
@@ -887,7 +912,7 @@ export class ActivePokemon {
       const poke = this.owner.team[i];
       if (
         poke.hp !== 0 &&
-        (battle.turnType === TurnType.Lead || !this.owner.active.some(a => a.base.real === poke))
+        (battle.turnType === TurnType.Lead || !this.owner.active.some(a => a.base === poke))
       ) {
         switches.push(i);
       }
@@ -922,9 +947,10 @@ export class ActivePokemon {
     // send all moves so PP can be updated
     const moves = this.base.moves.map((m, i) => {
       const move = this.v.mimic?.indexInMoves === i ? this.v.mimic?.move : m;
+      const pp = this.v.mimic?.pp !== undefined ? this.v.mimic.pp : this.base.pp[i];
       return {
         move,
-        pp: this.base.pp[i],
+        pp,
         valid: battle.gen.isValidMove(battle, this, move, i),
         indexInMoves: i,
         display: true,
@@ -948,17 +974,10 @@ export class ActivePokemon {
       });
     }
 
-    if (this.base.transformed) {
-      const original = this.base.real;
-      original.moves.forEach((move, i) => {
-        moves.push({
-          move,
-          pp: original.pp[i],
-          valid: false,
-          display: false,
-          indexInMoves: i,
-          targets: [],
-        });
+    if (this.originalMoveset) {
+      const [baseMoves, pp] = this.originalMoveset;
+      baseMoves.forEach((move, i) => {
+        moves.push({move, pp: pp[i], valid: false, display: false, indexInMoves: i, targets: []});
       });
     }
 
@@ -969,6 +988,26 @@ export class ActivePokemon {
       moves,
       id: this.id,
     };
+  }
+
+  hasPP(moveIndex: number) {
+    if (this.v.mimic?.indexInMoves === moveIndex && this.v.mimic.pp !== undefined) {
+      return this.v.mimic.pp;
+    }
+    return this.base.pp[moveIndex];
+  }
+
+  deductPP(moveIndex: number, count: number) {
+    if (this.v.mimic?.indexInMoves === moveIndex && this.v.mimic.pp !== undefined) {
+      this.v.mimic.pp = Math.max(this.v.mimic.pp - count, 0);
+    }
+
+    if (this.base.pp[moveIndex] === 0) {
+      // Certain glitches can cause a move to get used at 0 PP in Gen 1, in which case it wraps around
+      this.base.pp[moveIndex] = 63;
+    } else {
+      this.base.pp[moveIndex] = Math.max(this.base.pp[moveIndex] - count, 0);
+    }
   }
 
   moveset() {
@@ -1064,7 +1103,7 @@ export class ActivePokemon {
     cflags |= diff.meanLook ? CVF.meanLook : 0;
     cflags |= diff.seededBy ? CVF.seeded : 0;
     cflags |= diff.tauntTurns ? CVF.taunt : 0;
-    if (this.base.transformed) {
+    if (this.v.transformed) {
       diff.stats = undefined;
     }
     return {
@@ -1076,6 +1115,10 @@ export class ActivePokemon {
       perishCount: diff.perishCount,
       flags: diff.flags,
       drowsy: diff.drowsy,
+      speciesId: diff.speciesId,
+      shiny: diff.shiny,
+      gender: diff.gender,
+      transformed: diff.transformed,
       charging: diff.charging?.move?.id,
       trapped: diff.trapped?.move?.id,
       identified: diff.identified?.id,
@@ -1125,8 +1168,13 @@ class Volatiles {
    * like Power Trick.
    */
   stats: StageStats;
+  baseStats: StageStats;
   types: Type[];
   form?: FormId;
+  speciesId: SpeciesId;
+  shiny: bool;
+  gender: Gender;
+  transformed = false;
   substitute = 0;
   confusion = 0;
   counter = 0;
@@ -1170,16 +1218,22 @@ class Volatiles {
   bide?: {move: Move; turns: number; dmg: number};
   disabled?: {turns: number; indexInMoves: number};
   encore?: {turns: number; indexInMoves: number};
-  mimic?: {move: MoveId; indexInMoves: number};
+  mimic?: {move: MoveId; indexInMoves: number; pp?: number};
   trapping?: {move: Move; turns: number};
   trapped?: {user: ActivePokemon; move: Move; turns: number};
   flags = VF.none;
+  private gen: Generation;
 
   constructor(base: Pokemon) {
+    this.speciesId = base.speciesId;
+    this.gender = base.gender;
     this.types = [...base.species.types];
     this.stats = {...base.stats};
+    this.baseStats = {...base.stats};
+    this.shiny = base.shiny;
     this.ability = base.ability;
     this.counter = base.status === "tox" ? 1 : 0;
+    this.gen = base.gen;
     const self = dirty.tracked(this, VOLATILE_SYNC_KEYS);
     self.form = base.form;
     if (base.ability === "multitype" && HP_TYPES.includes(this.form)) {
@@ -1213,6 +1267,10 @@ class Volatiles {
   hasFlag(flag: VF) {
     return (this.flags & flag) !== 0;
   }
+
+  get species() {
+    return this.gen.speciesList[this.speciesId];
+  }
 }
 
 export type VolatileDiff = ReturnType<ActivePokemon["changedVolatiles"]>;
@@ -1237,4 +1295,8 @@ const VOLATILE_SYNC_KEYS = [
   "tauntTurns",
   "drowsy",
   "identified",
+  "speciesId",
+  "gender",
+  "shiny",
+  "transformed",
 ] satisfies (keyof Volatiles)[];

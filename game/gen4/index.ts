@@ -91,9 +91,9 @@ class DamageCalc {
       atk = idiv(atk * 150, 100);
     } else if (item?.choice === "spa") {
       spa = idiv(spa * 150, 100);
-    } else if (item?.boostStats?.[user.base.speciesId]) {
+    } else if (item?.boostStats?.[user.v.speciesId]) {
       // soul dew, deep sea tooth, thick club
-      const boost = item.boostStats[user.base.speciesId]!;
+      const boost = item.boostStats[user.v.speciesId]!;
       // Technically this will result in an (A * 200 / 100) operation where the game actually does (A * 2),
       // but since the multiplication will not overflow in JS at the 32 bit boundary it will be identical.
       if (boost.stats.includes("atk")) {
@@ -128,9 +128,9 @@ class DamageCalc {
     const item = target.base.item;
 
     let {def, spd} = target.v.stats;
-    if (item?.boostStats?.[target.base.speciesId]) {
+    if (item?.boostStats?.[target.v.speciesId]) {
       // soul dew, deep sea scale, metal powder
-      const boost = item.boostStats[target.base.speciesId]!;
+      const boost = item.boostStats[target.v.speciesId]!;
       if (boost.stats.includes("def")) {
         def = idiv(def * (100 + boost.percent), 100);
       } else if (boost.stats.includes("spd")) {
@@ -184,11 +184,11 @@ class DamageCalc {
     if (
       item?.typeBoost &&
       (item.typeBoost.type === type || item.typeBoost.type2 === type) &&
-      (!item.typeBoost.species || item.typeBoost.species.includes(user.base.speciesId))
+      (!item.typeBoost.species || item.typeBoost.species.includes(user.v.speciesId))
     ) {
       power = idiv(power * (100 + item.typeBoost.percent), 100);
     }
-    if (itemId === "lightball" && user.base.speciesId === "pikachu") {
+    if (itemId === "lightball" && user.v.speciesId === "pikachu") {
       power <<= 1;
     }
     if (
@@ -220,8 +220,8 @@ class DamageCalc {
       power = idiv(power * 125, 100);
     }
 
-    if (userAbilityId === "rivalry" && user.base.gender !== "N" && target.base.gender !== "N") {
-      if (user.base.gender === target.base.gender) {
+    if (userAbilityId === "rivalry" && user.v.gender !== "N" && target.v.gender !== "N") {
+      if (user.v.gender === target.v.gender) {
         power = idiv(power * 125, 100);
       } else {
         power = idiv(power * 75, 100);
@@ -325,7 +325,7 @@ class DamageCalc {
     // https://github.com/pret/pokeheartgold/blob/a6a9655094d23d501b1477831d107f9d37727f33/src/battle/battle_command.c#L3730
     const level = partyMon.level;
     const A = partyMon.species.stats.atk;
-    const D = target.base.species.stats.def;
+    const D = target.v.species.stats.def;
     let dmg = idiv(idiv(A * power * (idiv(2 * level, 5) + 2), D), 50) + 2;
     // Beat up has a special damage calculation routine and uses the Gen 3 method of applying helping hand
     if (user.v.hasFlag(VF.helpingHand)) {
@@ -813,7 +813,7 @@ export class Generation4 extends Generation3 {
     }
 
     // quick powder
-    const boost = item?.boostStats?.[user.base.speciesId];
+    const boost = item?.boostStats?.[user.v.speciesId];
     if (boost && boost.stats.includes("spe")) {
       speed = idiv(speed * (100 + boost.percent), 100);
     }

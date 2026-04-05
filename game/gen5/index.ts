@@ -100,10 +100,10 @@ class DamageCalc {
       mod = chainModIf(mod, Mod.ATK_FLASHFIRE, user.v.hasFlag(VF.flashFire) && type === "fire");
       mod = chainModIf(mod, Mod.ATK_SLOWSTART, !special && userAbilityId === "slowstart" && user.v.slowStartTurns < 5);
       mod = chainModIf(mod, Mod.ATK_FLOWERGIFT, !special && weather === "sun" && user.owner.sideHasAbility("flowergift"));
-      mod = chainModIf(mod, Mod.ATK_LIGHTBALL, user.base.itemId === "lightball" && user.base.speciesId === "pikachu");
+      mod = chainModIf(mod, Mod.ATK_LIGHTBALL, user.base.itemId === "lightball" && user.v.speciesId === "pikachu");
       mod = chainModIf(mod, Mod.ATK_CHOICE, user.base.item?.choice === atks);
-      mod = chainModIf(mod, Mod.ATK_DEEPSEATOOTH, special && user.base.itemId === "deepseatooth" && user.base.speciesId === "clamperl");
-      mod = chainModIf(mod, Mod.ATK_SOULDEW, special && user.base.itemId === "souldew" && (user.base.speciesId === "latios" || user.base.speciesId === "latias"));
+      mod = chainModIf(mod, Mod.ATK_DEEPSEATOOTH, special && user.base.itemId === "deepseatooth" && user.v.speciesId === "clamperl");
+      mod = chainModIf(mod, Mod.ATK_SOULDEW, special && user.base.itemId === "souldew" && (user.v.speciesId === "latios" || user.v.speciesId === "latias"));
     }
     return applyMod(applyMod(A, hustle), mod);
   }
@@ -132,10 +132,10 @@ class DamageCalc {
     {
       mod = chainModIf(mod, Mod.DEF_MARVELSCALE, !special && target.getAbilityId(user) === "marvelscale" && target.base.status);
       mod = chainModIf(mod, Mod.DEF_FLOWERGIFT, special && weather === "sun" && target.owner.sideHasAbility("flowergift"));
-      mod = chainModIf(mod, Mod.DEF_DEEPSEASCALE, special && target.base.itemId === "deepseascale" && target.base.speciesId === "clamperl");
-      mod = chainModIf(mod, Mod.DEF_METALPOWDER, !special && target.base.itemId === "metalpowder" && target.base.speciesId === "ditto" && !target.base.transformed);
-      mod = chainModIf(mod, Mod.DEF_EVIOLITE, target.base.itemId === "eviolite" && target.base.species.evolvesTo);
-      mod = chainModIf(mod, Mod.DEF_SOULDEW, special && target.base.itemId === "souldew" && (target.base.speciesId === "latios" || target.base.speciesId === "latias"));
+      mod = chainModIf(mod, Mod.DEF_DEEPSEASCALE, special && target.base.itemId === "deepseascale" && target.v.speciesId === "clamperl");
+      mod = chainModIf(mod, Mod.DEF_METALPOWDER, !special && target.base.itemId === "metalpowder" && target.v.speciesId === "ditto");
+      mod = chainModIf(mod, Mod.DEF_EVIOLITE, target.base.itemId === "eviolite" && target.v.species.evolvesTo);
+      mod = chainModIf(mod, Mod.DEF_SOULDEW, special && target.base.itemId === "souldew" && (target.v.speciesId === "latios" || target.v.speciesId === "latias"));
     }
     return applyMod(D, mod);
   }
@@ -146,7 +146,7 @@ class DamageCalc {
       return (
         typeBoost &&
         (typeBoost.type === type || typeBoost.type2 === type) &&
-        (!typeBoost.species || typeBoost.species.includes(user.base.speciesId))
+        (!typeBoost.species || typeBoost.species.includes(user.v.speciesId))
       );
     };
 
@@ -164,8 +164,8 @@ class DamageCalc {
       mod = chainModIf(mod, Mod.BP_IRONFIST, userAbilityId === "ironfist" && move.punch);
       mod = chainModIf(mod, Mod.BP_TOXICBOOST, !special && userAbilityId === "toxicboost" && (user.base.status === "psn" || user.base.status === "tox"));
       let rivalry = Mod.NONE;
-      if (userAbilityId === "rivalry" && user.base.gender !== "N" && target.base.gender !== "N") {
-        rivalry = user.base.gender === target.base.gender ? Mod.BP_RIVALRY_SAME : Mod.BP_RIVALRY_OPPOSITE;
+      if (userAbilityId === "rivalry" && user.v.gender !== "N" && target.v.gender !== "N") {
+        rivalry = user.v.gender === target.v.gender ? Mod.BP_RIVALRY_SAME : Mod.BP_RIVALRY_OPPOSITE;
       }
       mod = chainMod(mod, rivalry);
       mod = chainModIf(mod, Mod.BP_SAND_FORCE, weather === "sand" && userAbilityId === "sandforce" && (type === "rock" || type === "steel" || type === "ground"));

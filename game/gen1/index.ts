@@ -79,7 +79,7 @@ class Rng {
   tryKingsRock(battle: Battle) { return battle.rand255Good(30); }
   tryFocusBand(battle: Battle) { return battle.rand255Good(30); }
   tryCrit(battle: Battle, user: ActivePokemon, hc: bool) {
-    const baseSpe = user.base.species.stats.spe;
+    const baseSpe = user.v.species.stats.spe;
     const focus = user.v.hasFlag(VF.focusEnergy);
     if (hc) {
       return battle.rand255(focus ? 4 * idiv(baseSpe, 4) : 8 * idiv(baseSpe, 2));
@@ -142,9 +142,9 @@ export class DamageCalc {
     }
 
     if (isCrit) {
-      A = user.base.stats[atks];
+      A = user.v.baseStats[atks];
       // In gen 1, a crit against a transformed pokemon will use its untransformed stats
-      D = target.base.real.stats[defs];
+      D = target.base.stats[defs];
     }
 
     if (A > 0xff || D > 0xff) {
@@ -455,7 +455,7 @@ export class Generation1 {
 
   recalculateStat(poke: ActivePokemon, battle: Battle, stat: StatStageId, negative: bool) {
     const [num, div] = battle.gen.stageMultipliers[poke.v.stages[stat]];
-    poke.v.stats[stat] = idiv(poke.base.stats[stat] * num, div);
+    poke.v.stats[stat] = idiv(poke.v.baseStats[stat] * num, div);
 
     // https://www.smogon.com/rb/articles/rby_mechanics_guide#stat-mechanics
     if (!negative) {

@@ -139,6 +139,7 @@ type RawPokemonInit = {
   status?: Status;
   friendship: number;
   ivs: Stats;
+  evs: Partial<Stats>;
   shiny: bool;
   gender: Gender;
   ability?: AbilityId;
@@ -150,11 +151,12 @@ type RawPokemonInit = {
 export class Pokemon {
   readonly gen: Generation;
   readonly ivs: Stats;
-  readonly stats: Stats;
+  readonly evs: Partial<Stats>;
+  stats: Stats;
   readonly level: number;
   readonly name: string;
-  readonly moves: MoveId[];
-  readonly pp: number[];
+  moves: MoveId[];
+  pp: number[];
   readonly shiny: bool;
   readonly gender: Gender;
   readonly friendship: number;
@@ -180,6 +182,7 @@ export class Pokemon {
     status,
     friendship,
     ivs,
+    evs,
     shiny,
     gender,
     ability,
@@ -189,6 +192,7 @@ export class Pokemon {
   }: RawPokemonInit) {
     this.gen = gen;
     this.stats = stats;
+    this.evs = evs;
     this.speciesId = speciesId;
     this.level = level;
     this.name = name;
@@ -245,6 +249,7 @@ export class Pokemon {
     return new Pokemon({
       gen,
       ivs,
+      evs: evs ?? {},
       speciesId,
       level,
       item,
@@ -297,113 +302,15 @@ export class Pokemon {
     return this.gen.speciesList[this.speciesId];
   }
 
-  get transformed() {
-    return false;
-  }
-
-  get real(): Pokemon {
-    return this;
+  recalculateStats() {
+    const {species, level, ivs, evs, nature} = this;
+    this.stats = {
+      hp: this.gen.calcStat("hp", species.stats, level, ivs, evs, nature),
+      atk: this.gen.calcStat("atk", species.stats, level, ivs, evs, nature),
+      def: this.gen.calcStat("def", species.stats, level, ivs, evs, nature),
+      spa: this.gen.calcStat("spa", species.stats, level, ivs, evs, nature),
+      spd: this.gen.calcStat("spd", species.stats, level, ivs, evs, nature),
+      spe: this.gen.calcStat("spe", species.stats, level, ivs, evs, nature),
+    };
   }
 }
-
-// prettier-ignore
-class TransformedPokemon extends Pokemon {
-  constructor(readonly base: Pokemon, target: Pokemon) {
-    super({
-      stats: {...target.stats, hp: base.maxHp},
-      speciesId: target.speciesId,
-      moves: [...target.moves],
-      pp: target.moves.map(move => Math.min(base.gen.getMaxPP(move), 5)),
-      shiny: target.shiny,
-      form: target.form,
-
-      gen: base.gen,
-      level: base.level,
-      name: base.name,
-      hp: base.hp,
-      status: base.status,
-      friendship: base.friendship,
-      ivs: base.ivs,
-      gender: base.gender,
-      ability: base.ability,
-      nature: base.nature,
-      item: base.itemId,
-    });
-
-    delete this._itemId;
-    // @ts-expect-error operand of delete must be optional
-    delete this.itemUnusable;
-    // @ts-expect-error operand of delete must be optional
-    delete this.hp;
-    delete this.status;
-    // @ts-expect-error operand of delete must be optional
-    delete this.sleepTurns;
-    delete this.ability;
-    delete this.form;
-  }
-
-  // @ts-expect-error defined as property, overriden as getter
-  override get _itemId() { return this.base._itemId; }
-  // @ts-expect-error defined as property, overriden as getter
-  override get itemUnusable() { return this.base.itemUnusable; }
-  // @ts-expect-error defined as property, overriden as getter
-  override get hp() { return this.base.hp; }
-  // @ts-expect-error defined as property, overriden as getter
-  override get status() { return this.base.status; }
-  // @ts-expect-error defined as property, overriden as getter
-  override get sleepTurns() { return this.base.sleepTurns; }
-  // @ts-expect-error defined as property, overriden as getter
-  override get ability() { return this.base.ability; }
-  // @ts-expect-error defined as property, overriden as getter
-  override get form() { return this.base.form; }
-
-  override set _itemId(v) {  if (this.base) { this.base._itemId = v; } }
-  override set itemUnusable(v) {  if (this.base) { this.base.itemUnusable = v; } }
-  override set hp(v) {  if (this.base) { this.base.hp = v; } }
-  override set status(v) {  if (this.base) { this.base.status = v; } }
-  override set sleepTurns(v) {  if (this.base) { this.base.sleepTurns = v; } }
-  override set ability(v) {  if (this.base) { this.base.ability = v; } }
-  override set form(v) {  if (this.base) { this.base.form = v; } }
-
-  override get transformed() { return true; }
-  override get real() { return this.base; }
-}
-
-// export const transform = (user: Pokemon, transformed: Pokemon) => {
-//   const moves = [...transformed.moves];
-//   const pp = transformed.moves.map(move => Math.min(user.gen.getMaxPP(move), 5));
-//   const stats = {...transformed.stats, hp: user.stats.hp};
-//   const speciesId = transformed.speciesId;
-//   const shiny = transformed.shiny;
-//   let form = transformed.form;
-//
-//   return new Proxy(user, {
-//     get(target, prop: keyof Pokemon) {
-//       // prettier-ignore
-//       switch (prop) {
-//       case "real": return user;
-//       case "transformed": return true;
-//       case "moves": return moves;
-//       case "pp": return pp;
-//       case "stats": return stats;
-//       case "speciesId": return speciesId;
-//       case "shiny": return shiny;
-//       case "form": return form;
-//       case "species": return target.gen.speciesList[speciesId];
-//       default: return target[prop];
-//       }
-//     },
-//     set(target, prop: keyof Pokemon, val) {
-//       if (prop === "form") {
-//         form = val;
-//       } else {
-//         (target as any)[prop] = val;
-//       }
-//       return true;
-//     },
-//   });
-// };
-
-export const transform = (user: Pokemon, target: Pokemon) => {
-  return new TransformedPokemon(user, target) as Pokemon;
-};
