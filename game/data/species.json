@@ -28469,6 +28469,7 @@
     "name": "Shaymin-Sky",
     "dexId": 492,
     "sprite": "492-sky",
+    "cry": "492s",
     "types": ["grass", "flying"],
     "abilities": ["serenegrace"],
     "stats": {"hp": 100, "atk": 103, "def": 75, "spa": 120, "spd": 75, "spe": 127},

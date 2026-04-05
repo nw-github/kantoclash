@@ -411,10 +411,7 @@ onMounted(async () => {
     playCry(speciesId, pitchDown) {
       if (isLive()) {
         const species = gen.value.speciesList[speciesId];
-        let sprite = species.cry ?? species.dexId.toString();
-        if (speciesId === "shayminsky") {
-          sprite += "-sky";
-        }
+        const sprite = species.cry ?? species.dexId.toString();
         return sound.play("cries", {sprite, volume: sfxVol.value, detune: pitchDown ? -350 : 0});
       }
     },
