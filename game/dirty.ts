@@ -6,13 +6,14 @@ export type Diff<T> = {
   [P in keyof T]?: T[P] extends object ? NullableIfOptional<Diff<T[P]>> : NullableIfOptional<T[P]>;
 };
 
-type Key = string | symbol;
+type Key = string | number | symbol;
 
 const dirtyMap = new WeakMap<object, Set<Key>>();
 
-const enproxy = <T extends object>(
+const enproxy = <T>(
   obj: T,
-  includeList?: readonly (keyof T)[],
+  includeList: readonly (keyof T)[] | undefined,
+  startDirty: bool,
   notifyParent?: () => void,
 ): T => {
   if (
@@ -40,19 +41,18 @@ const enproxy = <T extends object>(
       return true;
     },
     set(target, key, newValue) {
-      const relevant = !include || include.has(key as keyof T);
-      if (relevant) {
-        if (typeof newValue === "object") {
-          newValue = enproxy(newValue, undefined, () => {
-            dirty.add(key);
-            notifyParent?.();
-          });
-        }
+      if (newValue === target[key as keyof T]) {
+        return true;
+      }
 
-        if (relevant && newValue !== target[key as keyof T]) {
+      if (!include || include.has(key as keyof T)) {
+        newValue = enproxy(newValue, undefined, true, () => {
           dirty.add(key);
           notifyParent?.();
-        }
+        });
+
+        dirty.add(key);
+        notifyParent?.();
       }
 
       target[key as keyof T] = newValue;
@@ -63,9 +63,12 @@ const enproxy = <T extends object>(
 
   for (const key in obj) {
     const item = obj[key as keyof T];
-    if (typeof item === "object" && (!include || include.has(key))) {
-      dirty.add(key);
-      obj[key as keyof T] = enproxy(item!, undefined, () => {
+    if (!include || include.has(key as keyof T)) {
+      if (startDirty) {
+        dirty.add(key);
+      }
+
+      obj[key as keyof T] = enproxy(item!, undefined, startDirty, () => {
         dirty.add(key);
         notifyParent?.();
       }) as any;
@@ -74,8 +77,12 @@ const enproxy = <T extends object>(
   return proxy;
 };
 
-export function tracked<T extends object>(obj: T, include?: readonly (keyof T)[]) {
-  return enproxy(obj, include);
+export function tracked<T extends object>(
+  obj: T,
+  include?: readonly (keyof T)[],
+  startDirty = false,
+) {
+  return enproxy(obj, include, startDirty);
 }
 
 export function flush<T extends object>(obj: T): Diff<T> {
@@ -98,6 +105,10 @@ export function flush<T extends object>(obj: T): Diff<T> {
   return result;
 }
 
+export function isDirty<T extends object>(obj: T) {
+  return !!dirtyMap.get(obj)?.size;
+}
+
 export function merge<T extends object>(obj: T, diff: Diff<T>) {
   for (const k in diff) {
     const rhs = diff[k];
@@ -117,4 +128,4 @@ export function merge<T extends object>(obj: T, diff: Diff<T>) {
   }
 }
 
-export default {tracked, flush, merge};
+export default {tracked, flush, isDirty, merge};

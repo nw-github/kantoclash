@@ -11,7 +11,7 @@ export const moveScripts: Partial<MoveScripts> = {
     }
 
     if (this.why === "rest") {
-      user.base.status = "slp";
+      user.setStatusCondition("slp");
       user.base.sleepTurns = 3;
       user.v.counter = 0;
       user.recover(diff, user, battle, this.why);

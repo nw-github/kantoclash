@@ -456,7 +456,7 @@ export const tryDamage = (
       battle.event({type: "trap", src: user.id, target: user.id, kind: "end", move});
     }
   } else if (self.clearTargetStatus && !hadSub && target.base.status === self.clearTargetStatus) {
-    target.base.status = undefined;
+    target.setStatusCondition(undefined);
     battle.event({type: "cure", src: target.id, status: self.clearTargetStatus});
   }
 

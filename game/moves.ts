@@ -358,11 +358,8 @@ export const moveScripts: MoveScripts = {
         return battle.info(user, "fail_generic");
       }
 
-      user.base.status = "slp";
-      user.base.sleepTurns = 2;
-      if (user.hasAbility("earlybird")) {
-        user.base.sleepTurns--;
-      }
+      user.setStatusCondition("slp");
+      user.base.sleepTurns = user.hasAbility("earlybird") ? 1 : 2;
       user.recover(diff, user, battle, this.why);
       // In gen 1, Rest doesn't reset the toxic counter or par/brn stat drops
     } else {
@@ -771,11 +768,11 @@ export const moveScripts: MoveScripts = {
         target.v.hazed = true;
       }
 
-      target.base.status = undefined;
+      target.setStatusCondition(undefined);
     }
 
     if (user.base.status === "tox") {
-      user.base.status = "psn";
+      user.setStatusCondition("psn");
     }
 
     battle.info(user, "haze");

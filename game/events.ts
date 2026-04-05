@@ -1,5 +1,5 @@
 import type {MoveId} from "./moves";
-import type {FormId, Gender, Status} from "./pokemon";
+import type {Gender, Status} from "./pokemon";
 import type {AbilityId, SpeciesId} from "./species";
 import type {StageId, Type, VF, Weather, ScreenId, HazardId} from "./utils";
 import type {ItemId} from "./item";
@@ -68,7 +68,6 @@ export type SwitchEvent = {
   indexInTeam: number;
   gender: Gender;
   shiny: bool;
-  form?: FormId;
   why?: "phaze" | "batonpass" | "uturn";
 };
 
@@ -79,7 +78,6 @@ type TransformEvent = {
   speciesId: SpeciesId;
   shiny: bool;
   gender: Gender;
-  form?: FormId;
   ability?: AbilityId;
   permanent?: bool;
 };

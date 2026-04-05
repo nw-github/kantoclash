@@ -16,6 +16,7 @@ import {
 import type {Generation} from "./gen";
 import {ActivePokemon} from "./active";
 import type {AbilityId} from "./species";
+import dirty from "./dirty";
 
 export {ActivePokemon};
 
@@ -209,10 +210,17 @@ export class Battle {
     this.finished = true;
   }
 
-  event<T extends BattleEvent = BattleEvent>(event: BattleEvent) {
-    event.volatiles = this.allActive.map(poke => ({id: poke.id, v: poke.changedVolatiles()}));
+  event<T extends BattleEvent>(event: T): T & BattleEvent {
+    const volatiles = this.allActive
+      .filter(poke => poke.initialized && dirty.isDirty(poke.v))
+      .map(poke => ({id: poke.id, v: poke.changedVolatiles()}));
+    if (volatiles.length) {
+      event.volatiles = volatiles;
+    } else if (event.type === "sv") {
+      return event;
+    }
     this.events.push(event);
-    return event as T;
+    return event;
   }
 
   info(src: ActivePokemon, why: InfoReason) {
@@ -310,7 +318,7 @@ export class Battle {
         } else {
           // Ensure switch-in abilities activate in turn order on the lead turn including item
           // effects like choice scarf
-          if (poke.choice.move.kind === "switch" && isLead) {
+          if (poke.choice.move.kind === "switch" && !poke.initialized) {
             poke.base = poke.choice.move.poke;
             poke.v.stats = {...poke.choice.move.poke.stats};
           }

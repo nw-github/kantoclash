@@ -379,6 +379,7 @@ watchImmediate([paused, () => events.length], ([paused, nEvents]) => {
 
 onMounted(async () => {
   const runEvent = async (e: BattleEvent) => {
+    let img;
     if (e.type === "next_turn") {
       currentTurnNo.value = e.turn;
       htmlTurns.value.push([]);
@@ -387,6 +388,12 @@ onMounted(async () => {
         await delay(450);
       }
       return;
+    } else if (e.type === "switch" || e.type === "transform") {
+      // Preload the sprite
+      const back = playerId(e.src) === perspective.value;
+      const form = e.volatiles?.find(v => v.id === e.src)?.v.form || undefined;
+      img = new Image();
+      img.src = getSpritePath(e.speciesId, e.gender === "F", e.shiny, back, form);
     }
 
     smoothScroll.value = isLive();
@@ -463,12 +470,6 @@ onMounted(async () => {
       if (isLive()) {
         liveEvents.value.push(ev);
       }
-    },
-    preloadSprite(poke, speciesId, female, shiny, form) {
-      const back = playerId(poke) === perspective.value;
-      const img = new Image();
-      img.src = getSpritePath(speciesId, female, shiny, back, form);
-      return img;
     },
   });
 

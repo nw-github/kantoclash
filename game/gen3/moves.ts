@@ -32,7 +32,7 @@ export const moveScripts: Partial<MoveScripts> = {
         return battle.info(user, "fail_generic");
       }
 
-      user.base.status = "slp";
+      user.setStatusCondition("slp");
       user.base.sleepTurns = 3;
       if (user.hasAbility("earlybird")) {
         user.base.sleepTurns--;
@@ -481,7 +481,7 @@ export const tryDamage = (
       battle.event({type: "trap", src: user.id, target: user.id, kind: "end", move});
     }
   } else if (self.clearTargetStatus && !hadSub && target.base.status === self.clearTargetStatus) {
-    target.base.status = undefined;
+    target.setStatusCondition(undefined);
     battle.event({type: "cure", src: target.id, status: self.clearTargetStatus});
   }
 

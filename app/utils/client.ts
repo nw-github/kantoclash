@@ -1,5 +1,5 @@
 import type {BattleEvent, PlayerId, PokeId, SwitchEvent} from "~~/game/events";
-import {Pokemon, transform, type ValidatedPokemonDesc, type FormId} from "~~/game/pokemon";
+import {Pokemon, transform, type ValidatedPokemonDesc} from "~~/game/pokemon";
 import type {SpeciesId} from "~~/game/species";
 import type {Generation} from "~~/game/gen";
 import type {AnimationParams} from "~/components/battle/ActivePokemon.vue";
@@ -15,7 +15,6 @@ export type ClientActivePokemon = ActivePokemon & {
   indexInTeam?: number;
   abilityUnknown?: bool;
   cflags?: CVF;
-  initialized?: bool;
 };
 
 export type ClientPlayer = {
@@ -38,7 +37,6 @@ type Callbacks = {
   playDmg(eff: number): Promise<void> | void;
   playAnimation(id: PokeId, params: AnimationParams): Promise<void> | void;
   displayEvent(e: RawUIBattleEvent): void;
-  preloadSprite(poke: PokeId, speciesId: string, female?: bool, shiny?: bool, form?: FormId): any;
 };
 
 export class AnimCallback {
@@ -131,7 +129,6 @@ export class ClientManager {
       playCry() {},
       playShiny() {},
       playDmg() {},
-      preloadSprite() {},
       playAnimation: (_, params) => void params.cb?.exec(),
       displayEvent() {},
     };
@@ -158,10 +155,9 @@ export class ClientManager {
           name: poke.base.name,
         });
       }
-      const _img = this.cb.preloadSprite(e.src, e.speciesId, e.gender === "F", e.shiny, e.form);
 
       this.cb.displayEvent(e);
-      await this.cb.playAnimation(e.src, {
+      return await this.cb.playAnimation(e.src, {
         anim: "sendin",
         name: e.name,
         batonPass: e.why === "batonpass",
@@ -174,7 +170,7 @@ export class ClientManager {
           poke.switchTo(base, this.battle);
           this.battle.events.length = 0;
 
-          poke.visible = poke.initialized = true;
+          poke.visible = true;
           poke.owned = e.indexInTeam !== -1;
           poke.indexInTeam = e.indexInTeam;
           poke.base.hp = e.hp;
@@ -186,7 +182,6 @@ export class ClientManager {
           });
         }),
       });
-      return;
     } else if (e.type === "damage" || e.type === "recover") {
       const update = () => {
         const target = this.players.poke(e.target)!;
@@ -283,8 +278,6 @@ export class ClientManager {
         this.players.poke(e.src)!.v.confusion = 1;
       }
     } else if (e.type === "transform") {
-      const _img = this.cb.preloadSprite(e.src, e.speciesId, e.gender === "F", e.shiny, e.form);
-
       this.cb.displayEvent(e);
 
       await this.cb.playAnimation(e.src, {
@@ -303,7 +296,10 @@ export class ClientManager {
           if (e.target) {
             src.base = transform(src.base.real, this.players.poke(e.target)!.base);
           }
-          src.base.form = e.form;
+          src.base.form = src.v.form;
+          if (e.ability) {
+            src.v.ability = e.ability;
+          }
         }),
       });
       return;

@@ -1,11 +1,4 @@
-import type {
-  HitSubstituteEvent,
-  DamageEvent,
-  DamageReason,
-  RecoveryReason,
-  InfoReason,
-  PokeId,
-} from "./events";
+import type {DamageReason, RecoveryReason, InfoReason, PokeId} from "./events";
 import type {MoveId, Move, DamagingMove, HealingWishMove, ForesightMove} from "./moves";
 import {
   natureTable,
@@ -66,6 +59,7 @@ export class ActivePokemon {
   choice?: ChosenMove;
   options?: {switches: number[]; moves: MoveOption[]; id: PokeId};
   consumed?: ItemId;
+  initialized?: bool;
   id: PokeId;
 
   constructor(public base: Pokemon, public readonly owner: Player, idx: number) {
@@ -79,7 +73,7 @@ export class ActivePokemon {
     }
 
     if (this.base.status === "tox" && battle.gen.id <= 2) {
-      this.base.status = "psn";
+      this.setStatusCondition("psn");
       battle.syncVolatiles();
     }
 
@@ -91,10 +85,11 @@ export class ActivePokemon {
     const old = this.v;
     this.v = new Volatiles(next);
     this.base = next;
+    this.initialized = true;
 
     if (old.inBatonPass === "batonpass") {
       this.v.substitute = old.substitute;
-      this.v.stages = old.stages;
+      this.v.stages = {...old.stages}; // TODO: fix dirty so this isnt necessary
       this.v.confusion = old.confusion;
       this.v.perishCount = old.perishCount;
       this.v.meanLook = old.meanLook;
@@ -127,7 +122,6 @@ export class ActivePokemon {
       level: next.level,
       gender: next.gender,
       shiny: next.shiny,
-      form: next.form,
       indexInTeam: this.owner.team.indexOf(next),
       why: phazer ? "phaze" : old.inBatonPass !== "hwish" ? old.inBatonPass : undefined,
     });
@@ -284,7 +278,6 @@ export class ActivePokemon {
       speciesId: this.base.speciesId,
       shiny: this.base.shiny,
       gender: this.base.gender,
-      form: this.v.form,
     });
   }
 
@@ -317,7 +310,7 @@ export class ActivePokemon {
     if (this.v.substitute !== 0 && !direct) {
       const hpBefore = this.v.substitute;
       this.v.substitute = Math.max(this.v.substitute - dmg, 0);
-      const event = battle.event<HitSubstituteEvent>({
+      const event = battle.event({
         type: "hit_sub",
         src: src.id,
         target: this.id,
@@ -337,7 +330,7 @@ export class ActivePokemon {
     } else {
       const hpBefore = this.base.hp;
       this.base.hp = Math.max(this.base.hp - dmg, 0);
-      const event = battle.event<DamageEvent>({
+      const event = battle.event({
         type: "damage",
         src: src.id,
         target: this.id,
@@ -439,7 +432,7 @@ export class ActivePokemon {
       }
     }
 
-    this.base.status = status;
+    this.setStatusCondition(status);
     battle.gen.applyStatusDebuff(this);
     battle.event({type: "status", src: this.id, status});
 
@@ -472,7 +465,6 @@ export class ActivePokemon {
         speciesId: this.base.speciesId,
         shiny: this.base.shiny,
         gender: this.base.gender,
-        form: this.v.form,
         ability: this.v.ability,
         permanent: true,
       });
@@ -490,7 +482,7 @@ export class ActivePokemon {
     }
 
     const status = this.base.status;
-    this.base.status = undefined;
+    this.setStatusCondition(undefined);
     this.v.hazed = this.v.hazed || why === "thaw";
     this.v.clearFlag(VF.nightmare);
 
@@ -605,8 +597,6 @@ export class ActivePokemon {
     } else {
       this.handleForecast(battle);
     }
-
-    battle.syncVolatiles();
   }
 
   handleForecast(battle: Battle) {
@@ -620,7 +610,6 @@ export class ActivePokemon {
           speciesId: this.base.speciesId,
           shiny: this.base.shiny,
           gender: this.base.gender,
-          form: this.v.form,
         });
       }
     } else if (this.hasAbility("forecast") && this.base.speciesId === "castform") {
@@ -647,7 +636,6 @@ export class ActivePokemon {
           speciesId: this.base.speciesId,
           shiny: this.base.shiny,
           gender: this.base.gender,
-          form: this.v.form,
         });
       }
     }
@@ -1103,6 +1091,14 @@ export class ActivePokemon {
     }
   }
 
+  setStatusCondition(status: Status | undefined) {
+    // TODO: find a better solution for this
+    this.base.status = status;
+    const old = this.v.tauntTurns;
+    this.v.tauntTurns = 100;
+    this.v.tauntTurns = old;
+  }
+
   private getValidTargets(battle: Battle, move: Move) {
     // TODO: retarget if dead && hyper beam
     if (this.v.encore) {
@@ -1180,15 +1176,16 @@ class Volatiles {
   flags = VF.none;
 
   constructor(base: Pokemon) {
-    this.form = base.form;
-    this.types =
-      base.ability === "multitype" && HP_TYPES.includes(this.form)
-        ? [this.form]
-        : [...base.species.types];
+    this.types = [...base.species.types];
     this.stats = {...base.stats};
     this.ability = base.ability;
     this.counter = base.status === "tox" ? 1 : 0;
-    return dirty.tracked(this, VOLATILE_SYNC_KEYS);
+    const self = dirty.tracked(this, VOLATILE_SYNC_KEYS);
+    self.form = base.form;
+    if (base.ability === "multitype" && HP_TYPES.includes(this.form)) {
+      self.types = [this.form];
+    }
+    return self;
   }
 
   hasAnyType(...types: Type[]) {
