@@ -403,7 +403,6 @@ export class Generation1 {
   getDamage({battle, user, target, move, isCrit, rng}: GetDamageParams) {
     let res;
     if ((res = this.getFixedDamage(battle, user, target, move))) {
-      battle.gen1LastDamage = res.dmg;
       return res;
     }
 
@@ -419,7 +418,6 @@ export class Generation1 {
       dmg = DamageCalc.randomizeDamage(dmg, random);
     }
 
-    battle.gen1LastDamage = dmg;
     return {dmg, miss, eff: eff.toFloat(), type: move.type};
   }
 

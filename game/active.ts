@@ -316,7 +316,6 @@ export class Battlemon {
     if (
       why === "crash" ||
       why === "attacked" ||
-      why === "recoil" ||
       why === "ohko" ||
       why === "confusion" ||
       why === "trap"
