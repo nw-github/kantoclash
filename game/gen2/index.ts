@@ -276,30 +276,31 @@ export class Generation2 extends Generation1 {
     };
 
     if (user.v.recharge) {
-      battle.info(user, "recharge");
       user.v.recharge = undefined;
       resetVolatiles();
+      battle.info(user, "recharge");
       return false;
     } else if (user.base.status === "slp") {
       if (--user.base.sleepTurns === 0) {
-        user.unstatus(battle, "wake");
         resetVolatiles();
+        user.unstatus(battle, "wake");
       } else {
         battle.info(user, "sleep");
         if (!move.sleepOnly) {
           resetVolatiles();
+          battle.syncVolatiles();
           return false;
         }
       }
     } else if (user.base.status === "frz" && !move.selfThaw) {
-      battle.info(user, "frozen");
       resetVolatiles();
+      battle.info(user, "frozen");
       return false;
     }
 
     if (user.v.flinch) {
-      battle.info(user, "flinch");
       resetVolatiles();
+      battle.info(user, "flinch");
       return false;
     }
 
@@ -310,6 +311,7 @@ export class Generation2 extends Generation1 {
 
     if (user.handleConfusion(battle)) {
       resetVolatiles();
+      battle.syncVolatiles();
       return false;
     }
 
@@ -317,15 +319,15 @@ export class Generation2 extends Generation1 {
       battle.event({type: "in_love", src: user.id, target: user.v.attract.id});
 
       if (battle.gen.rng.tryAttract(battle)) {
-        battle.info(user, "immobilized");
         resetVolatiles();
+        battle.info(user, "immobilized");
         return false;
       }
     }
 
     if (user.base.status === "par" && battle.gen.rng.tryFullPara(battle)) {
-      battle.info(user, "paralyze");
       resetVolatiles();
+      battle.info(user, "paralyze");
       return false;
     }
 

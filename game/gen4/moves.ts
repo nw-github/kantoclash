@@ -425,7 +425,7 @@ export const tryDamage = (
   }
 
   if (self.flag === DMF.remove_protect) {
-    user.v.stockpile = 0;
+    target.v.clearFlag(VF.protect);
     battle.syncVolatiles();
   }
 

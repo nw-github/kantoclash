@@ -832,8 +832,8 @@ export class Battlemon {
 
   handleWeather(battle: Battle, weather: Weather) {
     if (
-      this.v.charging?.move === battle.gen.moveList.dig ||
-      this.v.charging?.move === battle.gen.moveList.dive ||
+      this.v.charging?.move?.id === "dig" ||
+      this.v.charging?.move?.id === "dive" ||
       this.v.fainted
     ) {
       return;
@@ -1119,9 +1119,9 @@ export class Battlemon {
       shiny: diff.shiny,
       gender: diff.gender,
       transformed: diff.transformed,
-      charging: diff.charging?.move?.id,
-      trapped: diff.trapped?.move?.id,
-      identified: diff.identified?.id,
+      charging: diff.charging && diff.charging.move.id,
+      trapped: diff.trapped && diff.trapped.move.id,
+      identified: diff.identified && diff.identified.id,
       status: this.base.status || null,
       cflags,
     };

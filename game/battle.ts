@@ -790,10 +790,9 @@ export class Battle {
       }
 
       if (moveId === user.base.moves[user.v.disabled?.indexInMoves ?? -1]) {
-        this.event({move: moveId, type: "move", src: user.id, disabled: true});
         user.v.charging = undefined;
         user.v.clearFlag(VF.charge);
-        this.syncVolatiles();
+        this.event({move: moveId, type: "move", src: user.id, disabled: true});
         return;
       }
 

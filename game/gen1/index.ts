@@ -313,6 +313,7 @@ export class Generation1 {
         user.v.thrashing = undefined;
       }
       user.v.trapping = undefined;
+      battle.syncVolatiles();
     }
 
     if (!confuse && user.v.attract) {

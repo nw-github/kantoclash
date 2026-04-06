@@ -693,6 +693,7 @@ export class Generation3 extends Generation2 {
       }
       user.v.trapping = undefined;
       user.v.furyCutter = 0;
+      battle.syncVolatiles();
     };
 
     if (user.base.status === "slp") {
