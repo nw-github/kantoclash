@@ -18,6 +18,15 @@ import {abilityList} from "../species";
 export const moveScripts: Partial<MoveScripts> = {};
 
 export const moveOverrides: Partial<MovePropOverrides> = {
+  pow: {
+    spitup(battle, user) {
+      let power = this.power;
+      power *= user.v.stockpile;
+      user.v.stockpile = 0;
+      battle.syncVolatiles();
+      return power;
+    },
+  },
   acc: {
     blizzard(weather) {
       return weather === "hail" ? undefined : this.acc;

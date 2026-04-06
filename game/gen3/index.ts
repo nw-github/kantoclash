@@ -26,7 +26,6 @@ import {
   type Type,
   type Weather,
   Endure,
-  randChoiceWeighted,
   DMF,
   idiv1,
   TypeEffectiveness,
@@ -445,22 +444,9 @@ export class Generation3 extends Generation2 {
 
     const type = this.getMoveType(move, user.base, battle.getWeather());
 
-    power ??= this.getMoveBasePower(move, user.base, target.base);
-    if (move.id === "present") {
-      const result = randChoiceWeighted(battle.rng, [40, 80, 120, -4], [40, 30, 10, 20]);
-      if (result < 0) {
-        return {dmg: -idiv1(target.base.maxHp, 4), eff: 1, miss: false, type};
-      }
-      power = result;
-    } else if (move.id === "furycutter") {
-      if (user.v.furyCutter < 5) {
-        user.v.furyCutter++;
-      }
-
-      power <<= user.v.furyCutter - 1;
-    } else if (move.flag === DMF.rollout) {
-      const count = 5 - (user.v.thrashing?.turns ?? 5) + +user.v.hasFlag(VF.defenseCurl);
-      power <<= count;
+    power ??= this.getMoveBasePower(move, battle, user, target);
+    if (power < 0) {
+      return {dmg: -idiv1(target.base.maxHp, 4), eff: 1, miss: false, type};
     }
 
     let dmg;

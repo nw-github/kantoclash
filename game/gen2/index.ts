@@ -14,7 +14,6 @@ import {
   idiv1,
   idiv,
   n,
-  randChoiceWeighted,
   TypeMod,
   VF,
   type Stats,
@@ -461,14 +460,9 @@ export class Generation2 extends Generation1 {
       ));
     }
 
-    power ??= this.getMoveBasePower(move, user.base, target.base);
-
-    if (move.id === "present") {
-      const result = randChoiceWeighted(battle.rng, [40, 80, 120, -4], [40, 30, 10, 20]);
-      if (result < 0) {
-        return {dmg: -idiv1(target.base.maxHp, 4), eff: 1, miss: false, type};
-      }
-      power = result;
+    power ??= this.getMoveBasePower(move, battle, user, target);
+    if (power < 0) {
+      return {dmg: -idiv1(target.base.maxHp, 4), eff: 1, miss: false, type};
     }
 
     let dmg = DamageCalc.calcBaseDamage({

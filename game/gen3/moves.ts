@@ -125,19 +125,30 @@ export const moveOverrides: Partial<MovePropOverrides> = {
     },
   },
   pow: {
-    frustration: user => idiv1(255 - user.friendship, 2.5),
-    hiddenpower(user) {
+    furycutter(_, user) {
+      if (user.v.furyCutter < 5) {
+        user.v.furyCutter++;
+      }
+      return this.power << (user.v.furyCutter - 1);
+    },
+    rollout(_, user) {
+      const count = 5 - (user.v.thrashing?.turns ?? 5) + +user.v.hasFlag(VF.defenseCurl);
+      return this.power << count;
+    },
+    //
+    frustration: (_, user) => idiv1(255 - user.base.friendship, 2.5),
+    hiddenpower(_, {base}) {
       const v =
-        ((user.ivs.hp >> 1) & 1) |
-        (((user.ivs.atk >> 1) & 1) << 1) |
-        (((user.ivs.def >> 1) & 1) << 2) |
-        (((user.ivs.spe >> 1) & 1) << 3) |
-        (((user.ivs.spa >> 1) & 1) << 4) |
-        (((user.ivs.spd >> 1) & 1) << 5);
+        ((base.ivs.hp >> 1) & 1) |
+        (((base.ivs.atk >> 1) & 1) << 1) |
+        (((base.ivs.def >> 1) & 1) << 2) |
+        (((base.ivs.spe >> 1) & 1) << 3) |
+        (((base.ivs.spa >> 1) & 1) << 4) |
+        (((base.ivs.spd >> 1) & 1) << 5);
       return idiv(v * 40, 63) + 30;
     },
-    lowkick: (_user, target) => getLowKickPower(target.species.weight),
-    return: user => idiv1(user.friendship, 2.5),
+    lowkick: (_, _user, target) => getLowKickPower(target.v.species.weight),
+    return: (_, user) => idiv1(user.base.friendship, 2.5),
   },
   type: {
     hiddenpower(user) {

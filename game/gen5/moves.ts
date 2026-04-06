@@ -1,11 +1,14 @@
+import type {Battle, Battlemon} from "../battle";
 import type {Move, MoveScripts, MoveId, MovePropOverrides, DamagingMove} from "../moves";
-import type {Pokemon} from "../pokemon";
 import {DMF, idiv1, Range} from "../utils";
 
 export const moveScripts: Partial<MoveScripts> = {};
 
 export const moveOverrides: Partial<MovePropOverrides> = {
   pow: {
+    pursuit(_, user) {
+      return user.v.inPursuit ? this.power << 1 : this.power;
+    },
     crushgrip: getCrushGripPower,
     wringout: getCrushGripPower,
   },
@@ -71,8 +74,8 @@ export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
   wrap: {acc: 90},
 };
 
-function getCrushGripPower(_user: Pokemon, target: Pokemon) {
-  return idiv1(target.hp * 120, target.maxHp);
+function getCrushGripPower(_: Battle, _user: Battlemon, target: Battlemon) {
+  return idiv1(target.base.hp * 120, target.base.maxHp);
 }
 
 export const isAffectedBySheerForce = (move: DamagingMove) => {

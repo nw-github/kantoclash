@@ -10,6 +10,7 @@ import {
   TypeMod,
   DMF,
   idiv1,
+  randChoiceWeighted,
 } from "./utils";
 import type {FailReason, InfoReason, RecoveryReason} from "./events";
 import type {Pokemon, Status} from "./pokemon";
@@ -293,7 +294,7 @@ type PR<V> = Partial<Record<MoveId, V>>;
 
 export type MovePropOverrides = {
   dmg: PR<(this: DamagingMove, battle: Battle, user: Battlemon, target: Battlemon) => number>;
-  pow: PR<(this: DamagingMove, user: Pokemon, target: Pokemon) => number>;
+  pow: PR<(this: DamagingMove, battle: Battle, user: Battlemon, target: Battlemon) => number>;
   acc: PR<(this: Move, weather: Weather | undefined) => number | undefined>;
   type: PR<(this: Move, user: Pokemon, weather: Weather | undefined) => Type>;
   dmgPreCheck: PR<
@@ -1280,30 +1281,31 @@ export const moveScripts: MoveScripts = {
 
 export const moveOverrides: MovePropOverrides = {
   pow: {
+    present: battle => randChoiceWeighted(battle.rng, [40, 80, 120, -1], [40, 30, 10, 20]),
     // Gen III
     flail: getFlailPower,
-    frustration: user => idiv(255 - user.friendship, 2.5),
-    hiddenpower({ivs: dvs}) {
-      const msb = (dv?: number) => +(((dv ?? 15) & (1 << 3)) !== 0);
+    frustration: (_, user) => idiv(255 - user.base.friendship, 2.5),
+    hiddenpower(_, {base: {ivs: dvs}}) {
+      const msb = (dv: number) => +((dv & (1 << 3)) !== 0);
 
       const x = msb(dvs.spa) | (msb(dvs.spe) << 1) | (msb(dvs.def) << 2) | (msb(dvs.atk) << 3);
       const y = (dvs.spa ?? 15) & 0b11;
       return idiv(5 * x + y, 2) + 31;
     },
-    return: user => idiv(user.friendship, 2.5),
+    return: (_, user) => idiv(user.base.friendship, 2.5),
     reversal: getFlailPower,
     eruption: getHPFalloffPower,
     waterspout: getHPFalloffPower,
     // Gen IV
     crushgrip: getCrushGripPower,
-    grassknot: (_user, target) => getLowKickPower(target.species.weight),
+    grassknot: (_user, target) => getLowKickPower(target.v.species.weight),
     wringout: getCrushGripPower,
     // Gen V
-    acrobatics(user) {
-      return !user.itemId ? this.power * 2 : this.power;
+    acrobatics(_, user) {
+      return !user.base.itemId ? this.power << 1 : this.power;
     },
-    hex(_, target) {
-      return target.status ? this.power * 2 : this.power;
+    hex(_battle, _user, target) {
+      return target.base.status ? this.power << 1 : this.power;
     },
   },
   dmg: {
@@ -1403,8 +1405,8 @@ export const moveOverrides: MovePropOverrides = {
   },
 };
 
-function getFlailPower(user: Pokemon) {
-  const percent = user.hpPercent;
+function getFlailPower(_: Battle, user: Battlemon) {
+  const percent = user.base.hpPercent;
   if (percent >= 68.8) {
     return 20;
   } else if (percent >= 35.4) {
@@ -1420,12 +1422,12 @@ function getFlailPower(user: Pokemon) {
   }
 }
 
-function getHPFalloffPower(this: DamagingMove, user: Pokemon) {
-  return idiv1(this.power * user.hp, user.maxHp);
+function getHPFalloffPower(this: DamagingMove, _battle: Battle, user: Battlemon) {
+  return idiv1(this.power * user.base.hp, user.base.maxHp);
 }
 
-function getCrushGripPower(_user: Pokemon, target: Pokemon) {
-  return 1 + idiv(target.hp * 120, target.maxHp);
+function getCrushGripPower(_battle: Battle, _user: Battlemon, target: Battlemon) {
+  return 1 + idiv(target.base.hp * 120, target.base.maxHp);
 }
 
 export function getLowKickPower(weight: number): number {
