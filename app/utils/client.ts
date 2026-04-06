@@ -4,12 +4,12 @@ import type {SpeciesId} from "~~/game/species";
 import type {Generation} from "~~/game/gen";
 import type {AnimationParams} from "~/components/battle/ActivePokemon.vue";
 import type {BattleTimers, TeamPreview} from "~~/server/gameServer";
-import {type ActivePokemon, Battle, type Player} from "~~/game/battle";
+import {type Battlemon, Battle, type Player} from "~~/game/battle";
 import type {CVF, NonEmptyArray} from "~~/game/utils";
 import type {DamagingMove, ForesightMove} from "~~/game/moves";
 import dirty from "~~/game/dirty";
 
-export type ClientActivePokemon = ActivePokemon & {
+export type ClientActivePokemon = Battlemon & {
   visible?: bool;
   owned?: bool;
   indexInTeam?: number;

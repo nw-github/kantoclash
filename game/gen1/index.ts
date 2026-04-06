@@ -1,5 +1,5 @@
 import type {Random} from "random";
-import type {ActivePokemon, Battle} from "../battle";
+import type {Battlemon, Battle} from "../battle";
 import {
   moveOverrides,
   moveList,
@@ -55,7 +55,7 @@ enum BetweenTurns {
   PerishSong,
 }
 
-export const scaleAccuracy255 = (acc: number, user: ActivePokemon, target: ActivePokemon) => {
+export const scaleAccuracy255 = (acc: number, user: Battlemon, target: Battlemon) => {
   // https://bulbapedia.bulbagarden.net/wiki/Accuracy#Generation_I_and_II
   let userStages = user.v.stages["acc"];
   let targetStages = target.v.stages["eva"];
@@ -78,7 +78,7 @@ class Rng {
   tryQuickClaw(battle: Battle) { return battle.rand255Good(60); }
   tryKingsRock(battle: Battle) { return battle.rand255Good(30); }
   tryFocusBand(battle: Battle) { return battle.rand255Good(30); }
-  tryCrit(battle: Battle, user: ActivePokemon, hc: bool) {
+  tryCrit(battle: Battle, user: Battlemon, hc: bool) {
     const baseSpe = user.v.species.stats.spe;
     const focus = user.v.hasFlag(VF.focusEnergy);
     if (hc) {
@@ -103,7 +103,7 @@ class Rng {
   }
   disableTurns(battle: Battle) { return battle.rng.int(1, 8); }
   multiHitCount(battle: Battle) { return randChoiceWeighted(battle.rng, [2, 3, 4, 5], [37.5, 37.5, 12.5, 12.5]); }
-  bindingMoveTurns(battle: Battle, _user: ActivePokemon) { return this.multiHitCount(battle) - 1; }
+  bindingMoveTurns(battle: Battle, _user: Battlemon) { return this.multiHitCount(battle) - 1; }
   bideDuration(battle: Battle) { return battle.rng.int(2, 3) + 1; }
   uproarDuration(battle: Battle) { return battle.rng.int(2, 5); }
   thrashDuration(battle: Battle) { return battle.rng.int(2, this.maxThrash); }
@@ -119,8 +119,8 @@ type BaseDamageParams = {
 
 type StabParams = {
   type: Type;
-  user: ActivePokemon;
-  target: ActivePokemon;
+  user: Battlemon;
+  target: Battlemon;
 };
 
 export class DamageCalc {
@@ -128,12 +128,7 @@ export class DamageCalc {
     return Math.floor((v * 255) / 100);
   }
 
-  static getDamageVariables(
-    user: ActivePokemon,
-    target: ActivePokemon,
-    special: bool,
-    isCrit: bool,
-  ) {
+  static getDamageVariables(user: Battlemon, target: Battlemon, special: bool, isCrit: bool) {
     const [atks, defs] = special ? (["spa", "spa"] as const) : (["atk", "def"] as const);
     let A = user.v.stats[atks];
     let D = target.v.stats[defs];
@@ -202,8 +197,8 @@ export class DamageCalc {
 
 export type GetDamageParams = {
   battle: Battle;
-  user: ActivePokemon;
-  target: ActivePokemon;
+  user: Battlemon;
+  target: Battlemon;
   move: DamagingMove;
   isCrit: bool;
   /**
@@ -248,7 +243,7 @@ export class Generation1 {
   move = {scripts: moveScripts, overrides: moveOverrides};
   rng = new Generation1.Rng();
 
-  beforeUseMove(battle: Battle, move: Move, user: ActivePokemon) {
+  beforeUseMove(battle: Battle, move: Move, user: Battlemon) {
     // Order of events comes from here:
     //  https://www.smogon.com/forums/threads/past-gens-research-thread.3506992/#post-5878612
     if (user.v.hazed) {
@@ -333,7 +328,7 @@ export class Generation1 {
     return true;
   }
 
-  isValidMove(battle: Battle, user: ActivePokemon, move: MoveId, i: number) {
+  isValidMove(battle: Battle, user: Battlemon, move: MoveId, i: number) {
     if (user.v.lockedIn() && user.v.lockedIn() !== battle.gen.moveList[move]) {
       return false;
     } else if (user.base.status === "frz" || user.base.status === "slp") {
@@ -358,13 +353,7 @@ export class Generation1 {
     return true;
   }
 
-  checkAccuracy(
-    move: Move,
-    battle: Battle,
-    user: ActivePokemon,
-    target: ActivePokemon,
-    _phys?: bool,
-  ) {
+  checkAccuracy(move: Move, battle: Battle, user: Battlemon, target: Battlemon, _phys?: bool) {
     if (!move.acc) {
       return true;
     } else if (move.id === "dreameater" && target.base.status !== "slp") {
@@ -417,12 +406,7 @@ export class Generation1 {
     return {dmg, miss, eff: eff.toFloat(), type: move.type};
   }
 
-  protected getFixedDamage(
-    battle: Battle,
-    user: ActivePokemon,
-    target: ActivePokemon,
-    move: DamagingMove,
-  ) {
+  protected getFixedDamage(battle: Battle, user: Battlemon, target: Battlemon, move: DamagingMove) {
     if (move.fixedDamage) {
       return {dmg: move.fixedDamage, miss: false, eff: 1, type: move.type};
     } else if (this.move.overrides.dmg[move.id!]) {
@@ -432,7 +416,7 @@ export class Generation1 {
     }
   }
 
-  getConfusionSelfDamage(battle: Battle, user: ActivePokemon): {dmg: number; endure?: Endure} {
+  getConfusionSelfDamage(battle: Battle, user: Battlemon): {dmg: number; endure?: Endure} {
     const target = battle.opponentOf(user.owner).active[0];
 
     // This is the exact hack the game does (pokered:HandleSelfConfusionDamage)
@@ -446,7 +430,7 @@ export class Generation1 {
     return {dmg: DamageCalc.calcBaseDamage({power: 40, A, D, level})};
   }
 
-  applyStatusDebuff(poke: ActivePokemon) {
+  applyStatusDebuff(poke: Battlemon) {
     if (poke.base.status === "brn") {
       poke.v.stats.atk = idiv1(poke.v.stats.atk, 2);
     } else if (poke.base.status === "par") {
@@ -454,7 +438,7 @@ export class Generation1 {
     }
   }
 
-  recalculateStat(poke: ActivePokemon, battle: Battle, stat: StatStageId, negative: bool) {
+  recalculateStat(poke: Battlemon, battle: Battle, stat: StatStageId, negative: bool) {
     const [num, div] = battle.gen.stageMultipliers[poke.v.stages[stat]];
     poke.v.stats[stat] = idiv(poke.v.baseStats[stat] * num, div);
 
@@ -464,7 +448,7 @@ export class Generation1 {
     }
   }
 
-  handleCrashDamage(battle: Battle, user: ActivePokemon, target: ActivePokemon, _dmg: number) {
+  handleCrashDamage(battle: Battle, user: Battlemon, target: Battlemon, _dmg: number) {
     // https://www.smogon.com/dex/rb/moves/high-jump-kick/
     if (user.v.substitute && target.v.substitute) {
       target.damage(1, user, battle, false, "attacked");
@@ -473,7 +457,7 @@ export class Generation1 {
     }
   }
 
-  rollCrit(battle: Battle, user: ActivePokemon, _target: ActivePokemon, move: DamagingMove) {
+  rollCrit(battle: Battle, user: Battlemon, _target: Battlemon, move: DamagingMove) {
     // Counter gets handled right after calling CriticalHitTest, but it never does anything with wCriticalHitOrOHKO
     if (move.fixedDamage || move.id === "bide") {
       return false;
@@ -519,7 +503,7 @@ export class Generation1 {
     return move.pp === 1 ? 1 : Math.min(idiv(move.pp * 8, 5), 61);
   }
 
-  getSpeed(_battle: Battle, user: ActivePokemon) {
+  getSpeed(_battle: Battle, user: Battlemon) {
     return user.v.stats.spe;
   }
 
@@ -549,19 +533,19 @@ export class Generation1 {
     return false;
   }
 
-  accumulateBide(battle: Battle, _user: ActivePokemon, bide: Required<ActivePokemon["v"]>["bide"]) {
+  accumulateBide(battle: Battle, _user: Battlemon, bide: Required<Battlemon["v"]>["bide"]) {
     bide.dmg += battle.gen1LastDamage;
     bide.dmg &= 0xffff;
   }
 
   tryDamage = tryDamage;
 
-  afterBeforeUseMove(battle: Battle, user: ActivePokemon): bool {
+  afterBeforeUseMove(battle: Battle, user: Battlemon): bool {
     this.handleResidualDamage(battle, user);
     return battle.checkFaint(user) && shouldReturn(battle, false);
   }
 
-  afterUseMove(battle: Battle, user: ActivePokemon, isReplacement: bool): bool {
+  afterUseMove(battle: Battle, user: Battlemon, isReplacement: bool): bool {
     if (isReplacement) {
       return false;
     }
@@ -576,7 +560,7 @@ export class Generation1 {
     return battle.checkFaint(user) && shouldReturn(battle, false);
   }
 
-  handleResidualDamage(battle: Battle, poke: ActivePokemon) {
+  handleResidualDamage(battle: Battle, poke: Battlemon) {
     const tickCounter = (why: DamageReason) => {
       // BUG GEN1: Toxic, Leech Seed, and brn/psn share the same routine. If a Pokemon rests, its
       // toxic counter will not be reset and brn, poison, and leech seed will use and update it.
@@ -779,7 +763,7 @@ export class Generation1 {
     return isSpecialType(overrideType ?? move.type);
   }
 
-  handleRage(battle: Battle, poke: ActivePokemon) {
+  handleRage(battle: Battle, poke: Battlemon) {
     if (poke.v.thrashing?.move === battle.gen.moveList.rage && poke.v.stages.atk < 6) {
       battle.info(poke, "rage");
       poke.modStages([["atk", +1]], battle);
@@ -798,18 +782,18 @@ export class Generation1 {
     return callOr(move.power, this.move.overrides.pow[move.id!], move, user, target);
   }
 
-  getMoveDamage(move: DamagingMove, battle: Battle, user: ActivePokemon, target: ActivePokemon) {
+  getMoveDamage(move: DamagingMove, battle: Battle, user: Battlemon, target: Battlemon) {
     return this.move.overrides.dmg[move.id!]?.call(move, battle, user, target);
   }
 
-  getEffectiveness(type: Type, target: ActivePokemon) {
+  getEffectiveness(type: Type, target: Battlemon) {
     return DamageCalc.applyTypeModifiers(0, {type, user: target, target}).eff;
   }
 
   tryAbilityImmunity(
     _battle: Battle,
-    _user: ActivePokemon,
-    _target: ActivePokemon,
+    _user: Battlemon,
+    _target: Battlemon,
     _self: Move,
     _type: Type,
     _eff: number,
@@ -817,7 +801,7 @@ export class Generation1 {
     return false;
   }
 
-  handleFutureSight(battle: Battle, poke: ActivePokemon, fs: ActivePokemon["futureSight"] & {}) {
+  handleFutureSight(battle: Battle, poke: Battlemon, fs: Battlemon["futureSight"] & {}) {
     battle.event({type: "futuresight", src: poke.id, move: fs.move.id!, release: true});
     if (!battle.checkAccuracy(fs.move, poke, poke)) {
       // FIXME: this is lazy
@@ -851,8 +835,8 @@ const callOr = <T, Args extends any[], R>(
 export function tryDamage(
   self: DamagingMove,
   battle: Battle,
-  user: ActivePokemon,
-  target: ActivePokemon,
+  user: Battlemon,
+  target: Battlemon,
   _spread: bool,
   _power?: number,
 ): number {

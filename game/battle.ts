@@ -14,11 +14,11 @@ import {
   type NonEmptyArray,
 } from "./utils";
 import type {Generation} from "./gen";
-import {ActivePokemon} from "./active";
+import {Battlemon} from "./active";
 import type {AbilityId} from "./species";
 import dirty from "./dirty";
 
-export {ActivePokemon};
+export {Battlemon};
 
 export type MoveOption = {
   move: MoveId;
@@ -29,13 +29,13 @@ export type MoveOption = {
   targets: PokeId[];
 };
 
-export type Options = NonNullable<ActivePokemon["options"]>;
+export type Options = NonNullable<Battlemon["options"]>;
 
 type PlayerParams = {readonly id: PlayerId; readonly team: Pokemon[]};
 
 export class Player {
   readonly id: PlayerId;
-  readonly active: NonEmptyArray<ActivePokemon>;
+  readonly active: NonEmptyArray<Battlemon>;
   readonly team: Pokemon[];
   readonly screens: Partial<Record<ScreenId, number>> = {};
   readonly hazards: Partial<Record<HazardId, number>> = {};
@@ -45,9 +45,9 @@ export class Player {
   constructor({id, team}: PlayerParams, doubles: bool) {
     this.id = id;
     this.team = team;
-    this.active = [new ActivePokemon(this.team[0], this, 0)];
+    this.active = [new Battlemon(this.team[0], this, 0)];
     if (doubles && this.team.length > 1) {
-      this.active.push(new ActivePokemon(this.team[1], this, 1));
+      this.active.push(new Battlemon(this.team[1], this, 1));
     }
   }
 
@@ -163,8 +163,8 @@ export class Battle {
   finished = false;
   gen1LastDamage = 0;
   betweenTurns = 0;
-  allActive: ActivePokemon[];
-  turnOrder: ActivePokemon[] = [];
+  allActive: Battlemon[];
+  turnOrder: Battlemon[] = [];
 
   private constructor(
     readonly gen: Generation,
@@ -202,7 +202,7 @@ export class Battle {
     return this._turn;
   }
 
-  /** Should only be set by ActivePokemon::faintIfNeeded */
+  /** Should only be set by Battlemon::faintIfNeeded */
   set victor(value: Player) {
     this._victor = value;
     this.finished = true;
@@ -221,7 +221,7 @@ export class Battle {
     return event;
   }
 
-  info(src: ActivePokemon, why: InfoReason) {
+  info(src: Battlemon, why: InfoReason) {
     return this.event({type: "info", src: src.id, why});
   }
 
@@ -229,11 +229,11 @@ export class Battle {
     return this.event({type: "sv"});
   }
 
-  ability(src: ActivePokemon) {
+  ability(src: Battlemon) {
     return this.event({type: "proc_ability", src: src.id, ability: src.v.ability!});
   }
 
-  miss(user: ActivePokemon, target: ActivePokemon) {
+  miss(user: Battlemon, target: Battlemon) {
     this.event({type: "miss", src: user.id, target: target.id});
   }
 
@@ -396,7 +396,7 @@ export class Battle {
     return this.events.splice(0);
   }
 
-  getTargets(user: ActivePokemon, params: Range, forUser?: bool) {
+  getTargets(user: Battlemon, params: Range, forUser?: bool) {
     const pl = user.owner;
     const opp = this.opponentOf(pl);
 
@@ -458,7 +458,7 @@ export class Battle {
     }
     }
 
-    const targets: ActivePokemon[] = [];
+    const targets: Battlemon[] = [];
     const me = pl.active.indexOf(user);
     const p0 = this.players.indexOf(user.owner) === 0;
     if (!allyOnly) {
@@ -494,7 +494,7 @@ export class Battle {
     return this.rng.int(1, 256) <= Math.floor((num / 100) * 256);
   }
 
-  checkAccuracy(move: Move, user: ActivePokemon, target: ActivePokemon, physical?: bool) {
+  checkAccuracy(move: Move, user: Battlemon, target: Battlemon, physical?: bool) {
     if (target.v.hasFlag(VF.lockon)) {
       target.v.clearFlag(VF.lockon);
       this.syncVolatiles();
@@ -513,7 +513,7 @@ export class Battle {
     return this.gen.checkAccuracy(move, this, user, target, physical);
   }
 
-  hasUproar(user: ActivePokemon) {
+  hasUproar(user: Battlemon) {
     return (
       !user.hasAbility("soundproof") &&
       this.allActive.some(p => p.v.thrashing?.move?.id === "uproar")
@@ -589,7 +589,7 @@ export class Battle {
   // --
 
   private runTurn(normal: bool) {
-    const execChoice = (user: ActivePokemon) => {
+    const execChoice = (user: Battlemon) => {
       // eslint-disable-next-line prefer-const
       let {move, target, indexInMoves, isReplacement} = user.choice!;
 
@@ -628,7 +628,7 @@ export class Battle {
       }
     };
 
-    const checkPursuit = (user: ActivePokemon) => {
+    const checkPursuit = (user: Battlemon) => {
       const pursuers = this.turnOrder.filter(pursuer => {
         return (
           !pursuer.v.fainted &&
@@ -701,8 +701,8 @@ export class Battle {
 
   useMove(
     move: Move,
-    user: ActivePokemon,
-    targets: ActivePokemon[],
+    user: Battlemon,
+    targets: Battlemon[],
     moveIndex?: number,
     quiet?: bool,
     called?: bool,
@@ -717,8 +717,8 @@ export class Battle {
 
   doUseMove(
     move: Move,
-    user: ActivePokemon,
-    targets: ActivePokemon[],
+    user: Battlemon,
+    targets: Battlemon[],
     moveIndex?: number,
     quiet?: bool,
     called?: bool,
@@ -884,7 +884,7 @@ export class Battle {
     return (this.gen.move.scripts[move.kind] as any).call(move, this, user, targets, moveIndex);
   }
 
-  callMove(move: Move, user: ActivePokemon, moveIndex?: number) {
+  callMove(move: Move, user: Battlemon, moveIndex?: number) {
     let targets = this.getTargets(user, move.range);
     if (!isSpreadMove(move.range) && targets.length) {
       targets = [this.rng.choice(targets)!];
@@ -892,7 +892,7 @@ export class Battle {
     return this.useMove(move, user, targets, moveIndex, false, true);
   }
 
-  tryMagicBounce(move: Move, user: ActivePokemon, target: ActivePokemon) {
+  tryMagicBounce(move: Move, user: Battlemon, target: Battlemon) {
     if (target.v.hasFlag(VF.magicCoat) && move.magicCoat) {
       this.event({type: "bounce", src: target.id, move: move.id!});
       this.useMove(move, target, [user], undefined, true, true);
@@ -901,7 +901,7 @@ export class Battle {
     return false;
   }
 
-  checkFaint(user: ActivePokemon, causedFaint = false) {
+  checkFaint(user: Battlemon, causedFaint = false) {
     const targets = this.opponentOf(user.owner).active;
     let fainted = false;
     for (const poke of targets) {

@@ -26,7 +26,7 @@ import {
 import {moveOverrides, moveScripts, movePatches, tryDamage} from "./moves";
 import speciesPatches from "./species.json";
 import items from "./items.json";
-import type {ActivePokemon, Battle} from "../battle";
+import type {Battlemon, Battle} from "../battle";
 import type {DamagingMove, Move, MoveId} from "../moves";
 import type {Gender} from "../pokemon";
 import type {ItemData, ItemId} from "../item";
@@ -74,7 +74,7 @@ class Rng extends Generation1.Rng {
 
   override tryDefrost(battle: Battle) { return battle.rand255(25) }
 
-  override tryCrit(battle: Battle, user: ActivePokemon, hc: boolean) {
+  override tryCrit(battle: Battle, user: Battlemon, hc: boolean) {
     let stages = hc ? 2 : 0;
     if (user.v.hasFlag(VF.focusEnergy)) {
       stages++;
@@ -100,7 +100,7 @@ class Rng extends Generation1.Rng {
 
   override thrashDuration(battle: Battle) { return battle.rng.int(2, 3); }
 
-  override bindingMoveTurns(battle: Battle, _user: ActivePokemon) { return this.multiHitCount(battle) + 1; }
+  override bindingMoveTurns(battle: Battle, _user: Battlemon) { return this.multiHitCount(battle) + 1; }
 }
 
 type BaseDamageParams = {
@@ -115,8 +115,8 @@ type BaseDamageParams = {
 
 type StabParams = {
   type: Type;
-  user: ActivePokemon;
-  target: ActivePokemon;
+  user: Battlemon;
+  target: Battlemon;
   weather?: Weather;
   move: DamagingMove;
 };
@@ -124,8 +124,8 @@ type StabParams = {
 class DamageCalc extends Gen1DamageCalc {
   // command damagestats (BattleCommand_DamageStats)
   static override getDamageVariables(
-    user: ActivePokemon,
-    target: ActivePokemon,
+    user: Battlemon,
+    target: Battlemon,
     special: bool,
     isCrit: bool,
   ) {
@@ -258,7 +258,7 @@ export class Generation2 extends Generation1 {
     this.move = merge(this.move, {scripts: moveScripts, overrides: moveOverrides});
   }
 
-  override beforeUseMove(battle: Battle, move: Move, user: ActivePokemon) {
+  override beforeUseMove(battle: Battle, move: Move, user: Battlemon) {
     const resetVolatiles = () => {
       user.v.charging = undefined;
       user.v.invuln = false;
@@ -327,7 +327,7 @@ export class Generation2 extends Generation1 {
     return true;
   }
 
-  override isValidMove(battle: Battle, user: ActivePokemon, move: MoveId, i: number) {
+  override isValidMove(battle: Battle, user: Battlemon, move: MoveId, i: number) {
     if (user.v.lockedIn() && user.v.lockedIn() !== battle.gen.moveList[move]) {
       return false;
     } else if (i === user.v.disabled?.indexInMoves) {
@@ -354,7 +354,7 @@ export class Generation2 extends Generation1 {
     return true;
   }
 
-  override checkAccuracy(move: Move, battle: Battle, user: ActivePokemon, target: ActivePokemon) {
+  override checkAccuracy(move: Move, battle: Battle, user: Battlemon, target: Battlemon) {
     if (target.v.invuln) {
       const charging = target.v.charging && target.v.charging.move.id;
       if (charging && (!move.ignore || !move.ignore.includes(charging))) {
@@ -530,29 +530,19 @@ export class Generation2 extends Generation1 {
     return {dmg, miss: false, eff: eff.toFloat(), type};
   }
 
-  override handleCrashDamage(
-    battle: Battle,
-    user: ActivePokemon,
-    target: ActivePokemon,
-    dmg: number,
-  ) {
+  override handleCrashDamage(battle: Battle, user: Battlemon, target: Battlemon, dmg: number) {
     dmg = Math.min(dmg, target.base.hp);
     user.damage(idiv1(dmg, 8), user, battle, false, "crash", true);
   }
 
-  override rollCrit(
-    battle: Battle,
-    user: ActivePokemon,
-    _target: ActivePokemon,
-    move: DamagingMove,
-  ) {
+  override rollCrit(battle: Battle, user: Battlemon, _target: Battlemon, move: DamagingMove) {
     if (move.fixedDamage || this.move.overrides.dmg[move.id!]) {
       return false;
     }
     return this.rng.tryCrit(battle, user, move.flag === DMF.high_crit);
   }
 
-  override getConfusionSelfDamage(_battle: Battle, user: ActivePokemon) {
+  override getConfusionSelfDamage(_battle: Battle, user: Battlemon) {
     let [A, D] = [user.v.stats.atk, user.v.stats.def];
     if (user.owner.screens.reflect) {
       D *= 2;
@@ -571,7 +561,7 @@ export class Generation2 extends Generation1 {
     return {dmg};
   }
 
-  override recalculateStat(poke: ActivePokemon, battle: Battle, stat: StatStageId) {
+  override recalculateStat(poke: Battlemon, battle: Battle, stat: StatStageId) {
     const [num, div] = battle.gen.stageMultipliers[poke.v.stages[stat]];
     poke.v.stats[stat] = clamp(idiv(poke.v.baseStats[stat] * num, div), 1, 999);
   }
@@ -599,7 +589,7 @@ export class Generation2 extends Generation1 {
     );
   }
 
-  override getEffectiveness(type: Type, target: ActivePokemon) {
+  override getEffectiveness(type: Type, target: Battlemon) {
     return DamageCalc.applyTypeModifiers(0, {
       type,
       user: target,
@@ -612,7 +602,7 @@ export class Generation2 extends Generation1 {
 
   override tryDamage = tryDamage;
 
-  override handleRage(battle: Battle, poke: ActivePokemon) {
+  override handleRage(battle: Battle, poke: Battlemon) {
     if (poke.v.lastMove?.kind === "damage" && poke.v.lastMove.id === "rage") {
       battle.info(poke, "rage");
       poke.v.rage++;
@@ -765,7 +755,7 @@ const typeIndexNumber: Record<Type, number> = {
   dark: 27,
 };
 
-const getTypeBoost = (user: ActivePokemon, type: Type) => {
+const getTypeBoost = (user: Battlemon, type: Type) => {
   if (user.base.item?.typeBoost?.type === type) {
     return user.base.item.typeBoost.percent;
   }

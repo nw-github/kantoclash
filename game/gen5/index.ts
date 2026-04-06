@@ -5,7 +5,7 @@ import {merge} from "../gen2";
 import {movePatches, moveScripts, moveOverrides, isAffectedBySheerForce} from "./moves";
 import {DamageCalc as Gen3DamageCalc, createItemMergeList} from "../gen3";
 import {Generation4} from "../gen4";
-import {ActivePokemon, type Battle} from "../battle";
+import {Battlemon, type Battle} from "../battle";
 import {
   c,
   clamp,
@@ -33,7 +33,7 @@ import type {DamagingMove} from "../moves";
 class Rng extends Generation4.Rng {
   override disableTurns(_: Battle) { return 4 + 1; }
   override multiHitCount(battle: Battle) { return randChoiceWeighted(battle.rng, [2, 3, 4, 5], [35, 35, 15, 15]); }
-  override bindingMoveTurns(battle: Battle, user: ActivePokemon) {
+  override bindingMoveTurns(battle: Battle, user: Battlemon) {
     if (user.base.itemId === "gripclaw") {
       return 7 + 1;
     }
@@ -44,8 +44,8 @@ class Rng extends Generation4.Rng {
 type BoostedAttackParams = BoostedDefenseParams & {type: Type};
 type BoostedDefenseParams = {
   battle: Battle;
-  user: ActivePokemon;
-  target: ActivePokemon;
+  user: Battlemon;
+  target: Battlemon;
   move: DamagingMove;
   isCrit?: bool;
 };
@@ -55,15 +55,15 @@ type DamageParams = {
   power: number;
   type: Type;
   battle: Battle;
-  user: ActivePokemon;
-  target: ActivePokemon;
+  user: Battlemon;
+  target: Battlemon;
   isCrit?: bool;
   rng?: Random | number | null;
 };
 type FinalModifierParams = {
   move: DamagingMove;
-  user: ActivePokemon;
-  target: ActivePokemon;
+  user: Battlemon;
+  target: Battlemon;
   isCrit?: bool;
   eff: TypeEffectiveness;
 };
@@ -291,7 +291,7 @@ export class Generation5 extends Generation4 {
     this.move = merge(this.move, {scripts: moveScripts, overrides: moveOverrides});
   }
 
-  override handleCrashDamage(battle: Battle, user: ActivePokemon) {
+  override handleCrashDamage(battle: Battle, user: Battlemon) {
     user.damage(idiv1(user.base.maxHp, 2), user, battle, false, "crash", true);
   }
 
@@ -354,8 +354,8 @@ export class Generation5 extends Generation4 {
 
   override handleFutureSight(
     battle: Battle,
-    target: ActivePokemon,
-    {move, user}: ActivePokemon["futureSight"] & {},
+    target: Battlemon,
+    {move, user}: Battlemon["futureSight"] & {},
   ) {
     if (user === target) {
       return;
@@ -366,7 +366,7 @@ export class Generation5 extends Generation4 {
     if (user.v.fainted) {
       // Ignore user ability and item if it fainted
       const oldUser = user;
-      user = new ActivePokemon(user.base, user.owner, 0);
+      user = new Battlemon(user.base, user.owner, 0);
       user.id = oldUser.id;
       user.v.ability = undefined;
       // TODO: ignore user item

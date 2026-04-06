@@ -14,7 +14,7 @@ import {
 import type {FailReason, InfoReason, RecoveryReason} from "./events";
 import type {Pokemon, Status} from "./pokemon";
 import type {StageId, Type, Weather, ScreenId, HazardId} from "./utils";
-import type {ActivePokemon, Battle} from "./battle";
+import type {Battlemon, Battle} from "./battle";
 
 export type MoveId = keyof typeof rawMoveList;
 export type MoveScriptId = (typeof rawMoveList)[MoveId]["kind"];
@@ -277,8 +277,8 @@ export const moveList = createMoveList(rawMoveList) as Record<MoveId, Move>;
 
 export type ScriptFn = (
   battle: Battle,
-  user: ActivePokemon,
-  targets: ActivePokemon[],
+  user: Battlemon,
+  targets: Battlemon[],
   indexInMoves?: number,
 ) => void;
 
@@ -292,14 +292,12 @@ export type MoveScripts = {
 type PR<V> = Partial<Record<MoveId, V>>;
 
 export type MovePropOverrides = {
-  dmg: PR<
-    (this: DamagingMove, battle: Battle, user: ActivePokemon, target: ActivePokemon) => number
-  >;
+  dmg: PR<(this: DamagingMove, battle: Battle, user: Battlemon, target: Battlemon) => number>;
   pow: PR<(this: DamagingMove, user: Pokemon, target: Pokemon) => number>;
   acc: PR<(this: Move, weather: Weather | undefined) => number | undefined>;
   type: PR<(this: Move, user: Pokemon, weather: Weather | undefined) => Type>;
   dmgPreCheck: PR<
-    (this: DamagingMove, battle: Battle, user: ActivePokemon, targets: ActivePokemon[]) => bool
+    (this: DamagingMove, battle: Battle, user: Battlemon, targets: Battlemon[]) => bool
   >;
 };
 

@@ -35,7 +35,7 @@ import type {Generation} from "./gen";
 
 export type DamageParams = {
   dmg: number;
-  src: ActivePokemon;
+  src: Battlemon;
   why: DamageReason;
   isCrit?: bool;
   direct?: bool;
@@ -46,16 +46,16 @@ export type DamageParams = {
 export type ChosenMove = {
   move: Move;
   indexInMoves?: number;
-  target?: ActivePokemon;
+  target?: Battlemon;
   isReplacement: bool;
   spe: number;
   executed: bool;
 };
 
-export class ActivePokemon {
+export class Battlemon {
   v: Volatiles;
   lastChosenMove?: Move;
-  futureSight?: {move: DamagingMove; damage: number; turns: number; user: ActivePokemon};
+  futureSight?: {move: DamagingMove; damage: number; turns: number; user: Battlemon};
   wish?: {user: Pokemon; turns: number};
   choice?: ChosenMove;
   options?: {switches: number[]; moves: MoveOption[]; id: PokeId};
@@ -69,7 +69,7 @@ export class ActivePokemon {
     this.id = `${this.owner.id}:${idx}`;
   }
 
-  switchTo(next: Pokemon, battle: Battle, phazer?: ActivePokemon) {
+  switchTo(next: Pokemon, battle: Battle, phazer?: Battlemon) {
     if (this.choice) {
       this.choice.executed = true;
     }
@@ -256,7 +256,7 @@ export class ActivePokemon {
     }
   }
 
-  transform(battle: Battle, target: ActivePokemon) {
+  transform(battle: Battle, target: Battlemon) {
     if (!this.originalMoveset) {
       this.originalMoveset = [this.base.moves, this.base.pp];
     }
@@ -302,7 +302,7 @@ export class ActivePokemon {
 
   damage(
     dmg: number,
-    src: ActivePokemon,
+    src: Battlemon,
     battle: Battle,
     isCrit: bool,
     why: DamageReason,
@@ -373,7 +373,7 @@ export class ActivePokemon {
     }
   }
 
-  recover(amount: number, src: ActivePokemon, battle: Battle, why: RecoveryReason) {
+  recover(amount: number, src: Battlemon, battle: Battle, why: RecoveryReason) {
     if ((why === "seeder" || why === "drain") && src !== this && src.hasAbility("liquidooze")) {
       battle.ability(src);
       return this.damage2(battle, {dmg: amount, src, why: "roughskin"});
@@ -400,7 +400,7 @@ export class ActivePokemon {
   status(
     status: Status,
     battle: Battle,
-    src: ActivePokemon,
+    src: Battlemon,
     {override, loud, ignoreSafeguard}: {override?: bool; loud?: bool; ignoreSafeguard?: bool},
   ) {
     if (!override && this.base.status) {
@@ -533,7 +533,7 @@ export class ActivePokemon {
     }
   }
 
-  modStages(mods: [StageId, number][], battle: Battle, src?: ActivePokemon, quiet?: bool) {
+  modStages(mods: [StageId, number][], battle: Battle, src?: Battlemon, quiet?: bool) {
     let failed = true;
     const prevented = this.getAbility()?.preventsStatDrop;
     for (const [stat, count] of mods) {
@@ -1019,7 +1019,7 @@ export class ActivePokemon {
     return this.base.moves;
   }
 
-  isImprisoning(target: ActivePokemon, move: MoveId) {
+  isImprisoning(target: Battlemon, move: MoveId) {
     return (
       !this.v.fainted &&
       this.owner !== target.owner &&
@@ -1036,7 +1036,7 @@ export class ActivePokemon {
     return !isFlying && !this.hasAbility("levitate");
   }
 
-  hasAbility(ability: AbilityId, user?: ActivePokemon) {
+  hasAbility(ability: AbilityId, user?: Battlemon) {
     return this.getAbilityId(user) === ability;
   }
 
@@ -1044,13 +1044,13 @@ export class ActivePokemon {
     return ability.includes(this.getAbilityId());
   }
 
-  hasAllyAbility(user: ActivePokemon | null, ...abilities: AbilityId[]): any {
+  hasAllyAbility(user: Battlemon | null, ...abilities: AbilityId[]): any {
     return this.owner.active.some(
       p => p.base.hp && p !== this && abilities.includes(p.getAbilityId(user || undefined)),
     );
   }
 
-  getAbilityId(user?: ActivePokemon) {
+  getAbilityId(user?: Battlemon) {
     if (
       this.v.ability &&
       user?.getAbility()?.moldBreaker &&
@@ -1061,7 +1061,7 @@ export class ActivePokemon {
     return !this.v.hasFlag(VF.gastroAcid) ? this.v.ability : undefined;
   }
 
-  getAbility(user?: ActivePokemon) {
+  getAbility(user?: Battlemon) {
     const ability = this.getAbilityId(user);
     return ability && abilityList[ability];
   }
@@ -1201,24 +1201,24 @@ class Volatiles {
   furyCutter = 0;
   retaliateDamage = 0;
   ability?: AbilityId;
-  meanLook?: ActivePokemon;
-  attract?: ActivePokemon;
-  seededBy?: ActivePokemon;
+  meanLook?: Battlemon;
+  attract?: Battlemon;
+  seededBy?: Battlemon;
   choiceLock?: number;
-  lastHitBy?: {move: Move; poke: ActivePokemon; type: Type};
+  lastHitBy?: {move: Move; poke: Battlemon; type: Type};
   hwish?: HealingWishMove;
   lastMove?: Move;
   lastMoveIndex?: number;
   identified?: ForesightMove;
-  charging?: {move: DamagingMove; targets: ActivePokemon[]};
-  recharge?: {move: DamagingMove; target: ActivePokemon};
+  charging?: {move: DamagingMove; targets: Battlemon[]};
+  recharge?: {move: DamagingMove; target: Battlemon};
   thrashing?: {move: DamagingMove; turns: number; max: bool; acc?: number};
   bide?: {move: Move; turns: number; dmg: number};
   disabled?: {turns: number; indexInMoves: number};
   encore?: {turns: number; indexInMoves: number};
   mimic?: {move: MoveId; indexInMoves: number; pp?: number};
   trapping?: {move: Move; turns: number};
-  trapped?: {user: ActivePokemon; move: Move; turns: number};
+  trapped?: {user: Battlemon; move: Move; turns: number};
   flags = VF.none;
   private gen: Generation;
 
@@ -1271,7 +1271,7 @@ class Volatiles {
   }
 }
 
-export type VolatileDiff = ReturnType<ActivePokemon["changedVolatiles"]>;
+export type VolatileDiff = ReturnType<Battlemon["changedVolatiles"]>;
 
 type DiffV = Pick<Diff<Volatiles>, (typeof VOLATILE_SYNC_KEYS)[number]>;
 

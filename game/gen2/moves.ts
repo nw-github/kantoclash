@@ -1,7 +1,7 @@
 import type {Move, MoveScripts, MoveId, MovePropOverrides, DamagingMove} from "../moves";
 import {thunderAccOverride} from "../moves";
 import {stageKeys, Range, DMF, hazards, VF, idiv1, idiv} from "../utils";
-import type {ActivePokemon, Battle} from "../battle";
+import type {Battlemon, Battle} from "../battle";
 
 export const moveScripts: Partial<MoveScripts> = {
   recover(battle, user) {
@@ -200,8 +200,8 @@ export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
 export function doBeatUp(
   move: DamagingMove,
   battle: Battle,
-  user: ActivePokemon,
-  target: ActivePokemon,
+  user: Battlemon,
+  target: Battlemon,
   applyDamage: (dmg: number) => {stop: bool},
 ) {
   let beatUpFail = true;
@@ -224,8 +224,8 @@ export function doBeatUp(
 export const tryDamage = (
   self: DamagingMove,
   battle: Battle,
-  user: ActivePokemon,
-  target: ActivePokemon,
+  user: Battlemon,
+  target: Battlemon,
   _spread: bool,
   power?: number,
 ): number => {

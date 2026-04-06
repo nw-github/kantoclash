@@ -1,4 +1,4 @@
-import {ActivePokemon} from "./active";
+import {Battlemon} from "./active";
 
 type NullableIfOptional<T> = T extends undefined ? T | null | undefined : T | undefined;
 
@@ -20,7 +20,7 @@ const enproxy = <T>(
     !obj ||
     dirtyMap.has(obj) ||
     Object.isFrozen(obj) ||
-    obj instanceof ActivePokemon ||
+    obj instanceof Battlemon ||
     Array.isArray(obj)
   ) {
     return obj;

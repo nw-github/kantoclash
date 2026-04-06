@@ -7,7 +7,7 @@ import {
   type DamagingMove,
 } from "../moves";
 import {HP_TYPES, VF, Range, DMF, Endure, hazards, type Type, idiv1, idiv} from "../utils";
-import type {ActivePokemon, Battle} from "../battle";
+import type {Battlemon, Battle} from "../battle";
 import {doBeatUp} from "../gen2/moves";
 import type {Status} from "../pokemon";
 import {abilityList} from "../species";
@@ -209,12 +209,12 @@ export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
 export const tryDamage = (
   self: DamagingMove,
   battle: Battle,
-  user: ActivePokemon,
-  target: ActivePokemon,
+  user: Battlemon,
+  target: Battlemon,
   _spread: bool,
   power?: number,
 ): number => {
-  const isImmune = (poke: ActivePokemon, status: Status) => {
+  const isImmune = (poke: Battlemon, status: Status) => {
     if (poke.base.status) {
       return true;
     } else if (status === "brn" && poke.v.types.includes("fire")) {
