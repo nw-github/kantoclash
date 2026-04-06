@@ -252,7 +252,7 @@ export class DamageCalc {
         !target.v.substitute &&
         target.base.status === move.clearTargetStatus) ||
       (move.id === "wakeupslap" && !target.v.substitute && target.base.status === "slp") ||
-      (move.flag === DMF.minimize && target.v.usedMinimize) ||
+      (move.flag === DMF.minimize && target.v.hasFlag(VF.minimize)) ||
       (move.punish && target.v.charging && move.ignore?.includes(target.v.charging.move.id)) ||
       (move.id === "brine" && target.base.belowHp(2))
     );
@@ -469,7 +469,7 @@ export class Generation3 extends Generation2 {
 
       power <<= user.v.furyCutter - 1;
     } else if (move.flag === DMF.rollout) {
-      const count = 5 - (user.v.thrashing?.turns ?? 5) + +user.v.usedDefenseCurl;
+      const count = 5 - (user.v.thrashing?.turns ?? 5) + +user.v.hasFlag(VF.defenseCurl);
       power <<= count;
     }
 

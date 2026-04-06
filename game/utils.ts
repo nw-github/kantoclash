@@ -79,6 +79,8 @@ export enum VF {
   snatch       = 0x0040_0000,
   magicCoat    = 0x0080_0000,
   gastroAcid   = 0x0100_0000,
+  minimize     = 0x0200_0000,
+  defenseCurl  = 0x0400_0000,
 }
 
 /** Client only */

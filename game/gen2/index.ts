@@ -503,7 +503,7 @@ export class Generation2 extends Generation1 {
       dmg = Math.min(dmg << Math.min(user.v.furyCutter, 5), 0xffff);
     } else if (move.flag === DMF.rollout) {
       // command rolloutpower
-      const count = 5 - (user.v.thrashing?.turns ?? 5) + +user.v.usedDefenseCurl;
+      const count = 5 - (user.v.thrashing?.turns ?? 5) + +user.v.hasFlag(VF.defenseCurl);
       dmg = Math.min(dmg << count, 0xffff);
     } else if (move.id === "rage") {
       // command ragedamage
@@ -518,7 +518,7 @@ export class Generation2 extends Generation1 {
     // commands doubleundergrounddamage, doubleflyingdamage, doubleminimizedamage, pursuit
     if (
       user.v.inPursuit ||
-      (move.flag === DMF.minimize && target.v.usedMinimize) ||
+      (move.flag === DMF.minimize && target.v.hasFlag(VF.minimize)) ||
       (move.punish && target.v.charging && move.ignore?.includes(target.v.charging.move.id))
     ) {
       dmg = Math.min(dmg << 1, 0xffff);

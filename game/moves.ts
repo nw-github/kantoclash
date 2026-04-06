@@ -412,8 +412,11 @@ export const moveScripts: MoveScripts = {
       return battle.info(user, "fail_generic");
     }
 
-    user.v.usedMinimize = user.v.usedMinimize || id === "minimize";
-    user.v.usedDefenseCurl = user.v.usedDefenseCurl || id === "defensecurl";
+    let flags = VF.none;
+    flags |= id === "minimize" ? VF.minimize : 0;
+    flags |= id === "defensecurl" ? VF.defenseCurl : 0;
+    user.v.setFlag(flags);
+    battle.syncVolatiles();
   },
   status(battle, user, [target]) {
     if (target.v.substitute && this.status !== "par" && this.status !== "slp") {

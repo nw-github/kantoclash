@@ -222,7 +222,7 @@ class DamageCalc {
       mod = chainModIf(mod, Mod.FINAL_LIFE_ORB, user.base.itemId === "lifeorb");
       // mod = chainModIf(mod, Mod.FINAL_DMG_REDUCE_BERRY, );
       mod = chainModIf(mod, Mod.FINAL_DOUBLE_DMG,
-        (move.flag === DMF.minimize && target.v.usedMinimize) ||
+        (move.flag === DMF.minimize && target.v.hasFlag(VF.minimize)) ||
         (move.punish && target.v.charging && move.ignore?.includes(target.v.charging.move.id)));
     }
     return mod;
@@ -329,7 +329,7 @@ export class Generation5 extends Generation4 {
 
       power <<= user.v.furyCutter - 1;
     } else if (move.flag === DMF.rollout) {
-      const count = 5 - (user.v.thrashing?.turns ?? 5) + +user.v.usedDefenseCurl;
+      const count = 5 - (user.v.thrashing?.turns ?? 5) + +user.v.hasFlag(VF.defenseCurl);
       power <<= count;
     } else if (move.id === "spitup") {
       power *= user.v.stockpile;

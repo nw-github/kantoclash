@@ -1185,8 +1185,6 @@ class Volatiles {
   fainted = false;
   inPursuit = false;
   inBatonPass?: "batonpass" | "uturn" | "hwish";
-  usedDefenseCurl = false;
-  usedMinimize = false;
   usedIntimidate = false;
   usedTrace = false;
   metronomeCount = 0;

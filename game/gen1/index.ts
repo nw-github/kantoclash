@@ -405,6 +405,7 @@ export class Generation1 {
     let eff,
       miss = false;
     let dmg = DamageCalc.calcBaseDamage({level, A, D, power: move.power, move});
+    // eslint-disable-next-line prefer-const
     ({dmg, miss, eff} = DamageCalc.applyTypeModifiers(dmg, {type: move.type, user, target}));
 
     const random = !rng && rng !== null ? battle.rng : rng;

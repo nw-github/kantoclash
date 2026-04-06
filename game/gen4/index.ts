@@ -720,7 +720,7 @@ export class Generation4 extends Generation3 {
 
       power <<= user.v.furyCutter - 1;
     } else if (move.flag === DMF.rollout) {
-      const count = 5 - (user.v.thrashing?.turns ?? 5) + +user.v.usedDefenseCurl;
+      const count = 5 - (user.v.thrashing?.turns ?? 5) + +user.v.hasFlag(VF.defenseCurl);
       power <<= count;
     } else if (move.id === "spitup") {
       power *= user.v.stockpile;
