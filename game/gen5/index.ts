@@ -28,6 +28,7 @@ import type {Generation} from "../gen";
 import type {Random} from "random";
 import type {GetDamageParams} from "../gen1";
 import type {DamagingMove} from "../moves";
+import type {Calc} from "../calc";
 
 // prettier-ignore
 class Rng extends Generation4.Rng {
@@ -70,77 +71,92 @@ type FinalModifierParams = {
 
 // Based on this document: https://www.smogon.com/bw/articles/bw_complete_damage_formula#stab
 class DamageCalc {
-  private static getBoostedAttack({battle, user, target, isCrit, move, type}: BoostedAttackParams) {
+  static getBoostedAttack({battle, user, target, isCrit, move, type}: BoostedAttackParams) {
+    let m_atk = Mod.NONE;
+    let m_spa = Mod.NONE;
+
+    const chainBoth = (mod: number, cond: any) => {
+      m_atk = chainModIf(m_atk, mod, cond);
+      m_spa = chainModIf(m_spa, mod, cond);
+    };
+
     const targetAbilityId = target.getAbilityId(user);
     const userAbility = user.getAbility();
     const userAbilityId = user.getAbilityId();
     const weather = battle.getWeather();
 
-    const special = move.category === MC.special;
-    const atks = special ? "spa" : "atk";
-
     const statSource = move.id === "foulplay" ? target : user;
-    let statChange = statSource.v.stages[atks];
-    if (targetAbilityId === "unaware" || (isCrit && statChange < 0)) {
-      statChange = 0;
+    let {atk: statChangeAtk, spa: statChangeSpa} = statSource.v.stages;
+    if (targetAbilityId === "unaware" || (isCrit && statChangeAtk < 0)) {
+      statChangeAtk = 0;
+    }
+    if (targetAbilityId === "unaware" || (isCrit && statChangeSpa < 0)) {
+      statChangeSpa = 0;
     }
 
-    const A = applyStatStages(battle.gen, statSource.v.stats[atks], statChange);
-    const hustle = !special && userAbilityId === "hustle" ? Mod.ATK_HUSTLE : Mod.NONE;
-    let mod = Mod.NONE;
+    const atk = applyStatStages(battle.gen, statSource.v.stats.atk, statChangeAtk);
+    const spa = applyStatStages(battle.gen, statSource.v.stats.spa, statChangeSpa);
+
     // prettier-ignore
     {
-      mod = chainModIf(mod, Mod.ATK_THICKFAT, targetAbilityId === "thickfat" && (type === "ice" || type === "fire"));
-      mod = chainModIf(mod, Mod.ATK_PINCHBOOST, userAbility?.pinchBoostType && userAbility.pinchBoostType === type && user.base.belowHp(3));
-      mod = chainModIf(mod, Mod.ATK_GUTS, !special && user.base.status && userAbilityId === "guts");
-      mod = chainModIf(mod, Mod.ATK_PLUS, special && (userAbilityId === "plus" || userAbilityId === "minus") && user.hasAllyAbility(null, "plus", "minus"));
-      mod = chainModIf(mod, Mod.ATK_DEFEATIST, userAbilityId === "defeatist" && user.base.belowHp(2));
-      mod = chainModIf(mod, Mod.ATK_PUREPOWER, !special && userAbility?.doubleAtk);
-      mod = chainModIf(mod, Mod.ATK_SOLARPOWER, special && weather === "sun" && userAbilityId === "solarpower");
-      mod = chainModIf(mod, Mod.ATK_FLASHFIRE, user.v.hasFlag(VF.flashFire) && type === "fire");
-      mod = chainModIf(mod, Mod.ATK_SLOWSTART, !special && userAbilityId === "slowstart" && user.v.slowStartTurns < 5);
-      mod = chainModIf(mod, Mod.ATK_FLOWERGIFT, !special && weather === "sun" && user.owner.sideHasAbility("flowergift"));
-      mod = chainModIf(mod, Mod.ATK_LIGHTBALL, user.base.itemId === "lightball" && user.v.speciesId === "pikachu");
-      mod = chainModIf(mod, Mod.ATK_CHOICE, user.base.item?.choice === atks);
-      mod = chainModIf(mod, Mod.ATK_DEEPSEATOOTH, special && user.base.itemId === "deepseatooth" && user.v.speciesId === "clamperl");
-      mod = chainModIf(mod, Mod.ATK_SOULDEW, special && user.base.itemId === "souldew" && (user.v.speciesId === "latios" || user.v.speciesId === "latias"));
+      chainBoth(Mod.ATK_THICKFAT, targetAbilityId === "thickfat" && (type === "ice" || type === "fire"));
+      chainBoth(Mod.ATK_PINCHBOOST, userAbility?.pinchBoostType && userAbility.pinchBoostType === type && user.base.belowHp(3));
+      m_atk = chainModIf(m_atk, Mod.ATK_GUTS, user.base.status && userAbilityId === "guts");
+      m_spa = chainModIf(m_spa, Mod.ATK_PLUS, (userAbilityId === "plus" || userAbilityId === "minus") && user.hasAllyAbility(null, "plus", "minus"));
+      chainBoth(Mod.ATK_DEFEATIST, userAbilityId === "defeatist" && user.base.belowHp(2));
+      m_atk = chainModIf(m_atk, Mod.ATK_PUREPOWER, userAbility?.doubleAtk);
+      m_spa = chainModIf(m_spa, Mod.ATK_SOLARPOWER, weather === "sun" && userAbilityId === "solarpower");
+      chainBoth(Mod.ATK_FLASHFIRE, user.v.hasFlag(VF.flashFire) && type === "fire");
+      m_atk = chainModIf(m_atk, Mod.ATK_SLOWSTART, userAbilityId === "slowstart" && user.v.slowStartTurns < 5);
+      m_atk = chainModIf(m_atk, Mod.ATK_FLOWERGIFT, weather === "sun" && user.owner.sideHasAbility("flowergift"));
+      chainBoth(Mod.ATK_LIGHTBALL, user.base.itemId === "lightball" && user.v.speciesId === "pikachu");
+      m_atk = chainModIf(m_atk, Mod.ATK_CHOICE, user.base.item?.choice === "atk");
+      m_spa = chainModIf(m_spa, Mod.ATK_CHOICE, user.base.item?.choice === "spa");
+      m_spa = chainModIf(m_spa, Mod.ATK_DEEPSEATOOTH, user.base.itemId === "deepseatooth" && user.v.speciesId === "clamperl");
+      m_spa = chainModIf(m_spa, Mod.ATK_SOULDEW, user.base.itemId === "souldew" && (user.v.speciesId === "latios" || user.v.speciesId === "latias"));
     }
-    return applyMod(applyMod(A, hustle), mod);
+
+    const hustle = userAbilityId === "hustle" ? Mod.ATK_HUSTLE : Mod.NONE;
+    return {atk: applyMod(applyMod(atk, hustle), m_atk), spa: applyMod(spa, m_spa)};
   }
 
-  private static getBoostedDefense({battle, user, target, isCrit, move}: BoostedDefenseParams) {
-    const weather = battle.getWeather();
-    const special = move.category === MC.special;
+  static getBoostedDefense({battle, user, target, isCrit, move}: BoostedDefenseParams) {
     // TODO: Apply Wonder Room here
-    const defs = special && move.flag !== DMF.hits_defense ? "spd" : "def";
-    let statChange = target.v.stages[defs];
-    if (
-      user.getAbilityId() === "unaware" ||
-      (isCrit && statChange > 0) ||
-      move.flag === DMF.ignore_defeva
-    ) {
-      statChange = 0;
+    let {def: statChangeDef, spd: statChangeSpd} = target.v.stages;
+    const unaware = user.getAbilityId() === "unaware";
+    if (unaware || (isCrit && statChangeDef > 0) || move.flag === DMF.ignore_defeva) {
+      statChangeDef = 0;
+    }
+    if (unaware || (isCrit && statChangeSpd > 0)) {
+      statChangeSpd = 0;
     }
 
-    let D = applyStatStages(battle.gen, target.v.stats[defs], statChange);
-    if (special && weather === "sand" && target.v.hasAnyType("rock")) {
-      D = applyMod(D, Mod.DEF_SANDSTORM);
+    let def = applyStatStages(battle.gen, target.v.stats.def, statChangeDef);
+    let spd = applyStatStages(battle.gen, target.v.stats.spd, statChangeSpd);
+    const weather = battle.getWeather();
+    if (weather === "sand" && target.v.hasAnyType("rock")) {
+      spd = applyMod(spd, Mod.DEF_SANDSTORM);
     }
 
-    let mod = Mod.NONE;
+    let m_def = Mod.NONE;
+    let m_spd = Mod.NONE;
     // prettier-ignore
     {
-      mod = chainModIf(mod, Mod.DEF_MARVELSCALE, !special && target.getAbilityId(user) === "marvelscale" && target.base.status);
-      mod = chainModIf(mod, Mod.DEF_FLOWERGIFT, special && weather === "sun" && target.owner.sideHasAbility("flowergift"));
-      mod = chainModIf(mod, Mod.DEF_DEEPSEASCALE, special && target.base.itemId === "deepseascale" && target.v.speciesId === "clamperl");
-      mod = chainModIf(mod, Mod.DEF_METALPOWDER, !special && target.base.itemId === "metalpowder" && target.v.speciesId === "ditto");
-      mod = chainModIf(mod, Mod.DEF_EVIOLITE, target.base.itemId === "eviolite" && target.v.species.evolvesTo);
-      mod = chainModIf(mod, Mod.DEF_SOULDEW, special && target.base.itemId === "souldew" && (target.v.speciesId === "latios" || target.v.speciesId === "latias"));
+      m_def = chainModIf(m_def, Mod.DEF_MARVELSCALE, target.getAbilityId(user) === "marvelscale" && target.base.status);
+      m_spd = chainModIf(m_spd, Mod.DEF_FLOWERGIFT, weather === "sun" && target.owner.sideHasAbility("flowergift"));
+      m_spd = chainModIf(m_spd, Mod.DEF_DEEPSEASCALE, target.base.itemId === "deepseascale" && target.v.speciesId === "clamperl");
+      m_def = chainModIf(m_def, Mod.DEF_METALPOWDER, target.base.itemId === "metalpowder" && target.v.speciesId === "ditto");
+      m_def = chainModIf(m_def, Mod.DEF_EVIOLITE, target.base.itemId === "eviolite" && target.v.species.evolvesTo);
+      m_spd = chainModIf(m_spd, Mod.DEF_EVIOLITE, target.base.itemId === "eviolite" && target.v.species.evolvesTo);
+      m_spd = chainModIf(m_spd, Mod.DEF_SOULDEW, target.base.itemId === "souldew" && (target.v.speciesId === "latios" || target.v.speciesId === "latias"));
     }
-    return applyMod(D, mod);
+
+    def = applyMod(def, m_def);
+    spd = move.flag === DMF.hits_defense ? def : applyMod(spd, m_spd);
+    return {def, spd};
   }
 
-  private static getBoostedPower({move, battle, user, target, type, power}: BoostedPowerParams) {
+  static getBoostedPower({move, battle, user, target, type, power}: BoostedPowerParams) {
     const hasTypeBoostingItem = () => {
       const typeBoost = user.base.item?.typeBoost;
       return (
@@ -231,8 +247,10 @@ class DamageCalc {
   static calcDamage({power, type, battle, move, user, target, isCrit, rng}: DamageParams) {
     const level = user.base.level;
     const userAbilityId = user.getAbilityId();
-    const A = DamageCalc.getBoostedAttack({battle, user, target, isCrit, move, type});
-    const D = DamageCalc.getBoostedDefense({battle, user, target, isCrit, move});
+    const [atks, defs] =
+      move.category === MC.special ? (["spa", "spd"] as const) : (["atk", "def"] as const);
+    const A = DamageCalc.getBoostedAttack({battle, user, target, isCrit, move, type})[atks];
+    const D = DamageCalc.getBoostedDefense({battle, user, target, isCrit, move})[defs];
     power = DamageCalc.getBoostedPower({battle, user, target, type, power, move});
 
     let multiTarget = Mod.NONE;
@@ -279,6 +297,7 @@ export class Generation5 extends Generation4 {
   override lastMoveIdx = this.moveList.workup.idx!;
   override lastPokemon = 649;
   override rng = new Generation5.Rng();
+  override calc: Calc = DamageCalc;
 
   constructor() {
     super();

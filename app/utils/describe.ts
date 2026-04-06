@@ -189,7 +189,7 @@ const descriptions: Partial<Record<number, Partial<Record<MoveId, string>>>> = {
 const flagDesc: Record<NonNullable<DMF>, string> = {
   [DMF.drain]: "The user recovers 1/2 the damage dealt. ",
   [DMF.explosion]: "Halves target defense during damage calculation. Causes the user to faint. ",
-  [DMF.crash]: "If the user misses this move, it will take 1 HP due to crash damage. ",
+  [DMF.crash]: "If the user misses this move, it will lose 1 HP due to crash damage. ",
   [DMF.multi]: "Hits 2-5 times. ",
   [DMF.high_crit]: "Has a high critical hit ratio. ",
   [DMF.recharge]: "After using this move, the user must spend one turn to recharge. ",
@@ -211,7 +211,7 @@ const flagDesc: Record<NonNullable<DMF>, string> = {
   [DMF.uturn]: "Switches the user out. ",
   [DMF.futuresight]: "After two turns, the target is hit with an attack. Damage is calculated upon use of the move. ",
   [DMF.hits_defense]: "Damage calculation uses the target's Defense stat.",
-  [DMF.ignore_defeva]: "Ignores changes to Defense and Evasion.",
+  [DMF.ignore_defeva]: "Ignores changes to the target's Defense and Evasion.",
 };
 
 const groupWithComma = (items: readonly string[]) => {

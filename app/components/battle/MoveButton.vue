@@ -65,8 +65,7 @@
 
 <script setup lang="ts">
 import type {MoveOption, Player} from "~~/game/battle";
-import {abilityList} from "~~/game/species";
-import {MC, Range, type Type, type Weather} from "~~/game/utils";
+import {MC, Range} from "~~/game/utils";
 import type {ItemData} from "~~/game/item";
 import type {Pokemon} from "~~/game/pokemon";
 
@@ -76,74 +75,47 @@ defineEmits<{click: []}>();
 
 const breakpoint = useBreakpoints(breakpointsTailwind);
 const lessThanSm = breakpoint.smaller("sm");
+const manager = injectManager();
 
-const {option, user, weather, opponent} = defineProps<{
+const {option, user, opponent} = defineProps<{
   option: MoveOption;
   user: ClientActivePokemon;
-  weather?: Weather;
   opponent?: Player;
   ui?: string;
 }>();
 const move = computed(() => user.base.gen.moveList[option.move]);
 const info = computed(() => {
-  const type = user.base.gen.getMoveType(move.value, user.base, weather);
+  const move = user.base.gen.moveList[option.move];
+  const battle = manager?.battle;
+  const weather = battle?.getWeather();
+  const type = user.base.gen.getMoveType(move, user.base, weather);
   const powers: {pokes: Pokemon[]; pow?: number; acc?: number}[] = [];
   const item = user.base.item;
   for (const opp of opponent?.active?.toReversed() ?? []) {
-    if (!opp || opp.v.fainted) {
+    if (!opp || opp.v.fainted || !battle) {
       continue;
     }
 
-    let pow = move.value.power;
-    if (move.value.kind === "damage") {
-      pow = user.base.gen.getMoveBasePower(move.value, user.base, opp.base);
+    let power = move.power;
+    if (move.kind === "damage" && move.id !== "present") {
+      power = battle.gen.getMoveBasePower(move, battle, user, opp);
+      power = battle.gen.calc.getBoostedPower({battle, user, target: opp, type, power, move});
     }
 
-    pow = pow && applyPowerModifiers(pow, type, item);
-
-    const acc = applyAccuracyModifiers(user.base.gen.getMoveAcc(move.value, weather), item);
-    const other = powers.find(r => r.pow == pow && r.acc == acc);
+    const acc = applyAccuracyModifiers(user.base.gen.getMoveAcc(move, weather), item);
+    const other = powers.find(r => r.pow == power && r.acc == acc);
     if (other) {
       other.pokes.push(opp.base);
       continue;
     }
 
-    powers.push({pokes: [opp.base], pow, acc});
+    powers.push({pokes: [opp.base], pow: power, acc});
   }
 
   return {type, powers} as const;
 });
 const displayAgainst = computed(() => displayAgainstList.includes(move.value.range));
 const targeting = computed(() => targetingMap[move.value.range]);
-
-const applyPowerModifiers = (pow: number, type: Type, item?: ItemData) => {
-  if (
-    item?.typeBoost?.type === type &&
-    (!item.typeBoost.species || item.typeBoost.species.includes(user.v.speciesId))
-  ) {
-    pow += Math.floor(pow * (item.typeBoost.percent / 100));
-  }
-  if (option.move === "facade" && user.base.status) {
-    pow *= 2;
-  }
-  if (option.move === "spitup" && user.v.stockpile) {
-    pow *= user.v.stockpile;
-  }
-  if (option.move === "weatherball" && weather) {
-    pow *= 2;
-  }
-  if (
-    user.base.belowHp(3) &&
-    user.v.ability &&
-    abilityList[user.v.ability].pinchBoostType === type
-  ) {
-    pow += Math.floor(pow / 2);
-  }
-  if (pow <= 60 && user.v.ability === "technician") {
-    pow += Math.floor(pow / 2);
-  }
-  return pow;
-};
 
 const applyAccuracyModifiers = (acc: number | undefined, item?: ItemData) => {
   if (acc && item?.boostAcc) {

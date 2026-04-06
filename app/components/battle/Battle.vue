@@ -307,6 +307,8 @@ const sound = useAudio({
   shiny: {src: "/effects/shiny.mp3"},
 });
 
+provideManager(mgr);
+
 useIntervalFn(() => {
   liveEvents.value = liveEvents.value.filter(e => Date.now() - e.time < 1400);
 }, 400);

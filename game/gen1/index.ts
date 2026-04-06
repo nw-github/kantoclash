@@ -30,6 +30,7 @@ import {
 import {itemList, type ItemId} from "../item";
 import {UNOWN_FORM, type Pokemon, type FormId, type Gender, type Nature} from "../pokemon";
 import type {DamageReason} from "../events";
+import type {Calc} from "../calc";
 
 const stageMultipliers: Record<number, [num: number, div: number]> = {
   [-6]: [25, 100],
@@ -124,6 +125,20 @@ type StabParams = {
 };
 
 export class DamageCalc {
+  static getBoostedAttack({user}: {user: Battlemon}) {
+    return {atk: user.v.stats.atk, spa: user.v.stats.spa};
+  }
+
+  static getBoostedDefense({target}: {target: Battlemon}) {
+    return {def: target.v.stats.def, spd: target.v.stats.spa};
+  }
+
+  static getBoostedPower({power}: {power: number}) {
+    return power;
+  }
+
+  // --
+
   static P(v: number) {
     return Math.floor((v * 255) / 100);
   }
@@ -242,6 +257,7 @@ export class Generation1 {
   accStageMultipliers = stageMultipliers;
   move = {scripts: moveScripts, overrides: moveOverrides};
   rng = new Generation1.Rng();
+  calc: Calc = DamageCalc;
 
   beforeUseMove(battle: Battle, move: Move, user: Battlemon) {
     // Order of events comes from here:

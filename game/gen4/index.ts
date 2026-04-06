@@ -28,6 +28,7 @@ import type {GetDamageParams} from "../gen1";
 import type {Pokemon} from "../pokemon";
 import type {Random} from "random";
 import type {Generation} from "../gen";
+import type {Calc} from "../calc";
 
 // prettier-ignore
 class Rng extends Generation3.Rng {
@@ -74,7 +75,7 @@ type BoostedPowerParams = {
 };
 
 class DamageCalc {
-  private static getBoostedAttack(battle: Battle, user: Battlemon) {
+  static getBoostedAttack({battle, user}: {battle: Battle; user: Battlemon}) {
     const ability = user.getAbility();
     const abilityId = user.getAbilityId();
     const item = user.base.item;
@@ -122,7 +123,15 @@ class DamageCalc {
     return {atk, spa};
   }
 
-  private static getBoostedDefense(battle: Battle, user: Battlemon, target: Battlemon) {
+  static getBoostedDefense({
+    battle,
+    user,
+    target,
+  }: {
+    battle: Battle;
+    user: Battlemon;
+    target: Battlemon;
+  }) {
     const abilityId = target.getAbilityId(user);
     const item = target.base.item;
 
@@ -151,7 +160,7 @@ class DamageCalc {
     return {def, spd};
   }
 
-  private static getBoostedPower({move, battle, user, target, type, power}: BoostedPowerParams) {
+  static getBoostedPower({move, battle, user, target, type, power}: BoostedPowerParams) {
     const userAbility = user.getAbility();
     const userAbilityId = user.getAbilityId();
 
@@ -237,8 +246,8 @@ class DamageCalc {
   // CalcMoveDamage
   static calcBaseDamage({power, type, battle, move, user, target, isCrit}: BaseDamageParams) {
     const level = user.base.level;
-    const attacks = DamageCalc.getBoostedAttack(battle, user);
-    const defenses = DamageCalc.getBoostedDefense(battle, user, target);
+    const attacks = DamageCalc.getBoostedAttack({battle, user});
+    const defenses = DamageCalc.getBoostedDefense({battle, user, target});
     power = DamageCalc.getBoostedPower({battle, user, target, type, power, move});
 
     if (move.flag === DMF.explosion) {
@@ -421,6 +430,7 @@ export class Generation4 extends Generation3 {
   override lastMoveIdx = this.moveList.zenheadbutt.idx!;
   override lastPokemon = 493;
   override rng = new Generation4.Rng();
+  override calc: Calc = DamageCalc;
 
   constructor() {
     super();

@@ -39,6 +39,7 @@ import {TurnType, type Battle} from "../battle";
 import type {DamagingMove, Move, MoveId} from "../moves";
 import type {Generation} from "../gen";
 import type {Random} from "random";
+import type {Calc} from "../calc";
 
 const critStages: Record<number, number> = {
   [0]: 1 / 16,
@@ -129,8 +130,22 @@ type MiscModsParams = {
   move: DamagingMove;
 };
 
+type BoostedAttackParams = {
+  battle: Battle;
+  user: Battlemon;
+  target: Battlemon;
+  type: Type;
+};
+
+type BoostedPowerParams = {
+  battle: Battle;
+  user: Battlemon;
+  type: Type;
+  power: number;
+};
+
 export class DamageCalc {
-  private static getBoostedAttack(battle: Battle, user: Battlemon, target: Battlemon, type: Type) {
+  static getBoostedAttack({battle, user, target, type}: BoostedAttackParams) {
     const ability = user.getAbility();
     const abilityId = user.getAbilityId();
     const item = user.base.item;
@@ -183,7 +198,7 @@ export class DamageCalc {
     return {atk, spa};
   }
 
-  private static getBoostedDefense(target: Battlemon) {
+  static getBoostedDefense({target}: {target: Battlemon}) {
     const abilityId = target.getAbilityId();
     const item = target.base.item;
 
@@ -204,7 +219,7 @@ export class DamageCalc {
     return {def, spd};
   }
 
-  private static getBoostedPower(battle: Battle, user: Battlemon, type: Type, power: number) {
+  static getBoostedPower({battle, user, type, power}: BoostedPowerParams) {
     if (type === "electric" && battle.allActive.some(poke => poke.v.hasFlag(VF.mudSport))) {
       power >>= 1;
     } else if (type === "fire" && battle.allActive.some(poke => poke.v.hasFlag(VF.waterSport))) {
@@ -264,9 +279,9 @@ export class DamageCalc {
     explosion,
   }: BaseDamageParams) {
     const level = user.base.level;
-    const attacks = DamageCalc.getBoostedAttack(battle, user, target, type);
-    const defenses = DamageCalc.getBoostedDefense(target);
-    power = DamageCalc.getBoostedPower(battle, user, type, power);
+    const attacks = DamageCalc.getBoostedAttack({battle, user, target, type});
+    const defenses = DamageCalc.getBoostedDefense({target});
+    power = DamageCalc.getBoostedPower({battle, user, type, power});
 
     // The explosion check uses gCurrentMove instead of the move that was passed in
     if (explosion) {
@@ -407,6 +422,7 @@ export class Generation3 extends Generation2 {
   override lastMoveIdx = this.moveList.yawn.idx!;
   override lastPokemon = 386;
   override rng = new Generation3.Rng();
+  override calc: Calc = DamageCalc;
   override maxIv = 31;
   override maxEv = 255;
   override maxTotalEv = 510;

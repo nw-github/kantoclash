@@ -29,6 +29,7 @@ import type {Battlemon, Battle} from "../battle";
 import type {DamagingMove, Move, MoveId} from "../moves";
 import type {Gender} from "../pokemon";
 import type {ItemData, ItemId} from "../item";
+import type {Calc} from "../calc";
 
 const critStages: Record<number, number> = {
   [0]: 17 / 256,
@@ -121,6 +122,10 @@ type StabParams = {
 };
 
 class DamageCalc extends Gen1DamageCalc {
+  static override getBoostedDefense({target}: {target: Battlemon}) {
+    return {def: target.v.stats.def, spd: target.v.stats.spd};
+  }
+
   // command damagestats (BattleCommand_DamageStats)
   static override getDamageVariables(
     user: Battlemon,
@@ -243,6 +248,7 @@ export class Generation2 extends Generation1 {
   override lastMoveIdx = this.moveList.zapcannon.idx!;
   override lastPokemon = 251;
   override rng = new Generation2.Rng();
+  override calc: Calc = DamageCalc;
   override accStageMultipliers = accStageMultipliers;
   override typeMatchupTable = typeMatchupTable;
 

@@ -6,7 +6,7 @@ import type {Choice, ClientMessage, JoinRoomResponse, ServerMessage} from "./gam
 import type {BattleEvent} from "~~/game/events";
 import type {Options} from "~~/game/battle";
 import type {Pokemon} from "~~/game/pokemon";
-import {playerId, TypeEffectiveness, VF} from "~~/game/utils";
+import {playerId, VF} from "~~/game/utils";
 import type {MoveId} from "~~/game/moves";
 import {type Generation, GENERATIONS} from "~~/game/gen";
 
@@ -402,6 +402,7 @@ const botFunctions = {
     const active = selfP.active![0]!;
     const opponentActive = mgr.players.getBP(opponent).active![0]!;
     const opts = options[0];
+    const weather = mgr.battle.getWeather();
 
     const rank = <T>(arr: T[], getScore: (t: T) => number, name: (t: T) => string) => {
       const res = arr
@@ -423,12 +424,10 @@ const botFunctions = {
       const opponentPoke = opponentActive.base;
       const move = gen.moveList[id];
       if (move.kind === "damage") {
-        // FIXME
-        // const eff = gen.getEffectiveness(
-        //   gen.getMoveType(move, active.base, mgr.weather),
-        //   opponentActive.v.types ?? opponentPoke.species.types,
-        // );
-        const eff = new TypeEffectiveness();
+        const eff = gen.getEffectiveness(
+          gen.getMoveType(move, active.base, weather),
+          opponentActive,
+        );
         let score = 10;
         if (eff.superEffective()) {
           score = 15;
