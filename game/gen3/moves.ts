@@ -131,10 +131,8 @@ export const moveOverrides: Partial<MovePropOverrides> = {
       }
       return this.power << (user.v.furyCutter - 1);
     },
-    rollout(_, user) {
-      const count = 5 - (user.v.thrashing?.turns ?? 5) + +user.v.hasFlag(VF.defenseCurl);
-      return this.power << count;
-    },
+    rollout: rolloutPower,
+    iceball: rolloutPower,
     //
     frustration: (_, user) => idiv1(255 - user.base.friendship, 2.5),
     hiddenpower(_, {base}) {
@@ -216,6 +214,11 @@ export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
   wrap: {kingsRock: true},
   zapcannon: {effect: [100, "par"]},
 };
+
+function rolloutPower(this: DamagingMove, _: Battle, user: Battlemon) {
+  const count = 5 - (user.v.thrashing?.turns ?? 5) + +user.v.hasFlag(VF.defenseCurl);
+  return this.power << count;
+}
 
 export const tryDamage = (
   self: DamagingMove,

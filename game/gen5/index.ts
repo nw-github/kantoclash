@@ -18,8 +18,8 @@ import {
   n,
   randChoiceWeighted,
   Range,
+  TypeEffectiveness,
   VF,
-  type TypeEffectiveness,
   type Type,
   type Weather,
 } from "../utils";
@@ -307,7 +307,8 @@ export class Generation5 extends Generation4 {
       stab = userAbilityId === "adaptability" ? Mod.STAB_ADAPTABILITY : Mod.STAB;
     }
 
-    const eff = battle.gen.getEffectiveness(type, target);
+    const eff =
+      move.id === "struggle" ? new TypeEffectiveness() : battle.gen.getEffectiveness(type, target);
     let dmg = idiv(idiv(A * power * (idiv(2 * level, 5) + 2), D), 50) + 2;
     dmg = applyMod(dmg, multiTarget);
     dmg = applyMod(dmg, weatherModifier[weather!]?.[type] ?? Mod.NONE);

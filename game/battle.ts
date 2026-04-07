@@ -782,7 +782,8 @@ export class Battle {
         }
 
         if (move.range === Range.Random) {
-          targets = [this.rng.choice(this.getTargets(user, Range.AllAdjacentFoe))!];
+          const target = this.rng.choice(this.getTargets(user, Range.AllAdjacentFoe));
+          targets = target ? [target] : [];
         }
       } else {
         user.v.clearFlag(VF.charge);

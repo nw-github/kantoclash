@@ -598,7 +598,7 @@ export class Generation1 {
           why !== "seeded" && (battle.gen.id === 2 || poke.base.status === "tox")
             ? poke.v.counter || 1
             : 1;
-        d = 8;
+        d = why === "psn" && poke.base.status === "tox" ? 16 : 8;
       }
 
       let dead = false;
