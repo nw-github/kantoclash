@@ -11,7 +11,7 @@
   </div>
   <div v-else-if="e.type === 'damage'">
     <p v-if="e.why === 'attacked' && e.isCrit">
-      <template v-if="players.ownerOf(e.target).active.length > 1">
+      <template v-if="players.ownerOf(e.target)!.active.length > 1">
         A critical hit on {{ pn(e.target, false) }}!
       </template>
       <template v-else>
@@ -107,7 +107,7 @@
     </p>
   </div>
   <div v-else-if="e.type === 'miss'">
-    <template v-if="players.ownerOf(e.target).active.length > 1">{{ pn(e.target) }} avoided the attack!</template>
+    <template v-if="players.ownerOf(e.target)!.active.length > 1">{{ pn(e.target) }} avoided the attack!</template>
     <template v-else>{{ pn(e.src) }}'s attack missed!</template>
   </div>
   <div v-else-if="e.type === 'transform'">
@@ -251,7 +251,7 @@ const tn = (id: PokeId | PlayerId, title = true) => {
 };
 
 const eff = (id: PokeId, v?: number) => {
-  if (players.ownerOf(id).active.length > 1) {
+  if (players.ownerOf(id)!.active.length > 1) {
     return `It's ${
       (v ?? 1) > 1
         ? `super effective on ${pn(id, false)}!`

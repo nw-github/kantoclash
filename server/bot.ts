@@ -225,7 +225,7 @@ export async function startBot(botType: BotType, format?: FormatId) {
         $conn.emit("choose", room, eventNo, choice, err => {
           if (err) {
             if (choice.type === "switch") {
-              const poke = {...mgr.players.getBP(myId).team[choice.pokeIndex], gen: undefined};
+              const poke = {...mgr.players.getBP(myId)!.team[choice.pokeIndex], gen: undefined};
               console.error(`[${name}] bad switch '${err}' (to: ${choice.pokeIndex}|`, poke, ")");
             } else if (choice.type === "move") {
               console.error(
@@ -301,9 +301,9 @@ export async function startBot(botType: BotType, format?: FormatId) {
         const msg = message.message.toLowerCase();
         if (msg.startsWith("/dox")) {
           if (msg.includes("team")) {
-            mgr.players.getBP(myId).team.forEach(dox);
+            mgr.players.getBP(myId)!.team.forEach(dox);
           } else {
-            for (const poke of mgr.players.getBP(myId).active) {
+            for (const poke of mgr.players.getBP(myId)!.active) {
               if (poke?.base) {
                 dox(poke.base);
               }
@@ -394,13 +394,13 @@ const botFunctions = {
   },
   rank(params: BotParams): Choice[] {
     const {options, opponent, me, gen, mgr} = params;
-    const selfP = mgr.players.getBP(me);
+    const selfP = mgr.players.getBP(me)!;
     if (selfP.active.length !== 1) {
       return this.random(params);
     }
 
     const active = selfP.active![0]!;
-    const opponentActive = mgr.players.getBP(opponent).active![0]!;
+    const opponentActive = mgr.players.getBP(opponent)!.active![0]!;
     const opts = options[0];
     const weather = mgr.battle.getWeather();
 

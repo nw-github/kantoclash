@@ -69,12 +69,12 @@ export class Players {
   }
 
   get2(id: PlayerId) {
-    return this.items[id]?.bp!;
+    return this.items[id]?.bp;
   }
 
   ownerOf(id: PokeId) {
     const [player] = id.split(":");
-    return this.items[player]?.bp!;
+    return this.items[player]?.bp;
   }
 
   clientOwnerOf(id: PokeId) {
@@ -84,11 +84,11 @@ export class Players {
 
   poke(id: PokeId) {
     const [player, pos] = id.split(":");
-    return this.items[player].bp!.active[+pos];
+    return this.items[player]?.bp?.active[+pos];
   }
 
   getBP(id: PlayerId) {
-    return this.items[id]?.bp!;
+    return this.items[id]?.bp;
   }
 
   add({name, isSpectator, nPokemon, id, admin, teamPreview}: AddPlayerInfo) {
@@ -144,7 +144,7 @@ export class ClientManager {
 
   async handleEvent(e: BattleEvent) {
     if (e.type === "switch") {
-      const poke = this.players.poke(e.src);
+      const poke = this.players.poke(e.src)!;
       if (poke.initialized && !poke.v.fainted && e.why !== "batonpass" && e.why !== "uturn") {
         if (e.why !== "phaze") {
           this.cb.displayEvent({type: "retract", src: e.src, name: poke.base.name});
@@ -164,9 +164,8 @@ export class ClientManager {
         cb: new AnimCallback(() => {
           const base =
             e.indexInTeam !== -1
-              ? this.players.ownerOf(e.src).team[e.indexInTeam]
+              ? this.players.ownerOf(e.src)!.team[e.indexInTeam]
               : this.findOrCreateEnemyBasePokemon(e);
-          const poke = this.players.poke(e.src);
           poke.switchTo(base, this.battle);
           poke.cflags = CVF.none;
           this.battle.events.length = 0;
@@ -255,7 +254,7 @@ export class ClientManager {
         this.handleVolatiles(e);
         return;
       } else if (e.why === "heal_bell") {
-        this.players.ownerOf(e.src).team.forEach(poke => (poke.status = undefined));
+        this.players.ownerOf(e.src)!.team.forEach(poke => (poke.status = undefined));
       } else if (e.why === "batonpass") {
         this.handleVolatiles(e);
         await this.cb.playAnimation(e.src, {
@@ -443,7 +442,7 @@ export class ClientManager {
   }
 
   private findOrCreateEnemyBasePokemon(e: SwitchEvent) {
-    const owner = this.players.ownerOf(e.src);
+    const owner = this.players.ownerOf(e.src)!;
     // TODO: better heuristics based on for example, HP, if the opponent has multiple of the same
     // Pokemon
     const poke = owner.team.find(poke => poke.speciesId === e.speciesId && poke !== this.fake);
@@ -479,7 +478,7 @@ export class ClientManager {
     }
 
     for (const {v, id} of e.volatiles) {
-      const poke = this.players.poke(id);
+      const poke = this.players.poke(id)!;
       const gen = this.battle.gen;
       if (v.stages) {
         dirty.merge(poke.v.stages, v.stages);

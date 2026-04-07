@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div v-if="players.get2(myId).active.every(a => !a.initialized)" class="pb-2">
+    <div v-if="players.get2(myId)!.active.every(a => !a.initialized)" class="pb-2">
       Choose your lead
     </div>
     <div v-else-if="currOptionPoke" class="pb-2 flex gap-1 items-center w-[90%]">
@@ -55,20 +55,20 @@
       </div>
 
       <div class="grid gap-1 sm:gap-2 grid-cols-2 h-min sm:w-1/2">
-        <template v-for="(poke, i) in players.get2(opponent).active.toReversed()" :key="i">
+        <template v-for="(poke, i) in players.get2(opponent)!.active.toReversed()" :key="i">
           <SwitchButton
             v-if="poke"
             :popover-disabled="true"
             :poke="poke.base"
             :button-disabled="
               poke.v.fainted ||
-              !currTargets.includes(`${opponent}:${players.get2(opponent).active.length - i - 1}`)
+              !currTargets.includes(`${opponent}:${players.get2(opponent)!.active.length - i - 1}`)
             "
-            @click="selectTarget(`${opponent}:${players.get2(opponent).active.length - i - 1}`)"
+            @click="selectTarget(`${opponent}:${players.get2(opponent)!.active.length - i - 1}`)"
           />
           <div v-else></div>
         </template>
-        <template v-for="(poke, i) in players.get2(myId).active" :key="i">
+        <template v-for="(poke, i) in players.get2(myId)!.active" :key="i">
           <SwitchButton
             v-if="poke"
             :popover-disabled="true"
@@ -104,7 +104,7 @@
           :poke
           :weather
           :button-disabled="!isValidSwitch(currOption, i)"
-          :active="players.get2(myId).active.some(p => p.base === poke && p.initialized)"
+          :active="players.get2(myId)!.active.some(p => p.base === poke && p.initialized)"
           @click="selectSwitch(currOption, i)"
         />
       </div>
@@ -190,7 +190,7 @@ const cancelTarget = () => {
 };
 
 const choiceMessage = (i: number, choice: Choice, options: Options) => {
-  const self = players.get2(myId);
+  const self = players.get2(myId)!;
   if (choice.type === "switch") {
     const active = self.active[choice.who];
     if (active.initialized) {
