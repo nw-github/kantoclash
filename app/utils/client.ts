@@ -5,7 +5,7 @@ import type {Generation} from "~~/game/gen";
 import type {AnimationParams} from "~/components/battle/ActivePokemon.vue";
 import type {BattleTimers, TeamPreview} from "~~/server/gameServer";
 import {type Battlemon, Battle, type Player} from "~~/game/battle";
-import type {CVF, NonEmptyArray} from "~~/game/utils";
+import {CVF, type NonEmptyArray} from "~~/game/utils";
 import type {DamagingMove, ForesightMove} from "~~/game/moves";
 import dirty from "~~/game/dirty";
 
@@ -168,6 +168,7 @@ export class ClientManager {
               : this.findOrCreateEnemyBasePokemon(e);
           const poke = this.players.poke(e.src);
           poke.switchTo(base, this.battle);
+          poke.cflags = CVF.none;
           this.battle.events.length = 0;
 
           poke.visible = true;
@@ -505,6 +506,9 @@ export class ClientManager {
         turns: -1,
       }));
       apply(poke.v, v, "identified", c => gen.moveList[c] as ForesightMove);
+      apply(poke.v, v, "seededBy", id => this.players.poke(id));
+      apply(poke.v, v, "meanLook", id => this.players.poke(id));
+      apply(poke.v, v, "attract", id => this.players.poke(id));
       apply(poke.base, v, "status");
       apply(poke, v, "cflags");
     }

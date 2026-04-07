@@ -87,13 +87,9 @@ export enum VF {
 // prettier-ignore
 export enum CVF {
   none       = 0,
-  confused   = 0x0000_0001,
-  disabled   = 0x0000_0002,
-  attract    = 0x0000_0004,
-  encore     = 0x0000_0008,
-  meanLook   = 0x0000_0010,
-  seeded     = 0x0000_0020,
-  taunt      = 0x0000_0040,
+  disabled   = 0x0000_0001,
+  encore     = 0x0000_0002,
+  taunt      = 0x0000_0004,
 }
 
 export enum Endure {

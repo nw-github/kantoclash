@@ -1097,13 +1097,10 @@ export class Battlemon {
   }
 
   changedVolatiles() {
-    const diff: DiffV = dirty.flush(this.v);
+    const diff: Pick<Diff<Volatiles>, (typeof VOLATILE_SYNC_KEYS)[number]> = dirty.flush(this.v);
     let cflags = CVF.none;
     cflags |= diff.disabled ? CVF.disabled : 0;
-    cflags |= diff.attract ? CVF.attract : 0;
     cflags |= diff.encore ? CVF.encore : 0;
-    cflags |= diff.meanLook ? CVF.meanLook : 0;
-    cflags |= diff.seededBy ? CVF.seeded : 0;
     cflags |= diff.tauntTurns ? CVF.taunt : 0;
     if (this.v.transformed) {
       diff.stats = undefined;
@@ -1121,9 +1118,12 @@ export class Battlemon {
       shiny: diff.shiny,
       gender: diff.gender,
       transformed: diff.transformed,
-      charging: diff.charging && diff.charging.move.id,
-      trapped: diff.trapped && diff.trapped.move.id,
+      charging: diff.charging && diff.charging?.move?.id,
+      trapped: diff.trapped && diff.trapped?.move?.id,
       identified: diff.identified && diff.identified.id,
+      seededBy: diff.seededBy && diff.seededBy.id,
+      meanLook: diff.meanLook && diff.meanLook.id,
+      attract: diff.attract && diff.attract.id,
       status: this.base.status || null,
       cflags,
     };
@@ -1236,8 +1236,8 @@ class Volatiles {
     this.gen = base.gen;
     const self = dirty.tracked(this, VOLATILE_SYNC_KEYS);
     self.form = base.form;
-    if (base.ability === "multitype" && HP_TYPES.includes(this.form)) {
-      self.types = [this.form];
+    if (base.ability === "multitype" && HP_TYPES.includes(base.form)) {
+      self.types = [base.form];
     }
     return self;
   }
@@ -1274,8 +1274,6 @@ class Volatiles {
 }
 
 export type VolatileDiff = ReturnType<Battlemon["changedVolatiles"]>;
-
-type DiffV = Pick<Diff<Volatiles>, (typeof VOLATILE_SYNC_KEYS)[number]>;
 
 const VOLATILE_SYNC_KEYS = [
   "stages",
