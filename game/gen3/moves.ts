@@ -370,8 +370,7 @@ export const tryDamage = (
 
   let hadSub = target.v.substitute !== 0,
     dealt = 0,
-    endured = false,
-    band = false,
+    endure = Endure.None,
     beatUpFail = false,
     handledShellBell = false;
   let why = self.flag === DMF.ohko ? ("ohko" as const) : ("attacked" as const);
@@ -379,17 +378,8 @@ export const tryDamage = (
 
   const applyDamage = (dmg: number, doShellBell: bool) => {
     hadSub = target.v.substitute !== 0;
-    const deadly = dmg >= target.base.hp;
-    if (deadly && !band && target.base.itemId === "focusband") {
-      band = battle.gen.rng.tryFocusBand(battle);
-    }
-
-    if (deadly && target.v.hasFlag(VF.endure)) {
-      endured = true;
-    }
-
-    // command falseswipe BattleCommand_FalseSwipe
-    if (band || endured || (self.id === "falseswipe" && deadly)) {
+    ({dmg, endure} = battle.gen.tryEndure({battle, user, target, dmg, prev: endure}));
+    if (endure || (self.id === "falseswipe" && dmg >= target.base.hp)) {
       dmg = target.base.hp - 1;
       why = "attacked";
     }
@@ -496,12 +486,7 @@ export const tryDamage = (
     battle.event({type: "cure", src: target.id, status: self.clearTargetStatus});
   }
 
-  if (endured) {
-    target.handleEndure(battle, Endure.Endure);
-  } else if (band) {
-    target.handleEndure(battle, Endure.FocusBand);
-  }
-
+  target.handleEndure(battle, endure);
   if (self.flag === DMF.recharge) {
     user.v.recharge = {move: self, target};
   }

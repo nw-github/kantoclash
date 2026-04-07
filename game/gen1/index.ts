@@ -22,7 +22,7 @@ import {
   type StatStageId,
   TypeMod,
   isSpecialType,
-  type Endure,
+  Endure,
   DMF,
   idiv1,
   TypeEffectiveness,
@@ -229,6 +229,15 @@ export type GetDamageParams = {
   power?: number;
   /** The party mon for this beat up attack */
   beatUp?: Pokemon;
+};
+
+export type TryEndureParams = {
+  battle: Battle;
+  user: Battlemon;
+  target: Battlemon;
+  dmg: number;
+  prev?: Endure;
+  wasFullHp?: bool;
 };
 
 export class Generation1 {
@@ -825,6 +834,10 @@ export class Generation1 {
     } else {
       poke.damage(fs.damage, poke, battle, false, "future_sight");
     }
+  }
+
+  tryEndure({dmg}: TryEndureParams) {
+    return {dmg, endure: Endure.None};
   }
 }
 

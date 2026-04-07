@@ -24,7 +24,7 @@ import {
 } from "../utils";
 import {type Battlemon, type Battle, TurnType} from "../battle";
 import type {DamagingMove, Move} from "../moves";
-import type {GetDamageParams} from "../gen1";
+import type {GetDamageParams, TryEndureParams} from "../gen1";
 import type {Pokemon} from "../pokemon";
 import type {Random} from "random";
 import type {Generation} from "../gen";
@@ -757,20 +757,7 @@ export class Generation4 extends Generation3 {
       move: this.moveList.struggle as DamagingMove,
     });
     dmg = Gen3DamageCalc.randomizeDamage(dmg, battle.rng);
-    let endure;
-    if (dmg >= user.base.hp) {
-      if (user.v.hasFlag(VF.endure)) {
-        dmg = user.base.hp - 1;
-        endure = Endure.Endure;
-      } else if (this.rng.tryFocusBand(battle)) {
-        dmg = user.base.hp - 1;
-        endure = Endure.FocusBand;
-      } else if (user.base.itemId === "focussash" && user.base.hp === user.base.maxHp) {
-        dmg = user.base.hp - 1;
-        endure = Endure.FocusSash;
-      }
-    }
-    return {dmg, endure};
+    return this.tryEndure({battle, user, target: user, dmg});
   }
 
   override handleCrashDamage(battle: Battle, user: Battlemon, target: Battlemon) {
@@ -826,6 +813,22 @@ export class Generation4 extends Generation3 {
       speed <<= 1;
     }
     return speed;
+  }
+
+  override tryEndure({battle, target, dmg, prev, wasFullHp}: TryEndureParams) {
+    if (!target.v.substitute && dmg >= target.base.hp) {
+      // Endure is prioritized over focus band
+      if (prev) {
+        return {dmg: target.base.hp - 1, endure: prev};
+      } else if (target.v.hasFlag(VF.endure)) {
+        return {dmg: target.base.hp - 1, endure: Endure.Endure};
+      } else if (target.base.itemId === "focusband" && battle.gen.rng.tryFocusBand(battle)) {
+        return {dmg: target.base.hp - 1, endure: Endure.FocusBand};
+      } else if (target.base.itemId === "focussash" && wasFullHp) {
+        return {dmg: target.base.hp - 1, endure: Endure.FocusSash};
+      }
+    }
+    return {dmg, endure: Endure.None};
   }
 }
 

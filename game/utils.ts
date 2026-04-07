@@ -97,9 +97,11 @@ export enum CVF {
 }
 
 export enum Endure {
-  Endure = 1,
+  None,
+  Endure,
   FocusBand,
   FocusSash,
+  Sturdy,
 }
 
 // prettier-ignore

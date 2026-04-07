@@ -5,7 +5,7 @@ import {merge} from "../gen2";
 import {movePatches, moveScripts, moveOverrides, isAffectedBySheerForce} from "./moves";
 import {DamageCalc as Gen3DamageCalc, createItemMergeList} from "../gen3";
 import {Generation4} from "../gen4";
-import {Battlemon, type Battle} from "../battle";
+import type {Battlemon, Battle} from "../battle";
 import {
   c,
   clamp,
@@ -25,8 +25,7 @@ import {
 } from "../utils";
 import {applyMod, chainMod, chainModIf, Mod} from "./modifier";
 import type {Generation} from "../gen";
-import type {Random} from "random";
-import type {GetDamageParams} from "../gen1";
+import type {GetDamageParams, TryEndureParams} from "../gen1";
 import type {DamagingMove} from "../moves";
 import type {Calc} from "../calc";
 
@@ -51,16 +50,7 @@ type BoostedDefenseParams = {
   isCrit?: bool;
 };
 type BoostedPowerParams = BoostedDefenseParams & {type: Type; power: number};
-type DamageParams = {
-  move: DamagingMove;
-  power: number;
-  type: Type;
-  battle: Battle;
-  user: Battlemon;
-  target: Battlemon;
-  isCrit?: bool;
-  rng?: Random | number | null;
-};
+
 type FinalModifierParams = {
   move: DamagingMove;
   user: Battlemon;
@@ -210,7 +200,7 @@ class DamageCalc {
     return applyMod(power, mod);
   }
 
-  private static getFinalModifier({user, target, isCrit, move, eff}: FinalModifierParams) {
+  static getFinalModifier({user, target, isCrit, move, eff}: FinalModifierParams) {
     const userAbilityId = user.getAbilityId();
     const targetAlive = target.owner.active.reduce((acc, poke) => acc + Number(!!poke.base.hp), 0);
     const targetAbility = target.getAbility(user);
@@ -242,51 +232,6 @@ class DamageCalc {
         (move.punish && target.v.charging && move.ignore?.includes(target.v.charging.move.id)));
     }
     return mod;
-  }
-
-  static calcDamage({power, type, battle, move, user, target, isCrit, rng}: DamageParams) {
-    const level = user.base.level;
-    const userAbilityId = user.getAbilityId();
-    const [atks, defs] =
-      move.category === MC.special ? (["spa", "spd"] as const) : (["atk", "def"] as const);
-    const A = DamageCalc.getBoostedAttack({battle, user, target, isCrit, move, type})[atks];
-    const D = DamageCalc.getBoostedDefense({battle, user, target, isCrit, move})[defs];
-    power = DamageCalc.getBoostedPower({battle, user, target, type, power, move});
-
-    let multiTarget = Mod.NONE;
-    let stab = Mod.NONE;
-
-    const targetAlive = target.owner.active.reduce((acc, poke) => acc + Number(!!poke.base.hp), 0);
-    if (
-      (move.range === Range.AllAdjacentFoe && targetAlive > 1) ||
-      (move.range == Range.AllAdjacent && battle.getTargets(user, Range.AllAdjacent).length >= 2)
-    ) {
-      multiTarget = Mod.TARGET_MULTI;
-    }
-
-    if (user.v.hasAnyType(type)) {
-      stab = userAbilityId === "adaptability" ? Mod.STAB_ADAPTABILITY : Mod.STAB;
-    }
-
-    const eff = battle.gen.getEffectiveness(type, target);
-    let dmg = idiv(idiv(A * power * (idiv(2 * level, 5) + 2), D), 50) + 2;
-    dmg = applyMod(dmg, multiTarget);
-    dmg = applyMod(dmg, weatherModifier[battle.getWeather()!]?.[type] ?? Mod.NONE);
-    dmg = isCrit ? dmg * 2 : dmg;
-    const random = rng === undefined ? battle.rng : rng;
-    if (random !== null && move.flag !== DMF.norand) {
-      dmg = Gen3DamageCalc.randomizeDamage(dmg, random);
-    }
-    dmg = applyMod(dmg, stab);
-    dmg = eff.shifts < 0 ? dmg >> -eff.shifts : dmg << eff.shifts;
-    dmg = user.base.status === "brn" && userAbilityId !== "guts" ? idiv(dmg, 2) : dmg;
-    dmg = Math.max(dmg, 1);
-    dmg = applyMod(dmg, DamageCalc.getFinalModifier({user, target, isCrit, move, eff}));
-
-    debugLog(`\n${c(user.base.name, 32)} => ${c(target.base.name, 31)} (${c(move.name, 34)})`);
-    debugLog(`- P: ${n(power)} | A: ${n(A)} | D: ${n(D)} | L: ${n(level)}`);
-    debugLog(`- DMG: ${n(dmg)} | EFF: ${n(eff)} | CRIT: ${n(isCrit)} | Type: ${n(type)}`);
-    return {dmg, eff: eff.toFloat()};
   }
 }
 
@@ -329,7 +274,8 @@ export class Generation5 extends Generation4 {
 
     let type = user.getAbilityId() === "normalize" ? "normal" : move.type;
     // Hidden Power, Weather Ball, Natural Gift, Judgment, and Techno Blast now overwrite Normalize
-    const computed = this.getMoveType(move, user.base, battle.getWeather());
+    const weather = battle.getWeather();
+    const computed = this.getMoveType(move, user.base, weather);
     if (computed !== move.type) {
       type = computed;
     }
@@ -339,20 +285,61 @@ export class Generation5 extends Generation4 {
       return {dmg: -idiv1(target.base.maxHp, 4), eff: 1, miss: false, type};
     }
 
-    const {eff, dmg} = DamageCalc.calcDamage({
-      power,
-      type,
-      battle,
-      move,
-      user,
-      target,
-      isCrit,
-      rng,
-    });
-    return {dmg, eff, miss: false, type};
+    const level = user.base.level;
+    const userAbilityId = user.getAbilityId();
+    const [atks, defs] =
+      move.category === MC.special ? (["spa", "spd"] as const) : (["atk", "def"] as const);
+    const A = DamageCalc.getBoostedAttack({battle, user, target, isCrit, move, type})[atks];
+    const D = DamageCalc.getBoostedDefense({battle, user, target, isCrit, move})[defs];
+    power = DamageCalc.getBoostedPower({battle, user, target, type, power, move});
+
+    let multiTarget = Mod.NONE;
+    let stab = Mod.NONE;
+
+    if (
+      (move.range === Range.AllAdjacentFoe || move.range == Range.AllAdjacent) &&
+      battle.getTargets(user, Range.AllAdjacent).length >= 2
+    ) {
+      multiTarget = Mod.TARGET_MULTI;
+    }
+
+    if (user.v.hasAnyType(type)) {
+      stab = userAbilityId === "adaptability" ? Mod.STAB_ADAPTABILITY : Mod.STAB;
+    }
+
+    const eff = battle.gen.getEffectiveness(type, target);
+    let dmg = idiv(idiv(A * power * (idiv(2 * level, 5) + 2), D), 50) + 2;
+    dmg = applyMod(dmg, multiTarget);
+    dmg = applyMod(dmg, weatherModifier[weather!]?.[type] ?? Mod.NONE);
+    dmg = isCrit ? dmg << 1 : dmg;
+    const random = rng === undefined ? battle.rng : rng;
+    if (random !== null && move.flag !== DMF.norand) {
+      dmg = Gen3DamageCalc.randomizeDamage(dmg, random);
+    }
+    dmg = applyMod(dmg, stab);
+    dmg = eff.shifts < 0 ? dmg >> -eff.shifts : dmg << eff.shifts;
+    dmg = user.base.status === "brn" && userAbilityId !== "guts" ? idiv(dmg, 2) : dmg;
+    dmg = Math.max(dmg, 1);
+    dmg = applyMod(dmg, DamageCalc.getFinalModifier({user, target, isCrit, move, eff}));
+
+    debugLog(`\n${c(user.base.name, 32)} => ${c(target.base.name, 31)} (${c(move.name, 34)})`);
+    debugLog(`- P: ${n(power)} | A: ${n(A)} | D: ${n(D)} | L: ${n(level)}`);
+    debugLog(`- DMG: ${n(dmg)} | EFF: ${n(eff)} | CRIT: ${n(isCrit)} | Type: ${n(type)}`);
+    return {dmg, eff: eff.toFloat(), miss: false, type};
   }
 
-  // override getConfusionSelfDamage(battle: Battle, user: ActivePokemon) {}
+  override getConfusionSelfDamage(battle: Battle, user: Battlemon) {
+    // Confusion no longer takes into account items, abilities, screens, etc.
+    const level = user.base.level;
+    const A = applyStatStages(battle.gen, user.v.stats.atk, user.v.stages.atk);
+    const D = applyStatStages(battle.gen, user.v.stats.def, user.v.stages.def);
+    const power = 40;
+
+    let dmg = idiv(idiv(A * power * (idiv(2 * level, 5) + 2), D), 50) + 2;
+    dmg = Gen3DamageCalc.randomizeDamage(dmg, battle.rng);
+    dmg = Math.max(dmg, 1);
+    return this.tryEndure({battle, user, target: user, dmg});
+  }
 
   override handleFutureSight(
     battle: Battle,
@@ -367,15 +354,12 @@ export class Generation5 extends Generation4 {
 
     if (user.v.fainted) {
       // Ignore user ability and item if it fainted
-      const oldUser = user;
-      user = new Battlemon(user.base, user.owner, 0);
-      user.id = oldUser.id;
       user.v.ability = undefined;
       // TODO: ignore user item
     }
 
     const isCrit = this.rollCrit(battle, user, target, move);
-    const {dmg, eff, type} = this.getDamage({battle, user, target, isCrit, move});
+    const {dmg: dmg0, eff, type} = this.getDamage({battle, user, target, isCrit, move});
     if (eff === 0) {
       return battle.info(target, "immune");
     } else if (this.tryAbilityImmunity(battle, user, target, move, type, eff)) {
@@ -384,8 +368,30 @@ export class Generation5 extends Generation4 {
       return;
     }
 
+    const {dmg, endure} = this.tryEndure({
+      battle,
+      user,
+      target,
+      dmg: dmg0,
+      wasFullHp: target.base.hp === target.base.maxHp,
+    });
     target.damage2(battle, {dmg, src: user, isCrit, eff, why: "future_sight"});
-    // TODO: endure/sturdy/focus sash/focus band
+    target.handleEndure(battle, endure);
+  }
+
+  override tryEndure({battle, user, target, dmg}: TryEndureParams) {
+    if (!target.v.substitute && dmg >= target.base.hp) {
+      if (target.v.hasFlag(VF.endure)) {
+        return {dmg: target.base.hp - 1, endure: Endure.Endure};
+      } else if (target.getAbilityId(user) === "sturdy" && target.base.hp === target.base.maxHp) {
+        return {dmg: target.base.hp - 1, endure: Endure.Sturdy};
+      } else if (target.base.itemId === "focusband" && battle.gen.rng.tryFocusBand(battle)) {
+        return {dmg: target.base.hp - 1, endure: Endure.FocusBand};
+      } else if (target.base.itemId === "focussash" && target.base.hp === target.base.maxHp) {
+        return {dmg: target.base.hp - 1, endure: Endure.FocusSash};
+      }
+    }
+    return {dmg, endure: Endure.None};
   }
 }
 

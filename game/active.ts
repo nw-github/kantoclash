@@ -824,6 +824,9 @@ export class Battlemon {
         return battle.info(this, "endure_hit");
       case Endure.FocusBand:
         return battle.info(this, "endure_band");
+      case Endure.Sturdy:
+        battle.ability(this);
+        return battle.info(this, "endure_hit");
       case Endure.FocusSash:
         return this.consumeItem(battle);
     }

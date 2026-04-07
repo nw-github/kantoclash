@@ -1,4 +1,4 @@
-import {type GetDamageParams, shouldReturn} from "../gen1";
+import {type GetDamageParams, shouldReturn, type TryEndureParams} from "../gen1";
 import {Generation2, merge} from "../gen2";
 import {
   Nature,
@@ -1053,6 +1053,20 @@ export class Generation3 extends Generation2 {
       return true;
     }
     return false;
+  }
+
+  override tryEndure({battle, target, dmg, prev}: TryEndureParams) {
+    if (!target.v.substitute && dmg >= target.base.hp) {
+      // Endure is prioritized over focus band
+      if (prev) {
+        return {dmg: target.base.hp - 1, endure: prev};
+      } else if (target.v.hasFlag(VF.endure)) {
+        return {dmg: target.base.hp - 1, endure: Endure.Endure};
+      } else if (target.base.itemId === "focusband" && battle.gen.rng.tryFocusBand(battle)) {
+        return {dmg: target.base.hp - 1, endure: Endure.FocusBand};
+      }
+    }
+    return {dmg, endure: Endure.None};
   }
 }
 

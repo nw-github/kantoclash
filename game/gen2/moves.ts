@@ -1,6 +1,6 @@
 import type {Move, MoveScripts, MoveId, MovePropOverrides, DamagingMove} from "../moves";
 import {thunderAccOverride} from "../moves";
-import {stageKeys, Range, DMF, hazards, VF, idiv1, idiv} from "../utils";
+import {stageKeys, Range, DMF, hazards, VF, idiv1, idiv, Endure} from "../utils";
 import type {Battlemon, Battle} from "../battle";
 
 export const moveScripts: Partial<MoveScripts> = {
@@ -298,25 +298,17 @@ export const tryDamage = (
   let hadSub = false,
     dealt = 0,
     dead = false,
-    endured = false,
-    band = false,
+    endure = Endure.None,
     beatUpFail = false;
   let why = self.flag === DMF.ohko ? ("ohko" as const) : ("attacked" as const);
 
   // command BattleCommand_ApplyDamage
   const applyDamage = (dmg: number) => {
     hadSub = target.v.substitute !== 0;
-    const deadly = dmg >= target.base.hp;
-    if (deadly && !band && target.base.itemId === "focusband") {
-      band = battle.gen.rng.tryFocusBand(battle);
-    }
-
-    if (deadly && target.v.hasFlag(VF.endure)) {
-      endured = true;
-    }
+    ({dmg, endure} = battle.gen.tryEndure({battle, user, target, dmg, prev: endure}));
 
     // command falseswipe BattleCommand_FalseSwipe
-    if (band || endured || (self.id === "falseswipe" && deadly)) {
+    if (endure || (self.id === "falseswipe" && dmg >= target.base.hp)) {
       dmg = target.base.hp - 1;
       why = "attacked";
     }
@@ -402,11 +394,7 @@ export const tryDamage = (
   }
 
   // Focus band text is prioritized over endure
-  if (band) {
-    battle.info(target, "endure_band");
-  } else if (endured) {
-    battle.info(target, "endure_hit");
-  }
+  target.handleEndure(battle, endure);
 
   if (self.flag === DMF.recharge) {
     user.v.recharge = {move: self, target};

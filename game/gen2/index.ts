@@ -4,6 +4,7 @@ import {
   scaleAccuracy255,
   DamageCalc as Gen1DamageCalc,
   type GetDamageParams,
+  type TryEndureParams,
 } from "../gen1";
 import type {Species, SpeciesId} from "../species";
 import {
@@ -21,6 +22,7 @@ import {
   type Type,
   type Weather,
   TypeEffectiveness,
+  Endure,
 } from "../utils";
 import {moveOverrides, moveScripts, movePatches, tryDamage} from "./moves";
 import speciesPatches from "./species.json";
@@ -609,6 +611,20 @@ export class Generation2 extends Generation1 {
       battle.info(poke, "rage");
       poke.v.rage++;
     }
+  }
+
+  override tryEndure({battle, target, dmg, prev}: TryEndureParams) {
+    if (!target.v.substitute && dmg >= target.base.hp) {
+      // Focus band text is prioritized over endure
+      if (prev) {
+        return {dmg: target.base.hp - 1, endure: prev};
+      } else if (target.base.itemId === "focusband" && battle.gen.rng.tryFocusBand(battle)) {
+        return {dmg: target.base.hp - 1, endure: Endure.FocusBand};
+      } else if (target.v.hasFlag(VF.endure)) {
+        return {dmg: target.base.hp - 1, endure: Endure.Endure};
+      }
+    }
+    return {dmg, endure: Endure.None};
   }
 }
 
