@@ -4236,6 +4236,7 @@ export const rawMoveList = {
     range: "Adjacent",
     noAssist: true,
     protect: false,
+    kingsRock: true,
     flag: "remove_protect",
   },
   firefang: {
@@ -4683,6 +4684,7 @@ export const rawMoveList = {
     type: "dark",
     range: "Adjacent",
     contact: true,
+    kingsRock: true,
   },
   pluck: {
     kind: "damage",
@@ -4779,6 +4781,7 @@ export const rawMoveList = {
     type: "dark",
     range: "Adjacent",
     contact: true,
+    kingsRock: true,
   },
   roaroftime: {
     kind: "damage",
