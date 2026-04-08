@@ -5058,12 +5058,14 @@ export const rawMoveList = {
     recoil: 3,
   },
   worryseed: {
-    kind: "fail",
+    kind: "worryseed",
     name: "Worry Seed",
-    pp: 1,
-    type: "normal",
+    pp: 10,
+    acc: 100,
+    type: "grass",
     range: "Adjacent",
-    why: "fail_unimplemented",
+    protect: true,
+    magicCoat: true,
   },
   wringout: {
     kind: "damage",

@@ -2,7 +2,23 @@ import type {Battle, Battlemon} from "../battle";
 import type {Move, MoveScripts, MoveId, MovePropOverrides, DamagingMove} from "../moves";
 import {DMF, idiv1, Range} from "../utils";
 
-export const moveScripts: Partial<MoveScripts> = {};
+export const moveScripts: Partial<MoveScripts> = {
+  worryseed(battle, user, [target]) {
+    const ability = target.getAbilityId();
+    if (ability === "truant" || ability === "multitype" || ability === "insomnia") {
+      return battle.info(user, "fail_generic");
+    } else if (!battle.checkAccuracy(this, user, target)) {
+      return;
+    }
+
+    battle.ability(target);
+    target.v.ability = "insomnia";
+    battle.ability(target);
+    if (target.base.status === "slp") {
+      target.unstatus(battle);
+    }
+  },
+};
 
 export const moveOverrides: Partial<MovePropOverrides> = {
   pow: {

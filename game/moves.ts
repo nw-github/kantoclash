@@ -1377,6 +1377,20 @@ export const moveScripts: MoveScripts = {
       user.unstatus(battle);
     }
   },
+  worryseed(battle, user, [target]) {
+    const ability = target.getAbilityId();
+    if (ability === "truant" || ability === "multitype" || target.base._itemId === "griseousorb") {
+      return battle.info(user, "fail_generic");
+    } else if (!battle.checkAccuracy(this, user, target)) {
+      return;
+    }
+
+    target.v.ability = "insomnia";
+    battle.ability(target);
+    if (target.base.status === "slp") {
+      target.unstatus(battle);
+    }
+  },
 };
 
 export const moveOverrides: MovePropOverrides = {
