@@ -29,6 +29,7 @@ export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
   bonerush: {acc: 90},
   bulletseed: {power: 25},
   camouflage: {camouflageType: "ground"},
+  chatter: {effect: [10, "confusion"]},
   clamp: {acc: 85, pp: 15},
   conversion: {snatch: true},
   cottonspore: {acc: 100},

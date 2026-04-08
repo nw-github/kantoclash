@@ -205,7 +205,7 @@ export const tryDamage = (
         continue;
       }
 
-      if (user.hasAbility("serenegrace")) {
+      if (user.hasAbility("serenegrace") && self.id !== "chatter") {
         chance *= 2;
       }
       if (target.hasAbility("shielddust", user) && !effectSelf && effect !== "thief") {
