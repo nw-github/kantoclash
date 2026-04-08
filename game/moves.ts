@@ -1403,12 +1403,20 @@ export const moveOverrides: MovePropOverrides = {
     payback(_, _user, target) {
       return target.choice?.executed ? this.power << 1 : this.power;
     },
+    punishment(this, _battle, _user, target) {
+      const stages = stageKeys.reduce((acc, stat) => acc + Math.max(0, target.v.stages[stat]), 0);
+      return this.power + Math.min(stages, 7) * 20;
+    },
     // Gen V
     acrobatics(_, user) {
       return !user.base.itemId ? this.power << 1 : this.power;
     },
     hex(_battle, _user, target) {
       return target.base.status ? this.power << 1 : this.power;
+    },
+    storedpower(this, _battle, user) {
+      const stages = stageKeys.reduce((acc, stat) => acc + Math.max(0, user.v.stages[stat]), 0);
+      return this.power + stages * 20;
     },
   },
   dmg: {

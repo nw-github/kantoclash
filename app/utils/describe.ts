@@ -163,6 +163,13 @@ const descriptions: Partial<Record<number, Partial<Record<MoveId, string>>>> = {
     payback: "Doubles power if the target moves before the user. ",
     feint:
       "Removes the effect of protection moves. Only works if the target has used Protect or Detect. ",
+    defog:
+      "Lowers the target's evasion by 1 stage and removes hazards and screens from its side of the field. ",
+    powertrick: "Switches the user's base Attack and Defense stats. ",
+    punishment:
+      "Gains 20 power for each increased stat stage the target has, up to a maximum of 200 power. ",
+    storedpower: "Gains 20 power for each increased stat stage the user has. ",
+    fakeout: "Always flinches the target, but only works on the user's first turn on the field. ",
   },
   [2]: {
     conversion:
@@ -186,6 +193,10 @@ const descriptions: Partial<Record<number, Partial<Record<MoveId, string>>>> = {
     focusenergy: "Raises the user's critical hit stages by 2. Does not stack. ",
     lowkick: "Power increases with the weight of the target. ",
     grassknot: "Power increases with the weight of the target. ",
+  },
+  [4]: {
+    counter: "Deals 2x the last move's damage if it was physical. ",
+    mirrorcoat: "Deals 2x the last move's damage if it was special. ",
   },
   [5]: {
     feint: "Removes the effect of protection moves. ",
@@ -417,6 +428,8 @@ export const describeMove = (gen: Generation, id: MoveId) => {
     return "Prevents the target from switching out. ";
   } else if (move.kind === "lockOn") {
     return "The next move used against the target will always hit, unless it is Earthquake, Fissure, or Magnitude and the target is in the semi-invulnerable turn of Fly. ";
+  } else if (move.kind === "healbell") {
+    return "Cures the user's team of non-volatile status conditions. ";
   } else {
     return "No description. ";
   }

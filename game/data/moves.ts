@@ -4766,12 +4766,15 @@ export const rawMoveList = {
     range: "Adjacent",
   },
   punishment: {
-    kind: "fail",
+    kind: "damage",
     name: "Punishment",
-    pp: 1,
-    type: "normal",
+    pp: 5,
+    power: 60,
+    acc: 100,
+    category: "physical",
+    type: "dark",
     range: "Adjacent",
-    why: "fail_unimplemented",
+    contact: true,
   },
   roaroftime: {
     kind: "damage",
@@ -5925,7 +5928,7 @@ export const rawMoveList = {
     contact: true,
   },
   storedpower: {
-    kind: "fail",
+    kind: "damage",
     name: "Stored Power",
     pp: 10,
     type: "psychic",
@@ -5933,7 +5936,6 @@ export const rawMoveList = {
     power: 20,
     acc: 100,
     category: "special",
-    why: "fail_unimplemented",
   },
   stormthrow: {
     kind: "fail",
