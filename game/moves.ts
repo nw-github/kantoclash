@@ -1354,6 +1354,11 @@ export const moveScripts: MoveScripts = {
       }
     }
   },
+  powertrick(battle, user) {
+    [user.v.stats.atk, user.v.stats.def] = [user.v.stats.def, user.v.stats.atk];
+    user.v.setFlag(VF.powerTrick);
+    battle.info(user, "powerTrick");
+  },
 };
 
 export const moveOverrides: MovePropOverrides = {

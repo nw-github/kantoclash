@@ -152,6 +152,7 @@ export const infoMessage: Record<InfoReason, string> = {
   powerswap: "{} switched all changes to its Attack and Sp. Atk with the target!",
   lunardance: "{} became cloaked in a mystical moonlight!",
   healingwish: "The healing wish came true for {l}!",
+  powerTrick: "{} switched its Attack and Defense!",
 };
 
 export const weatherMessage: Record<Weather, Record<WeatherEvent["kind"], string>> = {

@@ -108,8 +108,22 @@ export class Battlemon {
       }
 
       const passedFlags =
-        VF.lightScreen | VF.reflect | VF.mist | VF.focusEnergy | VF.curse | VF.lockon | VF.ingrain;
+        VF.lightScreen |
+        VF.reflect |
+        VF.mist |
+        VF.focusEnergy |
+        VF.curse |
+        VF.lockon |
+        VF.ingrain |
+        VF.powerTrick |
+        VF.waterSport |
+        VF.mudSport |
+        VF.gastroAcid;
       this.v.setFlag(old.flags & passedFlags);
+
+      if (this.v.hasFlag(VF.powerTrick)) {
+        [this.v.stats.atk, this.v.stats.def] = [this.v.stats.def, this.v.stats.atk];
+      }
 
       // Is trapping passed? Encore? Nightmare?
 
@@ -275,7 +289,10 @@ export class Battlemon {
     this.v.stats = {...target.v.stats};
     this.v.baseStats = {...target.v.baseStats};
     this.v.gender = battle.gen.id <= 5 ? this.v.gender : target.v.gender;
-    this.v.mimic = target.v.mimic && {...target.v.mimic, pp: target.v.mimic.pp && 5};
+    this.v.mimic = undefined;
+    // TODO: bulbapedia says transform resets the ability for power trick to be baton passed, but
+    // I cant see where in the code this actually happens. Test it.
+    this.v.clearFlag(VF.powerTrick);
     for (const k of stageKeys) {
       this.v.stages[k] = target.v.stages[k];
       if (stageStatKeys.includes(k)) {

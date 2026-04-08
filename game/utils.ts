@@ -81,6 +81,7 @@ export enum VF {
   gastroAcid   = 0x0100_0000,
   minimize     = 0x0200_0000,
   defenseCurl  = 0x0400_0000,
+  powerTrick   = 0x0800_0000,
 }
 
 /** Client only */

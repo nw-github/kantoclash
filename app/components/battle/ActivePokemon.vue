@@ -290,6 +290,7 @@ const badges = computed(() => {
   if (poke.v.hasFlag(VF.followMe)) { result.push({color: "old-lime", icon: "tabler:hand-finger", variant: "subtle"}); }
   if (poke.v.hasFlag(VF.snatch)) { result.push({color: "old-lime", icon: "tabler:hand-grab", variant: "subtle"}); }
   if (poke.v.attract) { result.push({color: "old-pink", icon: "material-symbols:favorite", variant: "subtle"}); }
+  if (poke.v.hasFlag(VF.powerTrick)) { result.push({color: "old-pink", icon: "mi:switch", variant: "subtle"}); }
   if (poke.v.hasFlag(VF.lockon)) { result.push({color: "error", icon: "ri:crosshair-2-line", variant: "subtle"}); }
   if (poke.v.meanLook) { result.push({color: "error", icon: "tabler:prison", variant: "subtle"}); }
   if (poke.v.seededBy) { result.push({color: "old-lime", icon: "tabler:seedling-filled", variant: "subtle"}); }

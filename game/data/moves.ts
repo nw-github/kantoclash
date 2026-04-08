@@ -4727,12 +4727,11 @@ export const rawMoveList = {
     message: "powerswap",
   },
   powertrick: {
-    kind: "fail",
+    kind: "powertrick",
     name: "Power Trick",
-    pp: 1,
-    type: "normal",
-    range: "Adjacent",
-    why: "fail_unimplemented",
+    pp: 10,
+    type: "psychic",
+    range: "Self",
   },
   powerwhip: {
     kind: "damage",
