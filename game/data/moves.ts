@@ -4758,12 +4758,12 @@ export const rawMoveList = {
     kingsRock: true,
   },
   psychoshift: {
-    kind: "fail",
+    kind: "psychoshift",
     name: "Psycho Shift",
-    pp: 1,
-    type: "normal",
+    pp: 10,
+    acc: 100,
+    type: "psychic",
     range: "Adjacent",
-    why: "fail_unimplemented",
   },
   punishment: {
     kind: "fail",

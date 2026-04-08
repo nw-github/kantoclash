@@ -1359,6 +1359,24 @@ export const moveScripts: MoveScripts = {
     user.v.setFlag(VF.powerTrick);
     battle.info(user, "powerTrick");
   },
+  psychoshift(battle, user, [target]) {
+    if (!user.base.status) {
+      return battle.info(user, "fail_generic");
+    } else if (!target.canStatus(user.base.status, battle, user, {loud: true})) {
+      return;
+    } else if (!battle.checkAccuracy(this, user, target)) {
+      return;
+    }
+
+    const status = user.base.status;
+    if (battle.gen.id <= 4) {
+      user.unstatus(battle);
+      target.status(status, battle, user, {});
+    } else {
+      target.status(status, battle, user, {});
+      user.unstatus(battle);
+    }
+  },
 };
 
 export const moveOverrides: MovePropOverrides = {

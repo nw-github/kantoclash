@@ -416,7 +416,7 @@ export class Battlemon {
     });
   }
 
-  status(
+  canStatus(
     status: Status,
     battle: Battle,
     src: Battlemon,
@@ -426,22 +426,35 @@ export class Battlemon {
       if (loud) {
         battle.info(this, "fail_generic");
       }
-      return;
+      return false;
     }
 
     if (this.owner.screens.safeguard && !ignoreSafeguard) {
       if (loud) {
         battle.info(this, "safeguard_protect");
       }
-      return;
+      return false;
     }
 
     const statusNoTox = status === "tox" ? "psn" : status;
-    if (this.getAbility()?.preventsStatus === statusNoTox) {
+    if (this.getAbility(src)?.preventsStatus === statusNoTox) {
       if (loud) {
         battle.ability(this);
         battle.info(this, "immune");
       }
+      return false;
+    }
+    return true;
+  }
+
+  status(
+    status: Status,
+    battle: Battle,
+    src: Battlemon,
+    params: {override?: bool; loud?: bool; ignoreSafeguard?: bool},
+  ) {
+    const statusNoTox = status === "tox" ? "psn" : status;
+    if (!this.canStatus(status, battle, src, params)) {
       return;
     }
 
