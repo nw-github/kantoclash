@@ -11,6 +11,11 @@ export const moveOverrides: Partial<MovePropOverrides> = {
     },
     crushgrip: getCrushGripPower,
     wringout: getCrushGripPower,
+    payback(_, _user, target) {
+      return target.choice?.executed && target.choice.move.kind !== "switch"
+        ? this.power << 1
+        : this.power;
+    },
   },
   dmgPreCheck: {
     feint: () => true,

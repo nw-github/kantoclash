@@ -1375,8 +1375,11 @@ export const moveOverrides: MovePropOverrides = {
     waterspout: getHPFalloffPower,
     // Gen IV
     crushgrip: getCrushGripPower,
-    grassknot: (_user, target) => getLowKickPower(target.v.species.weight),
+    grassknot: (_, _user, target) => getLowKickPower(target.v.species.weight),
     wringout: getCrushGripPower,
+    payback(_, _user, target) {
+      return target.choice?.executed ? this.power << 1 : this.power;
+    },
     // Gen V
     acrobatics(_, user) {
       return !user.base.itemId ? this.power << 1 : this.power;

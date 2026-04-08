@@ -159,6 +159,10 @@ const descriptions: Partial<Record<number, Partial<Record<MoveId, string>>>> = {
       "Drops the target's Special Attack by 2 stages. Fails if the target is not of the opposite gender. ",
     foulplay: "Damage calculation uses the target's Attack stat.",
     wakeupslap: "Doubles damage against a sleeping target, but wakes it up. ",
+    acrobatics: "Doubles power if the user is not holding an item. ",
+    payback: "Doubles power if the target moves before the user. ",
+    feint:
+      "Removes the effect of protection moves. Only works if the target has used Protect or Detect. ",
   },
   [2]: {
     conversion:
@@ -182,6 +186,9 @@ const descriptions: Partial<Record<number, Partial<Record<MoveId, string>>>> = {
     focusenergy: "Raises the user's critical hit stages by 2. Does not stack. ",
     lowkick: "Power increases with the weight of the target. ",
     grassknot: "Power increases with the weight of the target. ",
+  },
+  [5]: {
+    feint: "Removes the effect of protection moves. ",
   },
 };
 
