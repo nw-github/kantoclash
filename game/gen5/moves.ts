@@ -12,6 +12,9 @@ export const moveOverrides: Partial<MovePropOverrides> = {
     crushgrip: getCrushGripPower,
     wringout: getCrushGripPower,
   },
+  dmgPreCheck: {
+    feint: () => true,
+  },
 };
 
 export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {

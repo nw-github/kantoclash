@@ -1472,6 +1472,13 @@ export const moveOverrides: MovePropOverrides = {
       }
       return true;
     },
+    feint(battle, user, [target]) {
+      if (!target.v.hasFlag(VF.protect)) {
+        battle.info(user, "fail_generic");
+        return false;
+      }
+      return true;
+    },
     suckerpunch(battle, user, [target]) {
       if (target?.choice?.move?.kind !== "damage" || target?.choice?.executed) {
         battle.info(user, "fail_generic");
