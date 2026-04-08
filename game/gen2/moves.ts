@@ -286,11 +286,6 @@ export const tryDamage = (
     checkThrashing();
     return 0;
   } else if (dmg < 0) {
-    if (target.base.isMaxHp()) {
-      battle.info(target, "fail_present");
-      return 0;
-    }
-
     target.recover(-dmg, user, battle, "present");
     return 0;
   }

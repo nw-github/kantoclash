@@ -330,7 +330,7 @@ export class TypeEffectiveness {
     } else if (this.superEffective()) {
       return this.shifts * 2;
     } else if (this.notVeryEffective()) {
-      return this.shifts * 0.5;
+      return -this.shifts * 0.5;
     } else {
       return 1;
     }

@@ -381,6 +381,9 @@ export class Battlemon {
     const hpBefore = this.base.hp;
     this.base.hp = Math.min(this.base.hp + amount, this.base.maxHp);
     if (this.base.hp === hpBefore) {
+      if (why === "present") {
+        battle.info(this, "fail_present");
+      }
       return;
     }
 

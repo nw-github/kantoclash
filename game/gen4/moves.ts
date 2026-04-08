@@ -327,7 +327,7 @@ export const tryDamage = (
   } else if (!battle.checkAccuracy(self, user, target, !special)) {
     return didMiss(true, dmg);
   } else if (dmg < 0) {
-    target.recover(dmg, user, battle, "present");
+    target.recover(-dmg, user, battle, "present");
     return 0;
   }
 

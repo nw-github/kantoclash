@@ -1035,7 +1035,7 @@ export class Generation3 extends Generation2 {
       return true;
     } else if (
       self.kind === "damage" &&
-      ((skipsTypeCheck && eff <= 1 && targetAbility === "wonderguard") ||
+      ((!skipsTypeCheck && eff <= 1 && targetAbility === "wonderguard") ||
         (type === "ground" && targetAbility === "levitate" && !target.isGrounded()) ||
         (type === "electric" && targetAbility === "voltabsorb") ||
         (type === "water" && targetAbility === "waterabsorb") ||
