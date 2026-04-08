@@ -207,7 +207,7 @@ watchImmediate(
 
 onMounted(() => {
   $conn.on("connect", () => {
-    $conn.emit("getChallenges", resp => (challenges.value = resp));
+    $conn.emit("getChallenges", resp => (challenges.value = resp ?? []));
     connected.value = true;
   });
   $conn.on("disconnect", () => {

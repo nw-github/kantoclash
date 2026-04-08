@@ -1,4 +1,4 @@
-import type {ScreenId, StageId} from "~~/game/utils";
+import {DMF, type ScreenId, type StageId} from "~~/game/utils";
 import type {Status} from "~~/game/pokemon";
 import type {DamagingMove, MoveId} from "~~/game/moves";
 import type {Generation} from "~~/game/gen";
@@ -23,7 +23,10 @@ const statusTable: Record<Status, string> = {
 
 const descriptions: Partial<Record<number, Partial<Record<MoveId, string>>>> = {
   [1]: {
+    bide: "The user sits dormant for 2-3 turns, then damages the opponent for 2x the damage received during the idling period.",
+    rage: "After using this move, the user will not be able to switch or do anything else except continue to use Rage until it faints or the battle ends. Every time it is hit by a move or targeted by Disable, Explosion, or Self-Destruct, its attack will increase by one stage. ",
     conversion: "Changes the user's types to match the target.",
+    dreameater: "The user recovers 1/2 the damage dealt. Only works on sleeping targets.",
     disable: "Disables a move from the target's move set at random.",
     haze:
       "Removes the effects of Leech Seed, Mist, Reflect, Light Screen, Focus Energy, and " +
@@ -47,6 +50,19 @@ const descriptions: Partial<Record<number, Partial<Record<MoveId, string>>>> = {
     mist: "Protects the user from stat dropping moves. Ends on switch out.",
     psywave: "Damages the target for a random amount between 1 HP and 1.5x the user's level. ",
     counter: "Deals 2x the last move's damage if it was normal or fighting type. ",
+    magnitude: "Power is determined randomly. ",
+    falseswipe: "Always leaves the target with at least 1 HP. ",
+    furycutter: "Base power doubles for each consecutive use, up to a maximum of 160. ",
+    present:
+      "Deals damage with a base power of 40, 80, or 120, or heals the target for 1/4 its max HP. ",
+    beatup:
+      "Hits with a typeless 10 power attack for each Pokémon in the user's party without a non-volatile status condition. ",
+    facade: "Doubles damage when poisoned, paralyzed or burned.",
+    smellingsalt: "Doubles damage against a paralyzed target, but cures its paralysis. ",
+    spitup:
+      "Damage multiplied by number of stockpiles, which is reset after use of this move. Fails if the user has not used stockpile yet.",
+    uproar:
+      "Locks the user in for 2-5 turns and starts an uproar, waking sleeping Pokémon up and preventing Pokémon from falling asleep. ",
     frustration: "Higher power the lower the user's friendship is. ",
     return: "Higher power the higher the user's friendship is. ",
     hiddenpower: "Power and type of this move are determined by the user's DVs. ",
@@ -117,7 +133,7 @@ const descriptions: Partial<Record<number, Partial<Record<MoveId, string>>>> = {
       "Heals 25%, 50%, or 100% of the user's HP, based on the number of stockpiles, which is reset " +
       "after use of this move. Fails if the user has not used stockpile yet.",
     stockpile: "+1 stockpile, changing the properties of Spit Up and Swallow. Max 3.",
-    weatherball: "Power doubles if weather is active. Changes type with the weather. ",
+    weatherball: "Doubled damage if weather is active. Changes type with the weather. ",
     watersport: "Reduces power of Fire-type attacks by 50% until the user switches out. ",
     mudsport: "Reduces power of Electric-type attacks by 50% until the user switches out. ",
     snatch: "Steals the next beneficial status move used by any Pokémon this turn. ",
@@ -141,6 +157,8 @@ const descriptions: Partial<Record<number, Partial<Record<MoveId, string>>>> = {
       "Suppresses the target's ability until it switches out. Fails on Pokémon with Multitype. ",
     captivate:
       "Drops the target's Special Attack by 2 stages. Fails if the target is not of the opposite gender. ",
+    foulplay: "Damage calculation uses the target's Attack stat.",
+    wakeupslap: "Doubles damage against a sleeping target, but wakes it up. ",
   },
   [2]: {
     conversion:
@@ -167,55 +185,33 @@ const descriptions: Partial<Record<number, Partial<Record<MoveId, string>>>> = {
   },
 };
 
-const flagDesc: Record<NonNullable<DamagingMove["flag"]>, string> = {
-  drain: "The user recovers 1/2 the damage dealt. ",
-  explosion: "Halves target defense during damage calculation. Causes the user to faint. ",
-  crash: "If the user misses this move, it will take 1 HP due to crash damage. ",
-  multi: "Hits 2-5 times. ",
-  high_crit: "Has a high critical hit ratio. ",
-  recharge: "After using this move, the user must spend one turn to recharge. ",
-  double: "Hits twice. ",
-  dream_eater: "The user recovers 1/2 the damage dealt. Only works on sleeping targets. ",
-  none: "",
-  payday: "",
-  multi_turn: "Locks the user in for 3-4 turns. Afterwards, the user becomes confused.",
-  rage:
-    "After using this move, the user will not be able to switch or do anything else except " +
-    "continue to use Rage until it faints or the battle ends. Every time it is hit by a move " +
-    "or targeted by Disable, Explosion, or Self-Destruct, its attack will increase by one " +
-    "stage. ",
-  ohko: "Fails on faster opponents. ",
-  trap: "Deals damage and prevents the target from moving for 2-5 turns. ",
-  norand: "",
-  magnitude: "Power is determined randomly. ",
-  false_swipe: "Always leaves the target with at least 1 HP. ",
-  rapid_spin: "Removes the entry hazards and the effects of trapping moves and Leech Seed. ",
-  rollout:
-    "Locks the user in for 5 turns, doubling in power for each consecutive hit. Boosted if Defense Curl was previously used by the user. ",
-  triple:
-    "Hits up to 3 times. The second hit has a damage multiplier of 2, and the third hit has a damage multiplier of 3. ",
-  fury_cutter: "Base power doubles for each consecutive use, up to a maximum of 160. ",
-  minimize: "Doubles damage against a target that has previously used minimize. ",
-  present:
-    "Deals damage with a base power of 40, 80, or 120, or heals the target for 1/4 its max HP. ",
-  bide: "The user sits dormant for 2-3 turns, then damages the opponent for 2x the damage received during the idling period.",
-  beatup:
-    "Hits with a typeless 10 power attack for each Pokémon in the user's party without a non-volatile status condition. ",
-  facade: "Doubles damage when poisoned, paralyzed or burned.",
-  remove_screens: "Removes the effects of Light Screen and Reflect. ",
-  remove_protect: "Removes the effects of protection moves. ",
-  smellingsalt: "Doubles power against paralyzed a paralyzed target, but cures its paralysis. ",
-  spitup:
-    "Damage multiplied by number of stockpiles, which is reset after use of this move. Fails if the user has not used stockpile yet.",
-  uproar:
-    "Locks the user in for 2-5 turns and starts an uproar, waking sleeping Pokémon up and " +
-    "preventing Pokémon from falling asleep. ",
-  revenge: "Doubles damage if the target was the last Pokémon to hit the user in this turn. ",
-  bugbite: "Consumes the target's berry and gains its effect if it has one. ",
-  assurance: "Doubles damage if the target has already taken damage this turn. ",
-  uturn: "Switches the user out. ",
-  futuresight:
-    "After two turns, the target is hit with an attack. Damage is calculated upon use of the move. ",
+// prettier-ignore
+const flagDesc: Record<NonNullable<DMF>, string> = {
+  [DMF.drain]: "The user recovers 1/2 the damage dealt. ",
+  [DMF.explosion]: "Halves target defense during damage calculation. Causes the user to faint. ",
+  [DMF.crash]: "If the user misses this move, it will lose 1 HP due to crash damage. ",
+  [DMF.multi]: "Hits 2-5 times. ",
+  [DMF.high_crit]: "Has a high critical hit ratio. ",
+  [DMF.recharge]: "After using this move, the user must spend one turn to recharge. ",
+  [DMF.double]: "Hits twice. ",
+  [DMF.none]: "",
+  [DMF.multi_turn]: "Locks the user in for 3-4 turns. Afterwards, the user becomes confused.",
+  [DMF.ohko]: "Fails on faster opponents. ",
+  [DMF.trap]: "Deals damage and prevents the target from moving for 2-5 turns. ",
+  [DMF.norand]: "",
+  [DMF.remove_hazards]: "Removes the entry hazards and the effects of trapping moves and Leech Seed. ",
+  [DMF.rollout]: "Locks the user in for 5 turns, doubling in power for each consecutive hit. Boosted if Defense Curl was previously used by the user. ",
+  [DMF.triple]: "Hits up to 3 times. The second hit has a damage multiplier of 2, and the third hit has a damage multiplier of 3. ",
+  [DMF.minimize]: "Doubles damage against a target that has previously used minimize. ",
+  [DMF.remove_screens]: "Removes the effects of Light Screen and Reflect. ",
+  [DMF.remove_protect]: "Removes the effects of protection moves. ",
+  [DMF.revenge]: "Doubles damage if the target was the last Pokémon to hit the user in this turn. ",
+  [DMF.bugbite]: "Consumes the target's berry and gains its effect if it has one. ",
+  [DMF.assurance]: "Doubles damage if the target has already taken damage this turn. ",
+  [DMF.uturn]: "Switches the user out. ",
+  [DMF.futuresight]: "After two turns, the target is hit with an attack. Damage is calculated upon use of the move. ",
+  [DMF.hits_defense]: "Damage calculation uses the target's Defense stat.",
+  [DMF.ignore_defeva]: "Ignores changes to the target's Defense and Evasion.",
 };
 
 const groupWithComma = (items: readonly string[]) => {
@@ -304,7 +300,7 @@ export const describeMove = (gen: Generation, id: MoveId) => {
   const move = gen.moveList[id];
   if (move.kind === "damage") {
     let buf = move.flag && move.flag in flagDesc ? flagDesc[move.flag] : "";
-    if (move.flag === "drain" && gen.id === 2) {
+    if (move.flag === DMF.drain && gen.id === 2) {
       buf += "Always fails on a target with a substitute. ";
     }
 

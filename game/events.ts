@@ -1,24 +1,9 @@
 import type {MoveId} from "./moves";
-import type {FormId, Gender, Status} from "./pokemon";
+import type {Gender, Status} from "./pokemon";
 import type {AbilityId, SpeciesId} from "./species";
-import type {StageId, Type, VF, Weather, ScreenId, HazardId, StageStats, CVF} from "./utils";
+import type {StageId, Type, VF, Weather, ScreenId, HazardId} from "./utils";
 import type {ItemId} from "./item";
-
-export type ClientVolatiles = {
-  stages: Partial<Record<StageId, number>>;
-  // Status isnt really a volatile, but multiple things can inflict/remove it, so let server handle it
-  status?: Status;
-  stats?: StageStats;
-  charging?: MoveId;
-  trapped?: MoveId;
-  types?: Type[];
-  flags?: {lo: VF; hi: CVF};
-  perishCount?: number;
-  ability?: AbilityId;
-  stockpile?: number;
-};
-
-type NullOrOptional<T> = {[P in keyof T]?: T[P] | null};
+import type {VolatileDiff} from "./active";
 
 type AnyEvent =
   | NextTurnEvent
@@ -63,7 +48,7 @@ type AnyEvent =
   | FutureSightEvent
   | MoldBreakerEvent;
 
-export type ChangedVolatiles = {id: PokeId; v: NullOrOptional<ClientVolatiles>}[];
+export type ChangedVolatiles = {id: PokeId; v: VolatileDiff}[];
 
 export type BattleEvent = AnyEvent & {volatiles?: ChangedVolatiles};
 
@@ -83,7 +68,6 @@ export type SwitchEvent = {
   indexInTeam: number;
   gender: Gender;
   shiny: bool;
-  form?: FormId;
   why?: "phaze" | "batonpass" | "uturn";
 };
 
@@ -94,7 +78,7 @@ type TransformEvent = {
   speciesId: SpeciesId;
   shiny: bool;
   gender: Gender;
-  form?: FormId;
+  ability?: AbilityId;
   permanent?: bool;
 };
 
@@ -231,7 +215,7 @@ export type BugType = "bug_gen2_bellydrum" | "bug_gen2_spikes";
 
 type VFReason = Exclude<
   keyof typeof VF,
-  "curse" | "none" | "disabled" | "identified" | "lockon" | "helpingHand" | "flashFire"
+  "curse" | "none" | "disabled" | "identified" | "lockon" | "helpingHand" | "flashFire" | "roost"
 >;
 
 export type InfoReason =
@@ -329,7 +313,7 @@ type SpikesEvent = {
 
 type DisableEvent = {type: "disable"; src: PokeId; move: MoveId};
 type ChargeEvent = {type: "charge"; src: PokeId; move: MoveId; called?: bool};
-type SketchEvent = {type: "sketch"; src: PokeId; move: MoveId};
+type SketchEvent = {type: "sketch"; src: PokeId; move: MoveId; moveIndex: number};
 type MimicEvent = {type: "mimic"; src: PokeId; move: MoveId};
 type CantUseEvent = {type: "cantuse"; src: PokeId; move: MoveId};
 type TauntEvent = {type: "cantusetaunt"; src: PokeId; move: MoveId};

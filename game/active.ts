@@ -1,16 +1,8 @@
-import type {
-  HitSubstituteEvent,
-  DamageEvent,
-  DamageReason,
-  RecoveryReason,
-  InfoReason,
-  ChangedVolatiles,
-  PokeId,
-} from "./events";
+import type {DamageReason, RecoveryReason, InfoReason, PokeId} from "./events";
 import type {MoveId, Move, DamagingMove, HealingWishMove, ForesightMove} from "./moves";
 import {
   natureTable,
-  transform,
+  type Gender,
   type CastformForm,
   type FormId,
   type Pokemon,
@@ -20,67 +12,71 @@ import {
   arraysEqual,
   clamp,
   CVF,
-  getEffectiveness,
   HP_TYPES,
   hpPercent,
-  idiv,
   stageKeys,
   stageStatKeys,
   VF,
   Range,
   type StageId,
   type StageStats,
-  type StatStageId,
   type Type,
   type Weather,
+  Endure,
+  IGNORABLE_ABILITIES,
+  idiv1,
+  idiv,
 } from "./utils";
 import {TurnType, type Battle, type MoveOption, type Options, type Player} from "./battle";
-import {abilityList, type AbilityId} from "./species";
+import {abilityList, type SpeciesId, type AbilityId} from "./species";
 import type {ItemId} from "./item";
+import dirty, {type Diff} from "./dirty";
+import type {Generation} from "./gen";
 
 export type DamageParams = {
   dmg: number;
-  src: ActivePokemon;
+  src: Battlemon;
   why: DamageReason;
   isCrit?: bool;
   direct?: bool;
   eff?: number;
   move?: MoveId;
-  volatiles?: ChangedVolatiles;
 };
 
 export type ChosenMove = {
   move: Move;
   indexInMoves?: number;
-  target?: ActivePokemon;
+  target?: Battlemon;
   isReplacement: bool;
   spe: number;
   executed: bool;
 };
 
-export class ActivePokemon {
+export class Battlemon {
   v: Volatiles;
   lastChosenMove?: Move;
-  futureSight?: {move: DamagingMove; damage: number; turns: number};
+  futureSight?: {move: DamagingMove; damage: number; turns: number; user: Battlemon};
   wish?: {user: Pokemon; turns: number};
   choice?: ChosenMove;
   options?: {switches: number[]; moves: MoveOption[]; id: PokeId};
   consumed?: ItemId;
+  initialized?: bool;
   id: PokeId;
+  originalMoveset?: [MoveId[], number[]];
 
   constructor(public base: Pokemon, public readonly owner: Player, idx: number) {
     this.v = new Volatiles(base);
     this.id = `${this.owner.id}:${idx}`;
   }
 
-  switchTo(next: Pokemon, battle: Battle, phazer?: ActivePokemon) {
+  switchTo(next: Pokemon, battle: Battle, phazer?: Battlemon) {
     if (this.choice) {
       this.choice.executed = true;
     }
 
     if (this.base.status === "tox" && battle.gen.id <= 2) {
-      this.base.status = "psn";
-      battle.event({type: "sv", volatiles: [{id: this.id, v: {status: "psn"}}]});
+      this.setStatusCondition("psn");
+      battle.syncVolatiles();
     }
 
     if (this.base.status && this.hasAbility("naturalcure") && !this.v.fainted) {
@@ -88,13 +84,20 @@ export class ActivePokemon {
       this.unstatus(battle);
     }
 
+    if (this.originalMoveset) {
+      this.base.moves = this.originalMoveset[0];
+      this.base.pp = this.originalMoveset[1];
+      this.originalMoveset = undefined;
+    }
+
     const old = this.v;
     this.v = new Volatiles(next);
     this.base = next;
+    this.initialized = true;
 
     if (old.inBatonPass === "batonpass") {
       this.v.substitute = old.substitute;
-      this.v.stages = old.stages;
+      this.v.stages = {...old.stages}; // TODO: fix dirty so this isnt necessary
       this.v.confusion = old.confusion;
       this.v.perishCount = old.perishCount;
       this.v.meanLook = old.meanLook;
@@ -111,26 +114,24 @@ export class ActivePokemon {
       // Is trapping passed? Encore? Nightmare?
 
       for (const stat of stageStatKeys) {
-        this.recalculateStat(battle, stat, false);
+        battle.gen.recalculateStat(this, battle, stat, false);
       }
     }
 
-    this.applyStatusDebuff();
+    battle.gen.applyStatusDebuff(this);
 
     battle.event({
       type: "switch",
       speciesId: next.speciesId,
-      hpPercent: hpPercent(next.hp, next.stats.hp),
+      hpPercent: hpPercent(next.hp, next.maxHp),
       hp: next.hp,
       src: this.id,
       name: next.name,
       level: next.level,
       gender: next.gender,
       shiny: next.shiny,
-      form: next.form,
       indexInTeam: this.owner.team.indexOf(next),
       why: phazer ? "phaze" : old.inBatonPass !== "hwish" ? old.inBatonPass : undefined,
-      volatiles: [{id: this.id, v: this.getClientVolatiles(battle, next)}],
     });
 
     this.freeOpponents(battle);
@@ -145,7 +146,7 @@ export class ActivePokemon {
 
     if (old.hwish) {
       battle.info(this, old.hwish.restorePP ? "lunardance" : "healingwish");
-      this.recover(this.base.stats.hp - this.base.hp, this, battle, "recover");
+      this.recover(this.base.maxHp - this.base.hp, this, battle, "recover");
       this.unstatus(battle);
       if (old.hwish.restorePP) {
         this.base.moves.forEach((move, i) => (this.base.pp[i] = battle.gen.getMaxPP(move)));
@@ -173,8 +174,7 @@ export class ActivePokemon {
       }
 
       if (this.owner.hazards.spikes && this.isGrounded()) {
-        const mod = 8 - (this.owner.hazards.spikes - 1) * 2;
-        const dmg = Math.max(1, Math.floor(this.base.stats.hp / mod));
+        const dmg = idiv1(this.base.maxHp, 8 - (this.owner.hazards.spikes - 1) * 2);
         this.damage(dmg, this, battle, false, "spikes", true);
         if (this.base.hp === 0) {
           return;
@@ -183,8 +183,8 @@ export class ActivePokemon {
     }
 
     if (this.owner.hazards.rocks) {
-      const eff = getEffectiveness(battle.gen.typeChart, "rock", this.v.types);
-      const dmg = Math.max(1, Math.floor(this.base.stats.hp * (0.125 * eff)));
+      const eff = battle.gen.getEffectiveness("rock", this).toFloat();
+      const dmg = Math.max(1, Math.floor(this.base.maxHp * (0.125 * eff)));
       this.damage(dmg, this, battle, false, "rocks", true);
       if (this.base.hp === 0) {
         return;
@@ -202,24 +202,13 @@ export class ActivePokemon {
 
   consumeItem(battle: Battle) {
     const item = this.base.itemId!;
-    battle.event({
-      type: "item",
-      src: this.id,
-      item,
-      volatiles:
-        item === "mentalherb"
-          ? [{id: this.id, v: {flags: this.v.cflags}}]
-          : item === "whiteherb"
-          ? [{id: this.id, v: {stages: {...this.v.stages}, stats: this.clientStats(battle)}}]
-          : undefined,
-    });
-
     this.consumed = item;
     this.base.itemId = undefined;
+    battle.event({type: "item", src: this.id, item});
   }
 
   canBatonPass() {
-    return this.owner.team.some(p => p.hp && !this.owner.active.some(a => a.base.real === p));
+    return this.owner.team.some(p => p.hp && !this.owner.active.some(a => a.base === p));
   }
 
   faintIfNeeded(battle: Battle) {
@@ -228,15 +217,8 @@ export class ActivePokemon {
     }
 
     this.v.fainted = true;
-    this.v.clearFlag(VF.protect | VF.mist | VF.lightScreen | VF.reflect);
-    battle.info(
-      this,
-      "faint",
-      battle.allActive.map(p => ({
-        id: p.id,
-        v: {stats: p.clientStats(battle), flags: p === this ? p.v.cflags : undefined},
-      })),
-    );
+    this.v.clearFlag(VF.protect | VF.mist | VF.lightScreen | VF.reflect | VF.roost);
+    battle.info(this, "faint");
 
     this.freeOpponents(battle);
     if (!battle.victor && this.owner.areAllDead()) {
@@ -248,18 +230,13 @@ export class ActivePokemon {
   freeOpponents(battle: Battle) {
     const {active: oppActive} = battle.opponentOf(this.owner);
     for (const opp of oppActive) {
-      let changed = false;
       if (opp.v.attract === this) {
         opp.v.attract = undefined;
-        changed = true;
       }
       if (opp.v.meanLook === this) {
         opp.v.meanLook = undefined;
-        changed = true;
       }
-      if (changed) {
-        battle.event({type: "sv", volatiles: [{id: opp.id, v: {flags: opp.v.cflags}}]});
-      }
+      battle.syncVolatiles();
 
       if (
         opp.v.trapped &&
@@ -273,31 +250,40 @@ export class ActivePokemon {
           target: opp.id,
           kind: "end",
           move: opp.v.trapped.move.id!,
-          volatiles: [{id: opp.id, v: {trapped: null}}],
         });
         opp.v.trapped = undefined;
       }
     }
   }
 
-  transform(battle: Battle, target: ActivePokemon) {
-    this.base = transform(this.base.real, target.base);
+  transform(battle: Battle, target: Battlemon) {
+    if (!this.originalMoveset) {
+      this.originalMoveset = [this.base.moves, this.base.pp];
+    }
+    this.base.moves = [...target.base.moves];
+    this.base.pp = target.base.moves.map(move => Math.min(battle.gen.getMaxPP(move), 5));
+
     // TODO: is this right? or should you continue to be locked into the move if the transform
     // moveset has it?
     this.v.choiceLock = undefined;
-
+    this.v.transformed = true;
+    this.v.types = [...target.v.types];
+    this.v.speciesId = target.v.speciesId;
+    this.v.form = target.v.form;
+    this.v.shiny = target.v.shiny;
+    this.v.ability = target.v.ability;
+    this.v.stats = {...target.v.stats};
+    this.v.baseStats = {...target.v.baseStats};
+    this.v.gender = battle.gen.id <= 5 ? this.v.gender : target.v.gender;
+    this.v.mimic = target.v.mimic && {...target.v.mimic, pp: target.v.mimic.pp && 5};
     for (const k of stageKeys) {
       this.v.stages[k] = target.v.stages[k];
       if (stageStatKeys.includes(k)) {
-        this.recalculateStat(battle, k, false);
+        battle.gen.recalculateStat(this, battle, k, false);
       }
     }
 
-    this.v.types = [...target.v.types];
-    this.v.form = target.v.form;
-    this.v.ability = target.v.ability;
-
-    if (target.base.speciesId === "arceus" && target.hasAbility("multitype")) {
+    if (target.v.speciesId === "arceus" && target.hasAbility("multitype")) {
       const type = this.base.item?.plate ?? "normal";
       this.v.form = type;
       this.v.types = [type];
@@ -307,32 +293,29 @@ export class ActivePokemon {
       type: "transform",
       src: this.id,
       target: target.id,
-      speciesId: this.base.speciesId,
-      shiny: this.base.shiny,
-      gender: this.base.gender,
+      speciesId: this.v.speciesId,
+      shiny: this.v.shiny,
+      gender: this.v.gender,
       form: this.v.form,
-      volatiles: [{id: this.id, v: this.getClientVolatiles(battle)}],
     });
   }
 
   damage(
     dmg: number,
-    src: ActivePokemon,
+    src: Battlemon,
     battle: Battle,
     isCrit: bool,
     why: DamageReason,
     direct?: bool,
     eff?: number,
-    volatiles?: ChangedVolatiles,
   ) {
-    return this.damage2(battle, {dmg, src, isCrit, why, direct, eff, volatiles});
+    return this.damage2(battle, {dmg, src, isCrit, why, direct, eff});
   }
 
-  damage2(battle: Battle, {dmg, src, isCrit, why, direct, eff, volatiles, move}: DamageParams) {
+  damage2(battle: Battle, {dmg, src, isCrit, why, direct, eff, move}: DamageParams) {
     if (
       why === "crash" ||
       why === "attacked" ||
-      why === "recoil" ||
       why === "ohko" ||
       why === "confusion" ||
       why === "trap"
@@ -345,19 +328,13 @@ export class ActivePokemon {
     if (this.v.substitute !== 0 && !direct) {
       const hpBefore = this.v.substitute;
       this.v.substitute = Math.max(this.v.substitute - dmg, 0);
-      if (this.v.substitute === 0) {
-        volatiles ??= [];
-        volatiles.push({id: this.id, v: {flags: this.v.cflags}});
-      }
-
-      const event = battle.event<HitSubstituteEvent>({
+      const event = battle.event({
         type: "hit_sub",
         src: src.id,
         target: this.id,
         broken: this.v.substitute === 0,
         confusion: why === "confusion",
         eff,
-        volatiles,
       });
       if (shouldRage) {
         this.handleRage(battle);
@@ -371,19 +348,18 @@ export class ActivePokemon {
     } else {
       const hpBefore = this.base.hp;
       this.base.hp = Math.max(this.base.hp - dmg, 0);
-      const event = battle.event<DamageEvent>({
+      const event = battle.event({
         type: "damage",
         src: src.id,
         target: this.id,
-        hpPercentBefore: hpPercent(hpBefore, this.base.stats.hp),
-        hpPercentAfter: hpPercent(this.base.hp, this.base.stats.hp),
+        hpPercentBefore: hpPercent(hpBefore, this.base.maxHp),
+        hpPercentAfter: hpPercent(this.base.hp, this.base.maxHp),
         hpBefore,
         hpAfter: this.base.hp,
         why,
         eff,
         isCrit,
         move,
-        volatiles,
       });
 
       const dealt = hpBefore - this.base.hp;
@@ -396,43 +372,37 @@ export class ActivePokemon {
     }
   }
 
-  recover(amount: number, src: ActivePokemon, battle: Battle, why: RecoveryReason, v = false) {
+  recover(amount: number, src: Battlemon, battle: Battle, why: RecoveryReason) {
     if ((why === "seeder" || why === "drain") && src !== this && src.hasAbility("liquidooze")) {
       battle.ability(src);
       return this.damage2(battle, {dmg: amount, src, why: "roughskin"});
     }
 
     const hpBefore = this.base.hp;
-    this.base.hp = Math.min(this.base.hp + amount, this.base.stats.hp);
+    this.base.hp = Math.min(this.base.hp + amount, this.base.maxHp);
     if (this.base.hp === hpBefore) {
+      if (why === "present") {
+        battle.info(this, "fail_present");
+      }
       return;
-    }
-
-    const volatiles: ChangedVolatiles = [];
-    if (v) {
-      volatiles.push({
-        id: this.id,
-        v: {status: this.base.status || null, stats: this.clientStats(battle)},
-      });
     }
 
     battle.event({
       type: "recover",
       src: src.id,
       target: this.id,
-      hpPercentBefore: hpPercent(hpBefore, this.base.stats.hp),
-      hpPercentAfter: hpPercent(this.base.hp, this.base.stats.hp),
+      hpPercentBefore: hpPercent(hpBefore, this.base.maxHp),
+      hpPercentAfter: hpPercent(this.base.hp, this.base.maxHp),
       hpBefore,
       hpAfter: this.base.hp,
       why,
-      volatiles,
     });
   }
 
   status(
     status: Status,
     battle: Battle,
-    src: ActivePokemon,
+    src: Battlemon,
     {override, loud, ignoreSafeguard}: {override?: bool; loud?: bool; ignoreSafeguard?: bool},
   ) {
     if (!override && this.base.status) {
@@ -469,7 +439,7 @@ export class ActivePokemon {
       }
       this.base.sleepTurns = battle.gen.rng.sleepTurns(battle);
       if (this.hasAbility("earlybird")) {
-        this.base.sleepTurns = Math.floor(this.base.sleepTurns / 2);
+        this.base.sleepTurns = idiv(this.base.sleepTurns, 2);
       }
 
       opp.sleepClausePoke = this.base;
@@ -483,14 +453,9 @@ export class ActivePokemon {
       }
     }
 
-    this.base.status = status;
-    this.applyStatusDebuff();
-    battle.event({
-      type: "status",
-      src: this.id,
-      status,
-      volatiles: [{id: this.id, v: {stats: this.clientStats(battle), status}}],
-    });
+    this.setStatusCondition(status);
+    battle.gen.applyStatusDebuff(this);
+    battle.event({type: "status", src: this.id, status});
 
     if (
       this.hasAbility("synchronize") &&
@@ -510,25 +475,22 @@ export class ActivePokemon {
       }
     }
 
-    if (status === "frz" && this.base.speciesId === "shayminsky" && !this.base.transformed) {
+    // will a shaymin sky transformed into a shaymin sky revert when frozen?
+    if (status === "frz" && this.base.speciesId === "shayminsky" && !this.v.transformed) {
       // Getting frozen transforms shaymin for the rest of the battle. Freezing a pokémon
       // transformed into shaymin-sky does nothing
-      this.base.speciesId = "shaymin";
-      this.base.ability = "naturalcure";
-      this.v.ability = "naturalcure";
+      this.v.speciesId = this.base.speciesId = "shaymin";
+      this.v.ability = this.base.ability = "naturalcure";
+      this.base.recalculateStats();
+      this.v.stats = {...this.base.stats};
+      this.v.baseStats = {...this.base.stats};
       battle.event({
         type: "transform",
         src: this.id,
-        speciesId: this.base.speciesId,
-        shiny: this.base.shiny,
-        gender: this.base.gender,
-        form: this.v.form,
-        volatiles: [
-          {
-            id: this.id,
-            v: {...this.getClientVolatiles(battle), ability: this.v.ability},
-          },
-        ],
+        speciesId: this.v.speciesId,
+        shiny: this.v.shiny,
+        gender: this.v.gender,
+        ability: this.v.ability,
         permanent: true,
       });
     }
@@ -545,17 +507,14 @@ export class ActivePokemon {
     }
 
     const status = this.base.status;
-    this.base.status = undefined;
+    this.setStatusCondition(undefined);
     this.v.hazed = this.v.hazed || why === "thaw";
     this.v.clearFlag(VF.nightmare);
 
-    const v = [
-      {id: this.id, v: {status: null, flags: this.v.cflags, stats: this.clientStats(battle)}},
-    ];
     if (why) {
-      return battle.info(this, why, v);
+      return battle.info(this, why);
     } else {
-      return battle.event({type: "cure", src: this.id, status, volatiles: v});
+      return battle.event({type: "cure", src: this.id, status});
     }
   }
 
@@ -563,25 +522,20 @@ export class ActivePokemon {
     this.v.stages[stat] = value;
 
     if (stageStatKeys.includes(stat)) {
-      this.recalculateStat(battle, stat, negative);
+      battle.gen.recalculateStat(this, battle, stat, negative);
     }
 
-    const v: ChangedVolatiles = [
-      {id: this.id, v: {stats: this.clientStats(battle), stages: {...this.v.stages}}},
-    ];
     if (battle.gen.id === 1) {
       for (const other of battle.allActive) {
         if (other !== this) {
           // https://bulbapedia.bulbagarden.net/wiki/List_of_battle_glitches_(Generation_I)#Stat_modification_errors
-          other.applyStatusDebuff();
-          v.push({id: other.id, v: {stats: other.clientStats(battle)}});
+          battle.gen.applyStatusDebuff(other);
         }
       }
     }
-    return v;
   }
 
-  modStages(mods: [StageId, number][], battle: Battle, src?: ActivePokemon, quiet?: bool) {
+  modStages(mods: [StageId, number][], battle: Battle, src?: Battlemon, quiet?: bool) {
     let failed = true;
     const prevented = this.getAbility()?.preventsStatDrop;
     for (const [stat, count] of mods) {
@@ -604,18 +558,8 @@ export class ActivePokemon {
         continue;
       }
 
-      battle.event({
-        type: "stages",
-        src: this.id,
-        stat,
-        count,
-        volatiles: this.setStage(
-          stat,
-          clamp(this.v.stages[stat] + count, -6, 6),
-          battle,
-          count < 0,
-        ),
-      });
+      this.setStage(stat, clamp(this.v.stages[stat] + count, -6, 6), battle, count < 0);
+      battle.event({type: "stages", src: this.id, stat, count});
       failed = false;
     }
     return !failed;
@@ -627,64 +571,8 @@ export class ActivePokemon {
     }
 
     this.v.confusion = turns ?? battle.rng.int(2, 5) + 1;
-    battle.info(this, reason ?? "become_confused", [{id: this.id, v: {flags: this.v.cflags}}]);
+    battle.info(this, reason ?? "become_confused");
     return true;
-  }
-
-  applyAbilityStatBoost(battle: Battle, stat: StatStageId, value: number) {
-    const ability = this.getAbilityId();
-    if (!ability) {
-      return value;
-    }
-
-    if ((ability === "hugepower" || ability === "purepower") && stat === "atk") {
-      value *= 2;
-    }
-
-    const weather = battle.getWeather();
-    if (weather && abilityList[ability]?.weatherSpeedBoost === weather && stat === "spe") {
-      value *= 2;
-    }
-
-    if (
-      weather === "sun" &&
-      this.owner.active.some(p => !p.v.fainted && p.hasAbility("flowergift")) &&
-      (stat === "atk" || stat === "spd")
-    ) {
-      value += Math.floor(value / 2);
-    }
-
-    // TODO: the attack boost from guts should activate if the pokemon uses a move that thaws it
-    // out
-    if (ability === "guts" && stat === "atk" && this.base.status) {
-      value += Math.floor(value / 2);
-    }
-
-    if (ability === "hustle" && stat === "atk") {
-      value += Math.floor(value / 2);
-    }
-
-    if (ability === "marvelscale" && stat === "def" && this.base.status) {
-      value += Math.floor(value / 2);
-    }
-
-    if (stat === "spa" && (ability === "plus" || ability === "minus")) {
-      let minus = false,
-        plus = false;
-      for (const poke of battle.allActive) {
-        // pre Gen V, plus and minus activate for opponents
-        if (!poke.v.fainted) {
-          minus = minus || poke.hasAbility("minus");
-          plus = plus || poke.hasAbility("plus");
-        }
-      }
-
-      if ((minus && ability === "plus") || (plus && ability === "minus")) {
-        value += Math.floor(value / 2);
-      }
-    }
-
-    return value;
   }
 
   handleWeatherAbility(battle: Battle) {
@@ -723,13 +611,7 @@ export class ActivePokemon {
         battle.ability(this);
         this.v.ability = target.v.ability;
         battle.ability(this);
-        battle.event({
-          type: "trace",
-          src: this.id,
-          target: target.id,
-          ability: this.v.ability!,
-          volatiles: [{id: this.id, v: {ability: this.v.ability}}],
-        });
+        battle.event({type: "trace", src: this.id, target: target.id, ability: this.v.ability!});
       }
     } else if (this.hasAbility("pressure") && battle.gen.id >= 4) {
       battle.ability(this);
@@ -740,25 +622,23 @@ export class ActivePokemon {
     } else {
       this.handleForecast(battle);
     }
-
-    battle.sv(battle.allActive.map(p => ({id: p.id, v: {stats: p.clientStats(battle)}})));
   }
 
   handleForecast(battle: Battle) {
-    if (this.base.speciesId === "cherrim") {
+    if (this.v.speciesId === "cherrim") {
       const form: FormId | undefined = battle.getWeather() === "sun" ? "sunshine" : undefined;
       if (form !== this.v.form) {
         this.v.form = form;
         battle.event({
           type: "transform",
           src: this.id,
-          speciesId: this.base.speciesId,
-          shiny: this.base.shiny,
-          gender: this.base.gender,
+          speciesId: this.v.speciesId,
+          shiny: this.v.shiny,
+          gender: this.v.gender,
           form: this.v.form,
         });
       }
-    } else if (this.hasAbility("forecast") && this.base.speciesId === "castform") {
+    } else if (this.hasAbility("forecast") && this.v.speciesId === "castform") {
       const types: Record<Weather, Type> = {
         sand: "normal",
         hail: "ice",
@@ -774,15 +654,15 @@ export class ActivePokemon {
       const type = types[battle.getWeather() ?? "sand"];
       if (!arraysEqual([type], this.v.types)) {
         this.v.form = forms[battle.getWeather() ?? "sand"];
+        this.v.types = [type];
         battle.ability(this);
         battle.event({
           type: "transform",
           src: this.id,
-          speciesId: this.base.speciesId,
-          shiny: this.base.shiny,
-          gender: this.base.gender,
+          speciesId: this.v.speciesId,
+          shiny: this.v.shiny,
+          gender: this.v.gender,
           form: this.v.form,
-          volatiles: [this.setVolatile("types", [type])],
         });
       }
     }
@@ -796,21 +676,11 @@ export class ActivePokemon {
     const done = --this.v.confusion === 0;
     battle.info(this, done ? "confused_end" : "confused");
     if (!done && battle.rng.bool()) {
-      const move = this.choice?.move;
-      const explosion = move?.kind === "damage" && move.flag === "explosion" ? 2 : 1;
-      const [atk, def] = battle.gen.getDamageVariables(false, battle, this, this, false);
-      const dmg = battle.gen.calcDamage({
-        lvl: this.base.level,
-        pow: 40,
-        def: Math.max(Math.floor(def / explosion), 1),
-        atk,
-        eff: 1,
-        rand: false,
-        isCrit: false,
-        hasStab: false,
-      });
-
+      const {dmg, endure} = battle.gen.getConfusionSelfDamage(battle, this);
       this.damage2(battle, {dmg, src: this, why: "confusion", direct: true});
+      if (endure) {
+        this.handleEndure(battle, endure);
+      }
       return true;
     }
 
@@ -827,13 +697,13 @@ export class ActivePokemon {
 
   handleShellBell(battle: Battle, dmg: number) {
     if (this.base.hp && dmg !== 0 && !this.v.fainted && this.base.itemId === "shellbell") {
-      this.recover(Math.max(1, Math.floor(dmg / 8)), this, battle, "shellbell", false);
+      this.recover(idiv1(dmg, 8), this, battle, "shellbell");
     }
   }
 
   handleLeftovers(battle: Battle) {
     if (!this.v.fainted && this.base.itemId === "leftovers") {
-      this.recover(Math.max(1, idiv(this.base.stats.hp, 16)), this, battle, "leftovers");
+      this.recover(idiv1(this.base.maxHp, 16), this, battle, "leftovers");
     }
   }
 
@@ -867,7 +737,7 @@ export class ActivePokemon {
         this.v.attract = undefined;
         // is this silent?
         battle.ability(this);
-        battle.info(this, "cure_attract", [{id: this.id, v: {flags: this.v.cflags}}]);
+        battle.info(this, "cure_attract");
       }
 
       if (this.v.confusion && this.hasAbility("owntempo")) {
@@ -921,7 +791,7 @@ export class ActivePokemon {
           this.recover(healFixed, this, battle, "item");
         } else if (healPinch) {
           this.consumeItem(battle);
-          this.recover(Math.max(1, Math.floor(this.base.stats.hp / 8)), this, battle, "item");
+          this.recover(idiv1(this.base.maxHp, 8), this, battle, "item");
           if (this.base.nature !== undefined) {
             const [, minus] = Object.keys(natureTable[this.base.nature]);
             if (minus === healPinch && !this.hasAbility("owntempo")) {
@@ -930,7 +800,7 @@ export class ActivePokemon {
           }
         } else if (healSitrus) {
           this.consumeItem(battle);
-          this.recover(Math.max(1, Math.floor(this.base.stats.hp / 4)), this, battle, "item");
+          this.recover(idiv1(this.base.maxHp, 4), this, battle, "item");
         }
       }
 
@@ -938,7 +808,8 @@ export class ActivePokemon {
       if (statPinch && this.base.belowHp(4)) {
         this.consumeItem(battle);
         if (statPinch === "crit") {
-          battle.info(this, "focusEnergy", [this.setFlag(VF.focusEnergy)]);
+          this.v.setFlag(VF.focusEnergy);
+          battle.info(this, "focusEnergy");
         } else {
           if (statPinch === "random") {
             this.modStages([[battle.rng.choice([...stageStatKeys])!, +2]], battle);
@@ -950,10 +821,24 @@ export class ActivePokemon {
     }
   }
 
+  handleEndure(battle: Battle, endure: Endure) {
+    switch (endure) {
+      case Endure.Endure:
+        return battle.info(this, "endure_hit");
+      case Endure.FocusBand:
+        return battle.info(this, "endure_band");
+      case Endure.Sturdy:
+        battle.ability(this);
+        return battle.info(this, "endure_hit");
+      case Endure.FocusSash:
+        return this.consumeItem(battle);
+    }
+  }
+
   handleWeather(battle: Battle, weather: Weather) {
     if (
-      this.v.charging?.move === battle.gen.moveList.dig ||
-      this.v.charging?.move === battle.gen.moveList.dive ||
+      this.v.charging?.move?.id === "dig" ||
+      this.v.charging?.move?.id === "dive" ||
       this.v.fainted
     ) {
       return;
@@ -968,8 +853,7 @@ export class ActivePokemon {
       return;
     }
 
-    const d = battle.gen.id <= 2 ? 8 : 16;
-    const dmg = Math.max(idiv(this.base.stats.hp, d), 1);
+    const dmg = idiv1(this.base.maxHp, battle.gen.id <= 2 ? 8 : 16);
     this.damage(dmg, this, battle, false, weather as "hail" | "sand", true);
   }
 
@@ -980,17 +864,10 @@ export class ActivePokemon {
 
     const move = this.v.trapped.move.id!;
     if (--this.v.trapped.turns === 0) {
-      battle.event({
-        type: "trap",
-        src: this.id,
-        target: this.id,
-        kind: "end",
-        move,
-        volatiles: [{id: this.id, v: {trapped: null}}],
-      });
       this.v.trapped = undefined;
+      battle.event({type: "trap", src: this.id, target: this.id, kind: "end", move});
     } else {
-      const dmg = Math.max(idiv(this.base.stats.hp, 16), 1);
+      const dmg = idiv1(this.base.maxHp, 16);
       this.damage2(battle, {dmg, src: this, why: "trap_eot", move, direct: true});
     }
   }
@@ -1002,26 +879,14 @@ export class ActivePokemon {
       (--this.v.encore.turns === 0 || !this.base.pp[this.v.encore.indexInMoves])
     ) {
       this.v.encore = undefined;
-      battle.info(this, "encore_end", [{id: this.id, v: {flags: this.v.cflags}}]);
+      battle.info(this, "encore_end");
     }
   }
 
   handleFutureSight(battle: Battle) {
     if (this.futureSight && --this.futureSight.turns === 0) {
       if (!this.v.fainted) {
-        battle.event({
-          type: "futuresight",
-          src: this.id,
-          move: this.futureSight.move.id!,
-          release: true,
-        });
-        if (!battle.checkAccuracy(battle.gen.moveList.futuresight, this, this)) {
-          // FIXME: this is lazy
-          battle.events.splice(-1, 1);
-          battle.info(this, "fail_generic");
-        } else {
-          this.damage(this.futureSight.damage, this, battle, false, "future_sight");
-        }
+        battle.gen.handleFutureSight(battle, this, this.futureSight);
       }
 
       this.futureSight = undefined;
@@ -1035,36 +900,14 @@ export class ActivePokemon {
 
     if (this.v.perishCount) {
       --this.v.perishCount;
-
-      const volatiles = [{id: this.id, v: {perishCount: this.v.perishCount}}];
       if (this.v.perishCount !== 3) {
-        battle.event({type: "perish", src: this.id, turns: this.v.perishCount, volatiles});
+        battle.event({type: "perish", src: this.id, turns: this.v.perishCount});
       } else {
-        battle.event({type: "sv", volatiles});
+        battle.syncVolatiles();
       }
       if (!this.v.perishCount) {
         this.damage(this.base.hp, this, battle, false, "perish_song", true);
       }
-    }
-  }
-
-  applyStatusDebuff() {
-    if (this.base.status === "brn") {
-      this.v.stats.atk = Math.max(Math.floor(this.v.stats.atk / 2), 1);
-    } else if (this.base.status === "par") {
-      this.v.stats.spe = Math.max(Math.floor(this.v.stats.spe / 4), 1);
-    }
-  }
-
-  recalculateStat(battle: Battle, stat: StatStageId, negative: bool) {
-    const [num, div] = battle.gen.stageMultipliers[this.v.stages[stat]];
-    this.v.stats[stat] = idiv(this.base.stats[stat] * num, div);
-
-    // https://www.smogon.com/rb/articles/rby_mechanics_guide#stat-mechanics
-    if (negative && battle.gen.id === 1) {
-      this.v.stats[stat] %= 1024;
-    } else {
-      this.v.stats[stat] = clamp(this.v.stats[stat], 1, 999);
     }
   }
 
@@ -1074,7 +917,7 @@ export class ActivePokemon {
       const poke = this.owner.team[i];
       if (
         poke.hp !== 0 &&
-        (battle.turnType === TurnType.Lead || !this.owner.active.some(a => a.base.real === poke))
+        (battle.turnType === TurnType.Lead || !this.owner.active.some(a => a.base === poke))
       ) {
         switches.push(i);
       }
@@ -1109,9 +952,10 @@ export class ActivePokemon {
     // send all moves so PP can be updated
     const moves = this.base.moves.map((m, i) => {
       const move = this.v.mimic?.indexInMoves === i ? this.v.mimic?.move : m;
+      const pp = this.v.mimic?.pp !== undefined ? this.v.mimic.pp : this.base.pp[i];
       return {
         move,
-        pp: this.base.pp[i],
+        pp,
         valid: battle.gen.isValidMove(battle, this, move, i),
         indexInMoves: i,
         display: true,
@@ -1135,17 +979,10 @@ export class ActivePokemon {
       });
     }
 
-    if (this.base.transformed) {
-      const original = this.base.real;
-      original.moves.forEach((move, i) => {
-        moves.push({
-          move,
-          pp: original.pp[i],
-          valid: false,
-          display: false,
-          indexInMoves: i,
-          targets: [],
-        });
+    if (this.originalMoveset) {
+      const [baseMoves, pp] = this.originalMoveset;
+      baseMoves.forEach((move, i) => {
+        moves.push({move, pp: pp[i], valid: false, display: false, indexInMoves: i, targets: []});
       });
     }
 
@@ -1158,6 +995,26 @@ export class ActivePokemon {
     };
   }
 
+  hasPP(moveIndex: number) {
+    if (this.v.mimic?.indexInMoves === moveIndex && this.v.mimic.pp !== undefined) {
+      return this.v.mimic.pp;
+    }
+    return this.base.pp[moveIndex];
+  }
+
+  deductPP(moveIndex: number, count: number) {
+    if (this.v.mimic?.indexInMoves === moveIndex && this.v.mimic.pp !== undefined) {
+      this.v.mimic.pp = Math.max(this.v.mimic.pp - count, 0);
+    }
+
+    if (this.base.pp[moveIndex] === 0) {
+      // Certain glitches can cause a move to get used at 0 PP in Gen 1, in which case it wraps around
+      this.base.pp[moveIndex] = 63;
+    } else {
+      this.base.pp[moveIndex] = Math.max(this.base.pp[moveIndex] - count, 0);
+    }
+  }
+
   moveset() {
     if (this.v.mimic) {
       const moves = [...this.base.moves];
@@ -1167,7 +1024,7 @@ export class ActivePokemon {
     return this.base.moves;
   }
 
-  isImprisoning(target: ActivePokemon, move: MoveId) {
+  isImprisoning(target: Battlemon, move: MoveId) {
     return (
       !this.v.fainted &&
       this.owner !== target.owner &&
@@ -1177,23 +1034,40 @@ export class ActivePokemon {
   }
 
   isGrounded() {
-    return !this.v.types.includes("flying") && !this.hasAbility("levitate");
+    if (this.base.item?.groundsUser) {
+      return true;
+    }
+    const isFlying = this.v.types.includes("flying") && !this.v.hasFlag(VF.roost);
+    return !isFlying && !this.hasAbility("levitate");
   }
 
-  hasAbility(ability: AbilityId) {
-    return this.getAbilityId() === ability;
+  hasAbility(ability: AbilityId, user?: Battlemon) {
+    return this.getAbilityId(user) === ability;
   }
 
   hasAnyAbility(...ability: AbilityId[]) {
     return ability.includes(this.getAbilityId());
   }
 
-  getAbilityId() {
+  hasAllyAbility(user: Battlemon | null, ...abilities: AbilityId[]): any {
+    return this.owner.active.some(
+      p => p.base.hp && p !== this && abilities.includes(p.getAbilityId(user || undefined)),
+    );
+  }
+
+  getAbilityId(user?: Battlemon) {
+    if (
+      this.v.ability &&
+      user?.getAbility()?.moldBreaker &&
+      IGNORABLE_ABILITIES.has(this.v.ability)
+    ) {
+      return;
+    }
     return !this.v.hasFlag(VF.gastroAcid) ? this.v.ability : undefined;
   }
 
-  getAbility() {
-    const ability = this.getAbilityId();
+  getAbility(user?: Battlemon) {
+    const ability = this.getAbilityId(user);
     return ability && abilityList[ability];
   }
 
@@ -1225,44 +1099,36 @@ export class ActivePokemon {
     this.options = this.getOptions(battle);
   }
 
-  setVolatile<T extends keyof Volatiles>(key: T, val: Volatiles[T]) {
-    this.v[key] = val;
-    if (key === "types" && arraysEqual(this.v.types, this.base.species.types)) {
-      return {id: this.id, v: {[key]: null}} as const;
-    } else {
-      return {id: this.id, v: {[key]: structuredClone(val)}} as const;
+  changedVolatiles() {
+    const diff: Pick<Diff<Volatiles>, (typeof VOLATILE_SYNC_KEYS)[number]> = dirty.flush(this.v);
+    let cflags = CVF.none;
+    cflags |= diff.disabled ? CVF.disabled : 0;
+    cflags |= diff.encore ? CVF.encore : 0;
+    cflags |= diff.tauntTurns ? CVF.taunt : 0;
+    if (this.v.transformed) {
+      diff.stats = undefined;
     }
-  }
-
-  setFlag(flag: VF) {
-    this.v.setFlag(flag);
-    return {id: this.id, v: {flags: this.v.cflags}};
-  }
-
-  clearFlag(flag: VF) {
-    this.v.clearFlag(flag);
-    return {id: this.id, v: {flags: this.v.cflags}};
-  }
-
-  clientStats(battle: Battle) {
-    if (!this.base.transformed) {
-      return Object.fromEntries(
-        stageStatKeys.map(key => [key, battle.gen.getStat(battle, this, key)]),
-      ) as StageStats;
-    }
-  }
-
-  getClientVolatiles(battle: Battle, base?: Pokemon): ChangedVolatiles[number]["v"] {
-    base ??= this.base;
     return {
-      status: base.status || null,
-      stages: {...this.v.stages},
-      stats: this.clientStats(battle),
-      charging: this.v.charging?.move?.id,
-      trapped: this.v.trapped?.move?.id,
-      types: !arraysEqual(this.v.types, base.species.types) ? [...this.v.types] : undefined,
-      flags: this.v.cflags,
-      perishCount: this.v.perishCount,
+      stages: diff.stages,
+      stats: diff.stats,
+      types: diff.types,
+      form: diff.form,
+      stockpile: diff.stockpile,
+      perishCount: diff.perishCount,
+      flags: diff.flags,
+      drowsy: diff.drowsy,
+      speciesId: diff.speciesId,
+      shiny: diff.shiny,
+      gender: diff.gender,
+      transformed: diff.transformed,
+      charging: diff.charging && diff.charging?.move?.id,
+      trapped: diff.trapped && diff.trapped?.move?.id,
+      identified: diff.identified && diff.identified.id,
+      seededBy: diff.seededBy && diff.seededBy.id,
+      meanLook: diff.meanLook && diff.meanLook.id,
+      attract: diff.attract && diff.attract.id,
+      status: this.base.status || null,
+      cflags,
     };
   }
 
@@ -1271,6 +1137,14 @@ export class ActivePokemon {
     if (!this.base.item?.choice) {
       this.v.choiceLock = undefined;
     }
+  }
+
+  setStatusCondition(status: Status | undefined) {
+    // TODO: find a better solution for this
+    this.base.status = status;
+    const old = this.v.tauntTurns;
+    this.v.tauntTurns = 100;
+    this.v.tauntTurns = old;
   }
 
   private getValidTargets(battle: Battle, move: Move) {
@@ -1293,10 +1167,19 @@ export class ActivePokemon {
 
 class Volatiles {
   stages = {atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0, eva: 0};
-  /** Gen 1 only */
+  /**
+   * In generations 1 and 2, this is the stat including stat stages and burn modifier.
+   * In generations 3+, this is the base stats before modifiers, but taking into account effects
+   * like Power Trick.
+   */
   stats: StageStats;
+  baseStats: StageStats;
   types: Type[];
   form?: FormId;
+  speciesId: SpeciesId;
+  shiny: bool;
+  gender: Gender;
+  transformed = false;
   substitute = 0;
   confusion = 0;
   counter = 0;
@@ -1307,10 +1190,10 @@ class Volatiles {
   fainted = false;
   inPursuit = false;
   inBatonPass?: "batonpass" | "uturn" | "hwish";
-  usedDefenseCurl = false;
-  usedMinimize = false;
   usedIntimidate = false;
   usedTrace = false;
+  metronomeCount = 0;
+  slowStartTurns = 0;
   canSpeedBoost = false;
   canFakeOut = true;
   justSwitched = true;
@@ -1323,42 +1206,43 @@ class Volatiles {
   furyCutter = 0;
   retaliateDamage = 0;
   ability?: AbilityId;
-  meanLook?: ActivePokemon;
-  attract?: ActivePokemon;
-  seededBy?: ActivePokemon;
+  meanLook?: Battlemon;
+  attract?: Battlemon;
+  seededBy?: Battlemon;
   choiceLock?: number;
-  lastHitBy?: {move: Move; poke: ActivePokemon; special: bool};
+  lastHitBy?: {move: Move; poke: Battlemon; type: Type};
   hwish?: HealingWishMove;
   lastMove?: Move;
   lastMoveIndex?: number;
   identified?: ForesightMove;
-  charging?: {move: DamagingMove; targets: ActivePokemon[]};
-  recharge?: {move: DamagingMove; target: ActivePokemon};
+  charging?: {move: DamagingMove; targets: Battlemon[]};
+  recharge?: {move: DamagingMove; target: Battlemon};
   thrashing?: {move: DamagingMove; turns: number; max: bool; acc?: number};
   bide?: {move: Move; turns: number; dmg: number};
   disabled?: {turns: number; indexInMoves: number};
   encore?: {turns: number; indexInMoves: number};
-  mimic?: {move: MoveId; indexInMoves: number};
+  mimic?: {move: MoveId; indexInMoves: number; pp?: number};
   trapping?: {move: Move; turns: number};
-  trapped?: {user: ActivePokemon; move: Move; turns: number};
+  trapped?: {user: Battlemon; move: Move; turns: number};
   flags = VF.none;
+  private gen: Generation;
 
   constructor(base: Pokemon) {
+    this.speciesId = base.speciesId;
+    this.gender = base.gender;
     this.types = [...base.species.types];
-    this.stats = {
-      atk: base.stats.atk,
-      def: base.stats.def,
-      spa: base.stats.spa,
-      spd: base.stats.spd,
-      spe: base.stats.spe,
-    };
+    this.stats = {...base.stats};
+    this.baseStats = {...base.stats};
+    this.shiny = base.shiny;
     this.ability = base.ability;
     this.counter = base.status === "tox" ? 1 : 0;
-    this.form = base.form;
-
-    if (base.ability === "multitype" && HP_TYPES.includes(this.form)) {
-      this.types = [this.form];
+    this.gen = base.gen;
+    const self = dirty.tracked(this, VOLATILE_SYNC_KEYS);
+    self.form = base.form;
+    if (base.ability === "multitype" && HP_TYPES.includes(base.form)) {
+      self.types = [base.form];
     }
+    return self;
   }
 
   hasAnyType(...types: Type[]) {
@@ -1387,16 +1271,33 @@ class Volatiles {
     return (this.flags & flag) !== 0;
   }
 
-  get cflags() {
-    let hi = CVF.none;
-    hi |= this.disabled ? CVF.disabled : 0;
-    hi |= this.attract ? CVF.attract : 0;
-    hi |= this.encore ? CVF.encore : 0;
-    hi |= this.meanLook ? CVF.meanLook : 0;
-    hi |= this.seededBy ? CVF.seeded : 0;
-    hi |= this.tauntTurns ? CVF.taunt : 0;
-    hi |= this.drowsy ? CVF.drowsy : 0;
-    hi |= this.identified ? CVF.identified : 0;
-    return {lo: this.flags, hi};
+  get species() {
+    return this.gen.speciesList[this.speciesId];
   }
 }
+
+export type VolatileDiff = ReturnType<Battlemon["changedVolatiles"]>;
+
+const VOLATILE_SYNC_KEYS = [
+  "stages",
+  "stats",
+  "charging",
+  "trapped",
+  "types",
+  "form",
+  "stockpile",
+  "perishCount",
+  "flags",
+  "disabled",
+  "attract",
+  "encore",
+  "meanLook",
+  "seededBy",
+  "tauntTurns",
+  "drowsy",
+  "identified",
+  "speciesId",
+  "gender",
+  "shiny",
+  "transformed",
+] satisfies (keyof Volatiles)[];

@@ -117,7 +117,7 @@
         <div class="events p-1">
           <template v-if="i > 0">
             <!-- eslint-disable-next-line vue/valid-v-for -->
-            <Event v-for="e of turn" :key="perspective" :e :my-id :players :perspective :gen />
+            <Event v-for="(e, j) of turn" :key="j" :e :my-id :players :perspective :gen />
           </template>
           <div v-if="chats[i]?.length" class="pt-1"></div>
           <ChatMessage
@@ -128,7 +128,7 @@
           />
           <template v-if="i === 0">
             <!-- eslint-disable-next-line vue/valid-v-for -->
-            <Event v-for="e of turn" :key="perspective" :e :my-id :players :perspective :gen />
+            <Event v-for="(e, j) of turn" :key="j" :e :my-id :players :perspective :gen />
           </template>
         </div>
       </template>

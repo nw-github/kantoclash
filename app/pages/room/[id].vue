@@ -3,7 +3,7 @@
     <Battle
       ref="battle"
       :options
-      :players
+      :mgr
       :events
       :chats
       :finished
@@ -26,6 +26,7 @@ import type {BattleEvent} from "~~/game/events";
 import type {Choice, InfoRecord, JoinRoomResponse} from "~~/server/gameServer";
 import type {InfoMessage, BattleTimers} from "~~/server/utils/info";
 import AlertModal from "~/components/dialog/AlertModal.vue";
+import {GENERATION1} from "~~/game/gen";
 
 const alert = useOverlay().create(AlertModal);
 
@@ -40,7 +41,7 @@ const myId = useMyId();
 const {track: currentTrack} = useBGMusic();
 const battle = useTemplateRef("battle");
 const loading = ref(true);
-const players = reactive(new Players());
+const mgr = reactive(new ClientManager(GENERATION1)) as ClientManager;
 const events = ref<BattleEvent[]>([]);
 const options = reactive<Partial<Record<number, Options[]>>>({});
 const chats = reactive<InfoRecord>({});
@@ -158,24 +159,14 @@ const displayErrorToast = (err?: string) => {
 
 const processMessage = (message: InfoMessage) => {
   if (message.type === "userJoin") {
-    const player = players.get(message.id);
+    const player = mgr.players.get(message.id);
     if (player) {
       player.connected = true;
     } else if (message.isSpectator) {
-      players.add(message.id, {
-        name: message.name,
-        isSpectator: message.isSpectator,
-        nPokemon: message.nPokemon,
-        admin: message.admin,
-        nFainted: 0,
-        connected: true,
-        active: [],
-        team: [],
-        teamDesc: [],
-      });
+      mgr.players.add(message);
     }
   } else if (message.type === "userLeave") {
-    players.get(message.id).connected = false;
+    mgr.players.get(message.id).connected = false;
   }
 };
 
@@ -219,29 +210,13 @@ const onJoinRoom = (resp: JoinRoomResponse | "bad_room") => {
   }
 
   const fmt = formatInfo[resp.format];
-  for (const {id, name, nPokemon, admin, teamPreview} of resp.battlers) {
-    const player = players.get(id);
-    if (player) {
-      continue;
-    }
-
-    players.add(id, {
-      name,
-      admin,
-      isSpectator: false,
-      connected: false,
-      nPokemon,
-      nFainted: 0,
-      active: Array(fmt.doubles ? 2 : 1).fill(undefined),
-      team: [],
-      teamDesc: [],
-      teamPreview,
-    });
+  for (const battler of resp.battlers) {
+    mgr.players.add(battler);
   }
 
   if (needsFreshStart) {
     events.value = resp.events;
-    const self = players.get(myId.value);
+    const self = mgr.players.get(myId.value);
     if (self) {
       self.teamDesc = resp.team ?? [];
     }
@@ -326,8 +301,8 @@ const onInfo = (roomId: string, message: InfoMessage, turn: number) => {
 };
 
 const timers = (timers?: BattleTimers) => {
-  for (const player in players.items) {
-    players.items[player].time = timers?.[player];
+  for (const player in mgr.players.items) {
+    mgr.players.items[player].time = timers?.[player];
   }
 };
 </script>

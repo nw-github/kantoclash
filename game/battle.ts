@@ -1,31 +1,24 @@
 import {Random} from "random";
-import type {
-  BattleEvent,
-  PlayerId,
-  InfoReason,
-  EndBattleEvent,
-  ChangedVolatiles,
-  PokeId,
-} from "./events";
+import type {BattleEvent, PlayerId, InfoReason, EndBattleEvent, PokeId} from "./events";
 import type {MoveId, Move} from "./moves";
 import type {Pokemon} from "./pokemon";
 import {
   Range,
   isSpreadMove,
-  getEffectiveness,
   playerId,
   VF,
   debugLog,
-  type Type,
   type Weather,
   type ScreenId,
   type HazardId,
-  HP_TYPES,
+  type NonEmptyArray,
 } from "./utils";
 import type {Generation} from "./gen";
-import {ActivePokemon} from "./active";
+import {Battlemon} from "./active";
+import type {AbilityId} from "./species";
+import dirty from "./dirty";
 
-export {ActivePokemon};
+export {Battlemon};
 
 export type MoveOption = {
   move: MoveId;
@@ -36,15 +29,13 @@ export type MoveOption = {
   targets: PokeId[];
 };
 
-export type Options = NonNullable<ActivePokemon["options"]>;
+export type Options = NonNullable<Battlemon["options"]>;
 
 type PlayerParams = {readonly id: PlayerId; readonly team: Pokemon[]};
 
-type NonEmptyArray<T> = [T, ...T[]];
-
 export class Player {
   readonly id: PlayerId;
-  readonly active: NonEmptyArray<ActivePokemon>;
+  readonly active: NonEmptyArray<Battlemon>;
   readonly team: Pokemon[];
   readonly screens: Partial<Record<ScreenId, number>> = {};
   readonly hazards: Partial<Record<HazardId, number>> = {};
@@ -54,9 +45,9 @@ export class Player {
   constructor({id, team}: PlayerParams, doubles: bool) {
     this.id = id;
     this.team = team;
-    this.active = [new ActivePokemon(this.team[0], this, 0)];
+    this.active = [new Battlemon(this.team[0], this, 0)];
     if (doubles && this.team.length > 1) {
-      this.active.push(new ActivePokemon(this.team[1], this, 1));
+      this.active.push(new Battlemon(this.team[1], this, 1));
     }
   }
 
@@ -106,9 +97,7 @@ export class Player {
     }
 
     const poke = this.team[index];
-    if (
-      this.active.some(a => a.choice?.move?.kind === "switch" && a.choice.move.poke.real === poke)
-    ) {
+    if (this.active.some(a => a.choice?.move?.kind === "switch" && a.choice.move.poke === poke)) {
       return false;
     }
 
@@ -140,6 +129,10 @@ export class Player {
   areAllDead() {
     return this.team.every(poke => poke.hp === 0);
   }
+
+  sideHasAbility(ability: AbilityId) {
+    return this.active.some(poke => poke.base.hp && poke.getAbilityId() === ability);
+  }
 }
 
 export type Mods = {sleepClause?: bool; freezeClause?: bool; endlessBattle?: bool};
@@ -170,8 +163,8 @@ export class Battle {
   finished = false;
   gen1LastDamage = 0;
   betweenTurns = 0;
-  allActive: ActivePokemon[];
-  turnOrder: ActivePokemon[] = [];
+  allActive: Battlemon[];
+  turnOrder: Battlemon[] = [];
 
   private constructor(
     readonly gen: Generation,
@@ -209,30 +202,38 @@ export class Battle {
     return this._turn;
   }
 
-  /** Should only be set by ActivePokemon::faintIfNeeded */
+  /** Should only be set by Battlemon::faintIfNeeded */
   set victor(value: Player) {
     this._victor = value;
     this.finished = true;
   }
 
-  event<T extends BattleEvent = BattleEvent>(event: BattleEvent) {
+  event<T extends BattleEvent>(event: T): T & BattleEvent {
+    const volatiles = this.allActive
+      .filter(poke => poke.initialized && dirty.isDirty(poke.v))
+      .map(poke => ({id: poke.id, v: poke.changedVolatiles()}));
+    if (volatiles.length) {
+      event.volatiles = volatiles;
+    } else if (event.type === "sv") {
+      return event;
+    }
     this.events.push(event);
-    return event as T;
+    return event;
   }
 
-  info(src: ActivePokemon, why: InfoReason, volatiles?: ChangedVolatiles) {
-    return this.event({type: "info", src: src.id, why, volatiles});
+  info(src: Battlemon, why: InfoReason) {
+    return this.event({type: "info", src: src.id, why});
   }
 
-  sv(volatiles?: ChangedVolatiles) {
-    this.event({type: "sv", volatiles});
+  syncVolatiles() {
+    return this.event({type: "sv"});
   }
 
-  ability(src: ActivePokemon, volatiles?: ChangedVolatiles) {
-    return this.event({type: "proc_ability", src: src.id, ability: src.v.ability!, volatiles});
+  ability(src: Battlemon) {
+    return this.event({type: "proc_ability", src: src.id, ability: src.v.ability!});
   }
 
-  miss(user: ActivePokemon, target: ActivePokemon) {
+  miss(user: Battlemon, target: Battlemon) {
     this.event({type: "miss", src: user.id, target: target.id});
   }
 
@@ -315,10 +316,12 @@ export class Battle {
         } else {
           // Ensure switch-in abilities activate in turn order on the lead turn including item
           // effects like choice scarf
-          if (poke.choice.move.kind === "switch" && isLead) {
+          if (poke.choice.move.kind === "switch" && !poke.initialized) {
             poke.base = poke.choice.move.poke;
+            poke.v.stats = {...poke.choice.move.poke.stats};
           }
-          poke.choice.spe = this.gen.getStat(this, poke, "spe");
+          poke.choice.spe = this.gen.getSpeed(this, poke);
+          debugLog(`[${poke.base.name}] speed is ${poke.choice.spe}`);
         }
       }
     }
@@ -393,7 +396,7 @@ export class Battle {
     return this.events.splice(0);
   }
 
-  getTargets(user: ActivePokemon, params: Range, forUser?: bool) {
+  getTargets(user: Battlemon, params: Range, forUser?: bool) {
     const pl = user.owner;
     const opp = this.opponentOf(pl);
 
@@ -455,7 +458,7 @@ export class Battle {
     }
     }
 
-    const targets: ActivePokemon[] = [];
+    const targets: Battlemon[] = [];
     const me = pl.active.indexOf(user);
     const p0 = this.players.indexOf(user.owner) === 0;
     if (!allyOnly) {
@@ -479,20 +482,6 @@ export class Battle {
 
   // --
 
-  getEffectiveness(atk: Type, target: ActivePokemon) {
-    if (target.v.identified) {
-      // FIXME: this is lazy
-      const chart = structuredClone(this.gen.typeChart);
-      for (const type of HP_TYPES) {
-        if (chart[type][target.v.identified.removeImmunities] === 0) {
-          chart[type][target.v.identified.removeImmunities] = 1;
-        }
-      }
-      return getEffectiveness(chart, atk, target.v.types);
-    }
-    return getEffectiveness(this.gen.typeChart, atk, target.v.types);
-  }
-
   rand255(num: number) {
     return this.rng.int(0, 255) < Math.min(num, 255);
   }
@@ -505,10 +494,10 @@ export class Battle {
     return this.rng.int(1, 256) <= Math.floor((num / 100) * 256);
   }
 
-  checkAccuracy(move: Move, user: ActivePokemon, target: ActivePokemon, physical?: bool) {
+  checkAccuracy(move: Move, user: Battlemon, target: Battlemon, physical?: bool) {
     if (target.v.hasFlag(VF.lockon)) {
-      this.event({type: "sv", volatiles: [target.clearFlag(VF.lockon)]});
-
+      target.v.clearFlag(VF.lockon);
+      this.syncVolatiles();
       if (this.gen.id === 2) {
         const moveId = move.id;
         if (moveId === "earthquake" || moveId === "fissure" || moveId === "magnitude") {
@@ -524,10 +513,10 @@ export class Battle {
     return this.gen.checkAccuracy(move, this, user, target, physical);
   }
 
-  hasUproar(user: ActivePokemon) {
+  hasUproar(user: Battlemon) {
     return (
       !user.hasAbility("soundproof") &&
-      this.allActive.some(p => p.v.thrashing?.move?.flag === "uproar")
+      this.allActive.some(p => p.v.thrashing?.move?.id === "uproar")
     );
   }
 
@@ -570,7 +559,7 @@ export class Battle {
   }
 
   getWeather() {
-    if (this.allActive.some(p => p.getAbility()?.negatesWeather)) {
+    if (this.allActive.some(p => p.base.hp && p.getAbility()?.negatesWeather)) {
       return;
     }
     return this.weather?.kind;
@@ -578,12 +567,7 @@ export class Battle {
 
   setWeather(weather: Weather, turns: number) {
     this.weather = {turns, kind: weather};
-    this.event({
-      type: "weather",
-      kind: "start",
-      weather,
-      volatiles: this.allActive.map(a => ({id: a.id, v: {stats: a.clientStats(this)}})),
-    });
+    this.event({type: "weather", kind: "start", weather});
 
     // TODO: not sure if this is the right order
     for (const poke of this.switchOrder()) {
@@ -605,7 +589,7 @@ export class Battle {
   // --
 
   private runTurn(normal: bool) {
-    const execChoice = (user: ActivePokemon) => {
+    const execChoice = (user: Battlemon) => {
       // eslint-disable-next-line prefer-const
       let {move, target, indexInMoves, isReplacement} = user.choice!;
 
@@ -615,7 +599,8 @@ export class Battle {
       }
 
       if (user.v.hasFlag(VF.destinyBond | VF.grudge)) {
-        this.event({type: "sv", volatiles: [user.clearFlag(VF.destinyBond | VF.grudge)]});
+        user.v.clearFlag(VF.destinyBond | VF.grudge);
+        this.syncVolatiles();
       }
 
       if (move.kind !== "switch" && user.v.encore && indexInMoves !== undefined) {
@@ -643,7 +628,7 @@ export class Battle {
       }
     };
 
-    const checkPursuit = (user: ActivePokemon) => {
+    const checkPursuit = (user: Battlemon) => {
       const pursuers = this.turnOrder.filter(pursuer => {
         return (
           !pursuer.v.fainted &&
@@ -716,8 +701,8 @@ export class Battle {
 
   useMove(
     move: Move,
-    user: ActivePokemon,
-    targets: ActivePokemon[],
+    user: Battlemon,
+    targets: Battlemon[],
     moveIndex?: number,
     quiet?: bool,
     called?: bool,
@@ -732,8 +717,8 @@ export class Battle {
 
   doUseMove(
     move: Move,
-    user: ActivePokemon,
-    targets: ActivePokemon[],
+    user: Battlemon,
+    targets: Battlemon[],
     moveIndex?: number,
     quiet?: bool,
     called?: bool,
@@ -784,7 +769,8 @@ export class Battle {
           if (move.charge !== "sun" || !this.hasWeather("sun")) {
             user.v.charging = {move, targets: originalTargets};
             user.v.invuln = move.charge === "invuln" || user.v.invuln;
-            this.sv([user.clearFlag(VF.charge)]);
+            user.v.clearFlag(VF.charge);
+            this.syncVolatiles();
             return;
           }
         }
@@ -796,32 +782,31 @@ export class Battle {
         }
 
         if (move.range === Range.Random) {
-          targets = [this.rng.choice(this.getTargets(user, Range.AllAdjacentFoe))!];
+          const target = this.rng.choice(this.getTargets(user, Range.AllAdjacentFoe));
+          targets = target ? [target] : [];
         }
       } else {
-        this.sv([user.clearFlag(VF.charge)]);
+        user.v.clearFlag(VF.charge);
+        this.syncVolatiles();
       }
 
       if (moveId === user.base.moves[user.v.disabled?.indexInMoves ?? -1]) {
-        this.event({move: moveId, type: "move", src: user.id, disabled: true});
         user.v.charging = undefined;
-        this.sv([user.clearFlag(VF.charge)]);
+        user.v.clearFlag(VF.charge);
+        this.event({move: moveId, type: "move", src: user.id, disabled: true});
         return;
       }
 
       if (moveIndex !== undefined && !user.v.thrashing && !user.v.bide) {
-        user.base.pp[moveIndex]--;
-        if (user.base.pp[moveIndex] < 0) {
-          user.base.pp[moveIndex] = 63;
-        }
-
         const tr = move.range === Range.Field ? this.allActive : targets;
+        let pp = 1;
         for (const poke of tr) {
           if (poke.hasAbility("pressure") && poke !== user) {
-            user.base.pp[moveIndex] = Math.max(0, user.base.pp[moveIndex] - 1);
+            pp++;
           }
         }
 
+        user.deductPP(moveIndex, pp);
         if (user.v.lastMoveIndex !== moveIndex) {
           user.v.rage = 1;
           user.v.furyCutter = 0;
@@ -848,12 +833,8 @@ export class Battle {
       if (move.snatch) {
         for (const snatcher of this.turnOrder) {
           if (!snatcher.v.fainted && snatcher.v.hasFlag(VF.snatch)) {
-            this.event({
-              type: "snatch",
-              src: snatcher.id,
-              target: user.id,
-              volatiles: [snatcher.clearFlag(VF.snatch)],
-            });
+            snatcher.v.clearFlag(VF.snatch);
+            this.event({type: "snatch", src: snatcher.id, target: user.id});
             // psych up targets the pokémon snatch stole from, even if its another snatch user
             // a snatched acupressure (only possible in gen 4) always targets the snatcher
             targets = move.range === Range.Adjacent ? [user] : [snatcher];
@@ -867,7 +848,8 @@ export class Battle {
         return this.info(user, "fail_generic");
       } else if (!targets.length) {
         user.v.charging = undefined;
-        this.sv([user.clearFlag(VF.charge)]);
+        user.v.clearFlag(VF.charge);
+        this.syncVolatiles();
         return this.info(user, "fail_notarget");
       }
 
@@ -902,7 +884,7 @@ export class Battle {
     return (this.gen.move.scripts[move.kind] as any).call(move, this, user, targets, moveIndex);
   }
 
-  callMove(move: Move, user: ActivePokemon, moveIndex?: number) {
+  callMove(move: Move, user: Battlemon, moveIndex?: number) {
     let targets = this.getTargets(user, move.range);
     if (!isSpreadMove(move.range) && targets.length) {
       targets = [this.rng.choice(targets)!];
@@ -910,7 +892,7 @@ export class Battle {
     return this.useMove(move, user, targets, moveIndex, false, true);
   }
 
-  tryMagicBounce(move: Move, user: ActivePokemon, target: ActivePokemon) {
+  tryMagicBounce(move: Move, user: Battlemon, target: Battlemon) {
     if (target.v.hasFlag(VF.magicCoat) && move.magicCoat) {
       this.event({type: "bounce", src: target.id, move: move.id!});
       this.useMove(move, target, [user], undefined, true, true);
@@ -919,7 +901,7 @@ export class Battle {
     return false;
   }
 
-  checkFaint(user: ActivePokemon, causedFaint = false) {
+  checkFaint(user: Battlemon, causedFaint = false) {
     const targets = this.opponentOf(user.owner).active;
     let fainted = false;
     for (const poke of targets) {

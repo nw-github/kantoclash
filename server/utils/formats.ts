@@ -7,7 +7,7 @@ import {
   type SpeciesId,
   abilityList,
 } from "~~/game/species";
-import {HP_TYPES, MC, statKeys, type Stats} from "~~/game/utils";
+import {DMF, HP_TYPES, MC, statKeys, type Stats} from "~~/game/utils";
 import {
   type Generation,
   GENERATION1,
@@ -59,6 +59,7 @@ export const getRandomPokemon = (
           itemData.laggingTail ||
           itemData.extendWeather ||
           itemData.reduceType ||
+          itemData.gem ||
           (itemData.statusOrb && poke.ability !== "guts")
         ) {
           return false;
@@ -76,6 +77,13 @@ export const getRandomPokemon = (
         ) {
           return false;
         } else if (item === "mysteryberry" && !poke.moves.some(m => gen.moveList[m].pp === 5)) {
+          return false;
+        } else if (
+          item === "gripclaw" &&
+          !poke.moves.some(
+            m => gen.moveList[m].kind === "damage" && gen.moveList[m].flag === DMF.trap,
+          )
+        ) {
           return false;
         }
 

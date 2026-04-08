@@ -1,10 +1,12 @@
 <template>
   <div>
-    <div v-if="players.get(myId).active.every(a => !a)" class="pb-2">Choose your lead</div>
+    <div v-if="players.get2(myId)!.active.every(a => !a.initialized)" class="pb-2">
+      Choose your lead
+    </div>
     <div v-else-if="currOptionPoke" class="pb-2 flex gap-1 items-center w-[90%]">
-      <BoxSprite :species-id="currOptionPoke.base.speciesId" :form="currOptionPoke.base.form" />
+      <BoxSprite :species-id="currOptionPoke.v.speciesId" :form="currOptionPoke.v.form" />
 
-      <span v-if="currOptionPoke.fainted">
+      <span v-if="currOptionPoke.v.fainted">
         Choose a Pokémon to replace
         <span v-if="localMode">
           <b>{{ players.get(myId).name }}</b
@@ -53,30 +55,30 @@
       </div>
 
       <div class="grid gap-1 sm:gap-2 grid-cols-2 h-min sm:w-1/2">
-        <template v-for="(poke, i) in players.get(opponent).active.toReversed()" :key="i">
+        <div v-if="players.get2(opponent)!.active.length < 2 && !isSingles"></div>
+        <template v-for="(poke, i) in players.get2(opponent)!.active.toReversed()" :key="i">
           <SwitchButton
             v-if="poke"
             :popover-disabled="true"
             :poke="poke.base"
             :button-disabled="
-              poke.fainted ||
-              !currTargets.includes(`${opponent}:${players.get(opponent).active.length - i - 1}`)
+              poke.v.fainted ||
+              !currTargets.includes(`${opponent}:${players.get2(opponent)!.active.length - i - 1}`)
             "
-            @click="selectTarget(`${opponent}:${players.get(opponent).active.length - i - 1}`)"
+            @click="selectTarget(`${opponent}:${players.get2(opponent)!.active.length - i - 1}`)"
           />
-          <div v-else></div>
         </template>
-        <template v-for="(poke, i) in players.get(myId).active" :key="i">
+        <template v-for="(poke, i) in players.get2(myId)!.active" :key="i">
           <SwitchButton
             v-if="poke"
             :popover-disabled="true"
             :active="true"
             :poke="poke.base"
-            :button-disabled="poke.fainted || !currTargets.includes(`${myId}:${i}`)"
+            :button-disabled="poke.v.fainted || !currTargets.includes(`${myId}:${i}`)"
             @click="selectTarget(`${myId}:${i}`)"
           />
-          <div v-else></div>
         </template>
+        <div v-if="players.get2(myId)!.active.length < 2 && !isSingles"></div>
       </div>
     </div>
     <div v-else-if="currOption" class="grid gap-2 sm:grid-cols-[1fr_1.5fr] h-min">
@@ -89,7 +91,7 @@
             :option
             :weather
             :user="currOptionPoke"
-            :opponent="players.get(opponent)!"
+            :opponent="players.get2(opponent)!"
             @click="selectMove(currOption, i)"
           />
         </template>
@@ -102,7 +104,7 @@
           :poke
           :weather
           :button-disabled="!isValidSwitch(currOption, i)"
-          :active="players.get(myId).active.some(p => p?.indexInTeam === i)"
+          :active="players.get2(myId)!.active.some(p => p.base === poke && p.initialized)"
           @click="selectSwitch(currOption, i)"
         />
       </div>
@@ -124,6 +126,7 @@ const {players, myId, options, opponent} = defineProps<{
   options?: Options[];
   weather?: Weather;
   localMode?: bool;
+  isSingles?: bool;
 }>();
 
 const choices = ref<[Options, Choice][]>([]);
@@ -134,7 +137,7 @@ const currTargets = computed(
   () => currOption.value?.moves[currMoveChoice.value?.moveIndex ?? -1]?.targets,
 );
 const currOptionPoke = computed(() => currOption.value?.id && players.poke(currOption.value.id));
-const team = computed(() => players.get(myId).team);
+const team = computed(() => players.get(myId).bp!.team);
 
 watch(
   () => options,
@@ -188,10 +191,10 @@ const cancelTarget = () => {
 };
 
 const choiceMessage = (i: number, choice: Choice, options: Options) => {
-  const self = players.get(myId);
+  const self = players.get2(myId)!;
   if (choice.type === "switch") {
     const active = self.active[choice.who];
-    if (active) {
+    if (active.initialized) {
       return `${active.base.name} will be replaced by ${team.value[choice.pokeIndex].name}`;
     } else {
       return `${team.value[choice.pokeIndex].name} will be sent out ${

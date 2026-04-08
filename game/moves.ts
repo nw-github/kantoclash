@@ -1,9 +1,21 @@
 import {rawMoveList} from "./data/moves";
-import {VF, MC, Range, stageKeys, idiv, stageStatKeys, HP_TYPES} from "./utils";
+import {
+  VF,
+  MC,
+  Range,
+  stageKeys,
+  idiv,
+  stageStatKeys,
+  HP_TYPES,
+  TypeMod,
+  DMF,
+  idiv1,
+  randChoiceWeighted,
+} from "./utils";
 import type {FailReason, InfoReason, RecoveryReason} from "./events";
 import type {Pokemon, Status} from "./pokemon";
 import type {StageId, Type, Weather, ScreenId, HazardId} from "./utils";
-import type {ActivePokemon, Battle} from "./battle";
+import type {Battlemon, Battle} from "./battle";
 
 export type MoveId = keyof typeof rawMoveList;
 export type MoveScriptId = (typeof rawMoveList)[MoveId]["kind"];
@@ -166,7 +178,7 @@ export interface DamagingMove extends BaseMove {
   readonly kind: "damage";
   readonly power: number;
   readonly category: MC.physical | MC.special;
-  readonly flag?: Flag;
+  readonly flag?: DMF;
   readonly effect?: [number, Effect] | [number, Effect, true];
   readonly effect2?: DamagingMove["effect"];
   /** Recoil: max(1 / recoil, 1) */
@@ -183,6 +195,10 @@ export interface DamagingMove extends BaseMove {
   readonly kingsRock?: bool;
   /** The amount of damage the move should do */
   readonly fixedDamage?: number;
+  /** Affected by Iron Fist */
+  readonly punch?: bool;
+  /** Removes a target's status if hit (Smelling Salt/Wake Up Slap) */
+  readonly clearTargetStatus?: Status;
 }
 
 interface NaturePowerMove extends BaseMove {
@@ -229,44 +245,6 @@ type Effect =
   | "tri_attack"
   | "knockoff";
 
-type Flag =
-  | "none"
-  | "high_crit"
-  | "drain"
-  | "explosion"
-  | "recharge"
-  | "crash"
-  | "double"
-  | "triple"
-  | "multi"
-  | "dream_eater"
-  | "bide"
-  | "payday"
-  | "multi_turn"
-  | "rage"
-  | "trap"
-  | "ohko"
-  | "uturn"
-  | "norand"
-  | "magnitude"
-  | "false_swipe"
-  | "rapid_spin"
-  | "fury_cutter"
-  | "rollout"
-  | "minimize"
-  | "present"
-  | "beatup"
-  | "facade"
-  | "remove_screens"
-  | "remove_protect"
-  | "smellingsalt"
-  | "spitup"
-  | "uproar"
-  | "revenge"
-  | "bugbite"
-  | "futuresight"
-  | "assurance";
-
 const createMoveList = (list: any) => {
   let idx = 0;
   for (const moveId in list) {
@@ -275,9 +253,21 @@ const createMoveList = (list: any) => {
     move.idx = idx++;
     move.range = Range[move.range];
     if (move.kind === "volatile") {
+      if (VF[move.flag] === undefined) {
+        console.log(`Move ${moveId} has invalid VF ${move.flag}`);
+      }
       move.flag = VF[move.flag];
     }
+    if (move.kind === "damage" && move.flag) {
+      if (DMF[move.flag] === undefined) {
+        console.log(`Move ${moveId} has invalid DMF ${move.flag}`);
+      }
+      move.flag = DMF[move.flag];
+    }
     if (move.category) {
+      if (MC[move.category] === undefined) {
+        console.log(`Move ${moveId} has invalid MC ${move.category}`);
+      }
       move.category = MC[move.category];
     }
   }
@@ -288,8 +278,8 @@ export const moveList = createMoveList(rawMoveList) as Record<MoveId, Move>;
 
 export type ScriptFn = (
   battle: Battle,
-  user: ActivePokemon,
-  targets: ActivePokemon[],
+  user: Battlemon,
+  targets: Battlemon[],
   indexInMoves?: number,
 ) => void;
 
@@ -303,14 +293,12 @@ export type MoveScripts = {
 type PR<V> = Partial<Record<MoveId, V>>;
 
 export type MovePropOverrides = {
-  dmg: PR<
-    (this: DamagingMove, battle: Battle, user: ActivePokemon, target: ActivePokemon) => number
-  >;
-  pow: PR<(this: DamagingMove, user: Pokemon, target: Pokemon) => number>;
+  dmg: PR<(this: DamagingMove, battle: Battle, user: Battlemon, target: Battlemon) => number>;
+  pow: PR<(this: DamagingMove, battle: Battle, user: Battlemon, target: Battlemon) => number>;
   acc: PR<(this: Move, weather: Weather | undefined) => number | undefined>;
   type: PR<(this: Move, user: Pokemon, weather: Weather | undefined) => Type>;
   dmgPreCheck: PR<
-    (this: DamagingMove, battle: Battle, user: ActivePokemon, targets: ActivePokemon[]) => bool
+    (this: DamagingMove, battle: Battle, user: Battlemon, targets: Battlemon[]) => bool
   >;
 };
 
@@ -325,7 +313,8 @@ export const moveScripts: MoveScripts = {
       console.error("Attempt to set invalid VolatileFlag value: " + this.flag);
       return battle.info(user, "fail_generic");
     }
-    return battle.info(user, key as InfoReason, [user.setFlag(this.flag)]);
+    user.v.setFlag(this.flag);
+    return battle.info(user, key as InfoReason);
   },
   confuse(battle, user, targets) {
     let failed = true;
@@ -358,7 +347,7 @@ export const moveScripts: MoveScripts = {
     }
   },
   recover(battle, user) {
-    const diff = user.base.stats.hp - user.base.hp;
+    const diff = user.base.maxHp - user.base.hp;
     if (diff === 0 || diff % 255 === 0) {
       return battle.info(user, "fail_generic");
     }
@@ -368,15 +357,12 @@ export const moveScripts: MoveScripts = {
         return battle.info(user, "fail_generic");
       }
 
-      user.base.status = "slp";
-      user.base.sleepTurns = 2;
-      if (user.hasAbility("earlybird")) {
-        user.base.sleepTurns--;
-      }
-      user.recover(diff, user, battle, this.why, true);
+      user.setStatusCondition("slp");
+      user.base.sleepTurns = user.hasAbility("earlybird") ? 1 : 2;
+      user.recover(diff, user, battle, this.why);
       // In gen 1, Rest doesn't reset the toxic counter or par/brn stat drops
     } else {
-      user.recover(Math.floor(user.base.stats.hp / 2), user, battle, this.why);
+      user.recover(idiv(user.base.maxHp, 2), user, battle, this.why);
     }
   },
   stage(battle, user, targets) {
@@ -403,9 +389,9 @@ export const moveScripts: MoveScripts = {
             battle.info(target, "immune");
             continue;
           } else if (
-            user.base.gender === target.base.gender ||
-            user.base.gender === "N" ||
-            target.base.gender === "N"
+            user.v.gender === target.v.gender ||
+            user.v.gender === "N" ||
+            target.v.gender === "N"
           ) {
             continue;
           }
@@ -425,14 +411,17 @@ export const moveScripts: MoveScripts = {
       return battle.info(user, "fail_generic");
     }
 
-    user.v.usedMinimize = user.v.usedMinimize || id === "minimize";
-    user.v.usedDefenseCurl = user.v.usedDefenseCurl || id === "defensecurl";
+    let flags = VF.none;
+    flags |= id === "minimize" ? VF.minimize : 0;
+    flags |= id === "defensecurl" ? VF.defenseCurl : 0;
+    user.v.setFlag(flags);
+    battle.syncVolatiles();
   },
   status(battle, user, [target]) {
     if (target.v.substitute && this.status !== "par" && this.status !== "slp") {
       return battle.info(target, "fail_generic");
     } else if (
-      (this.type === "electric" && battle.getEffectiveness(this.type, target) === 0) ||
+      (this.type === "electric" && battle.gen.getEffectiveness(this.type, target).immune()) ||
       (this.type === "poison" && target.v.types.includes("poison")) ||
       (this.type === "fire" && target.v.types.includes("fire"))
     ) {
@@ -455,25 +444,25 @@ export const moveScripts: MoveScripts = {
     const checkSuccess = battle.gen.move.overrides.dmgPreCheck[this.id!];
     if (checkSuccess && !checkSuccess.call(this, battle, user, targets)) {
       user.v.charging = undefined;
-      return battle.sv([user.clearFlag(VF.charge)]);
+      user.v.clearFlag(VF.charge);
+      return battle.syncVolatiles();
     }
 
     let power: number | undefined;
-    if (this.flag === "multi_turn" && !user.v.thrashing) {
+    if (this.flag === DMF.multi_turn && !user.v.thrashing) {
       // when called by sleep talk, thrashing moves don't lock the user in
       if (user.lastChosenMove !== battle.gen.moveList.sleeptalk) {
         user.v.thrashing = {move: this, turns: battle.gen.rng.thrashDuration(battle), max: false};
         user.v.thrashing.max = user.v.thrashing.turns === battle.gen.rng.maxThrash;
       }
-    } else if (this.flag === "rollout" && !user.v.thrashing) {
+    } else if (this.flag === DMF.rollout && !user.v.thrashing) {
       if (user.lastChosenMove !== battle.gen.moveList.sleeptalk) {
         user.v.thrashing = {move: this, turns: 5, max: false};
       }
-    } else if (this.flag === "fury_cutter") {
-      user.v.furyCutter++;
-    } else if (this.flag === "bide") {
+    } else if (this.id === "bide") {
       if (!user.v.bide) {
         user.v.bide = {move: this, turns: battle.gen.rng.bideDuration(battle), dmg: 0};
+        battle.info(user, "bide_store");
         return;
       }
 
@@ -483,35 +472,19 @@ export const moveScripts: MoveScripts = {
       }
 
       battle.info(user, "bide");
-    } else if (this.flag === "magnitude") {
+    } else if (this.id === "magnitude") {
       const magnitude = battle.rng.int(4, 10);
       power = [10, 30, 50, 70, 90, 110, 150][magnitude - 4];
       battle.event({type: "magnitude", magnitude});
-    } else if (this.flag === "futuresight") {
+    } else if (this.flag === DMF.futuresight) {
       const [target] = targets;
       if (target.futureSight) {
         return battle.info(user, "fail_generic");
       }
 
-      const spc = battle.gen.isSpecial(this);
-      const [atk, def] = battle.gen.getDamageVariables(spc, battle, user, target, false);
-      const damage = battle.gen.calcDamage({
-        atk,
-        def,
-        pow: this.power,
-        lvl: user.base.level,
-        eff: 1,
-        isCrit: false,
-        hasStab: false,
-        rand: battle.rng,
-      });
-      target.futureSight = {damage, turns: 3, move: this};
-      return battle.event({
-        type: "futuresight",
-        src: user.id,
-        move: this.id!,
-        release: false,
-      });
+      const {dmg} = battle.gen.getDamage({user, target, battle, move: this, isCrit: false});
+      target.futureSight = {damage: dmg, turns: 3, move: this, user};
+      return battle.event({type: "futuresight", src: user.id, move: this.id!, release: false});
     }
 
     if (this.range === Range.Self) {
@@ -556,10 +529,11 @@ export const moveScripts: MoveScripts = {
       }
     }
 
+    user.v.clearFlag(VF.charge);
     user.handleShellBell(battle, dealt);
-    battle.sv([user.clearFlag(VF.charge)]);
+    battle.syncVolatiles();
 
-    if (this.flag === "bide") {
+    if (this.id === "bide") {
       user.v.bide = undefined;
     } else if (user.v.inBatonPass) {
       battle.checkFaint(user);
@@ -580,20 +554,11 @@ export const moveScripts: MoveScripts = {
     }
 
     user.owner.screens[this.screen] = this.turns ?? 5;
-    battle.event({
-      type: "screen",
-      screen: this.screen,
-      kind: "start",
-      user: user.owner.id,
-      volatiles:
-        this.screen === "tailwind"
-          ? user.owner.active.map(p => ({id: p.id, v: {stats: p.clientStats(battle)}}))
-          : undefined,
-    });
+    battle.event({type: "screen", screen: this.screen, kind: "start", user: user.owner.id});
   },
   phaze(battle, user, [target]) {
     const next = battle.rng.choice(
-      target.owner.team.filter(p => p.hp && target.owner.active.every(a => p !== a.base.real)),
+      target.owner.team.filter(p => p.hp && target.owner.active.every(a => p !== a.base)),
     );
     if (!next || !target.choice?.executed) {
       return battle.info(user, "fail_generic");
@@ -621,11 +586,11 @@ export const moveScripts: MoveScripts = {
     }
 
     user.v.protectCount++;
-    if (!this.endure) {
-      battle.info(user, "protect", [user.setFlag(VF.protect)]);
-    } else {
-      battle.info(user, "endure", [user.setFlag(VF.endure)]);
-    }
+    const [flag, msg] = this.endure
+      ? ([VF.endure, "endure"] as const)
+      : ([VF.protect, "protect"] as const);
+    user.v.setFlag(flag);
+    battle.info(user, msg);
   },
   noSwitch(battle, user, [target]) {
     if (target.v.meanLook) {
@@ -635,7 +600,7 @@ export const moveScripts: MoveScripts = {
     }
 
     target.v.meanLook = user;
-    battle.info(target, "meanlook", [{id: target.id, v: {flags: target.v.cflags}}]);
+    battle.info(target, "meanlook");
   },
   lockOn(battle, user, [target]) {
     if (target.v.substitute) {
@@ -644,12 +609,8 @@ export const moveScripts: MoveScripts = {
       return;
     }
 
-    battle.event({
-      type: "lock_on",
-      src: user.id,
-      target: target.id,
-      volatiles: [target.setFlag(VF.lockon)],
-    });
+    target.v.setFlag(VF.lockon);
+    battle.event({type: "lock_on", src: user.id, target: target.id});
   },
   healbell(battle, user) {
     battle.info(user, this.why);
@@ -666,7 +627,7 @@ export const moveScripts: MoveScripts = {
     for (const poke of user.owner.team) {
       if (this.sound && poke.ability === "soundproof") {
         continue;
-      } else if (user.owner.active.some(p => p.base.real === poke)) {
+      } else if (user.owner.active.some(p => p.base === poke)) {
         continue;
       }
 
@@ -704,12 +665,7 @@ export const moveScripts: MoveScripts = {
     }
 
     target.v.identified = this;
-    battle.event({
-      type: "foresight",
-      src: user.id,
-      target: target.id,
-      volatiles: [{id: target.id, v: {flags: target.v.cflags}}],
-    });
+    battle.event({type: "foresight", src: user.id, target: target.id});
   },
   trick(battle, user, [target]) {
     if (target.v.substitute) {
@@ -758,14 +714,10 @@ export const moveScripts: MoveScripts = {
     for (const stat of this.stats) {
       [user.v.stages[stat], target.v.stages[stat]] = [target.v.stages[stat], user.v.stages[stat]];
     }
-    battle.info(
-      user,
-      this.message,
-      [user, target].map(t => ({id: t.id, v: t.getClientVolatiles(battle)})),
-    );
+    battle.info(user, this.message);
   },
   hwish(battle, user) {
-    if (!user.owner.team.some(p => p.hp && user.owner.active.every(a => p !== a.base.real))) {
+    if (!user.owner.team.some(p => p.hp && user.owner.active.every(a => p !== a.base))) {
       return battle.info(user, "fail_generic");
     }
 
@@ -778,13 +730,7 @@ export const moveScripts: MoveScripts = {
   // Individual move functions
   conversion(battle, user, [target]) {
     user.v.types = [...target.v.types];
-    battle.event({
-      type: "conversion",
-      src: user.id,
-      target: target.id,
-      types: [...user.v.types],
-      volatiles: [{id: user.id, v: {types: [...user.v.types]}}],
-    });
+    battle.event({type: "conversion", src: user.id, target: target.id, types: [...user.v.types]});
   },
   disable(battle, user, [target]) {
     battle.gen1LastDamage = 0;
@@ -801,12 +747,7 @@ export const moveScripts: MoveScripts = {
 
     const indexInMoves = battle.rng.choice(options)!;
     target.v.disabled = {indexInMoves, turns: battle.gen.rng.disableTurns(battle)};
-    battle.event({
-      type: "disable",
-      src: target.id,
-      move: target.base.moves[indexInMoves],
-      volatiles: [{id: target.id, v: {flags: target.v.cflags}}],
-    });
+    battle.event({type: "disable", src: target.id, move: target.base.moves[indexInMoves]});
     target.handleRage(battle);
   },
   haze(battle, user, targets) {
@@ -819,7 +760,7 @@ export const moveScripts: MoveScripts = {
       target.v.confusion = 0;
       target.v.disabled = undefined;
       target.v.seededBy = undefined;
-      target.v.stats = {...target.base.stats};
+      target.v.stats = {...target.v.baseStats};
       if (target === user) {
         continue;
       }
@@ -829,18 +770,14 @@ export const moveScripts: MoveScripts = {
         target.v.hazed = true;
       }
 
-      target.base.status = undefined;
+      target.setStatusCondition(undefined);
     }
 
     if (user.base.status === "tox") {
-      user.base.status = "psn";
+      user.setStatusCondition("psn");
     }
 
-    battle.info(
-      user,
-      "haze",
-      targets.map(t => ({id: t.id, v: t.getClientVolatiles(battle)})),
-    );
+    battle.info(user, "haze");
   },
   leechseed(battle, user, [target]) {
     if (target.v.types.includes("grass")) {
@@ -854,7 +791,7 @@ export const moveScripts: MoveScripts = {
     }
 
     target.v.seededBy = user;
-    battle.info(target, "seeded", [{id: target.id, v: {flags: target.v.cflags}}]);
+    battle.info(target, "seeded");
   },
   metronome(battle, user) {
     battle.gen1LastDamage = 0;
@@ -885,7 +822,7 @@ export const moveScripts: MoveScripts = {
   mirrormove(battle, user) {
     battle.gen1LastDamage = 0;
     const lastHitBy = user.v.lastHitBy;
-    if (user.base.transformed && battle.gen.id === 2) {
+    if (user.v.transformed && battle.gen.id === 2) {
       return battle.info(user, "fail_generic");
     } else if (!lastHitBy || lastHitBy.poke.v.lastMove !== lastHitBy.move) {
       return battle.info(user, "fail_generic");
@@ -893,7 +830,7 @@ export const moveScripts: MoveScripts = {
     return battle.callMove(lastHitBy.move, user);
   },
   substitute(battle, user) {
-    const hp = Math.floor(user.base.stats.hp / 4);
+    const hp = idiv(user.base.maxHp, 4);
     if (user.v.substitute) {
       return battle.info(user, "has_substitute");
     } else if (hp > user.base.hp) {
@@ -902,9 +839,7 @@ export const moveScripts: MoveScripts = {
     }
 
     user.v.substitute = hp + 1;
-    user.damage(hp, user, battle, false, "substitute", true, undefined, [
-      {id: user.id, v: {flags: user.v.cflags}},
-    ]);
+    user.damage(hp, user, battle, false, "substitute", true, undefined);
   },
   transform(battle, user, [target]) {
     battle.gen1LastDamage = 0;
@@ -915,9 +850,9 @@ export const moveScripts: MoveScripts = {
       battle.ability(target);
       return battle.info(target, "immune");
     } else if (
-      user.base.gender === "N" ||
-      target.base.gender === "N" ||
-      user.base.gender === target.base.gender ||
+      user.v.gender === "N" ||
+      target.v.gender === "N" ||
+      user.v.gender === target.v.gender ||
       target.v.attract
     ) {
       battle.info(user, "fail_generic");
@@ -927,7 +862,7 @@ export const moveScripts: MoveScripts = {
     }
 
     target.v.attract = user;
-    battle.info(target, "attract", [{id: target.id, v: {flags: target.v.cflags}}]);
+    battle.info(target, "attract");
   },
   batonpass(battle, user) {
     if (!user.canBatonPass()) {
@@ -943,33 +878,23 @@ export const moveScripts: MoveScripts = {
       return;
     }
 
-    const dmg = idiv(user.base.stats.hp, 2);
+    const dmg = idiv(user.base.maxHp, 2);
     if (user.base.hp < dmg) {
       battle.info(user, "fail_generic");
 
       if (battle.gen.id <= 2) {
-        battle.event({
-          type: "bug",
-          bug: "bug_gen2_bellydrum",
-          volatiles: user.setStage("atk", Math.min(user.v.stages.atk + 2, 6), battle, false),
-        });
+        user.setStage("atk", Math.min(user.v.stages.atk + 2, 6), battle, false);
+        battle.event({type: "bug", bug: "bug_gen2_bellydrum"});
       }
       return;
     }
 
-    user.damage(
-      dmg,
-      user,
-      battle,
-      false,
-      "belly_drum",
-      true,
-      undefined,
-      user.setStage("atk", +6, battle, false),
-    );
+    user.setStage("atk", +6, battle, false);
+    user.damage(dmg, user, battle, false, "belly_drum", true, undefined);
   },
   conversion2(battle, user) {
-    let lastType = user.v.lastHitBy?.move?.type;
+    // Conversion2 takes type changes like Hidden Power into account
+    let lastType = user.v.lastHitBy?.type;
     if (!lastType) {
       return battle.info(user, "fail_generic");
     }
@@ -978,17 +903,11 @@ export const moveScripts: MoveScripts = {
       lastType = "normal";
     }
 
-    const types = (Object.keys(battle.gen.typeChart) as Type[]).filter(type => {
-      return (battle.gen.typeChart[lastType][type] ?? 1) < 1;
+    const types = battle.gen.typeMatchupTable.filter(([atk, , mod]) => {
+      return atk === lastType && mod < TypeMod.EFFECTIVE;
     });
-
-    const v = user.setVolatile("types", [battle.rng.choice(types)!]);
-    battle.event({
-      type: "conversion",
-      src: user.id,
-      types: [...user.v.types],
-      volatiles: [v],
-    });
+    user.v.types = [battle.rng.choice(types)![1]];
+    battle.event({type: "conversion", src: user.id, types: [...user.v.types]});
   },
   curse(battle, user, [target]) {
     if (!user.v.types.includes("ghost")) {
@@ -1014,16 +933,8 @@ export const moveScripts: MoveScripts = {
         return;
       }
 
-      user.damage(
-        idiv(user.base.stats.hp, 2),
-        target,
-        battle,
-        false,
-        "set_curse",
-        true,
-        undefined,
-        [target.setFlag(VF.curse)],
-      );
+      target.v.setFlag(VF.curse);
+      user.damage(idiv(user.base.maxHp, 2), target, battle, false, "set_curse", true);
     }
   },
   encore(battle, user, [target]) {
@@ -1039,7 +950,7 @@ export const moveScripts: MoveScripts = {
     }
 
     target.v.encore = {indexInMoves: target.v.lastMoveIndex, turns: battle.rng.int(2, 6) + 1};
-    battle.info(target, "encore", [{id: target.id, v: {flags: target.v.cflags}}]);
+    battle.info(target, "encore");
   },
   nightmare(battle, user, [target]) {
     if (target.v.hasFlag(VF.nightmare) || target.base.status !== "slp") {
@@ -1048,7 +959,8 @@ export const moveScripts: MoveScripts = {
       return;
     }
 
-    battle.info(target, "nightmare", [target.setFlag(VF.nightmare)]);
+    target.v.setFlag(VF.nightmare);
+    battle.info(target, "nightmare");
   },
   painsplit(battle, user, [target]) {
     if (target.v.substitute) {
@@ -1087,11 +999,7 @@ export const moveScripts: MoveScripts = {
         poke.v.perishCount = 4;
       }
     }
-    battle.info(
-      user,
-      "perish_song",
-      targets.map(poke => ({id: poke.id, v: {perishCount: poke.v.perishCount}})),
-    );
+    battle.info(user, "perish_song");
   },
   psychup(battle, user, [target]) {
     if (Object.values(target.v.stages).every(v => v === 0)) {
@@ -1102,14 +1010,9 @@ export const moveScripts: MoveScripts = {
 
     user.v.stages = {...target.v.stages};
     for (const stat of stageStatKeys) {
-      user.recalculateStat(battle, stat, false);
+      battle.gen.recalculateStat(user, battle, stat, false);
     }
-    battle.event({
-      type: "psych_up",
-      src: user.id,
-      target: target.id,
-      volatiles: [{id: user.id, v: {stats: user.clientStats(battle), stages: {...user.v.stages}}}],
-    });
+    battle.event({type: "psych_up", src: user.id, target: target.id});
   },
   sketch(battle, user, [target], moveIndex) {
     if (!battle.checkAccuracy(this, user, target)) {
@@ -1144,7 +1047,7 @@ export const moveScripts: MoveScripts = {
 
     user.base.moves[moveIndex] = id;
     user.base.pp[moveIndex] = battle.gen.getMaxPP(target.v.lastMove);
-    battle.event({type: "sketch", src: user.id, move: id});
+    battle.event({type: "sketch", src: user.id, move: id, moveIndex});
   },
   sleeptalk(battle, user) {
     const m = battle.rng.choice(
@@ -1183,7 +1086,7 @@ export const moveScripts: MoveScripts = {
   },
   assist(battle, user) {
     const moves = user.owner.team
-      .flatMap(p => (p !== user.base.real ? p.moves : []))
+      .flatMap(p => (p !== user.base ? p.moves : []))
       .map(move => battle.gen.moveList[move])
       .filter(move => !move.noAssist);
     const move = battle.rng.choice(moves);
@@ -1193,27 +1096,20 @@ export const moveScripts: MoveScripts = {
     return battle.callMove(move, user);
   },
   camouflage(battle, user) {
-    battle.event({
-      type: "conversion",
-      types: [this.camouflageType],
-      src: user.id,
-      volatiles: [user.setVolatile("types", [this.camouflageType])],
-    });
+    user.v.types = [this.camouflageType];
+    battle.event({type: "conversion", types: [this.camouflageType], src: user.id});
   },
   charge(battle, user) {
-    battle.info(user, "charge", [user.setFlag(VF.charge)]);
+    user.v.setFlag(VF.charge);
+    battle.info(user, "charge");
   },
   helpinghand(battle, user, [target]) {
     if (target.choice?.executed) {
       return battle.info(user, "fail_generic");
     }
 
-    battle.event({
-      type: "helping_hand",
-      src: user.id,
-      target: target.id,
-      volatiles: [target.setFlag(VF.helpingHand)],
-    });
+    target.v.setFlag(VF.helpingHand);
+    battle.event({type: "helping_hand", src: user.id, target: target.id});
   },
   imprison(battle, user) {
     const moves = new Set(user.moveset());
@@ -1225,7 +1121,8 @@ export const moveScripts: MoveScripts = {
       return battle.info(user, "fail_generic");
     }
 
-    return battle.info(user, "imprisoning", [user.setFlag(VF.imprisoning)]);
+    user.v.setFlag(VF.imprisoning);
+    return battle.info(user, "imprisoning");
   },
   memento(battle, user, [target]) {
     let faint = true;
@@ -1270,14 +1167,8 @@ export const moveScripts: MoveScripts = {
       return;
     }
 
-    const v = user.setVolatile("ability", target.v.ability);
-    battle.event({
-      type: "copy_ability",
-      src: user.id,
-      target: target.id,
-      ability: user.v.ability!,
-      volatiles: [v],
-    });
+    user.v.ability = target.v.ability;
+    battle.event({type: "copy_ability", src: user.id, target: target.id, ability: user.v.ability!});
   },
   skillswap(battle, user, [target]) {
     if (target.hasAbility("multitype") || user.hasAbility("multitype")) {
@@ -1290,15 +1181,7 @@ export const moveScripts: MoveScripts = {
     user.v.ability = target.v.ability;
     target.v.ability = mine;
     // skill swap doesn't reveal the abilities until Gen V
-    battle.event({
-      type: "skill_swap",
-      src: user.id,
-      target: target.id,
-      volatiles: [
-        {id: user.id, v: {ability: null}},
-        {id: target.id, v: {ability: null}},
-      ],
-    });
+    battle.event({type: "skill_swap", src: user.id, target: target.id});
   },
   stockpile(battle, user) {
     if (user.v.stockpile === 3) {
@@ -1306,12 +1189,7 @@ export const moveScripts: MoveScripts = {
     }
 
     user.v.stockpile++;
-    battle.event({
-      type: "stockpile",
-      src: user.id,
-      count: user.v.stockpile,
-      volatiles: [{id: user.id, v: {stockpile: user.v.stockpile}}],
-    });
+    battle.event({type: "stockpile", src: user.id, count: user.v.stockpile});
   },
   swallow(battle, user) {
     if (!user.v.stockpile) {
@@ -1319,8 +1197,9 @@ export const moveScripts: MoveScripts = {
     }
 
     const d = {3: 1, 2: 2, 1: 4}[user.v.stockpile] ?? 4;
-    user.recover(Math.max(1, idiv(user.base.stats.hp, d)), user, battle, "recover");
-    battle.sv([user.setVolatile("stockpile", 0)]);
+    user.v.stockpile = 0;
+    user.recover(idiv1(user.base.maxHp, d), user, battle, "recover");
+    battle.syncVolatiles();
   },
   taunt(battle, user, [target]) {
     if (target.v.tauntTurns) {
@@ -1330,7 +1209,7 @@ export const moveScripts: MoveScripts = {
     }
 
     target.v.tauntTurns = 2 + 1;
-    battle.info(target, "taunt", [{id: target.id, v: {flags: target.v.cflags}}]);
+    battle.info(target, "taunt");
   },
   torment(battle, user, [target]) {
     if (target.v.hasFlag(VF.torment)) {
@@ -1339,7 +1218,8 @@ export const moveScripts: MoveScripts = {
       return;
     }
 
-    battle.info(target, "torment", [target.setFlag(VF.torment)]);
+    target.v.setFlag(VF.torment);
+    battle.info(target, "torment");
   },
   wish(battle, user) {
     if (user.wish) {
@@ -1362,7 +1242,7 @@ export const moveScripts: MoveScripts = {
     }
 
     target.v.drowsy = 2;
-    battle.info(target, "drowsy", [{id: target.id, v: {flags: target.v.cflags}}]);
+    battle.info(target, "drowsy");
   },
   acupressure(battle, user, [target]) {
     if (target.v.substitute) {
@@ -1386,46 +1266,55 @@ export const moveScripts: MoveScripts = {
       return battle.info(target, "immune");
     }
 
-    return battle.info(target, "gastroAcid", [target.setFlag(VF.gastroAcid)]);
+    target.v.setFlag(VF.gastroAcid);
+    return battle.info(target, "gastroAcid");
+  },
+  roost(battle, user) {
+    if (user.base.maxHp === user.base.hp) {
+      return battle.info(user, "fail_generic");
+    }
+
+    user.v.setFlag(VF.roost);
+    user.recover(idiv1(user.base.maxHp, 2), user, battle, "recover");
   },
 };
 
 export const moveOverrides: MovePropOverrides = {
   pow: {
+    present: battle => randChoiceWeighted(battle.rng, [40, 80, 120, -1], [40, 30, 10, 20]),
     // Gen III
     flail: getFlailPower,
-    frustration: user => idiv(255 - user.friendship, 2.5),
-    hiddenpower({ivs: dvs}) {
-      const msb = (dv?: number) => +(((dv ?? 15) & (1 << 3)) !== 0);
+    frustration: (_, user) => idiv(255 - user.base.friendship, 2.5),
+    hiddenpower(_, {base: {ivs: dvs}}) {
+      const msb = (dv: number) => +((dv & (1 << 3)) !== 0);
 
       const x = msb(dvs.spa) | (msb(dvs.spe) << 1) | (msb(dvs.def) << 2) | (msb(dvs.atk) << 3);
       const y = (dvs.spa ?? 15) & 0b11;
       return idiv(5 * x + y, 2) + 31;
     },
-    return: user => idiv(user.friendship, 2.5),
+    return: (_, user) => idiv(user.base.friendship, 2.5),
     reversal: getFlailPower,
-    eruption: user => Math.max(1, Math.floor((user.hp * 150) / user.stats.hp)),
-    waterspout: user => Math.max(1, Math.floor((user.hp * 150) / user.stats.hp)),
+    eruption: getHPFalloffPower,
+    waterspout: getHPFalloffPower,
     // Gen IV
     crushgrip: getCrushGripPower,
-    grassknot: (_user, target) => getLowKickPower(target.species.weight),
+    grassknot: (_user, target) => getLowKickPower(target.v.species.weight),
     wringout: getCrushGripPower,
     // Gen V
-    acrobatics(user) {
-      return !user.itemId ? this.power * 2 : this.power;
+    acrobatics(_, user) {
+      return !user.base.itemId ? this.power << 1 : this.power;
     },
-    brine(_user, target) {
-      return target.belowHp(2) ? this.power * 2 : this.power;
-    },
-    hex(_, target) {
-      return target.status ? this.power * 2 : this.power;
-    },
-    venoshock(_user, target) {
-      return target.status === "psn" || target.status === "tox" ? this.power * 2 : this.power;
+    hex(_battle, _user, target) {
+      return target.base.status ? this.power << 1 : this.power;
     },
   },
   dmg: {
-    bide: (_, user) => (user.v.bide?.dmg ?? 0) * 2,
+    bide: (_, user) => {
+      // Bide doesn't have an overflow check
+      // https://github.com/pret/pokered/blob/fbcf7d0e19a3a2db505440d3ccd3d40ca996c15c/engine/battle/core.asm#L5878
+      // https://github.com/pret/pokered/blob/fbcf7d0e19a3a2db505440d3ccd3d40ca996c15c/engine/battle/core.asm#L3503
+      return ((user.v.bide?.dmg ?? 0) << 1) & 0xffff;
+    },
     counter(battle, _, target) {
       // https://www.youtube.com/watch?v=ftTalHMjPRY
       //  On cartrige, the move counter uses is updated whenever a player hovers over a move (even
@@ -1444,18 +1333,25 @@ export const moveOverrides: MovePropOverrides = {
       } else if (target.choice?.move === this) {
         return 0;
       }
-      // Counter can crit, but it won't do any more damage
-      return battle.gen1LastDamage * 2;
+      // Counter checks for an overflow and sets the damage to 0xffff in that case
+      return Math.min(battle.gen1LastDamage << 1, 0xffff);
     },
     nightshade: (_, user) => user.base.level,
     psywave(battle, user) {
-      // psywave has a desync glitch that we don't emulate
-      return battle.rng.int(1, Math.max(Math.floor(user.base.level * 1.5 - 1), 1));
+      // Psywave generates a random number between 1 and Level * 1.5 exclusive for the player,
+      // and 0 and level * 1.5 exclusive for the enemy. This can cause a desync, so we
+      // just always use [1, level * 1.5).
+      const upperBound = Math.max(1, user.base.level + (user.base.level >> 1));
+      return battle.rng.int(1, upperBound);
     },
     seismictoss: (_, user) => user.base.level,
-    superfang: (_battle, _, target) => Math.max(Math.floor(target.base.hp / 2), 1),
-    mirrorcoat(_battle, user) {
-      return !user.v.lastHitBy || !user.v.lastHitBy.special ? 0 : user.v.retaliateDamage * 2;
+    superfang: (_battle, _, target) => Math.max(target.base.hp >> 1, 1),
+    mirrorcoat(battle, user) {
+      const lastHit = user.v.lastHitBy;
+      if (!lastHit || !battle.gen.isSpecial(lastHit.move, lastHit.type, true)) {
+        return 0;
+      }
+      return Math.min(user.v.retaliateDamage << 1, 0xffff);
     },
     endeavor: (_, user, target) => Math.max(0, target.base.hp - user.base.hp),
   },
@@ -1509,8 +1405,8 @@ export const moveOverrides: MovePropOverrides = {
   },
 };
 
-function getFlailPower(user: Pokemon) {
-  const percent = user.hpPercent;
+function getFlailPower(_: Battle, user: Battlemon) {
+  const percent = user.base.hpPercent;
   if (percent >= 68.8) {
     return 20;
   } else if (percent >= 35.4) {
@@ -1526,8 +1422,12 @@ function getFlailPower(user: Pokemon) {
   }
 }
 
-function getCrushGripPower(_user: Pokemon, target?: Pokemon) {
-  return target ? 1 + Math.floor(120 * (target.hp / target.stats.hp)) : 0;
+function getHPFalloffPower(this: DamagingMove, _battle: Battle, user: Battlemon) {
+  return idiv1(this.power * user.base.hp, user.base.maxHp);
+}
+
+function getCrushGripPower(_battle: Battle, _user: Battlemon, target: Battlemon) {
+  return 1 + idiv(target.base.hp * 120, target.base.maxHp);
 }
 
 export function getLowKickPower(weight: number): number {

@@ -4,7 +4,7 @@
     ref="battle"
     :options
     :my-id
-    :players
+    :mgr
     :events
     :chats
     :finished
@@ -25,7 +25,7 @@ import type {PlayerParams, BattleRecipe, Choice, InfoRecord} from "~~/server/gam
 
 const {recipe: battleParams} = defineProps<{recipe: BattleRecipe}>();
 
-const players = reactive(new Players());
+const mgr = reactive(new ClientManager(GENERATIONS[1]!)) as ClientManager;
 const events = ref<BattleEvent[]>([]);
 const options = reactive<Partial<Record<number, Options[]>>>({});
 const chats = reactive<InfoRecord>({});
@@ -41,10 +41,10 @@ let engine: BattleEngine;
 
 onMounted(() => {
   const loadNames = async () => {
-    for (const player in players.items) {
+    for (const player in mgr.players.items) {
       try {
         const {name} = await $fetch(`/api/users/${player}`);
-        players.get(player).name = name;
+        mgr.players.get(player).name = name;
       } catch {
         continue;
       }
@@ -56,17 +56,13 @@ onMounted(() => {
   }
 
   for (const player of [battleParams.player1, battleParams.player2]) {
-    players.add(player.id, {
+    const pl = mgr.players.add({
+      id: player.id,
       name: `#ID${player.id}`,
-      isSpectator: false,
       nPokemon: player.team.length,
-      nFainted: 0,
-      connected: false,
-      active: Array(formatInfo[battleParams.format].doubles ? 2 : 1).fill(undefined),
-      teamDesc: player.team,
-      team: [],
-      admin: false,
     });
+    pl.connected = false;
+    pl.teamDesc = player.team;
   }
 
   loadNames();
@@ -83,12 +79,12 @@ const makeChoice = (playerId: string, choice: Choice) => {
         return false;
       case "move":
         if (!player.chooseMove(choice.who, engine, choice.moveIndex, choice.target)) {
-          console.log(`Player ${players.get(player.id).name}: Choice failed: `, {...choice});
+          console.log(`Player ${mgr.players.get(player.id).name}: Choice failed: `, {...choice});
         }
         break;
       case "switch":
         if (!player.chooseSwitch(choice.who, engine, choice.pokeIndex)) {
-          console.log(`Player ${players.get(player.id).name}: Choice failed: `, {...choice});
+          console.log(`Player ${mgr.players.get(player.id).name}: Choice failed: `, {...choice});
         }
         break;
     }

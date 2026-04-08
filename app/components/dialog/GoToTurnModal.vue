@@ -1,7 +1,7 @@
 <template>
   <UModal title="Go to turn...">
     <template #body>
-      <UInputNumber v-model="turn" :min="0" :max class="w-full" />
+      <UInputNumber v-model="turn" :min="0" :max autofocus class="w-full" />
     </template>
 
     <template #footer>

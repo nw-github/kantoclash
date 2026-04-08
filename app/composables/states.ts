@@ -56,7 +56,9 @@ export const useIgnoreChallenges = () => useLocalStorage<bool>("ignoreChallenges
 
 export const useAutoMuteMusic = () => useLocalStorage<bool>("autoMuteMusic", false);
 
-export const useChallenges = () => useState<Challenge[]>("challenges", () => []);
+const challenges = ref<Challenge[]>([]);
+
+export const useChallenges = () => challenges;
 
 const touchFocus = ref<any>();
 

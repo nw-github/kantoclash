@@ -1,7 +1,7 @@
 import type {MoveId, Move} from "~~/game/moves";
-import {abilityList, type Species, type SpeciesId} from "~~/game/species";
+import {abilityList, speciesList, type Species, type SpeciesId} from "~~/game/species";
 import {HP_TYPES, statKeys, type StatId, type Stats, type Type} from "~~/game/utils";
-import {Nature, Pokemon, type PokemonDesc} from "~~/game/pokemon";
+import {Nature, Pokemon, type FormId, type Gender, type PokemonDesc} from "~~/game/pokemon";
 import {GENERATIONS, type Generation} from "~~/game/gen";
 
 import {battleFormats, formatInfo, type FormatId} from "./shared";
@@ -332,4 +332,38 @@ export const ivsToDvs = (gen: Generation, ivs: Partial<Stats>) => {
     dvs[stat as StatId] = ivToDv(ivs[stat as StatId]);
   }
   return dvs;
+};
+
+export const gen1Gender: Partial<Record<SpeciesId, Gender>> = {
+  nidoranf: "F",
+  nidoranm: "M",
+};
+
+export const getSpritePath = (
+  speciesId: string | undefined,
+  female?: bool,
+  shiny?: bool,
+  back?: bool,
+  form?: FormId,
+) => {
+  if (!speciesId || !(speciesId in speciesList)) {
+    return `/sprites/battle/unknown.png`;
+  }
+
+  const sp = speciesList[speciesId as SpeciesId];
+  let id = sp.sprite ?? String(sp.dexId);
+  if (form) {
+    id += `-${form}`;
+  }
+
+  let extra = shiny ? "shiny/" : "";
+  if (female && femaleIds.has(id)) {
+    extra += "female/";
+  }
+
+  if (!back) {
+    return `/sprites/battle/${extra}${id}.gif`;
+  } else {
+    return `/sprites/battle/back/${extra}${id}.gif`;
+  }
 };

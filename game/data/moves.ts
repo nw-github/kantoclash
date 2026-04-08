@@ -20,7 +20,7 @@ export const rawMoveList = {
     category: "special",
     power: 40,
     acc: 100,
-    effect: [33.21, [["spa", -1]]],
+    effect: [33, [["spa", -1]]],
   },
   acidarmor: {
     kind: "stage",
@@ -58,7 +58,7 @@ export const rawMoveList = {
     category: "special",
     power: 65,
     acc: 100,
-    effect: [33.21, [["atk", -1]]],
+    effect: [33, [["atk", -1]]],
   },
   barrage: {
     kind: "damage",
@@ -91,7 +91,6 @@ export const rawMoveList = {
     power: 0,
     noSleepTalk: true,
     kingsRock: true,
-    flag: "bide",
     contact: true,
   },
   bind: {
@@ -115,7 +114,7 @@ export const rawMoveList = {
     category: "physical",
     power: 85,
     acc: 100,
-    effect: [30.1, "par"],
+    effect: [30, "par"],
     contact: true,
   },
   bonemerang: {
@@ -139,7 +138,7 @@ export const rawMoveList = {
     category: "special",
     power: 20,
     acc: 100,
-    effect: [33.21, [["spe", -1]]],
+    effect: [33, [["spe", -1]]],
   },
   bubblebeam: {
     kind: "damage",
@@ -150,7 +149,7 @@ export const rawMoveList = {
     category: "special",
     power: 65,
     acc: 100,
-    effect: [33.21, [["spe", -1]]],
+    effect: [33, [["spe", -1]]],
   },
   bite: {
     kind: "damage",
@@ -161,7 +160,7 @@ export const rawMoveList = {
     category: "physical",
     power: 60,
     acc: 100,
-    effect: [10.2, "flinch"],
+    effect: [10, "flinch"],
     contact: true,
   },
   blizzard: {
@@ -173,7 +172,7 @@ export const rawMoveList = {
     category: "special",
     power: 120,
     acc: 90,
-    effect: [10.2, "frz"],
+    effect: [10, "frz"],
   },
   boneclub: {
     kind: "damage",
@@ -184,7 +183,7 @@ export const rawMoveList = {
     category: "physical",
     power: 65,
     acc: 85,
-    effect: [10.2, "flinch"],
+    effect: [10, "flinch"],
   },
   clamp: {
     kind: "damage",
@@ -210,6 +209,7 @@ export const rawMoveList = {
     flag: "multi",
     kingsRock: true,
     contact: true,
+    punch: true,
   },
   confuseray: {
     kind: "confuse",
@@ -240,7 +240,7 @@ export const rawMoveList = {
     category: "physical",
     power: 10,
     acc: 100,
-    effect: [33.21, [["spe", -1]]],
+    effect: [33, [["spe", -1]]],
     contact: true,
   },
   conversion: {kind: "conversion", name: "Conversion", pp: 30, type: "normal", range: "Adjacent"},
@@ -325,6 +325,7 @@ export const rawMoveList = {
     power: 70,
     acc: 100,
     contact: true,
+    punch: true,
   },
   doubleedge: {
     kind: "damage",
@@ -394,7 +395,7 @@ export const rawMoveList = {
     category: "special",
     power: 100,
     acc: 100,
-    flag: "dream_eater",
+    flag: "drain",
   },
   drillpeck: {
     kind: "damage",
@@ -438,7 +439,7 @@ export const rawMoveList = {
     category: "special",
     power: 40,
     acc: 100,
-    effect: [10.2, "brn"],
+    effect: [10, "brn"],
   },
   explosion: {
     kind: "damage",
@@ -462,7 +463,7 @@ export const rawMoveList = {
     category: "special",
     power: 120,
     acc: 85,
-    effect: [30.1, "brn"],
+    effect: [30, "brn"],
   },
   firepunch: {
     kind: "damage",
@@ -473,8 +474,9 @@ export const rawMoveList = {
     category: "physical",
     power: 75,
     acc: 100,
-    effect: [10.2, "brn"],
+    effect: [10, "brn"],
     contact: true,
+    punch: true,
   },
   firespin: {
     kind: "damage",
@@ -508,7 +510,7 @@ export const rawMoveList = {
     category: "special",
     power: 95,
     acc: 100,
-    effect: [10.2, "brn"],
+    effect: [10, "brn"],
   },
   flash: {
     kind: "stage",
@@ -642,7 +644,7 @@ export const rawMoveList = {
     category: "physical",
     power: 70,
     acc: 100,
-    effect: [30.1, "flinch"],
+    effect: [30, "flinch"],
     contact: true,
   },
   hijumpkick: {
@@ -714,7 +716,7 @@ export const rawMoveList = {
     category: "physical",
     power: 80,
     acc: 90,
-    effect: [10.2, "flinch"],
+    effect: [10, "flinch"],
     contact: true,
   },
   hypnosis: {
@@ -736,7 +738,7 @@ export const rawMoveList = {
     category: "special",
     power: 95,
     acc: 100,
-    effect: [10.2, "frz"],
+    effect: [10, "frz"],
   },
   icepunch: {
     kind: "damage",
@@ -747,8 +749,9 @@ export const rawMoveList = {
     category: "physical",
     power: 75,
     acc: 100,
-    effect: [10.2, "frz"],
+    effect: [10, "frz"],
     contact: true,
+    punch: true,
   },
   jumpkick: {
     kind: "damage",
@@ -827,7 +830,7 @@ export const rawMoveList = {
     category: "physical",
     power: 20,
     acc: 100,
-    effect: [30.1, "par"],
+    effect: [30, "par"],
     contact: true,
   },
   lightscreen: {
@@ -858,7 +861,7 @@ export const rawMoveList = {
     category: "physical",
     power: 50,
     acc: 90,
-    effect: [30.1, "flinch"],
+    effect: [30, "flinch"],
     contact: true,
   },
   meditate: {
@@ -905,6 +908,7 @@ export const rawMoveList = {
     acc: 85,
     kingsRock: true,
     contact: true,
+    punch: true,
   },
   metronome: {
     kind: "metronome",
@@ -975,7 +979,6 @@ export const rawMoveList = {
     category: "physical",
     power: 40,
     acc: 100,
-    flag: "payday",
     kingsRock: true,
   },
   peck: {
@@ -1044,7 +1047,7 @@ export const rawMoveList = {
     category: "physical",
     power: 15,
     acc: 100,
-    effect: [20.4, "psn"],
+    effect: [20, "psn"],
   },
   pound: {
     kind: "damage",
@@ -1078,7 +1081,7 @@ export const rawMoveList = {
     category: "special",
     power: 90,
     acc: 100,
-    effect: [33.21, [["spa", -1]]],
+    effect: [33, [["spa", -1]]],
   },
   psywave: {
     kind: "damage",
@@ -1113,7 +1116,6 @@ export const rawMoveList = {
     category: "physical",
     acc: 100,
     power: 20,
-    flag: "rage",
     kingsRock: true,
     contact: true,
   },
@@ -1209,7 +1211,7 @@ export const rawMoveList = {
     category: "physical",
     power: 60,
     acc: 85,
-    effect: [30.1, "flinch"],
+    effect: [30, "flinch"],
     contact: true,
   },
   sandattack: {
@@ -1361,7 +1363,7 @@ export const rawMoveList = {
     category: "special",
     power: 65,
     acc: 100,
-    effect: [40.4, "psn"],
+    effect: [40, "psn"],
   },
   smog: {
     kind: "damage",
@@ -1372,7 +1374,7 @@ export const rawMoveList = {
     category: "special",
     power: 20,
     acc: 70,
-    effect: [40.4, "psn"],
+    effect: [40, "psn"],
   },
   smokescreen: {
     kind: "stage",
@@ -1450,7 +1452,7 @@ export const rawMoveList = {
     category: "physical",
     power: 65,
     acc: 100,
-    effect: [30.1, "flinch"],
+    effect: [30, "flinch"],
     flag: "minimize",
     contact: true,
   },
@@ -1644,7 +1646,7 @@ export const rawMoveList = {
     category: "special",
     power: 120,
     acc: 70,
-    effect: [10.2, "par"],
+    effect: [10, "par"],
   },
   thunderbolt: {
     kind: "damage",
@@ -1655,7 +1657,7 @@ export const rawMoveList = {
     category: "special",
     power: 95,
     acc: 100,
-    effect: [10.2, "par"],
+    effect: [10, "par"],
   },
   thunderpunch: {
     kind: "damage",
@@ -1666,8 +1668,9 @@ export const rawMoveList = {
     category: "physical",
     power: 75,
     acc: 100,
-    effect: [10.2, "par"],
+    effect: [10, "par"],
     contact: true,
+    punch: true,
   },
   thundershock: {
     kind: "damage",
@@ -1678,7 +1681,7 @@ export const rawMoveList = {
     category: "special",
     power: 40,
     acc: 100,
-    effect: [10.2, "par"],
+    effect: [10, "par"],
   },
   thunderwave: {
     kind: "status",
@@ -1877,7 +1880,6 @@ export const rawMoveList = {
     acc: 100,
     kingsRock: true,
     noTechnician: true,
-    flag: "beatup",
   },
   bellydrum: {
     kind: "bellydrum",
@@ -1994,8 +1996,9 @@ export const rawMoveList = {
     category: "physical",
     power: 100,
     acc: 50,
-    effect: [99.6, "confusion"],
+    effect: [100, "confusion"],
     contact: true,
+    punch: true,
   },
   encore: {
     kind: "encore",
@@ -2040,7 +2043,6 @@ export const rawMoveList = {
     category: "physical",
     power: 40,
     acc: 100,
-    flag: "false_swipe",
     kingsRock: true,
     contact: true,
   },
@@ -2112,7 +2114,6 @@ export const rawMoveList = {
     category: "physical",
     power: 10,
     acc: 95,
-    flag: "fury_cutter",
     kingsRock: true,
     contact: true,
   },
@@ -2169,7 +2170,7 @@ export const rawMoveList = {
     category: "special",
     power: 55,
     acc: 95,
-    effect: [99.6, [["spe", -1]]],
+    effect: [100, [["spe", -1]]],
   },
   irontail: {
     kind: "damage",
@@ -2196,6 +2197,7 @@ export const rawMoveList = {
     priority: 1,
     kingsRock: true,
     contact: true,
+    punch: true,
   },
   magnitude: {
     kind: "damage",
@@ -2206,7 +2208,6 @@ export const rawMoveList = {
     category: "physical",
     power: 0,
     acc: 100,
-    flag: "magnitude",
     ignore: ["dig"],
     punish: true,
     kingsRock: true,
@@ -2303,7 +2304,7 @@ export const rawMoveList = {
     category: "special",
     power: 20,
     acc: 100,
-    effect: [99.6, [["acc", -1]]],
+    effect: [100, [["acc", -1]]],
   },
   nightmare: {kind: "nightmare", name: "Nightmare", pp: 15, type: "ghost", range: "Adjacent"},
   octazooka: {
@@ -2366,7 +2367,6 @@ export const rawMoveList = {
     range: "Adjacent",
     category: "physical",
     acc: 90,
-    flag: "present",
     kingsRock: true,
   },
   protect: {
@@ -2416,7 +2416,7 @@ export const rawMoveList = {
     category: "physical",
     power: 20,
     acc: 100,
-    flag: "rapid_spin",
+    flag: "remove_hazards",
     kingsRock: true,
     contact: true,
   },
@@ -2676,7 +2676,7 @@ export const rawMoveList = {
     power: 40,
     acc: 100,
     noMetronome: true,
-    effect: [99.6, "thief"],
+    effect: [100, "thief"],
     kingsRock: true,
     noAssist: true,
     contact: true,
@@ -2741,7 +2741,7 @@ export const rawMoveList = {
     category: "special",
     power: 100,
     acc: 50,
-    effect: [99.6, "par"],
+    effect: [100, "par"],
   },
   aerialace: {
     kind: "damage",
@@ -3044,7 +3044,6 @@ export const rawMoveList = {
     category: "physical",
     power: 70,
     acc: 100,
-    flag: "facade",
     kingsRock: true,
     contact: true,
   },
@@ -3104,6 +3103,7 @@ export const rawMoveList = {
     contact: true,
     kingsRock: true,
     noSleepTalk: true,
+    punch: true,
   },
   followme: {
     kind: "volatile",
@@ -3325,6 +3325,7 @@ export const rawMoveList = {
     acc: 85,
     kingsRock: true,
     contact: true,
+    punch: true,
     effect: [20, [["atk", 1]], true],
   },
   mistball: {
@@ -3533,6 +3534,7 @@ export const rawMoveList = {
     power: 60,
     kingsRock: true,
     contact: true,
+    punch: true,
   },
   sheercold: {
     kind: "damage",
@@ -3603,6 +3605,7 @@ export const rawMoveList = {
     acc: 90,
     kingsRock: true,
     contact: true,
+    punch: true,
     ignore: ["bounce", "fly", "skydrop"],
   },
   slackoff: {
@@ -3625,7 +3628,6 @@ export const rawMoveList = {
     acc: 100,
     kingsRock: true,
     contact: true,
-    flag: "smellingsalt",
   },
   snatch: {
     kind: "volatile",
@@ -3646,7 +3648,7 @@ export const rawMoveList = {
     power: 100,
     acc: 100,
     kingsRock: true,
-    flag: "spitup",
+    flag: "norand",
   },
   stockpile: {
     kind: "stockpile",
@@ -3741,7 +3743,6 @@ export const rawMoveList = {
     power: 50,
     acc: 100,
     sound: true,
-    flag: "uproar",
     noSleepTalk: true,
   },
   volttackle: {
@@ -3982,6 +3983,7 @@ export const rawMoveList = {
     priority: 1,
     kingsRock: true,
     contact: true,
+    punch: true,
   },
   captivate: {
     kind: "stage",
@@ -4184,6 +4186,7 @@ export const rawMoveList = {
     flag: "drain",
     kingsRock: true,
     contact: true,
+    punch: true,
   },
   earthpower: {
     kind: "damage",
@@ -4380,6 +4383,7 @@ export const rawMoveList = {
     acc: 90,
     kingsRock: true,
     contact: true,
+    punch: true,
     effect: [100, [["spe", -1]], true],
   },
   headsmash: {
@@ -4809,12 +4813,12 @@ export const rawMoveList = {
     kingsRock: true,
   },
   roost: {
-    kind: "fail",
+    kind: "roost",
     name: "Roost",
-    pp: 1,
-    type: "normal",
-    range: "Adjacent",
-    why: "fail_unimplemented",
+    pp: 10,
+    type: "flying",
+    range: "Self",
+    snatch: true,
   },
   seedbomb: {
     kind: "damage",
@@ -5008,12 +5012,16 @@ export const rawMoveList = {
     kingsRock: true,
   },
   wakeupslap: {
-    kind: "fail",
+    kind: "damage",
     name: "Wake-Up Slap",
-    pp: 1,
-    type: "normal",
+    pp: 10,
+    type: "fight",
     range: "Adjacent",
-    why: "fail_unimplemented",
+    category: "physical",
+    power: 60,
+    acc: 100,
+    kingsRock: true,
+    contact: true,
   },
   woodhammer: {
     kind: "damage",
@@ -5163,15 +5171,16 @@ export const rawMoveList = {
     effect: [100, [["spe", -1]]],
   },
   chipaway: {
-    kind: "fail",
+    kind: "damage",
     name: "Chip Away",
     pp: 20,
     type: "normal",
     range: "Adjacent",
     power: 70,
     acc: 100,
+    contact: true,
     category: "physical",
-    why: "fail_unimplemented",
+    flag: "ignore_defeva",
   },
   circlethrow: {
     kind: "fail",
@@ -5351,7 +5360,7 @@ export const rawMoveList = {
     effect: [100, [["spe", 1]], true],
   },
   foulplay: {
-    kind: "fail",
+    kind: "damage",
     name: "Foul Play",
     pp: 15,
     type: "dark",
@@ -5359,7 +5368,7 @@ export const rawMoveList = {
     power: 95,
     acc: 100,
     category: "physical",
-    why: "fail_unimplemented",
+    contact: true,
   },
   freezeshock: {
     kind: "damage",
@@ -5642,7 +5651,7 @@ export const rawMoveList = {
     why: "fail_unimplemented",
   },
   psyshock: {
-    kind: "fail",
+    kind: "damage",
     name: "Psyshock",
     pp: 10,
     type: "psychic",
@@ -5650,10 +5659,10 @@ export const rawMoveList = {
     power: 80,
     acc: 100,
     category: "special",
-    why: "fail_unimplemented",
+    flag: "hits_defense",
   },
   psystrike: {
-    kind: "fail",
+    kind: "damage",
     name: "Psystrike",
     pp: 10,
     type: "psychic",
@@ -5661,7 +5670,7 @@ export const rawMoveList = {
     power: 100,
     acc: 100,
     category: "special",
-    why: "fail_unimplemented",
+    flag: "hits_defense",
   },
   quash: {
     kind: "fail",
@@ -5759,15 +5768,16 @@ export const rawMoveList = {
     sound: true,
   },
   sacredsword: {
-    kind: "fail",
+    kind: "damage",
     name: "Sacred Sword",
     pp: 15,
     type: "fight",
     range: "Adjacent",
     power: 90,
     acc: 100,
+    contact: true,
     category: "physical",
-    why: "fail_unimplemented",
+    flag: "ignore_defeva",
   },
   scald: {
     kind: "damage",

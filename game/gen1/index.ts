@@ -1,6 +1,5 @@
 import type {Random} from "random";
-import {accumulateBide, tryDamage} from "./damaging";
-import type {ActivePokemon, Battle} from "../battle";
+import type {Battlemon, Battle} from "../battle";
 import {
   moveOverrides,
   moveList,
@@ -12,77 +11,26 @@ import {
 import {speciesList, type Species, type SpeciesId} from "../species";
 import {
   clamp,
-  floatTo255,
   idiv,
   VF,
   screens,
-  type Stats,
-  type StatStageId,
-  type Type,
   randChoiceWeighted,
   MC,
-  debugLog,
-  dmgFlags,
+  type Stats,
+  type Type,
   type Weather,
+  type StatStageId,
+  TypeMod,
+  isSpecialType,
+  Endure,
+  DMF,
+  idiv1,
+  TypeEffectiveness,
 } from "../utils";
 import {itemList, type ItemId} from "../item";
 import {UNOWN_FORM, type Pokemon, type FormId, type Gender, type Nature} from "../pokemon";
 import type {DamageReason} from "../events";
-
-export type TypeChart = Record<Type, Partial<Record<Type, number>>>;
-
-const typeChart: TypeChart = {
-  normal: {ghost: 0, rock: 0.5, steel: 0.5},
-  rock: {bug: 2, fire: 2, flying: 2, ice: 2, fight: 0.5, ground: 0.5, steel: 0.5},
-  ground: {rock: 2, poison: 2, bug: 0.5, flying: 0, grass: 0.5, fire: 2, electric: 2, steel: 2},
-  ghost: {normal: 0, ghost: 2, psychic: 0, dark: 0.5, steel: 0.5},
-  poison: {rock: 0.5, ground: 0.5, ghost: 0.5, grass: 2, bug: 2, poison: 0.5, steel: 0},
-  bug: {
-    ghost: 0.5,
-    flying: 0.5,
-    fight: 0.5,
-    grass: 2,
-    fire: 0.5,
-    psychic: 2,
-    poison: 2,
-    dark: 2,
-    steel: 0.5,
-  },
-  flying: {rock: 0.5, bug: 2, fight: 2, grass: 2, electric: 0.5, steel: 0.5},
-  fight: {
-    normal: 2,
-    rock: 2,
-    ghost: 0,
-    poison: 0.5,
-    bug: 0.5,
-    flying: 0.5,
-    ice: 2,
-    psychic: 0.5,
-    dark: 2,
-    steel: 2,
-  },
-  water: {rock: 2, ground: 2, water: 0.5, grass: 0.5, fire: 2, dragon: 0.5},
-  grass: {
-    rock: 2,
-    ground: 2,
-    poison: 0.5,
-    bug: 0.5,
-    flying: 0.5,
-    water: 2,
-    fire: 0.5,
-    dragon: 0.5,
-    grass: 0.5,
-    steel: 0.5,
-  },
-  fire: {rock: 0.5, bug: 2, water: 0.5, grass: 2, fire: 0.5, ice: 2, dragon: 0.5, steel: 2},
-  electric: {ground: 0, flying: 2, water: 2, grass: 0.5, electric: 0.5, dragon: 0.5},
-  ice: {ground: 2, flying: 2, water: 0.5, grass: 2, ice: 0.5, dragon: 2, steel: 0.5},
-  psychic: {poison: 2, fight: 2, psychic: 0.5, steel: 0.5, dark: 0},
-  dragon: {dragon: 2, steel: 0.5},
-  dark: {ghost: 2, fight: 0.5, psychic: 2, dark: 0.5, steel: 0.5},
-  steel: {rock: 2, water: 0.5, fire: 0.5, electric: 0.5, ice: 2, steel: 0.5},
-  "???": {},
-};
+import type {Calc} from "../calc";
 
 const stageMultipliers: Record<number, [num: number, div: number]> = {
   [-6]: [25, 100],
@@ -108,7 +56,7 @@ enum BetweenTurns {
   PerishSong,
 }
 
-export const scaleAccuracy255 = (acc: number, user: ActivePokemon, target: ActivePokemon) => {
+export const scaleAccuracy255 = (acc: number, user: Battlemon, target: Battlemon) => {
   // https://bulbapedia.bulbagarden.net/wiki/Accuracy#Generation_I_and_II
   let userStages = user.v.stages["acc"];
   let targetStages = target.v.stages["eva"];
@@ -123,41 +71,6 @@ export const scaleAccuracy255 = (acc: number, user: ActivePokemon, target: Activ
   return clamp(acc, 1, 255);
 };
 
-export type CalcDamageParams = {
-  lvl: number;
-  pow: number;
-  atk: number;
-  def: number;
-  eff: number;
-  isCrit: bool;
-  hasStab: bool;
-  rand: Random | number | false;
-
-  itemBonus?: number;
-  weather?: "bonus" | "penalty";
-  tripleKick?: number;
-  /**
-   * Rollout:     2**(n + d) | n: min(consecutive hits, 4), d: defense curl used
-   * Fury Cutter: 2**n | n: min(consecutive hits, 4)
-   * Rage:        number of times user was damaged while using rage
-   */
-  moveMod?: number;
-  /**
-   * Pursuit & target is switching
-   * "minimize" flag  and target has minimized
-   * ignore + punish and target is in semi-invulnerable move
-   * SmellingSalt and target is paralyzed
-   * Facade and target is burned
-   */
-  doubleDmg?: bool;
-  stockpile?: number;
-  helpingHand?: bool;
-  screen?: bool;
-  spread?: bool;
-  flashFire?: bool;
-  technician?: bool;
-};
-
 // prettier-ignore
 class Rng {
   maxThrash = 3;
@@ -166,13 +79,13 @@ class Rng {
   tryQuickClaw(battle: Battle) { return battle.rand255Good(60); }
   tryKingsRock(battle: Battle) { return battle.rand255Good(30); }
   tryFocusBand(battle: Battle) { return battle.rand255Good(30); }
-  tryCrit(battle: Battle, user: ActivePokemon, hc: bool) {
-    const baseSpe = user.base.species.stats.spe;
+  tryCrit(battle: Battle, user: Battlemon, hc: bool) {
+    const baseSpe = user.v.species.stats.spe;
     const focus = user.v.hasFlag(VF.focusEnergy);
     if (hc) {
-      return battle.rand255(focus ? 4 * Math.floor(baseSpe / 4) : 8 * Math.floor(baseSpe / 2));
+      return battle.rand255(focus ? 4 * idiv(baseSpe, 4) : 8 * idiv(baseSpe, 2));
     } else {
-      return battle.rand255(Math.floor(focus ? baseSpe / 8 : baseSpe / 2));
+      return battle.rand255(idiv(baseSpe, focus ? 8 : 2));
     }
   }
   tryFullPara(battle: Battle) { return battle.rand100(25); }
@@ -191,11 +104,141 @@ class Rng {
   }
   disableTurns(battle: Battle) { return battle.rng.int(1, 8); }
   multiHitCount(battle: Battle) { return randChoiceWeighted(battle.rng, [2, 3, 4, 5], [37.5, 37.5, 12.5, 12.5]); }
-  bindingMoveTurns(battle: Battle, _user: ActivePokemon) { return this.multiHitCount(battle) - 1; }
+  bindingMoveTurns(battle: Battle, _user: Battlemon) { return this.multiHitCount(battle) - 1; }
   bideDuration(battle: Battle) { return battle.rng.int(2, 3) + 1; }
   uproarDuration(battle: Battle) { return battle.rng.int(2, 5); }
   thrashDuration(battle: Battle) { return battle.rng.int(2, this.maxThrash); }
 }
+
+type BaseDamageParams = {
+  move?: DamagingMove;
+  power: number; // u8
+  level: number; // u8
+  A: number; // u8
+  D: number; // u8
+};
+
+type StabParams = {
+  type: Type;
+  user: Battlemon;
+  target: Battlemon;
+};
+
+export class DamageCalc {
+  static getBoostedAttack({user}: {user: Battlemon}) {
+    return {atk: user.v.stats.atk, spa: user.v.stats.spa};
+  }
+
+  static getBoostedDefense({target}: {target: Battlemon}) {
+    return {def: target.v.stats.def, spd: target.v.stats.spa};
+  }
+
+  static getBoostedPower({power}: {power: number}) {
+    return power;
+  }
+
+  // --
+
+  static P(v: number) {
+    return Math.floor((v * 255) / 100);
+  }
+
+  static getDamageVariables(user: Battlemon, target: Battlemon, special: bool, isCrit: bool) {
+    const [atks, defs] = special ? (["spa", "spa"] as const) : (["atk", "def"] as const);
+    let A = user.v.stats[atks];
+    let D = target.v.stats[defs];
+    if (target.v.hasFlag(defs === "def" ? VF.reflect : VF.lightScreen)) {
+      D <<= 1;
+    }
+
+    if (isCrit) {
+      A = user.v.baseStats[atks];
+      // In gen 1, a crit against a transformed pokemon will use its untransformed stats
+      D = target.base.stats[defs];
+    }
+
+    if (A > 0xff || D > 0xff) {
+      // A / 4
+      A = Math.max(A >> 2, 1);
+      // defense doesn't get capped here on cart, potentially causing divide by 0
+      D = Math.max(D >> 2, 1);
+    }
+
+    let level = user.base.level;
+    if (isCrit) {
+      level *= 2;
+    }
+    // A, D, power, and level are all u8 values
+    return {A: A & 0xff, D: D & 0xff, level: level & 0xff} as const;
+  }
+
+  static calcBaseDamage({power, level, A, D, move}: BaseDamageParams) {
+    if (move?.flag === DMF.explosion) {
+      D = Math.max(D >> 1, 1);
+    }
+
+    return Math.min(idiv(idiv((idiv(level * 2, 5) + 2) * power * A, D), 50), 997) + 2;
+  }
+
+  static applyTypeModifiers(dmg: number, {type, user, target}: StabParams) {
+    if (user.v.hasAnyType(type)) {
+      // Stab does not check for overflow
+      dmg = (dmg + (dmg >> 1)) & 0xffff;
+    }
+
+    const eff = new TypeEffectiveness();
+    for (const [atktype, deftype, modifier] of typeMatchupTable) {
+      if (atktype === type && target.v.hasAnyType(deftype)) {
+        dmg = idiv(dmg * modifier, TypeMod.EFFECTIVE);
+        eff.modify(modifier);
+        if (dmg === 0) {
+          return {dmg: 0, eff, miss: true};
+        }
+      }
+    }
+
+    return {dmg, eff, miss: false};
+  }
+
+  static randomizeDamage(dmg: number, rng: Random | number) {
+    if (dmg <= 1) {
+      return dmg;
+    }
+
+    const r = typeof rng === "number" ? rng : rng.int(DamageCalc.P(85) + 1, DamageCalc.P(100));
+    return idiv(dmg * r, DamageCalc.P(100));
+  }
+}
+
+export type GetDamageParams = {
+  battle: Battle;
+  user: Battlemon;
+  target: Battlemon;
+  move: DamagingMove;
+  isCrit: bool;
+  /**
+   * If RNG is null, skip damage randomization. If RNG is a number, use that number. Otherwise,
+   * use battle.rng to generate a number.
+   */
+  rng?: number | null;
+
+  // Gen 2+
+
+  /** Gen 2 only: Which triple kick (a number between 1 and 3) */
+  tripleKick?: number;
+  power?: number;
+  /** The party mon for this beat up attack */
+  beatUp?: Pokemon;
+};
+
+export type TryEndureParams = {
+  battle: Battle;
+  user: Battlemon;
+  target: Battlemon;
+  dmg: number;
+  prev?: Endure;
+  wasFullHp?: bool;
+};
 
 export class Generation1 {
   static Rng = Rng;
@@ -206,7 +249,7 @@ export class Generation1 {
   maxTotalEv = 65535 * 6;
   speciesList = speciesList;
   moveList = moveList;
-  typeChart = typeChart;
+  typeMatchupTable = typeMatchupTable;
   items = itemList;
   lastMoveIdx = moveList.whirlwind.idx!;
   lastPokemon = 151;
@@ -223,8 +266,9 @@ export class Generation1 {
   accStageMultipliers = stageMultipliers;
   move = {scripts: moveScripts, overrides: moveOverrides};
   rng = new Generation1.Rng();
+  calc: Calc = DamageCalc;
 
-  beforeUseMove(battle: Battle, move: Move, user: ActivePokemon) {
+  beforeUseMove(battle: Battle, move: Move, user: Battlemon) {
     // Order of events comes from here:
     //  https://www.smogon.com/forums/threads/past-gens-research-thread.3506992/#post-5878612
     if (user.v.hazed) {
@@ -248,7 +292,6 @@ export class Generation1 {
 
     if (user.v.flinch) {
       battle.info(user, "flinch");
-      user.v.recharge = undefined;
       return false;
     } else if (user.v.trapped) {
       battle.info(user, "trapped");
@@ -261,12 +304,11 @@ export class Generation1 {
 
     if (user.v.disabled && --user.v.disabled.turns === 0) {
       user.v.disabled = undefined;
-      battle.info(user, "disable_end", [{id: user.id, v: {flags: user.v.cflags}}]);
+      battle.info(user, "disable_end");
     }
 
     if (user.v.confusion) {
-      const event = --user.v.confusion === 0 ? "confused_end" : "confused";
-      battle.info(user, event, [{id: user.id, v: {flags: user.v.cflags}}]);
+      battle.info(user, --user.v.confusion === 0 ? "confused_end" : "confused");
     }
 
     const confuse = user.v.confusion && battle.rng.bool();
@@ -280,6 +322,7 @@ export class Generation1 {
         user.v.thrashing = undefined;
       }
       user.v.trapping = undefined;
+      battle.syncVolatiles();
     }
 
     if (!confuse && user.v.attract) {
@@ -287,19 +330,7 @@ export class Generation1 {
     }
 
     if (confuse) {
-      // TODO: use target reflect
-      const [atk, def] = battle.gen.getDamageVariables(false, battle, user, user, false);
-      const dmg = battle.gen.calcDamage({
-        lvl: user.base.level,
-        pow: 40,
-        def,
-        atk,
-        eff: 1,
-        rand: false,
-        isCrit: false,
-        hasStab: false,
-      });
-
+      const {dmg} = this.getConfusionSelfDamage(battle, user);
       if (!user.v.substitute) {
         user.damage(dmg, user, battle, false, "confusion");
       } else {
@@ -323,7 +354,7 @@ export class Generation1 {
     return true;
   }
 
-  isValidMove(battle: Battle, user: ActivePokemon, move: MoveId, i: number) {
+  isValidMove(battle: Battle, user: Battlemon, move: MoveId, i: number) {
     if (user.v.lockedIn() && user.v.lockedIn() !== battle.gen.moveList[move]) {
       return false;
     } else if (user.base.status === "frz" || user.base.status === "slp") {
@@ -348,18 +379,23 @@ export class Generation1 {
     return true;
   }
 
-  checkAccuracy(
-    move: Move,
-    battle: Battle,
-    user: ActivePokemon,
-    target: ActivePokemon,
-    _phys?: bool,
-  ) {
+  checkAccuracy(move: Move, battle: Battle, user: Battlemon, target: Battlemon, _phys?: bool) {
     if (!move.acc) {
       return true;
+    } else if (move.id === "dreameater" && target.base.status !== "slp") {
+      battle.miss(user, target);
+      return false;
+    } else if (
+      move.kind === "damage" &&
+      move.flag === DMF.ohko &&
+      user.v.stats.spe < target.v.stats.spe
+    ) {
+      // in the real game, this is handled inside calcBaseDamage
+      battle.miss(user, target);
+      return false;
     }
 
-    const chance = scaleAccuracy255(user.v.thrashing?.acc ?? floatTo255(move.acc), user, target);
+    const chance = scaleAccuracy255(user.v.thrashing?.acc ?? DamageCalc.P(move.acc), user, target);
     // https://www.smogon.com/dex/rb/moves/petal-dance/
     // https://www.youtube.com/watch?v=NC5gbJeExbs
     if (user.v.thrashing) {
@@ -373,56 +409,70 @@ export class Generation1 {
     return true;
   }
 
-  calcDamage({lvl, pow, atk, def, eff, isCrit, hasStab, rand}: CalcDamageParams) {
-    if (eff === 0) {
-      return 0;
+  getDamage({battle, user, target, move, isCrit, rng}: GetDamageParams) {
+    let res;
+    if ((res = this.getFixedDamage(battle, user, target, move))) {
+      return res;
     }
 
-    lvl *= isCrit ? 2 : 1;
-    let dmg = Math.min(idiv(idiv((idiv(2 * lvl, 5) + 2) * pow * atk, def), 50), 997) + 2;
-    if (hasStab) {
-      dmg += idiv(dmg, 2);
+    const {A, D, level} = DamageCalc.getDamageVariables(user, target, this.isSpecial(move), isCrit);
+    let eff,
+      miss = false;
+    let dmg = DamageCalc.calcBaseDamage({level, A, D, power: move.power, move});
+    // eslint-disable-next-line prefer-const
+    ({dmg, miss, eff} = DamageCalc.applyTypeModifiers(dmg, {type: move.type, user, target}));
+
+    const random = !rng && rng !== null ? battle.rng : rng;
+    if (!miss && random) {
+      dmg = DamageCalc.randomizeDamage(dmg, random);
     }
 
-    if (eff > 1) {
-      dmg = idiv(dmg * 20, 10);
-      dmg = eff > 2 ? idiv(dmg * 20, 10) : dmg;
-    } else if (eff < 1) {
-      dmg = idiv(dmg * 5, 10);
-      dmg = eff < 0.5 ? idiv(dmg * 5, 10) : dmg;
-    }
-
-    let r = typeof rand === "number" ? rand : 255;
-    if (rand && typeof rand !== "number" && dmg > 1) {
-      r = rand.int(217, 255);
-    }
-
-    if (import.meta.dev) {
-      debugLog(`flag: ${dmgFlags({crit: isCrit, stab: hasStab})}`);
-      debugLog("vars:", {dmg, lvl, pow, atk, def, eff, r});
-    }
-    return idiv(dmg * r, 255);
+    return {dmg, miss, eff: eff.toFloat(), type: move.type};
   }
 
-  getDamageVariables(
-    special: bool,
-    battle: Battle,
-    user: ActivePokemon,
-    target: ActivePokemon,
-    isCrit: bool,
-  ) {
-    const [atks, defs] = special ? (["spa", "spa"] as const) : (["atk", "def"] as const);
-    let atk = this.getStat(battle, user, atks, isCrit);
-    let def = this.getStat(battle, target, defs, isCrit, true);
-    if (atk >= 256 || def >= 256) {
-      atk = Math.max(Math.floor(atk / 4) % 256, 1);
-      // defense doesn't get capped here on cart, potentially causing divide by 0
-      def = Math.max(Math.floor(def / 4) % 256, 1);
+  protected getFixedDamage(battle: Battle, user: Battlemon, target: Battlemon, move: DamagingMove) {
+    if (move.fixedDamage) {
+      return {dmg: move.fixedDamage, miss: false, eff: 1, type: move.type};
+    } else if (this.move.overrides.dmg[move.id!]) {
+      // Counter, Bide
+      const dmg = this.getMoveDamage(move, battle, user, target) ?? 0;
+      return {dmg, miss: !dmg, eff: 1, type: move.type};
     }
-    return [atk, def] as const;
   }
 
-  handleCrashDamage(battle: Battle, user: ActivePokemon, target: ActivePokemon, _dmg: number) {
+  getConfusionSelfDamage(battle: Battle, user: Battlemon): {dmg: number; endure?: Endure} {
+    const target = battle.opponentOf(user.owner).active[0];
+
+    // This is the exact hack the game does (pokered:HandleSelfConfusionDamage)
+    // This causes the game to use the opponent's reflect when calculating confusion damage
+    const olddef = target.v.stats.def;
+    target.v.stats.def = user.v.stats.def;
+    const {A, D, level} = DamageCalc.getDamageVariables(user, target, false, false);
+    target.v.stats.def = olddef;
+
+    // Confusion damage is not adjusted for type effectiveness/stab or varied by a random factor
+    return {dmg: DamageCalc.calcBaseDamage({power: 40, A, D, level})};
+  }
+
+  applyStatusDebuff(poke: Battlemon) {
+    if (poke.base.status === "brn") {
+      poke.v.stats.atk = idiv1(poke.v.stats.atk, 2);
+    } else if (poke.base.status === "par") {
+      poke.v.stats.spe = idiv1(poke.v.stats.spe, 4);
+    }
+  }
+
+  recalculateStat(poke: Battlemon, battle: Battle, stat: StatStageId, negative: bool) {
+    const [num, div] = battle.gen.stageMultipliers[poke.v.stages[stat]];
+    poke.v.stats[stat] = idiv(poke.v.baseStats[stat] * num, div);
+
+    // https://www.smogon.com/rb/articles/rby_mechanics_guide#stat-mechanics
+    if (!negative) {
+      poke.v.stats[stat] = clamp(poke.v.stats[stat], 1, 999);
+    }
+  }
+
+  handleCrashDamage(battle: Battle, user: Battlemon, target: Battlemon, _dmg: number) {
     // https://www.smogon.com/dex/rb/moves/high-jump-kick/
     if (user.v.substitute && target.v.substitute) {
       target.damage(1, user, battle, false, "attacked");
@@ -431,20 +481,12 @@ export class Generation1 {
     }
   }
 
-  getStat(_: Battle, poke: ActivePokemon, stat: StatStageId, isCrit?: bool, def?: bool) {
-    // In gen 1, a crit against a transformed pokemon will use its untransformed stats
-    let value = poke.v.stats[stat];
-    if (def && isCrit && poke.base.transformed) {
-      return poke.base.real.stats[stat];
+  rollCrit(battle: Battle, user: Battlemon, _target: Battlemon, move: DamagingMove) {
+    // Counter gets handled right after calling CriticalHitTest, but it never does anything with wCriticalHitOrOHKO
+    if (move.fixedDamage || move.id === "bide") {
+      return false;
     }
-
-    const screen = def && poke.v.hasFlag(stat === "def" ? VF.reflect : VF.lightScreen);
-    if (isCrit) {
-      value = poke.base.stats[stat];
-    } else if (screen) {
-      value *= 2;
-    }
-    return value;
+    return this.rng.tryCrit(battle, user, move.flag === DMF.high_crit);
   }
 
   calcStat(
@@ -482,11 +524,11 @@ export class Generation1 {
 
   getMaxPP(move: Move | MoveId) {
     move = typeof move === "string" ? this.moveList[move] : move;
-    return move.pp === 1 ? 1 : Math.min(Math.floor((move.pp * 8) / 5), 61);
+    return move.pp === 1 ? 1 : Math.min(idiv(move.pp * 8, 5), 61);
   }
 
-  canOHKOHit(battle: Battle, user: ActivePokemon, target: ActivePokemon) {
-    return this.getStat(battle, target, "spe") <= this.getStat(battle, user, "spe");
+  getSpeed(_battle: Battle, user: Battlemon) {
+    return user.v.stats.spe;
   }
 
   getGender(_desired: Gender | undefined, _species: Species, _atk: number): Gender | undefined {
@@ -515,15 +557,19 @@ export class Generation1 {
     return false;
   }
 
-  accumulateBide = accumulateBide;
+  accumulateBide(battle: Battle, _user: Battlemon, bide: Required<Battlemon["v"]>["bide"]) {
+    bide.dmg += battle.gen1LastDamage;
+    bide.dmg &= 0xffff;
+  }
+
   tryDamage = tryDamage;
 
-  afterBeforeUseMove(battle: Battle, user: ActivePokemon): bool {
+  afterBeforeUseMove(battle: Battle, user: Battlemon): bool {
     this.handleResidualDamage(battle, user);
     return battle.checkFaint(user) && shouldReturn(battle, false);
   }
 
-  afterUseMove(battle: Battle, user: ActivePokemon, isReplacement: bool): bool {
+  afterUseMove(battle: Battle, user: Battlemon, isReplacement: bool): bool {
     if (isReplacement) {
       return false;
     }
@@ -538,7 +584,7 @@ export class Generation1 {
     return battle.checkFaint(user) && shouldReturn(battle, false);
   }
 
-  handleResidualDamage(battle: Battle, poke: ActivePokemon) {
+  handleResidualDamage(battle: Battle, poke: Battlemon) {
     const tickCounter = (why: DamageReason) => {
       // BUG GEN1: Toxic, Leech Seed, and brn/psn share the same routine. If a Pokemon rests, its
       // toxic counter will not be reset and brn, poison, and leech seed will use and update it.
@@ -552,17 +598,17 @@ export class Generation1 {
           why !== "seeded" && (battle.gen.id === 2 || poke.base.status === "tox")
             ? poke.v.counter || 1
             : 1;
-        d = why === "seeded" ? 8 : 16;
+        d = why === "psn" && poke.base.status === "tox" ? 16 : 8;
       }
 
       let dead = false;
       if (why === "psn" && poke.hasAbility("poisonheal")) {
-        if (poke.base.hp < poke.base.stats.hp) {
+        if (poke.base.hp < poke.base.maxHp) {
           battle.ability(poke);
-          poke.recover(Math.max(Math.floor(poke.base.stats.hp / 8), 1), poke, battle, "recover");
+          poke.recover(idiv1(poke.base.maxHp, 8), poke, battle, "recover");
         }
       } else {
-        const dmg = Math.max(Math.floor((m * poke.base.stats.hp) / d), 1);
+        const dmg = idiv1(m * poke.base.maxHp, d);
         dead = poke.damage(dmg, poke, battle, false, why, true).dead;
         if (why === "seeded" && poke.v.seededBy) {
           poke.v.seededBy.recover(dmg, poke, battle, "seeder");
@@ -586,7 +632,7 @@ export class Generation1 {
     } else if (
       poke.v.hasFlag(VF.nightmare) &&
       poke.damage2(battle, {
-        dmg: Math.max(1, idiv(poke.base.stats.hp, 4)),
+        dmg: idiv1(poke.base.maxHp, 4),
         src: poke,
         why: "nightmare",
         direct: true,
@@ -596,7 +642,7 @@ export class Generation1 {
     } else if (
       poke.v.hasFlag(VF.curse) &&
       poke.damage2(battle, {
-        dmg: Math.max(1, idiv(poke.base.stats.hp, 4)),
+        dmg: idiv1(poke.base.maxHp, 4),
         src: poke,
         why: "curse",
         direct: true,
@@ -616,10 +662,8 @@ export class Generation1 {
         poke.v.trapped = undefined;
       }
       if (poke.v.hasFlag(VF.protect | VF.endure | VF.helpingHand)) {
-        battle.event({
-          type: "sv",
-          volatiles: [poke.clearFlag(VF.protect | VF.endure | VF.helpingHand)],
-        });
+        poke.v.clearFlag(VF.protect | VF.endure | VF.helpingHand);
+        battle.syncVolatiles();
       }
     }
 
@@ -690,7 +734,7 @@ export class Generation1 {
       }
 
       if (poke.base.itemId === "leftovers") {
-        poke.recover(Math.max(1, idiv(poke.base.stats.hp, 16)), poke, battle, "leftovers");
+        poke.recover(idiv1(poke.base.maxHp, 16), poke, battle, "leftovers");
       }
       poke.handleBerry(battle, {pp: true});
     }
@@ -740,31 +784,10 @@ export class Generation1 {
       return false;
     }
 
-    switch (overrideType ?? move.type) {
-      case "normal":
-      case "rock":
-      case "ground":
-      case "ghost":
-      case "poison":
-      case "bug":
-      case "flying":
-      case "fight":
-      case "steel":
-      case "???":
-        return false;
-      case "water":
-      case "grass":
-      case "fire":
-      case "electric":
-      case "ice":
-      case "psychic":
-      case "dragon":
-      case "dark":
-        return true;
-    }
+    return isSpecialType(overrideType ?? move.type);
   }
 
-  handleRage(battle: Battle, poke: ActivePokemon) {
+  handleRage(battle: Battle, poke: Battlemon) {
     if (poke.v.thrashing?.move === battle.gen.moveList.rage && poke.v.stages.atk < 6) {
       battle.info(poke, "rage");
       poke.modStages([["atk", +1]], battle);
@@ -779,12 +802,42 @@ export class Generation1 {
     return callOr(move.type, this.move.overrides.type[move.id!], move, user, weather);
   }
 
-  getMoveBasePower(move: DamagingMove, user: Pokemon, target: Pokemon) {
-    return callOr(move.power, this.move.overrides.pow[move.id!], move, user, target);
+  getMoveBasePower(move: DamagingMove, battle: Battle, user: Battlemon, target: Battlemon) {
+    return callOr(move.power, this.move.overrides.pow[move.id!], move, battle, user, target);
   }
 
-  getMoveDamage(move: DamagingMove, battle: Battle, user: ActivePokemon, target: ActivePokemon) {
+  getMoveDamage(move: DamagingMove, battle: Battle, user: Battlemon, target: Battlemon) {
     return this.move.overrides.dmg[move.id!]?.call(move, battle, user, target);
+  }
+
+  getEffectiveness(type: Type, target: Battlemon) {
+    return DamageCalc.applyTypeModifiers(0, {type, user: target, target}).eff;
+  }
+
+  tryAbilityImmunity(
+    _battle: Battle,
+    _user: Battlemon,
+    _target: Battlemon,
+    _self: Move,
+    _type: Type,
+    _eff: number,
+  ) {
+    return false;
+  }
+
+  handleFutureSight(battle: Battle, poke: Battlemon, fs: Battlemon["futureSight"] & {}) {
+    battle.event({type: "futuresight", src: poke.id, move: fs.move.id!, release: true});
+    if (!battle.checkAccuracy(fs.move, poke, poke)) {
+      // FIXME: this is lazy
+      battle.events.splice(-1, 1);
+      battle.info(poke, "fail_generic");
+    } else {
+      poke.damage(fs.damage, poke, battle, false, "future_sight");
+    }
+  }
+
+  tryEndure({dmg}: TryEndureParams) {
+    return {dmg, endure: Endure.None};
   }
 }
 
@@ -806,3 +859,269 @@ const callOr = <T, Args extends any[], R>(
 ) => {
   return func ? func.call(self, ...args) : _default;
 };
+
+export function tryDamage(
+  self: DamagingMove,
+  battle: Battle,
+  user: Battlemon,
+  target: Battlemon,
+  _spread: bool,
+  _power?: number,
+): number {
+  const checkThrashing = () => {
+    if (user.v.thrashing && user.v.thrashing.turns !== -1 && --user.v.thrashing.turns === 0) {
+      if (!user.owner.screens.safeguard && self.flag === DMF.multi_turn) {
+        user.confuse(battle, user.v.thrashing.max ? "fatigue_confuse_max" : "fatigue_confuse");
+      }
+      user.v.thrashing = undefined;
+    }
+  };
+
+  const trapTarget = () => {
+    target.v.trapped = {move: self, turns: -1, user};
+    user.v.trapping = {move: self, turns: battle.gen.rng.bindingMoveTurns(battle, user)};
+  };
+
+  if (self.flag === DMF.trap) {
+    target.v.recharge = undefined;
+  }
+
+  const isCrit = battle.gen.rollCrit(battle, user, target, self);
+  // eslint-disable-next-line prefer-const
+  let {dmg, eff, miss, type} = battle.gen.getDamage({battle, user, target, move: self, isCrit});
+  if (miss || !battle.checkAccuracy(self, user, target, !battle.gen.isSpecial(self, type))) {
+    battle.gen1LastDamage = 0;
+    // pokered:PrintMoveFailureText
+    if (miss) {
+      if (eff !== 0) {
+        battle.miss(user, target);
+      } else {
+        battle.info(target, "immune");
+        if (self.flag === DMF.trap) {
+          trapTarget();
+        } else if (self.flag === DMF.crash) {
+          checkThrashing();
+          return 0;
+        }
+      }
+    }
+
+    if (self.flag === DMF.crash) {
+      battle.gen.handleCrashDamage(battle, user, target, dmg);
+    } else if (self.flag === DMF.explosion) {
+      // according to showdown, explosion also boosts rage even on miss/failure
+      target.handleRage(battle);
+      user.damage(user.base.hp, user, battle, false, "explosion", true);
+    }
+    checkThrashing();
+    return 0;
+  }
+
+  target.v.lastHitBy = {move: self, poke: user, type};
+
+  checkThrashing();
+  if (self.id === "rage") {
+    user.v.thrashing = {move: self, max: false, turns: -1};
+  }
+
+  const hadSub = target.v.substitute !== 0;
+  // eslint-disable-next-line prefer-const
+  let {dealt, brokeSub, dead, event} = target.damage(
+    dmg,
+    user,
+    battle,
+    isCrit,
+    self.flag === DMF.ohko ? "ohko" : "attacked",
+    false,
+    eff,
+  );
+
+  if (self.flag === DMF.multi || self.flag === DMF.double) {
+    event.hitCount = 1;
+  }
+
+  if (!brokeSub) {
+    if (self.recoil) {
+      dead =
+        user.damage(idiv1(dealt, self.recoil), user, battle, false, "recoil", true).dead || dead;
+    }
+
+    if (self.flag === DMF.drain) {
+      // https://www.smogon.com/forums/threads/past-gens-research-thread.3506992/#post-5878612
+      //  - DRAIN HP SIDE EFFECT
+      const dmg = idiv1(dealt, 2);
+      battle.gen1LastDamage = dmg;
+      user.recover(dmg, target, battle, "drain");
+    } else if (self.flag === DMF.explosion) {
+      dead = user.damage(user.base.hp, user, battle, false, "explosion", true).dead || dead;
+    } else if (self.flag === DMF.double || self.flag === DMF.multi) {
+      const count = self.flag === DMF.double ? 2 : battle.gen.rng.multiHitCount(battle);
+      for (let hits = 1; !dead && !brokeSub && hits < count; hits++) {
+        event.hitCount = 0;
+        ({dead, brokeSub, event} = target.damage(
+          dmg,
+          user,
+          battle,
+          isCrit,
+          "attacked",
+          false,
+          eff,
+        ));
+        event.hitCount = hits + 1;
+      }
+    } else if (self.id === "payday") {
+      battle.info(user, "payday");
+    }
+  }
+
+  if (dead || brokeSub) {
+    return dealt;
+  }
+
+  if (self.flag === DMF.recharge) {
+    user.v.recharge = {move: self, target};
+  } else if (self.flag === DMF.trap) {
+    trapTarget();
+  }
+
+  if (!self.effect) {
+    return dealt;
+  }
+
+  // eslint-disable-next-line prefer-const
+  let [chance, effect] = self.effect;
+  if (effect === "tri_attack") {
+    effect = battle.rng.choice(["brn", "par", "frz"] as const)!;
+  }
+
+  if (effect === "brn" && target.base.status === "frz") {
+    target.unstatus(battle, "thaw");
+    // TODO: can you thaw and then burn?
+    return dealt;
+  }
+
+  /*
+   * ld b, XX percent + 1
+   * call BattleRandom      ; a = 0-255
+   * cp b
+   * ret nc                 ; ret if a >= b
+   * ; Do the effect
+   */
+  if (battle.rng.int(0, 255) >= DamageCalc.P(chance) + 1) {
+    return dealt;
+  }
+
+  if (effect === "confusion") {
+    // GEN1 bug: ConfusionSideEffect doesn't check for an opponent substitute
+    if (target.v.confusion === 0) {
+      target.confuse(battle);
+    }
+    return dealt;
+  } else if (hadSub) {
+    return dealt;
+  } else if (Array.isArray(effect)) {
+    target.modStages(effect, battle, user, true);
+  } else if (effect === "flinch") {
+    target.v.flinch = true;
+    // Flinching moves clear hyper beam from the target
+    // https://github.com/pret/pokered/blob/fbcf7d0e19a3a2db505440d3ccd3d40ca996c15c/engine/battle/effects.asm#L992
+    target.v.recharge = undefined;
+  } else if (effect !== "knockoff" && effect !== "thief") {
+    if (target.base.status || target.v.types.includes(self.type)) {
+      return dealt;
+    }
+
+    if (effect === "frz") {
+      // https://github.com/pret/pokered/blob/fbcf7d0e19a3a2db505440d3ccd3d40ca996c15c/engine/battle/effects.asm#L249
+      target.v.recharge = undefined;
+    }
+
+    target.status(effect, battle, user, {});
+  }
+  return dealt;
+}
+
+const typeMatchupTable: [Type, Type, number][] = [
+  ["water", "fire", TypeMod.SUPER_EFFECTIVE],
+  ["fire", "grass", TypeMod.SUPER_EFFECTIVE],
+  ["fire", "ice", TypeMod.SUPER_EFFECTIVE],
+  ["grass", "water", TypeMod.SUPER_EFFECTIVE],
+  ["electric", "water", TypeMod.SUPER_EFFECTIVE],
+  ["water", "rock", TypeMod.SUPER_EFFECTIVE],
+  ["ground", "flying", TypeMod.NO_EFFECT],
+  ["water", "water", TypeMod.NOT_VERY_EFFECTIVE],
+  ["fire", "fire", TypeMod.NOT_VERY_EFFECTIVE],
+  ["electric", "electric", TypeMod.NOT_VERY_EFFECTIVE],
+  ["ice", "ice", TypeMod.NOT_VERY_EFFECTIVE],
+  ["grass", "grass", TypeMod.NOT_VERY_EFFECTIVE],
+  ["psychic", "psychic", TypeMod.NOT_VERY_EFFECTIVE],
+  ["fire", "water", TypeMod.NOT_VERY_EFFECTIVE],
+  ["grass", "fire", TypeMod.NOT_VERY_EFFECTIVE],
+  ["water", "grass", TypeMod.NOT_VERY_EFFECTIVE],
+  ["electric", "grass", TypeMod.NOT_VERY_EFFECTIVE],
+  ["normal", "rock", TypeMod.NOT_VERY_EFFECTIVE],
+  ["normal", "ghost", TypeMod.NO_EFFECT],
+  ["ghost", "ghost", TypeMod.SUPER_EFFECTIVE],
+  ["fire", "bug", TypeMod.SUPER_EFFECTIVE],
+  ["fire", "rock", TypeMod.NOT_VERY_EFFECTIVE],
+  ["water", "ground", TypeMod.SUPER_EFFECTIVE],
+  ["electric", "ground", TypeMod.NO_EFFECT],
+  ["electric", "flying", TypeMod.SUPER_EFFECTIVE],
+  ["grass", "ground", TypeMod.SUPER_EFFECTIVE],
+  ["grass", "bug", TypeMod.NOT_VERY_EFFECTIVE],
+  ["grass", "poison", TypeMod.NOT_VERY_EFFECTIVE],
+  ["grass", "rock", TypeMod.SUPER_EFFECTIVE],
+  ["grass", "flying", TypeMod.NOT_VERY_EFFECTIVE],
+  ["ice", "water", TypeMod.NOT_VERY_EFFECTIVE],
+  ["ice", "grass", TypeMod.SUPER_EFFECTIVE],
+  ["ice", "ground", TypeMod.SUPER_EFFECTIVE],
+  ["ice", "flying", TypeMod.SUPER_EFFECTIVE],
+  ["fight", "normal", TypeMod.SUPER_EFFECTIVE],
+  ["fight", "poison", TypeMod.NOT_VERY_EFFECTIVE],
+  ["fight", "flying", TypeMod.NOT_VERY_EFFECTIVE],
+  ["fight", "psychic", TypeMod.NOT_VERY_EFFECTIVE],
+  ["fight", "bug", TypeMod.NOT_VERY_EFFECTIVE],
+  ["fight", "rock", TypeMod.SUPER_EFFECTIVE],
+  ["fight", "ice", TypeMod.SUPER_EFFECTIVE],
+  ["fight", "ghost", TypeMod.NO_EFFECT],
+  ["poison", "grass", TypeMod.SUPER_EFFECTIVE],
+  ["poison", "poison", TypeMod.NOT_VERY_EFFECTIVE],
+  ["poison", "ground", TypeMod.NOT_VERY_EFFECTIVE],
+  ["poison", "bug", TypeMod.SUPER_EFFECTIVE],
+  ["poison", "rock", TypeMod.NOT_VERY_EFFECTIVE],
+  ["poison", "ghost", TypeMod.NOT_VERY_EFFECTIVE],
+  ["ground", "fire", TypeMod.SUPER_EFFECTIVE],
+  ["ground", "electric", TypeMod.SUPER_EFFECTIVE],
+  ["ground", "grass", TypeMod.NOT_VERY_EFFECTIVE],
+  ["ground", "bug", TypeMod.NOT_VERY_EFFECTIVE],
+  ["ground", "rock", TypeMod.SUPER_EFFECTIVE],
+  ["ground", "poison", TypeMod.SUPER_EFFECTIVE],
+  ["flying", "electric", TypeMod.NOT_VERY_EFFECTIVE],
+  ["flying", "fight", TypeMod.SUPER_EFFECTIVE],
+  ["flying", "bug", TypeMod.SUPER_EFFECTIVE],
+  ["flying", "grass", TypeMod.SUPER_EFFECTIVE],
+  ["flying", "rock", TypeMod.NOT_VERY_EFFECTIVE],
+  ["psychic", "fight", TypeMod.SUPER_EFFECTIVE],
+  ["psychic", "poison", TypeMod.SUPER_EFFECTIVE],
+  ["bug", "fire", TypeMod.NOT_VERY_EFFECTIVE],
+  ["bug", "grass", TypeMod.SUPER_EFFECTIVE],
+  ["bug", "fight", TypeMod.NOT_VERY_EFFECTIVE],
+  ["bug", "flying", TypeMod.NOT_VERY_EFFECTIVE],
+  ["bug", "psychic", TypeMod.SUPER_EFFECTIVE],
+  ["bug", "ghost", TypeMod.NOT_VERY_EFFECTIVE],
+  ["bug", "poison", TypeMod.SUPER_EFFECTIVE],
+  ["rock", "fire", TypeMod.SUPER_EFFECTIVE],
+  ["rock", "fight", TypeMod.NOT_VERY_EFFECTIVE],
+  ["rock", "ground", TypeMod.NOT_VERY_EFFECTIVE],
+  ["rock", "flying", TypeMod.SUPER_EFFECTIVE],
+  ["rock", "bug", TypeMod.SUPER_EFFECTIVE],
+  ["rock", "ice", TypeMod.SUPER_EFFECTIVE],
+  ["ghost", "normal", TypeMod.NO_EFFECT],
+  ["ghost", "psychic", TypeMod.NO_EFFECT],
+  ["fire", "dragon", TypeMod.NOT_VERY_EFFECTIVE],
+  ["water", "dragon", TypeMod.NOT_VERY_EFFECTIVE],
+  ["electric", "dragon", TypeMod.NOT_VERY_EFFECTIVE],
+  ["grass", "dragon", TypeMod.NOT_VERY_EFFECTIVE],
+  ["ice", "dragon", TypeMod.SUPER_EFFECTIVE],
+  ["dragon", "dragon", TypeMod.SUPER_EFFECTIVE],
+];

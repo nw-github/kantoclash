@@ -64,6 +64,7 @@ import {Pokemon, type PokemonDesc} from "~~/game/pokemon";
 import type {Generation} from "~~/game/gen";
 import {ivsToDvs} from "~/utils/pokemon";
 import type {ItemId} from "~~/game/item";
+import {Battle} from "~~/game/battle";
 
 const query = defineModel<string>({default: ""});
 const {poke, gen, idx, format} = defineProps<{
@@ -76,27 +77,18 @@ const {poke, gen, idx, format} = defineProps<{
 const open = ref(false);
 const species = computed<Species | undefined>(() => gen.speciesList[poke?.speciesId as SpeciesId]);
 const items = computed(() => Object.entries(gen.moveList) as [MoveId, Move][]);
-const fakeTarget = computed(() => {
-  return Pokemon.fromDescriptor(gen, {speciesId: "abra", ivs: {}, moves: [], level: 100});
-});
 const trailing = computed(() => {
   const q = normalizeName(query.value);
   const move = q && q in gen.moveList ? gen.moveList[q as MoveId] : undefined;
-  if (move?.kind !== "damage") {
+  if (move?.kind !== "damage" || move.id === "present") {
     return;
   }
 
-  const item = poke.item && (normalizeName(poke.item) as ItemId);
-  const base = Pokemon.fromDescriptor(gen, {
-    speciesId: "abra",
-    moves: [],
-    ivs: gen.id <= 2 ? ivsToDvs(gen, poke.ivs ?? {}) : poke.ivs,
-    friendship: poke.friendship,
-    item: item && item in gen.items ? item : undefined,
-    level: poke.level ?? formatInfo[format].maxLevel,
-  });
-  const type = gen.getMoveType(move, base, undefined);
-  const pow = gen.getMoveBasePower(move, base, fakeTarget.value);
+  const battle = createFake();
+  const user = battle.players[0].active[0];
+  const target = battle.players[1].active[0];
+  const type = gen.getMoveType(move, user.base, undefined);
+  const pow = gen.getMoveBasePower(move, battle, user, target);
   if (type === move.type && pow === move.power) {
     return;
   }
@@ -143,5 +135,28 @@ const isIllegal = (id: string) => {
     return !isValidSketchMove(gen, id);
   }
   return true;
+};
+
+const createFake = () => {
+  const item = poke.item && (normalizeName(poke.item) as ItemId);
+  const base = Pokemon.fromDescriptor(gen, {
+    speciesId: "abra",
+    moves: [],
+    ivs: gen.id <= 2 ? ivsToDvs(gen, poke.ivs ?? {}) : poke.ivs,
+    friendship: poke.friendship,
+    item: item && item in gen.items ? item : undefined,
+    level: poke.level ?? formatInfo[format].maxLevel,
+  });
+
+  const target = Pokemon.fromDescriptor(gen, {speciesId: "abra", ivs: {}, moves: [], level: 100});
+  const [battle] = Battle.start({
+    gen,
+    player1: {id: "1", team: [base]},
+    player2: {id: "2", team: [target]},
+    seed: "1234",
+    chooseLead: true,
+  });
+
+  return battle;
 };
 </script>

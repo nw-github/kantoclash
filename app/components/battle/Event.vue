@@ -2,16 +2,16 @@
 <template>
   <div v-if="e.type === 'retract'" class="move">
     <template v-if="playerId(e.src) === perspective">Come back! {{ e.name }}!</template>
-    <template v-else>{{ players.ownerOf(e.src).name }} withdrew {{ e.name }}!</template>
+    <template v-else>{{ players.clientOwnerOf(e.src).name }} withdrew {{ e.name }}!</template>
   </div>
   <div v-else-if="e.type === 'switch'" class="move">
     <template v-if="e.why === 'phaze'"><b>{{ e.name }}</b> was dragged out!</template>
     <template v-else-if="playerId(e.src) === perspective">Go! <b>{{ e.name }}</b>!</template>
-    <template v-else>{{ players.ownerOf(e.src).name }} sent in <b>{{ e.name }}</b>!</template>
+    <template v-else>{{ players.clientOwnerOf(e.src).name }} sent in <b>{{ e.name }}</b>!</template>
   </div>
   <div v-else-if="e.type === 'damage'">
     <p v-if="e.why === 'attacked' && e.isCrit">
-      <template v-if="players.ownerOf(e.target).active.length > 1">
+      <template v-if="players.ownerOf(e.target)!.active.length > 1">
         A critical hit on {{ pn(e.target, false) }}!
       </template>
       <template v-else>
@@ -30,7 +30,7 @@
       }}
     </p>
 
-    <p v-if="e.why === 'attacked' && e.hitCount === undefined && (e.eff ?? 1) !== 1" class="italic">
+    <p v-if="e.hitCount === undefined && (e.eff ?? 1) !== 1" class="italic">
       {{ eff(e.target, e.eff) }}
     </p>
 
@@ -99,7 +99,7 @@
   </div>
   <div v-else-if="e.type === 'info'" :class="{ confused: e.why === 'confused', move: e.why === 'sleep' || e.why === 'disable_end' || e.why === 'wake' }">
     <p :class="[e.why === 'withdraw' && 'muted']">
-      {{ infoMessage[e.why].replace("{}", pn(e.src)).replace("{l}", pn(e.src, false)).replace("{tl}", tn(e.src, false)).replace("{p}", players.ownerOf(e.src).name) }}
+      {{ infoMessage[e.why].replace("{}", pn(e.src)).replace("{l}", pn(e.src, false)).replace("{tl}", tn(e.src, false)).replace("{p}", players.clientOwnerOf(e.src).name) }}
     </p>
 
     <p v-if="e.why === 'fail_sleep_clause'">
@@ -107,7 +107,7 @@
     </p>
   </div>
   <div v-else-if="e.type === 'miss'">
-    <template v-if="players.ownerOf(e.target).active.length > 1">{{ pn(e.target) }} avoided the attack!</template>
+    <template v-if="players.ownerOf(e.target)!.active.length > 1">{{ pn(e.target) }} avoided the attack!</template>
     <template v-else>{{ pn(e.src) }}'s attack missed!</template>
   </div>
   <div v-else-if="e.type === 'transform'">
@@ -251,7 +251,7 @@ const tn = (id: PokeId | PlayerId, title = true) => {
 };
 
 const eff = (id: PokeId, v?: number) => {
-  if (players.ownerOf(id).active.length > 1) {
+  if (players.ownerOf(id)!.active.length > 1) {
     return `It's ${
       (v ?? 1) > 1
         ? `super effective on ${pn(id, false)}!`

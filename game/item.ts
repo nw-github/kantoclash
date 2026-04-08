@@ -26,12 +26,14 @@ export type ItemData = {
   raiseCrit?: number;
   kingsRock?: bool;
   halveSpeed?: bool;
+  groundsUser?: bool;
   laggingTail?: bool;
   reduceType?: Type;
+  gem?: Type;
   extendWeather?: Weather;
   statusOrb?: Status;
   boostStats?: Partial<
-    Record<SpeciesId, {stats: StatStageId[]; amount: number; transformed: bool}>
+    Record<SpeciesId, {stats: StatStageId[]; percent: number; transformed: bool}>
   >;
   boostCrit?: SpeciesId;
 };

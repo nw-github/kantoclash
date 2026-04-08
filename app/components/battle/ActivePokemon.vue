@@ -2,14 +2,14 @@
   <div class="all w-full flex flex-col items-center">
     <div
       class="flex flex-col gap-0.5 sm:gap-1 text-sm z-40"
-      :class="[(!poke || poke.hidden) && 'invisible', !isSingles ? 'w-16 sm:w-32' : 'w-28 sm:w-40']"
+      :class="[!poke?.visible && 'invisible', !isSingles ? 'w-16 sm:w-32' : 'w-28 sm:w-40']"
     >
       <div class="flex justify-between flex-col sm:flex-row gap-1">
         <div class="font-bold flex items-center grow overflow-hidden">
           <span class="truncate text-xs">{{ poke?.base?.name || "--" }}</span>
           <GenderIcon
             class="size-4 hidden sm:block"
-            :gender="gen1Gender[poke?.base?.speciesId!] ?? poke?.base?.gender"
+            :gender="gen1Gender[poke?.v?.speciesId!] ?? poke?.v?.gender"
           />
         </div>
         <div class="flex items-center">
@@ -18,7 +18,7 @@
           </span>
           <GenderIcon
             class="size-4 sm:hidden"
-            :gender="gen1Gender[poke?.base?.speciesId!] ?? poke?.base?.gender"
+            :gender="gen1Gender[poke?.v?.speciesId!] ?? poke?.v?.gender"
           />
         </div>
       </div>
@@ -35,58 +35,26 @@
           v-if="poke"
           class="flex gap-1 flex-wrap absolute *:px-[0.2rem] *:py-[0.1rem] *:text-[0.6rem] *:leading-3 sm:*:text-xs"
         >
-          <UBadge
-            v-if="poke.base.transformed"
-            color="neutral"
-            label="Transformed"
-            variant="subtle"
-          />
+          <UBadge v-if="poke.v.transformed" color="neutral" label="Transformed" variant="subtle" />
 
           <UBadge
-            v-if="poke.v.status"
-            :color="statusColor[poke.v.status].color"
-            :variant="statusColor[poke.v.status].variant"
-            :label="poke.v.status.toUpperCase()"
+            v-if="poke.base.status"
+            :color="statusColor[poke.base.status].color"
+            :variant="statusColor[poke.base.status].variant"
+            :label="poke.base.status.toUpperCase()"
           />
 
-          <template v-if="!poke.base.species.types.every((ty, i) => ty === poke.v.types?.[i])">
+          <template v-if="!poke.v.species.types.every((ty, i) => ty === poke.v.types?.[i])">
             <TypeBadge v-for="type in poke.v.types" :key="type" :type />
           </template>
 
           <TypeBadge
             v-if="poke.v.charging"
-            :type="poke.base.gen.moveList[poke.v.charging].type"
-            :label="poke.base.gen.moveList[poke.v.charging].name"
+            :type="poke.v.charging.move.type"
+            :label="poke.v.charging.move.name"
           />
 
-          <UBadge
-            v-if="poke.v.trapped"
-            color="error"
-            icon="tabler:prison"
-            :label="poke.base.gen.moveList[poke.v.trapped].name"
-            variant="subtle"
-          />
-
-          <UBadge
-            v-if="poke.v.perishCount"
-            color="error"
-            icon="material-symbols:skull"
-            :label="poke.v.perishCount"
-            variant="subtle"
-          />
-
-          <UBadge
-            v-if="poke.v.stockpile"
-            color="old-lime"
-            icon="material-symbols-light:money-bag"
-            :label="poke.v.stockpile"
-            variant="subtle"
-          />
-
-          <template v-for="{cond, props} in badges">
-            <!-- eslint-disable-next-line vue/valid-v-for -->
-            <UBadge v-if="cond()" v-bind="props" />
-          </template>
+          <UBadge v-for="(props, i) in badges" :key="i" v-bind="props" />
 
           <template v-for="(val, stage) in poke.v.stages">
             <UBadge v-if="val" :key="stage" :color="val > 0 ? 'old-lime' : 'error'">
@@ -112,31 +80,31 @@
           <div
             ref="sprite"
             class="sprite relative z-20 flex justify-center h-28 sm:h-56"
-            :class="!poke && 'invisible'"
+            :class="!poke?.visible && 'invisible'"
             :data-poke-id="pokeId"
           >
             <div
               class="absolute w-[128px] h-[117px] sm:w-[256px] sm:h-[234px] flex justify-center items-center select-none"
             >
               <Sprite
-                v-show="poke?.base?.speciesId"
-                :species-id="poke?.base?.speciesId"
+                v-show="poke?.v?.speciesId"
+                :species-id="poke?.v?.speciesId"
                 :scale="lessThanSm ? 0.95 : 1.75"
-                :shiny="poke?.base?.shiny"
-                :form="poke?.base?.form"
-                :gender="poke?.base?.gender"
+                :shiny="poke?.v?.shiny"
+                :form="poke?.v?.form"
+                :gender="poke?.v?.gender"
                 :back
               />
 
               <img
-                v-if="poke && !poke.fainted && poke.confused"
+                v-if="poke && !poke.v.fainted && poke.v.confusion"
                 class="absolute size-10 sm:size-20 -top-3 sm:top-0 z-30 dark:invisible"
                 src="/dizzy-light.gif"
                 alt="confused"
               />
 
               <img
-                v-if="poke && !poke.fainted && poke.confused"
+                v-if="poke && !poke.v.fainted && poke.v.confusion"
                 class="absolute size-10 sm:size-20 -top-3 sm:top-0 z-30 invisible dark:visible"
                 src="/dizzy.gif"
                 alt="confused"
@@ -144,7 +112,7 @@
 
               <AnimatePresence>
                 <motion.img
-                  v-if="poke?.v.status === 'slp'"
+                  v-if="poke?.base?.status === 'slp'"
                   class="absolute size-6 sm:size-10 top-6 z-30 invert dark:invert-0 rotate-180 ml-24"
                   src="/zzz.gif"
                   alt="sleeping"
@@ -157,8 +125,8 @@
             </div>
           </div>
 
-          <template v-if="poke && !poke.hidden" #content>
-            <PokemonTTContent v-if="poke.owned && !poke.base.transformed" :poke :weather />
+          <template v-if="poke?.visible" #content>
+            <PokemonTTContent v-if="poke.owned && !poke.v.transformed" :poke :weather />
             <UnknownPokeTTContent v-else :poke />
           </template>
         </TouchPopover>
@@ -280,25 +248,22 @@ const scrColor = {
   mist: "bg-sky-400",
 };
 
-const flags = computed(() => poke?.v.flags?.lo ?? 0);
-const cflags = computed(() => poke?.v.flags?.hi ?? 0);
-
 const screens = computed(() => {
   const screens: {name: string; clazz: string}[] = [];
-  if (flags.value & VF.protect) {
+  if (poke?.v.hasFlag(VF.protect)) {
     screens.push({name: "protect", clazz: "bg-slate-200"});
   }
 
-  if (flags.value & VF.lightScreen) {
+  if (poke?.v.hasFlag(VF.lightScreen)) {
     screens.push({name: "light_screen", clazz: scrColor.light_screen});
   }
 
-  if (flags.value & VF.reflect) {
+  if (poke?.v.hasFlag(VF.reflect)) {
     screens.push({name: "reflect", clazz: scrColor.reflect});
   }
 
   for (const screen in scrColor) {
-    if (player?.screens?.[screen as ScreenId]) {
+    if (player?.bp?.screens?.[screen as ScreenId]) {
       screens.push({name: screen, clazz: scrColor[screen as keyof typeof scrColor]});
     }
   }
@@ -312,99 +277,49 @@ const offsX = (number: number) => `-${number * 42 - number}px`;
 const offsY = (number: number) => `-${number * 42 - number * 2}px`;
 const relativePos = (src: DOMRect, x: number, y: number) => [x - src.left, y - src.top];
 
-const fc = (flag: VF) => {
-  return () => (flags.value & flag) !== 0;
-};
+// prettier-ignore
+const badges = computed(() => {
+  const result: BadgeProps[] = [];
+  if (!poke) {
+    return result;
+  }
 
-const cfc = (flag: CVF) => {
-  return () => (cflags.value & flag) !== 0;
-};
+  if (poke.v.trapped) { result.push({color: "error", icon: "tabler:prison", label: poke.v.trapped.move.name, variant: "subtle"}); }
+  if (poke.v.perishCount) { result.push({color: "error", icon: "material-symbols:skull", label: poke.v.perishCount, variant: "subtle"}); }
+  if (poke.v.stockpile) { result.push({color: "old-lime", icon: "material-symbols-light:money-bag", label: poke.v.stockpile, variant: "subtle"}); }
+  if (poke.v.hasFlag(VF.followMe)) { result.push({color: "old-lime", icon: "tabler:hand-finger", variant: "subtle"}); }
+  if (poke.v.hasFlag(VF.snatch)) { result.push({color: "old-lime", icon: "tabler:hand-grab", variant: "subtle"}); }
+  if (poke.v.attract) { result.push({color: "old-pink", icon: "material-symbols:favorite", variant: "subtle"}); }
+  if (poke.v.hasFlag(VF.lockon)) { result.push({color: "error", icon: "ri:crosshair-2-line", variant: "subtle"}); }
+  if (poke.v.meanLook) { result.push({color: "error", icon: "tabler:prison", variant: "subtle"}); }
+  if (poke.v.seededBy) { result.push({color: "old-lime", icon: "tabler:seedling-filled", variant: "subtle"}); }
+  if (poke.v.hasFlag(VF.flashFire)) { result.push({color: "error", icon: "mdi:fire", variant: "subtle"}); }
+  if (poke.v.hasFlag(VF.helpingHand)) { result.push({color: "old-lime", icon: "mdi:hand-clap", variant: "subtle"}); }
+  if (poke.v.hasFlag(VF.charge)) { result.push({color: "old-yellow", icon: "material-symbols:bolt", variant: "subtle"}); }
+  if (poke.v.hasFlag(VF.magicCoat)) { result.push({color: "old-pink", icon: "mdi:mirror", variant: "subtle"}); }
+  if (poke.v.hasFlag(VF.gastroAcid)) { result.push({ color: "old-purple", icon: "material-symbols:block-outline", label: "Suppressed", variant: "subtle" }); }
+  if ((poke.cflags || 0) & CVF.encore) { result.push({color: "old-sky", icon: "material-symbols:celebration", variant: "subtle"}); }
+  if ((poke.cflags || 0) & CVF.disabled) { result.push({color: "error", icon: "material-symbols:block-outline", variant: "subtle"}); }
+  if ((poke.cflags || 0) & CVF.taunt) { result.push({color: "error", icon: "fluent-emoji-high-contrast:anger-symbol", variant: "subtle"}); }
+  if (poke.v.hasFlag(VF.torment)) { result.push({ color: "error", icon: "fluent-emoji-high-contrast:anger-symbol", variant: "subtle", label: "Torment" }); }
+  if (poke.v.identified) { result.push({color: "old-violet", icon: "material-symbols:search-rounded", variant: "subtle"}); }
+  if (poke.v.hasFlag(VF.imprisoning)) { result.push({ color: "error", icon: "material-symbols:lock", variant: "subtle", label: "Imprisoning" }); }
+  if (poke.v.hasFlag(VF.curse)) { result.push({color: "error", icon: "mdi:nail", label: "Cursed", variant: "subtle"}); }
+  if (poke.v.hasFlag(VF.ingrain)) { result.push({color: "old-lime", icon: "tabler:prison", variant: "subtle", label: "Ingrain"}); }
+  if (poke.v.hasFlag(VF.roost)) { result.push({color: "neutral", label: "Roost", icon: "mdi:feather", variant: "subtle"}); }
+  if (poke.v.hasFlag(VF.focusEnergy)) { result.push({color: "old-emerald", label: "Focus Energy"}); }
+  if (poke.v.hasFlag(VF.mist)) { result.push({color: "old-teal", label: "Mist"}); }
+  if (poke.v.hasFlag(VF.destinyBond)) { result.push({color: "neutral", label: "Destiny Bond", variant: "subtle"}); }
+  if (poke.v.hasFlag(VF.grudge)) { result.push({color: "neutral", label: "Grudge", variant: "subtle"}); }
+  if (poke.v.hasFlag(VF.protect)) { result.push({color: "neutral", label: "Protect"}); }
+  if (poke.v.hasFlag(VF.endure)) { result.push({color: "neutral", label: "Endure"}); }
+  if (poke.v.hasFlag(VF.nightmare)) { result.push({color: "neutral", label: "Nightmare"}); }
+  if (poke.v.drowsy) { result.push({color: "neutral", label: "Drowsy"}); }
+  if (poke.v.hasFlag(VF.waterSport)) { result.push({color: "old-sky", label: "Water Sport"}); }
+  if (poke.v.hasFlag(VF.mudSport)) { result.push({color: "old-orange", label: "Mud Sport"}); }
 
-const badges: {cond: () => bool; props: BadgeProps}[] = [
-  {
-    cond: fc(VF.followMe),
-    props: {color: "old-lime", icon: "tabler:hand-finger", variant: "subtle"},
-  },
-  {cond: fc(VF.snatch), props: {color: "old-lime", icon: "tabler:hand-grab", variant: "subtle"}},
-  {
-    cond: cfc(CVF.attract),
-    props: {color: "old-pink", icon: "material-symbols:favorite", variant: "subtle"},
-  },
-  {cond: fc(VF.lockon), props: {color: "error", icon: "ri:crosshair-2-line", variant: "subtle"}},
-  {cond: cfc(CVF.meanLook), props: {color: "error", icon: "tabler:prison", variant: "subtle"}},
-  {
-    cond: cfc(CVF.seeded),
-    props: {color: "old-lime", icon: "tabler:seedling-filled", variant: "subtle"},
-  },
-  {cond: fc(VF.flashFire), props: {color: "error", icon: "mdi:fire", variant: "subtle"}},
-  {cond: fc(VF.helpingHand), props: {color: "old-lime", icon: "mdi:hand-clap", variant: "subtle"}},
-  {
-    cond: fc(VF.charge),
-    props: {color: "old-yellow", icon: "material-symbols:bolt", variant: "subtle"},
-  },
-  {cond: fc(VF.magicCoat), props: {color: "old-pink", icon: "mdi:mirror", variant: "subtle"}},
-  {
-    cond: fc(VF.gastroAcid),
-    props: {
-      color: "old-purple",
-      icon: "material-symbols:block-outline",
-      label: "Suppressed",
-      variant: "subtle",
-    },
-  },
-  {
-    cond: cfc(CVF.encore),
-    props: {color: "old-sky", icon: "material-symbols:celebration", variant: "subtle"},
-  },
-  {
-    cond: cfc(CVF.disabled),
-    props: {color: "error", icon: "material-symbols:block-outline", variant: "subtle"},
-  },
-  {
-    cond: cfc(CVF.taunt),
-    props: {color: "error", icon: "fluent-emoji-high-contrast:anger-symbol", variant: "subtle"},
-  },
-  {
-    cond: fc(VF.torment),
-    props: {
-      color: "error",
-      icon: "fluent-emoji-high-contrast:anger-symbol",
-      variant: "subtle",
-      label: "Torment",
-    },
-  },
-  {
-    cond: cfc(CVF.identified),
-    props: {color: "old-violet", icon: "material-symbols:search-rounded", variant: "subtle"},
-  },
-  {
-    cond: fc(VF.imprisoning),
-    props: {
-      color: "error",
-      icon: "material-symbols:lock",
-      variant: "subtle",
-      label: "Imprisoning",
-    },
-  },
-  {
-    cond: fc(VF.curse),
-    props: {color: "error", icon: "mdi:nail", label: "Cursed", variant: "subtle"},
-  },
-  {
-    cond: fc(VF.ingrain),
-    props: {color: "old-lime", icon: "tabler:prison", variant: "subtle", label: "Ingrain"},
-  },
-  {cond: fc(VF.focusEnergy), props: {color: "old-emerald", label: "Focus Energy"}},
-  {cond: fc(VF.mist), props: {color: "old-teal", label: "Mist"}},
-  {cond: fc(VF.destinyBond), props: {color: "neutral", label: "Destiny Bond", variant: "subtle"}},
-  {cond: fc(VF.grudge), props: {color: "neutral", label: "Grudge", variant: "subtle"}},
-  {cond: fc(VF.protect), props: {color: "neutral", label: "Protect"}},
-  {cond: fc(VF.endure), props: {color: "neutral", label: "Endure"}},
-  {cond: fc(VF.nightmare), props: {color: "neutral", label: "Nightmare"}},
-  {cond: cfc(CVF.drowsy), props: {color: "neutral", label: "Drowsy"}},
-  {cond: fc(VF.waterSport), props: {color: "old-sky", label: "Water Sport"}},
-  {cond: fc(VF.mudSport), props: {color: "old-orange", label: "Mud Sport"}},
-];
+  return result;
+});
 
 const rem = (rem: number) => parseFloat(getComputedStyle(document.documentElement).fontSize) * rem;
 

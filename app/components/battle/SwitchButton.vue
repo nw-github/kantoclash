@@ -15,7 +15,7 @@
         </div>
         <UProgress
           :model-value="poke.hp"
-          :max="poke.stats.hp"
+          :max="poke.maxHp"
           :color="barCol"
           class="w-full h-0.5 sm:h-0.75"
         />

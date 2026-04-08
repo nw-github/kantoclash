@@ -1,7 +1,8 @@
 import type {Random} from "random";
-import type {TypeChart} from "./gen";
 import type {PlayerId, PokeId} from "./events";
 import type {AbilityId} from "./species";
+
+export type NonEmptyArray<T> = [T, ...T[]];
 
 export type Weather = "rain" | "sun" | "sand" | "hail";
 
@@ -62,7 +63,7 @@ export enum VF {
   protect      = 0x0000_0040,
   endure       = 0x0000_0080,
   nightmare    = 0x0000_0100,
-  // identified   = 0x0000_0200,
+  roost        = 0x0000_0200,
   lockon       = 0x0000_0400,
   grudge       = 0x0000_0800,
   helpingHand  = 0x0000_1000,
@@ -78,21 +79,25 @@ export enum VF {
   snatch       = 0x0040_0000,
   magicCoat    = 0x0080_0000,
   gastroAcid   = 0x0100_0000,
+  minimize     = 0x0200_0000,
+  defenseCurl  = 0x0400_0000,
 }
 
 /** Client only */
 // prettier-ignore
 export enum CVF {
   none       = 0,
-  confused   = 0x0000_0001,
-  disabled   = 0x0000_0002,
-  attract    = 0x0000_0004,
-  encore     = 0x0000_0008,
-  meanLook   = 0x0000_0010,
-  seeded     = 0x0000_0020,
-  taunt      = 0x0000_0040,
-  drowsy     = 0x0000_0080,
-  identified = 0x0000_0100,
+  disabled   = 0x0000_0001,
+  encore     = 0x0000_0002,
+  taunt      = 0x0000_0004,
+}
+
+export enum Endure {
+  None,
+  Endure,
+  FocusBand,
+  FocusSash,
+  Sturdy,
 }
 
 // prettier-ignore
@@ -112,6 +117,14 @@ export const IGNORABLE_ABILITIES = new Set<AbilityId>([
   'bigpecks', 'contrary', 'friendguard', 'heavymetal', 'lightmetal', 'magicbounce', 'multiscale',
   'sapsipper', 'telepathy', 'wonderskin',
 ]);
+
+export const TypeMod = {
+  SUPER_EFFECTIVE: 20,
+  MORE_EFFECTIVE: 15,
+  EFFECTIVE: 10,
+  NOT_VERY_EFFECTIVE: 5,
+  NO_EFFECT: 0,
+} as const;
 
 export enum MC {
   physical,
@@ -147,9 +160,35 @@ export enum Range {
   Field,
 }
 
-export const isSpreadMove = (range: Range) => range >= Range.All;
+export enum DMF {
+  none,
+  high_crit,
+  drain,
+  explosion,
+  recharge,
+  crash,
+  double,
+  triple,
+  multi,
+  multi_turn,
+  trap,
+  ohko,
+  uturn,
+  norand,
+  rollout,
+  minimize,
+  remove_hazards,
+  remove_screens,
+  remove_protect,
+  revenge,
+  bugbite,
+  futuresight,
+  assurance,
+  hits_defense,
+  ignore_defeva,
+}
 
-export const floatTo255 = (num: number) => Math.floor((num / 100) * 255);
+export const isSpreadMove = (range: Range) => range >= Range.All;
 
 export const clamp = (num: number, min: number, max: number) => Math.max(Math.min(num, max), min);
 
@@ -164,13 +203,8 @@ export const hpPercent = (current: number, max: number) => {
   return percent;
 };
 
-export const getEffectiveness = (typeChart: TypeChart, atk: Type, def: readonly Type[]) => {
-  return def.reduce((eff, def) => eff * (typeChart[atk][def] ?? 1), 1);
-};
-
-export const idiv = (a: number, b: number) => Math.floor(a / b);
-
-export const imul = (a: number, b: number) => Math.floor(a * b);
+export const idiv = (a: number, b: number) => (a / b) | 0;
+export const idiv1 = (a: number, b: number) => Math.max(1, (a / b) | 0);
 
 export const arraysEqual = <T>(a: readonly T[], b: readonly T[]) => {
   return a.length === b.length && a.every((item, i) => b[i] === item);
@@ -196,13 +230,33 @@ export const playerId = (poke: PokeId): PlayerId => poke.split(":")[0];
 
 export const debugLog = import.meta.dev ? console.debug : (..._args: any[]) => {};
 
-export const dmgFlags = (flags: Record<string, any>) => {
-  let extra = "";
-  const c = (n: string, b?: bool) => b && (extra += n + " ");
-  for (const k in flags) {
-    c(k, flags[k]);
+export const c = (v: any, c: number) => `\x1b[0;${c}m${v}\x1b[0m`;
+
+export const n = (v: any) => c(v, 33);
+
+export const isSpecialType = (type: Type) => {
+  switch (type) {
+    case "normal":
+    case "rock":
+    case "ground":
+    case "ghost":
+    case "poison":
+    case "bug":
+    case "flying":
+    case "fight":
+    case "steel":
+    case "???":
+      return false;
+    case "water":
+    case "grass":
+    case "fire":
+    case "electric":
+    case "ice":
+    case "psychic":
+    case "dragon":
+    case "dark":
+      return true;
   }
-  return extra;
 };
 
 // from ts-reset
@@ -245,3 +299,46 @@ declare global {
 
   type bool = boolean;
 }
+
+export class TypeEffectiveness {
+  shifts = 0;
+
+  modify(mod: number) {
+    // prettier-ignore
+    switch (mod) {
+    case TypeMod.SUPER_EFFECTIVE: this.shifts++; break;
+    case TypeMod.NOT_VERY_EFFECTIVE: this.shifts--; break;
+    case TypeMod.NO_EFFECT: this.shifts = NaN; break;
+    }
+  }
+
+  superEffective() {
+    return this.shifts > 0;
+  }
+
+  notVeryEffective() {
+    return this.shifts < 0;
+  }
+
+  immune() {
+    return Number.isNaN(this.shifts);
+  }
+
+  toFloat() {
+    return this.immune() ? 0 : 2 ** this.shifts;
+  }
+
+  toString() {
+    return this.immune() ? "Immune" : `${Math.abs(this.toFloat())}x`;
+  }
+}
+
+export const deepFreeze = <T>(obj: T): T => {
+  if (typeof obj !== "object" || !obj || Object.isFrozen(obj)) {
+    return obj;
+  }
+  for (const k in obj) {
+    obj[k as keyof T] = deepFreeze(obj[k as keyof T]);
+  }
+  return Object.freeze(obj);
+};
