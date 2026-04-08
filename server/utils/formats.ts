@@ -253,6 +253,13 @@ export const randoms = (
 };
 
 const createValidator = (gen: Generation, maxLevel: number, nfe = false) => {
+  function refineSpecies(id: string, ctx: z.RefinementCtx) {
+    if (!(id in gen.speciesList)) {
+      ctx.addIssue({code: z.ZodIssueCode.custom, message: "Species is invalid", fatal: true});
+      return z.NEVER;
+    }
+  }
+
   return z
     .object({
       name: z
@@ -265,18 +272,18 @@ const createValidator = (gen: Generation, maxLevel: number, nfe = false) => {
       speciesId: nfe
         ? z
             .string()
-            .refine(id => id in gen.speciesList, "Species is invalid")
+            .superRefine(refineSpecies)
             .refine(
               id => gen.validSpecies(gen.speciesList[id as SpeciesId]),
               "Species does not exist in this generation",
             )
             .refine(
-              id => !gen.speciesList[id as SpeciesId].evolvesTo,
+              id => gen.speciesList[id as SpeciesId].evolvesTo,
               "Species cannot be used in NFE format (it does not evolve)",
             )
         : z
             .string()
-            .refine(id => id in gen.speciesList, "Species is invalid")
+            .superRefine(refineSpecies)
             .refine(
               id => gen.validSpecies(gen.speciesList[id as SpeciesId]),
               "Species does not exist in this generation",
