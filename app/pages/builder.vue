@@ -178,7 +178,7 @@ watch([pageCount, filteredTeams], () => (page.value = 1));
 const router = useRouter();
 
 onMounted(() => {
-  useTitle("Team Builder");
+  useTitle("Team Builder | Kanto Clash");
 
   const route = useRoute();
   const format = String(route.query.new_team);

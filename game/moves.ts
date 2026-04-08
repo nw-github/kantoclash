@@ -11,6 +11,7 @@ import {
   DMF,
   idiv1,
   randChoiceWeighted,
+  hazards,
 } from "./utils";
 import type {FailReason, InfoReason, RecoveryReason} from "./events";
 import type {Pokemon, Status} from "./pokemon";
@@ -1323,6 +1324,35 @@ export const moveScripts: MoveScripts = {
 
     user.v.setFlag(VF.roost);
     user.recover(idiv1(user.base.maxHp, 2), user, battle, "recover");
+  },
+  defog(this: Move, battle, user, [target]) {
+    if (!battle.checkAccuracy(this, user, target)) {
+      return;
+    }
+
+    if (battle.gen.id <= 4 || !target.v.substitute) {
+      target.modStages([["eva", -1]], battle, user);
+    }
+
+    for (const screen of ["light_screen", "reflect", "safeguard", "mist"] as const) {
+      if (target.owner.screens[screen]) {
+        target.owner.screens[screen] = 0;
+        battle.event({type: "screen", user: target.owner.id, screen, kind: "end"});
+      }
+    }
+
+    for (const hazard of hazards) {
+      if (target.owner.hazards[hazard]) {
+        target.owner.hazards[hazard] = 0;
+        battle.event({
+          type: "hazard",
+          src: user.id,
+          player: target.owner.id,
+          hazard,
+          spin: true,
+        });
+      }
+    }
   },
 };
 

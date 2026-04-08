@@ -32,7 +32,7 @@ const alert = useOverlay().create(AlertModal);
 
 const {$conn} = useNuxtApp();
 const {user} = useUserSession();
-const title = useTitle("Battle");
+const title = useTitle("Battle | Kanto Clash");
 const toast = useToast();
 const route = useRoute();
 const router = useRouter();
@@ -239,7 +239,7 @@ const onJoinRoom = (resp: JoinRoomResponse | "bad_room") => {
   }
 
   loading.value = false;
-  title.value = `${resp.battlers.map(b => b.name).join(" vs. ")} - ${fmt.name}`;
+  title.value = `${resp.battlers.map(b => b.name).join(" vs. ")} - ${fmt.name} | Kanto Clash`;
   finished.value = resp.finished;
 
   let startAtBeginning = firstConnect;

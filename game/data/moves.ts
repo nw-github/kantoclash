@@ -4106,12 +4106,12 @@ export const rawMoveList = {
     snatch: true,
   },
   defog: {
-    kind: "fail",
+    kind: "defog",
     name: "Defog",
-    pp: 1,
-    type: "normal",
+    pp: 15,
+    type: "flying",
     range: "Adjacent",
-    why: "fail_unimplemented",
+    protect: true,
   },
   discharge: {
     kind: "damage",

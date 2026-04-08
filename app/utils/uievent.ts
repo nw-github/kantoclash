@@ -212,16 +212,16 @@ export const screenMessage: Record<ScreenId, Record<ScreenEvent["kind"], string>
 
 export const hazardMessage: Record<HazardId, {set: string; spin: string}> = {
   spikes: {
-    set: "Spikes were scattered all around the feet of {l}!",
-    spin: "Rapid Spin blew away the Spikes around {l}'s feet!",
+    set: "Spikes were scattered all around the feet of {tl}!",
+    spin: "{} blew away the Spikes around {tl}'s feet!",
   },
   rocks: {
-    set: "Pointed stones float in the air around {l}!",
-    spin: "The pointed stones disappeared from the ground around {l}'s feet!",
+    set: "Pointed stones float in the air around {tl}!",
+    spin: "The pointed stones disappeared from the ground around {tl}'s feet!",
   },
   tspikes: {
-    set: "Poison spikes were scattered all around {l}'s feet!",
-    spin: "The poison spikes disappeared from the ground around {l}'s feet!",
+    set: "Poison spikes were scattered all around {tl}'s feet!",
+    spin: "The poison spikes disappeared from the ground around {tl}'s feet!",
   },
 };
 

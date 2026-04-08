@@ -27,6 +27,7 @@ export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
   covet: {power: 60},
   crabhammer: {acc: 90},
   curse: {type: "ghost"},
+  defog: {magicCoat: true},
   detect: {priority: +4},
   disable: {acc: 100},
   doomdesire: {power: 140, acc: 100},

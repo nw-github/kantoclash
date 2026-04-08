@@ -185,7 +185,7 @@
     <template v-else>{{ pn(e.src) }} was cured of its {{ statusNameTable[e.status] }}!</template>
   </div>
   <div v-else-if="e.type === 'hazard'">
-    {{ hazardMessage[e.hazard][e.spin ? 'spin' : 'set'].replace("{}", tn(e.player, true)).replace("{l}", tn(e.player, false)) }}
+    {{ hazardMessage[e.hazard][e.spin ? 'spin' : 'set'].replace("{}", pn(e.src, true)).replace("{t}", tn(e.player, true)).replace("{tl}", tn(e.player, false)) }}
   </div>
   <div v-else-if="e.type === 'futuresight'">
     {{ futureSightMessage[e.move]![e.release ? 'release' : 'set'].replace("{}", pn(e.src)) }}
