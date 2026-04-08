@@ -67,17 +67,17 @@ const manager = injectManager();
 const weather = computed(() => manager?.battle?.getWeather());
 
 const statClass = (stat: StatStageId) => {
-  if (poke.stats[stat] === boostedStats.value[stat]) {
-    return "";
+  const baseStats = poke.gen.id <= 2 ? poke.stats : active?.v.stats ?? poke.stats;
+  if (baseStats[stat] !== boostedStats.value[stat]) {
+    return baseStats[stat] > boostedStats.value[stat] ? "down" : "up";
   }
-  return poke.stats[stat] > boostedStats.value[stat] ? "down" : "up";
 };
 
 const getType = (id: MoveId) => poke.gen.getMoveType(poke.gen.moveList[id], poke, weather.value);
 
 const boostedStats = computed(() => {
   if (!manager || !active) {
-    return active?.v?.stats ?? poke.stats;
+    return active?.v.stats ?? poke.stats;
   }
 
   const battle = manager.battle;

@@ -378,6 +378,15 @@ export class Generation5 extends Generation4 {
     });
     target.damage2(battle, {dmg, src: user, isCrit, eff, why: "future_sight"});
     target.handleEndure(battle, endure);
+
+    if (user.base.hp && user.base.itemId === "lifeorb") {
+      user.damage2(battle, {
+        dmg: idiv1(user.base.maxHp, 10),
+        src: user,
+        why: "lifeorb",
+        direct: true,
+      });
+    }
   }
 
   override tryEndure({battle, user, target, dmg}: TryEndureParams) {

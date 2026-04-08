@@ -68,24 +68,15 @@ import {abilityList} from "~~/game/species";
 
 const {poke} = defineProps<{poke: ClientActivePokemon}>();
 
-const minSpe = computed(() =>
-  poke.base.gen.calcStat(
-    "spe",
-    poke.v.species.stats,
-    poke.base.level,
-    {spe: 0},
-    {spe: 0},
-    Nature.quiet,
-  ),
-);
-const maxSpe = computed(() =>
-  poke.base.gen.calcStat(
-    "spe",
-    poke.v.species.stats,
-    poke.base.level,
-    {spe: poke.base.gen.maxIv},
-    {spe: poke.base.gen.maxEv},
-    Nature.timid,
-  ),
-);
+const calc = (ev: number, iv: number, nature: Nature) => {
+  let baseStats = poke.v.species.stats;
+  if (poke.v.form && poke.v.species.forms?.[poke.v.form]) {
+    baseStats = poke.v.species.forms![poke.v.form]!.stats;
+  }
+
+  return poke.base.gen.calcStat("spe", baseStats, poke.base.level, {spe: iv}, {spe: ev}, nature);
+};
+
+const minSpe = computed(() => calc(0, 0, Nature.quiet));
+const maxSpe = computed(() => calc(poke.base.gen.maxEv, poke.base.gen.maxIv, Nature.timid));
 </script>

@@ -108,7 +108,8 @@ export type DamageReason =
   | "rocks"
   | "trap_eot"
   | "roughskin"
-  | "baddreams";
+  | "baddreams"
+  | "lifeorb";
 
 export type RecoveryReason =
   | "drain"
@@ -215,7 +216,16 @@ export type BugType = "bug_gen2_bellydrum" | "bug_gen2_spikes";
 
 type VFReason = Exclude<
   keyof typeof VF,
-  "curse" | "none" | "disabled" | "identified" | "lockon" | "helpingHand" | "flashFire" | "roost"
+  | "curse"
+  | "none"
+  | "disabled"
+  | "identified"
+  | "lockon"
+  | "helpingHand"
+  | "flashFire"
+  | "roost"
+  | "minimize"
+  | "defenseCurl"
 >;
 
 export type InfoReason =

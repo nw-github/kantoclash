@@ -226,7 +226,7 @@ export const hazardMessage: Record<HazardId, {set: string; spin: string}> = {
 };
 
 export const damageMessage: Partial<Record<DamageReason, string>> = {
-  recoil: "{} was hurt by recoil!",
+  recoil: "{} is hit with recoil!",
   psn: "{} is hurt by poison!",
   brn: "{} is hurt by its burn!",
   spikes: "{} is hurt by the spikes!",
@@ -245,6 +245,7 @@ export const damageMessage: Partial<Record<DamageReason, string>> = {
   destiny_bond: "{} took {tl} with it!",
   roughskin: "{t} was hurt!",
   baddreams: "{t} is tormented!",
+  lifeorb: "{} is hurt by its Life Orb!",
 };
 
 export const trapStart: Partial<Record<MoveId, string>> = {

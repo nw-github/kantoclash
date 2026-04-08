@@ -294,7 +294,6 @@ export class ClientManager {
             src.base.recalculateStats();
           }
 
-          src.base.form = src.v.form;
           if (e.ability) {
             src.v.ability = e.ability;
           }

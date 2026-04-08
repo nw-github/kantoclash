@@ -2,7 +2,7 @@ import __speciesList from "./data/species.json";
 import __abilityList from "./data/abilities.json";
 import type {MoveId} from "./moves";
 import type {StageId, Stats, Type, Weather} from "./utils";
-import type {Status} from "./pokemon";
+import type {FormId, Status} from "./pokemon";
 import type {ItemId} from "./item";
 
 export type Species = {
@@ -21,6 +21,7 @@ export type Species = {
   /** Weight in kilograms */
   readonly weight: number;
   readonly requiresItem?: ItemId;
+  readonly forms?: Partial<Record<FormId, {stats: Stats; types: Type[]}>>;
 };
 
 export type SpeciesId = keyof typeof __speciesList;

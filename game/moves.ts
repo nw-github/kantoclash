@@ -16,6 +16,7 @@ import type {FailReason, InfoReason, RecoveryReason} from "./events";
 import type {Pokemon, Status} from "./pokemon";
 import type {StageId, Type, Weather, ScreenId, HazardId} from "./utils";
 import type {Battlemon, Battle} from "./battle";
+import {isAffectedBySheerForce} from "./gen5/moves";
 
 export type MoveId = keyof typeof rawMoveList;
 export type MoveScriptId = (typeof rawMoveList)[MoveId]["kind"];
@@ -500,6 +501,7 @@ export const moveScripts: MoveScripts = {
 
     let dealt = 0;
     const killed = [];
+    const start = battle.events.length;
     for (const target of targets) {
       dealt += battle.gen.tryDamage(this, battle, user, target, targets.length > 1, power);
 
@@ -507,6 +509,7 @@ export const moveScripts: MoveScripts = {
         killed.push(target);
       }
     }
+    const end = battle.events.length;
 
     for (const target of killed) {
       if (target.v.hasFlag(VF.destinyBond)) {
@@ -540,6 +543,50 @@ export const moveScripts: MoveScripts = {
       if (battle.finished) {
         user.v.inBatonPass = undefined;
       }
+    }
+
+    // FIXME: this is a hack
+    const failed = !battle.events
+      .slice(start, end)
+      .find(ev => ev.type === "damage" && ev.src !== ev.target);
+    // Sheer Force skips the Relic Song transformation
+    if (failed || (user.getAbilityId() === "sheerforce" && isAffectedBySheerForce(this))) {
+      return;
+    }
+
+    // TODO: Don't cause damage in Gen IV when hitting a substitute?
+    if (user.base.hp && user.base.itemId === "lifeorb") {
+      user.damage2(battle, {
+        dmg: idiv1(user.base.maxHp, 10),
+        src: user,
+        why: "lifeorb",
+        direct: true,
+      });
+    }
+
+    if (this.id === "relicsong" && user.base.hp && user.v.speciesId === "meloetta") {
+      // Doing Meloetta's transfomation like this means anything that accesses species.stats.*
+      // would get an incorrect value. Luckily, Beat Up was the only thing that did that, and no
+      // longer does from Gen V onward.
+      if (user.v.form !== "pirouette") {
+        const form = user.v.species.forms!.pirouette!;
+        user.v.stats = user.base.calculateStats(form.stats);
+        user.v.baseStats = {...user.v.stats};
+        user.v.types = [...form.types];
+        user.v.form = "pirouette";
+      } else {
+        user.v.stats = user.base.calculateStats(user.v.species.stats);
+        user.v.baseStats = {...user.v.stats};
+        user.v.types = [...user.v.species.types];
+        user.v.form = undefined;
+      }
+      battle.event({
+        type: "transform",
+        src: user.id,
+        speciesId: user.v.speciesId,
+        shiny: user.v.shiny,
+        gender: user.v.gender,
+      });
     }
   },
   fail(battle, user) {

@@ -47,6 +47,7 @@ export type SawsbuckForm = (typeof SAWSBUCK_FORM)[number];
 export type CherrimForm = "sunshine" | "overcast";
 export type ArceusForm = Exclude<Type, "???">;
 export type KeldeoForm = "resolute";
+export type MeloettaForm = "pirouette";
 export type FormId =
   | UnownForm
   | CastformForm
@@ -54,7 +55,8 @@ export type FormId =
   | ArceusForm
   | GenesectForm
   | KeldeoForm
-  | SawsbuckForm;
+  | SawsbuckForm
+  | MeloettaForm;
 
 export const choosableForms: Partial<Record<SpeciesId, readonly FormId[]>> = {
   unown: UNOWN_FORM,
@@ -303,14 +305,18 @@ export class Pokemon {
   }
 
   recalculateStats() {
-    const {species, level, ivs, evs, nature} = this;
-    this.stats = {
-      hp: this.gen.calcStat("hp", species.stats, level, ivs, evs, nature),
-      atk: this.gen.calcStat("atk", species.stats, level, ivs, evs, nature),
-      def: this.gen.calcStat("def", species.stats, level, ivs, evs, nature),
-      spa: this.gen.calcStat("spa", species.stats, level, ivs, evs, nature),
-      spd: this.gen.calcStat("spd", species.stats, level, ivs, evs, nature),
-      spe: this.gen.calcStat("spe", species.stats, level, ivs, evs, nature),
+    this.stats = this.calculateStats(this.species.stats);
+  }
+
+  calculateStats(base: Stats) {
+    const {level, ivs, evs, nature} = this;
+    return {
+      hp: this.gen.calcStat("hp", base, level, ivs, evs, nature),
+      atk: this.gen.calcStat("atk", base, level, ivs, evs, nature),
+      def: this.gen.calcStat("def", base, level, ivs, evs, nature),
+      spa: this.gen.calcStat("spa", base, level, ivs, evs, nature),
+      spd: this.gen.calcStat("spd", base, level, ivs, evs, nature),
+      spe: this.gen.calcStat("spe", base, level, ivs, evs, nature),
     };
   }
 }
