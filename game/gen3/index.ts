@@ -389,9 +389,11 @@ export class DamageCalc {
 
     const eff = new TypeEffectiveness();
     for (const [atktype, deftype, modifier] of gen.typeMatchupTable) {
-      if (deftype === target.v.identified?.removeImmunities && modifier === TypeMod.NO_EFFECT) {
-        break;
-      } else if (atktype === type && target.v.hasAnyType(deftype)) {
+      if (atktype === type && target.v.hasAnyType(deftype)) {
+        if (deftype === target.v.identified?.removeImmunities && modifier === TypeMod.NO_EFFECT) {
+          continue;
+        }
+
         eff.modify(modifier);
         if (modifier === TypeMod.NO_EFFECT) {
           dmg = 0;

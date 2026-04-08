@@ -325,15 +325,7 @@ export class TypeEffectiveness {
   }
 
   toFloat() {
-    if (this.immune()) {
-      return 0;
-    } else if (this.superEffective()) {
-      return this.shifts * 2;
-    } else if (this.notVeryEffective()) {
-      return -this.shifts * 0.5;
-    } else {
-      return 1;
-    }
+    return this.immune() ? 0 : 2 ** this.shifts;
   }
 
   toString() {

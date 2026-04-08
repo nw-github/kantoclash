@@ -396,9 +396,7 @@ class DamageCalc {
 
     const eff = new TypeEffectiveness();
     for (const [atktype, deftype, modifier] of gen.typeMatchupTable) {
-      if (!shouldUse(deftype, modifier)) {
-        continue;
-      } else if (atktype === type && target.v.hasAnyType(deftype)) {
+      if (atktype === type && target.v.hasAnyType(deftype) && shouldUse(deftype, modifier)) {
         eff.modify(modifier);
         if (modifier === TypeMod.NO_EFFECT) {
           dmg = 0;
