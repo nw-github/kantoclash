@@ -589,6 +589,9 @@ export class Generation4 extends Generation3 {
         if (poke.v.hasFlag(VF.ingrain)) {
           poke.recover(idiv1(poke.base.maxHp, 16), poke, battle, "ingrain");
         }
+        if (poke.v.hasFlag(VF.aquaRing)) {
+          poke.recover(idiv1(poke.base.maxHp, 16), poke, battle, "aquaRing");
+        }
 
         if (ability === "speedboost" && poke.v.canSpeedBoost && poke.v.stages.spe < 6) {
           battle.ability(poke);

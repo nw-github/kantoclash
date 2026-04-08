@@ -119,7 +119,8 @@ export class Battlemon {
         VF.powerTrick |
         VF.waterSport |
         VF.mudSport |
-        VF.gastroAcid;
+        VF.gastroAcid |
+        VF.aquaRing;
       this.v.setFlag(old.flags & passedFlags);
 
       if (this.v.hasFlag(VF.powerTrick)) {

@@ -53,6 +53,7 @@
     <p v-else-if="e.why === 'rest'">{{ pn(e.src) }} started sleeping!</p>
     <p v-else-if="e.why === 'leftovers'">{{ pn(e.src) }} restored a little HP using its Leftovers!</p>
     <p v-else-if="e.why === 'ingrain'">{{ pn(e.src) }} absorbed nutrients with its roots!</p>
+    <p v-else-if="e.why === 'aquaRing'">A veil of water restored {{ pn(e.src, false) }}'s HP!</p>
     <p v-else-if="e.why === 'shellbell'">{{ pn(e.src) }} restored a little HP using its Shell Bell!</p>
     <p v-else-if="e.why.startsWith('wish:')">{{ e.why.slice(5) }}'s wish came true!</p>
 

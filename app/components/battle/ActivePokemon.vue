@@ -307,6 +307,7 @@ const badges = computed(() => {
   if (poke.v.hasFlag(VF.imprisoning)) { result.push({ color: "error", icon: "material-symbols:lock", variant: "subtle", label: "Imprisoning" }); }
   if (poke.v.hasFlag(VF.curse)) { result.push({color: "error", icon: "mdi:nail", label: "Cursed", variant: "subtle"}); }
   if (poke.v.hasFlag(VF.ingrain)) { result.push({color: "old-lime", icon: "tabler:prison", variant: "subtle", label: "Ingrain"}); }
+  if (poke.v.hasFlag(VF.aquaRing)) { result.push({color: "old-sky", variant: "subtle", label: "Aqua Ring"}); }
   if (poke.v.hasFlag(VF.roost)) { result.push({color: "neutral", label: "Roost", icon: "mdi:feather", variant: "subtle"}); }
   if (poke.v.hasFlag(VF.focusEnergy)) { result.push({color: "old-emerald", label: "Focus Energy"}); }
   if (poke.v.hasFlag(VF.mist)) { result.push({color: "old-teal", label: "Mist"}); }

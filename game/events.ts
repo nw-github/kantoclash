@@ -122,6 +122,7 @@ export type RecoveryReason =
   | "shellbell"
   | "item"
   | "ingrain"
+  | "aquaRing"
   | "none"
   | `wish:${string}`;
 

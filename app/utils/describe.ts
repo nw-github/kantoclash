@@ -171,6 +171,7 @@ const descriptions: Partial<Record<number, Partial<Record<MoveId, string>>>> = {
     storedpower: "Gains 20 power for each increased stat stage the user has. ",
     fakeout: "Always flinches the target, but only works on the user's first turn on the field. ",
     gyroball: "Power increases the slower the user is compared to the target. ",
+    aquaring: "Heals the user for 1/16 its max HP at the end of every turn. ",
   },
   [2]: {
     conversion:

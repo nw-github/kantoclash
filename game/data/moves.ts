@@ -3853,12 +3853,13 @@ export const rawMoveList = {
     contact: true,
   },
   aquaring: {
-    kind: "fail",
+    kind: "volatile",
     name: "Aqua Ring",
-    pp: 1,
-    type: "normal",
+    pp: 20,
+    type: "water",
     range: "Self",
-    why: "fail_unimplemented",
+    flag: "aquaRing",
+    snatch: true,
   },
   aquatail: {
     kind: "damage",
