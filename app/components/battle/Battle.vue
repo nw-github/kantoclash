@@ -342,10 +342,9 @@ const updatePerspective = () => {
 };
 
 const skipToTurn = (turn: number) => {
-  // console.log(`skipTo() | index: ${index} currentTurn: ${currentTurn}`);
   let index = 0;
   if (turn < 0) {
-    index = events.length + 1;
+    index = events.length && events.length + 1;
   } else if (turn !== 0) {
     index = events.findIndex(event => event.type === "next_turn" && event.turn === turn);
     if (index === -1) {
@@ -354,6 +353,8 @@ const skipToTurn = (turn: number) => {
       index++;
     }
   }
+
+  // console.log(`skipTo(${turn}) => index: ${index} (nextEvent was: ${nextEvent.value})`);
 
   // TODO: mute current sounds
   if (index < nextEvent.value) {

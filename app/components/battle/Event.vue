@@ -30,7 +30,7 @@
       }}
     </p>
 
-    <p v-if="e.why === 'attacked' && e.hitCount === undefined && (e.eff ?? 1) !== 1" class="italic">
+    <p v-if="e.hitCount === undefined && (e.eff ?? 1) !== 1" class="italic">
       {{ eff(e.target, e.eff) }}
     </p>
 
