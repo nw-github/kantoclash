@@ -97,7 +97,7 @@ const info = computed(() => {
     }
 
     let power = move.power;
-    if (move.kind === "damage" && move.id !== "present") {
+    if (move.kind === "damage" && move.id !== "present" && move.id !== "gyroball") {
       power = battle.gen.getMoveBasePower(move, battle, user, opp);
       power = battle.gen.calc.getBoostedPower({battle, user, target: opp, type, power, move});
     }

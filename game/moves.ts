@@ -1407,6 +1407,15 @@ export const moveOverrides: MovePropOverrides = {
       const stages = stageKeys.reduce((acc, stat) => acc + Math.max(0, target.v.stages[stat]), 0);
       return this.power + Math.min(stages, 7) * 20;
     },
+    gyroball(battle, user, target) {
+      // https://github.com/pret/pokeheartgold/blob/821bad70967f3d49dc98e56f36c1776ae9e69e3e/src/battle/battle_command.c#L4302
+      // Gyro ball uses ctx->effectiveSpeed. This is only set by CheckSortSpeed, which has a few different
+      // code paths that call it. Its unclear to me if it is only called at the beginning of the turn,
+      // or between moves, or something else.
+      const targetSpe = battle.gen.getSpeed(battle, target); // target.choice!.spe
+      const userSpe = battle.gen.getSpeed(battle, user); // user.choice!.spe
+      return Math.min(150, 1 + idiv(25 * targetSpe, userSpe));
+    },
     // Gen V
     acrobatics(_, user) {
       return !user.base.itemId ? this.power << 1 : this.power;

@@ -86,6 +86,7 @@ export class Player {
       isReplacement: false,
       executed: false,
       spe: 0,
+      subpriority: 0,
     };
     return true;
   }
@@ -113,6 +114,7 @@ export class Player {
       },
       isReplacement: active.v.fainted,
       executed: false,
+      subpriority: 0,
       spe: 0,
     };
     return true;
@@ -290,6 +292,8 @@ export class Battle {
       .sort((a, b) => {
         if (b.choice!.move.priority !== a.choice!.move.priority) {
           return (b.choice!.move.priority ?? 0) - (a.choice!.move.priority ?? 0);
+        } else if (a.choice!.subpriority !== b.choice!.subpriority) {
+          return b.choice!.subpriority - a.choice!.subpriority;
         } else if (a.choice!.spe !== b.choice!.spe) {
           return b.choice!.spe - a.choice!.spe;
         }
@@ -312,17 +316,17 @@ export class Battle {
           } else {
             debugLog("proc quick claw: ", poke.base.name);
           }
-          poke.choice.spe = 65535;
-        } else {
-          // Ensure switch-in abilities activate in turn order on the lead turn including item
-          // effects like choice scarf
-          if (poke.choice.move.kind === "switch" && !poke.initialized) {
-            poke.base = poke.choice.move.poke;
-            poke.v.stats = {...poke.choice.move.poke.stats};
-          }
-          poke.choice.spe = this.gen.getSpeed(this, poke);
-          debugLog(`[${poke.base.name}] speed is ${poke.choice.spe}`);
+          poke.choice.subpriority = 1;
         }
+
+        // Ensure switch-in abilities activate in turn order on the lead turn including item
+        // effects like choice scarf
+        if (poke.choice.move.kind === "switch" && !poke.initialized) {
+          poke.base = poke.choice.move.poke;
+          poke.v.stats = {...poke.choice.move.poke.stats};
+        }
+        poke.choice.spe = this.gen.getSpeed(this, poke);
+        debugLog(`[${poke.base.name}] speed is ${poke.choice.spe}`);
       }
     }
 

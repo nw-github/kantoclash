@@ -170,6 +170,7 @@ const descriptions: Partial<Record<number, Partial<Record<MoveId, string>>>> = {
       "Gains 20 power for each increased stat stage the target has, up to a maximum of 200 power. ",
     storedpower: "Gains 20 power for each increased stat stage the user has. ",
     fakeout: "Always flinches the target, but only works on the user's first turn on the field. ",
+    gyroball: "Power increases the slower the user is compared to the target. ",
   },
   [2]: {
     conversion:

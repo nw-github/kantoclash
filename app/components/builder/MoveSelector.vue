@@ -80,7 +80,7 @@ const items = computed(() => Object.entries(gen.moveList) as [MoveId, Move][]);
 const trailing = computed(() => {
   const q = normalizeName(query.value);
   const move = q && q in gen.moveList ? gen.moveList[q as MoveId] : undefined;
-  if (move?.kind !== "damage" || move.id === "present") {
+  if (move?.kind !== "damage" || move.id === "present" || move.id === "gyroball") {
     return;
   }
 

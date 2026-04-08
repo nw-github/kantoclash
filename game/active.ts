@@ -48,6 +48,7 @@ export type ChosenMove = {
   indexInMoves?: number;
   target?: Battlemon;
   isReplacement: bool;
+  subpriority: number;
   spe: number;
   executed: bool;
 };

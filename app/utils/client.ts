@@ -220,7 +220,7 @@ export class ClientManager {
         ) {
           await Promise.allSettled([
             this.cb.playDmg(e.eff ?? 1),
-            this.cb.playAnimation(e.src, {anim: "hurt", direct: true}),
+            this.cb.playAnimation(e.target, {anim: "hurt", direct: true}),
           ]);
         }
       }
