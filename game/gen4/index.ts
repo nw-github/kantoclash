@@ -376,7 +376,7 @@ class DamageCalc {
       } else if (deftype === "flying") {
         if (target.v.hasFlag(VF.roost)) {
           return false;
-        } else if (immunity && target.isGrounded()) {
+        } else if (immunity && target.isGrounded(user)) {
           return false;
         }
       }
@@ -395,6 +395,11 @@ class DamageCalc {
     // Technically levitate, magnet rise, wonder guard get checked here
 
     const eff = new TypeEffectiveness();
+    if (!target.isGrounded(user) && type === "ground") {
+      eff.modify(TypeMod.NO_EFFECT);
+      dmg = 0;
+    }
+
     for (const [atktype, deftype, modifier] of gen.typeMatchupTable) {
       if (atktype === type && target.v.hasAnyType(deftype) && shouldUse(deftype, modifier)) {
         eff.modify(modifier);
@@ -662,7 +667,11 @@ export class Generation4 extends Generation3 {
           battle.info(poke, "taunt_end");
         }
 
-        // TODO: magnet rise, heal block, embargo
+        if (poke.v.magnetRise && --poke.v.magnetRise === 0) {
+          battle.info(poke, "magnet_rise_end");
+        }
+
+        // TODO: heal block, embargo
       }
 
       // TODO: lockon/mind reader?

@@ -495,6 +495,7 @@ export class ClientManager {
       apply(poke.v, v, "transformed");
       apply(poke.v, v, "stockpile");
       apply(poke.v, v, "perishCount");
+      apply(poke.v, v, "magnetRise");
       apply(poke.v, v, "flags");
       apply(poke.v, v, "drowsy");
       apply(poke.v, v, "charging", c => ({move: gen.moveList[c] as DamagingMove, targets: []}));

@@ -4570,12 +4570,11 @@ export const rawMoveList = {
     kingsRock: true,
   },
   magnetrise: {
-    kind: "fail",
+    kind: "magnetrise",
     name: "Magnet Rise",
-    pp: 1,
-    type: "normal",
-    range: "Adjacent",
-    why: "fail_unimplemented",
+    pp: 10,
+    type: "electric",
+    range: "Self",
   },
   mefirst: {
     kind: "fail",

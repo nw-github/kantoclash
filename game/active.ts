@@ -104,6 +104,7 @@ export class Battlemon {
       this.v.meanLook = old.meanLook;
       this.v.counter = old.counter;
       this.v.seededBy = old.seededBy;
+      this.v.magnetRise = old.magnetRise;
       if (battle.gen.id >= 3) {
         this.v.identified = old.identified;
       }
@@ -1065,12 +1066,12 @@ export class Battlemon {
     );
   }
 
-  isGrounded() {
-    if (this.base.item?.groundsUser) {
+  isGrounded(user?: Battlemon) {
+    if (this.base.item?.groundsUser || this.v.hasFlag(VF.ingrain)) {
       return true;
     }
     const isFlying = this.v.types.includes("flying") && !this.v.hasFlag(VF.roost);
-    return !isFlying && !this.hasAbility("levitate");
+    return !isFlying && !this.hasAbility("levitate", user) && !this.v.magnetRise;
   }
 
   hasAbility(ability: AbilityId, user?: Battlemon) {
@@ -1153,6 +1154,7 @@ export class Battlemon {
       shiny: diff.shiny,
       gender: diff.gender,
       transformed: diff.transformed,
+      magnetRise: diff.magnetRise,
       charging: diff.charging && diff.charging?.move?.id,
       trapped: diff.trapped && diff.trapped?.move?.id,
       identified: diff.identified && diff.identified.id,
@@ -1216,6 +1218,7 @@ class Volatiles {
   confusion = 0;
   counter = 0;
   stockpile = 0;
+  magnetRise = 0;
   flinch = false;
   invuln = false;
   hazed = false;
@@ -1332,4 +1335,5 @@ const VOLATILE_SYNC_KEYS = [
   "gender",
   "shiny",
   "transformed",
+  "magnetRise",
 ] satisfies (keyof Volatiles)[];

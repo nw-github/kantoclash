@@ -280,6 +280,10 @@ export class Generation5 extends Generation4 {
       type = computed;
     }
 
+    if (!target.isGrounded(user) && type === "ground") {
+      return {dmg: 0, eff: 0, miss: false, type};
+    }
+
     power ??= this.getMoveBasePower(move, battle, user, target);
     if (power < 0) {
       return {dmg: -idiv1(target.base.maxHp, 4), eff: 1, miss: false, type};

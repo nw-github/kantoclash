@@ -1391,6 +1391,14 @@ export const moveScripts: MoveScripts = {
       target.unstatus(battle);
     }
   },
+  magnetrise(battle, user) {
+    if (user.v.magnetRise || user.v.hasFlag(VF.ingrain)) {
+      return battle.info(user, "fail_generic");
+    }
+
+    user.v.magnetRise = 5;
+    battle.info(user, "magnet_rise");
+  },
 };
 
 export const moveOverrides: MovePropOverrides = {

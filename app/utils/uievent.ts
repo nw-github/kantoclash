@@ -154,6 +154,8 @@ export const infoMessage: Record<InfoReason, string> = {
   healingwish: "The healing wish came true for {l}!",
   powerTrick: "{} switched its Attack and Defense!",
   aquaRing: "{} surrounded itself with a veil of water!",
+  magnet_rise: "{} levitated with electromagnetism!",
+  magnet_rise_end: "{}'s electromagnetism wore off!",
 };
 
 export const weatherMessage: Record<Weather, Record<WeatherEvent["kind"], string>> = {

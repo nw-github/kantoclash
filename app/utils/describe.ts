@@ -172,6 +172,7 @@ const descriptions: Partial<Record<number, Partial<Record<MoveId, string>>>> = {
     fakeout: "Always flinches the target, but only works on the user's first turn on the field. ",
     gyroball: "Power increases the slower the user is compared to the target. ",
     aquaring: "Heals the user for 1/16 its max HP at the end of every turn. ",
+    magnetrise: "The user becomes ungrounded for 5 turns, avoiding Ground-type attacks. ",
   },
   [2]: {
     conversion:
