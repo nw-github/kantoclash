@@ -55,6 +55,7 @@
       </div>
 
       <div class="grid gap-1 sm:gap-2 grid-cols-2 h-min sm:w-1/2">
+        <div v-if="players.get2(opponent)!.active.length < 2 && !isSingles"></div>
         <template v-for="(poke, i) in players.get2(opponent)!.active.toReversed()" :key="i">
           <SwitchButton
             v-if="poke"
@@ -66,7 +67,6 @@
             "
             @click="selectTarget(`${opponent}:${players.get2(opponent)!.active.length - i - 1}`)"
           />
-          <div v-else></div>
         </template>
         <template v-for="(poke, i) in players.get2(myId)!.active" :key="i">
           <SwitchButton
@@ -77,8 +77,8 @@
             :button-disabled="poke.v.fainted || !currTargets.includes(`${myId}:${i}`)"
             @click="selectTarget(`${myId}:${i}`)"
           />
-          <div v-else></div>
         </template>
+        <div v-if="players.get2(myId)!.active.length < 2 && !isSingles"></div>
       </div>
     </div>
     <div v-else-if="currOption" class="grid gap-2 sm:grid-cols-[1fr_1.5fr] h-min">
@@ -126,6 +126,7 @@ const {players, myId, options, opponent} = defineProps<{
   options?: Options[];
   weather?: Weather;
   localMode?: bool;
+  isSingles?: bool;
 }>();
 
 const choices = ref<[Options, Choice][]>([]);

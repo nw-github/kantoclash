@@ -15,6 +15,15 @@
             :is-singles
             :weather
           />
+
+          <ActivePokemon
+            v-if="!isSingles && player.bp.active.length < 2"
+            :class="id === perspective && 'pt-2 sm:pt-4'"
+            :poke-id="`${id}:${1}`"
+            :player
+            :is-singles
+            :weather
+          />
         </div>
         <div class="relative flex justify-center w-full">
           <div

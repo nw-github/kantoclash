@@ -107,6 +107,7 @@
             :opponent
             :weather
             :local-mode
+            :is-singles
             @cancel="$emit('cancel')"
             @choice="$emit('choice', $event)"
           />
