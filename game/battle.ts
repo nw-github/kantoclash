@@ -155,6 +155,11 @@ type BattleParams = {
   seed: string;
 };
 
+type Field = {
+  // weather?: {kind: Weather; turns: number};
+  gravity?: number;
+};
+
 export class Battle {
   readonly events: BattleEvent[] = [];
   turnType = TurnType.Lead;
@@ -162,6 +167,7 @@ export class Battle {
   private _victor?: Player;
   private _turn = 0;
   weather?: {kind: Weather; turns: number};
+  field: Field = {};
   finished = false;
   gen1LastDamage = 0;
   betweenTurns = 0;
@@ -753,7 +759,7 @@ export class Battle {
         const damp = this.allActive.find(p => p.hasAbility("damp"));
         if (damp && move.damp) {
           this.ability(damp);
-          return this.event({type: "cantuse", src: user.id, move: moveId});
+          return this.event({type: "cantuse", src: user.id, move: moveId, why: "generic"});
         }
 
         if (user.v.trapping && targets[0].v.trapped) {

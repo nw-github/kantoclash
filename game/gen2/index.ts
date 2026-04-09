@@ -337,7 +337,7 @@ export class Generation2 extends Generation1 {
   }
 
   override isValidMove(battle: Battle, user: Battlemon, move: MoveId, i: number) {
-    if (user.v.lockedIn() && user.v.lockedIn() !== battle.gen.moveList[move]) {
+    if (user.v.lockedIn() && user.v.lockedIn() !== this.moveList[move]) {
       return false;
     } else if (i === user.v.disabled?.indexInMoves) {
       return false;
@@ -347,7 +347,7 @@ export class Generation2 extends Generation1 {
       return false;
     } else if (user.v.choiceLock !== undefined && i !== user.v.choiceLock) {
       return false;
-    } else if (user.v.tauntTurns && battle.gen.moveList[move].kind !== "damage") {
+    } else if (user.v.tauntTurns && this.moveList[move].kind !== "damage") {
       return false;
     } else if (battle.allActive.some(p => p.isImprisoning(user, move))) {
       return false;
@@ -357,6 +357,8 @@ export class Generation2 extends Generation1 {
       user.v.lastMove !== user.v.thrashing?.move &&
       user.v.lastMove?.id !== "struggle"
     ) {
+      return false;
+    } else if (battle.field.gravity && this.moveList[move].noGravity) {
       return false;
     }
 
@@ -593,7 +595,7 @@ export class Generation2 extends Generation1 {
     );
   }
 
-  override getEffectiveness(type: Type, target: Battlemon) {
+  override getEffectiveness(_battle: Battle, type: Type, target: Battlemon) {
     return DamageCalc.applyTypeModifiers(0, {
       type,
       user: target,

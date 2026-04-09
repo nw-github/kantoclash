@@ -176,7 +176,7 @@
   "leafguard": {"name": "Leaf Guard", "desc": "Unimplemented"},
   "magicguard": {"name": "Magic Guard", "desc": "Unimplemented"},
   "stormdrain": {"name": "Storm Drain", "desc": "Unimplemented"},
-  "tangledfeet": {"name": "Tangled Feet", "desc": "Unimplemented"},
+  "tangledfeet": {"name": "Tangled Feet", "desc": "Increased evasiveness when confused."},
   "unburden": {"name": "Unburden", "desc": "Unimplemented"},
   "anticipation": {"name": "Anticipation", "desc": "Unimplemented"},
   "aftermath": {"name": "Aftermath", "desc": "Unimplemented"},

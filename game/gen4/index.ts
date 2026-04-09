@@ -43,9 +43,9 @@ class Rng extends Generation3.Rng {
 
 type StabParams = {
   type: Type;
-  gen: Generation;
   user: Battlemon;
   target: Battlemon;
+  battle: Battle;
 };
 
 type BaseDamageParams = {
@@ -274,8 +274,8 @@ class DamageCalc {
       statChangeA = 0;
     }
 
-    attacks[atks] = applyStatStages(user, attacks[atks], statChangeA);
-    defenses[defs] = applyStatStages(target, defenses[defs], statChangeD);
+    attacks[atks] = applyStatStages(user.base.gen, attacks[atks], statChangeA);
+    defenses[defs] = applyStatStages(user.base.gen, defenses[defs], statChangeD);
 
     let damage = idiv(idiv(attacks[atks] * power * (idiv(2 * level, 5) + 2), defenses[defs]), 50);
     if (!special && user.base.status === "brn" && userAbilityId !== "guts") {
@@ -365,7 +365,7 @@ class DamageCalc {
   }
 
   // DoApplyTypeEffectiveness
-  static applyTypeModifier(dmg: number, {type, gen, user, target}: StabParams) {
+  static applyTypeModifier(dmg: number, {battle, type, user, target}: StabParams) {
     // ov12_02251C74, modified
     const shouldUse = (deftype: Type, modifier: number) => {
       const immunity = modifier === TypeMod.NO_EFFECT;
@@ -376,7 +376,7 @@ class DamageCalc {
       } else if (deftype === "flying") {
         if (target.v.hasFlag(VF.roost)) {
           return false;
-        } else if (immunity && target.isGrounded(user)) {
+        } else if (immunity && target.isGrounded(battle, user)) {
           return false;
         }
       }
@@ -395,12 +395,12 @@ class DamageCalc {
     // Technically levitate, magnet rise, wonder guard get checked here
 
     const eff = new TypeEffectiveness();
-    if (!target.isGrounded(user) && type === "ground") {
+    if (!target.isGrounded(battle, user) && type === "ground") {
       eff.modify(TypeMod.NO_EFFECT);
       dmg = 0;
     }
 
-    for (const [atktype, deftype, modifier] of gen.typeMatchupTable) {
+    for (const [atktype, deftype, modifier] of battle.gen.typeMatchupTable) {
       if (atktype === type && target.v.hasAnyType(deftype) && shouldUse(deftype, modifier)) {
         eff.modify(modifier);
         if (modifier === TypeMod.NO_EFFECT) {
@@ -584,7 +584,9 @@ export class Generation4 extends Generation3 {
       // TODO: Dry Skin
     }
 
-    // TODO: Gravity
+    if (battle.field.gravity && --battle.field.gravity === 0) {
+      battle.event({type: "weather", kind: "end", weather: "gravity"});
+    }
 
     // A bunch of stuff
     const hasUproar = battle.allActive.some(p => p.v.thrashing?.move?.id === "uproar");
@@ -749,7 +751,7 @@ export class Generation4 extends Generation3 {
     dmg = DamageCalc.applyMiscModifiers(dmg, {isCrit, user, move, rng: random});
     let eff = new TypeEffectiveness();
     if (move.id !== "struggle" && move.flag !== DMF.futuresight && !beatUp) {
-      ({dmg, eff} = DamageCalc.applyTypeModifier(dmg, {type, gen: this, user, target}));
+      ({dmg, eff} = DamageCalc.applyTypeModifier(dmg, {battle, type, user, target}));
     }
 
     debugLog(`- DMG: ${n(dmg)} | EFF: ${n(eff)} | CRIT: ${n(isCrit)} | Type: ${n(type)}`);
@@ -774,8 +776,8 @@ export class Generation4 extends Generation3 {
     user.damage(idiv1(target.base.maxHp, 2), user, battle, false, "crash", true);
   }
 
-  override getEffectiveness(type: Type, target: Battlemon) {
-    return DamageCalc.applyTypeModifier(0, {type, user: target, target, gen: this}).eff;
+  override getEffectiveness(battle: Battle, type: Type, target: Battlemon) {
+    return DamageCalc.applyTypeModifier(0, {type, user: target, target, battle}).eff;
   }
 
   // CheckSortSpeed
@@ -790,7 +792,7 @@ export class Generation4 extends Generation3 {
       statChange *= 2;
     }
 
-    let speed = applyStatStages(user, user.v.stats.spe, statChange);
+    let speed = applyStatStages(this, user.v.stats.spe, statChange);
     if (weather && ability?.weatherSpeedBoost === weather) {
       speed <<= 1;
     }
@@ -840,10 +842,110 @@ export class Generation4 extends Generation3 {
     }
     return {dmg, endure: Endure.None};
   }
+
+  // BattleSystem_CheckMoveHit
+  override checkAccuracy(move: Move, battle: Battle, user: Battlemon, target: Battlemon) {
+    const userAbilityId = user.getAbilityId();
+    const targetAbilityId = target.getAbilityId(user);
+    const targetAbility = target.getAbility(user);
+    if (userAbilityId === "noguard" || targetAbilityId === "noguard") {
+      return true;
+    }
+
+    if (
+      target.v.charging &&
+      target.v.charging.move.charge === "invuln" &&
+      (!move.ignore || !move.ignore.includes(target.v.charging.move.id))
+    ) {
+      battle.miss(user, target);
+      return false;
+    }
+
+    const weather = battle.getWeather();
+    const chance = this.getMoveAcc(move, weather);
+    if (!chance || user.v.inPursuit) {
+      return true;
+    } else if (move.kind === "damage" && move.flag === DMF.ohko) {
+      // In Gen 3/4, the type immunity message takes priority over the sturdy one
+      if (targetAbilityId === "sturdy") {
+        battle.ability(target);
+        battle.info(target, "immune");
+        return false;
+      }
+
+      // Starting from Gen 3, OHKO moves are no longer affected by accuracy/evasion stats
+      if (!battle.rand100(user.base.level - target.base.level + 30)) {
+        battle.miss(user, target);
+        return false;
+      }
+      return true;
+    }
+
+    let stagesEva = target.v.stages.eva;
+    // Starting from Gen 4, Foresight/Odor Sleuth/Miracle Eye only ignore positive evasion changes
+    if (targetAbilityId === "simple") {
+      stagesEva *= 2;
+    }
+
+    if (target.v.identified && stagesEva > 0) {
+      stagesEva = 0;
+    }
+
+    let stagesAcc = user.v.stages.acc;
+    if (userAbilityId === "simple") {
+      stagesAcc *= 2;
+    }
+
+    let acc = applyStatStages(this, chance, clamp(stagesAcc - stagesEva, -6, 6));
+    if (userAbilityId === "compoundeyes") {
+      acc = idiv(acc * 130, 100);
+    }
+
+    if (weather && targetAbility?.weatherEva === weather) {
+      acc = idiv(acc * 80, 100);
+    }
+
+    // Fog is applied here (acc * 6 / 10)
+    if (userAbilityId === "hustle" && battle.gen.getCategory(move) === MC.physical) {
+      acc = idiv(acc * 80, 100);
+    }
+
+    if (targetAbilityId === "tangledfeet" && target.v.confusion) {
+      acc = idiv(acc * 50, 100);
+    }
+
+    const targetItem = user.base.item;
+    if (targetItem?.reduceAcc) {
+      acc = idiv(acc * (100 - targetItem.reduceAcc), 100);
+    }
+
+    const userItem = user.base.item;
+    if (userItem?.boostAcc) {
+      acc = idiv(acc * (100 + userItem.boostAcc), 100);
+    }
+
+    if (user.base.itemId === "zoomlens" && target.choice?.executed) {
+      acc = idiv(acc * 120, 100);
+    }
+
+    // TODO: micle berry is applied here
+
+    if (battle.field.gravity) {
+      acc = idiv(acc * 10, 6);
+    }
+
+    debugLog(`[${user.base.name}] ${move.name} (Acc ${acc}/100)`);
+    if (!battle.rand100(acc)) {
+      // BattleSystem_Random(battleSystem) % 100) + 1 > hitChance
+      battle.miss(user, target);
+      return false;
+    }
+    return true;
+  }
 }
 
-const applyStatStages = (poke: Battlemon, stat: number, stages: number) => {
-  const [num, div] = poke.base.gen.stageMultipliers[clamp(stages, -6, 6)];
+const applyStatStages = (gen: Generation, stat: number, stages: number) => {
+  const [num, div] = gen.stageMultipliers[clamp(stages, -6, 6)];
   return idiv(stat * num, div);
 };
 

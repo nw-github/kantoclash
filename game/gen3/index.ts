@@ -685,6 +685,9 @@ export class Generation3 extends Generation2 {
     return true;
   }
 
+  // In pokeemerald: AtkCanceler_UnableToUseMove
+  // In pokeheartgold: ov12_0224B528
+  // Emerald doesn't have the
   override beforeUseMove(battle: Battle, move: Move, user: Battlemon) {
     const resetVolatiles = () => {
       user.v.charging = undefined;
@@ -697,6 +700,8 @@ export class Generation3 extends Generation2 {
       user.v.furyCutter = 0;
       battle.syncVolatiles();
     };
+
+    // The game clears destiny bond/grudge here, but battle.ts already does that
 
     if (user.base.status === "slp") {
       if (--user.base.sleepTurns === 0 || battle.hasUproar(user)) {
@@ -720,13 +725,14 @@ export class Generation3 extends Generation2 {
     }
 
     const moveId = move.id!;
-    if (user.v.recharge) {
-      battle.info(user, "recharge");
+    if (user.hasAbility("truant") && user.v.hasFlag(VF.loafing)) {
+      battle.info(user, "loafing");
       user.v.recharge = undefined;
       resetVolatiles();
       return false;
-    } else if (user.hasAbility("truant") && user.v.hasFlag(VF.loafing)) {
-      battle.info(user, "loafing");
+    } else if (user.v.recharge) {
+      battle.info(user, "recharge");
+      user.v.recharge = undefined;
       resetVolatiles();
       return false;
     } else if (user.v.flinch) {
@@ -738,17 +744,25 @@ export class Generation3 extends Generation2 {
       resetVolatiles();
       return false;
     } else if (move.kind !== "damage" && user.v.tauntTurns) {
-      battle.event({move: moveId, type: "cantusetaunt", src: user.id});
+      battle.event({move: moveId, type: "cantuse", src: user.id, why: "taunt"});
       resetVolatiles();
       return false;
     } else if (battle.allActive.some(p => p.isImprisoning(user, moveId))) {
-      battle.event({move: moveId, type: "cantuse", src: user.id});
+      battle.event({move: moveId, type: "cantuse", src: user.id, why: "generic"});
       resetVolatiles();
       return false;
-    } else if (user.handleConfusion(battle)) {
+    } else if (battle.field.gravity && move.noGravity) {
+      battle.event({move: moveId, type: "cantuse", src: user.id, why: "gravity"});
       resetVolatiles();
       return false;
-    } else if (user.base.status === "par" && battle.gen.rng.tryFullPara(battle)) {
+    } /* heal block goes here */ else if (user.handleConfusion(battle)) {
+      resetVolatiles();
+      return false;
+    } else if (
+      user.base.status === "par" &&
+      user.getAbilityId() !== "magicguard" &&
+      battle.gen.rng.tryFullPara(battle)
+    ) {
       battle.info(user, "paralyze");
       resetVolatiles();
       return false;
@@ -761,6 +775,7 @@ export class Generation3 extends Generation2 {
       }
     }
 
+    // The game does the bide check here, then the self defrost check
     return true;
   }
 
@@ -1013,7 +1028,7 @@ export class Generation3 extends Generation2 {
     }
   }
 
-  override getEffectiveness(type: Type, target: Battlemon) {
+  override getEffectiveness(_battle: Battle, type: Type, target: Battlemon) {
     return DamageCalc.applyTypeModifier(0, {type, user: target, target, gen: this}).eff;
   }
 
@@ -1038,7 +1053,7 @@ export class Generation3 extends Generation2 {
     } else if (
       self.kind === "damage" &&
       ((!skipsTypeCheck && eff <= 1 && targetAbility === "wonderguard") ||
-        (type === "ground" && targetAbility === "levitate" && !target.isGrounded()) ||
+        (type === "ground" && targetAbility === "levitate" && !target.isGrounded(battle)) ||
         (type === "electric" && targetAbility === "voltabsorb") ||
         (type === "water" && targetAbility === "waterabsorb") ||
         (type === "fire" && targetAbility === "flashfire" && target.base.status !== "frz"))

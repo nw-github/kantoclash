@@ -810,7 +810,7 @@ export class Generation1 {
     return this.move.overrides.dmg[move.id!]?.call(move, battle, user, target);
   }
 
-  getEffectiveness(type: Type, target: Battlemon) {
+  getEffectiveness(_battle: Battle, type: Type, target: Battlemon) {
     return DamageCalc.applyTypeModifiers(0, {type, user: target, target}).eff;
   }
 

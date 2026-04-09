@@ -33,7 +33,7 @@ export const moveScripts: Partial<MoveScripts> = {
       } else if (target.v.substitute || (battle.hasUproar(target) && this.status === "slp")) {
         continue;
       } else if (
-        (this.checkType && battle.gen.getEffectiveness(this.type, target).immune()) ||
+        (this.checkType && battle.gen.getEffectiveness(battle, this.type, target).immune()) ||
         ((this.status === "psn" || this.status === "tox") &&
           target.v.hasAnyType("poison", "steel")) ||
         (this.status === "brn" && target.v.types.includes("fire"))
@@ -162,7 +162,6 @@ export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
   // --
   amnesia: {stages: [["spd", 2]]},
   glare: {checkType: true},
-  thunderwave: {checkType: true},
   // --
   acid: {effect: [10, [["def", -1]]]},
   aurorabeam: {effect: [10, [["atk", -1]]]},

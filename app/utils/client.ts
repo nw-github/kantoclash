@@ -335,10 +335,18 @@ export class ClientManager {
     } else if (e.type === "end") {
       this.victor = e.victor ?? "draw";
     } else if (e.type === "weather") {
-      if (e.kind === "start") {
-        this.battle.weather = {kind: e.weather, turns: -1};
-      } else if (e.kind === "end") {
-        this.battle.weather = undefined;
+      if (e.weather === "gravity") {
+        if (e.kind === "start") {
+          this.battle.field.gravity = -1;
+        } else if (e.kind === "end") {
+          this.battle.field.gravity = undefined;
+        }
+      } else {
+        if (e.kind === "start") {
+          this.battle.weather = {kind: e.weather, turns: -1};
+        } else if (e.kind === "end") {
+          this.battle.weather = undefined;
+        }
       }
     } else if (e.type === "item") {
       this.players.poke(e.src)!.base.itemId = undefined;

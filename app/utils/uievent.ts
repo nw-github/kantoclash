@@ -12,7 +12,7 @@ import type {
 import type {MoveId} from "~~/game/moves";
 import type {Status} from "~~/game/pokemon";
 import type {AbilityId} from "~~/game/species";
-import type {Weather, ScreenId, HazardId} from "~~/game/utils";
+import type {ScreenId, HazardId} from "~~/game/utils";
 
 export type RawUIBattleEvent =
   | BattleEvent
@@ -158,9 +158,13 @@ export const infoMessage: Record<InfoReason, string> = {
   magnet_rise: "{} levitated with electromagnetism!",
   magnet_rise_end: "{}'s electromagnetism wore off!",
   worryseed: "{} acquired Insomnia!",
+  gravity_grounded: "{} couldn't stay airborne because of Gravity!",
 };
 
-export const weatherMessage: Record<Weather, Record<WeatherEvent["kind"], string>> = {
+export const weatherMessage: Record<
+  WeatherEvent["weather"],
+  Record<WeatherEvent["kind"], string>
+> = {
   rain: {
     start: "A downpour started!",
     continue: "Rain continues to fall.",
@@ -180,6 +184,11 @@ export const weatherMessage: Record<Weather, Record<WeatherEvent["kind"], string
     start: "It started to hail!",
     continue: "Hail continues to fall.",
     end: "The hail stopped.",
+  },
+  gravity: {
+    start: "Gravity intensified!",
+    continue: "",
+    end: "Gravity returned to normal!",
   },
 };
 

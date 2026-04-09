@@ -169,7 +169,7 @@ export class Battlemon {
       }
     }
 
-    if (this.isGrounded()) {
+    if (this.isGrounded(battle)) {
       if (this.owner.hazards.tspikes && this.v.types.includes("poison")) {
         this.owner.hazards.tspikes = 0;
         battle.event({
@@ -189,7 +189,7 @@ export class Battlemon {
         this.status(this.owner.hazards.tspikes > 1 ? "tox" : "psn", battle, phazer ?? this, {});
       }
 
-      if (this.owner.hazards.spikes && this.isGrounded()) {
+      if (this.owner.hazards.spikes && this.isGrounded(battle)) {
         const dmg = idiv1(this.base.maxHp, 8 - (this.owner.hazards.spikes - 1) * 2);
         this.damage(dmg, this, battle, false, "spikes", true);
         if (this.base.hp === 0) {
@@ -199,7 +199,7 @@ export class Battlemon {
     }
 
     if (this.owner.hazards.rocks) {
-      const eff = battle.gen.getEffectiveness("rock", this).toFloat();
+      const eff = battle.gen.getEffectiveness(battle, "rock", this).toFloat();
       const dmg = Math.max(1, Math.floor(this.base.maxHp * (0.125 * eff)));
       this.damage(dmg, this, battle, false, "rocks", true);
       if (this.base.hp === 0) {
@@ -1066,8 +1066,8 @@ export class Battlemon {
     );
   }
 
-  isGrounded(user?: Battlemon) {
-    if (this.base.item?.groundsUser || this.v.hasFlag(VF.ingrain)) {
+  isGrounded(battle: Battle, user?: Battlemon) {
+    if (this.base.item?.groundsUser || this.v.hasFlag(VF.ingrain) || battle.field.gravity) {
       return true;
     }
     const isFlying = this.v.types.includes("flying") && !this.v.hasFlag(VF.roost);
@@ -1118,7 +1118,7 @@ export class Battlemon {
       const ability = poke.getAbilityId();
       if (ability === "magnetpull" && this.v.types.includes("steel")) {
         return true;
-      } else if (ability === "arenatrap" && poke.owner !== this.owner && this.isGrounded()) {
+      } else if (ability === "arenatrap" && poke.owner !== this.owner && this.isGrounded(battle)) {
         return true;
       } else if (ability === "shadowtag" && poke.owner !== this.owner) {
         return true;

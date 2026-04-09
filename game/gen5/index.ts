@@ -280,7 +280,7 @@ export class Generation5 extends Generation4 {
       type = computed;
     }
 
-    if (!target.isGrounded(user) && type === "ground") {
+    if (!target.isGrounded(battle, user) && type === "ground") {
       return {dmg: 0, eff: 0, miss: false, type};
     }
 
@@ -312,7 +312,9 @@ export class Generation5 extends Generation4 {
     }
 
     const eff =
-      move.id === "struggle" ? new TypeEffectiveness() : battle.gen.getEffectiveness(type, target);
+      move.id === "struggle"
+        ? new TypeEffectiveness()
+        : battle.gen.getEffectiveness(battle, type, target);
     let dmg = idiv(idiv(A * power * (idiv(2 * level, 5) + 2), D), 50) + 2;
     dmg = applyMod(dmg, multiTarget);
     dmg = applyMod(dmg, weatherModifier[weather!]?.[type] ?? Mod.NONE);

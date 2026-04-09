@@ -535,6 +535,7 @@ export const rawMoveList = {
     noSleepTalk: true,
     kingsRock: true,
     contact: true,
+    noGravity: true,
   },
   focusenergy: {
     kind: "volatile",
@@ -659,6 +660,7 @@ export const rawMoveList = {
     flag: "crash",
     kingsRock: true,
     contact: true,
+    noGravity: true,
   },
   hornattack: {
     kind: "damage",
@@ -765,6 +767,7 @@ export const rawMoveList = {
     flag: "crash",
     kingsRock: true,
     contact: true,
+    noGravity: true,
   },
   karatechop: {
     kind: "damage",
@@ -1432,7 +1435,15 @@ export const rawMoveList = {
     flag: "multi",
     kingsRock: true,
   },
-  splash: {kind: "fail", name: "Splash", pp: 40, type: "normal", range: "Self", why: "splash"},
+  splash: {
+    kind: "fail",
+    name: "Splash",
+    pp: 40,
+    type: "normal",
+    range: "Self",
+    why: "splash",
+    noGravity: true,
+  },
   spore: {
     kind: "status",
     name: "Spore",
@@ -1692,6 +1703,7 @@ export const rawMoveList = {
     acc: 100,
     status: "par",
     magicCoat: true,
+    checkType: true,
   },
   toxic: {
     kind: "status",
@@ -2856,6 +2868,7 @@ export const rawMoveList = {
     acc: 85,
     charge: "invuln",
     kingsRock: true,
+    noGravity: true,
     effect: [30, "par"],
   },
   brickbreak: {
@@ -4347,12 +4360,11 @@ export const rawMoveList = {
     kingsRock: true,
   },
   gravity: {
-    kind: "fail",
+    kind: "gravity",
     name: "Gravity",
-    pp: 1,
-    type: "normal",
-    range: "Adjacent",
-    why: "fail_unimplemented",
+    pp: 5,
+    type: "psychic",
+    range: "Field",
   },
   guardswap: {
     kind: "swap",
@@ -4575,6 +4587,7 @@ export const rawMoveList = {
     pp: 10,
     type: "electric",
     range: "Self",
+    noGravity: true,
   },
   mefirst: {
     kind: "fail",
@@ -5883,6 +5896,7 @@ export const rawMoveList = {
     category: "physical",
     why: "fail_unimplemented",
     noAssist: true,
+    noGravity: true,
   },
   sludgewave: {
     kind: "damage",
@@ -6012,6 +6026,7 @@ export const rawMoveList = {
     type: "psychic",
     range: "Adjacent",
     why: "fail_unimplemented",
+    noGravity: true,
   },
   vcreate: {
     kind: "damage",

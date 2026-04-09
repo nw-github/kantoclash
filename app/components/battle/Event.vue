@@ -140,8 +140,17 @@
   </div>
   <div v-else-if="e.type === 'sketch'">{{ pn(e.src) }} sketched {{ gen.moveList[e.move].name }}!</div>
   <div v-else-if="e.type === 'bounce'">{{ pn(e.src) }} bounced the <b>{{ gen.moveList[e.move].name }}</b> back!</div>
-  <div v-else-if="e.type === 'cantuse'" class="move">{{ pn(e.src) }} can't use <b>{{ gen.moveList[e.move].name }}</b>!</div>
-  <div v-else-if="e.type === 'cantusetaunt'" class="move">{{ pn(e.src) }} can't use <b>{{ gen.moveList[e.move].name }}</b> after the taunt!</div>
+  <div v-else-if="e.type === 'cantuse'" class="move">
+    <template v-if="e.why === 'taunt'">
+      {{ pn(e.src) }} can't use <b>{{ gen.moveList[e.move].name }}</b> after the taunt!
+    </template>
+    <template v-else-if="e.why === 'gravity'">
+      {{ pn(e.src) }} can't use <b>{{ gen.moveList[e.move].name }}</b> because of Gravity!
+    </template>
+    <template v-else-if="e.why === 'generic'">
+      {{ pn(e.src) }} can't use <b>{{ gen.moveList[e.move].name }}</b>!
+    </template>
+  </div>
   <div v-else-if="e.type === 'grudge'">{{ pn(e.src) }}'s {{ gen.moveList[e.move].name }} lost all its PP due to the grudge!</div>
   <div v-else-if="e.type === 'perish'">{{ pn(e.src) }}'s perish count fell to {{ e.turns }}!</div>
   <div v-else-if="e.type === 'psych_up'">

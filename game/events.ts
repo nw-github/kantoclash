@@ -21,7 +21,6 @@ type AnyEvent =
   | ChargeEvent
   | MimicEvent
   | CantUseEvent
-  | TauntEvent
   | GrudgeEvent
   | ConversionEvent
   | MagnitudeEvent
@@ -288,7 +287,8 @@ export type InfoReason =
   | "lunardance"
   | "magnet_rise"
   | "magnet_rise_end"
-  | "worryseed";
+  | "worryseed"
+  | "gravity_grounded";
 
 type InfoEvent = {type: "info"; src: PokeId; why: InfoReason};
 
@@ -329,8 +329,12 @@ type DisableEvent = {type: "disable"; src: PokeId; move: MoveId};
 type ChargeEvent = {type: "charge"; src: PokeId; move: MoveId; called?: bool};
 type SketchEvent = {type: "sketch"; src: PokeId; move: MoveId; moveIndex: number};
 type MimicEvent = {type: "mimic"; src: PokeId; move: MoveId};
-type CantUseEvent = {type: "cantuse"; src: PokeId; move: MoveId};
-type TauntEvent = {type: "cantusetaunt"; src: PokeId; move: MoveId};
+type CantUseEvent = {
+  type: "cantuse";
+  src: PokeId;
+  move: MoveId;
+  why: "gravity" | "taunt" | "generic";
+};
 type GrudgeEvent = {type: "grudge"; src: PokeId; move: MoveId};
 type RestorePPEvent = {type: "pp"; src: PokeId; move: MoveId};
 type BounceEvent = {type: "bounce"; src: PokeId; move: MoveId};
@@ -361,7 +365,13 @@ type SpiteEvent = {type: "spite"; src: PokeId; move: MoveId; amount: number};
 
 type BeatUpEvent = {type: "beatup"; name: string};
 
-export type WeatherEvent = {type: "weather"; kind: "start" | "end" | "continue"; weather: Weather};
+type FieldCondition = Weather | "gravity";
+
+export type WeatherEvent = {
+  type: "weather";
+  kind: "start" | "end" | "continue";
+  weather: FieldCondition;
+};
 
 type PerishSongEvent = {type: "perish"; src: PokeId; turns: number};
 

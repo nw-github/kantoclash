@@ -173,6 +173,8 @@ const descriptions: Partial<Record<number, Partial<Record<MoveId, string>>>> = {
     gyroball: "Power increases the slower the user is compared to the target. ",
     aquaring: "Heals the user for 1/16 its max HP at the end of every turn. ",
     magnetrise: "The user becomes ungrounded for 5 turns, avoiding Ground-type attacks. ",
+    gravity:
+      "For 5 turns, the accuracy of all moves is multiplied by 5/3, all Pokémon become grounded (susceptible to Ground-type attacks, Spikes, Toxic Spikes, and Arena Trap), and certain moves cannot be used. ",
   },
   [2]: {
     conversion:

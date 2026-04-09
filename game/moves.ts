@@ -45,6 +45,8 @@ export interface BaseMove {
   readonly noSleepTalk?: bool;
   /** Not copyable by mimic */
   readonly noMimic?: bool;
+  /** Not selectable/usable while Gravity is active */
+  readonly noGravity?: bool;
   /** Undefined: Inherit from script, true: affected, false: unaffected */
   readonly protect?: bool;
   /** Only usable while sleeping */
@@ -423,7 +425,7 @@ export const moveScripts: MoveScripts = {
     if (target.v.substitute && this.status !== "par" && this.status !== "slp") {
       return battle.info(target, "fail_generic");
     } else if (
-      (this.type === "electric" && battle.gen.getEffectiveness(this.type, target).immune()) ||
+      (this.checkType && battle.gen.getEffectiveness(battle, this.type, target).immune()) ||
       (this.type === "poison" && target.v.types.includes("poison")) ||
       (this.type === "fire" && target.v.types.includes("fire"))
     ) {
@@ -848,6 +850,7 @@ export const moveScripts: MoveScripts = {
       .filter(
         ([id]) => (battle.gen.id !== 2 && battle.gen.id !== 4) || !user.base.moves.includes(id),
       )
+      .filter(([, move]) => !battle.field.gravity || !move.noGravity)
       .map(([, move]) => move);
     return battle.callMove(battle.rng.choice(moves)!, user);
   },
@@ -1136,7 +1139,7 @@ export const moveScripts: MoveScripts = {
     const moves = user.owner.team
       .flatMap(p => (p !== user.base ? p.moves : []))
       .map(move => battle.gen.moveList[move])
-      .filter(move => !move.noAssist);
+      .filter(move => !move.noAssist && (!battle.field.gravity || !move.noGravity));
     const move = battle.rng.choice(moves);
     if (!move) {
       return battle.info(user, "fail_generic");
@@ -1399,6 +1402,30 @@ export const moveScripts: MoveScripts = {
 
     user.v.magnetRise = 5;
     battle.info(user, "magnet_rise");
+  },
+  gravity(battle, user) {
+    if (battle.field.gravity) {
+      return battle.info(user, "fail_generic");
+    }
+
+    battle.field.gravity = 5;
+    battle.event({type: "weather", kind: "start", weather: "gravity"});
+    for (const poke of battle.turnOrder) {
+      if (!poke.base.hp) {
+        continue;
+      } else if (poke.v.magnetRise) {
+        poke.v.magnetRise = 0;
+        battle.info(poke, "gravity_grounded");
+      } else if (poke.v.charging?.move?.id === "fly") {
+        poke.v.charging = undefined;
+        poke.choice!.executed = true;
+        battle.info(poke, "gravity_grounded");
+      } else if (poke.v.hasFlag(VF.ingrain | VF.gastroAcid)) {
+        continue;
+      } else if (poke.getAbilityId() === "levitate" || poke.v.hasAnyType("flying")) {
+        battle.info(poke, "gravity_grounded");
+      }
+    }
   },
 };
 

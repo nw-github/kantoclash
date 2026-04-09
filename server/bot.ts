@@ -425,6 +425,7 @@ const botFunctions = {
       const move = gen.moveList[id];
       if (move.kind === "damage") {
         const eff = gen.getEffectiveness(
+          mgr.battle,
           gen.getMoveType(move, active.base, weather),
           opponentActive,
         );
