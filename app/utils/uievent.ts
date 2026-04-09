@@ -61,6 +61,7 @@ export const chargeMessage: Partial<Record<MoveId, string>> = {
   bounce: "{} sprang up!",
   shadowforce: "{} vanished instantly!",
   freezeshock: "{} became cloaked in a freezing light!",
+  iceburn: "{} became cloaked in freezing air!",
 };
 
 export const infoMessage: Record<InfoReason, string> = {
@@ -156,6 +157,7 @@ export const infoMessage: Record<InfoReason, string> = {
   aquaRing: "{} surrounded itself with a veil of water!",
   magnet_rise: "{} levitated with electromagnetism!",
   magnet_rise_end: "{}'s electromagnetism wore off!",
+  worryseed: "{} acquired Insomnia!",
 };
 
 export const weatherMessage: Record<Weather, Record<WeatherEvent["kind"], string>> = {

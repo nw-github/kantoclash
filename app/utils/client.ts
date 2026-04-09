@@ -376,6 +376,11 @@ export class ClientManager {
         target.abilityUnknown = true;
       }
       // TODO: set ability
+    } else if (e.type === "copy_ability") {
+      this.players.poke(e.src)!.v.ability = e.ability;
+      this.players.poke(e.src)!.abilityUnknown = false;
+      this.players.poke(e.target)!.v.ability = e.ability;
+      this.players.poke(e.target)!.abilityUnknown = false;
     } else if (e.type === "move") {
       const src = this.players.poke(e.src)!;
       if (!src.owned && !e.called) {
@@ -397,7 +402,9 @@ export class ClientManager {
       }
     } else if (e.type === "proc_ability") {
       const src = this.players.poke(e.src)!;
-      if (!src.owned && !src.base.ability) {
+      src.abilityUnknown = false;
+      src.v.ability = e.ability;
+      if (!src.owned && !src.base.ability && !src.abilityUnknown) {
         src.base.ability = e.ability;
       }
     }

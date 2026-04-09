@@ -287,7 +287,8 @@ export type InfoReason =
   | "healingwish"
   | "lunardance"
   | "magnet_rise"
-  | "magnet_rise_end";
+  | "magnet_rise_end"
+  | "worryseed";
 
 type InfoEvent = {type: "info"; src: PokeId; why: InfoReason};
 

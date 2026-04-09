@@ -1387,6 +1387,7 @@ export const moveScripts: MoveScripts = {
 
     target.v.ability = "insomnia";
     battle.ability(target);
+    battle.info(target, "worryseed");
     if (target.base.status === "slp") {
       target.unstatus(battle);
     }

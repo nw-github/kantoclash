@@ -15,7 +15,11 @@
 
       <div class="flex gap-1 items-center">
         <span v-if="active?.abilityUnknown">???</span>
-        <span v-else-if="active?.v.ability ?? poke.ability" class="text-xs">
+        <span
+          v-else-if="active?.v.ability ?? poke.ability"
+          class="text-xs"
+          :class="active?.v.ability && active?.v.ability !== poke.ability && 'font-bold'"
+        >
           {{ abilityList[(active?.v.ability ?? poke.ability)!].name }}
         </span>
 

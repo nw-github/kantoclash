@@ -14,6 +14,7 @@ export const moveScripts: Partial<MoveScripts> = {
     battle.ability(target);
     target.v.ability = "insomnia";
     battle.ability(target);
+    battle.info(target, "worryseed");
     if (target.base.status === "slp") {
       target.unstatus(battle);
     }
