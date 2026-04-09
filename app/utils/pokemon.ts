@@ -339,6 +339,34 @@ export const gen1Gender: Partial<Record<SpeciesId, Gender>> = {
   nidoranm: "M",
 };
 
+export const customCry: Partial<Record<SpeciesId, string>> = {
+  shayminsky: "492s",
+  kyuremblack: "646bk",
+  kyuremwhite: "646wk",
+};
+
+const sprite: Partial<Record<SpeciesId, string>> = {
+  deoxysattack: "386-attack",
+  deoxysdefense: "386-defense",
+  deoxysspeed: "386-speed",
+  wormadamsandy: "413-sandy",
+  wormadamtrash: "413-trash",
+  gastrodoneast: "423-east",
+  rotomfan: "479-fan",
+  rotomfrost: "479-frost",
+  rotomheat: "479-heat",
+  rotommow: "479-mow",
+  rotomwash: "479-wash",
+  giratinaorigin: "487-origin",
+  shayminsky: "492-sky",
+  basculinbluestriped: "550-blue-striped",
+  tornadustherian: "641-therian",
+  thundurustherian: "642-therian",
+  landorustherian: "645-therian",
+  kyuremblack: "646-black",
+  kyuremwhite: "646-white",
+};
+
 export const getSpritePath = (
   speciesId: string | undefined,
   female?: bool,
@@ -350,8 +378,7 @@ export const getSpritePath = (
     return `/sprites/battle/unknown.png`;
   }
 
-  const sp = speciesList[speciesId as SpeciesId];
-  let id = sp.sprite ?? String(sp.dexId);
+  let id = sprite[speciesId as SpeciesId] ?? String(speciesList[speciesId as SpeciesId].dexId);
   if (form) {
     id += `-${form}`;
   }

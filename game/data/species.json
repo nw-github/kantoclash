@@ -19891,7 +19891,6 @@
   "deoxysattack": {
     "name": "Deoxys-Attack",
     "dexId": 386,
-    "sprite": "386-attack",
     "types": ["psychic"],
     "abilities": ["pressure"],
     "stats": {"hp": 50, "atk": 180, "def": 20, "spa": 180, "spd": 20, "spe": 150},
@@ -19979,7 +19978,6 @@
   "deoxysdefense": {
     "name": "Deoxys-Defense",
     "dexId": 386,
-    "sprite": "386-defense",
     "types": ["psychic"],
     "abilities": ["pressure"],
     "stats": {"hp": 50, "atk": 70, "def": 160, "spa": 70, "spd": 160, "spe": 90},
@@ -20067,7 +20065,6 @@
   "deoxysspeed": {
     "name": "Deoxys-Speed",
     "dexId": 386,
-    "sprite": "386-speed",
     "types": ["psychic"],
     "abilities": ["pressure"],
     "stats": {"hp": 50, "atk": 95, "def": 90, "spa": 95, "spd": 90, "spe": 180},
@@ -22029,7 +22026,6 @@
     "evolvesFrom": "burmy",
     "name": "Wormadam-Sandy",
     "dexId": 413,
-    "sprite": "413-sandy",
     "types": ["bug", "ground"],
     "abilities": ["anticipation"],
     "stats": {"hp": 60, "atk": 79, "def": 105, "spa": 59, "spd": 85, "spe": 36},
@@ -22091,7 +22087,6 @@
     "evolvesFrom": "burmy",
     "name": "Wormadam-Trash",
     "dexId": 413,
-    "sprite": "413-trash",
     "types": ["bug", "steel"],
     "abilities": ["anticipation"],
     "stats": {"hp": 60, "atk": 69, "def": 95, "spa": 69, "spd": 95, "spe": 36},
@@ -22776,7 +22771,6 @@
     "dexId": 423,
     "types": ["water", "ground"],
     "abilities": ["stickyhold", "stormdrain"],
-    "sprite": "423-east",
     "stats": {"hp": 111, "atk": 83, "def": 68, "spa": 92, "spd": 82, "spe": 39},
     "genderRatio": 50,
     "weight": 29.9,
@@ -27109,7 +27103,6 @@
   "rotomfan": {
     "name": "Rotom-Fan",
     "dexId": 479,
-    "sprite": "479-fan",
     "types": ["electric", "ghost"],
     "abilities": ["levitate"],
     "stats": {"hp": 50, "atk": 65, "def": 107, "spa": 105, "spd": 107, "spe": 86},
@@ -27167,7 +27160,6 @@
   "rotomfrost": {
     "name": "Rotom-Frost",
     "dexId": 479,
-    "sprite": "479-frost",
     "types": ["electric", "ghost"],
     "abilities": ["levitate"],
     "stats": {"hp": 50, "atk": 65, "def": 107, "spa": 105, "spd": 107, "spe": 86},
@@ -27225,7 +27217,6 @@
   "rotomheat": {
     "name": "Rotom-Heat",
     "dexId": 479,
-    "sprite": "479-heat",
     "types": ["electric", "ghost"],
     "abilities": ["levitate"],
     "stats": {"hp": 50, "atk": 65, "def": 107, "spa": 105, "spd": 107, "spe": 86},
@@ -27283,7 +27274,6 @@
   "rotommow": {
     "name": "Rotom-Mow",
     "dexId": 479,
-    "sprite": "479-mow",
     "types": ["electric", "ghost"],
     "abilities": ["levitate"],
     "stats": {"hp": 50, "atk": 65, "def": 107, "spa": 105, "spd": 107, "spe": 86},
@@ -27341,7 +27331,6 @@
   "rotomwash": {
     "name": "Rotom-Wash",
     "dexId": 479,
-    "sprite": "479-wash",
     "types": ["electric", "ghost"],
     "abilities": ["levitate"],
     "stats": {"hp": 50, "atk": 65, "def": 107, "spa": 105, "spd": 107, "spe": 86},
@@ -28028,7 +28017,6 @@
   "giratinaorigin": {
     "name": "Giratina-Origin",
     "dexId": 487,
-    "sprite": "487-origin",
     "types": ["ghost", "dragon"],
     "abilities": ["levitate"],
     "stats": {"hp": 150, "atk": 120, "def": 100, "spa": 120, "spd": 100, "spe": 90},
@@ -28468,8 +28456,6 @@
   "shayminsky": {
     "name": "Shaymin-Sky",
     "dexId": 492,
-    "sprite": "492-sky",
-    "cry": "492s",
     "types": ["grass", "flying"],
     "abilities": ["serenegrace"],
     "stats": {"hp": 100, "atk": 103, "def": 75, "spa": 120, "spd": 75, "spe": 127},
@@ -32704,7 +32690,6 @@
   },
   "basculinbluestriped": {
     "name": "Basculin-Blue-Striped",
-    "sprite": "550-blue-striped",
     "dexId": 550,
     "types": ["water"],
     "abilities": ["rockhead", "reckless", "adaptability", "moldbreaker"],
@@ -39209,7 +39194,6 @@
   "tornadustherian": {
     "name": "Tornadus-Therian",
     "dexId": 641,
-    "sprite": "641-therian",
     "types": ["flying"],
     "abilities": ["regenerator"],
     "stats": {"hp": 79, "atk": 100, "def": 80, "spa": 110, "spd": 90, "spe": 121},
@@ -39358,7 +39342,6 @@
   "thundurustherian": {
     "name": "Thundurus-Therian",
     "dexId": 642,
-    "sprite": "642-therian",
     "types": ["electric", "flying"],
     "abilities": ["voltabsorb"],
     "stats": {"hp": 79, "atk": 105, "def": 70, "spa": 145, "spd": 80, "spe": 101},
@@ -39651,7 +39634,6 @@
   "landorustherian": {
     "name": "Landorus-Therian",
     "dexId": 645,
-    "sprite": "645-therian",
     "types": ["ground", "flying"],
     "abilities": ["intimidate"],
     "stats": {"hp": 89, "atk": 145, "def": 90, "spa": 105, "spd": 80, "spe": 91},
@@ -39789,8 +39771,6 @@
   "kyuremblack": {
     "name": "Kyurem-Black",
     "dexId": 646,
-    "sprite": "646-black",
-    "cry": "646bk",
     "types": ["dragon", "ice"],
     "abilities": ["teravolt"],
     "stats": {"hp": 125, "atk": 170, "def": 100, "spa": 120, "spd": 90, "spe": 95},
@@ -39860,8 +39840,6 @@
   "kyuremwhite": {
     "name": "Kyurem-White",
     "dexId": 646,
-    "sprite": "646-white",
-    "cry": "646wk",
     "types": ["dragon", "ice"],
     "abilities": ["turboblaze"],
     "stats": {"hp": 125, "atk": 120, "def": 90, "spa": 170, "spd": 100, "spe": 95},

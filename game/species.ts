@@ -16,8 +16,6 @@ export type Species = {
   readonly evolvesTo?: SpeciesId | readonly SpeciesId[];
   /** Male part of Ratio | Ex: 87.5 means 87.5% male, 12.5% female. Undefined for Gender Unknown */
   readonly genderRatio?: number;
-  readonly sprite?: string;
-  readonly cry?: string;
   /** Weight in kilograms */
   readonly weight: number;
   readonly requiresItem?: ItemId;
