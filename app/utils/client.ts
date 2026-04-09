@@ -335,11 +335,11 @@ export class ClientManager {
     } else if (e.type === "end") {
       this.victor = e.victor ?? "draw";
     } else if (e.type === "weather") {
-      if (e.weather === "gravity") {
+      if (e.weather === "gravity" || e.weather === "trickRoom") {
         if (e.kind === "start") {
-          this.battle.field.gravity = -1;
+          this.battle.field[e.weather] = -1;
         } else if (e.kind === "end") {
-          this.battle.field.gravity = undefined;
+          this.battle.field[e.weather] = undefined;
         }
       } else {
         if (e.kind === "start") {

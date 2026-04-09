@@ -190,6 +190,11 @@ export const weatherMessage: Record<
     continue: "",
     end: "Gravity returned to normal!",
   },
+  trickRoom: {
+    start: "{} twisted the dimensions!",
+    continue: "",
+    end: "The twisted dimensions returned to normal!",
+  },
 };
 
 export const screenMessage: Record<ScreenId, Record<ScreenEvent["kind"], string>> = {

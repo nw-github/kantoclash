@@ -127,7 +127,7 @@
     </template>
   </div>
   <div v-else-if="e.type === 'magnitude'">Magnitude {{ e.magnitude }}!</div>
-  <div v-else-if="e.type === 'weather'">{{ weatherMessage[e.weather][e.kind] }}</div>
+  <div v-else-if="e.type === 'weather'">{{ weatherMessage[e.weather][e.kind].replace("{}", e.src ? pn(e.src) : "") }}</div>
   <div v-else-if="e.type === 'screen'">
     {{ screenMessage[e.screen][e.kind].replace("{}", tn(e.user, true)).replace("{l}", tn(e.user, false)) }}
   </div>

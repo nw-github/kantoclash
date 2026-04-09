@@ -365,12 +365,13 @@ type SpiteEvent = {type: "spite"; src: PokeId; move: MoveId; amount: number};
 
 type BeatUpEvent = {type: "beatup"; name: string};
 
-type FieldCondition = Weather | "gravity";
+type FieldCondition = Weather | "gravity" | "trickRoom";
 
 export type WeatherEvent = {
   type: "weather";
   kind: "start" | "end" | "continue";
   weather: FieldCondition;
+  src?: PokeId;
 };
 
 type PerishSongEvent = {type: "perish"; src: PokeId; turns: number};

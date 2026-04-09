@@ -175,6 +175,8 @@ const descriptions: Partial<Record<number, Partial<Record<MoveId, string>>>> = {
     magnetrise: "The user becomes ungrounded for 5 turns, avoiding Ground-type attacks. ",
     gravity:
       "For 5 turns, the accuracy of all moves is multiplied by 5/3, all Pokémon become grounded (susceptible to Ground-type attacks, Spikes, Toxic Spikes, and Arena Trap), and certain moves cannot be used. ",
+    trickroom:
+      "For 5 turns, slower Pokémon move before faster ones within their priority brackets. ",
   },
   [2]: {
     conversion:

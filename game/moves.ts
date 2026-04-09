@@ -1427,6 +1427,15 @@ export const moveScripts: MoveScripts = {
       }
     }
   },
+  trickroom(battle, user) {
+    if (battle.field.trickRoom) {
+      battle.field.trickRoom = 0;
+      return battle.event({type: "weather", kind: "end", weather: "trickRoom"});
+    }
+
+    battle.field.trickRoom = 5;
+    battle.event({type: "weather", kind: "start", weather: "trickRoom", src: user.id});
+  },
 };
 
 export const moveOverrides: MovePropOverrides = {

@@ -5005,12 +5005,12 @@ export const rawMoveList = {
     max: 2,
   },
   trickroom: {
-    kind: "fail",
+    kind: "trickroom",
     name: "Trick Room",
-    pp: 1,
-    type: "normal",
-    range: "Adjacent",
-    why: "fail_unimplemented",
+    pp: 5,
+    type: "psychic",
+    range: "Field",
+    priority: -7,
   },
   trumpcard: {
     kind: "fail",

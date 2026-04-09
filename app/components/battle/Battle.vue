@@ -55,9 +55,13 @@
         </div>
 
         <div class="absolute bottom-0 z-0 flex flex-row pb-2 justify-end w-full gap-2 items-center">
-          <!-- <TouchTooltip v-if="mgr.trickRoom" text="Trick Room">
+          <TouchTooltip v-if="mgr.battle.field.gravity" text="Gravity">
+            <UIcon class="size-6 text-pink-400" name="hugeicons:falling-star" />
+          </TouchTooltip>
+
+          <TouchTooltip v-if="mgr.battle.field.trickRoom" text="Trick Room">
             <UIcon class="size-6 text-pink-400" name="material-symbols:swap-calls" />
-          </TouchTooltip> -->
+          </TouchTooltip>
 
           <TouchTooltip v-if="weather" :text="weatherData[weather].tooltip">
             <UIcon

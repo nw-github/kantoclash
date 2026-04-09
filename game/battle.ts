@@ -158,6 +158,7 @@ type BattleParams = {
 type Field = {
   // weather?: {kind: Weather; turns: number};
   gravity?: number;
+  trickRoom?: number;
 };
 
 export class Battle {
@@ -301,7 +302,11 @@ export class Battle {
         } else if (a.choice!.subpriority !== b.choice!.subpriority) {
           return b.choice!.subpriority - a.choice!.subpriority;
         } else if (a.choice!.spe !== b.choice!.spe) {
-          return b.choice!.spe - a.choice!.spe;
+          if (this.gen.id <= 4 && this.field.trickRoom) {
+            return a.choice!.spe - b.choice!.spe;
+          } else {
+            return b.choice!.spe - a.choice!.spe;
+          }
         }
         return this.rng.bool() ? 1 : -1;
       });
@@ -333,6 +338,9 @@ export class Battle {
         }
         poke.choice.spe = this.gen.getSpeed(this, poke);
         debugLog(`[${poke.base.name}] speed is ${poke.choice.spe}`);
+        if (this.gen.id >= 5 && this.field.trickRoom) {
+          poke.choice.spe = (10000 - poke.choice.spe) & 0x1fff;
+        }
       }
     }
 

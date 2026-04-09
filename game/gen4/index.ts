@@ -588,6 +588,10 @@ export class Generation4 extends Generation3 {
       battle.event({type: "weather", kind: "end", weather: "gravity"});
     }
 
+    if (battle.field.trickRoom && --battle.field.trickRoom === 0) {
+      battle.event({type: "weather", kind: "end", weather: "trickRoom"});
+    }
+
     // A bunch of stuff
     const hasUproar = battle.allActive.some(p => p.v.thrashing?.move?.id === "uproar");
     for (const poke of turnOrder) {
