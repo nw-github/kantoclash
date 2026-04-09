@@ -5,7 +5,7 @@ import type {Generation} from "~~/game/gen";
 import type {AnimationParams} from "~/components/battle/ActivePokemon.vue";
 import type {BattleTimers, TeamPreview} from "~~/server/gameServer";
 import {type Battlemon, Battle, type Player} from "~~/game/battle";
-import {CVF, type NonEmptyArray} from "~~/game/utils";
+import type {NonEmptyArray} from "~~/game/utils";
 import type {DamagingMove, ForesightMove} from "~~/game/moves";
 import dirty from "~~/game/dirty";
 
@@ -14,7 +14,6 @@ export type ClientActivePokemon = Battlemon & {
   owned?: bool;
   indexInTeam?: number;
   abilityUnknown?: bool;
-  cflags?: CVF;
 };
 
 export type ClientPlayer = {
@@ -167,7 +166,6 @@ export class ClientManager {
               ? this.players.ownerOf(e.src)!.team[e.indexInTeam]
               : this.findOrCreateEnemyBasePokemon(e);
           poke.switchTo(base, this.battle);
-          poke.cflags = CVF.none;
           this.battle.events.length = 0;
 
           poke.visible = true;
@@ -297,6 +295,15 @@ export class ClientManager {
           if (e.ability) {
             src.v.ability = e.ability;
           }
+
+          if (e.target) {
+            const target = this.players.poke(e.target)!;
+            if (!target.abilityUnknown && target.v.ability) {
+              src.v.ability = target.v.ability;
+            } else if (!e.ability) {
+              src.v.ability = undefined;
+            }
+          }
         }),
       });
     } else if (e.type === "hit_sub") {
@@ -383,7 +390,7 @@ export class ClientManager {
       this.players.poke(e.target)!.abilityUnknown = false;
     } else if (e.type === "move") {
       const src = this.players.poke(e.src)!;
-      if (!src.owned && !e.called) {
+      if (!src.owned && !e.called && e.move !== "struggle") {
         const idx = src.base.moves.findIndex(id => id === e.move);
         // TODO: pressure
         const ppcost = e.disabled || e.thrashing ? 0 : 1;
@@ -505,6 +512,9 @@ export class ClientManager {
       apply(poke.v, v, "magnetRise");
       apply(poke.v, v, "flags");
       apply(poke.v, v, "drowsy");
+      apply(poke.v, v, "tauntTurns");
+      apply(poke.v, v, "disabled", c => ({indexInMoves: -1, turns: c}));
+      apply(poke.v, v, "encore", c => ({indexInMoves: -1, turns: c}));
       apply(poke.v, v, "charging", c => ({move: gen.moveList[c] as DamagingMove, targets: []}));
       apply(poke.v, v, "trapped", c => ({
         move: gen.moveList[c] as DamagingMove,
@@ -516,7 +526,6 @@ export class ClientManager {
       apply(poke.v, v, "meanLook", id => this.players.poke(id));
       apply(poke.v, v, "attract", id => this.players.poke(id));
       apply(poke.base, v, "status");
-      apply(poke, v, "cflags");
     }
   }
 }

@@ -205,7 +205,7 @@ img {
 
 <script setup lang="ts">
 import type {PokeId} from "~~/game/events";
-import {CVF, VF, type ScreenId, type Weather} from "~~/game/utils";
+import {VF, type ScreenId, type Weather} from "~~/game/utils";
 
 import {breakpointsTailwind} from "@vueuse/core";
 import {
@@ -299,9 +299,9 @@ const badges = computed(() => {
   if (poke.v.hasFlag(VF.charge)) { result.push({color: "old-yellow", icon: "material-symbols:bolt", variant: "subtle"}); }
   if (poke.v.hasFlag(VF.magicCoat)) { result.push({color: "old-pink", icon: "mdi:mirror", variant: "subtle"}); }
   if (poke.v.hasFlag(VF.gastroAcid)) { result.push({ color: "old-purple", icon: "material-symbols:block-outline", label: "Suppressed", variant: "subtle" }); }
-  if ((poke.cflags || 0) & CVF.encore) { result.push({color: "old-sky", icon: "material-symbols:celebration", variant: "subtle"}); }
-  if ((poke.cflags || 0) & CVF.disabled) { result.push({color: "error", icon: "material-symbols:block-outline", variant: "subtle"}); }
-  if ((poke.cflags || 0) & CVF.taunt) { result.push({color: "error", icon: "fluent-emoji-high-contrast:anger-symbol", variant: "subtle"}); }
+  if (poke.v.encore) { result.push({color: "old-sky", icon: "material-symbols:celebration", variant: "subtle"}); }
+  if (poke.v.disabled) { result.push({color: "error", icon: "material-symbols:block-outline", variant: "subtle"}); }
+  if (poke.v.tauntTurns) { result.push({color: "error", icon: "fluent-emoji-high-contrast:anger-symbol", variant: "subtle"}); }
   if (poke.v.hasFlag(VF.torment)) { result.push({ color: "error", icon: "fluent-emoji-high-contrast:anger-symbol", variant: "subtle", label: "Torment" }); }
   if (poke.v.identified) { result.push({color: "old-violet", icon: "material-symbols:search-rounded", variant: "subtle"}); }
   if (poke.v.magnetRise) { result.push({color: "old-amber", icon: "tabler:magnet", variant: "subtle"}); }

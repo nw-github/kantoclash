@@ -11,7 +11,6 @@ import {
 import {
   arraysEqual,
   clamp,
-  CVF,
   HP_TYPES,
   hpPercent,
   stageKeys,
@@ -684,11 +683,12 @@ export class Battlemon {
         hail: "snowy",
       };
 
-      const type = types[battle.getWeather() ?? "sand"];
+      const weather = battle.getWeather() ?? "sand";
+      const type = types[weather];
       if (!arraysEqual([type], this.v.types)) {
-        this.v.form = forms[battle.getWeather() ?? "sand"];
-        this.v.types = [type];
         battle.ability(this);
+        this.v.form = forms[weather];
+        this.v.types = [type];
         battle.event({
           type: "transform",
           src: this.id,
@@ -1134,16 +1134,9 @@ export class Battlemon {
 
   changedVolatiles() {
     const diff: Pick<Diff<Volatiles>, (typeof VOLATILE_SYNC_KEYS)[number]> = dirty.flush(this.v);
-    let cflags = CVF.none;
-    cflags |= diff.disabled ? CVF.disabled : 0;
-    cflags |= diff.encore ? CVF.encore : 0;
-    cflags |= diff.tauntTurns ? CVF.taunt : 0;
-    if (this.v.transformed) {
-      diff.stats = undefined;
-    }
     return {
       stages: diff.stages,
-      stats: diff.stats,
+      stats: this.v.transformed ? undefined : diff.stats,
       types: diff.types,
       form: diff.form,
       stockpile: diff.stockpile,
@@ -1155,6 +1148,9 @@ export class Battlemon {
       gender: diff.gender,
       transformed: diff.transformed,
       magnetRise: diff.magnetRise,
+      tauntTurns: diff.tauntTurns && 1,
+      disabled: diff.disabled && diff.disabled?.turns && 1,
+      encore: diff.encore && diff.encore?.turns && 1,
       charging: diff.charging && diff.charging?.move?.id,
       trapped: diff.trapped && diff.trapped?.move?.id,
       identified: diff.identified && diff.identified.id,
@@ -1162,7 +1158,6 @@ export class Battlemon {
       meanLook: diff.meanLook && diff.meanLook.id,
       attract: diff.attract && diff.attract.id,
       status: this.base.status || null,
-      cflags,
     };
   }
 

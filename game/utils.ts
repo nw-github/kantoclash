@@ -85,15 +85,6 @@ export enum VF {
   aquaRing     = 0x1000_0000,
 }
 
-/** Client only */
-// prettier-ignore
-export enum CVF {
-  none       = 0,
-  disabled   = 0x0000_0001,
-  encore     = 0x0000_0002,
-  taunt      = 0x0000_0004,
-}
-
 export enum Endure {
   None,
   Endure,
