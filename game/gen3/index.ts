@@ -619,6 +619,20 @@ export class Generation3 extends Generation2 {
     return move.pp === 1 ? 1 : idiv(move.pp * 8, 5);
   }
 
+  override rollCrit(battle: Battle, user: Battlemon, target: Battlemon, move: DamagingMove) {
+    if (
+      move.fixedDamage ||
+      this.move.overrides.dmg[move.id!] ||
+      target.owner.screens.luckychant ||
+      target.getAbility(user)?.preventsCrit
+    ) {
+      return false;
+    } else if (move.flag === DMF.always_crit) {
+      return true;
+    }
+    return this.rng.tryCrit(battle, user, move.flag === DMF.high_crit);
+  }
+
   // Cmd_accuracycheck
   override checkAccuracy(
     move: Move,

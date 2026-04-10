@@ -157,6 +157,7 @@ export enum Range {
 export enum DMF {
   none,
   high_crit,
+  always_crit,
   drain,
   explosion,
   recharge,

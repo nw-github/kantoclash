@@ -235,8 +235,9 @@ const flagDesc: Record<NonNullable<DMF>, string> = {
   [DMF.assurance]: "Doubles damage if the target has already taken damage this turn. ",
   [DMF.uturn]: "Switches the user out. ",
   [DMF.futuresight]: "After two turns, the target is hit with an attack. Damage is calculated upon use of the move. ",
-  [DMF.hits_defense]: "Damage calculation uses the target's Defense stat.",
-  [DMF.ignore_defeva]: "Ignores changes to the target's Defense and Evasion.",
+  [DMF.hits_defense]: "Damage calculation uses the target's Defense stat. ",
+  [DMF.ignore_defeva]: "Ignores changes to the target's Defense and Evasion. ",
+  [DMF.always_crit]: "Always results in a critical hit unless the target is protected by Lucky Chant or has the Battle Armor or Shell Armor ability. ",
 };
 
 const groupWithComma = (items: readonly string[]) => {
