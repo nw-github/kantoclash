@@ -392,10 +392,16 @@ export class ClientManager {
       }
       // TODO: set ability
     } else if (e.type === "copy_ability") {
-      this.players.poke(e.src)!.v.ability = e.ability;
-      this.players.poke(e.src)!.abilityUnknown = false;
-      this.players.poke(e.target)!.v.ability = e.ability;
-      this.players.poke(e.target)!.abilityUnknown = false;
+      const src = this.players.poke(e.src)!;
+      const target = this.players.poke(e.target)!;
+
+      src.v.ability = e.ability;
+      src.abilityUnknown = false;
+      target.v.ability = e.ability;
+      target.abilityUnknown = false;
+      if (!target.owned && !target.v.ability) {
+        target.base.ability = e.ability;
+      }
     } else if (e.type === "move") {
       const src = this.players.poke(e.src)!;
       if (!src.owned && !e.called && e.move !== "struggle") {

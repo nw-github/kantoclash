@@ -26,6 +26,7 @@ import {
   DMF,
   idiv1,
   TypeEffectiveness,
+  applyStatStages,
 } from "../utils";
 import {itemList, type ItemId} from "../item";
 import {UNOWN_FORM, type Pokemon, type FormId, type Gender, type Nature} from "../pokemon";
@@ -462,10 +463,8 @@ export class Generation1 {
     }
   }
 
-  recalculateStat(poke: Battlemon, battle: Battle, stat: StatStageId, negative: bool) {
-    const [num, div] = battle.gen.stageMultipliers[poke.v.stages[stat]];
-    poke.v.stats[stat] = idiv(poke.v.baseStats[stat] * num, div);
-
+  recalculateStat(poke: Battlemon, stat: StatStageId, negative: bool) {
+    poke.v.stats[stat] = applyStatStages(this, poke.v.baseStats[stat], poke.v.stages[stat]);
     // https://www.smogon.com/rb/articles/rby_mechanics_guide#stat-mechanics
     if (!negative) {
       poke.v.stats[stat] = clamp(poke.v.stats[stat], 1, 999);

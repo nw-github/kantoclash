@@ -10,7 +10,6 @@ import {
 } from "../pokemon";
 import {abilityList, type Species, type SpeciesId} from "../species";
 import {
-  clamp,
   c,
   n,
   debugLog,
@@ -21,7 +20,6 @@ import {
   TypeMod,
   isSpecialType,
   Range,
-  type StatStageId,
   type Stats,
   type Type,
   type Weather,
@@ -29,6 +27,7 @@ import {
   DMF,
   idiv1,
   TypeEffectiveness,
+  applyStatStages,
 } from "../utils";
 import {moveScripts, moveOverrides, movePatches, tryDamage} from "./moves";
 import speciesPatches from "./species.json";
@@ -63,6 +62,22 @@ const stageMultipliers: Record<number, [num: number, div: number]> = {
   4: [6, 2],
   5: [7, 2],
   6: [8, 2],
+};
+
+const accStageMultipliers: Record<number, [num: number, div: number]> = {
+  [-6]: [33, 100],
+  [-5]: [36, 100],
+  [-4]: [43, 100],
+  [-3]: [50, 100],
+  [-2]: [60, 100],
+  [-1]: [75, 100],
+  0: [1, 1],
+  1: [133, 100],
+  2: [166, 100],
+  3: [2, 1],
+  4: [233, 100],
+  5: [133, 50],
+  6: [3, 1],
 };
 
 enum BetweenTurns {
@@ -291,11 +306,11 @@ export class DamageCalc {
     const special = isSpecialType(type);
     const [atks, defs] = special ? (["spa", "spd"] as const) : (["atk", "def"] as const);
     if (!isCrit || user.v.stages[atks] < 0) {
-      attacks[atks] = applyStatStages(user, attacks[atks], atks);
+      attacks[atks] = applyStatStages(battle.gen, attacks[atks], user.v.stages[atks]);
     }
 
     if (!isCrit || target.v.stages[defs] > 0) {
-      defenses[defs] = applyStatStages(target, defenses[defs], defs);
+      defenses[defs] = applyStatStages(battle.gen, defenses[defs], target.v.stages[defs]);
     }
 
     let damage = idiv(idiv(attacks[atks] * power * (idiv(2 * level, 5) + 2), defenses[defs]), 50);
@@ -429,6 +444,7 @@ export class Generation3 extends Generation2 {
   override maxEv = 255;
   override maxTotalEv = 510;
   override stageMultipliers = stageMultipliers;
+  override accStageMultipliers = accStageMultipliers;
   override invalidSketchMoves = [];
 
   constructor() {
@@ -533,7 +549,7 @@ export class Generation3 extends Generation2 {
       speed <<= 1;
     }
 
-    speed = applyStatStages(user, speed, "spe");
+    speed = applyStatStages(battle.gen, speed, user.v.stages.spe);
     if (item?.halveSpeed) {
       speed >>= 1;
     }
@@ -603,6 +619,7 @@ export class Generation3 extends Generation2 {
     return move.pp === 1 ? 1 : idiv(move.pp * 8, 5);
   }
 
+  // Cmd_accuracycheck
   override checkAccuracy(
     move: Move,
     battle: Battle,
@@ -610,7 +627,10 @@ export class Generation3 extends Generation2 {
     target: Battlemon,
     phys?: bool,
   ) {
-    if (user.hasAbility("noguard") || target.hasAbility("noguard")) {
+    const userAbilityId = user.getAbilityId();
+    const targetAbilityId = target.getAbilityId(user);
+    const targetAbility = target.getAbility(user);
+    if (userAbilityId === "noguard" || targetAbilityId === "noguard") {
       return true;
     }
 
@@ -623,12 +643,13 @@ export class Generation3 extends Generation2 {
       return false;
     }
 
-    const chance = this.getMoveAcc(move, battle.getWeather());
+    const weather = battle.getWeather();
+    const chance = this.getMoveAcc(move, weather);
     if (!chance || user.v.inPursuit) {
       return true;
     } else if (move.kind === "damage" && move.flag === DMF.ohko) {
       // In Gen 3/4, the type immunity message takes priority over the sturdy one
-      if (target.hasAbility("sturdy")) {
+      if (targetAbilityId === "sturdy") {
         battle.ability(target);
         battle.info(target, "immune");
         return false;
@@ -642,43 +663,30 @@ export class Generation3 extends Generation2 {
       return true;
     }
 
-    let eva = target.v.stages.eva;
-    // Starting from Gen 4, Foresight/Odor Sleuth/Miracle Eye only ignore positive evasion changes
-    if (target.v.identified && (eva > 0 || battle.gen.id <= 3)) {
-      eva = 0;
+    const stagesEva = target.v.identified ? 0 : target.v.stages.eva;
+    const stagesAcc = user.v.stages.acc;
+
+    let acc = applyStatStages(this, chance, stagesAcc - stagesEva, "accStageMultipliers");
+    if (userAbilityId === "compoundeyes") {
+      acc = idiv(acc * 130, 100);
     }
 
-    const [num, div] = this.accStageMultipliers[clamp(user.v.stages.acc - eva, -6, 6)];
-    let acc = idiv(chance * num, div);
-    const targetItem = target.base.item;
+    if (weather && targetAbility?.weatherEva === weather) {
+      acc = idiv(acc * 80, 100);
+    }
+
+    if (userAbilityId === "hustle" && (phys ?? battle.gen.getCategory(move) === MC.physical)) {
+      acc = idiv(acc * 80, 100);
+    }
+
+    const targetItem = user.base.item;
     if (targetItem?.reduceAcc) {
       acc = idiv(acc * (100 - targetItem.reduceAcc), 100);
     }
 
-    const userItem = user.base.item;
-    if (userItem?.boostAcc) {
-      acc = idiv(acc * (100 + userItem.boostAcc), 100);
-    }
-
-    if (user.base.itemId === "zoomlens" && target.choice?.executed) {
-      acc = idiv(acc * 120, 100);
-    }
-
-    if (user.hasAbility("compoundeyes")) {
-      acc = idiv(acc * 130, 100);
-    }
-
-    if (user.hasAbility("hustle") && (phys ?? battle.gen.getCategory(move) === MC.physical)) {
-      acc = idiv(acc * 80, 100);
-    }
-
-    const weatherEva = target.getAbility()?.weatherEva;
-    if (weatherEva && battle.getWeather() === weatherEva) {
-      acc = idiv(acc * 4, 5);
-    }
-
     debugLog(`[${user.base.name}] ${move.name} (Acc ${acc}/100)`);
     if (!battle.rand100(acc)) {
+      // BattleSystem_Random(battleSystem) % 100) + 1 > hitChance
       battle.miss(user, target);
       return false;
     }
@@ -1086,11 +1094,6 @@ export class Generation3 extends Generation2 {
     return {dmg, endure: Endure.None};
   }
 }
-
-const applyStatStages = (poke: Battlemon, stat: number, statId: StatStageId) => {
-  const [num, div] = poke.base.gen.stageMultipliers[poke.v.stages[statId]];
-  return idiv(stat * num, div);
-};
 
 const weatherModifier: Partial<Record<Weather, Partial<Record<Type, number>>>> = {
   rain: {

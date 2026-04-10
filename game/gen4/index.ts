@@ -11,6 +11,7 @@ import {
   screens,
   VF,
   DMF,
+  applyStatStages,
   type Type,
   Endure,
   TypeMod,
@@ -18,7 +19,6 @@ import {
   c,
   n,
   debugLog,
-  clamp,
   idiv1,
   TypeEffectiveness,
 } from "../utils";
@@ -27,7 +27,6 @@ import type {DamagingMove, Move} from "../moves";
 import type {GetDamageParams, TryEndureParams} from "../gen1";
 import type {Pokemon} from "../pokemon";
 import type {Random} from "random";
-import type {Generation} from "../gen";
 import type {Calc} from "../calc";
 
 // prettier-ignore
@@ -900,7 +899,7 @@ export class Generation4 extends Generation3 {
       stagesAcc *= 2;
     }
 
-    let acc = applyStatStages(this, chance, clamp(stagesAcc - stagesEva, -6, 6));
+    let acc = applyStatStages(this, chance, stagesAcc - stagesEva, "accStageMultipliers");
     if (userAbilityId === "compoundeyes") {
       acc = idiv(acc * 130, 100);
     }
@@ -947,11 +946,6 @@ export class Generation4 extends Generation3 {
     return true;
   }
 }
-
-const applyStatStages = (gen: Generation, stat: number, stages: number) => {
-  const [num, div] = gen.stageMultipliers[clamp(stages, -6, 6)];
-  return idiv(stat * num, div);
-};
 
 const weatherModifier: Partial<Record<Weather, Partial<Record<Type, number>>>> = {
   rain: {

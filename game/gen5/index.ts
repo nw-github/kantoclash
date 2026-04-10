@@ -8,7 +8,7 @@ import {Generation4} from "../gen4";
 import type {Battlemon, Battle} from "../battle";
 import {
   c,
-  clamp,
+  applyStatStages,
   debugLog,
   DMF,
   Endure,
@@ -24,7 +24,6 @@ import {
   type Weather,
 } from "../utils";
 import {applyMod, chainMod, chainModIf, Mod} from "./modifier";
-import type {Generation} from "../gen";
 import type {GetDamageParams, TryEndureParams} from "../gen1";
 import type {DamagingMove} from "../moves";
 import type {Calc} from "../calc";
@@ -410,11 +409,6 @@ export class Generation5 extends Generation4 {
     return {dmg, endure: Endure.None};
   }
 }
-
-const applyStatStages = (gen: Generation, stat: number, stages: number) => {
-  const [num, div] = gen.stageMultipliers[clamp(stages, -6, 6)];
-  return idiv(stat * num, div);
-};
 
 const weatherModifier: Partial<Record<Weather, Partial<Record<Type, number>>>> = {
   rain: {

@@ -896,6 +896,7 @@ export const moveScripts: MoveScripts = {
     battle.gen1LastDamage = 0;
     user.transform(battle, target);
   },
+  // Gen II
   attract(battle, user, [target]) {
     if (target.hasAbility("oblivious")) {
       battle.ability(target);
@@ -1061,7 +1062,7 @@ export const moveScripts: MoveScripts = {
 
     user.v.stages = {...target.v.stages};
     for (const stat of stageStatKeys) {
-      battle.gen.recalculateStat(user, battle, stat, false);
+      battle.gen.recalculateStat(user, stat, false);
     }
     battle.event({type: "psych_up", src: user.id, target: target.id});
   },
@@ -1135,6 +1136,7 @@ export const moveScripts: MoveScripts = {
     target.base.pp[idx] -= amount;
     battle.event({type: "spite", src: target.id, move: id, amount});
   },
+  // Gen III
   assist(battle, user) {
     const moves = user.owner.team
       .flatMap(p => (p !== user.base ? p.moves : []))
@@ -1295,6 +1297,7 @@ export const moveScripts: MoveScripts = {
     target.v.drowsy = 2;
     battle.info(target, "drowsy");
   },
+  // Gen IV
   acupressure(battle, user, [target]) {
     if (target.v.substitute) {
       return battle.info(user, "fail_generic");

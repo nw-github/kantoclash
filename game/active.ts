@@ -130,7 +130,7 @@ export class Battlemon {
       // Is trapping passed? Encore? Nightmare?
 
       for (const stat of stageStatKeys) {
-        battle.gen.recalculateStat(this, battle, stat, false);
+        battle.gen.recalculateStat(this, stat, false);
       }
     }
 
@@ -298,7 +298,7 @@ export class Battlemon {
     for (const k of stageKeys) {
       this.v.stages[k] = target.v.stages[k];
       if (stageStatKeys.includes(k)) {
-        battle.gen.recalculateStat(this, battle, k, false);
+        battle.gen.recalculateStat(this, k, false);
       }
     }
 
@@ -554,7 +554,7 @@ export class Battlemon {
     this.v.stages[stat] = value;
 
     if (stageStatKeys.includes(stat)) {
-      battle.gen.recalculateStat(this, battle, stat, negative);
+      battle.gen.recalculateStat(this, stat, negative);
     }
 
     if (battle.gen.id === 1) {

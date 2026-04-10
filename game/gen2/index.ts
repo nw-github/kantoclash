@@ -23,6 +23,7 @@ import {
   type Weather,
   TypeEffectiveness,
   Endure,
+  applyStatStages,
 } from "../utils";
 import {moveOverrides, moveScripts, movePatches, tryDamage} from "./moves";
 import speciesPatches from "./species.json";
@@ -567,9 +568,9 @@ export class Generation2 extends Generation1 {
     return {dmg};
   }
 
-  override recalculateStat(poke: Battlemon, battle: Battle, stat: StatStageId) {
-    const [num, div] = battle.gen.stageMultipliers[poke.v.stages[stat]];
-    poke.v.stats[stat] = clamp(idiv(poke.v.baseStats[stat] * num, div), 1, 999);
+  override recalculateStat(poke: Battlemon, stat: StatStageId) {
+    poke.v.stats[stat] = applyStatStages(this, poke.v.baseStats[stat], poke.v.stages[stat]);
+    poke.v.stats[stat] = clamp(poke.v.stats[stat], 1, 999);
   }
 
   override getGender(

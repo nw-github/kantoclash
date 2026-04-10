@@ -1,6 +1,7 @@
 import type {Random} from "random";
 import type {PlayerId, PokeId} from "./events";
 import type {AbilityId} from "./species";
+import type {Generation} from "./gen";
 
 export type NonEmptyArray<T> = [T, ...T[]];
 
@@ -217,6 +218,16 @@ export const randChoiceWeighted = <T>(rng: Random, arr: readonly T[], weights: n
   }
 
   return arr[i];
+};
+
+export const applyStatStages = (
+  gen: Generation,
+  stat: number,
+  stages: number,
+  mult: "stageMultipliers" | "accStageMultipliers" = "stageMultipliers",
+) => {
+  const [num, div] = gen[mult][clamp(stages, -6, 6)];
+  return idiv(stat * num, div);
 };
 
 export const playerId = (poke: PokeId): PlayerId => poke.split(":")[0];
