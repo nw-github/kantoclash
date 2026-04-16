@@ -803,7 +803,7 @@ export class Generation4 extends Generation3 {
     if (item?.halveSpeed) {
       speed >>= 1;
     } else if (item?.choice === "spe") {
-      speed <<= 1;
+      speed = idiv(speed * 15, 10);
     }
 
     // quick powder
