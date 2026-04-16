@@ -183,7 +183,7 @@ export interface DamagingMove extends BaseMove {
   readonly power: number;
   readonly category: MC.physical | MC.special;
   readonly flag?: DMF;
-  readonly effect?: [number, Effect] | [number, Effect, true];
+  readonly effect?: [number, Effect] | [number, Effect, true] | null;
   readonly effect2?: DamagingMove["effect"];
   /** Recoil: max(1 / recoil, 1) */
   readonly recoil?: number;

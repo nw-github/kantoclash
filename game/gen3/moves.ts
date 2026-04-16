@@ -182,7 +182,7 @@ export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
   hyperbeam: {kingsRock: true},
   icywind: {effect: [100, [["spe", -1]]]},
   leechlife: {kingsRock: false},
-  lowkick: {acc: 100, effect: [0, "flinch"], power: 0},
+  lowkick: {acc: 100, effect: null, power: 0},
   meanlook: {protect: true},
   megadrain: {kingsRock: false},
   metronome: {noEncore: false, noSleepTalk: true},
