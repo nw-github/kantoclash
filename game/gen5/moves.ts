@@ -86,6 +86,7 @@ export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
   powertrick: {snatch: true},
   protect: {priority: +4},
   psychup: {snatch: false},
+  recycle: {snatch: true},
   rockblast: {acc: 90},
   sandtomb: {power: 35, acc: 85},
   scaryface: {acc: 100},

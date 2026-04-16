@@ -1199,7 +1199,7 @@ export const moveScripts: MoveScripts = {
     battle.callMove(battle.gen.moveList[this.calls], user);
   },
   recycle(battle, user) {
-    if (!user.consumed) {
+    if (!user.consumed || user.base._itemId) {
       return battle.info(user, "fail_generic");
     }
 
