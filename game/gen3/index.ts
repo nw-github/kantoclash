@@ -150,6 +150,14 @@ type BoostedAttackParams = {
   user: Battlemon;
   target: Battlemon;
   type: Type;
+  isCrit?: bool;
+};
+
+type BoostedDefenseParams = {
+  battle: Battle;
+  target: Battlemon;
+  explosion?: bool;
+  isCrit?: bool;
 };
 
 type BoostedPowerParams = {
@@ -160,7 +168,7 @@ type BoostedPowerParams = {
 };
 
 export class DamageCalc {
-  static getBoostedAttack({battle, user, target, type}: BoostedAttackParams) {
+  static getBoostedAttack({battle, user, target, type, isCrit}: BoostedAttackParams) {
     const ability = user.getAbility();
     const abilityId = user.getAbilityId();
     const item = user.base.item;
@@ -210,10 +218,17 @@ export class DamageCalc {
       spa >>= 1;
     }
 
+    if (!isCrit || user.v.stages.atk < 0) {
+      atk = applyStatStages(battle.gen, atk, user.v.stages.atk);
+    }
+    if (!isCrit || user.v.stages.spa < 0) {
+      spa = applyStatStages(battle.gen, spa, user.v.stages.spa);
+    }
+
     return {atk, spa};
   }
 
-  static getBoostedDefense({target}: {target: Battlemon}) {
+  static getBoostedDefense({battle, target, explosion, isCrit}: BoostedDefenseParams) {
     const abilityId = target.getAbilityId();
     const item = target.base.item;
 
@@ -231,6 +246,20 @@ export class DamageCalc {
     if (abilityId === "marvelscale" && target.base.status) {
       def = idiv(def * 150, 100);
     }
+
+    // The explosion check uses gCurrentMove instead of the move that was passed in
+    if (explosion) {
+      def >>= 1;
+    }
+
+    if (!isCrit || target.v.stages.def > 0) {
+      def = applyStatStages(battle.gen, def, target.v.stages.def);
+    }
+
+    if (!isCrit || target.v.stages.spd > 0) {
+      spd = applyStatStages(battle.gen, spd, target.v.stages.spd);
+    }
+
     return {def, spd};
   }
 
@@ -293,27 +322,13 @@ export class DamageCalc {
     isCrit,
     explosion,
   }: BaseDamageParams) {
-    const level = user.base.level;
-    const attacks = DamageCalc.getBoostedAttack({battle, user, target, type});
-    const defenses = DamageCalc.getBoostedDefense({target});
-    power = DamageCalc.getBoostedPower({battle, user, type, power});
-
-    // The explosion check uses gCurrentMove instead of the move that was passed in
-    if (explosion) {
-      defenses.def >>= 1;
-    }
-
     const special = isSpecialType(type);
     const [atks, defs] = special ? (["spa", "spd"] as const) : (["atk", "def"] as const);
-    if (!isCrit || user.v.stages[atks] < 0) {
-      attacks[atks] = applyStatStages(battle.gen, attacks[atks], user.v.stages[atks]);
-    }
+    const A = DamageCalc.getBoostedAttack({battle, user, target, type, isCrit})[atks];
+    const D = DamageCalc.getBoostedDefense({battle, target, explosion, isCrit})[defs];
+    power = DamageCalc.getBoostedPower({battle, user, type, power});
 
-    if (!isCrit || target.v.stages[defs] > 0) {
-      defenses[defs] = applyStatStages(battle.gen, defenses[defs], target.v.stages[defs]);
-    }
-
-    let damage = idiv(idiv(attacks[atks] * power * (idiv(2 * level, 5) + 2), defenses[defs]), 50);
+    let damage = idiv(idiv(A * power * (idiv(2 * user.base.level, 5) + 2), D), 50);
     if (!special && user.base.status === "brn" && user.getAbilityId() !== "guts") {
       damage >>= 1;
     }
@@ -356,9 +371,7 @@ export class DamageCalc {
     }
 
     debugLog(`\n${c(user.base.name, 32)} => ${c(target.base.name, 31)} (${c(move.name, 34)})`);
-    debugLog(
-      `- P: ${n(power)} | A: ${n(attacks[atks])} | D: ${n(defenses[defs])} | L: ${n(level)}`,
-    );
+    debugLog(`- P: ${n(power)} | A: ${n(A)} | D: ${n(D)}`);
     return damage + 2;
   }
 

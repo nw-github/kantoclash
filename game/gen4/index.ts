@@ -73,16 +73,26 @@ type BoostedPowerParams = {
   power: number;
 };
 
+type BoostedDefenseParams = {
+  battle: Battle;
+  user: Battlemon;
+  target: Battlemon;
+  isCrit?: bool;
+  move: DamagingMove;
+};
+
+type BoostedAttackParams = {battle: Battle; user: Battlemon; target: Battlemon; isCrit?: bool};
+
 class DamageCalc {
-  static getBoostedAttack({battle, user}: {battle: Battle; user: Battlemon}) {
-    const ability = user.getAbility();
-    const abilityId = user.getAbilityId();
+  static getBoostedAttack({battle, user, target, isCrit}: BoostedAttackParams) {
+    const userAbility = user.getAbility();
+    const userAbilityId = user.getAbilityId();
     const item = user.base.item;
 
     let {atk, spa} = user.v.stats;
-    if (ability?.doubleAtk) {
+    if (userAbility?.doubleAtk) {
       atk <<= 1;
-    } else if (abilityId === "slowstart" && user.v.slowStartTurns < 5) {
+    } else if (userAbilityId === "slowstart" && user.v.slowStartTurns < 5) {
       atk >>= 1;
     }
 
@@ -102,36 +112,48 @@ class DamageCalc {
       }
     }
 
-    if (abilityId === "hustle" || (abilityId === "guts" && user.base.status)) {
+    if (userAbilityId === "hustle" || (userAbilityId === "guts" && user.base.status)) {
       atk = idiv(atk * 150, 100);
-    } else if (abilityId === "plus" && user.owner.sideHasAbility("minus")) {
+    } else if (userAbilityId === "plus" && user.owner.sideHasAbility("minus")) {
       spa = idiv(spa * 150, 100);
-    } else if (abilityId === "minus" && user.owner.sideHasAbility("plus")) {
+    } else if (userAbilityId === "minus" && user.owner.sideHasAbility("plus")) {
       spa = idiv(spa * 150, 100);
     }
 
     // The air lock check is not ignored by mold breaker
     if (battle.getWeather() === "sun") {
-      if (abilityId === "solarpower") {
+      if (userAbilityId === "solarpower") {
         spa = idiv(spa * 15, 10);
       }
       if (user.owner.sideHasAbility("flowergift")) {
         atk = idiv(atk * 15, 10);
       }
     }
-    return {atk, spa};
+
+    let {atk: statChangeAtk, spa: statChangeSpa} = user.v.stages;
+    if (userAbilityId === "simple") {
+      statChangeAtk *= 2;
+      statChangeSpa *= 2;
+    }
+    if (target.getAbilityId(user) === "unaware") {
+      statChangeAtk = 0;
+      statChangeSpa = 0;
+    }
+    if (isCrit && statChangeAtk < 0) {
+      statChangeAtk = 0;
+    }
+    if (isCrit && statChangeSpa < 0) {
+      statChangeSpa = 0;
+    }
+
+    return {
+      atk: applyStatStages(battle.gen, atk, statChangeAtk),
+      spa: applyStatStages(battle.gen, spa, statChangeSpa),
+    };
   }
 
-  static getBoostedDefense({
-    battle,
-    user,
-    target,
-  }: {
-    battle: Battle;
-    user: Battlemon;
-    target: Battlemon;
-  }) {
-    const abilityId = target.getAbilityId(user);
+  static getBoostedDefense({battle, user, target, move, isCrit}: BoostedDefenseParams) {
+    const targetAbilityId = target.getAbilityId(user);
     const item = target.base.item;
 
     let {def, spd} = target.v.stats;
@@ -145,7 +167,7 @@ class DamageCalc {
       }
     }
 
-    if (abilityId === "marvelscale" && target.base.status) {
+    if (targetAbilityId === "marvelscale" && target.base.status) {
       def = idiv(def * 150, 100);
     }
 
@@ -156,6 +178,28 @@ class DamageCalc {
     if (!user.getAbility()?.moldBreaker && target.owner.sideHasAbility("flowergift")) {
       def = idiv(def * 15, 10);
     }
+
+    if (move.flag === DMF.explosion) {
+      def >>= 1;
+    }
+
+    let {def: statChangeDef, spd: statChangeSpd} = target.v.stages;
+    if (targetAbilityId === "simple") {
+      statChangeDef *= 2;
+      statChangeSpd *= 2;
+    }
+    if (user.getAbilityId() === "unaware") {
+      statChangeDef = 0;
+      statChangeSpd = 0;
+    }
+    if (isCrit && statChangeDef > 0) {
+      statChangeDef = 0;
+    }
+    if (isCrit && statChangeSpd > 0) {
+      statChangeSpd = 0;
+    }
+    def = applyStatStages(battle.gen, def, statChangeDef);
+    spd = applyStatStages(battle.gen, spd, statChangeSpd);
     return {def, spd};
   }
 
@@ -244,40 +288,14 @@ class DamageCalc {
 
   // CalcMoveDamage
   static calcBaseDamage({power, type, battle, move, user, target, isCrit}: BaseDamageParams) {
-    const level = user.base.level;
-    const attacks = DamageCalc.getBoostedAttack({battle, user});
-    const defenses = DamageCalc.getBoostedDefense({battle, user, target});
+    const special = move.category === MC.special;
+    const [atks, defs] = special ? (["spa", "spd"] as const) : (["atk", "def"] as const);
+    const A = DamageCalc.getBoostedAttack({battle, user, target, isCrit})[atks];
+    const D = DamageCalc.getBoostedDefense({battle, user, target, move, isCrit})[defs];
     power = DamageCalc.getBoostedPower({battle, user, target, type, power, move});
 
-    if (move.flag === DMF.explosion) {
-      defenses.def >>= 1;
-    }
-
-    const special = move.category === MC.special;
-    const userAbilityId = user.getAbilityId();
-    const targetAbilityId = target.getAbilityId(user);
-    const [atks, defs] = special ? (["spa", "spd"] as const) : (["atk", "def"] as const);
-
-    let statChangeA = user.v.stages[atks];
-    let statChangeD = target.v.stages[defs];
-    if (userAbilityId === "simple") {
-      statChangeA *= 2;
-    }
-    if (targetAbilityId === "simple") {
-      statChangeD *= 2;
-    }
-    if (userAbilityId === "unaware" || (isCrit && statChangeD > 0)) {
-      statChangeD = 0;
-    }
-    if (targetAbilityId === "unaware" || (isCrit && statChangeA < 0)) {
-      statChangeA = 0;
-    }
-
-    attacks[atks] = applyStatStages(user.base.gen, attacks[atks], statChangeA);
-    defenses[defs] = applyStatStages(user.base.gen, defenses[defs], statChangeD);
-
-    let damage = idiv(idiv(attacks[atks] * power * (idiv(2 * level, 5) + 2), defenses[defs]), 50);
-    if (!special && user.base.status === "brn" && userAbilityId !== "guts") {
+    let damage = idiv(idiv(A * power * (idiv(2 * user.base.level, 5) + 2), D), 50);
+    if (!special && user.base.status === "brn" && user.getAbilityId() !== "guts") {
       damage >>= 1;
     }
 
@@ -316,9 +334,7 @@ class DamageCalc {
     }
 
     debugLog(`\n${c(user.base.name, 32)} => ${c(target.base.name, 31)} (${c(move.name, 34)})`);
-    debugLog(
-      `- P: ${n(power)} | A: ${n(attacks[atks])} | D: ${n(defenses[defs])} | L: ${n(level)}`,
-    );
+    debugLog(`- P: ${n(power)} | A: ${n(A)} | D: ${n(D)}`);
     return damage + 2;
   }
 
