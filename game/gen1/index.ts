@@ -539,6 +539,7 @@ export class Generation1 {
     id: SpeciesId,
     dvs: Partial<Stats>,
     item?: ItemId,
+    _moves?: string[],
   ): FormId | undefined {
     if (id === "unown") {
       const c2 = (iv?: number) => ((iv ?? 15) >> 1) & 0b11;

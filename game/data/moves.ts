@@ -5806,7 +5806,7 @@ export const rawMoveList = {
   sacredsword: {
     kind: "damage",
     name: "Sacred Sword",
-    pp: 15,
+    pp: 20,
     type: "fight",
     range: "Adjacent",
     power: 90,
@@ -5839,7 +5839,7 @@ export const rawMoveList = {
     effect: [30, "brn"],
   },
   secretsword: {
-    kind: "fail",
+    kind: "damage",
     name: "Secret Sword",
     pp: 10,
     type: "fight",
@@ -5847,7 +5847,7 @@ export const rawMoveList = {
     power: 85,
     acc: 100,
     category: "special",
-    why: "fail_unimplemented",
+    flag: "hits_defense",
   },
   shellsmash: {
     kind: "stage",

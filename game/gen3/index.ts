@@ -588,7 +588,13 @@ export class Generation3 extends Generation2 {
 
   override tryDamage = tryDamage;
 
-  override getForm(desired: string | undefined, id: string, _dvs: Partial<Stats>, item?: ItemId) {
+  override getForm(
+    desired: string | undefined,
+    id: string,
+    _dvs: Partial<Stats>,
+    item?: ItemId,
+    moves?: string[],
+  ) {
     // prettier-ignore
     switch (id) {
       case "unown": return UNOWN_FORM.includes(desired) ? desired : undefined;
@@ -596,6 +602,7 @@ export class Generation3 extends Generation2 {
       case "sawsbuck": return SAWSBUCK_FORM.includes(desired) ? desired : undefined;
       case "genesect": return this.items[item!]?.drive;
       case "arceus": return this.items[item!]?.plate;
+      case "keldeo": return moves?.includes("secretsword") ? "resolute" : undefined;
       default: return;
     }
   }

@@ -155,7 +155,13 @@ type Socket = SocketIoClient<ClientMessage, ServerMessage>;
 
 const ROOM_CLEANUP_DELAY_MS = 15 * 60 * 1000;
 const TURN_DECISION_TIME_MS = 45 * 1000;
-const SHOW_SPECIES_FORM = new Set<SpeciesId>(["unown", "sawsbuck", "deerling", "basculin"]);
+const SHOW_SPECIES_FORM = new Set<SpeciesId>([
+  "unown",
+  "sawsbuck",
+  "deerling",
+  "basculin",
+  "keldeo",
+]);
 
 type Account = {
   id: string;

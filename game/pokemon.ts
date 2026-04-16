@@ -267,7 +267,7 @@ export class Pokemon {
       gender:
         gen.getGender(gender, species, ivs.atk) ??
         (Math.random() * 100 < species.genderRatio! ? "M" : "F"),
-      form: gen.getForm(form, speciesId, ivs, item),
+      form: gen.getForm(form, speciesId, ivs, item, moves),
     });
   }
 

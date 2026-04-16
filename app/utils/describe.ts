@@ -180,6 +180,8 @@ const descriptions: Partial<Record<number, Partial<Record<MoveId, string>>>> = {
     crushgrip: "Power is greater the more HP the target has. ",
     wringout: "Power is greater the more HP the target has. ",
     worryseed: "Sets the target's ability to Insomnia. ",
+    roost:
+      "The user recovers 1/2 its max HP. Until the end of the turn, its Flying type is not considered during damage calculation. ",
   },
   [2]: {
     conversion:
@@ -210,6 +212,8 @@ const descriptions: Partial<Record<number, Partial<Record<MoveId, string>>>> = {
   },
   [5]: {
     feint: "Removes the effect of protection moves. ",
+    roost:
+      "The user recovers 1/2 its max HP. Until the end of the turn, its Flying type is removed. ",
   },
 };
 
