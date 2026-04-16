@@ -177,6 +177,9 @@ const descriptions: Partial<Record<number, Partial<Record<MoveId, string>>>> = {
       "For 5 turns, the accuracy of all moves is multiplied by 5/3, all Pokémon become grounded (susceptible to Ground-type attacks, Spikes, Toxic Spikes, and Arena Trap), and certain moves cannot be used. ",
     trickroom:
       "For 5 turns, slower Pokémon move before faster ones within their priority brackets. ",
+    crushgrip: "Power is greater the more HP the target has. ",
+    wringout: "Power is greater the more HP the target has. ",
+    worryseed: "Sets the target's ability to Insomnia. ",
   },
   [2]: {
     conversion:

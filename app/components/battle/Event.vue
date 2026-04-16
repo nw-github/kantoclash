@@ -66,7 +66,7 @@
   </div>
   <div v-else-if="e.type === 'move'" class="move">
     <template v-if="e.thrashing && e.move !== 'rage'">{{ pn(e.src) }}'s thrashing about!</template>
-    <template v-else-if="e.disabled">{{ pn(e.src) }}'s {{ gen.moveList[e.move].name }} is disabled!</template>
+    <template v-else-if="e.disabled">{{ pn(e.src) }}'s <b>{{ gen.moveList[e.move].name }}</b> is disabled!</template>
     <template v-else>{{ pn(e.src) }} used <b>{{ gen.moveList[e.move].name }}</b>!</template>
   </div>
   <div v-else-if="e.type === 'end'">
@@ -115,7 +115,7 @@
     <template v-if="e.target">{{ pn(e.src) }} transformed into {{ pn(e.target, false) }}!</template>
     <template v-else>{{ pn(e.src) }} transformed!</template>
   </div>
-  <div v-else-if="e.type === 'disable'">{{ pn(e.src) }}'s {{ gen.moveList[e.move].name }} was disabled!</div>
+  <div v-else-if="e.type === 'disable'">{{ pn(e.src) }}'s <b>{{ gen.moveList[e.move].name }}</b> was disabled!</div>
   <div v-else-if="e.type === 'charge'" class="move">{{ chargeMessage[e.move]?.replace("{}", pn(e.src)) }}</div>
   <div v-else-if="e.type === 'mimic'">{{ pn(e.src) }} learned {{ gen.moveList[e.move].name }}!</div>
   <div v-else-if="e.type === 'conversion'">

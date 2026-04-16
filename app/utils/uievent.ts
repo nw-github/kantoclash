@@ -34,7 +34,7 @@ export type UIRecoverEvent = RecoverEvent & {maxHp?: number};
 
 export const statusTable: Record<Status, string> = {
   psn: "was poisoned",
-  par: "was paralyzed",
+  par: "was paralyzed! It may be unable to move",
   slp: "fell asleep",
   frz: "was frozen solid",
   tox: "was badly poisoned",
@@ -96,7 +96,7 @@ export const infoMessage: Record<InfoReason, string> = {
   wake: "{} woke up!",
   haze: "All status changes were removed!",
   thaw: "{} thawed out!",
-  paralyze: "{}'s fully paralyzed!",
+  paralyze: "{}'s paralyzed! It can't move!",
   rage: "{}'s rage is building!",
   disable_end: "{}'s disabled no more!",
   bide: "{} unleashed energy!",
