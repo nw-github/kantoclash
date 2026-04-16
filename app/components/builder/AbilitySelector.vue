@@ -2,6 +2,7 @@
   <Selector
     v-model:open="open"
     v-model:query="query"
+    :ui="{list: 'w-84 sm:w-96'}"
     :content="{align: 'start'}"
     :items
     :filter
@@ -10,10 +11,10 @@
   >
     <UInput
       v-model="query"
-      :class="ui"
-      :disabled
       placeholder="No Ability"
       color="error"
+      :class="ui"
+      :disabled
       :highlight="!disabled && isIllegal(normalizeName(query))"
       trailing-icon="lucide:chevron-down"
       @focus="(open = true), $event.target.select()"
@@ -28,7 +29,7 @@
         </span>
       </div>
 
-      <div class="text-[0.6rem] text-muted text-nowrap">
+      <div class="text-[0.6rem] text-muted text-right">
         {{ ability.desc || "No competitive use." }}
       </div>
     </template>
