@@ -2926,6 +2926,7 @@ export const rawMoveList = {
     type: "normal",
     range: "Self",
     snatch: true,
+    camouflageType: "normal",
   },
   charge: {kind: "charge", name: "Charge", pp: 20, type: "electric", range: "Self"},
   cosmicpower: {
