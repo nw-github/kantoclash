@@ -54,9 +54,7 @@
           <TypeBadge :type="poke.base.gen.moveList[id].type" image />
           <span>{{ poke.base.gen.moveList[id].name }}</span>
         </div>
-        <span v-if="id !== 'struggle'">
-          ({{ poke.base.pp[i] }}/{{ poke.base.gen.getMaxPP(id) }})
-        </span>
+        <PPBadge :cur="poke.base.pp[i]" :max="poke.base.gen.getMaxPP(id)" />
       </li>
     </ul>
   </div>

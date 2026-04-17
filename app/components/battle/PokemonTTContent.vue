@@ -30,7 +30,7 @@
     <UProgress :model-value="poke.hp" :max="poke.maxHp" />
     <div class="flex justify-between gap-4">
       <span>{{ poke.hp }}/{{ poke.maxHp }} HP ({{ roundTo(poke.hpPercent, 2) }}%)</span>
-      <StatusOrFaint :poke="poke" :faint="!active || active.v.fainted" />
+      <StatusOrFaint :poke :faint="!active || active.v.fainted" />
     </div>
 
     <div class="flex gap-1 justify-center">
@@ -48,7 +48,8 @@
       <li v-for="(id, i) in poke.moves" :key="id" class="flex items-center gap-1">
         <TypeBadge :type="getType(id)" image />
         <span>
-          {{ poke.gen.moveList[id].name }} ({{ poke.pp[i] }}/{{ poke.gen.getMaxPP(id) }})
+          {{ poke.gen.moveList[id].name }}
+          <PPBadge :cur="poke.pp[i]" :max="poke.gen.getMaxPP(id)" />
         </span>
       </li>
     </ul>
