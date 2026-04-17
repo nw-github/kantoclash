@@ -27,7 +27,6 @@ export type ClientPlayer = {
   teamDesc?: ValidatedPokemonDesc[];
   teamPreview?: TeamPreview;
   nPokemon: number;
-  nFainted: number;
 };
 
 type Callbacks = {
@@ -100,7 +99,6 @@ export class Players {
       isSpectator: !!isSpectator,
       connected: true,
       nPokemon,
-      nFainted: this.items[id]?.nFainted ?? 0,
       admin,
       teamPreview,
     });
@@ -248,7 +246,6 @@ export class ClientManager {
 
         poke.v.fainted = true;
         poke.visible = false;
-        this.players.clientOwnerOf(e.src).nFainted++;
         this.handleVolatiles(e);
         return;
       } else if (e.why === "heal_bell") {
@@ -442,7 +439,6 @@ export class ClientManager {
     for (const id in this.players.items) {
       const cp = this.players.get(id);
       if (!cp.isSpectator) {
-        cp.nFainted = 0;
         battlers.push(id);
       }
     }
@@ -451,6 +447,21 @@ export class ClientManager {
       const cp = this.players.get(id);
       if (cp.teamDesc) {
         return {id, team: cp.teamDesc.map(poke => Pokemon.fromDescriptor(gen, poke))};
+      } else if (cp.teamPreview) {
+        return {
+          id,
+          team: cp.teamPreview.map(poke => {
+            const base = Pokemon.fromDescriptor(gen, {
+              speciesId: poke.speciesId,
+              form: poke.form,
+              gender: poke.gender,
+              level: poke.level,
+              moves: [],
+            });
+            base.stats.hp = 100;
+            return base;
+          }),
+        };
       } else {
         return {id, team: Array.from({length: cp.nPokemon}, () => this.fake)};
       }
@@ -466,6 +477,10 @@ export class ClientManager {
     });
     this.players.get(player1.id).bp = this.battle.players[0];
     this.players.get(player2.id).bp = this.battle.players[1];
+  }
+
+  isUnknown(poke: Pokemon) {
+    return poke === this.fake;
   }
 
   private findOrCreateEnemyBasePokemon(e: SwitchEvent) {
@@ -492,7 +507,7 @@ export class ClientManager {
       pp: [],
       friendship: 0,
     });
-    const slot = owner.team.findIndex(poke => poke === this.fake);
+    const slot = owner.team.findIndex(poke => this.isUnknown(poke));
     if (slot !== -1) {
       return (owner.team[slot] = newPoke);
     }

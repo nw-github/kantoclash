@@ -3,8 +3,8 @@
     <div class="flex flex-col w-full items-center overflow-x-hidden overflow-y-auto">
       <!-- Top Bar -->
       <div v-if="perspective && opponent" class="flex w-full justify-between items-start">
-        <TeamDisplay :player="mgr.players.get(perspective)" />
-        <TeamDisplay :player="mgr.players.get(opponent)" reverse />
+        <TeamDisplay :show-team-preview :player="mgr.players.get(perspective)" />
+        <TeamDisplay :show-team-preview :player="mgr.players.get(opponent)" reverse />
       </div>
 
       <div v-if="showTeamPreview" class="w-full relative">

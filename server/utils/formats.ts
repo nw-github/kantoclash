@@ -50,6 +50,7 @@ export const getRandomPokemon = (
     .map(id => {
       const s = gen.speciesList[id];
       const poke = customize(s, id);
+      const moveData = poke.moves.map(m => gen.moveList[m]);
       const items = (Object.keys(gen.items) as ItemId[]).filter(item => {
         const itemData = gen.items[item];
         if (
@@ -76,14 +77,14 @@ export const getRandomPokemon = (
           (itemData.cureStatus === "brn" && s.types.includes("fire"))
         ) {
           return false;
-        } else if (item === "mysteryberry" && !poke.moves.some(m => gen.moveList[m].pp === 5)) {
+        } else if (item === "mysteryberry" && !moveData.some(m => m.pp === 5)) {
           return false;
         } else if (
           item === "gripclaw" &&
-          !poke.moves.some(
-            m => gen.moveList[m].kind === "damage" && gen.moveList[m].flag === DMF.trap,
-          )
+          !moveData.some(m => m.kind === "damage" && m.flag === DMF.trap)
         ) {
+          return false;
+        } else if (item === "eviolite" && !s.evolvesTo) {
           return false;
         }
 
@@ -92,12 +93,11 @@ export const getRandomPokemon = (
         }
 
         const typeBoost = itemData.typeBoost;
-        if (
+        if (typeBoost && typeBoost.species && !typeBoost.species.includes(id)) {
+          return false;
+        } else if (
           typeBoost &&
-          ((typeBoost.species && !typeBoost.species.includes(id)) ||
-            !poke.moves.some(
-              m => gen.moveList[m].kind === "damage" && gen.moveList[m].type === typeBoost.type,
-            ))
+          !moveData.some(m => m.kind === "damage" && m.type === typeBoost.type)
         ) {
           return false;
         }
@@ -107,15 +107,15 @@ export const getRandomPokemon = (
         }
 
         if (
-          itemData.choice === "atk" &&
-          !poke.moves.some(m => gen.getCategory(gen.moveList[m]) === MC.physical)
+          (itemData.choice === "atk" || item === "muscleband") &&
+          !moveData.some(m => gen.getCategory(m) === MC.physical)
         ) {
           return false;
         }
 
         if (
-          itemData.choice === "spa" &&
-          !poke.moves.some(m => gen.getCategory(gen.moveList[m]) === MC.special)
+          (itemData.choice === "spa" || item === "wiseglasses") &&
+          !moveData.some(m => gen.getCategory(m) === MC.special)
         ) {
           return false;
         }

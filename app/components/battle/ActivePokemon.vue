@@ -229,7 +229,7 @@ const {poke, back, player, pokeId} = defineProps<{
 
 const hpPercent = computed(() => {
   const value = poke?.base?.hpPercent ?? 0;
-  return value ? Math.max(Math.round(value), 1) : 0;
+  return value ? Math.min(Math.max(Math.round(value), 1), 100) : 0;
 });
 const statShortName = computed(
   () => poke && {...getStatKeys(poke.base.gen), spd: "SpD", acc: "Acc", eva: "Eva"},
