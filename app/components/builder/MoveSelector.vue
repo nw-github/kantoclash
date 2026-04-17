@@ -66,6 +66,15 @@ import {ivsToDvs} from "~/utils/pokemon";
 import type {ItemId} from "~~/game/item";
 import {Battle} from "~~/game/battle";
 
+const NO_VARIABLE_POWER = new Set<MoveId>([
+  "present",
+  "gyroball",
+  "wringout",
+  "crushgrip",
+  "lowkick",
+  "grassknot",
+]);
+
 const query = defineModel<string>({default: ""});
 const {poke, gen, idx, format} = defineProps<{
   poke: PokemonDesc;
@@ -80,7 +89,7 @@ const items = computed(() => Object.entries(gen.moveList) as [MoveId, Move][]);
 const trailing = computed(() => {
   const q = normalizeName(query.value);
   const move = q && q in gen.moveList ? gen.moveList[q as MoveId] : undefined;
-  if (move?.kind !== "damage" || move.id === "present" || move.id === "gyroball") {
+  if (move?.kind !== "damage" || NO_VARIABLE_POWER.has(move.id!)) {
     return;
   }
 
