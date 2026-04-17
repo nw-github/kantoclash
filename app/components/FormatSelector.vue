@@ -3,7 +3,7 @@
     <USelectMenu
       v-model="generation"
       :items="Object.keys(formats[category])"
-      :disabled="Object.keys(formats[category]).length <= 1"
+      :disabled="Object.keys(formats[category]).length <= 1 || disabled"
       :search-input="false"
     />
     <USelectMenu
@@ -11,6 +11,7 @@
       class="grow overflow-hidden"
       :items="Object.keys(formats)"
       :ui="{content: 'min-w-fit'}"
+      :disabled
     />
 
     <slot name="trailing"></slot>
@@ -18,6 +19,8 @@
 </template>
 
 <script setup lang="ts">
+defineProps<{disabled?: boolean}>();
+
 const model = defineModel<FormatId>();
 
 const showBetaFormats = computed(() => useUserSession().user.value?.admin);

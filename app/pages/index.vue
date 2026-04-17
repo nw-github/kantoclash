@@ -5,7 +5,7 @@
         {{ user ? `Welcome ${user.name}!` : "You must first log in to find a battle" }}
       </h1>
       <ClientOnly>
-        <FormatSelector v-model="selectedFormat" class="gap-1.5">
+        <FormatSelector v-model="selectedFormat" class="gap-1.5" :disabled="findingMatch">
           <template #trailing>
             <FormatInfoButton :format="selectedFormat" />
           </template>
