@@ -427,7 +427,7 @@ export class Generation2 extends Generation1 {
       return res;
     }
 
-    const type = this.getMoveType(move, user.base, battle.getWeather());
+    const type = this.getMoveType(move, battle, user);
 
     let A, D, level;
     if (beatUp) {

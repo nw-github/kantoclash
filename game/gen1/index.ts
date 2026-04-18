@@ -798,8 +798,8 @@ export class Generation1 {
     return callOr(move.acc, this.move.overrides.acc[move.id!], move, weather);
   }
 
-  getMoveType(move: Move, user: Pokemon, weather: Weather | undefined) {
-    return callOr(move.type, this.move.overrides.type[move.id!], move, user, weather);
+  getMoveType(move: Move, battle: Battle | Weather | undefined, user: Battlemon | Pokemon) {
+    return callOr(move.type, this.move.overrides.type[move.id!], move, battle, user);
   }
 
   getMoveBasePower(move: DamagingMove, battle: Battle, user: Battlemon, target: Battlemon) {

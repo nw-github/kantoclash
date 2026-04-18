@@ -490,7 +490,7 @@ export class Generation3 extends Generation2 {
       return res;
     }
 
-    const type = this.getMoveType(move, user.base, battle.getWeather());
+    const type = this.getMoveType(move, battle, user);
 
     power ??= this.getMoveBasePower(move, battle, user, target);
     if (power < 0) {

@@ -91,7 +91,7 @@ const info = computed(() => {
   const move = user.base.gen.moveList[option.move];
   const battle = manager?.battle;
   const weather = battle?.getWeather();
-  const type = user.base.gen.getMoveType(move, user.base, weather);
+  const type = user.base.gen.getMoveType(move, battle, user);
   const powers: {pokes: Pokemon[]; pow?: number; acc?: number}[] = [];
   const item = user.base.item;
   for (const opp of opponent?.active?.toReversed() ?? []) {

@@ -69,8 +69,6 @@ const active = p instanceof Pokemon ? undefined : p;
 const statKeys = computed(() => getStatKeys(poke.gen));
 const manager = injectManager();
 
-const weather = computed(() => manager?.battle?.getWeather());
-
 const statClass = (stat: StatStageId) => {
   const baseStats = poke.gen.id <= 2 ? poke.stats : active?.v.stats ?? poke.stats;
   if (baseStats[stat] !== boostedStats.value[stat]) {
@@ -78,7 +76,9 @@ const statClass = (stat: StatStageId) => {
   }
 };
 
-const getType = (id: MoveId) => poke.gen.getMoveType(poke.gen.moveList[id], poke, weather.value);
+const getType = (id: MoveId) => {
+  return poke.gen.getMoveType(poke.gen.moveList[id], manager?.battle, active || poke);
+};
 
 const boostedStats = computed(() => {
   if (!manager || !active) {

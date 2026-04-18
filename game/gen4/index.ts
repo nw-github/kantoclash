@@ -741,11 +741,7 @@ export class Generation4 extends Generation3 {
       return res;
     }
 
-    let type = this.getMoveType(move, user.base, battle.getWeather());
-    if (user.getAbilityId() === "normalize") {
-      type = "normal";
-    }
-
+    const type = this.getMoveType(move, battle, user);
     power ??= this.getMoveBasePower(move, battle, user, target);
     if (power < 0) {
       return {dmg: -idiv1(target.base.maxHp, 4), eff: 1, miss: false, type};
@@ -962,6 +958,21 @@ export class Generation4 extends Generation3 {
       return false;
     }
     return true;
+  }
+
+  override getMoveType(
+    move: Move,
+    battle: Battle | Weather | undefined,
+    user: Battlemon | Pokemon,
+  ) {
+    const userAbility = "base" in user ? user.getAbilityId() : user.ability;
+    const override = this.move.overrides.type[move.id!];
+    if (userAbility === "normalize") {
+      return "normal";
+    } else if (override) {
+      return override.call(move, battle, user);
+    }
+    return move.type;
   }
 }
 

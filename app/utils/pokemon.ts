@@ -76,7 +76,7 @@ export const descToString = (format: FormatId, poke: PokemonDesc) => {
         moves: [],
         level: 100,
       });
-      const type = gen.getMoveType(gen.moveList.hiddenpower, fakeUser, undefined);
+      const type = gen.getMoveType(gen.moveList.hiddenpower, undefined, fakeUser);
       result += ` - Hidden Power [${toTitleCase(type)}]\n`;
     } else if ((gen.moveList as Record<string, Move>)[id]) {
       result += ` - ${gen.moveList[id as MoveId].name}\n`;

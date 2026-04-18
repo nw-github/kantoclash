@@ -27,13 +27,14 @@ export const moveScripts: Partial<MoveScripts> = {
   },
   status(battle, user, targets) {
     let failed = true;
+    const type = battle.gen.getMoveType(this, battle, user);
     for (const target of targets) {
       if (battle.tryMagicBounce(this, user, target)) {
         return;
       } else if (target.v.substitute || (battle.hasUproar(target) && this.status === "slp")) {
         continue;
       } else if (
-        (this.checkType && battle.gen.getEffectiveness(battle, this.type, target).immune()) ||
+        (this.checkType && battle.gen.getEffectiveness(battle, type, target).immune()) ||
         ((this.status === "psn" || this.status === "tox") &&
           target.v.hasAnyType("poison", "steel")) ||
         (this.status === "brn" && target.v.types.includes("fire"))

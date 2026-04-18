@@ -149,7 +149,8 @@ export const moveOverrides: Partial<MovePropOverrides> = {
     return: (_, user) => idiv1(user.base.friendship, 2.5),
   },
   type: {
-    hiddenpower(user) {
+    hiddenpower(_battle, _user) {
+      const user = "base" in _user ? _user.base : _user;
       const v =
         (user.ivs.hp & 1) |
         ((user.ivs.atk & 1) << 1) |

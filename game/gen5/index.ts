@@ -25,8 +25,9 @@ import {
 } from "../utils";
 import {applyMod, chainMod, chainModIf, Mod} from "./modifier";
 import type {GetDamageParams, TryEndureParams} from "../gen1";
-import type {DamagingMove} from "../moves";
+import type {DamagingMove, Move} from "../moves";
 import type {Calc} from "../calc";
+import type {Pokemon} from "../pokemon";
 
 // prettier-ignore
 class Rng extends Generation4.Rng {
@@ -276,14 +277,7 @@ export class Generation5 extends Generation4 {
       return res;
     }
 
-    let type = user.getAbilityId() === "normalize" ? "normal" : move.type;
-    // Hidden Power, Weather Ball, Natural Gift, Judgment, and Techno Blast now overwrite Normalize
-    const weather = battle.getWeather();
-    const computed = this.getMoveType(move, user.base, weather);
-    if (computed !== move.type) {
-      type = computed;
-    }
-
+    const type = this.getMoveType(move, battle, user);
     if (!target.isGrounded(battle, user) && type === "ground") {
       return {dmg: 0, eff: 0, miss: false, type};
     }
@@ -321,7 +315,7 @@ export class Generation5 extends Generation4 {
         : battle.gen.getEffectiveness(battle, type, target);
     let dmg = idiv(idiv(A * power * (idiv(2 * level, 5) + 2), D), 50) + 2;
     dmg = applyMod(dmg, multiTarget);
-    dmg = applyMod(dmg, weatherModifier[weather!]?.[type] ?? Mod.NONE);
+    dmg = applyMod(dmg, weatherModifier[battle.getWeather()!]?.[type] ?? Mod.NONE);
     dmg = isCrit ? dmg << 1 : dmg;
     const random = rng === undefined ? battle.rng : rng;
     if (random !== null && move.flag !== DMF.norand) {
@@ -413,6 +407,21 @@ export class Generation5 extends Generation4 {
       }
     }
     return {dmg, endure: Endure.None};
+  }
+
+  override getMoveType(
+    move: Move,
+    battle: Battle | Weather | undefined,
+    user: Battlemon | Pokemon,
+  ) {
+    const userAbility = "base" in user ? user.getAbilityId() : user.ability;
+    const override = this.move.overrides.type[move.id!];
+    if (override) {
+      return override.call(move, battle, user);
+    } else if (userAbility === "normalize") {
+      return "normal";
+    }
+    return move.type;
   }
 }
 

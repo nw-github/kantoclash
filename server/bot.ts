@@ -282,7 +282,7 @@ export async function startBot(botType: BotType, format?: FormatId) {
         const dox = (a: Pokemon) => {
           const name = (m: MoveId) => {
             if (gen.move.overrides.type[m]) {
-              return m + gen.getMoveType(gen.moveList[m], a, mgr.battle.weather?.kind);
+              return m + gen.getMoveType(gen.moveList[m], mgr.battle.weather?.kind, a);
             }
             return m;
           };
@@ -402,7 +402,6 @@ const botFunctions = {
     const active = selfP.active![0]!;
     const opponentActive = mgr.players.getBP(opponent)!.active![0]!;
     const opts = options[0];
-    const weather = mgr.battle.getWeather();
 
     const rank = <T>(arr: T[], getScore: (t: T) => number, name: (t: T) => string) => {
       const res = arr
@@ -426,7 +425,7 @@ const botFunctions = {
       if (move.kind === "damage") {
         const eff = gen.getEffectiveness(
           mgr.battle,
-          gen.getMoveType(move, active.base, weather),
+          gen.getMoveType(move, mgr.battle, active),
           opponentActive,
         );
         let score = 10;

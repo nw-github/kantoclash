@@ -161,7 +161,7 @@
   "unaware": {"name": "Unaware", "desc": "Ignores target stat changes when attacking or attacked."},
   "honeygather": {"name": "Honey Gather", "desc": ""},
 
-  "normalize": {"name": "Normalize", "desc": "All moves are normal type.**"},
+  "normalize": {"name": "Normalize", "desc": "All moves are normal type."},
   "heatproof": {"name": "Heatproof", "desc": "Halves damage from Fire-type attacks and burn.**"},
   "solarpower": {"name": "Solar Power", "desc": "Attacks are boosted during harsh sunlight.**"},
   "slowstart": {"name": "Slow Start", "desc": "Atk and Spe are halved for 5 turns.**"},

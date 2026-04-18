@@ -96,7 +96,7 @@ const trailing = computed(() => {
   const battle = createFake();
   const user = battle.players[0].active[0];
   const target = battle.players[1].active[0];
-  const type = gen.getMoveType(move, user.base, undefined);
+  const type = gen.getMoveType(move, battle, user);
   const pow = gen.getMoveBasePower(move, battle, user, target);
   if (type === move.type && pow === move.power) {
     return;

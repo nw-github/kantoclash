@@ -300,7 +300,7 @@ export type MovePropOverrides = {
   dmg: PR<(this: DamagingMove, battle: Battle, user: Battlemon, target: Battlemon) => number>;
   pow: PR<(this: DamagingMove, battle: Battle, user: Battlemon, target: Battlemon) => number>;
   acc: PR<(this: Move, weather: Weather | undefined) => number | undefined>;
-  type: PR<(this: Move, user: Pokemon, weather: Weather | undefined) => Type>;
+  type: PR<(this: Move, battle: Battle | Weather | undefined, user: Battlemon | Pokemon) => Type>;
   dmgPreCheck: PR<
     (this: DamagingMove, battle: Battle, user: Battlemon, targets: Battlemon[]) => bool
   >;
@@ -1561,19 +1561,25 @@ export const moveOverrides: MovePropOverrides = {
     hurricane: thunderAccOverride,
   },
   type: {
-    hiddenpower(user) {
+    hiddenpower(_battle, _user) {
+      const user = "base" in _user ? _user.base : _user;
       return HP_TYPES[(((user.ivs.atk ?? 15) & 0b11) << 2) | ((user.ivs.def ?? 15) & 0b11)];
     },
-    weatherball(_user, weather) {
+    weatherball(battle) {
+      const weather = typeof battle === "string" ? battle : battle?.getWeather();
       return (
         (weather && ({hail: "ice", sand: "rock", rain: "water", sun: "fire"} as const)[weather]) ??
         "normal"
       );
     },
-    judgment: user => user.item?.plate ?? "normal",
-    technoblast(user) {
+    judgment(_battle, user) {
+      const item = "base" in user ? user.getItem() : user.item;
+      return item?.plate ?? "normal";
+    },
+    technoblast(_battle, user) {
+      const item = "base" in user ? user.getItem() : user.item;
       // prettier-ignore
-      switch (user.item?.drive) {
+      switch (item?.drive) {
       case "douse": return "water";
       case "shock": return "electric";
       case "burn": return "fire";
