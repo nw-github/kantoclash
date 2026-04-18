@@ -1,7 +1,7 @@
 import speciesPatches from "./species.json";
 import items from "./items.json";
 import type {Species, SpeciesId} from "../species";
-import {merge} from "../gen2";
+import {merge, weatherModifier} from "../gen2";
 import {moveScripts, movePatches, moveOverrides, tryDamage} from "./moves";
 import {Generation3, DamageCalc as Gen3DamageCalc, createItemMergeList} from "../gen3";
 import {
@@ -975,14 +975,3 @@ export class Generation4 extends Generation3 {
     return move.type;
   }
 }
-
-const weatherModifier: Partial<Record<Weather, Partial<Record<Type, number>>>> = {
-  rain: {
-    water: TypeMod.MORE_EFFECTIVE,
-    fire: TypeMod.NOT_VERY_EFFECTIVE,
-  },
-  sun: {
-    fire: TypeMod.MORE_EFFECTIVE,
-    water: TypeMod.NOT_VERY_EFFECTIVE,
-  },
-};

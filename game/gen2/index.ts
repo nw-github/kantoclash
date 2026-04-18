@@ -632,7 +632,7 @@ export class Generation2 extends Generation1 {
   }
 }
 
-const weatherModifier: Partial<Record<Weather, Partial<Record<Type, number>>>> = {
+export const weatherModifier: Partial<Record<Weather, Partial<Record<Type, number>>>> = {
   rain: {
     water: TypeMod.MORE_EFFECTIVE,
     fire: TypeMod.NOT_VERY_EFFECTIVE,

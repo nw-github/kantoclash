@@ -1,5 +1,5 @@
 import {type GetDamageParams, shouldReturn, type TryEndureParams} from "../gen1";
-import {Generation2, merge} from "../gen2";
+import {Generation2, merge, weatherModifier} from "../gen2";
 import {
   Nature,
   natureTable,
@@ -22,7 +22,6 @@ import {
   Range,
   type Stats,
   type Type,
-  type Weather,
   Endure,
   DMF,
   idiv1,
@@ -1129,14 +1128,3 @@ export class Generation3 extends Generation2 {
     return {dmg, endure: Endure.None};
   }
 }
-
-const weatherModifier: Partial<Record<Weather, Partial<Record<Type, number>>>> = {
-  rain: {
-    water: TypeMod.MORE_EFFECTIVE,
-    fire: TypeMod.NOT_VERY_EFFECTIVE,
-  },
-  sun: {
-    fire: TypeMod.MORE_EFFECTIVE,
-    water: TypeMod.NOT_VERY_EFFECTIVE,
-  },
-};
