@@ -558,7 +558,7 @@ export const moveScripts: MoveScripts = {
     }
 
     // TODO: Don't cause damage in Gen IV when hitting a substitute?
-    if (user.base.hp && user.base.itemId === "lifeorb") {
+    if (user.base.hp && user.hasItem("lifeorb")) {
       user.damage2(battle, {
         dmg: idiv1(user.base.maxHp, 10),
         src: user,
@@ -596,7 +596,7 @@ export const moveScripts: MoveScripts = {
     battle.info(user, this.why);
   },
   weather(battle, user) {
-    battle.setWeather(this.weather, user.base.item?.extendWeather === this.weather ? 8 : 5);
+    battle.setWeather(this.weather, user.getItem()?.extendWeather === this.weather ? 8 : 5);
   },
   screen(battle, user) {
     if (user.owner.screens[this.screen]) {
@@ -643,7 +643,7 @@ export const moveScripts: MoveScripts = {
     battle.info(user, msg);
   },
   noSwitch(battle, user, [target]) {
-    if (target.v.meanLook) {
+    if (target.v.meanLook || (battle.gen.id >= 3 && target.v.substitute)) {
       return battle.info(user, "fail_generic");
     } else if (!battle.checkAccuracy(this, user, target)) {
       return;
@@ -1005,7 +1005,7 @@ export const moveScripts: MoveScripts = {
     battle.info(target, "encore");
   },
   nightmare(battle, user, [target]) {
-    if (target.v.hasFlag(VF.nightmare) || target.base.status !== "slp") {
+    if (target.v.hasFlag(VF.nightmare) || target.base.status !== "slp" || target.v.substitute) {
       return battle.info(user, "fail_generic");
     } else if (!battle.checkAccuracy(this, user, target)) {
       return;
@@ -1265,7 +1265,7 @@ export const moveScripts: MoveScripts = {
     battle.info(target, "taunt");
   },
   torment(battle, user, [target]) {
-    if (target.v.hasFlag(VF.torment)) {
+    if (target.v.hasFlag(VF.torment) || target.v.substitute) {
       return battle.info(user, "fail_generic");
     } else if (!battle.checkAccuracy(this, user, target)) {
       return;
@@ -1310,10 +1310,25 @@ export const moveScripts: MoveScripts = {
 
     target.modStages([[key, +2]], battle, user);
   },
+  embargo(battle, user, [target]) {
+    if (
+      target.v.embargoTurns ||
+      target.v.substitute ||
+      target.base._itemId === "griseousorb" ||
+      target.hasAbility("multitype")
+    ) {
+      return battle.info(user, "fail_generic");
+    } else if (!battle.checkAccuracy(this, user, target)) {
+      return;
+    }
+
+    target.v.embargoTurns = 5;
+    battle.info(target, "embargo");
+  },
   gastroacid(battle, user, [target]) {
     if (battle.tryMagicBounce(this, user, target)) {
       return;
-    } else if (target.v.hasFlag(VF.gastroAcid)) {
+    } else if (target.v.hasFlag(VF.gastroAcid) || target.v.substitute) {
       return battle.info(user, "fail_generic");
     } else if (target.hasAbility("multitype")) {
       battle.ability(target);
@@ -1366,7 +1381,7 @@ export const moveScripts: MoveScripts = {
     battle.info(user, "powerTrick");
   },
   psychoshift(battle, user, [target]) {
-    if (!user.base.status) {
+    if (!user.base.status || target.v.substitute) {
       return battle.info(user, "fail_generic");
     } else if (!target.canStatus(user.base.status, battle, user, {loud: true})) {
       return;
@@ -1385,7 +1400,12 @@ export const moveScripts: MoveScripts = {
   },
   worryseed(battle, user, [target]) {
     const ability = target.getAbilityId();
-    if (ability === "truant" || ability === "multitype" || target.base._itemId === "griseousorb") {
+    if (
+      ability === "truant" ||
+      ability === "multitype" ||
+      target.base._itemId === "griseousorb" ||
+      target.v.substitute
+    ) {
       return battle.info(user, "fail_generic");
     } else if (!battle.checkAccuracy(this, user, target)) {
       return;
@@ -1480,7 +1500,7 @@ export const moveOverrides: MovePropOverrides = {
     },
     // Gen V
     acrobatics(_, user) {
-      return !user.base.itemId ? this.power << 1 : this.power;
+      return !user.base._itemId ? this.power << 1 : this.power;
     },
     hex(_battle, _user, target) {
       return target.base.status ? this.power << 1 : this.power;

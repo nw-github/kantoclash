@@ -733,7 +733,7 @@ export class Generation1 {
         continue;
       }
 
-      if (poke.base.itemId === "leftovers") {
+      if (poke.hasItem("leftovers")) {
         poke.recover(idiv1(poke.base.maxHp, 16), poke, battle, "leftovers");
       }
       poke.handleBerry(battle, {pp: true});

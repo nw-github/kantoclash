@@ -159,6 +159,8 @@ export const infoMessage: Record<InfoReason, string> = {
   magnet_rise_end: "{}'s electromagnetism wore off!",
   worryseed: "{} acquired Insomnia!",
   gravity_grounded: "{} couldn't stay airborne because of Gravity!",
+  embargo: "{} can't use items anymore!",
+  embargo_end: "{}'s Embargo was lifted!",
 };
 
 export const weatherMessage: Record<

@@ -78,12 +78,13 @@ class Rng extends Generation1.Rng {
   override tryDefrost(battle: Battle) { return battle.rand255(25) }
 
   override tryCrit(battle: Battle, user: Battlemon, hc: boolean) {
+    const userItem = user.getItem();
     let stages = hc ? 2 : 0;
     if (user.v.hasFlag(VF.focusEnergy)) {
       stages++;
     }
-    stages += user.base.item?.raiseCrit ?? 0;
-    if (user.base.item?.boostCrit && user.base.item?.boostCrit === user.v.speciesId) {
+    stages += userItem?.raiseCrit ?? 0;
+    if (userItem?.boostCrit && userItem?.boostCrit === user.v.speciesId) {
       stages += 2;
     }
     return battle.rand255Good(DamageCalc.P(critStages[Math.min(stages, 4)] * 100));
@@ -391,7 +392,7 @@ export class Generation2 extends Generation1 {
     }
 
     let acc = scaleAccuracy255(chance, user, target);
-    if (target.base.itemId === "brightpowder") {
+    if (target.hasItem("brightpowder")) {
       acc -= 20;
     }
 
@@ -621,7 +622,7 @@ export class Generation2 extends Generation1 {
       // Focus band text is prioritized over endure
       if (prev) {
         return {dmg: target.base.hp - 1, endure: prev};
-      } else if (target.base.itemId === "focusband" && battle.gen.rng.tryFocusBand(battle)) {
+      } else if (target.hasItem("focusband") && battle.gen.rng.tryFocusBand(battle)) {
         return {dmg: target.base.hp - 1, endure: Endure.FocusBand};
       } else if (target.v.hasFlag(VF.endure)) {
         return {dmg: target.base.hp - 1, endure: Endure.Endure};
@@ -777,8 +778,9 @@ const typeIndexNumber: Record<Type, number> = {
 };
 
 const getTypeBoost = (user: Battlemon, type: Type) => {
-  if (user.base.item?.typeBoost?.type === type) {
-    return user.base.item.typeBoost.percent;
+  const userItem = user.getItem();
+  if (userItem?.typeBoost?.type === type) {
+    return userItem.typeBoost.percent;
   }
   return 0;
 };

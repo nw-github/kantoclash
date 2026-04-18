@@ -542,6 +542,7 @@ export class ClientManager {
       apply(poke.v, v, "flags");
       apply(poke.v, v, "drowsy");
       apply(poke.v, v, "tauntTurns");
+      apply(poke.v, v, "embargoTurns");
       apply(poke.v, v, "disabled", c => ({indexInMoves: -1, turns: c}));
       apply(poke.v, v, "encore", c => ({indexInMoves: -1, turns: c}));
       apply(poke.v, v, "charging", c => ({move: gen.moveList[c] as DamagingMove, targets: []}));

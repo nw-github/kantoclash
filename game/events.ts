@@ -288,7 +288,9 @@ export type InfoReason =
   | "magnet_rise"
   | "magnet_rise_end"
   | "worryseed"
-  | "gravity_grounded";
+  | "gravity_grounded"
+  | "embargo"
+  | "embargo_end";
 
 type InfoEvent = {type: "info"; src: PokeId; why: InfoReason};
 

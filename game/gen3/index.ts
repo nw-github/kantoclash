@@ -101,12 +101,13 @@ export const createItemMergeList = (items: any) => {
 class Rng extends Generation2.Rng {
   override tryDefrost(battle: Battle) { return battle.rand100(20); }
   override tryCrit(battle: Battle, user: Battlemon, hc: boolean) {
+    const item = user.getItem();
     let stages = hc ? 2 : 0;
     if (user.v.hasFlag(VF.focusEnergy)) {
       stages += 2;
     }
-    stages += user.base.item?.raiseCrit ?? 0;
-    if (user.base.item?.boostCrit && user.base.item?.boostCrit === user.v.speciesId) {
+    stages += item?.raiseCrit ?? 0;
+    if (item?.boostCrit && item?.boostCrit === user.v.speciesId) {
       stages += 2;
     }
     if (user.hasAbility("superluck")) {
@@ -171,7 +172,7 @@ export class DamageCalc {
   static getBoostedAttack({battle, user, target, type, isCrit}: BoostedAttackParams) {
     const ability = user.getAbility();
     const abilityId = user.getAbilityId();
-    const item = user.base.item;
+    const item = user.getItem();
 
     let {atk, spa} = user.v.stats;
     if (ability?.doubleAtk) {
@@ -230,12 +231,12 @@ export class DamageCalc {
 
   static getBoostedDefense({battle, target, explosion, isCrit}: BoostedDefenseParams) {
     const abilityId = target.getAbilityId();
-    const item = target.base.item;
+    const boostStats = target.getItem()?.boostStats;
 
     let {def, spd} = target.v.stats;
-    if (item?.boostStats?.[target.v.speciesId]) {
+    if (boostStats?.[target.v.speciesId]) {
       // soul dew, deep sea scale, metal powder
-      const boost = item.boostStats[target.v.speciesId]!;
+      const boost = boostStats[target.v.speciesId]!;
       if (boost.stats.includes("def")) {
         def = idiv(def * (100 + boost.percent), 100);
       } else if (boost.stats.includes("spd")) {
@@ -556,7 +557,7 @@ export class Generation3 extends Generation2 {
     // GetWhoStrikesFirst
     const ability = user.getAbility();
     const weather = battle.getWeather();
-    const item = user.base.item;
+    const item = user.getItem();
     let speed = user.v.stats.spe;
     if (weather && ability?.weatherSpeedBoost === weather) {
       speed <<= 1;
@@ -713,9 +714,9 @@ export class Generation3 extends Generation2 {
       acc = idiv(acc * 80, 100);
     }
 
-    const targetItem = user.base.item;
-    if (targetItem?.reduceAcc) {
-      acc = idiv(acc * (100 - targetItem.reduceAcc), 100);
+    const reduceAcc = target.getItem()?.reduceAcc;
+    if (reduceAcc) {
+      acc = idiv(acc * (100 - reduceAcc), 100);
     }
 
     debugLog(`[${user.base.name}] ${move.name} (Acc ${acc}/100)`);
@@ -1121,7 +1122,7 @@ export class Generation3 extends Generation2 {
         return {dmg: target.base.hp - 1, endure: prev};
       } else if (target.v.hasFlag(VF.endure)) {
         return {dmg: target.base.hp - 1, endure: Endure.Endure};
-      } else if (target.base.itemId === "focusband" && battle.gen.rng.tryFocusBand(battle)) {
+      } else if (target.hasItem("focusband") && battle.gen.rng.tryFocusBand(battle)) {
         return {dmg: target.base.hp - 1, endure: Endure.FocusBand};
       }
     }

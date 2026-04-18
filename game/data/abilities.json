@@ -181,7 +181,7 @@
   "anticipation": {"name": "Anticipation", "desc": "Unimplemented"},
   "aftermath": {"name": "Aftermath", "desc": "Unimplemented"},
   "gluttony": {"name": "Gluttony", "desc": "Unimplemented"},
-  "klutz": {"name": "Klutz", "desc": "Unimplemented"},
+  "klutz": {"name": "Klutz", "desc": "User is unaffected by its held item."},
   "motordrive": {"name": "Motor Drive", "desc": "Unimplemented"},
   "stall": {"name": "Stall", "desc": "Unimplemented"},
   "steadfast": {"name": "Steadfast", "desc": "Unimplemented"},

@@ -249,7 +249,7 @@ export const tryDamage = (
   const tryContactAbility = (type: Type, hadSub: bool) => {
     const targetAbility = target.getAbilityId();
     if (
-      user.base.item?.kingsRock &&
+      user.getItem()?.kingsRock &&
       self.kingsRock &&
       !hadSub &&
       targetAbility !== "innerfocus" &&

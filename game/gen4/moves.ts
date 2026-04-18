@@ -110,7 +110,7 @@ export const tryDamage = (
     const targetAbilityId = target.getAbilityId(user);
     const targetAbility = abilityList[targetAbilityId!];
     if (
-      user.base.item?.kingsRock &&
+      user.getItem()?.kingsRock &&
       self.kingsRock &&
       !hadSub &&
       targetAbilityId !== "innerfocus" &&

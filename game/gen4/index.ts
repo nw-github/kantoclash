@@ -33,7 +33,7 @@ import type {Calc} from "../calc";
 class Rng extends Generation3.Rng {
   override disableTurns(battle: Battle) { return battle.rng.int(4, 7) + 1; }
   override bindingMoveTurns(battle: Battle, user: Battlemon) {
-    if (user.base.itemId === "gripclaw") {
+    if (user.hasItem("gripclaw")) {
       return 5 + 1;
     }
     return super.bindingMoveTurns(battle, user);
@@ -87,7 +87,7 @@ class DamageCalc {
   static getBoostedAttack({battle, user, target, isCrit}: BoostedAttackParams) {
     const userAbility = user.getAbility();
     const userAbilityId = user.getAbilityId();
-    const item = user.base.item;
+    const item = user.getItem();
 
     let {atk, spa} = user.v.stats;
     if (userAbility?.doubleAtk) {
@@ -154,7 +154,7 @@ class DamageCalc {
 
   static getBoostedDefense({battle, user, target, move, isCrit}: BoostedDefenseParams) {
     const targetAbilityId = target.getAbilityId(user);
-    const item = target.base.item;
+    const item = target.getItem();
 
     let {def, spd} = target.v.stats;
     if (item?.boostStats?.[target.v.speciesId]) {
@@ -229,8 +229,7 @@ class DamageCalc {
       power = idiv(power * 15, 10);
     }
 
-    const item = user.base.item;
-    const itemId = user.base.itemId;
+    const {data: item, id: itemId} = user.getItemIdAndData();
     // type boosting items + orbs
     if (
       item?.typeBoost &&
@@ -364,9 +363,10 @@ class DamageCalc {
         dmg *= move.id !== "beatup" && user.getAbilityId() === "sniper" ? 3 : 2;
       }
 
-      if (user.base.itemId === "lifeorb") {
+      const itemId = user.getItemId();
+      if (itemId === "lifeorb") {
         dmg = idiv(dmg * 130, 100);
-      } else if (user.base.itemId === "metronome") {
+      } else if (itemId === "metronome") {
         dmg = idiv(dmg * (10 + user.v.metronomeCount), 10);
       }
     }
@@ -427,7 +427,7 @@ class DamageCalc {
       }
     }
 
-    if (user.base.itemId === "expertbelt" && eff.superEffective()) {
+    if (user.hasItem("expertbelt") && eff.superEffective()) {
       dmg = idiv(dmg * 120, 100);
     }
     if (target.getAbility(user)?.reduceSE && eff.superEffective()) {
@@ -707,7 +707,7 @@ export class Generation4 extends Generation3 {
       // TODO: sticky barb
 
       // TODO: this might not be the right place
-      const statusOrb = poke.base.item?.statusOrb;
+      const statusOrb = poke.getItem()?.statusOrb;
       if (statusOrb && !poke.base.status) {
         poke.status(statusOrb, battle, poke, {});
       }
@@ -804,7 +804,7 @@ export class Generation4 extends Generation3 {
     const ability = user.getAbility();
     const abilityId = user.getAbilityId();
     const weather = battle.getWeather();
-    const item = user.base.item;
+    const item = user.getItem();
 
     let statChange = user.v.stages.spe;
     if (abilityId === "simple") {
@@ -816,7 +816,8 @@ export class Generation4 extends Generation3 {
       speed <<= 1;
     }
 
-    if (item?.halveSpeed) {
+    // The speed drop from Iron Ball/Macho Brace/Power items is not negated in gen IV by klutz/embargo
+    if (user.base.item?.halveSpeed) {
       speed >>= 1;
     } else if (item?.choice === "spe") {
       speed = idiv(speed * 15, 10);
@@ -848,14 +849,15 @@ export class Generation4 extends Generation3 {
 
   override tryEndure({battle, target, dmg, prev, wasFullHp}: TryEndureParams) {
     if (!target.v.substitute && dmg >= target.base.hp) {
+      const targetItemId = target.getItemId();
       // Endure is prioritized over focus band
       if (prev) {
         return {dmg: target.base.hp - 1, endure: prev};
       } else if (target.v.hasFlag(VF.endure)) {
         return {dmg: target.base.hp - 1, endure: Endure.Endure};
-      } else if (target.base.itemId === "focusband" && battle.gen.rng.tryFocusBand(battle)) {
+      } else if (targetItemId === "focusband" && battle.gen.rng.tryFocusBand(battle)) {
         return {dmg: target.base.hp - 1, endure: Endure.FocusBand};
-      } else if (target.base.itemId === "focussash" && wasFullHp) {
+      } else if (targetItemId === "focussash" && wasFullHp) {
         return {dmg: target.base.hp - 1, endure: Endure.FocusSash};
       }
     }
@@ -933,17 +935,17 @@ export class Generation4 extends Generation3 {
       acc = idiv(acc * 50, 100);
     }
 
-    const targetItem = user.base.item;
-    if (targetItem?.reduceAcc) {
-      acc = idiv(acc * (100 - targetItem.reduceAcc), 100);
+    const reduceAcc = target.getItem()?.reduceAcc;
+    if (reduceAcc) {
+      acc = idiv(acc * (100 - reduceAcc), 100);
     }
 
-    const userItem = user.base.item;
+    const {id: userItemId, data: userItem} = user.getItemIdAndData();
     if (userItem?.boostAcc) {
       acc = idiv(acc * (100 + userItem.boostAcc), 100);
     }
 
-    if (user.base.itemId === "zoomlens" && target.choice?.executed) {
+    if (userItemId === "zoomlens" && target.choice?.executed) {
       acc = idiv(acc * 120, 100);
     }
 

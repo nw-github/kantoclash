@@ -58,6 +58,7 @@ export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
   disable: {acc: 100},
   doomdesire: {power: 140, acc: 100},
   drainpunch: {power: 75, pp: 10},
+  embargo: {magicCoat: true},
   endure: {priority: +4},
   extremespeed: {priority: +2},
   fakeout: {priority: +3},

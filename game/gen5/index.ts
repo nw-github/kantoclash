@@ -33,7 +33,7 @@ class Rng extends Generation4.Rng {
   override disableTurns(_: Battle) { return 4 + 1; }
   override multiHitCount(battle: Battle) { return randChoiceWeighted(battle.rng, [2, 3, 4, 5], [35, 35, 15, 15]); }
   override bindingMoveTurns(battle: Battle, user: Battlemon) {
-    if (user.base.itemId === "gripclaw") {
+    if (user.hasItem("gripclaw")) {
       return 7 + 1;
     }
     return super.bindingMoveTurns(battle, user);
@@ -72,6 +72,7 @@ class DamageCalc {
     const targetAbilityId = target.getAbilityId(user);
     const userAbility = user.getAbility();
     const userAbilityId = user.getAbilityId();
+    const {id: userItemId, data: userItemData} = user.getItemIdAndData();
     const weather = battle.getWeather();
 
     const statSource = move.id === "foulplay" ? target : user;
@@ -98,11 +99,11 @@ class DamageCalc {
       chainBoth(Mod.ATK_FLASHFIRE, user.v.hasFlag(VF.flashFire) && type === "fire");
       m_atk = chainModIf(m_atk, Mod.ATK_SLOWSTART, userAbilityId === "slowstart" && user.v.slowStartTurns < 5);
       m_atk = chainModIf(m_atk, Mod.ATK_FLOWERGIFT, weather === "sun" && user.owner.sideHasAbility("flowergift"));
-      chainBoth(Mod.ATK_LIGHTBALL, user.base.itemId === "lightball" && user.v.speciesId === "pikachu");
-      m_atk = chainModIf(m_atk, Mod.ATK_CHOICE, user.base.item?.choice === "atk");
-      m_spa = chainModIf(m_spa, Mod.ATK_CHOICE, user.base.item?.choice === "spa");
-      m_spa = chainModIf(m_spa, Mod.ATK_DEEPSEATOOTH, user.base.itemId === "deepseatooth" && user.v.speciesId === "clamperl");
-      m_spa = chainModIf(m_spa, Mod.ATK_SOULDEW, user.base.itemId === "souldew" && (user.v.speciesId === "latios" || user.v.speciesId === "latias"));
+      chainBoth(Mod.ATK_LIGHTBALL, userItemId === "lightball" && user.v.speciesId === "pikachu");
+      m_atk = chainModIf(m_atk, Mod.ATK_CHOICE, userItemData?.choice === "atk");
+      m_spa = chainModIf(m_spa, Mod.ATK_CHOICE, userItemData?.choice === "spa");
+      m_spa = chainModIf(m_spa, Mod.ATK_DEEPSEATOOTH, userItemId === "deepseatooth" && user.v.speciesId === "clamperl");
+      m_spa = chainModIf(m_spa, Mod.ATK_SOULDEW, userItemId === "souldew" && (user.v.speciesId === "latios" || user.v.speciesId === "latias"));
     }
 
     const hustle = userAbilityId === "hustle" ? Mod.ATK_HUSTLE : Mod.NONE;
@@ -127,17 +128,19 @@ class DamageCalc {
       spd = applyMod(spd, Mod.DEF_SANDSTORM);
     }
 
+    const targetItemId = target.getItemId();
+
     let m_def = Mod.NONE;
     let m_spd = Mod.NONE;
     // prettier-ignore
     {
       m_def = chainModIf(m_def, Mod.DEF_MARVELSCALE, target.getAbilityId(user) === "marvelscale" && target.base.status);
       m_spd = chainModIf(m_spd, Mod.DEF_FLOWERGIFT, weather === "sun" && target.owner.sideHasAbility("flowergift"));
-      m_spd = chainModIf(m_spd, Mod.DEF_DEEPSEASCALE, target.base.itemId === "deepseascale" && target.v.speciesId === "clamperl");
-      m_def = chainModIf(m_def, Mod.DEF_METALPOWDER, target.base.itemId === "metalpowder" && target.v.speciesId === "ditto");
-      m_def = chainModIf(m_def, Mod.DEF_EVIOLITE, target.base.itemId === "eviolite" && target.v.species.evolvesTo);
-      m_spd = chainModIf(m_spd, Mod.DEF_EVIOLITE, target.base.itemId === "eviolite" && target.v.species.evolvesTo);
-      m_spd = chainModIf(m_spd, Mod.DEF_SOULDEW, target.base.itemId === "souldew" && (target.v.speciesId === "latios" || target.v.speciesId === "latias"));
+      m_spd = chainModIf(m_spd, Mod.DEF_DEEPSEASCALE, targetItemId === "deepseascale" && target.v.speciesId === "clamperl");
+      m_def = chainModIf(m_def, Mod.DEF_METALPOWDER, targetItemId === "metalpowder" && target.v.speciesId === "ditto");
+      m_def = chainModIf(m_def, Mod.DEF_EVIOLITE, targetItemId === "eviolite" && target.v.species.evolvesTo);
+      m_spd = chainModIf(m_spd, Mod.DEF_EVIOLITE, targetItemId === "eviolite" && target.v.species.evolvesTo);
+      m_spd = chainModIf(m_spd, Mod.DEF_SOULDEW, targetItemId === "souldew" && (target.v.speciesId === "latios" || target.v.speciesId === "latias"));
     }
 
     def = applyMod(def, m_def);
@@ -146,8 +149,9 @@ class DamageCalc {
   }
 
   static getBoostedPower({move, battle, user, target, type, power}: BoostedPowerParams) {
+    const {id: userItemId, data: userItemData} = user.getItemIdAndData();
     const hasTypeBoostingItem = () => {
-      const typeBoost = user.base.item?.typeBoost;
+      const typeBoost = userItemData?.typeBoost;
       return (
         typeBoost &&
         (typeBoost.type === type || typeBoost.type2 === type) &&
@@ -178,8 +182,8 @@ class DamageCalc {
       mod = chainModIf(mod, Mod.BP_DRY_SKIN, targetAbilityId === "dryskin" && type === "fire");
       mod = chainModIf(mod, Mod.BP_SHEER_FORCE, userAbilityId === "sheerforce" && isAffectedBySheerForce(move));
       mod = chainModIf(mod, Mod.BP_TYPE_BOOST, hasTypeBoostingItem()); // This covers orbs too
-      mod = chainModIf(mod, Mod.BP_MUSCLE_BAND, !special && user.base.itemId === "muscleband");
-      mod = chainModIf(mod, Mod.BP_WISE_GLASSES, special && user.base.itemId === "wiseglasses");
+      mod = chainModIf(mod, Mod.BP_MUSCLE_BAND, !special && userItemId === "muscleband");
+      mod = chainModIf(mod, Mod.BP_WISE_GLASSES, special && userItemId === "wiseglasses");
       // mod = chainModIf(mod, Mod.BP_GEM, );
       mod = chainModIf(mod, Mod.BP_FACADE, move.id === "facade" && (user.base.status === "brn" || user.base.status === "par" || user.base.status === "psn" || user.base.status === "tox"));
       mod = chainModIf(mod, Mod.BP_BRINE, move.id === "brine" && target.base.belowHp(2));
@@ -200,6 +204,7 @@ class DamageCalc {
   }
 
   static getFinalModifier({user, target, isCrit, move, eff}: FinalModifierParams) {
+    const userItemId = user.getItemId();
     const userAbilityId = user.getAbilityId();
     const targetAlive = target.owner.active.reduce((acc, poke) => acc + Number(!!poke.base.hp), 0);
     const targetAbility = target.getAbility(user);
@@ -222,9 +227,9 @@ class DamageCalc {
       if (user.v.metronomeCount > 4) {
         metronome = Mod.FINAL_METRONOME_GT4;
       }
-      mod = chainModIf(mod, metronome, user.base.itemId === "metronome");
-      mod = chainModIf(mod, Mod.FINAL_EXPERT_BELT, user.base.itemId === "expertbelt" && eff.superEffective());
-      mod = chainModIf(mod, Mod.FINAL_LIFE_ORB, user.base.itemId === "lifeorb");
+      mod = chainModIf(mod, metronome, userItemId === "metronome");
+      mod = chainModIf(mod, Mod.FINAL_EXPERT_BELT, userItemId === "expertbelt" && eff.superEffective());
+      mod = chainModIf(mod, Mod.FINAL_LIFE_ORB, userItemId === "lifeorb");
       // mod = chainModIf(mod, Mod.FINAL_DMG_REDUCE_BERRY, );
       mod = chainModIf(mod, Mod.FINAL_DOUBLE_DMG,
         (move.flag === DMF.minimize && target.v.hasFlag(VF.minimize)) ||
@@ -384,7 +389,7 @@ export class Generation5 extends Generation4 {
     target.damage2(battle, {dmg, src: user, isCrit, eff, why: "future_sight"});
     target.handleEndure(battle, endure);
 
-    if (user.base.hp && user.base.itemId === "lifeorb") {
+    if (user.base.hp && user.hasItem("lifeorb")) {
       user.damage2(battle, {
         dmg: idiv1(user.base.maxHp, 10),
         src: user,
@@ -396,13 +401,14 @@ export class Generation5 extends Generation4 {
 
   override tryEndure({battle, user, target, dmg}: TryEndureParams) {
     if (!target.v.substitute && dmg >= target.base.hp) {
+      const targetItemId = target.getItemId();
       if (target.v.hasFlag(VF.endure)) {
         return {dmg: target.base.hp - 1, endure: Endure.Endure};
       } else if (target.getAbilityId(user) === "sturdy" && target.base.hp === target.base.maxHp) {
         return {dmg: target.base.hp - 1, endure: Endure.Sturdy};
-      } else if (target.base.itemId === "focusband" && battle.gen.rng.tryFocusBand(battle)) {
+      } else if (targetItemId === "focusband" && battle.gen.rng.tryFocusBand(battle)) {
         return {dmg: target.base.hp - 1, endure: Endure.FocusBand};
-      } else if (target.base.itemId === "focussash" && target.base.hp === target.base.maxHp) {
+      } else if (targetItemId === "focussash" && target.base.hp === target.base.maxHp) {
         return {dmg: target.base.hp - 1, endure: Endure.FocusSash};
       }
     }

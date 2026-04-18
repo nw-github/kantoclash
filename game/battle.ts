@@ -318,7 +318,7 @@ export class Battle {
         const isLead = this.turnType === TurnType.Lead;
         // Roll quick claw for lead turn in Gen 3 only
         if (
-          poke.base.itemId === "quickclaw" &&
+          poke.hasItem("quickclaw") &&
           this.gen.rng.tryQuickClaw(this) &&
           (poke.choice.move.kind !== "switch" || (this.gen.id <= 3 && isLead))
         ) {

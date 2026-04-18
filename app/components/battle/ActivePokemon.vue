@@ -302,6 +302,7 @@ const badges = computed(() => {
   if (poke.v.encore) { result.push({color: "old-sky", icon: "material-symbols:celebration", variant: "subtle"}); }
   if (poke.v.disabled) { result.push({color: "error", icon: "material-symbols:block-outline", variant: "subtle"}); }
   if (poke.v.tauntTurns) { result.push({color: "error", icon: "fluent-emoji-high-contrast:anger-symbol", variant: "subtle"}); }
+  if (poke.v.embargoTurns) { result.push({color: "error", icon: "tabler:truck-off", variant: "subtle"}); }
   if (poke.v.hasFlag(VF.torment)) { result.push({ color: "error", icon: "fluent-emoji-high-contrast:anger-symbol", variant: "subtle", label: "Torment" }); }
   if (poke.v.identified) { result.push({color: "old-violet", icon: "material-symbols:search-rounded", variant: "subtle"}); }
   if (poke.v.magnetRise) { result.push({color: "old-amber", icon: "tabler:magnet", variant: "subtle"}); }

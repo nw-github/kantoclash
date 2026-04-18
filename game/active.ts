@@ -104,6 +104,7 @@ export class Battlemon {
       this.v.counter = old.counter;
       this.v.seededBy = old.seededBy;
       this.v.magnetRise = old.magnetRise;
+      this.v.embargoTurns = old.embargoTurns;
       if (battle.gen.id >= 3) {
         this.v.identified = old.identified;
       }
@@ -302,10 +303,13 @@ export class Battlemon {
       }
     }
 
-    if (target.v.speciesId === "arceus" && target.hasAbility("multitype")) {
+    if (target.v.speciesId === "arceus" && target.hasAbility("multitype") && battle.gen.id <= 5) {
       const type = this.base.item?.plate ?? "normal";
       this.v.form = type;
       this.v.types = [type];
+    } else {
+      this.v.form = target.v.form;
+      this.v.types = [...target.v.types];
     }
 
     battle.event({
@@ -729,19 +733,19 @@ export class Battlemon {
   }
 
   handleShellBell(battle: Battle, dmg: number) {
-    if (this.base.hp && dmg !== 0 && !this.v.fainted && this.base.itemId === "shellbell") {
+    if (this.base.hp && dmg !== 0 && !this.v.fainted && this.hasItem("shellbell")) {
       this.recover(idiv1(dmg, 8), this, battle, "shellbell");
     }
   }
 
   handleLeftovers(battle: Battle) {
-    if (!this.v.fainted && this.base.itemId === "leftovers") {
+    if (!this.v.fainted && this.hasItem("leftovers")) {
       this.recover(idiv1(this.base.maxHp, 16), this, battle, "leftovers");
     }
   }
 
   handleBerry(battle: Battle, {pp, pinch, status}: {pp?: bool; pinch?: bool; status?: bool}) {
-    const item = this.base.item;
+    const {data: item, id: itemId} = this.getItemIdAndData();
     if (this.v.fainted || !item) {
       return;
     }
@@ -796,14 +800,11 @@ export class Battlemon {
         this.v.confusion = 0;
         this.consumeItem(battle);
         battle.info(this, "confused_end");
-      } else if (this.v.attract && this.base.itemId === "mentalherb") {
+      } else if (this.v.attract && itemId === "mentalherb") {
         this.v.attract = undefined;
         this.consumeItem(battle);
         battle.info(this, "cure_attract");
-      } else if (
-        this.base.itemId === "whiteherb" &&
-        Object.values(this.v.stages).some(v => v < 0)
-      ) {
+      } else if (itemId === "whiteherb" && Object.values(this.v.stages).some(v => v < 0)) {
         for (const stage in this.v.stages) {
           if (this.v.stages[stage as StageId] < 0) {
             this.setStage(stage as StageId, 0, battle, false);
@@ -1067,7 +1068,7 @@ export class Battlemon {
   }
 
   isGrounded(battle: Battle, user?: Battlemon) {
-    if (this.base.item?.groundsUser || this.v.hasFlag(VF.ingrain) || battle.field.gravity) {
+    if (this.getItem()?.groundsUser || this.v.hasFlag(VF.ingrain) || battle.field.gravity) {
       return true;
     }
     const isFlying = this.v.types.includes("flying") && !this.v.hasFlag(VF.roost);
@@ -1102,6 +1103,28 @@ export class Battlemon {
   getAbility(user?: Battlemon) {
     const ability = this.getAbilityId(user);
     return ability && abilityList[ability];
+  }
+
+  getAbilityIdAndData(user?: Battlemon) {
+    const id = this.getAbilityId(user);
+    return {id, data: id && abilityList[id]};
+  }
+
+  hasItem(id: ItemId) {
+    return this.getItemId() === id;
+  }
+
+  getItem() {
+    return this.v.embargoTurns || this.v.ability === "klutz" ? undefined : this.base.item;
+  }
+
+  getItemId() {
+    return this.v.embargoTurns || this.v.ability === "klutz" ? undefined : this.base.itemId;
+  }
+
+  getItemIdAndData() {
+    const id = this.getItemId();
+    return {id, data: id && this.base.gen.items[id]};
   }
 
   cantEscape(battle: Battle) {
@@ -1148,6 +1171,7 @@ export class Battlemon {
       gender: diff.gender,
       transformed: diff.transformed,
       magnetRise: diff.magnetRise,
+      embargoTurns: diff.embargoTurns,
       tauntTurns: diff.tauntTurns && 1,
       disabled: diff.disabled && diff.disabled?.turns && 1,
       encore: diff.encore && diff.encore?.turns && 1,
@@ -1223,6 +1247,7 @@ class Volatiles {
   usedIntimidate = false;
   usedTrace = false;
   metronomeCount = 0;
+  embargoTurns = 0;
   slowStartTurns = 0;
   canSpeedBoost = false;
   canFakeOut = true;
@@ -1331,4 +1356,5 @@ const VOLATILE_SYNC_KEYS = [
   "shiny",
   "transformed",
   "magnetRise",
+  "embargoTurns",
 ] satisfies (keyof Volatiles)[];

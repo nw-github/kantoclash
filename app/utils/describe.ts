@@ -182,6 +182,8 @@ const descriptions: Partial<Record<number, Partial<Record<MoveId, string>>>> = {
     worryseed: "Sets the target's ability to Insomnia. ",
     roost:
       "The user recovers 1/2 its max HP. Until the end of the turn, its Flying type is not considered during damage calculation. ",
+    embargo:
+      "For 5 turns, the target has its held item effects negated and cannot use Fling or Natural Gift. ",
   },
   [2]: {
     conversion:

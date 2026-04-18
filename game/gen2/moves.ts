@@ -397,7 +397,7 @@ export const tryDamage = (
   // BUG GEN2:
   // https://pret.github.io/pokecrystal/bugs_and_glitches.html#beat-up-may-trigger-kings-rock-even-if-it-failed
   if (
-    user.base.item?.kingsRock &&
+    user.getItem()?.kingsRock &&
     self.kingsRock &&
     !hadSub &&
     battle.gen.rng.tryKingsRock(battle)

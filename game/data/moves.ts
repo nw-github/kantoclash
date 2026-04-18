@@ -4220,12 +4220,12 @@ export const rawMoveList = {
     kingsRock: true,
   },
   embargo: {
-    kind: "fail",
+    kind: "embargo",
     name: "Embargo",
-    pp: 1,
-    type: "normal",
+    pp: 15,
+    acc: 100,
+    type: "dark",
     range: "Adjacent",
-    why: "fail_unimplemented",
   },
   energyball: {
     kind: "damage",
