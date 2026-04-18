@@ -195,11 +195,7 @@
     "fling": 90,
     "boostStats": {"marowak": {"stats": ["atk"], "transformed": false, "percent": 100}}
   },
-  "focusband": {
-    "name": "Focus Band",
-    "desc": "Small chance to endure fatal hits.",
-    "fling": 10
-  },
+  "focusband": {"name": "Focus Band", "desc": "Small chance to endure fatal hits.", "fling": 10},
   "energypowder": {"name": "EnergyPowder", "fling": 30},
   "energyroot": {"name": "Energy Root", "fling": 30},
   "healpowder": {"name": "Heal Powder", "fling": 30},
@@ -386,155 +382,177 @@
     "name": "Cheri Berry",
     "desc": "Cures paralysis once.",
     "fling": 10,
-    "cureStatus": "par"
+    "cureStatus": "par",
+    "naturalGift": ["fire", 60]
   },
   "chestoberry": {
     "name": "Chesto Berry",
     "desc": "Cures sleep once.",
     "fling": 10,
-    "cureStatus": "slp"
+    "cureStatus": "slp",
+    "naturalGift": ["water", 60]
   },
   "pechaberry": {
     "name": "Pecha Berry",
     "desc": "Cures poison once.",
     "fling": 10,
-    "cureStatus": "psn"
+    "cureStatus": "psn",
+    "naturalGift": ["electric", 60]
   },
   "rawstberry": {
     "name": "Rawst Berry",
     "desc": "Cures burn once.",
     "fling": 10,
-    "cureStatus": "brn"
+    "cureStatus": "brn",
+    "naturalGift": ["grass", 60]
   },
   "aspearberry": {
     "name": "Aspear Berry",
     "desc": "Cures freeze once.",
     "fling": 10,
-    "cureStatus": "frz"
+    "cureStatus": "frz",
+    "naturalGift": ["ice", 60]
   },
   "leppaberry": {
     "name": "Leppa Berry",
     "desc": "Restores PP by 10 once.",
     "fling": 10,
-    "restorePP": 10
+    "restorePP": 10,
+    "naturalGift": ["fight", 60]
   },
   "oranberry": {
     "name": "Oran Berry",
     "desc": "Restores 10 HP once below 50% HP.",
     "fling": 10,
-    "healFixed": 10
+    "healFixed": 10,
+    "naturalGift": ["poison", 60]
   },
   "persimberry": {
     "name": "Persim Berry",
     "desc": "Cures confusion once.",
     "fling": 10,
-    "cureStatus": "confuse"
+    "cureStatus": "confuse",
+    "naturalGift": ["ground", 60]
   },
   "lumberry": {
     "name": "Lum Berry",
     "desc": "Cures status or confusion once.",
     "fling": 10,
-    "cureStatus": "any"
+    "cureStatus": "any",
+    "naturalGift": ["flying", 60]
   },
   "sitrusberry": {
     "name": "Sitrus Berry",
     "desc": "Restores 30 HP once below 50% HP.",
     "fling": 10,
-    "healFixed": 30
+    "healFixed": 30,
+    "naturalGift": ["psychic", 60]
   },
   "figyberry": {
     "name": "Figy Berry",
     "desc": "Heals 1/8 HP below 50% HP. Confuses if -Atk.",
     "fling": 10,
-    "healPinchNature": "atk"
+    "healPinchNature": "atk",
+    "naturalGift": ["bug", 60]
   },
   "wikiberry": {
     "name": "Wiki Berry",
     "desc": "Heals 1/8 HP below 50% HP. Confuses if -SpA.",
     "fling": 10,
-    "healPinchNature": "spa"
+    "healPinchNature": "spa",
+    "naturalGift": ["rock", 60]
   },
   "magoberry": {
     "name": "Mago Berry",
     "desc": "Heals 1/8 HP below 50% HP. Confuses if -Spe.",
     "fling": 10,
-    "healPinchNature": "spe"
+    "healPinchNature": "spe",
+    "naturalGift": ["ghost", 60]
   },
   "aguavberry": {
     "name": "Aguav Berry",
     "desc": "Heals 1/8 HP below 50% HP. Confuses if -SpD.",
     "fling": 10,
-    "healPinchNature": "spd"
+    "healPinchNature": "spd",
+    "naturalGift": ["dragon", 60]
   },
   "iapapaberry": {
     "name": "Iapapa Berry",
     "desc": "Heals 1/8 HP below 50% HP. Confuses if -Def.",
     "fling": 10,
-    "healPinchNature": "def"
+    "healPinchNature": "def",
+    "naturalGift": ["dark", 60]
   },
-  "razzberry": {"name": "Razz Berry", "fling": 10},
-  "blukberry": {"name": "Bluk Berry", "fling": 10},
-  "nanabberry": {"name": "Nanab Berry", "fling": 10},
-  "wepearberry": {"name": "Wepear Berry", "fling": 10},
-  "pinapberry": {"name": "Pinap Berry", "fling": 10},
-  "pomegberry": {"name": "Pomeg Berry", "fling": 10},
-  "kelpsyberry": {"name": "Kelpsy Berry", "fling": 10},
-  "qualotberry": {"name": "Qualot Berry", "fling": 10},
-  "hondewberry": {"name": "Hondew Berry", "fling": 10},
-  "grepaberry": {"name": "Grepa Berry", "fling": 10},
-  "tamatoberry": {"name": "Tamato Berry", "fling": 10},
-  "cornnberry": {"name": "Cornn Berry", "fling": 10},
-  "magostberry": {"name": "Magost Berry", "fling": 10},
-  "rabutaberry": {"name": "Rabuta Berry", "fling": 10},
-  "nomelberry": {"name": "Nomel Berry", "fling": 10},
-  "spelonberry": {"name": "Spelon Berry", "fling": 10},
-  "pamtreberry": {"name": "Pamtre Berry", "fling": 10},
-  "watmelberry": {"name": "Watmel Berry", "fling": 10},
-  "durinberry": {"name": "Durin Berry", "fling": 10},
-  "belueberry": {"name": "Belue Berry", "fling": 10},
+  "razzberry": {"name": "Razz Berry", "fling": 10, "naturalGift": ["steel", 60]},
+  "blukberry": {"name": "Bluk Berry", "fling": 10, "naturalGift": ["fire", 70]},
+  "nanabberry": {"name": "Nanab Berry", "fling": 10, "naturalGift": ["water", 70]},
+  "wepearberry": {"name": "Wepear Berry", "fling": 10, "naturalGift": ["electric", 70]},
+  "pinapberry": {"name": "Pinap Berry", "fling": 10, "naturalGift": ["grass", 70]},
+  "pomegberry": {"name": "Pomeg Berry", "fling": 10, "naturalGift": ["ice", 70]},
+  "kelpsyberry": {"name": "Kelpsy Berry", "fling": 10, "naturalGift": ["fight", 70]},
+  "qualotberry": {"name": "Qualot Berry", "fling": 10, "naturalGift": ["poison", 70]},
+  "hondewberry": {"name": "Hondew Berry", "fling": 10, "naturalGift": ["ground", 70]},
+  "grepaberry": {"name": "Grepa Berry", "fling": 10, "naturalGift": ["flying", 70]},
+  "tamatoberry": {"name": "Tamato Berry", "fling": 10, "naturalGift": ["psychic", 70]},
+  "cornnberry": {"name": "Cornn Berry", "fling": 10, "naturalGift": ["bug", 70]},
+  "magostberry": {"name": "Magost Berry", "fling": 10, "naturalGift": ["rock", 70]},
+  "rabutaberry": {"name": "Rabuta Berry", "fling": 10, "naturalGift": ["ghost", 70]},
+  "nomelberry": {"name": "Nomel Berry", "fling": 10, "naturalGift": ["dragon", 70]},
+  "spelonberry": {"name": "Spelon Berry", "fling": 10, "naturalGift": ["dark", 70]},
+  "pamtreberry": {"name": "Pamtre Berry", "fling": 10, "naturalGift": ["steel", 70]},
+  "watmelberry": {"name": "Watmel Berry", "fling": 10, "naturalGift": ["fire", 80]},
+  "durinberry": {"name": "Durin Berry", "fling": 10, "naturalGift": ["water", 80]},
+  "belueberry": {"name": "Belue Berry", "fling": 10, "naturalGift": ["electric", 80]},
   "liechiberry": {
     "name": "Liechi Berry",
     "desc": "Raises Atk by 1 when below 25% HP.",
     "fling": 10,
-    "statPinch": "atk"
+    "statPinch": "atk",
+    "naturalGift": ["grass", 80]
   },
   "ganlonberry": {
     "name": "Ganlon Berry",
     "desc": "Raises Def by 1 when below 25% HP.",
     "fling": 10,
-    "statPinch": "def"
+    "statPinch": "def",
+    "naturalGift": ["ice", 80]
   },
   "salacberry": {
     "name": "Salac Berry",
     "desc": "Raises Spe by 1 when below 25% HP.",
     "fling": 10,
-    "statPinch": "spe"
+    "statPinch": "spe",
+    "naturalGift": ["fight", 80]
   },
   "petayaberry": {
     "name": "Petaya Berry",
     "desc": "Raises SpA by 1 when below 25% HP.",
     "fling": 10,
-    "statPinch": "spa"
+    "statPinch": "spa",
+    "naturalGift": ["poison", 80]
   },
   "apicotberry": {
     "name": "Apicot Berry",
     "desc": "Raises SpD by 1 when below 25% HP.",
     "fling": 10,
-    "statPinch": "spd"
+    "statPinch": "spd",
+    "naturalGift": ["ground", 80]
   },
   "lansatberry": {
     "name": "Lansat Berry",
     "desc": "Raises Crit by 2 when below 25% HP.",
     "fling": 10,
-    "statPinch": "crit"
+    "statPinch": "crit",
+    "naturalGift": ["flying", 80]
   },
   "starfberry": {
     "name": "Starf Berry",
     "desc": "Raises a random stat by 2 when below 25% HP.",
     "fling": 10,
-    "statPinch": "random"
+    "statPinch": "random",
+    "naturalGift": ["psychic", 80]
   },
-  "enigmaberry": {"name": "Enigma Berry", "fling": 10},
+  "enigmaberry": {"name": "Enigma Berry", "fling": 10, "naturalGift": ["bug", 80]},
   "whiteherb": {"name": "White Herb", "desc": "Resets negative stat stages once.", "fling": 10},
   "machobrace": {
     "name": "Macho Brace",
@@ -709,108 +727,125 @@
     "name": "Occa Berry",
     "fling": 10,
     "reduceType": "fire",
-    "desc": "Halves dmg from a SE Fire-type move."
+    "desc": "Halves dmg from a SE Fire-type move.",
+    "naturalGift": ["fire", 60]
   },
   "passhoberry": {
     "name": "Passho Berry",
     "fling": 10,
     "reduceType": "water",
-    "desc": "Halves dmg from a SE Water-type move."
+    "desc": "Halves dmg from a SE Water-type move.",
+    "naturalGift": ["water", 60]
   },
   "wacanberry": {
     "name": "Wacan Berry",
     "fling": 10,
     "reduceType": "electric",
-    "desc": "Halves dmg from a SE Electric-type move."
+    "desc": "Halves dmg from a SE Electric-type move.",
+    "naturalGift": ["electric", 60]
   },
   "rindoberry": {
     "name": "Rindo Berry",
     "fling": 10,
     "reduceType": "grass",
-    "desc": "Halves dmg from a SE Grass-type move."
+    "desc": "Halves dmg from a SE Grass-type move.",
+    "naturalGift": ["grass", 60]
   },
   "yacheberry": {
     "name": "Yache Berry",
     "fling": 10,
     "reduceType": "ice",
-    "desc": "Halves dmg from a SE Ice-type move."
+    "desc": "Halves dmg from a SE Ice-type move.",
+    "naturalGift": ["ice", 60]
   },
   "chopleberry": {
     "name": "Chople Berry",
     "fling": 10,
     "reduceType": "fight",
-    "desc": "Halves dmg from a SE Fighting-type move."
+    "desc": "Halves dmg from a SE Fighting-type move.",
+    "naturalGift": ["fight", 60]
   },
   "kebiaberry": {
     "name": "Kebia Berry",
     "fling": 10,
     "reduceType": "poison",
-    "desc": "Halves dmg from a SE Poison-type move."
+    "desc": "Halves dmg from a SE Poison-type move.",
+    "naturalGift": ["poison", 60]
   },
   "shucaberry": {
     "name": "Shuca Berry",
     "fling": 10,
     "reduceType": "ground",
-    "desc": "Halves dmg from a SE Ground-type move."
+    "desc": "Halves dmg from a SE Ground-type move.",
+    "naturalGift": ["ground", 60]
   },
   "cobaberry": {
     "name": "Coba Berry",
     "fling": 10,
     "reduceType": "flying",
-    "desc": "Halves dmg from a SE Flying-type move."
+    "desc": "Halves dmg from a SE Flying-type move.",
+    "naturalGift": ["flying", 60]
   },
   "payapaberry": {
     "name": "Payapa Berry",
     "fling": 10,
     "reduceType": "psychic",
-    "desc": "Halves dmg from a SE Psychic-type move."
+    "desc": "Halves dmg from a SE Psychic-type move.",
+    "naturalGift": ["psychic", 60]
   },
   "tangaberry": {
     "name": "Tanga Berry",
     "fling": 10,
     "reduceType": "bug",
-    "desc": "Halves dmg from a SE Bug-type move."
+    "desc": "Halves dmg from a SE Bug-type move.",
+    "naturalGift": ["bug", 60]
   },
   "chartiberry": {
     "name": "Charti Berry",
     "fling": 10,
     "reduceType": "rock",
-    "desc": "Halves dmg from a SE Rock-type move."
+    "desc": "Halves dmg from a SE Rock-type move.",
+    "naturalGift": ["rock", 60]
   },
   "kasibberry": {
     "name": "Kasib Berry",
     "fling": 10,
     "reduceType": "ghost",
-    "desc": "Halves dmg from a SE Ghost-type move."
+    "desc": "Halves dmg from a SE Ghost-type move.",
+    "naturalGift": ["ghost", 60]
   },
   "habanberry": {
     "name": "Haban Berry",
     "fling": 10,
     "reduceType": "dragon",
-    "desc": "Halves dmg from a SE Dragon-type move."
+    "desc": "Halves dmg from a SE Dragon-type move.",
+    "naturalGift": ["dragon", 60]
   },
   "colburberry": {
     "name": "Colbur Berry",
     "fling": 10,
     "reduceType": "dark",
-    "desc": "Halves dmg from a SE Dark-type move."
+    "desc": "Halves dmg from a SE Dark-type move.",
+    "naturalGift": ["dark", 60]
   },
   "babiriberry": {
     "name": "Babiri Berry",
     "fling": 10,
     "reduceType": "steel",
-    "desc": "Halves dmg from a SE Steel-type move."
+    "desc": "Halves dmg from a SE Steel-type move.",
+    "naturalGift": ["steel", 60]
   },
   "chilanberry": {
     "name": "Chilan Berry",
     "fling": 10,
     "reduceType": "normal",
-    "desc": "Halves dmg from a Normal-type move."
+    "desc": "Halves dmg from a Normal-type move.",
+    "naturalGift": ["normal", 60]
   },
-  "micleberry": {"name": "Micle Berry", "fling": 10},
-  "custapberry": {"name": "Custap Berry", "fling": 10},
-  "jabocaberry": {"name": "Jaboca Berry", "fling": 10},
-  "rowapberry": {"name": "Rowap Berry", "fling": 10},
+  "micleberry": {"name": "Micle Berry", "fling": 10, "naturalGift": ["rock", 80]},
+  "custapberry": {"name": "Custap Berry", "fling": 10, "naturalGift": ["ghost", 80]},
+  "jabocaberry": {"name": "Jaboca Berry", "fling": 10, "naturalGift": ["dragon", 80]},
+  "rowapberry": {"name": "Rowap Berry", "fling": 10, "naturalGift": ["dark", 80]},
   "widelens": {"name": "Wide Lens", "fling": 10, "desc": "Boosts accuracy by 10%.", "boostAcc": 10},
   "muscleband": {"name": "Muscle Band", "fling": 10, "desc": "Boosts physical attacks by 10%."},
   "wiseglasses": {"name": "Wise Glasses", "fling": 10, "desc": "Boosts special attacks by 10%."},

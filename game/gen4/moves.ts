@@ -190,6 +190,10 @@ export const tryDamage = (
     if (crash && self.flag === DMF.crash) {
       battle.gen.handleCrashDamage(battle, user, target, dmg);
     }
+    if (self.id === "naturalgift") {
+      user.base.itemId = undefined;
+      battle.event({type: "item", src: user.id});
+    }
     return 0;
   };
 
@@ -410,6 +414,11 @@ export const tryDamage = (
     } while (!stop && ++hits <= count);
   } else {
     applyDamage(dmg, false);
+  }
+
+  if (self.id === "naturalgift") {
+    user.base.itemId = undefined;
+    battle.event({type: "item", src: user.id});
   }
 
   if (self.flag === DMF.remove_protect) {

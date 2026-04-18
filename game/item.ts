@@ -13,6 +13,7 @@ export type ItemData = {
 
   plate?: ArceusForm;
   drive?: GenesectForm;
+  naturalGift?: [Type, number];
   typeBoost?: {type: Type; type2?: Type; percent: number; species?: SpeciesId[]};
   cureStatus?: Status | "any" | "confuse";
   healFixed?: number;

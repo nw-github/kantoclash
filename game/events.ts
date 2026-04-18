@@ -378,11 +378,17 @@ export type WeatherEvent = {
 
 type PerishSongEvent = {type: "perish"; src: PokeId; turns: number};
 
-type ItemEvent = {
-  type: "item" | "recycle";
-  src: PokeId;
-  item: ItemId;
-};
+type ItemEvent =
+  | {
+      type: "item";
+      src: PokeId;
+      item?: ItemId;
+    }
+  | {
+      type: "recycle";
+      src: PokeId;
+      item: ItemId;
+    };
 
 type ThiefEvent = {
   type: "thief" | "knockoff";

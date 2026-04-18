@@ -1489,6 +1489,8 @@ export const moveOverrides: MovePropOverrides = {
       const stages = stageKeys.reduce((acc, stat) => acc + Math.max(0, target.v.stages[stat]), 0);
       return this.power + Math.min(stages, 7) * 20;
     },
+    naturalgift: (_battle, user) => user.getItem()?.naturalGift?.[1] ?? 0,
+    fling: (_battle, user) => user.getItem()?.fling ?? 0,
     gyroball(battle, user, target) {
       // https://github.com/pret/pokeheartgold/blob/821bad70967f3d49dc98e56f36c1776ae9e69e3e/src/battle/battle_command.c#L4302
       // Gyro ball uses ctx->effectiveSpeed. This is only set by CheckSortSpeed, which has a few different
@@ -1572,6 +1574,10 @@ export const moveOverrides: MovePropOverrides = {
         "normal"
       );
     },
+    naturalgift(_battle, user) {
+      const item = "base" in user ? user.getItem() : user.item;
+      return item?.naturalGift?.[0] ?? "normal";
+    },
     judgment(_battle, user) {
       const item = "base" in user ? user.getItem() : user.item;
       return item?.plate ?? "normal";
@@ -1612,6 +1618,13 @@ export const moveOverrides: MovePropOverrides = {
     },
     suckerpunch(battle, user, [target]) {
       if (target?.choice?.move?.kind !== "damage" || target?.choice?.executed) {
+        battle.info(user, "fail_generic");
+        return false;
+      }
+      return true;
+    },
+    naturalgift(battle, user) {
+      if (!user.getItem()?.naturalGift) {
         battle.info(user, "fail_generic");
         return false;
       }

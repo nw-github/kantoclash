@@ -184,6 +184,8 @@ const descriptions: Partial<Record<number, Partial<Record<MoveId, string>>>> = {
       "The user recovers 1/2 its max HP. Until the end of the turn, its Flying type is not considered during damage calculation. ",
     embargo:
       "For 5 turns, the target has its held item effects negated and cannot use Fling or Natural Gift. ",
+    naturalgift:
+      "Only usable if the user is holding a berry. Type and base power are determined by the held berry. Consumes the berry upon use. ",
   },
   [2]: {
     conversion:

@@ -347,6 +347,9 @@ export class ClientManager {
       }
     } else if (e.type === "item") {
       this.players.poke(e.src)!.base.itemId = undefined;
+      if (!e.item) {
+        return this.handleVolatiles(e);
+      }
     } else if (e.type === "screen") {
       this.players.get(e.user).bp!.screens[e.screen] = e.kind === "start" ? 1 : 0;
     } else if (e.type === "thief") {

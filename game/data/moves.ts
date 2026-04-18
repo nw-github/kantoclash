@@ -4650,12 +4650,14 @@ export const rawMoveList = {
     snatch: true,
   },
   naturalgift: {
-    kind: "fail",
+    kind: "damage",
     name: "Natural Gift",
-    pp: 1,
+    pp: 15,
+    power: 0,
+    acc: 100,
     type: "normal",
     range: "Adjacent",
-    why: "fail_unimplemented",
+    category: "physical",
   },
   nightslash: {
     kind: "damage",
