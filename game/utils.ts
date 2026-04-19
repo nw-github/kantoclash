@@ -329,6 +329,10 @@ export class TypeEffectiveness {
     return Number.isNaN(this.shifts);
   }
 
+  fixed() {
+    return this.immune() ? 0 : 1;
+  }
+
   toFloat() {
     return this.immune() ? 0 : 2 ** this.shifts;
   }

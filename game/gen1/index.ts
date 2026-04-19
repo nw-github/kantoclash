@@ -434,6 +434,9 @@ export class Generation1 {
   protected getFixedDamage(battle: Battle, user: Battlemon, target: Battlemon, move: DamagingMove) {
     if (move.fixedDamage) {
       return {dmg: move.fixedDamage, miss: false, eff: 1, type: move.type};
+    } else if (move.flag === DMF.ohko) {
+      const eff = this.getEffectiveness(battle, move.type, target).fixed();
+      return {dmg: 0xffff, miss: false, eff, type: move.type};
     } else if (this.move.overrides.dmg[move.id!]) {
       // Counter, Bide
       const dmg = this.getMoveDamage(move, battle, user, target) ?? 0;
@@ -889,20 +892,22 @@ export function tryDamage(
   const isCrit = battle.gen.rollCrit(battle, user, target, self);
   // eslint-disable-next-line prefer-const
   let {dmg, eff, miss, type} = battle.gen.getDamage({battle, user, target, move: self, isCrit});
-  if (miss || !battle.checkAccuracy(self, user, target, !battle.gen.isSpecial(self, type))) {
+  if (
+    miss ||
+    eff === 0 ||
+    !battle.checkAccuracy(self, user, target, !battle.gen.isSpecial(self, type))
+  ) {
     battle.gen1LastDamage = 0;
     // pokered:PrintMoveFailureText
-    if (miss) {
-      if (eff !== 0) {
-        battle.miss(user, target);
-      } else {
-        battle.info(target, "immune");
-        if (self.flag === DMF.trap) {
-          trapTarget();
-        } else if (self.flag === DMF.crash) {
-          checkThrashing();
-          return 0;
-        }
+    if (miss || eff !== 0) {
+      battle.miss(user, target);
+    } else {
+      battle.info(target, "immune");
+      if (self.flag === DMF.trap) {
+        trapTarget();
+      } else if (self.flag === DMF.crash) {
+        checkThrashing();
+        return 0;
       }
     }
 

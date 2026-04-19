@@ -610,6 +610,21 @@ export class Generation2 extends Generation1 {
 
   override tryDamage = tryDamage;
 
+  override getFixedDamage(battle: Battle, user: Battlemon, target: Battlemon, move: DamagingMove) {
+    if (move.fixedDamage) {
+      const eff = this.getEffectiveness(battle, move.type, target).fixed();
+      return {dmg: move.fixedDamage, miss: false, eff, type: move.type};
+    } else if (move.flag === DMF.ohko) {
+      const eff = this.getEffectiveness(battle, move.type, target).fixed();
+      return {dmg: 0xffff, miss: false, eff, type: move.type};
+    } else if (this.move.overrides.dmg[move.id!]) {
+      // Counter, Bide
+      const eff = move.ignoreType ? 1 : this.getEffectiveness(battle, move.type, target).fixed();
+      const dmg = this.getMoveDamage(move, battle, user, target) ?? 0;
+      return {dmg, miss: !dmg, eff, type: move.type};
+    }
+  }
+
   override handleRage(battle: Battle, poke: Battlemon) {
     if (poke.v.lastMove?.kind === "damage" && poke.v.lastMove.id === "rage") {
       battle.info(poke, "rage");
