@@ -275,7 +275,7 @@ const createMoveList = (list: any) => {
       move.category = MC[move.category];
     }
   }
-  return Object.freeze(list);
+  return list;
 };
 
 export const moveList = createMoveList(rawMoveList) as Record<MoveId, Move>;
