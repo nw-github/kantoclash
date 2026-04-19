@@ -21,7 +21,10 @@
         >
           Lv. {{ level }}
         </span>
-        <span class="text-xs sm:text-sm truncate">{{ gen.speciesList[speciesId].name }}</span>
+        <span class="text-xs sm:text-sm truncate">
+          {{ gen.speciesList[speciesId].name }}
+          <span v-if="form">({{ toTitleCase(form) }})</span>
+        </span>
         <GenderIcon :gender />
       </div>
       <TouchTooltip v-if="hasItem" text="Holding an Item" class="px-1">

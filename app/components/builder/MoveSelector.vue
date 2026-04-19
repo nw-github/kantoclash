@@ -13,7 +13,7 @@
       :class="ui"
       placeholder="Add move..."
       color="error"
-      :highlight="isIllegal(normalizeName(query)) || hasConflict()"
+      :highlight="isIllegal(query) || hasConflict()"
       :trailing-icon="trailing ? undefined : 'lucide:chevron-down'"
       :ui="{trailing: 'pointer-events-none'}"
       @focus="(open = true), $event.target.select()"
@@ -87,7 +87,7 @@ const open = ref(false);
 const species = computed<Species | undefined>(() => gen.speciesList[poke?.speciesId as SpeciesId]);
 const items = computed(() => Object.entries(gen.moveList) as [MoveId, Move][]);
 const trailing = computed(() => {
-  const q = normalizeName(query.value);
+  const q = normalizeMoveName(query.value);
   const move = q && q in gen.moveList ? gen.moveList[q as MoveId] : undefined;
   if (move?.kind !== "damage" || NO_VARIABLE_POWER.has(move.id!)) {
     return;
@@ -106,10 +106,10 @@ const trailing = computed(() => {
 });
 
 const filter = (moves: [MoveId, Move][], query: string) => {
-  const q = normalizeName(query);
-  const all = moves.filter(([id, _]) => id.includes(q));
+  const q = normalizeMoveName(query);
+  const all = moves.filter(([id, move]) => id.includes(q) || normalizeName(move.name).includes(q));
   if (poke) {
-    const currentMoves = poke.moves.map(normalizeName);
+    const currentMoves = poke.moves.map(normalizeMoveName);
 
     let subset = all.filter(([id, _]) => !currentMoves.includes(id));
     if (species.value) {
@@ -126,14 +126,15 @@ const filter = (moves: [MoveId, Move][], query: string) => {
 const onChoose = ([_, move]: [string, Move]) => (query.value = move.name);
 
 const hasConflict = () => {
-  const q = normalizeName(query.value);
+  const q = normalizeMoveName(query.value);
   if (!q) {
     return false;
   }
-  return poke.moves.findIndex((m, i) => m && normalizeName(m) === q && i !== idx) !== -1;
+  return poke.moves.findIndex((m, i) => m && normalizeMoveName(m) === q && i !== idx) !== -1;
 };
 
 const isIllegal = (id: string) => {
+  id = normalizeMoveName(id);
   if (!id) {
     return false;
   } else if (!species.value) {

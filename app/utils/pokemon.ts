@@ -68,7 +68,7 @@ export const descToString = (format: FormatId, poke: PokemonDesc) => {
   }
 
   for (const move of poke.moves) {
-    const id = normalizeName(move);
+    const id = normalizeMoveName(move);
     if (id === "hiddenpower") {
       const fakeUser = Pokemon.fromDescriptor(gen, {
         speciesId: "abra",
@@ -182,7 +182,15 @@ export const parsePokemon = (format: FormatId, src: string): TeamPokemonDesc => 
     }
   }
 
-  desc.speciesId = normalizeName(desc.speciesId);
+  let normalized = normalizeName(desc.speciesId);
+  if (!(normalized in gen.speciesList)) {
+    // Get rid of form-attached names like Arceus-Bug, Sawsbuck-summer, etc.
+    const mini = normalizeName(desc.speciesId.split("-", 1)[0]);
+    if (mini in gen.speciesList) {
+      normalized = mini;
+    }
+  }
+  desc.speciesId = normalized;
 
   let gotIvs = false;
   for (const line of lines.slice(1)) {
@@ -286,7 +294,7 @@ export const parseTeams = (src: string, fallback: FormatId = "g1_standard") => {
 export const convertDesc = (gen: Generation, desc: PokemonDesc): PokemonDesc => {
   const speciesId = normalizeName(desc.speciesId);
   const moves = desc.moves
-    .map(move => normalizeName(move))
+    .map(normalizeMoveName)
     .filter(m => !!m)
     .slice(0, 4);
 
@@ -319,6 +327,12 @@ export const convertTeam = (team: Team) => {
 };
 
 export const normalizeName = (v: string) => v.trim().toLowerCase().replaceAll(ignoreChars, "");
+
+export const normalizeMoveName = (v: string) => {
+  const titles: any = {highjumpkick: "hijumpkick", faintattack: "feintattack"};
+  const name = normalizeName(v);
+  return titles[name] ?? name;
+};
 
 export const ivToDv = (v?: number) => Math.floor((v ?? 31) / 2);
 export const dvToIv = (v?: number) => (v ?? 15) * 2;

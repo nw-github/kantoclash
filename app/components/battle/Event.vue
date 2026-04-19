@@ -200,7 +200,7 @@
   <div v-else-if="e.type === 'futuresight'">
     {{ futureSightMessage[e.move]![e.release ? 'release' : 'set'].replace("{}", pn(e.src)) }}
   </div>
-  <div v-else-if="e.type === 'proc_ability'" class="move ability">[{{ pn(e.src) }}'s {{ abilityList[e.ability].name }}]</div>
+  <div v-else-if="e.type === 'proc_ability'" class="move ability">[{{ pn(e.src) }}'s <b>{{ abilityList[e.ability].name }}</b>]</div>
   <div v-else-if="e.type === 'copy_ability'">{{ pn(e.src) }} copied {{ pn(e.target, false) }}'s {{ abilityList[e.ability].name }}!</div>
   <div v-else-if="e.type === 'trace'">{{ pn(e.src) }} traced {{ pn(e.target, false) }}'s {{ abilityList[e.ability].name }}!</div>
   <div v-else-if="e.type === 'skill_swap'">{{ pn(e.src) }} swapped abilities with {{ pn(e.target, false) }}!</div>

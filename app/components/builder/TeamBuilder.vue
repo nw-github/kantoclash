@@ -220,7 +220,7 @@
                     selectedPoke.data.speciesId as SpeciesId,
                     ivsToDvs(selectedPoke.data),
                     (selectedPoke.data.item && normalizeName(selectedPoke.data.item)) as ItemId,
-                    selectedPoke.data.moves.map(normalizeName),
+                    selectedPoke.data.moves.map(normalizeMoveName),
                   )"
                   @select="onSpeciesChange"
                 />
@@ -473,7 +473,7 @@ const items = computed(() => {
       poke.speciesId as SpeciesId,
       ivsToDvsRaw(poke.ivs),
       (poke.item && normalizeName(poke.item)) as ItemId,
-      poke.moves.map(normalizeName),
+      poke.moves.map(normalizeMoveName),
     ),
   }));
 });

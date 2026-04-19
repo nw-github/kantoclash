@@ -1,7 +1,11 @@
 <template>
   <div class="flex gap-2" :class="reverse && 'flex-row-reverse'">
     <div class="flex flex-col gap-1" :class="reverse && 'items-end'">
-      <div v-if="!showTeamPreview" class="flex items-center">
+      <div
+        v-if="!showTeamPreview"
+        class="flex items-center"
+        :class="!reverse && 'flex-row-reverse'"
+      >
         <TouchPopover
           v-for="(poke, i) in player?.bp?.team ?? []"
           :key="i"
@@ -32,10 +36,7 @@
           :key="i"
           class="relative flex items-center justify-center -ml-1"
         >
-          <UIcon
-            class="absolute bg-primary size-3 sm:size-3.5 dark:bg-inverted"
-            name="ci:dot-03-m"
-          />
+          <UIcon class="absolute size-3 sm:size-3.5 bg-inverted" name="ci:dot-03-m" />
           <BoxSprite class="invisible" :scale="lessThanSm ? 0.7 : 1" />
         </div>
       </div>
@@ -47,12 +48,11 @@
         <span :class="player?.admin && 'text-amber-300'">{{ player?.name ?? "Loading..." }}</span>
 
         <div
-          v-if="(time = timeLeft())"
-          :key="updateMarker"
+          v-if="timeLeft"
           class="flex items-center"
-          :class="[time.red ? 'text-error' : 'text-muted']"
+          :class="[timeLeft.red ? 'text-error' : 'text-muted']"
         >
-          (<UIcon class="mr-0.5" name="material-symbols:alarm-outline" /> {{ time.time }})
+          (<UIcon class="mr-0.5" name="material-symbols:alarm-outline" /> {{ timeLeft.time }})
         </div>
 
         <template v-for="(screen, name) in player?.bp?.screens">
@@ -80,36 +80,26 @@ const {player, reverse} = defineProps<{
   showTeamPreview?: boolean;
 }>();
 
-const updateMarker = ref(0);
 const lessThanSm = useBreakpoints(breakpointsTailwind).smaller("sm");
 const mgr = injectManager();
-
-useIntervalFn(() => updateMarker.value++, 1000);
+const timeLeft = ref<ReturnType<typeof formatRemainingTime>>();
 
 const screens: Partial<Record<ScreenId, {clazz: string; icon: string; name: string}>> = {
   tailwind: {clazz: "text-sky-400", icon: "mdi:weather-windy", name: "Tailwind"},
   luckychant: {clazz: "text-lime-400", icon: "mdi:clover", name: "Lucky Chant"},
 };
 
-let time: ReturnType<typeof timeLeft>;
+const isRevealed = (poke: Pokemon) => mgr && !mgr.isUnknown(poke);
 
-const timeLeft = () => {
+const reloadTime = () => {
   if (!player?.time || reverse) {
+    timeLeft.value = undefined;
     return;
   }
 
-  const secs = Math.max(
-    Math.floor((player.time.startedAt + player.time.duration - Date.now()) / 1000),
-    0,
-  );
-
-  const m = Math.floor(secs / 60);
-  const s = secs % 60;
-  return {
-    red: secs <= 10,
-    time: `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`,
-  };
+  timeLeft.value = formatRemainingTime(player.time);
 };
 
-const isRevealed = (poke: Pokemon) => mgr && !mgr.isUnknown(poke);
+onMounted(reloadTime);
+useIntervalFn(reloadTime, 1000);
 </script>

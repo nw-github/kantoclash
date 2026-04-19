@@ -112,3 +112,14 @@ export const getStatKeys = (gen: Generation) => {
     return {hp: "HP", atk: "Atk", def: "Def", spa: "SpA", spd: "SpD", spe: "Spe"};
   }
 };
+
+export const formatRemainingTime = (time: {startedAt: number; duration: number}) => {
+  const secs = Math.max(Math.floor((time.startedAt + time.duration - Date.now()) / 1000), 0);
+
+  const m = Math.floor(secs / 60);
+  const s = secs % 60;
+  return {
+    red: secs <= 10,
+    time: `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`,
+  };
+};

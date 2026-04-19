@@ -40,12 +40,13 @@
             @click="openReportModal"
           />
           <TooltipButton
-            :text="players.get(myId)?.time ? 'Timer is on' : 'Start Timer'"
+            :text="timeLeft ? 'Timer is on' : 'Start Timer'"
             :content="{side: 'top'}"
+            :label="timeLeft?.time"
             icon="material-symbols:alarm-outline"
-            color="neutral"
+            :color="timeLeft?.red ? 'error' : 'neutral'"
             variant="ghost"
-            :disabled="disableTimer || !!players.get(myId)?.time"
+            :disabled="disableTimer || !!timeLeft"
             @click="() => $emit('timer')"
           />
 
@@ -212,6 +213,7 @@ const mutedPlayers = useMutedPlayerIds();
 const message = ref("");
 const scrollPoint = useTemplateRef("scrollPoint");
 const gen = computed(() => GENERATIONS[formatInfo[props.format].generation]!);
+const timeLeft = ref<ReturnType<typeof formatRemainingTime>>();
 
 const overlay = useOverlay();
 const forfeitModal = overlay.create(AlertModal);
@@ -219,6 +221,8 @@ const reportModal = overlay.create(ReportModal);
 
 let lastScroll = 0;
 onMounted(async () => {
+  reloadTime();
+
   await until(scrollPoint).toBeTruthy();
   await nextTick();
   scrollPoint.value?.scrollIntoView({block: "center", inline: "center"});
@@ -227,6 +231,16 @@ onMounted(async () => {
   useEventListener(scrollPoint.value?.parentElement, "touchmove", () => (lastScroll = Date.now()));
   useEventListener(scrollPoint.value?.parentElement, "mousedown", () => (lastScroll = Date.now()));
 });
+
+const reloadTime = () => {
+  const time = props.players.get(props.myId)?.time;
+  if (!time) {
+    timeLeft.value = undefined;
+    return;
+  }
+
+  timeLeft.value = formatRemainingTime(time);
+};
 
 const sendMessage = () => {
   const msg = message.value.trim();
@@ -299,6 +313,8 @@ const openReportModal = async () => {
     emit("report", message);
   }
 };
+
+useIntervalFn(reloadTime, 1000);
 
 watch(props.chats, tryScroll);
 watch(() => props.turns, tryScroll, {deep: true});
