@@ -1,5 +1,5 @@
 import type {Random} from "random";
-import type {PlayerId, PokeId} from "./events";
+import type {DamageReason, PlayerId, PokeId} from "./events";
 import type {AbilityId} from "./species";
 import type {Generation} from "./gen";
 
@@ -351,3 +351,12 @@ export const deepFreeze = <T>(obj: T): T => {
   }
   return Object.freeze(obj);
 };
+
+export function damageReason(dmf: DMF | undefined): DamageReason {
+  // prettier-ignore
+  switch (dmf) {
+  case DMF.ohko: return "ohko";
+  case DMF.futuresight: return "future_sight";
+  default: return "attacked";
+  }
+}

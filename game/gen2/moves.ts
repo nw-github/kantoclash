@@ -1,6 +1,6 @@
 import type {Move, MoveScripts, MoveId, MovePropOverrides, DamagingMove} from "../moves";
 import {thunderAccOverride} from "../moves";
-import {stageKeys, Range, DMF, hazards, VF, idiv1, idiv, Endure} from "../utils";
+import {stageKeys, Range, DMF, hazards, VF, idiv1, idiv, Endure, damageReason} from "../utils";
 import type {Battlemon, Battle} from "../battle";
 
 export const moveScripts: Partial<MoveScripts> = {
@@ -295,7 +295,7 @@ export const tryDamage = (
     dead = false,
     endure = Endure.None,
     beatUpFail = false;
-  let why = self.flag === DMF.ohko ? ("ohko" as const) : ("attacked" as const);
+  let why = damageReason(self.flag);
 
   // command BattleCommand_ApplyDamage
   const applyDamage = (dmg: number) => {
@@ -305,7 +305,9 @@ export const tryDamage = (
     // command falseswipe BattleCommand_FalseSwipe
     if (endure || (self.id === "falseswipe" && dmg >= target.base.hp)) {
       dmg = target.base.hp - 1;
-      why = "attacked";
+      if (why === "ohko") {
+        why = "attacked";
+      }
     }
 
     let event;

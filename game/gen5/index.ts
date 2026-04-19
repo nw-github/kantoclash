@@ -351,45 +351,9 @@ export class Generation5 extends Generation4 {
     target: Battlemon,
     {move, user}: Battlemon["futureSight"] & {},
   ) {
-    if (user === target) {
-      return;
-    }
-
-    battle.event({type: "futuresight", src: target.id, move: move.id!, release: true});
-
-    if (user.v.fainted) {
-      // Ignore user ability and item if it fainted
-      user.v.ability = undefined;
-      // TODO: ignore user item
-    }
-
-    const isCrit = this.rollCrit(battle, user, target, move);
-    const {dmg: dmg0, eff, type} = this.getDamage({battle, user, target, isCrit, move});
-    if (eff === 0) {
-      return battle.info(target, "immune");
-    } else if (this.tryAbilityImmunity(battle, user, target, move, type, eff)) {
-      return;
-    } else if (!battle.checkAccuracy(move, target, target)) {
-      return;
-    }
-
-    const {dmg, endure} = this.tryEndure({
-      battle,
-      user,
-      target,
-      dmg: dmg0,
-      wasFullHp: target.base.hp === target.base.maxHp,
-    });
-    target.damage2(battle, {dmg, src: user, isCrit, eff, why: "future_sight"});
-    target.handleEndure(battle, endure);
-
-    if (user.base.hp && user.hasItem("lifeorb")) {
-      user.damage2(battle, {
-        dmg: idiv1(user.base.maxHp, 10),
-        src: user,
-        why: "lifeorb",
-        direct: true,
-      });
+    if (user !== target) {
+      battle.event({type: "futuresight", src: target.id, move: move.id!, release: true});
+      return this.move.scripts[move.kind].call(move, battle, user, [target]);
     }
   }
 

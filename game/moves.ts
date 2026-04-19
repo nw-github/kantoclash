@@ -480,15 +480,6 @@ export const moveScripts: MoveScripts = {
       const magnitude = battle.rng.int(4, 10);
       power = [10, 30, 50, 70, 90, 110, 150][magnitude - 4];
       battle.event({type: "magnitude", magnitude});
-    } else if (this.flag === DMF.futuresight) {
-      const [target] = targets;
-      if (target.futureSight) {
-        return battle.info(user, "fail_generic");
-      }
-
-      const {dmg} = battle.gen.getDamage({user, target, battle, move: this, isCrit: false});
-      target.futureSight = {damage: dmg, turns: 3, move: this, user};
-      return battle.event({type: "futuresight", src: user.id, move: this.id!, release: false});
     }
 
     if (this.range === Range.Self) {

@@ -1,7 +1,7 @@
 import type {Move, MoveScripts, MoveId, MovePropOverrides, DamagingMove} from "../moves";
 import type {Battlemon, Battle} from "../battle";
 import type {Status} from "../pokemon";
-import {DMF, Range, Endure, hazards, VF, type Type, idiv1} from "../utils";
+import {DMF, Range, Endure, hazards, VF, damageReason, type Type, idiv1} from "../utils";
 import {doBeatUp} from "../gen2/moves";
 import {abilityList} from "../species";
 
@@ -11,11 +11,15 @@ import {abilityList} from "../species";
  * DamagingMove: ignoreType
  *
  * If Bide is called through another move, it will have +0 priority on its subsequent turns.
- *
- * Pursuit into u-turn
  */
 
-export const moveScripts: Partial<MoveScripts> = {};
+export const moveScripts: Partial<MoveScripts> = {
+  charge(battle, user) {
+    user.v.setFlag(VF.charge);
+    battle.info(user, "charge");
+    user.modStages([["spd", +1]], battle);
+  },
+};
 
 export const moveOverrides: Partial<MovePropOverrides> = {
   pow: {
@@ -340,7 +344,7 @@ export const tryDamage = (
     endure = Endure.None,
     beatUpFail = false,
     handledShellBell = false;
-  let why = self.flag === DMF.ohko ? ("ohko" as const) : ("attacked" as const);
+  let why = damageReason(self.flag);
   const wasSleeping = user.base.status === "slp";
   const wasFullHp = target.base.hp === target.base.maxHp;
 
@@ -350,7 +354,9 @@ export const tryDamage = (
     ({dmg, endure} = battle.gen.tryEndure({battle, user, target, dmg, prev: endure, wasFullHp}));
     if (endure || (self.id === "falseswipe" && dmg >= target.base.hp)) {
       dmg = target.base.hp - 1;
-      why = "attacked";
+      if (why === "ohko") {
+        why = "attacked";
+      }
     }
 
     let event, dead;

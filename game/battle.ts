@@ -8,6 +8,7 @@ import {
   playerId,
   VF,
   debugLog,
+  DMF,
   type Weather,
   type ScreenId,
   type HazardId,
@@ -848,6 +849,22 @@ export class Battle {
       }
       user.v.lastMove = move;
 
+      if (move.kind === "damage" && move.flag === DMF.futuresight) {
+        user.v.clearFlag(VF.charge);
+
+        // From Gen V onward, Future Sight can now target an empty slot
+        const [target] = this.gen.id <= 4 ? targets : originalTargets;
+        if (!target) {
+          return this.info(user, "fail_notarget");
+        } else if (target.futureSight) {
+          return this.info(user, "fail_generic");
+        }
+
+        const {dmg} = this.gen.getDamage({user, target, battle: this, move, isCrit: false});
+        target.futureSight = {damage: dmg, turns: 3, move, user};
+        return this.event({type: "futuresight", src: user.id, move: move.id!, release: false});
+      }
+
       if (move.snatch) {
         for (const snatcher of this.turnOrder) {
           if (!snatcher.v.fainted && snatcher.v.hasFlag(VF.snatch)) {
@@ -867,7 +884,6 @@ export class Battle {
       } else if (!targets.length) {
         user.v.charging = undefined;
         user.v.clearFlag(VF.charge);
-        this.syncVolatiles();
         return this.info(user, "fail_notarget");
       }
 

@@ -27,6 +27,7 @@ import {
   idiv1,
   TypeEffectiveness,
   applyStatStages,
+  damageReason,
 } from "../utils";
 import {itemList, type ItemId} from "../item";
 import {UNOWN_FORM, type Pokemon, type FormId, type Gender, type Nature} from "../pokemon";
@@ -936,7 +937,7 @@ export function tryDamage(
     user,
     battle,
     isCrit,
-    self.flag === DMF.ohko ? "ohko" : "attacked",
+    damageReason(self.flag),
     false,
     eff,
   );

@@ -1097,7 +1097,7 @@ export class Battlemon {
     ) {
       return;
     }
-    return !this.v.hasFlag(VF.gastroAcid) ? this.v.ability : undefined;
+    return !this.v.hasFlag(VF.gastroAcid) && !this.v.fainted ? this.v.ability : undefined;
   }
 
   getAbility(user?: Battlemon) {
@@ -1115,11 +1115,14 @@ export class Battlemon {
   }
 
   getItem() {
-    return this.v.embargoTurns || this.v.ability === "klutz" ? undefined : this.base.item;
+    const itemId = this.getItemId();
+    return itemId && this.base.gen.items[itemId];
   }
 
   getItemId() {
-    return this.v.embargoTurns || this.v.ability === "klutz" ? undefined : this.base.itemId;
+    return this.v.embargoTurns || this.hasAbility("klutz") || this.v.fainted
+      ? undefined
+      : this.base.itemId;
   }
 
   getItemIdAndData() {

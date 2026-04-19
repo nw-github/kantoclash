@@ -6,7 +6,18 @@ import {
   type MovePropOverrides,
   type DamagingMove,
 } from "../moves";
-import {HP_TYPES, VF, Range, DMF, Endure, hazards, type Type, idiv1, idiv} from "../utils";
+import {
+  HP_TYPES,
+  VF,
+  Range,
+  DMF,
+  Endure,
+  hazards,
+  idiv1,
+  idiv,
+  damageReason,
+  type Type,
+} from "../utils";
 import type {Battlemon, Battle} from "../battle";
 import {doBeatUp} from "../gen2/moves";
 import type {Status} from "../pokemon";
@@ -377,7 +388,7 @@ export const tryDamage = (
     endure = Endure.None,
     beatUpFail = false,
     handledShellBell = false;
-  let why = self.flag === DMF.ohko ? ("ohko" as const) : ("attacked" as const);
+  let why = damageReason(self.flag);
   const wasSleeping = user.base.status === "slp";
 
   const applyDamage = (dmg: number, doShellBell: bool) => {
@@ -385,7 +396,9 @@ export const tryDamage = (
     ({dmg, endure} = battle.gen.tryEndure({battle, user, target, dmg, prev: endure}));
     if (endure || (self.id === "falseswipe" && dmg >= target.base.hp)) {
       dmg = target.base.hp - 1;
-      why = "attacked";
+      if (why === "ohko") {
+        why = "attacked";
+      }
     }
 
     let event, dead;
