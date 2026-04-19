@@ -491,6 +491,9 @@ onMounted(async () => {
   reset();
   updatePerspective();
 
+  // Wait for next tick so bp is initialized for both players
+  await nextTick();
+
   while (isMounted.value) {
     while (
       (nextEvent.value < playToIndex.value || (nextEvent.value === 0 && playToIndex.value === 0)) &&
