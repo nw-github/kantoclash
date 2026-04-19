@@ -692,7 +692,11 @@ export class Generation4 extends Generation3 {
           battle.info(poke, "magnet_rise_end");
         }
 
-        // TODO: heal block, embargo
+        if (poke.v.embargoTurns && --poke.v.embargoTurns === 0) {
+          battle.info(poke, "embargo_end");
+        }
+
+        // TODO: heal block
       }
 
       // TODO: lockon/mind reader?

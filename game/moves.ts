@@ -549,15 +549,17 @@ export const moveScripts: MoveScripts = {
     }
 
     // FIXME: this is a hack
-    const failed = !battle.events
-      .slice(start, end)
-      .find(ev => ev.type === "damage" && ev.src !== ev.target);
+    const failed = !battle.events.slice(start, end).find(ev => {
+      if (ev.type !== "damage" && (battle.gen.id <= 5 || ev.type !== "hit_sub")) {
+        return false;
+      }
+      return ev.src !== ev.target;
+    });
     // Sheer Force skips the Relic Song transformation
-    if (failed || (user.getAbilityId() === "sheerforce" && isAffectedBySheerForce(this))) {
+    if (failed || (user.hasAbility("sheerforce") && isAffectedBySheerForce(this))) {
       return;
     }
 
-    // TODO: Don't cause damage in Gen IV when hitting a substitute?
     if (user.base.hp && user.hasItem("lifeorb")) {
       user.damage2(battle, {
         dmg: idiv1(user.base.maxHp, 10),
