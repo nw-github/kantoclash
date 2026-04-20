@@ -9,6 +9,7 @@ import type {
   ScreenEvent,
   WeatherEvent,
 } from "~~/game/events";
+import type {ItemId} from "~~/game/item";
 import type {MoveId} from "~~/game/moves";
 import type {Status} from "~~/game/pokemon";
 import type {AbilityId} from "~~/game/species";
@@ -20,7 +21,8 @@ export type RawUIBattleEvent =
   | SubBroke
   | GetSubstitute
   | UIDamageEvent
-  | UIRecoverEvent;
+  | UIRecoverEvent
+  | ObtainItem;
 export type UIBattleEvent = RawUIBattleEvent & {time: number} & {[id: string]: string};
 
 export type RetractEvent = {type: "retract"; src: PokeId; name: string};
@@ -28,6 +30,7 @@ export type RetractEvent = {type: "retract"; src: PokeId; name: string};
 export type SubBroke = {type: "sub_break"; target: PokeId};
 
 export type GetSubstitute = {type: "get_sub"; src: PokeId};
+export type ObtainItem = {type: "obtain_item"; src: PokeId; item: ItemId};
 
 export type UIDamageEvent = DamageEvent & {maxHp?: number};
 export type UIRecoverEvent = RecoverEvent & {maxHp?: number};

@@ -178,11 +178,7 @@
   </div>
   <div v-else-if="e.type === 'pp'">{{ pn(e.src) }}'s <b>{{ gen.moveList[e.move].name }}</b> was restored!</div>
   <div v-else-if="e.type === 'thief'">{{ pn(e.src) }} stole {{ pn(e.target, false) }}'s {{ gen.items[e.item].name }}!</div>
-  <div v-else-if="e.type === 'trick'">
-    <p>{{ pn(e.src) }} switched items with its target!</p>
-    <p v-if="e.srcItem">{{ pn(e.src) }} obtained one {{ gen.items[e.srcItem].name }}!</p>
-    <p v-if="e.targetItem">{{ pn(e.target) }} obtained one {{ gen.items[e.targetItem].name }}!</p>
-  </div>
+  <div v-else-if="e.type === 'trick'">{{ pn(e.src) }} switched items with its target!</div>
   <div v-else-if="e.type === 'knockoff'">{{ pn(e.src) }} knocked off {{ pn(e.target, false) }}'s {{ gen.items[e.item].name }}!</div>
   <div v-else-if="e.type === 'recycle'">{{ pn(e.src) }} found one {{ gen.items[e.item].name }}!</div>
   <div v-else-if="e.type === 'forfeit'">
@@ -206,6 +202,7 @@
   <div v-else-if="e.type === 'skill_swap'">{{ pn(e.src) }} swapped abilities with {{ pn(e.target, false) }}!</div>
   <div v-else-if="e.type === 'stockpile'">{{ pn(e.src) }} stockpiled {{ e.count }}!</div>
   <div v-else-if="e.type === 'moldbreaker'">{{ moldBreakerMessage[e.ability]!.replace("{}", pn(e.src)) }}</div>
+  <div v-else-if="e.type === 'obtain_item'">{{ pn(e.src) }} obtained one {{ gen.items[e.item].name }}!</div>
   <div v-else>Unknown event: <code>{{ e }}</code></div>
 </template>
 

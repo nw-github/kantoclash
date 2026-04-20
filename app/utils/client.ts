@@ -358,6 +358,15 @@ export class ClientManager {
     } else if (e.type === "trick") {
       this.players.poke(e.src)!.base.itemId = e.srcItem;
       this.players.poke(e.target)!.base.itemId = e.targetItem;
+
+      this.cb.displayEvent(e);
+      if (e.srcItem) {
+        this.cb.displayEvent({type: "obtain_item", src: e.src, item: e.srcItem});
+      }
+      if (e.targetItem) {
+        this.cb.displayEvent({type: "obtain_item", src: e.target, item: e.targetItem});
+      }
+      return this.handleVolatiles(e);
     } else if (e.type === "knockoff") {
       this.players.poke(e.target)!.base.itemUnusable = true;
     } else if (e.type === "recycle") {
