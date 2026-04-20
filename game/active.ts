@@ -613,7 +613,7 @@ export class Battlemon {
 
   handleWeatherAbility(battle: Battle) {
     const weather = this.getAbility()?.startsWeather;
-    if (weather) {
+    if (weather && (battle.weather?.kind !== weather || battle.weather?.turns !== -1)) {
       battle.ability(this);
       battle.setWeather(weather, -1);
     }
