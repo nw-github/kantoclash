@@ -38,7 +38,7 @@ const route = useRoute();
 const router = useRouter();
 const mounted = useMounted();
 const myId = useMyId();
-const {track: currentTrack} = useBGMusic();
+const bgMusic = useBGMusic();
 const battle = useTemplateRef("battle");
 const loading = ref(true);
 const mgr = reactive(new ClientManager(GENERATION1)) as ClientManager;
@@ -205,9 +205,7 @@ const onJoinRoom = (resp: JoinRoomResponse | "bad_room") => {
     return;
   }
 
-  if (allMusicTracks.length && !currentTrack.value) {
-    currentTrack.value = randChoice(allMusicTracks);
-  }
+  bgMusic.playRandom();
 
   const fmt = formatInfo[resp.format];
   for (const battler of resp.battlers) {

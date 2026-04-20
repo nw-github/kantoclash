@@ -33,7 +33,7 @@ const finished = ref(false);
 const format = ref(battleParams.format);
 const ready = ref(false);
 const myId = ref("");
-const {track: currentTrack} = useBGMusic();
+const bgMusic = useBGMusic();
 const battle = useTemplateRef("battle");
 const loaded = ref(true);
 
@@ -51,9 +51,7 @@ onMounted(() => {
     }
   };
 
-  if (allMusicTracks.length && !currentTrack.value) {
-    currentTrack.value = randChoice(allMusicTracks);
-  }
+  bgMusic.playRandom();
 
   for (const player of [battleParams.player1, battleParams.player2]) {
     const pl = mgr.players.add({

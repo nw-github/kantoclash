@@ -41,10 +41,20 @@ const fadeOutRequested = ref(false);
 
 export const useBGMusic = () => {
   return {
+    onlyPlayFavorites: useLocalStorage("onlyPlayFavorites", false),
     volume: useLocalStorage("musicVolume", 0.2),
+    favorites: useLocalStorage<Record<string, bool>>("musicFavorites", {}),
     track: useState<string | undefined>("currentTrack", () => undefined),
     fadeOutRequested,
     fadeOut: () => void (fadeOutRequested.value = true),
+    playRandom() {
+      const tracks = this.onlyPlayFavorites.value
+        ? allMusicTracks.filter(track => this.favorites.value[track])
+        : allMusicTracks;
+      if (!this.track.value) {
+        this.track.value = randChoice(tracks);
+      }
+    },
   };
 };
 

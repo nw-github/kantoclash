@@ -58,13 +58,35 @@
                         <USlider v-model="sfxVol" :max="0.8" :step="0.005" />
                       </div>
                       <div v-if="currentTrack || debug">
+                        <div class="pt-1 pb-1">
+                          <UCheckbox v-model="onlyPlayFavorites" label="Only play favorites" />
+                        </div>
                         <div>Current Track</div>
                         <USelectMenu
                           v-model="currentTrack"
                           class="w-full"
                           :items="musicTrackItems"
                           value-key="value"
-                        />
+                        >
+                          <template #item="{item}">
+                            <div class="w-full flex justify-between items-center gap-1">
+                              <span class="truncate">{{ item.label }}</span>
+                              <div>
+                                <UButton
+                                  :icon="
+                                    favorites[item.value]
+                                      ? 'material-symbols:favorite'
+                                      : 'material-symbols:favorite-outline'
+                                  "
+                                  color="old-pink"
+                                  variant="ghost"
+                                  size="xs"
+                                  @click.stop="favorites[item.value] = !favorites[item.value]"
+                                />
+                              </div>
+                            </div>
+                          </template>
+                        </USelectMenu>
                       </div>
                     </div>
                   </template>
@@ -126,7 +148,7 @@ const debug = import.meta.dev;
 const {$conn} = useNuxtApp();
 const {user, fetch} = useUserSession();
 const route = useRoute();
-const {volume: musicVol, track: currentTrack} = useBGMusic();
+const {volume: musicVol, track: currentTrack, favorites, onlyPlayFavorites} = useBGMusic();
 const sfxVol = useSfxVolume();
 const challenges = useChallenges();
 const ignoreChallenges = useIgnoreChallenges();
