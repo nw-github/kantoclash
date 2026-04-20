@@ -27,7 +27,7 @@
           </div>
 
           <template v-if="isRevealed(poke)" #content>
-            <UnknownPokeTTContent :poke="new Battlemon(poke, player!.bp!, 0)" />
+            <UnknownPokeTTContent :poke="new Battlemon(poke, player!.bp!, 0)" team-display />
           </template>
         </TouchPopover>
 

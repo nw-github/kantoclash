@@ -1,5 +1,5 @@
 <template>
-  <div class="p-2 flex flex-col items-center">
+  <div class="p-2 flex flex-col items-center min-w-min max-w-60">
     <div class="flex gap-10">
       <div class="flex gap-0.5 items-center justify-center">
         {{ poke.v.species.name }}
@@ -19,17 +19,21 @@
         <TypeBadge v-for="type in poke.v.species.types" :key="type" :type image />
       </div>
     </div>
-    <div v-if="poke.owned && poke.v.transformed" class="pt-1.5 space-y-1.5 w-full">
+    <div v-if="(poke.owned && poke.v.transformed) || teamDisplay" class="pt-1.5 space-y-1.5 w-full">
       <UProgress :model-value="poke.base.hp" :max="poke.base.maxHp" />
       <div class="flex justify-between gap-4">
-        <span>
+        <span v-if="teamDisplay">HP: {{ roundTo(poke.base.hpPercent, 2) }}%</span>
+        <span v-else>
           {{ poke.base.hp }}/{{ poke.base.maxHp }} HP ({{ roundTo(poke.base.hpPercent, 2) }}%)
         </span>
 
-        <StatusOrFaint :poke="poke.base" :faint="poke.v.fainted" />
+        <StatusOrFaint
+          :poke="poke.base"
+          :faint="poke.v.fainted || (!poke.base.hp && teamDisplay)"
+        />
       </div>
     </div>
-    <div class="pt-1.5">
+    <div class="pt-1.5 text-center">
       <span v-if="poke.v.ability || poke.base.ability">
         <span class="font-bold">
           {{ abilityList[(poke.v.ability || poke.base.ability)!].name }}
@@ -48,7 +52,7 @@
       <li
         v-for="(id, i) in poke.base.moves"
         :key="id"
-        class="flex items-center gap-1 justify-between"
+        class="flex items-center gap-2 justify-between"
       >
         <div class="flex items-center gap-1">
           <TypeBadge :type="poke.base.gen.moveList[id].type" image />
@@ -64,7 +68,7 @@
 import {Nature} from "~~/game/pokemon";
 import {abilityList} from "~~/game/species";
 
-const {poke} = defineProps<{poke: ClientActivePokemon}>();
+const {poke} = defineProps<{poke: ClientActivePokemon; teamDisplay?: boolean}>();
 
 const calc = (ev: number, iv: number, nature: Nature) => {
   let baseStats = poke.v.species.stats;
