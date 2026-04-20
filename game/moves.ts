@@ -924,7 +924,7 @@ export const moveScripts: MoveScripts = {
     }
 
     const dmg = idiv(user.base.maxHp, 2);
-    if (user.base.hp < dmg) {
+    if (user.base.hp <= dmg) {
       battle.info(user, "fail_generic");
 
       if (battle.gen.id <= 2) {
