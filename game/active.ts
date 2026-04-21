@@ -303,7 +303,7 @@ export class Battlemon {
       }
     }
 
-    if (target.v.speciesId === "arceus" && target.hasAbility("multitype") && battle.gen.id <= 5) {
+    if (target.v.speciesId === "arceus" && target.hasAbility("multitype") && battle.gen.id <= 4) {
       const type = this.base.item?.plate ?? "normal";
       this.v.form = type;
       this.v.types = [type];
