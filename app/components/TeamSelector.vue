@@ -17,15 +17,13 @@
             <span class="truncate text-xs text-muted">{{ formatInfo[team.format].name }}</span>
           </div>
 
-          <div class="flex">
-            <BoxSprite
-              v-for="({speciesId, form}, i) in team.pokemon"
-              :key="i"
-              :species-id
-              :form
-              :scale="lessThanSm ? 1 : 1.2"
-            />
-          </div>
+          <BoxSprite
+            v-for="({speciesId, form}, i) in team.pokemon"
+            :key="i"
+            :species-id
+            :form
+            :scale="lessThanSm ? 1 : 1.2"
+          />
         </div>
       </template>
 

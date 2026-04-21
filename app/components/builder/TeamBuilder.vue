@@ -55,10 +55,8 @@
           }"
           :content="false"
         >
-          <template #default="{item}">
-            <div class="-m-1 flex items-center">
-              <BoxSprite :species-id="item.speciesId" :scale="2" :form="item.form" />
-            </div>
+          <template #default="{item: {speciesId, form}}">
+            <BoxSprite class="-m-1" :species-id :scale="2" :form />
           </template>
         </UTabs>
       </div>
@@ -75,9 +73,9 @@
           :content="false"
           color="neutral"
         >
-          <template #default="{item}">
+          <template #default="{item: {speciesId, form}}">
             <div class="size-[32px] flex items-center justify-center">
-              <BoxSprite :species-id="item.speciesId" :form="item.form" />
+              <BoxSprite :species-id :form />
             </div>
           </template>
         </UTabs>

@@ -1,5 +1,7 @@
 <template>
-  <span class="pokesprite pokemon" :class="clazz" />
+  <div class="flex">
+    <span class="pokesprite pokemon" :class="clazz" />
+  </div>
 </template>
 
 <style scoped>
