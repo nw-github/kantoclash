@@ -2,8 +2,12 @@
   <div class="p-2 flex flex-col items-center min-w-min max-w-60">
     <div class="flex gap-10">
       <div class="flex gap-0.5 items-center justify-center">
-        {{ poke.v.species.name }}
-        <span v-if="poke.v.transformed">(was {{ poke.base.species.name }})</span>
+        <div class="flex flex-col">
+          {{ poke.v.species.name }}
+          <span v-if="poke.v.transformed" class="text-xs text-muted">
+            (was {{ poke.base.species.name }})
+          </span>
+        </div>
 
         <template v-if="poke.owned && poke.v.transformed && poke.base._itemId">
           <ItemSprite :item="poke.base._itemId" :gen="poke.base.gen" />
@@ -34,7 +38,7 @@
       </div>
     </div>
     <div class="pt-1.5 text-center">
-      <span v-if="poke.v.ability || poke.base.ability">
+      <span v-if="poke.v.ability || (poke.base.ability && !poke.v.transformed)">
         <span class="font-bold">
           {{ abilityList[(poke.v.ability || poke.base.ability)!].name }}
         </span>

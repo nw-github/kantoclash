@@ -246,27 +246,24 @@ export class ClientManager {
 
         poke.v.fainted = true;
         poke.visible = false;
-        this.handleVolatiles(e);
-        return;
-      } else if (e.why === "heal_bell") {
+        return this.handleVolatiles(e);
+      } else if (e.why === "heal_bell" || e.why === "aromatherapy") {
         this.players.ownerOf(e.src)!.team.forEach(poke => (poke.status = undefined));
       } else if (e.why === "batonpass") {
         this.handleVolatiles(e);
-        await this.cb.playAnimation(e.src, {
+        return await this.cb.playAnimation(e.src, {
           anim: "retract",
           name: this.players.poke(e.src)!.base.name,
           batonPass: true,
         });
-        return;
       } else if (e.why === "uturn") {
         this.cb.displayEvent(e);
         this.handleVolatiles(e);
-        await this.cb.playAnimation(e.src, {
+        return await this.cb.playAnimation(e.src, {
           anim: "retract",
           name: this.players.poke(e.src)!.base.name,
           batonPass: true,
         });
-        return;
       } else if (e.why === "confused_end") {
         this.players.poke(e.src)!.v.confusion = 0;
       } else if (confusionMessages.includes(e.why)) {
@@ -470,7 +467,7 @@ export class ClientManager {
               level: poke.level,
               moves: [],
             });
-            base.stats.hp = 100;
+            base.hp = base.stats.hp = 100;
             return base;
           }),
         };
