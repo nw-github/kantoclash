@@ -56,7 +56,7 @@
           :content="false"
         >
           <template #default="{item}">
-            <div class="size-[64px] m-1 flex items-center">
+            <div class="-m-1 flex items-center">
               <BoxSprite :species-id="item.speciesId" :scale="2" :form="item.form" />
             </div>
           </template>

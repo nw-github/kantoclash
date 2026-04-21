@@ -1,21 +1,12 @@
 <template>
-  <div class="flex items-center justify-center">
-    <span class="pokesprite pokemon" :class="clazz" />
-  </div>
+  <span class="pokesprite pokemon" :class="clazz" />
 </template>
 
 <style scoped>
 @import url("/assets/box-sprites.css");
 
-div {
-  --scale: v-bind("scale ?? 1");
-
-  width: calc(40px * var(--scale));
-  height: calc(30px * var(--scale));
-}
-
 span {
-  transform: scale(var(--scale));
+  --scale: v-bind("scale ?? 1");
 }
 </style>
 

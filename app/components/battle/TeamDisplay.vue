@@ -11,7 +11,7 @@
           :key="i"
           :disabled="!isRevealed(poke)"
         >
-          <div class="relative flex items-center justify-center -ml-1">
+          <div class="relative flex items-center justify-center -ml-0.5 sm:-ml-1">
             <UIcon
               :class="isRevealed(poke) && 'invisible'"
               class="absolute bg-primary size-3 sm:size-3.5 dark:bg-inverted"

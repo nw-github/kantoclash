@@ -7,7 +7,9 @@
       :class="reverse && 'flex-row-reverse'"
     >
       <TouchPopover>
-        <BoxSprite :species-id :form :scale="lessThanSm ? 1 : 1.5" />
+        <div class="flex">
+          <BoxSprite :species-id :form :scale="lessThanSm ? 1 : 1.5" />
+        </div>
 
         <template #content>
           <PreviewPopoverContent :gen :level :species-id :has-item />
