@@ -1,7 +1,7 @@
 <template>
   <UCard class="h-full flex flex-col" :ui="{body: 'grow overflow-auto'}">
     <template #header>
-      <h1 class="text-2xl text-center pb-5">Your Teams</h1>
+      <h1 class="text-2xl text-center pb-5">My Teams</h1>
       <div class="flex flex-col sm:flex-row gap-1">
         <div class="flex gap-1 w-full">
           <FormatDropdown v-model="formats" team-only multiple class="w-48" placeholder="Format" />
@@ -81,51 +81,50 @@
           :key="i"
           class="space-y-1 py-1 divide-y divide-default"
         >
-          <div class="flex justify-between items-end pb-1">
-            <div>
-              <span class="text-sm truncate">{{ team.name }}</span>
-              <div class="flex items-center gap-1 text-xs">
+          <div class="flex items-end pb-1">
+            <div class="overflow-hidden truncate">
+              <span class="text-sm">{{ teamName(team.name) }}</span>
+              <div class="flex items-center gap-1 text-xs text-muted">
                 <UIcon :name="formatInfo[team.format as FormatId].icon" class="size-3" />
                 <span>{{ formatInfo[team.format as FormatId].name }}</span>
               </div>
             </div>
-            <div>
-              <TooltipButton
-                text="Copy"
-                icon="material-symbols:content-copy-outline"
-                color="neutral"
-                variant="ghost"
-                @click="() => copyTeam(team)"
-              />
-              <TooltipButton
-                text="Duplicate"
-                icon="material-symbols:file-copy-outline"
-                color="neutral"
-                variant="ghost"
-                @click="() => duplicateTeam(team)"
-              />
-              <TooltipButton
-                text="Edit"
-                icon="material-symbols:edit-square-outline"
-                color="neutral"
-                variant="ghost"
-                @click="() => editTeam(team)"
-              />
-              <TooltipButton
-                text="Delete"
-                icon="material-symbols:delete-outline"
-                color="error"
-                variant="ghost"
-                @click="() => deleteTeam(team)"
-              />
-            </div>
+            <TooltipButton
+              class="ml-auto"
+              text="Copy"
+              icon="material-symbols:content-copy-outline"
+              color="neutral"
+              variant="ghost"
+              @click="() => copyTeam(team)"
+            />
+            <TooltipButton
+              text="Duplicate"
+              icon="material-symbols:file-copy-outline"
+              color="neutral"
+              variant="ghost"
+              @click="() => duplicateTeam(team)"
+            />
+            <TooltipButton
+              text="Edit"
+              icon="material-symbols:edit-square-outline"
+              color="neutral"
+              variant="ghost"
+              @click="() => editTeam(team)"
+            />
+            <TooltipButton
+              text="Delete"
+              icon="material-symbols:delete-outline"
+              color="error"
+              variant="ghost"
+              @click="() => deleteTeam(team)"
+            />
           </div>
           <div class="flex justify-center">
             <BoxSprite
               v-for="(poke, j) in team.pokemon"
               :key="j"
               :species-id="(poke.speciesId as SpeciesId)"
-              :scale="isXS ? 1.2 : !isMdOrGreater ? 1.5 : 2"
+              :scale="isXS ? 1.2 : !isMdOrGreater ? 1.5 : 1.9"
               :form="(poke.form as FormId)"
             />
           </div>
@@ -207,7 +206,7 @@ const deleteTeam = (team: Team) => {
   const idx = myTeams.value.indexOf(team);
   const [removed] = myTeams.value.splice(idx, 1);
   toast.add({
-    title: `'${team.name}' deleted!`,
+    title: `'${teamName(team.name)}' deleted!`,
     actions: [{label: "Undo", onClick: () => void myTeams.value.splice(idx, 0, removed)}],
   });
 };
@@ -224,7 +223,7 @@ const newTeam = (format: FormatId = "g1_standard") => {
 
 const copyTeam = async (team: Team) => {
   await navigator.clipboard.writeText(teamToString(team));
-  toast.add({title: `'${team.name}' copied to clipboard!`});
+  toast.add({title: `'${teamName(team.name)}' copied to clipboard!`});
 };
 
 const duplicateTeam = (team: Team) => {

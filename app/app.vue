@@ -171,7 +171,7 @@ const battleText = (count: number) => {
 
 const links = ref<NavigationMenuItem[]>([
   {label: "Home", icon: "heroicons:home", to: "/"},
-  {label: "Team Builder", icon: "famicons:hammer-outline", to: "/builder"},
+  {label: "My Teams", icon: "famicons:hammer-outline", to: "/builder"},
   {label: battleText(0), icon: "akar-icons:double-sword", disabled: true, children: []},
 ]);
 const battleLink = computed(() => links.value[2]);

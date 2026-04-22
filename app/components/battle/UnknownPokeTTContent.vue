@@ -1,5 +1,5 @@
 <template>
-  <div class="p-2 flex flex-col items-center min-w-min max-w-60">
+  <div class="p-2 flex flex-col items-center min-w-40 max-w-60">
     <div class="flex gap-10">
       <div class="flex gap-0.5 items-center justify-center">
         <div class="flex flex-col">

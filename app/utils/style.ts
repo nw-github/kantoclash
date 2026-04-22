@@ -76,6 +76,8 @@ export const ppColor = (cur: number) => {
   return cur <= 2 ? "text-red-500" : cur <= 5 ? "text-amber-400" : "";
 };
 
+export const teamName = (name?: string) => name || "Unnamed Team";
+
 const red = {h: 0, s: 0.8235294117647058, v: 153};
 const hp_yellow = {h: 40.60606060606061, s: 0.9801980198019802, v: 202};
 const hp_green = {h: 85.87155963302752, s: 0.8790322580645161, v: 124};

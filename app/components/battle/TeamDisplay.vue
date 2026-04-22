@@ -11,20 +11,13 @@
           :key="i"
           :disabled="!isRevealed(poke)"
         >
-          <div class="relative flex items-center justify-center -ml-0.5 sm:-ml-1">
-            <UIcon
-              :class="isRevealed(poke) && 'invisible'"
-              class="absolute bg-primary size-3 sm:size-3.5 dark:bg-inverted"
-              name="ic:baseline-catching-pokemon"
-            />
-
-            <BoxSprite
-              :class="!poke.hp && 'opacity-25'"
-              :species-id="isRevealed(poke) ? poke.speciesId : ''"
-              :form="poke.form"
-              :scale="lessThanSm ? 0.7 : 1"
-            />
-          </div>
+          <BoxSprite
+            class="-ml-0.5 sm:-ml-1"
+            :class="!poke.hp && 'opacity-25'"
+            :species-id="isRevealed(poke) ? poke.speciesId : ''"
+            :form="poke.form"
+            :scale="lessThanSm ? 0.7 : 1"
+          />
 
           <template v-if="isRevealed(poke)" #content>
             <UnknownPokeTTContent :poke="new Battlemon(poke, player!.bp!, 0)" team-display />

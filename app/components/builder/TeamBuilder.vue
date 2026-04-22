@@ -24,6 +24,7 @@
           @click="() => void (teamPokepaste = !teamPokepaste)"
         />
         <TooltipButton
+          v-if="!undeletable"
           text="Delete Team"
           icon="material-symbols:delete-outline"
           color="error"
@@ -460,7 +461,7 @@ import {defaultCustomize, getRandomPokemon} from "~~/server/utils/formats";
 
 defineEmits<{delete: []; close: []}>();
 
-const {team} = defineProps<{team: Team}>();
+const {team} = defineProps<{team: Team; undeletable?: boolean}>();
 const toast = useToast();
 const items = computed(() => {
   return team.pokemon.map(poke => ({
