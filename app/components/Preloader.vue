@@ -1,6 +1,6 @@
 <template>
   <div class="absolute invisible">
-    <TypeBadge v-for="type in types" :key="type" :type />
+    <TypeBadge v-for="type in types" :key="type" :type image />
     <BoxSprite species-id="abra" />
   </div>
 </template>
