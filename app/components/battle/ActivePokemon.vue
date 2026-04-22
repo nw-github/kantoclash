@@ -7,10 +7,7 @@
       <div class="flex justify-between flex-col sm:flex-row gap-1">
         <div class="font-bold flex items-center grow overflow-hidden">
           <span class="truncate text-xs">{{ poke?.base?.name || "--" }}</span>
-          <GenderIcon
-            class="size-4 hidden sm:block"
-            :gender="gen1Gender[poke?.v?.speciesId!] ?? poke?.v?.gender"
-          />
+          <GenderIcon class="size-4 hidden sm:block" :gender />
         </div>
         <div class="flex items-center">
           <span class="text-[0.65rem] sm:text-xs whitespace-nowrap">
@@ -18,7 +15,8 @@
           </span>
           <GenderIcon
             class="size-4 sm:hidden"
-            :gender="gen1Gender[poke?.v?.speciesId!] ?? poke?.v?.gender"
+            :class="gender === 'N' && 'invisible'"
+            :gender="gender === 'N' ? 'M' : gender"
           />
         </div>
       </div>
@@ -92,7 +90,7 @@
                 :scale="lessThanSm ? 0.95 : 1.75"
                 :shiny="poke?.v?.shiny"
                 :form="poke?.v?.form"
-                :gender="poke?.v?.gender"
+                :gender
                 :back
               />
 
@@ -217,6 +215,7 @@ import {
   type SequenceTime,
 } from "motion-v";
 import type {BadgeProps} from "@nuxt/ui";
+import type {SpeciesId} from "~~/game/species";
 
 const {poke, back, player, pokeId} = defineProps<{
   player?: ClientPlayer;
@@ -234,6 +233,7 @@ const hpPercent = computed(() => {
 const statShortName = computed(
   () => poke && {...getStatKeys(poke.base.gen), spd: "SpD", acc: "Acc", eva: "Eva"},
 );
+const gender = computed(() => gen1Gender[poke?.v.speciesId as SpeciesId] ?? poke?.v.gender ?? "N");
 
 const breakpoint = useBreakpoints(breakpointsTailwind);
 const lessThanSm = breakpoint.smaller("sm");

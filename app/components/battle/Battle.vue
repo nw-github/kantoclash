@@ -400,8 +400,9 @@ onMounted(async () => {
       // Preload the sprite
       const back = playerId(e.src) === perspective.value;
       const form = e.volatiles?.find(v => v.id === e.src)?.v.form || undefined;
+      const gender = gen1Gender[e.speciesId] ?? e.gender;
       img = new Image();
-      img.src = getSpritePath(e.speciesId, e.gender === "F", e.shiny, back, form);
+      img.src = getSpritePath(e.speciesId, gender === "F", e.shiny, back, form);
     }
 
     smoothScroll.value = isLive();
