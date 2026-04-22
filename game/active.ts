@@ -261,14 +261,9 @@ export class Battlemon {
         opp.v.trapped.user === this &&
         !opp.v.fainted
       ) {
-        battle.event({
-          type: "trap",
-          src: opp.id,
-          target: opp.id,
-          kind: "end",
-          move: opp.v.trapped.move.id!,
-        });
+        const move = opp.v.trapped.move.id!;
         opp.v.trapped = undefined;
+        battle.event({type: "trap", src: opp.id, target: opp.id, kind: "end", move});
       }
     }
   }
