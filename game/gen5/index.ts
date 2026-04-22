@@ -289,8 +289,8 @@ export class Generation5 extends Generation4 {
 
     const level = user.base.level;
     const userAbilityId = user.getAbilityId();
-    const [atks, defs] =
-      move.category === MC.special ? (["spa", "spd"] as const) : (["atk", "def"] as const);
+    const special = move.category === MC.special;
+    const [atks, defs] = special ? (["spa", "spd"] as const) : (["atk", "def"] as const);
     const A = DamageCalc.getBoostedAttack({battle, user, target, isCrit, move, type})[atks];
     const D = DamageCalc.getBoostedDefense({battle, user, target, isCrit, move})[defs];
     power = DamageCalc.getBoostedPower({battle, user, target, type, power, move});
@@ -323,7 +323,7 @@ export class Generation5 extends Generation4 {
     }
     dmg = applyMod(dmg, stab);
     dmg = eff.shifts < 0 ? dmg >> -eff.shifts : dmg << eff.shifts;
-    dmg = user.base.status === "brn" && userAbilityId !== "guts" ? idiv(dmg, 2) : dmg;
+    dmg = !special && user.base.status === "brn" && userAbilityId !== "guts" ? idiv(dmg, 2) : dmg;
     dmg = Math.max(dmg, 1);
     dmg = applyMod(dmg, DamageCalc.getFinalModifier({user, target, isCrit, move, eff}));
 
