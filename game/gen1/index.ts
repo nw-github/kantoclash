@@ -900,9 +900,9 @@ export function tryDamage(
   ) {
     battle.gen1LastDamage = 0;
     // pokered:PrintMoveFailureText
-    if (miss || eff !== 0) {
+    if (miss) {
       battle.miss(user, target);
-    } else {
+    } else if (eff === 0) {
       battle.info(target, "immune");
       if (self.flag === DMF.trap) {
         trapTarget();
