@@ -1,7 +1,17 @@
 import type {Move, MoveScripts, MoveId, MovePropOverrides, DamagingMove} from "../moves";
 import type {Battlemon, Battle} from "../battle";
 import type {Status} from "../pokemon";
-import {DMF, Range, Endure, hazards, VF, damageReason, type Type, idiv1} from "../utils";
+import {
+  DMF,
+  Range,
+  Endure,
+  hazards,
+  VF,
+  damageReason,
+  type Type,
+  idiv1,
+  NO_SKILL_SWAP_ABILITIES,
+} from "../utils";
 import {doBeatUp} from "../gen2/moves";
 import {abilityList} from "../species";
 
@@ -18,6 +28,24 @@ export const moveScripts: Partial<MoveScripts> = {
     user.v.setFlag(VF.charge);
     battle.info(user, "charge");
     user.modStages([["spd", +1]], battle);
+  },
+  skillswap(battle, user, [target]) {
+    const userAbility = user.v.ability!;
+    const targetAbility = target.v.ability!;
+    if (
+      NO_SKILL_SWAP_ABILITIES.has(userAbility) ||
+      NO_SKILL_SWAP_ABILITIES.has(targetAbility) ||
+      user.base._itemId === "griseousorb" ||
+      target.base._itemId === "griseousorb"
+    ) {
+      return battle.info(user, "fail_generic");
+    } else if (!battle.checkAccuracy(this, user, target)) {
+      return;
+    }
+
+    user.v.ability = targetAbility;
+    target.v.ability = userAbility;
+    battle.event({type: "skill_swap", src: user.id, target: target.id});
   },
 };
 

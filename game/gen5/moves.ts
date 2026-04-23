@@ -1,8 +1,45 @@
 import type {Battle, Battlemon} from "../battle";
 import type {Move, MoveScripts, MoveId, MovePropOverrides, DamagingMove} from "../moves";
-import {DMF, idiv1, Range} from "../utils";
+import {DMF, idiv1, Range, NO_SKILL_SWAP_ABILITIES} from "../utils";
 
 export const moveScripts: Partial<MoveScripts> = {
+  healbell(battle, user) {
+    battle.info(user, this.why);
+    for (const poke of user.owner.active) {
+      poke.unstatus(battle);
+    }
+    const opp = battle.opponentOf(user.owner);
+    for (const poke of user.owner.team) {
+      if (user.owner.active.some(p => p.base === poke)) {
+        continue;
+      }
+
+      poke.status = undefined;
+      if (opp.sleepClausePoke === poke) {
+        opp.sleepClausePoke = undefined;
+      }
+    }
+  },
+  skillswap(battle, user, [target]) {
+    const userAbility = user.v.ability!;
+    const targetAbility = target.v.ability!;
+    if (
+      NO_SKILL_SWAP_ABILITIES.has(userAbility) ||
+      NO_SKILL_SWAP_ABILITIES.has(targetAbility) ||
+      userAbility === targetAbility
+    ) {
+      return battle.info(user, "fail_generic");
+    } else if (!battle.checkAccuracy(this, user, target)) {
+      return;
+    }
+
+    user.v.ability = targetAbility;
+    target.v.ability = userAbility;
+    // TODO: the ability effect should also activate here
+    battle.ability(user);
+    battle.ability(target);
+    battle.event({type: "skill_swap", src: user.id, target: target.id});
+  },
   worryseed(battle, user, [target]) {
     const ability = target.getAbilityId();
     if (ability === "truant" || ability === "multitype" || ability === "insomnia") {

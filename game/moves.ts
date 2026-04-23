@@ -12,6 +12,7 @@ import {
   idiv1,
   randChoiceWeighted,
   hazards,
+  NO_SKILL_SWAP_ABILITIES,
 } from "./utils";
 import type {FailReason, InfoReason, RecoveryReason} from "./events";
 import type {Pokemon, Status} from "./pokemon";
@@ -1217,15 +1218,16 @@ export const moveScripts: MoveScripts = {
     battle.event({type: "copy_ability", src: user.id, target: target.id, ability: user.v.ability!});
   },
   skillswap(battle, user, [target]) {
-    if (target.hasAbility("multitype") || user.hasAbility("multitype")) {
+    const userAbility = user.v.ability!;
+    const targetAbility = target.v.ability!;
+    if (NO_SKILL_SWAP_ABILITIES.has(userAbility) || NO_SKILL_SWAP_ABILITIES.has(targetAbility)) {
       return battle.info(user, "fail_generic");
     } else if (!battle.checkAccuracy(this, user, target)) {
       return;
     }
 
-    const mine = user.v.ability;
-    user.v.ability = target.v.ability;
-    target.v.ability = mine;
+    user.v.ability = targetAbility;
+    target.v.ability = userAbility;
     // skill swap doesn't reveal the abilities until Gen V
     battle.event({type: "skill_swap", src: user.id, target: target.id});
   },

@@ -102,14 +102,21 @@ export const HP_TYPES: Type[] = [
 
 // prettier-ignore
 export const IGNORABLE_ABILITIES = new Set<AbilityId>([
-  'battlearmor', 'clearbody', 'damp', 'dryskin', 'filter', 'flashfire', 'flowergift',
-  'heatproof', 'hypercutter', 'immunity', 'innerfocus', 'insomnia', 'keeneye', 'leafguard',
-  'levitate', 'lightningrod', 'limber', 'magmaarmor', 'marvelscale', 'motordrive', 'oblivious',
-  'owntempo', 'sandveil', 'shellarmor', 'shielddust', 'simple', 'snowcloak', 'solidrock',
-  'soundproof', 'stickyhold', 'stormdrain', 'sturdy', 'suctioncups', 'tangledfeet', 'thickfat',
-  'unaware', 'vitalspirit', 'voltabsorb', 'waterabsorb', 'waterveil', 'whitesmoke', 'wonderguard',
-  'bigpecks', 'contrary', 'friendguard', 'heavymetal', 'lightmetal', 'magicbounce', 'multiscale',
-  'sapsipper', 'telepathy', 'wonderskin',
+  "battlearmor", "clearbody", "damp", "dryskin", "filter", "flashfire", "flowergift",
+  "heatproof", "hypercutter", "immunity", "innerfocus", "insomnia", "keeneye", "leafguard",
+  "levitate", "lightningrod", "limber", "magmaarmor", "marvelscale", "motordrive", "oblivious",
+  "owntempo", "sandveil", "shellarmor", "shielddust", "simple", "snowcloak", "solidrock",
+  "soundproof", "stickyhold", "stormdrain", "sturdy", "suctioncups", "tangledfeet", "thickfat",
+  "unaware", "vitalspirit", "voltabsorb", "waterabsorb", "waterveil", "whitesmoke", "wonderguard",
+  "bigpecks", "contrary", "friendguard", "heavymetal", "lightmetal", "magicbounce", "multiscale",
+  "sapsipper", "telepathy", "wonderskin",
+]);
+
+export const NO_SKILL_SWAP_ABILITIES = new Set<AbilityId>([
+  "wonderguard",
+  "multitype",
+  "illusion",
+  "zenmode",
 ]);
 
 export const TypeMod = {
