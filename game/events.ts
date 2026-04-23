@@ -136,7 +136,7 @@ export type DamageEvent = {
   isCrit?: bool;
   why: DamageReason;
   /* when why === "trap", this is a moveId */
-  move?: string;
+  move?: MoveId;
   /**
    * undefined: this is the one and only hit of a normal attack
    * 0:         this is one, non-final hit of a multi-hit attack

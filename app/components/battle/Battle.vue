@@ -466,12 +466,12 @@ onMounted(async () => {
       }
     },
     displayEvent(e) {
-      const ev = {...e, time: Date.now()} as UIBattleEvent;
+      const ev = {...e, names: {}, time: Date.now()} as UIBattleEvent;
       if ("src" in ev && ev.src) {
-        ev[ev.src] = mgr.players.poke(ev.src as PokeId)!.base.name;
+        ev.names[ev.src] = mgr.players.poke(ev.src as PokeId)!.base.name;
       }
       if ("target" in ev && ev.target) {
-        ev[ev.target] = mgr.players.poke(ev.target as PokeId)!.base.name;
+        ev.names[ev.target] = mgr.players.poke(ev.target as PokeId)!.base.name;
       }
 
       htmlTurns.value.at(-1)!.push(ev);
