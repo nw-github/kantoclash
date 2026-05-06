@@ -33,7 +33,7 @@ import speciesPatches from "./species.json";
 import items from "./items.json";
 import {itemList, type ItemId} from "../item";
 import type {Battlemon} from "../active";
-import {TurnType, type Battle} from "../battle";
+import type {Battle} from "../battle";
 import type {DamagingMove, Move, MoveId} from "../moves";
 import type {Generation} from "../gen";
 import type {Random} from "random";
@@ -725,6 +725,19 @@ export class Generation3 extends Generation2 {
       return false;
     }
     return true;
+  }
+
+  // TryDoEventsBeforeFirstTurn
+  override handleLeadTurn(battle: Battle) {
+    // Handle Drizzle, Sand Stream, Drought in turn order
+    for (const poke of battle.turnOrder) {
+      poke.handleSwitchInAbility(battle);
+    }
+
+    // Handle White Herb, Amulet Coin
+    for (const poke of battle.turnOrder) {
+      poke.handleSwitchInItem(battle);
+    }
   }
 
   // In pokeemerald: AtkCanceler_UnableToUseMove

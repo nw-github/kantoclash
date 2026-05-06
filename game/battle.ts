@@ -13,6 +13,7 @@ import {
   type ScreenId,
   type HazardId,
   type NonEmptyArray,
+  hpPercent,
 } from "./utils";
 import type {Generation} from "./gen";
 import {Battlemon} from "./active";
@@ -183,7 +184,12 @@ export class Battle {
     readonly mods: Mods,
     readonly rng: Random,
   ) {
-    this.allActive = this.players.flatMap(pl => pl.active);
+    this.allActive = [
+      players[0].active[0],
+      players[1].active[0],
+      players[0].active[1],
+      players[1].active[1],
+    ].filter(p => !!p);
   }
 
   static start({gen, player1, player2, doubles, chooseLead, mods, seed}: BattleParams) {
@@ -196,7 +202,7 @@ export class Battle {
       return [self, [] as BattleEvent[]] as const;
     }
 
-    for (let i = 0; i < self.players[0].active.length; i++) {
+    for (let i = 0; i < (doubles ? 2 : 1); i++) {
       self.players[0].chooseSwitch(i, self, i);
       self.players[1].chooseSwitch(i, self, i);
     }
@@ -284,14 +290,7 @@ export class Battle {
 
   switchOrder() {
     // Gen 3 switch order is Host first, Guest first, Host second, Guest second
-    const result = [
-      this.players[0].active[0],
-      this.players[1].active[0],
-      this.players[0].active[1],
-      this.players[1].active[1],
-    ];
-
-    return result.filter(p => !!p);
+    return this.allActive;
   }
 
   inTurnOrder() {
@@ -313,7 +312,7 @@ export class Battle {
       });
   }
 
-  private calcTurnOrder() {
+  calcTurnOrder() {
     for (const poke of this.allActive) {
       if (poke.choice && !poke.choice.executed) {
         const isLead = this.turnType === TurnType.Lead;
@@ -331,12 +330,6 @@ export class Battle {
           poke.choice.subpriority = 1;
         }
 
-        // Ensure switch-in abilities activate in turn order on the lead turn including item
-        // effects like choice scarf
-        if (poke.choice.move.kind === "switch" && !poke.initialized) {
-          poke.base = poke.choice.move.poke;
-          poke.v.stats = {...poke.choice.move.poke.stats};
-        }
         poke.choice.spe = this.gen.getSpeed(this, poke);
         debugLog(`[${poke.base.name}] speed is ${poke.choice.spe}`);
         if (this.gen.id >= 5 && this.field.trickRoom) {
@@ -345,11 +338,14 @@ export class Battle {
       }
     }
 
-    if (this.gen.id <= 3 || this.turnType !== TurnType.Normal) {
+    if (
+      (this.gen.id <= 3 && this.turnType !== TurnType.Lead) ||
+      this.turnType === TurnType.Switch
+    ) {
       const switches = this.switchOrder().filter(p => p.choice?.move?.kind === "switch");
-      return switches.concat(this.inTurnOrder().filter(p => p.choice?.move?.kind !== "switch"));
+      this.turnOrder = switches.concat(this.inTurnOrder().filter(p => p.choice?.move?.kind !== "switch"));
     } else {
-      return this.inTurnOrder();
+      this.turnOrder = this.inTurnOrder();
     }
   }
 
@@ -358,11 +354,45 @@ export class Battle {
       return;
     }
 
+    if (this.turnType === TurnType.Lead) {
+      for (const player of this.players) {
+        for (const poke of player.active) {
+          if (poke.choice!.move.kind === "switch") {
+            poke.reinitialize(poke.choice!.move.poke);
+          }
+        }
+        this.event({
+          type: "init",
+          pokes: player.active.map(poke => ({
+            src: poke.id,
+            speciesId: poke.base.speciesId,
+            hpPercent: hpPercent(poke.base.hp, poke.base.maxHp),
+            hp: poke.base.hp,
+            name: poke.base.name,
+            level: poke.base.level,
+            gender: poke.base.gender,
+            shiny: poke.base.shiny,
+            indexInTeam: player.team.indexOf(poke.base),
+          })),
+        });
+      }
+
+      this.calcTurnOrder();
+      this.gen.handleLeadTurn(this);
+      this.turnType = TurnType.Normal;
+
+      for (const poke of this.allActive) {
+        poke.updateOptions(this);
+      }
+
+      return this.events.splice(0);
+    }
+
     const normal = this.turnType === TurnType.Normal && !this.allActive.some(p => p.v.inBatonPass);
     if (normal) {
       this._turn++;
       this.event({type: "next_turn", turn: this._turn});
-      this.turnOrder = this.calcTurnOrder();
+      this.calcTurnOrder();
       for (let i = 0; i < this.turnOrder.length; i++) {
         const user = this.turnOrder[i];
         if (user.choice?.move.kind !== "protect") {
@@ -370,7 +400,7 @@ export class Battle {
         }
       }
     } else if (this.turnType !== TurnType.Normal) {
-      this.turnOrder = this.calcTurnOrder();
+      this.calcTurnOrder();
     }
 
     this.runTurn(normal);
@@ -547,6 +577,15 @@ export class Battle {
         result[i] = {...e, hpBefore: e.hpPercentBefore, hpAfter: e.hpPercentAfter};
       } else if (e.type === "switch" && playerId(e.src) !== player?.id) {
         result[i] = {...e, hp: e.hpPercent, indexInTeam: -1};
+      } else if (e.type === "init" && playerId(e.pokes[0].src) !== player?.id) {
+        result[i] = {
+          ...e,
+          pokes: e.pokes.map(poke => ({
+            ...poke,
+            hp: poke.hpPercent,
+            indexInTeam: -1,
+          })),
+        };
       } else if (
         e.type === "info" &&
         e.why === "fatigue_confuse" &&

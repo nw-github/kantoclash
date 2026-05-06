@@ -530,8 +530,7 @@ export class Generation4 extends Generation3 {
 
     if (battle.turnType !== TurnType.Normal) {
       for (const poke of battle.inTurnOrder()) {
-        if (poke.choice?.isReplacement || battle.turnType === TurnType.Lead) {
-          poke.handleWeatherAbility(battle);
+        if (poke.choice?.isReplacement) {
           poke.handleSwitchInAbility(battle);
           poke.handleBerry(battle, {pp: true, pinch: true, status: true});
         }

@@ -88,7 +88,7 @@ const textLines = computed(() => {
   }
 
   const re =
-    /{(?:Src|src|SrcTeam|srcTeam|Target|target|TargetTeam|targetTeam|owner|name|user|move|ability|victor|wish|item)}/g;
+    /{(?:Src|src|SrcTeam|srcTeam|Target|target|TargetTeam|targetTeam|owner|name|name\d|user|move|ability|victor|wish|item)}/g;
   for (const line of lines) {
     for (const text of line.text) {
       text.text = text.text.replaceAll(re, substr => {
@@ -133,6 +133,13 @@ const textLines = computed(() => {
           return gen.items[e.item].name;
         } else if (substr === "{wish}" && "why" in e && e.why && e.why.startsWith("wish:")) {
           return e.why.slice(5);
+        } else if ("pokes" in e) {
+          if (substr.startsWith("{name")) {
+            const index = substr.slice("{name".length, substr.length - 1);
+            return e.pokes[+index]?.name ?? "???";
+          } else if (substr === "{owner}") {
+            return players.clientOwnerOf(e.pokes[0].src).name;
+          }
         }
         return substr;
       });
@@ -213,6 +220,10 @@ const createTemplate = (e: UIBattleEvent): FormattedText | undefined => {
 
   // prettier-ignore
   switch (e.type) {
+  case "init": {
+    const nameText = e.pokes.map((_, i) => `<b>{name${i}}</b>`).join(" and ");
+    return text(playerId(e.pokes[0].src) === perspective ? `Go! ${nameText}!` : `{owner} sent in ${nameText}!`, "move");
+  }
   case "retract": return text(playerId(e.src) === perspective ? "Come back! <b>{name}</b>!" : "{owner} withdrew <b>{name}</b>!", "move");
   case "switch":
     if (e.why === "phaze") {

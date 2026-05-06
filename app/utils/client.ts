@@ -1,4 +1,4 @@
-import type {BattleEvent, PlayerId, PokeId, SwitchEvent} from "~~/game/events";
+import type {BattleEvent, PlayerId, PokeId} from "~~/game/events";
 import {Pokemon, type ValidatedPokemonDesc} from "~~/game/pokemon";
 import type {SpeciesId} from "~~/game/species";
 import type {Generation} from "~~/game/gen";
@@ -36,6 +36,8 @@ type Callbacks = {
   playAnimation(id: PokeId, params: AnimationParams): Promise<void> | void;
   displayEvent(e: RawUIBattleEvent): void;
 };
+
+type SwitchInEventData = (BattleEvent & {type: "init"})["pokes"][number];
 
 export class AnimCallback {
   private _cb: (() => void) | undefined;
@@ -140,7 +142,42 @@ export class ClientManager {
   }
 
   async handleEvent(e: BattleEvent) {
-    if (e.type === "switch") {
+    const getSwitchCallback = (data: SwitchInEventData) => {
+      return () => {
+        const poke = this.players.poke(data.src)!;
+        const base =
+          data.indexInTeam !== -1
+            ? this.players.ownerOf(data.src)!.team[data.indexInTeam]
+            : this.findOrCreateEnemyBasePokemon(data);
+        poke.reinitialize(base);
+        this.battle.events.length = 0;
+
+        poke.visible = true;
+        poke.owned = data.indexInTeam !== -1;
+        poke.indexInTeam = data.indexInTeam;
+        poke.base.hp = data.hp;
+        this.handleVolatiles(e);
+        this.cb.playCry(data.speciesId, false)?.then(() => {
+          if (data.shiny) {
+            this.cb.playShiny(data.src);
+          }
+        });
+      };
+    };
+
+    if (e.type === "init") {
+      this.cb.displayEvent(e);
+      return await Promise.allSettled(
+        e.pokes.map(data => {
+          return this.cb.playAnimation(data.src, {
+            anim: "sendin",
+            name: data.name,
+            batonPass: false,
+            cb: new AnimCallback(getSwitchCallback(data)),
+          });
+        }),
+      );
+    } else if (e.type === "switch") {
       const poke = this.players.poke(e.src)!;
       if (poke.initialized && !poke.v.fainted && e.why !== "batonpass" && e.why !== "uturn") {
         if (e.why !== "phaze") {
@@ -158,25 +195,7 @@ export class ClientManager {
         anim: "sendin",
         name: e.name,
         batonPass: e.why === "batonpass",
-        cb: new AnimCallback(() => {
-          const base =
-            e.indexInTeam !== -1
-              ? this.players.ownerOf(e.src)!.team[e.indexInTeam]
-              : this.findOrCreateEnemyBasePokemon(e);
-          poke.switchTo(base, this.battle);
-          this.battle.events.length = 0;
-
-          poke.visible = true;
-          poke.owned = e.indexInTeam !== -1;
-          poke.indexInTeam = e.indexInTeam;
-          poke.base.hp = e.hp;
-          this.handleVolatiles(e);
-          this.cb.playCry(e.speciesId, false)?.then(() => {
-            if (e.shiny) {
-              this.cb.playShiny(e.src);
-            }
-          });
-        }),
+        cb: new AnimCallback(getSwitchCallback(e)),
       });
     } else if (e.type === "damage" || e.type === "recover") {
       const update = () => {
@@ -492,7 +511,7 @@ export class ClientManager {
     return poke === this.fake;
   }
 
-  private findOrCreateEnemyBasePokemon(e: SwitchEvent) {
+  private findOrCreateEnemyBasePokemon(e: SwitchInEventData) {
     const owner = this.players.ownerOf(e.src)!;
     // TODO: better heuristics based on for example, HP, if the opponent has multiple of the same
     // Pokemon

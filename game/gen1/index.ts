@@ -568,6 +568,12 @@ export class Generation1 {
 
   tryDamage = tryDamage;
 
+  handleLeadTurn(battle: Battle) {
+    for (const poke of battle.allActive) {
+      poke.handleSwitchInItem(battle);
+    }
+  }
+
   afterBeforeUseMove(battle: Battle, user: Battlemon): bool {
     this.handleResidualDamage(battle, user);
     return battle.checkFaint(user) && shouldReturn(battle, false);

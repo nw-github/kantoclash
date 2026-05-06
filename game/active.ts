@@ -69,6 +69,12 @@ export class Battlemon {
     this.id = `${this.owner.id}:${idx}`;
   }
 
+  reinitialize(base: Pokemon) {
+    this.base = base;
+    this.v = new Volatiles(base);
+    this.initialized = true;
+  }
+
   switchTo(next: Pokemon, battle: Battle, phazer?: Battlemon) {
     if (this.choice) {
       this.choice.executed = true;
@@ -91,9 +97,7 @@ export class Battlemon {
     }
 
     const old = this.v;
-    this.v = new Volatiles(next);
-    this.base = next;
-    this.initialized = true;
+    this.reinitialize(next);
 
     if (old.inBatonPass === "batonpass") {
       this.v.substitute = old.substitute;
@@ -152,14 +156,7 @@ export class Battlemon {
     });
 
     this.freeOpponents(battle);
-
-    if (this.base.itemId === "berserkgene") {
-      this.consumeItem(battle);
-      this.modStages([["atk", +2]], battle);
-      // BUG GEN2: If you baton pass into a pokemon with a berserk gene, the confusion value
-      // is not updated.
-      this.confuse(battle, undefined, 256);
-    }
+    this.handleSwitchInItem(battle);
 
     if (old.hwish) {
       battle.info(this, old.hwish.restorePP ? "lunardance" : "healingwish");
@@ -208,11 +205,7 @@ export class Battlemon {
       }
     }
 
-    if (
-      battle.turnType === TurnType.Normal ||
-      (battle.gen.id <= 3 && battle.turnType !== TurnType.Lead)
-    ) {
-      this.handleWeatherAbility(battle);
+    if (battle.turnType === TurnType.Normal || battle.gen.id <= 3) {
       this.handleSwitchInAbility(battle);
     }
   }
@@ -606,16 +599,24 @@ export class Battlemon {
     return true;
   }
 
-  handleWeatherAbility(battle: Battle) {
+  handleSwitchInItem(battle: Battle) {
+    if (this.base.itemId === "berserkgene") {
+      this.consumeItem(battle);
+      this.modStages([["atk", +2]], battle);
+      // BUG GEN2: If you baton pass into a pokemon with a berserk gene, the confusion value
+      // is not updated.
+      this.confuse(battle, undefined, 256);
+    }
+
+    this.handleWhiteHerb(battle);
+  }
+
+  handleSwitchInAbility(battle: Battle) {
     const weather = this.getAbility()?.startsWeather;
     if (weather && (battle.weather?.kind !== weather || battle.weather?.turns !== -1)) {
       battle.ability(this);
       battle.setWeather(weather, -1);
-    }
-  }
-
-  handleSwitchInAbility(battle: Battle) {
-    if (this.hasAbility("intimidate") && !this.v.usedIntimidate) {
+    } else if (this.hasAbility("intimidate") && !this.v.usedIntimidate) {
       this.v.usedIntimidate = true;
       let procd = false;
       for (const poke of battle.getTargets(this, Range.AllAdjacentFoe)) {
@@ -799,14 +800,8 @@ export class Battlemon {
         this.v.attract = undefined;
         this.consumeItem(battle);
         battle.info(this, "cure_attract");
-      } else if (itemId === "whiteherb" && Object.values(this.v.stages).some(v => v < 0)) {
-        for (const stage in this.v.stages) {
-          if (this.v.stages[stage as StageId] < 0) {
-            this.setStage(stage as StageId, 0, battle, false);
-          }
-        }
-
-        this.consumeItem(battle);
+      } else {
+        this.handleWhiteHerb(battle);
       }
     }
 
@@ -847,6 +842,19 @@ export class Battlemon {
           }
         }
       }
+    }
+  }
+
+  handleWhiteHerb(battle: Battle) {
+    const itemId = this.getItemId();
+    if (itemId === "whiteherb" && Object.values(this.v.stages).some(v => v < 0)) {
+      for (const stage in this.v.stages) {
+        if (this.v.stages[stage as StageId] < 0) {
+          this.setStage(stage as StageId, 0, battle, false);
+        }
+      }
+
+      this.consumeItem(battle);
     }
   }
 

@@ -8,6 +8,7 @@ import type {VolatileDiff} from "./active";
 type AnyEvent =
   | NextTurnEvent
   | SwitchEvent
+  | InitSideEvent
   | DamageEvent
   | RecoverEvent
   | UseMoveEvent
@@ -56,7 +57,22 @@ export type PokeId = `${PlayerId}:${number}`;
 
 type NextTurnEvent = {type: "next_turn"; turn: number};
 
-export type SwitchEvent = {
+type InitSideEvent = {
+  type: "init";
+  pokes: {
+    src: PokeId;
+    speciesId: SpeciesId;
+    level: number;
+    hpPercent: number;
+    hp: number;
+    name: string;
+    indexInTeam: number;
+    gender: Gender;
+    shiny: bool;
+  }[];
+};
+
+type SwitchEvent = {
   type: "switch";
   src: PokeId;
   speciesId: SpeciesId;

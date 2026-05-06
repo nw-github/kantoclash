@@ -146,7 +146,7 @@ export const infoMessage: Record<InfoReason, string> = {
   snatch: "{Src} waits for a target to make a move!",
   magicCoat: "{Src} shrouded itself in Magic Coat!",
   batonpass: "",
-  uturn: "{Src} went back to {p}!",
+  uturn: "{Src} went back to {owner}!",
   pressure: "{Src} is exerting its Pressure!",
   gastroAcid: "{Src}'s ability was suppressed!",
   atk_maximize: "{Src} maxed its Attack!",
@@ -312,7 +312,7 @@ export const cantUseTable: Partial<Record<(BattleEvent & {type: "cantuse"})["why
 };
 
 export const consumeItemTable: Partial<Record<ItemId, string>> = {
-  whiteherb: "{Src} restored its stats using its {move}!",
+  whiteherb: "{Src} restored its stats using its {item}!",
   focussash: "{Src} held on using its {item}!",
 };
 
