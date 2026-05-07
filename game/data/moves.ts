@@ -2944,7 +2944,7 @@ export const rawMoveList = {
     pp: 40,
     type: "normal",
     range: "Adjacent",
-    category: "special",
+    category: "physical",
     power: 40,
     acc: 100,
     effect: [100, "thief"],
