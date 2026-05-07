@@ -849,6 +849,10 @@ export class Generation1 {
   tryEndure({dmg}: TryEndureParams) {
     return {dmg, endure: Endure.None};
   }
+
+  shouldSwitchInAbilitiesActivate(_battle: Battle) {
+    return false;
+  }
 }
 
 export const shouldReturn = (battle: Battle, pursuit: bool) => {

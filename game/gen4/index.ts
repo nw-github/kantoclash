@@ -85,8 +85,7 @@ type BoostedAttackParams = {battle: Battle; user: Battlemon; target: Battlemon; 
 
 class DamageCalc {
   static getBoostedAttack({battle, user, target, isCrit}: BoostedAttackParams) {
-    const userAbility = user.getAbility();
-    const userAbilityId = user.getAbilityId();
+    const {id: userAbilityId, data: userAbility} = user.getAbilityIdAndData();
     const item = user.getItem();
 
     let {atk, spa} = user.v.stats;
@@ -204,8 +203,7 @@ class DamageCalc {
   }
 
   static getBoostedPower({move, battle, user, target, type, power}: BoostedPowerParams) {
-    const userAbility = user.getAbility();
-    const userAbilityId = user.getAbilityId();
+    const {id: userAbilityId, data: userAbility} = user.getAbilityIdAndData();
 
     let powerMultiplier = 10;
     if (Gen3DamageCalc.gen34DoubleDmgOrPower(battle, user, target, move)) {
@@ -500,7 +498,7 @@ export class Generation4 extends Generation3 {
     // out of battle speeed?
     const turnOrder = battle.turnOrder;
 
-    if (!battle.allActive.some(p => p.v.fainted && p.canBeReplaced(battle))) {
+    if (!battle.allActive.some(p => p.v.fainted && p.canBeReplaced())) {
       for (const poke of turnOrder) {
         poke.v.flinch = false;
         poke.v.inPursuit = false;
@@ -800,8 +798,7 @@ export class Generation4 extends Generation3 {
 
   // CheckSortSpeed
   override getSpeed(battle: Battle, user: Battlemon) {
-    const ability = user.getAbility();
-    const abilityId = user.getAbilityId();
+    const {id: abilityId, data: ability} = user.getAbilityIdAndData();
     const weather = battle.getWeather();
     const item = user.getItem();
 
@@ -866,8 +863,7 @@ export class Generation4 extends Generation3 {
   // BattleSystem_CheckMoveHit
   override checkAccuracy(move: Move, battle: Battle, user: Battlemon, target: Battlemon) {
     const userAbilityId = user.getAbilityId();
-    const targetAbilityId = target.getAbilityId(user);
-    const targetAbility = target.getAbility(user);
+    const {id: targetAbilityId, data: targetAbility} = target.getAbilityIdAndData(user);
     if (userAbilityId === "noguard" || targetAbilityId === "noguard") {
       return true;
     }
@@ -976,5 +972,9 @@ export class Generation4 extends Generation3 {
       return override.call(move, battle, user);
     }
     return move.type;
+  }
+
+  override shouldSwitchInAbilitiesActivate(battle: Battle): boolean {
+    return battle.turnType === TurnType.Normal;
   }
 }

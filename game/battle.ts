@@ -343,7 +343,9 @@ export class Battle {
       this.turnType === TurnType.Switch
     ) {
       const switches = this.switchOrder().filter(p => p.choice?.move?.kind === "switch");
-      this.turnOrder = switches.concat(this.inTurnOrder().filter(p => p.choice?.move?.kind !== "switch"));
+      this.turnOrder = switches.concat(
+        this.inTurnOrder().filter(p => p.choice?.move?.kind !== "switch"),
+      );
     } else {
       this.turnOrder = this.inTurnOrder();
     }
@@ -420,11 +422,11 @@ export class Battle {
         return this.forceEnd("too_long");
       }
 
-      if (this.allActive.some(p => p.v.fainted && p.canBeReplaced(this))) {
+      if (this.allActive.some(p => p.v.fainted && p.canBeReplaced())) {
         this.turnType = TurnType.Switch;
 
         for (const poke of this.allActive) {
-          if (poke.v.fainted && poke.canBeReplaced(this)) {
+          if (poke.v.fainted && poke.canBeReplaced()) {
             poke.updateOptions(this);
           } else {
             poke.options = undefined;

@@ -33,7 +33,7 @@ import speciesPatches from "./species.json";
 import items from "./items.json";
 import {itemList, type ItemId} from "../item";
 import type {Battlemon} from "../active";
-import type {Battle} from "../battle";
+import {TurnType, type Battle} from "../battle";
 import type {DamagingMove, Move, MoveId} from "../moves";
 import type {Generation} from "../gen";
 import type {Random} from "random";
@@ -81,8 +81,8 @@ const accStageMultipliers: Record<number, [num: number, div: number]> = {
 
 enum BetweenTurns {
   Begin,
-  Weather,
-  PartialTrapping,
+  EndTurnEffects,
+  FaintedActions,
   FutureSight,
   PerishSong,
 }
@@ -742,7 +742,7 @@ export class Generation3 extends Generation2 {
 
   // In pokeemerald: AtkCanceler_UnableToUseMove
   // In pokeheartgold: ov12_0224B528
-  // Emerald doesn't have the
+  // Emerald doesn't have the gravity or heal block checks
   override beforeUseMove(battle: Battle, move: Move, user: Battlemon) {
     const resetVolatiles = () => {
       user.v.charging = undefined;
@@ -861,26 +861,22 @@ export class Generation3 extends Generation2 {
     return battle.checkFaint(user) && shouldReturn(battle, true);
   }
 
+  // pokeemerald/battle_main.c:BattleTurnPassed
   override betweenTurns(battle: Battle) {
     const checkFaint = (poke: Battlemon) => {
       return (
         battle.checkFaint(poke, true) &&
-        battle.allActive.some(p => p.v.fainted && p.canBeReplaced(battle))
+        battle.allActive.some(p => p.v.fainted && p.canBeReplaced())
       );
     };
 
-    // TODO: should this turn order take into account priority/pursuit/etc. or should it use
-    // out of battle speeed?
-    const turnOrder = battle.turnOrder;
+    // pokeemerald/battle_util.c:DoFieldEndTurnEffects,DoBattlerEndTurnEffects
+    if (battle.betweenTurns < BetweenTurns.EndTurnEffects) {
+      let someoneDied = false;
+      battle.calcTurnOrder();
 
-    debugLog(
-      `\nbetweenTurns(${BetweenTurns[battle.betweenTurns]}):`,
-      battle.turnOrder.map(t => t.base.name),
-    );
-
-    // Screens Wish & Weather
-    if (battle.betweenTurns < BetweenTurns.Weather) {
       for (const player of battle.players) {
+        // Originally checked in the order Reflect, Light Screen, Mist, Safeguard
         for (const screen of screens) {
           if (player.screens[screen] && --player.screens[screen] === 0) {
             battle.event({type: "screen", user: player.id, screen, kind: "end"});
@@ -888,7 +884,7 @@ export class Generation3 extends Generation2 {
         }
       }
 
-      for (const poke of turnOrder) {
+      for (const poke of battle.turnOrder) {
         if (poke.wish && --poke.wish.turns === 0) {
           if (!poke.v.fainted) {
             poke.recover(idiv1(poke.base.maxHp, 2), poke, battle, `wish:${poke.base.name}`);
@@ -897,7 +893,6 @@ export class Generation3 extends Generation2 {
         }
       }
 
-      let someoneDied = false;
       weather: if (battle.weather) {
         if (battle.weather.turns !== -1 && --battle.weather.turns === 0) {
           battle.endWeather();
@@ -909,51 +904,45 @@ export class Generation3 extends Generation2 {
           break weather;
         }
 
-        for (const poke of turnOrder) {
+        for (const poke of battle.turnOrder) {
           poke.handleWeather(battle, battle.weather!.kind);
           someoneDied = checkFaint(poke) || someoneDied;
         }
       }
 
-      battle.betweenTurns = BetweenTurns.Weather;
-      if (someoneDied) {
-        return;
-      }
-    }
-
-    // A bunch of stuff
-    if (battle.betweenTurns < BetweenTurns.PartialTrapping) {
-      let someoneDied = false;
       const hasUproar = battle.allActive.some(p => p.v.thrashing?.move?.id === "uproar");
-      for (const poke of turnOrder) {
+      for (const poke of battle.turnOrder) {
+        if (poke.betweenTurns >= BetweenTurns.EndTurnEffects || !poke.base.hp) {
+          continue;
+        }
+        poke.betweenTurns = BetweenTurns.EndTurnEffects;
+
         const ability = poke.getAbilityId();
-        if (!poke.v.fainted) {
-          if (poke.v.hasFlag(VF.ingrain)) {
-            poke.recover(idiv1(poke.base.maxHp, 16), poke, battle, "ingrain");
-          }
+        if (poke.v.hasFlag(VF.ingrain)) {
+          poke.recover(idiv1(poke.base.maxHp, 16), poke, battle, "ingrain");
+        }
 
-          if (battle.hasWeather("rain") && ability === "raindish" && !poke.base.isMaxHp()) {
-            battle.ability(poke);
-            poke.recover(idiv1(poke.base.maxHp, 16), poke, battle, "recover");
-          }
+        if (battle.hasWeather("rain") && ability === "raindish" && !poke.base.isMaxHp()) {
+          battle.ability(poke);
+          poke.recover(idiv1(poke.base.maxHp, 16), poke, battle, "recover");
+        }
 
-          if (ability === "speedboost" && poke.v.canSpeedBoost && poke.v.stages.spe < 6) {
-            battle.ability(poke);
-            poke.modStages([["spe", +1]], battle);
-          }
+        if (ability === "speedboost" && poke.v.canSpeedBoost && poke.v.stages.spe < 6) {
+          battle.ability(poke);
+          poke.modStages([["spe", +1]], battle);
+        }
 
-          if (poke.v.canSpeedBoost) {
-            if (poke.v.hasFlag(VF.loafing)) {
-              poke.v.clearFlag(VF.loafing);
-            } else if (ability === "truant") {
-              poke.v.setFlag(VF.loafing);
-            }
+        if (poke.v.canSpeedBoost) {
+          if (poke.v.hasFlag(VF.loafing)) {
+            poke.v.clearFlag(VF.loafing);
+          } else if (ability === "truant") {
+            poke.v.setFlag(VF.loafing);
           }
+        }
 
-          if (poke.base.status && ability === "shedskin" && battle.gen.rng.tryShedSkin(battle)) {
-            battle.ability(poke);
-            poke.unstatus(battle);
-          }
+        if (poke.base.status && ability === "shedskin" && battle.gen.rng.tryShedSkin(battle)) {
+          battle.ability(poke);
+          poke.unstatus(battle);
         }
 
         poke.handleLeftovers(battle);
@@ -963,88 +952,111 @@ export class Generation3 extends Generation2 {
           poke.handlePartialTrapping(battle);
         }
 
-        if (poke.base.hp) {
-          if (hasUproar && poke.base.status === "slp" && ability !== "soundproof") {
-            poke.unstatus(battle, "wake");
+        if (checkFaint(poke)) {
+          someoneDied = true;
+          continue;
+        }
+
+        if (hasUproar && poke.base.status === "slp" && ability !== "soundproof") {
+          poke.unstatus(battle, "wake");
+        }
+
+        if (poke.v.thrashing) {
+          const done = --poke.v.thrashing.turns === 0;
+          if (poke.v.thrashing.move.id === "uproar") {
+            battle.info(poke, done ? "uproar_end" : "uproar_continue");
           }
 
-          if (poke.v.thrashing) {
-            const done = --poke.v.thrashing.turns === 0;
-            if (poke.v.thrashing.move.id === "uproar") {
-              battle.info(poke, done ? "uproar_end" : "uproar_continue");
+          if (done) {
+            if (poke.v.thrashing.move.flag === DMF.multi_turn && ability !== "owntempo") {
+              poke.confuse(battle, "fatigue_confuse_max");
             }
-
-            if (done) {
-              if (poke.v.thrashing.move.flag === DMF.multi_turn && ability !== "owntempo") {
-                poke.confuse(battle, "fatigue_confuse_max");
-              }
-              poke.v.thrashing = undefined;
-            }
-          }
-
-          if (poke.v.disabled && --poke.v.disabled.turns === 0) {
-            poke.v.disabled = undefined;
-            battle.info(poke, "disable_end");
-          }
-
-          poke.handleEncore(battle);
-
-          if (poke.v.tauntTurns && --poke.v.tauntTurns === 0) {
-            battle.info(poke, "taunt_end");
+            poke.v.thrashing = undefined;
           }
         }
 
-        // TODO: lockon/mind reader?
+        if (poke.v.disabled && --poke.v.disabled.turns === 0) {
+          poke.v.disabled = undefined;
+          battle.info(poke, "disable_end");
+        }
 
-        if (poke.base.hp && poke.v.drowsy && --poke.v.drowsy === 0) {
+        poke.handleEncore(battle);
+
+        // TODO: lockon, mind reader, charge
+
+        if (poke.v.tauntTurns && --poke.v.tauntTurns === 0) {
+          battle.info(poke, "taunt_end");
+        }
+
+        if (poke.v.drowsy && --poke.v.drowsy === 0) {
           battle.syncVolatiles();
           if (!poke.base.status && abilityList[ability!]?.preventsStatus !== "slp") {
             poke.status("slp", battle, poke, {ignoreSafeguard: true});
           }
         }
-
-        someoneDied = checkFaint(poke) || someoneDied;
       }
 
-      battle.betweenTurns = BetweenTurns.PartialTrapping;
+      battle.betweenTurns = BetweenTurns.EndTurnEffects;
       if (someoneDied) {
         return;
       }
     }
 
+    // pokeemerald/battle_util.c:HandleFaintedMonActions
+    if (battle.betweenTurns < BetweenTurns.FaintedActions) {
+      const battlers = battle.switchOrder();
+      for (const poke of battlers) {
+        // Technically, it handles all Intimidate, then all Trace, then battler 0 item,
+        // then all Forecast, but they all happen in switch order anyway
+        if (poke.base.hp) {
+          // TODO: weather abilities are handled somewhere else?
+          poke.handleSwitchInAbility(battle);
+        }
+      }
+
+      // BUG Gen3: Only the Pokémon in slot 0 has its item activate at this point
+      if (battlers[0].base.hp) {
+        battlers[0].handleBerry(battle, {status: true});
+      }
+
+      battle.betweenTurns = BetweenTurns.FaintedActions;
+    }
+
+    // pokeemerald/battle_util.c:HandleWishPerishSongOnTurnEnd
     if (battle.betweenTurns < BetweenTurns.FutureSight) {
-      let someoneDied = false;
+      // NOTE: Future sight doesn't use gBattlerByTurnOrder
       for (const poke of battle.switchOrder()) {
-        poke.handleFutureSight(battle);
-        // FIXME: after future sight, the affected pokemon should die and be forced to switch
-        // immediately, even before other future sights go off
-        someoneDied = checkFaint(poke) || someoneDied;
+        if (poke.betweenTurns < BetweenTurns.FutureSight) {
+          poke.betweenTurns = BetweenTurns.FutureSight;
+          poke.handleFutureSight(battle);
+          if (checkFaint(poke)) {
+            return;
+          }
+        }
       }
 
       battle.betweenTurns = BetweenTurns.FutureSight;
-      if (someoneDied) {
-        return;
-      }
     }
 
+    // pokeemerald/battle_util.c:HandleWishPerishSongOnTurnEnd
     if (battle.betweenTurns < BetweenTurns.PerishSong) {
-      let someoneDied = false;
-      for (const poke of turnOrder) {
-        poke.handlePerishSong(battle);
-        someoneDied = checkFaint(poke) || someoneDied;
+      for (const poke of battle.turnOrder) {
+        if (poke.betweenTurns < BetweenTurns.PerishSong) {
+          poke.betweenTurns = BetweenTurns.PerishSong;
+          poke.handlePerishSong(battle);
+          if (checkFaint(poke)) {
+            return;
+          }
+        }
       }
-
-      // FIXME: after perish song the affected pokemon should die and be forced to switch
-      // immediately, even before other ones go off
 
       battle.betweenTurns = BetweenTurns.PerishSong;
-      if (someoneDied) {
-        return;
-      }
     }
 
-    for (const poke of turnOrder) {
-      // TODO: hyper beam?
+    // pokeemerald/battle_main.c:TurnValuesCleanUp
+    for (const poke of battle.allActive) {
+      // TODO: reset recharge if the poke has been prevented from moving and resetting recharge
+      // itself
       poke.v.flinch = false;
       poke.v.inPursuit = false;
       poke.v.retaliateDamage = 0;
@@ -1056,28 +1068,18 @@ export class Generation3 extends Generation2 {
         poke.v.canFakeOut = false;
       }
 
-      const flags =
-        VF.protect | VF.endure | VF.helpingHand | VF.followMe | VF.snatch | VF.magicCoat;
-      if (poke.v.hasFlag(flags)) {
-        poke.v.clearFlag(flags);
-        battle.syncVolatiles();
-      }
+      poke.v.clearFlag(
+        VF.protect | VF.endure | VF.helpingHand | VF.followMe | VF.snatch | VF.magicCoat,
+      );
+      poke.betweenTurns = BetweenTurns.Begin;
     }
 
+    battle.syncVolatiles();
     battle.betweenTurns = BetweenTurns.Begin;
-    if (battle.turnType === TurnType.Lead) {
-      for (const poke of battle.inTurnOrder()) {
-        poke.handleWeatherAbility(battle);
-      }
-
-      for (const user of battle.turnOrder) {
-        user.handleSwitchInAbility(battle);
-      }
-    }
   }
 
   override handleRage(battle: Battle, poke: Battlemon) {
-    if (poke.v.lastMove?.kind === "damage" && poke.v.lastMove.id === "rage") {
+    if (poke.v.lastMove?.id === "rage") {
       battle.info(poke, "rage");
       poke.modStages([["atk", +1]], battle);
     }
@@ -1139,5 +1141,11 @@ export class Generation3 extends Generation2 {
       }
     }
     return {dmg, endure: Endure.None};
+  }
+
+  override shouldSwitchInAbilitiesActivate(battle: Battle) {
+    return (
+      battle.turnType === TurnType.Normal || battle.betweenTurns >= BetweenTurns.FaintedActions
+    );
   }
 }

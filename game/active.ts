@@ -63,6 +63,7 @@ export class Battlemon {
   initialized?: bool;
   id: PokeId;
   originalMoveset?: [MoveId[], number[]];
+  betweenTurns = 0;
 
   constructor(public base: Pokemon, public readonly owner: Player, idx: number) {
     this.v = new Volatiles(base);
@@ -188,7 +189,7 @@ export class Battlemon {
       }
 
       if (this.owner.hazards.spikes && this.isGrounded(battle)) {
-        const dmg = idiv1(this.base.maxHp, 8 - (this.owner.hazards.spikes - 1) * 2);
+        const dmg = idiv1(this.base.maxHp, (5 - this.owner.hazards.spikes) * 2);
         this.damage(dmg, this, battle, false, "spikes", true);
         if (this.base.hp === 0) {
           return;
@@ -205,7 +206,7 @@ export class Battlemon {
       }
     }
 
-    if (battle.turnType === TurnType.Normal || battle.gen.id <= 3) {
+    if (battle.gen.shouldSwitchInAbilitiesActivate(battle)) {
       this.handleSwitchInAbility(battle);
     }
   }
@@ -634,6 +635,7 @@ export class Battlemon {
         }
       }
     } else if (this.hasAbility("trace") && !this.v.usedTrace) {
+      this.v.usedTrace = true;
       const target = battle.rng.choice(
         battle
           .getTargets(this, Range.AllAdjacentFoe)
@@ -905,7 +907,7 @@ export class Battlemon {
       battle.event({type: "trap", src: this.id, target: this.id, kind: "end", move});
     } else {
       const dmg = idiv1(this.base.maxHp, 16);
-      this.damage2(battle, {dmg, src: this, why: "trap_eot", move, direct: true});
+      return this.damage2(battle, {dmg, src: this, why: "trap_eot", move, direct: true}).dead;
     }
   }
 
@@ -948,23 +950,20 @@ export class Battlemon {
     }
   }
 
-  getSwitches(battle: Battle) {
+  getSwitches() {
     const switches: number[] = [];
     for (let i = 0; i < this.owner.team.length; i++) {
       const poke = this.owner.team[i];
-      if (
-        poke.hp !== 0 &&
-        (battle.turnType === TurnType.Lead || !this.owner.active.some(a => a.base === poke))
-      ) {
+      if (poke.hp && !this.owner.active.some(a => a.initialized && a.base === poke)) {
         switches.push(i);
       }
     }
     return switches;
   }
 
-  canBeReplaced(switches: number[] | Battle) {
+  canBeReplaced(switches?: number[]) {
     const myPos = this.owner.active.filter(a => a.v.fainted).indexOf(this);
-    return myPos < (Array.isArray(switches) ? switches : this.getSwitches(switches)).length;
+    return myPos < (Array.isArray(switches) ? switches : this.getSwitches()).length;
   }
 
   getOptions(battle: Battle): Options | undefined {
@@ -972,15 +971,12 @@ export class Battlemon {
       return undefined;
     }
 
-    const switches = this.getSwitches(battle);
+    const switches = this.getSwitches();
     if (battle.allActive.some(poke => poke.v.inBatonPass)) {
       return this.v.inBatonPass ? {switches, moves: [], id: this.id} : undefined;
     } else if (this.v.fainted && !this.canBeReplaced(switches)) {
       return;
-    } else if (
-      !this.v.fainted &&
-      battle.allActive.some(p => p.v.fainted && p.canBeReplaced(battle))
-    ) {
+    } else if (!this.v.fainted && battle.allActive.some(p => p.v.fainted && p.canBeReplaced())) {
       return;
     } else if (battle.turnType === TurnType.Lead) {
       return {switches, moves: [], id: this.id};
