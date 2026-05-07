@@ -129,6 +129,7 @@ const descriptions: Partial<Record<number, Partial<Record<MoveId, string>>>> = {
     wish: "At the end of the next turn, the Pokémon in this slot will recover 1/2 its max HP. ",
     charge: "Boost the next move's damage by 50% if it is electric type. ",
     followme: "Draws opponent single-target attacks toward the user. ",
+    ragepowder: "Draws opponent single-target attacks toward the user. ",
     swallow:
       "Heals 25%, 50%, or 100% of the user's HP, based on the number of stockpiles, which is reset " +
       "after use of this move. Fails if the user has not used stockpile yet.",
@@ -186,6 +187,8 @@ const descriptions: Partial<Record<number, Partial<Record<MoveId, string>>>> = {
       "For 5 turns, the target has its held item effects negated and cannot use Fling or Natural Gift. ",
     naturalgift:
       "Only usable if the user is holding a berry. Type and base power are determined by the held berry. Consumes the berry upon use. ",
+    venoshock: "Doubles power if the target is poisoned. ",
+    memento: "Drops the target's Attack and Sp. Attack by 2 stages. After this, the user faints. ",
   },
   [2]: {
     conversion:
@@ -218,6 +221,7 @@ const descriptions: Partial<Record<number, Partial<Record<MoveId, string>>>> = {
     feint: "Removes the effect of protection moves. ",
     roost:
       "The user recovers 1/2 its max HP. Until the end of the turn, its Flying type is removed. ",
+    naturepower: "Always calls Earthquake. ",
   },
 };
 

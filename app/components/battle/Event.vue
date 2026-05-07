@@ -384,8 +384,8 @@ const createTemplate = (e: UIBattleEvent): FormattedText | undefined => {
   case "trick": return text("{Src} switched items with its target!");
   case "knockoff": return text("{Src} knocked off {target}'s {item}!");
   case "recycle": return text("{Src} found one {item}!");
-  case "copy_ability": return text("{Src} copied {target}'s {ability}!");
-  case "trace": return text("{Src} traced {target}'s {ability}!");
+  case "copy_ability": return text("{Src} copied {target}'s <b>{ability}</b>!");
+  case "trace": return text("{Src} traced {target}'s <b>{ability}</b>!");
   case "skill_swap": return text("{Src} swapped abilities with {target}!");
   case "stockpile": return text(`{Src} stockpiled ${e.count}!`);
   case "obtain_item": return text("{Src} obtained one {item}!");
