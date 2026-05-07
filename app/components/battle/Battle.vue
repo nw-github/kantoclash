@@ -229,6 +229,8 @@ import {playerId, type Weather} from "~~/game/utils";
 import {AnimatePresence, motion, type AnimationPlaybackControls} from "motion-v";
 import type {Options} from "~~/game/battle";
 import GoToTurnModal from "../dialog/GoToTurnModal.vue";
+import type {SpeciesId} from "~~/game/species";
+import type {Gender} from "~~/game/pokemon";
 
 const weatherData = {
   rain: {icon: "material-symbols:rainy", tooltip: "Raining", class: "text-sky-400"},
@@ -386,8 +388,21 @@ watchImmediate([paused, () => events.length], ([paused, nEvents]) => {
 });
 
 onMounted(async () => {
+  const preloadSprite = (
+    ev: BattleEvent,
+    e: {src: PokeId; speciesId: SpeciesId; gender: Gender; shiny: bool},
+  ) => {
+    // Preload the sprite
+    const back = playerId(e.src) === perspective.value;
+    const form = ev.volatiles?.find(v => v.id === e.src)?.v.form || undefined;
+    const gender = gen1Gender[e.speciesId] ?? e.gender;
+    const img = new Image();
+    img.src = getSpritePath(e.speciesId, gender === "F", e.shiny, back, form);
+    return img;
+  };
+
   const runEvent = async (e: BattleEvent) => {
-    let img;
+    let _img: any;
     if (e.type === "next_turn") {
       currentTurnNo.value = e.turn;
       htmlTurns.value.push([]);
@@ -397,12 +412,9 @@ onMounted(async () => {
       }
       return;
     } else if (e.type === "switch" || e.type === "transform") {
-      // Preload the sprite
-      const back = playerId(e.src) === perspective.value;
-      const form = e.volatiles?.find(v => v.id === e.src)?.v.form || undefined;
-      const gender = gen1Gender[e.speciesId] ?? e.gender;
-      img = new Image();
-      img.src = getSpritePath(e.speciesId, gender === "F", e.shiny, back, form);
+      _img = preloadSprite(e, e);
+    } else if (e.type === "init") {
+      _img = e.pokes.map(poke => preloadSprite(e, poke));
     }
 
     smoothScroll.value = isLive();
