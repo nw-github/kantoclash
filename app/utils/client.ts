@@ -320,7 +320,7 @@ export class ClientManager {
         }),
       });
     } else if (e.type === "hit_sub") {
-      if (e.confusion) {
+      if (e.why === "confusion" || e.why !== "future_sight") {
         await Promise.allSettled([
           this.cb.playDmg(e.eff ?? 1),
           this.cb.playAnimation(e.src, {anim: "hurt", direct: false}),

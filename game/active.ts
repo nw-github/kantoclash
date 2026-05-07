@@ -345,7 +345,7 @@ export class Battlemon {
         src: src.id,
         target: this.id,
         broken: this.v.substitute === 0,
-        confusion: why === "confusion",
+        why,
         eff,
       });
       if (shouldRage) {

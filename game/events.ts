@@ -178,7 +178,7 @@ export type HitSubstituteEvent = {
   src: PokeId;
   target: PokeId;
   broken: bool;
-  confusion: bool;
+  why: DamageReason;
   hitCount?: number;
   eff?: number;
 };
