@@ -1101,6 +1101,11 @@ export class Generation3 extends Generation2 {
     type: Type,
     eff: number,
   ) {
+    if (!self.power) {
+      // Allow fixed damage moves like Night Shade to hit Wonder Guard
+      eff = this.getEffectiveness(battle, type, target).toFloat();
+    }
+
     const targetAbility = target.getAbilityId(user);
     const skipsTypeCheck = self.id === "beatup" || self.id === "struggle";
     if (self.sound && targetAbility === "soundproof") {
