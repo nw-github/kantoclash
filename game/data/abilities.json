@@ -182,7 +182,10 @@
   "aftermath": {"name": "Aftermath", "desc": "Unimplemented"},
   "gluttony": {"name": "Gluttony", "desc": "Unimplemented"},
   "klutz": {"name": "Klutz", "desc": "User is unaffected by its held item."},
-  "motordrive": {"name": "Motor Drive", "desc": "Unimplemented"},
+  "motordrive": {
+    "name": "Motor Drive",
+    "desc": "Immune to Electric-type moves. +1 Atk when hit by one."
+  },
   "stall": {"name": "Stall", "desc": "Unimplemented"},
   "steadfast": {"name": "Steadfast", "desc": "Unimplemented"},
 

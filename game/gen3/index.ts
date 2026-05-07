@@ -1112,6 +1112,7 @@ export class Generation3 extends Generation2 {
       ((!skipsTypeCheck && eff <= 1 && targetAbility === "wonderguard") ||
         (type === "ground" && targetAbility === "levitate" && !target.isGrounded(battle)) ||
         (type === "electric" && targetAbility === "voltabsorb") ||
+        (type === "electric" && targetAbility === "motordrive") ||
         (type === "water" && targetAbility === "waterabsorb") ||
         (type === "fire" && targetAbility === "flashfire" && target.base.status !== "frz"))
     ) {
@@ -1123,6 +1124,8 @@ export class Generation3 extends Generation2 {
 
       if (targetAbility === "waterabsorb" || targetAbility === "voltabsorb") {
         target.recover(idiv1(target.base.maxHp, 4), user, battle, "none");
+      } else if (targetAbility === "motordrive") {
+        target.modStages([["atk", +1]], battle);
       }
       return true;
     }
