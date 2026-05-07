@@ -39,6 +39,7 @@ export const battles = pgTable("battles", {
 
 export const bugReports = pgTable("bugReports", {
   id: uuid().primaryKey(),
+  commit: varchar({length: 40}),
   battle: jsonb().$type<BattleRecipe>().notNull(),
   reports: jsonb().$type<BugReports>().notNull(),
   createdAt: timestamp().notNull().defaultNow(),

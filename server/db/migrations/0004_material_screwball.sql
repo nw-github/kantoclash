@@ -1,0 +1,1 @@
+ALTER TABLE "bugReports" ADD COLUMN "commit" varchar(40);

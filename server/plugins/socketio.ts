@@ -26,7 +26,7 @@ export default defineNitroPlugin(nitro => {
       try {
         await useDrizzle()
           .insert(bugReports)
-          .values({id, battle, reports})
+          .values({id, battle, reports, commit: useRuntimeConfig().gitCommitHash})
           .onConflictDoUpdate({target: bugReports.id, set: {battle, reports}});
       } catch (ex) {
         console.error("Cannot save bug report due to database error: ", ex);

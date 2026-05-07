@@ -1,3 +1,7 @@
+import {execSync} from "node:child_process";
+
+const gitCommitHash = execSync("git rev-parse --short HEAD").toString().trim();
+
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   css: ["~/assets/main.css"],
@@ -50,6 +54,10 @@ export default defineNuxtConfig({
     session: {
       maxAge: 60 * 60 * 24 * 7, // 1 week
       password: process.env.NUXT_SESSION_PASSWORD || "",
+    },
+    gitCommitHash,
+    public: {
+      gitCommitHash,
     },
   },
   typescript: {
