@@ -78,7 +78,7 @@ export const moveOverrides: Partial<MovePropOverrides> = {
 
 export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
   aquaring: {snatch: true},
-  beatup: {noTechnician: false},
+  beatup: {noTechnician: false, power: 0},
   bind: {acc: 85},
   bonerush: {acc: 90},
   bulletseed: {power: 25},

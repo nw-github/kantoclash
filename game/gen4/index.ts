@@ -752,15 +752,7 @@ export class Generation4 extends Generation3 {
     if (beatUp) {
       dmg = DamageCalc.calcBaseDamageBeatUp(user, beatUp, target, power);
     } else {
-      dmg = DamageCalc.calcBaseDamage({
-        power,
-        type,
-        battle,
-        move,
-        user,
-        target,
-        isCrit,
-      });
+      dmg = DamageCalc.calcBaseDamage({power, type, battle, move, user, target, isCrit});
     }
 
     const random = rng === undefined ? battle.rng : rng;

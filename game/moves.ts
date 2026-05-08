@@ -562,9 +562,6 @@ export const moveScripts: MoveScripts = {
     }
 
     if (this.id === "relicsong" && user.base.hp && user.v.speciesId === "meloetta") {
-      // Doing Meloetta's transfomation like this means anything that accesses species.stats.*
-      // would get an incorrect value. Luckily, Beat Up was the only thing that did that, and no
-      // longer does from Gen V onward.
       if (user.v.form !== "pirouette") {
         const form = user.v.species.forms!.pirouette!;
         user.v.stats = user.base.calculateStats(form.stats);

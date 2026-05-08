@@ -264,7 +264,7 @@ export class Generation5 extends Generation4 {
     user.damage(idiv1(user.base.maxHp, 2), user, battle, false, "crash", true);
   }
 
-  override getDamage({battle, user, target, move, isCrit, power, rng}: GetDamageParams) {
+  override getDamage({battle, user, target, move, isCrit, power, rng, beatUp}: GetDamageParams) {
     if (
       (move.id === "dreameater" && (target.v.substitute || target.base.status !== "slp")) ||
       (move.id === "spitup" && !user.v.stockpile)
@@ -285,6 +285,10 @@ export class Generation5 extends Generation4 {
     power ??= this.getMoveBasePower(move, battle, user, target);
     if (power < 0) {
       return {dmg: -idiv1(target.base.maxHp, 4), eff: 1, miss: false, type};
+    } else if (beatUp) {
+      const form = beatUp === user.base && !user.v.transformed ? user.v.form : beatUp.form;
+      const stats = beatUp.species.forms?.[form!]?.stats ?? beatUp.species.stats;
+      power = idiv(stats.atk, 10) + 5;
     }
 
     const level = user.base.level;

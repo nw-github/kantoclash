@@ -56,7 +56,7 @@ const descriptions: Partial<Record<number, Partial<Record<MoveId, string>>>> = {
     present:
       "Deals damage with a base power of 40, 80, or 120, or heals the target for 1/4 its max HP. ",
     beatup:
-      "Hits with a typeless 10 power attack for each Pokémon in the user's party without a non-volatile status condition. ",
+      "Hits with a typeless 10 power attack for each living Pokémon in the user's party without a non-volatile status condition. ",
     facade: "Doubles damage when poisoned, paralyzed or burned.",
     smellingsalt: "Doubles damage against a paralyzed target, but cures its paralysis. ",
     spitup:
@@ -222,6 +222,8 @@ const descriptions: Partial<Record<number, Partial<Record<MoveId, string>>>> = {
     roost:
       "The user recovers 1/2 its max HP. Until the end of the turn, its Flying type is removed. ",
     naturepower: "Always calls Earthquake. ",
+    beatup:
+      "Hits for each living Pokémon in the user's party without a non-volatile status condition. The power for each strike is determined by the attacker's species base Attack stat. ",
   },
 };
 

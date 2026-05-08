@@ -391,7 +391,7 @@ export const tryDamage = (
   let why = damageReason(self.flag);
   const wasSleeping = user.base.status === "slp";
 
-  const applyDamage = (dmg: number, doShellBell: bool) => {
+  const applyDamage = (dmg: number, isCrit: bool, doShellBell: bool) => {
     hadSub = target.v.substitute !== 0;
     ({dmg, endure} = battle.gen.tryEndure({battle, user, target, dmg, prev: endure}));
     if (endure || (self.id === "falseswipe" && dmg >= target.base.hp)) {
@@ -402,13 +402,7 @@ export const tryDamage = (
     }
 
     let event, dead;
-    ({dead, event, dealt} = target.damage2(battle, {
-      dmg,
-      src: user,
-      why,
-      isCrit,
-      eff: self.id === "beatup" ? 1 : eff,
-    }));
+    ({dead, event, dealt} = target.damage2(battle, {dmg, src: user, why, isCrit, eff}));
 
     if (doShellBell) {
       user.handleShellBell(battle, dealt);
@@ -426,7 +420,8 @@ export const tryDamage = (
   };
 
   if (self.id === "beatup") {
-    beatUpFail = doBeatUp(self, battle, user, target, dmg => applyDamage(dmg, true));
+    eff = 1;
+    beatUpFail = doBeatUp(self, battle, user, target, (dmg, crit) => applyDamage(dmg, crit, true));
   } else if (self.flag === DMF.double || self.flag === DMF.triple || self.flag === DMF.multi) {
     const counts = {
       [DMF.double]: 2,
@@ -443,7 +438,7 @@ export const tryDamage = (
       if (event) {
         event.hitCount = 0;
       }
-      ({event, stop} = applyDamage(dmg, true));
+      ({event, stop} = applyDamage(dmg, isCrit, true));
       event.hitCount = hits;
       if (self.flag === DMF.triple && !stop) {
         if (!battle.checkAccuracy(self, user, target, !special)) {
@@ -458,7 +453,7 @@ export const tryDamage = (
       ({dmg} = battle.gen.getDamage({battle, user, target, move: self, isCrit, power}));
     } while (!stop && ++hits <= count);
   } else {
-    applyDamage(dmg, false);
+    applyDamage(dmg, isCrit, false);
   }
 
   // TODO: should bide include damage taken by a substitute?

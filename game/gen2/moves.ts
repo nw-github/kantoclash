@@ -202,7 +202,7 @@ export function doBeatUp(
   battle: Battle,
   user: Battlemon,
   target: Battlemon,
-  applyDamage: (dmg: number) => {stop: bool},
+  applyDamage: (dmg: number, isCrit: bool) => {stop: bool},
 ) {
   let beatUpFail = true;
   for (const poke of user.owner.team) {
@@ -210,11 +210,14 @@ export function doBeatUp(
       continue;
     }
 
-    battle.event({type: "beatup", name: poke.name});
+    if (battle.gen.id <= 4) {
+      battle.event({type: "beatup", name: poke.name});
+    }
 
     beatUpFail = false;
-    const {dmg} = battle.gen.getDamage({battle, user, target, move, isCrit: false, beatUp: poke});
-    if (applyDamage(dmg).stop) {
+    const isCrit = battle.gen.rollCrit(battle, user, target, move);
+    const {dmg} = battle.gen.getDamage({battle, user, target, move, isCrit, beatUp: poke});
+    if (applyDamage(dmg, isCrit).stop) {
       break;
     }
   }
@@ -244,7 +247,7 @@ export const tryDamage = (
   }
 
   const protect = target.v.hasFlag(VF.protect);
-  let isCrit = battle.gen.rollCrit(battle, user, target, self);
+  const isCrit = battle.gen.rollCrit(battle, user, target, self);
   const {eff, dmg, miss, type} = battle.gen.getDamage({
     battle,
     user,
@@ -298,7 +301,7 @@ export const tryDamage = (
   let why = damageReason(self.flag);
 
   // command BattleCommand_ApplyDamage
-  const applyDamage = (dmg: number) => {
+  const applyDamage = (dmg: number, isCrit: bool) => {
     hadSub = target.v.substitute !== 0;
     ({dmg, endure} = battle.gen.tryEndure({battle, user, target, dmg, prev: endure}));
 
@@ -335,7 +338,7 @@ export const tryDamage = (
       event,
       stop = false;
     for (let hits = 1; !stop && hits <= count; hits++) {
-      isCrit = battle.gen.rollCrit(battle, user, target, self);
+      const isCrit = battle.gen.rollCrit(battle, user, target, self);
       ({dmg} = battle.gen.getDamage({
         battle,
         user,
@@ -348,11 +351,11 @@ export const tryDamage = (
       if (event) {
         event.hitCount = 0;
       }
-      ({stop, event} = applyDamage(dmg));
+      ({stop, event} = applyDamage(dmg, isCrit));
       event.hitCount = hits + 1;
     }
   } else {
-    applyDamage(dmg);
+    applyDamage(dmg, isCrit);
   }
 
   if (!hadSub && target.v.bide) {

@@ -495,7 +495,7 @@ export class Generation2 extends Generation1 {
     }
 
     let eff = new TypeEffectiveness();
-    if (move.id !== "struggle" && move.flag !== DMF.futuresight) {
+    if (move.id !== "struggle" && move.flag !== DMF.futuresight && !beatUp) {
       ({dmg, eff} = DamageCalc.applyTypeModifiers(dmg, {
         weather: battle.getWeather(),
         type,
