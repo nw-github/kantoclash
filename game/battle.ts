@@ -48,7 +48,7 @@ export class Player {
     this.id = id;
     this.team = team;
     this.active = [new Battlemon(this.team[0], this, 0)];
-    if (doubles && this.team.length > 1) {
+    if (doubles) {
       this.active.push(new Battlemon(this.team[1], this, 1));
     }
   }

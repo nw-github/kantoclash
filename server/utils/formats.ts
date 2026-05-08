@@ -252,7 +252,7 @@ export const randoms = (
   return getRandomPokemon(gen, 6, validSpecies, (s, id) => defaultCustomize(gen, level, s, id));
 };
 
-const createValidator = (gen: Generation, maxLevel: number, nfe = false) => {
+const createValidator = (gen: Generation, maxLevel: number, nfe = false, min = 1) => {
   function refineSpecies(id: string, ctx: z.RefinementCtx) {
     if (!(id in gen.speciesList)) {
       ctx.addIssue({code: z.ZodIssueCode.custom, message: "Species is invalid", fatal: true});
@@ -353,8 +353,8 @@ const createValidator = (gen: Generation, maxLevel: number, nfe = false) => {
       }
     })
     .array()
-    .max(6, "Team must have between 1 and 6 pokemon")
-    .nonempty("Team must have between 1 and 6 pokemon")
+    .min(min, `Team must have between ${min} and 6 pokemon`)
+    .max(6, `Team must have between ${min} and 6 pokemon`)
     .refine(
       team =>
         new Set(team.map(p => gen.speciesList[p.speciesId as SpeciesId].dexId)).size ===
@@ -369,9 +369,9 @@ const VALIDATOR_GEN3 = createValidator(GENERATION3, 100);
 const VALIDATOR_GEN4 = createValidator(GENERATION4, 100);
 const VALIDATOR_GEN5 = createValidator(GENERATION5, 100);
 
-const VALIDATOR_GEN3_DBLS = createValidator(GENERATION3, 50);
-const VALIDATOR_GEN4_DBLS = createValidator(GENERATION4, 50);
-const VALIDATOR_GEN5_DBLS = createValidator(GENERATION5, 50);
+const VALIDATOR_GEN3_DBLS = createValidator(GENERATION3, 50, false, 2);
+const VALIDATOR_GEN4_DBLS = createValidator(GENERATION4, 50, false, 2);
+const VALIDATOR_GEN5_DBLS = createValidator(GENERATION5, 50, false, 2);
 
 const VALIDATOR_GEN1_NFE = createValidator(GENERATION1, 5, true);
 const VALIDATOR_GEN3_NFE = createValidator(GENERATION3, 5, true);
