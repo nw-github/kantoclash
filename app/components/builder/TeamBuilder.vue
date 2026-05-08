@@ -59,6 +59,32 @@
           <template #default="{item: {speciesId, form}}">
             <BoxSprite class="-m-1" :species-id :scale="2" :form />
           </template>
+
+          <template #trailing="{index}">
+            <div
+              class="absolute right-0 top-0 flex-col pr-0.5 pt-1 group-hover:flex"
+              :class="index === selectedPokeIdx ? 'flex' : 'hidden'"
+            >
+              <UButton
+                :disabled="index === 0"
+                icon="material-symbols:chevron-left"
+                size="xs"
+                variant="link"
+                color="neutral"
+                :ui="{leadingIcon: 'rotate-90'}"
+                @click.stop="move(index, -1)"
+              />
+              <UButton
+                :disabled="index === items.length - 1"
+                icon="material-symbols:chevron-right"
+                size="xs"
+                variant="link"
+                color="neutral"
+                :ui="{leadingIcon: 'rotate-90'}"
+                @click.stop="move(index, +1)"
+              />
+            </div>
+          </template>
         </UTabs>
       </div>
 
@@ -77,6 +103,30 @@
           <template #default="{item: {speciesId, form}}">
             <div class="size-[32px] flex items-center justify-center">
               <BoxSprite :species-id :form />
+            </div>
+          </template>
+
+          <template #trailing="{index}">
+            <div
+              class="absolute right-0 top-0 group-hover:flex w-full h-full justify-between items-center"
+              :class="index === selectedPokeIdx ? 'flex' : 'hidden'"
+            >
+              <UButton
+                :disabled="index === 0"
+                icon="material-symbols:chevron-left"
+                size="xs"
+                variant="link"
+                color="neutral"
+                @click.stop="move(index, -1)"
+              />
+              <UButton
+                :disabled="index === items.length - 1"
+                icon="material-symbols:chevron-right"
+                size="xs"
+                variant="link"
+                color="neutral"
+                @click.stop="move(index, +1)"
+              />
             </div>
           </template>
         </UTabs>
@@ -757,6 +807,14 @@ const teamTextChange = () => {
   team.format = parsed.format;
   team.name = parsed.name;
   team.pokemon = parsed.pokemon;
+};
+
+const move = (index: number, offs: number) => {
+  [team.pokemon[index], team.pokemon[index + offs]] = [
+    team.pokemon[index + offs],
+    team.pokemon[index],
+  ];
+  selectedPokeIdx.value = index + offs;
 };
 
 const prevStat = ref<StatId>();
