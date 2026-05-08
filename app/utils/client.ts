@@ -320,10 +320,10 @@ export class ClientManager {
         }),
       });
     } else if (e.type === "hit_sub") {
-      if (e.why === "confusion" || e.why !== "future_sight") {
+      if (e.why === "confusion" || e.why === "future_sight") {
         await Promise.allSettled([
           this.cb.playDmg(e.eff ?? 1),
-          this.cb.playAnimation(e.src, {anim: "hurt", direct: false}),
+          this.cb.playAnimation(e.target, {anim: "hurt", direct: false}),
         ]);
       } else {
         await this.cb.playAnimation(e.src, {

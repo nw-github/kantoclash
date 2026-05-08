@@ -96,7 +96,7 @@ const boostedStats = computed(() => {
       user: active,
       target: dummy,
       move,
-      type: move.type,
+      type: "???",
     }),
     ...battle.gen.calc.getBoostedDefense({battle, user: dummy, target: active, move}),
     spe: battle.gen.getSpeed(battle, active),
