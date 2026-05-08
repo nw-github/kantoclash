@@ -122,18 +122,20 @@ export async function startBot(botType: BotType, format?: FormatId) {
     if (self !== -1) {
       console.log(`[${name}] was disconnected, attempting to reconnect...`);
       activeBots.splice(self, 1);
-      tryReconnect($conn, random).then(() => console.log(`[${name}] reconnected!`));
+      tryReconnect($conn, random).then(() => {
+        console.log(`[${name}] reconnected!`);
 
-      for (const roomId in games) {
-        $conn.emit("joinRoom", roomId, games[roomId].eventNo(), resp => {
-          if (resp === "bad_room") {
-            console.error(`[${name}] got bad room trying to rejoin ${roomId}!`);
-            return;
-          }
+        for (const roomId in games) {
+          $conn.emit("joinRoom", roomId, games[roomId].eventNo(), resp => {
+            if (resp === "bad_room" || !resp) {
+              console.error(`[${name}] got bad room trying to rejoin ${roomId}!`);
+              return;
+            }
 
-          games[roomId].nextTurn(resp.events, resp.options);
-        });
-      }
+            games[roomId].nextTurn(resp.events, resp.options);
+          });
+        }
+      });
     } else {
       console.log(`[${name}] was disconnected but already not active?`);
     }
