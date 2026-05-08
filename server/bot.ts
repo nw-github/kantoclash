@@ -38,6 +38,7 @@ export const activeBots: string[] = [];
 type Game = {
   nextTurn(turn: BattleEvent[], opts?: Options[]): void;
   chat(message: InfoMessage): void;
+  eventNo(): number;
 };
 
 export async function startBot(botType: BotType, format?: FormatId) {
@@ -122,6 +123,17 @@ export async function startBot(botType: BotType, format?: FormatId) {
       console.log(`[${name}] was disconnected, attempting to reconnect...`);
       activeBots.splice(self, 1);
       tryReconnect($conn, random).then(() => console.log(`[${name}] reconnected!`));
+
+      for (const roomId in games) {
+        $conn.emit("joinRoom", roomId, games[roomId].eventNo(), resp => {
+          if (resp === "bad_room") {
+            console.error(`[${name}] got bad room trying to rejoin ${roomId}!`);
+            return;
+          }
+
+          games[roomId].nextTurn(resp.events, resp.options);
+        });
+      }
     } else {
       console.log(`[${name}] was disconnected but already not active?`);
     }
@@ -130,10 +142,7 @@ export async function startBot(botType: BotType, format?: FormatId) {
   function generateName() {
     const regex = botType === "rank" ? /[a-mA-M]/ : /[n-zN-Z]/;
     return random.choice(
-      namedTrainers
-        .split("\n")
-        .map(n => n.trim())
-        .filter(n => n && !usedNames.includes(n) && (n as string)[0].match(regex)),
+      namedTrainers.filter(n => n && !usedNames.includes(n) && (n as string)[0].match(regex)),
     )!;
   }
 
@@ -259,6 +268,7 @@ export async function startBot(botType: BotType, format?: FormatId) {
 
     mgr.reset(gen, formatInfo[format].doubles);
     games[room] = {
+      eventNo: () => eventNo,
       async nextTurn(turn, options) {
         let done = false;
         eventNo += turn.length;
@@ -2127,158 +2137,4 @@ Adamant Nature
  - Agility
 `;
 
-const namedTrainers = `
-Alder
-Benga
-Bianca
-Blaine
-Blue
-Brawly
-Brock
-Brycen-Man
-Brycen
-Bugsy
-Burgh
-Byron
-Caitlin
-Candice
-Cheren
-Chili
-Chuck
-Cilan
-Clair
-Clay
-Colress
-Crasher_Wake
-Cress
-Cynthia
-Drayden
-Elesa
-Emmet
-Erika
-Falkner
-Fantina
-Flannery
-Gardenia
-Ghetsis
-Giovanni
-Grimsley
-Hilbert
-Hilbert_2
-Hilda
-Hilda_2
-Hugh
-Ingo
-Iris
-Janine
-Jasmine
-Juan
-Lenora
-Liza
-Lt_Surge
-Marlon
-Marshal
-Maylene
-Misty
-Morty
-N
-Nate
-Nate_2
-Norman
-Pryce
-Red
-Roark
-Rood
-Rosa
-Rosa_2
-Roxanne
-Roxie
-Sabrina
-Shauntal
-Skyla
-Steven
-Tate
-Volkner
-Wallace
-Wattson
-Whitney
-Winona
-Zinzolin
-`;
-
-const _trainerClasses = `
-Ace_Trainer_F
-Ace_Trainer_M
-Artist
-Backers_F
-Backers_M
-Backpacker_F
-Backpacker_M
-Baker
-Battle_Girl
-Beauty
-Biker
-Black_Belt
-Clerk_F
-Clerk_M
-Clerk_M_B
-Cyclist_F
-Cyclist_M
-Dancer
-Depot_Agent
-Doctor
-Fisherman
-Gentleman
-Guitarist
-Harlequin
-Hiker
-Hooligans
-Hoopster
-Infielder
-Janitor
-Lady
-Lance
-Lass
-Linebacker
-Maid
-Mecha_Cop
-Musician
-Nurse
-Nursery_Aide
-Parasol_Lady
-Pilot
-Plasma_Grunt_F
-Plasma_Grunt_M
-Pokéfan_F
-Pokéfan_M
-Pokémon_Breeder_F
-Pokémon_Breeder_M
-Pokémon_Ranger_F
-Pokémon_Ranger_M
-Policeman
-Preschooler_F
-Preschooler_M
-Psychic_F
-Psychic_M
-Rich_Boy
-Roughneck
-School_Kid_F
-School_Kid_M
-Scientist_F
-Scientist_M
-Shadow_Triad
-Smasher
-Socialite
-Striker
-Swimmer_F
-Swimmer_M
-Twins
-Veteran_F
-Veteran_M
-Waiter
-Waitress
-Weird_Light
-Worker
-WorkerIce
-Youngster
-`;
+const namedTrainers = ["Colress", "Cynthia", "Iris", "Misty", "Nate", "Red", "Sabrina", "Skyla"];

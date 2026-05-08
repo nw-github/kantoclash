@@ -348,6 +348,7 @@ export const isValidSketchMove = (gen: Generation, id: string) => {
 };
 
 export const tryReconnect = async (conn: Socket, rng: Random, retries: number = 999) => {
+  conn.disconnect();
   const [base, max] = [1000, 30000];
   for (let i = 0; !conn.connected && i <= retries; i++) {
     const timeout = Math.min(base * 2 ** i, max) * rng.float(0.5, 1.5);
