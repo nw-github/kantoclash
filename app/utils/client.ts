@@ -152,6 +152,7 @@ export class ClientManager {
         poke.reinitialize(base);
         this.battle.events.length = 0;
 
+        poke.abilityUnknown = false;
         poke.visible = true;
         poke.owned = data.indexInTeam !== -1;
         poke.indexInTeam = data.indexInTeam;
@@ -409,13 +410,14 @@ export class ClientManager {
     } else if (e.type === "skill_swap") {
       const src = this.players.poke(e.src);
       const target = this.players.poke(e.target);
-      if (src) {
-        src.abilityUnknown = true;
+      if (this.battle.gen.id <= 4) {
+        if (src) {
+          src.abilityUnknown = true;
+        }
+        if (target) {
+          target.abilityUnknown = true;
+        }
       }
-      if (target) {
-        target.abilityUnknown = true;
-      }
-      // TODO: set ability
     } else if (e.type === "copy_ability") {
       const src = this.players.poke(e.src)!;
       const target = this.players.poke(e.target)!;

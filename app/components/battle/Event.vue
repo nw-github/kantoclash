@@ -273,7 +273,7 @@ const createTemplate = (e: UIBattleEvent): FormattedText | undefined => {
   }
   case "hit_sub": {
     const messages = [];
-    if (e.confusion) {
+    if (e.why === "confusion") {
       messages.push(p("It hurt itself in its confusion!"));
     }
     if ((e.eff ?? 1 ) !== 1) {
@@ -369,7 +369,7 @@ const createTemplate = (e: UIBattleEvent): FormattedText | undefined => {
   case "disable": return text("{Src}'s <b>{move}</b> was disabled!");
   case "mimic": return text("{Src} learned <b>{move}</b>!");
   case "in_love": return text("{Src} is in love with {target}!", "move");
-  case "spite": return text(`It reduced the PP of {src}'s <b>{move}</b> by ${e.amount}`);
+  case "spite": return text(`It reduced the PP of {src}'s <b>{move}</b> by ${e.amount}!`);
   case "sketch": return text("{Src} sketched <b>{move}</b>!");
   case "bounce": return text("{Src} bounced the <b>{move}</b> back!");
   case "grudge": return text("{Src}'s <b>{move}</b> lost all its PP due to the grudge!");

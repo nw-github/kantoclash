@@ -1463,7 +1463,7 @@ export const moveOverrides: MovePropOverrides = {
       const msb = (dv: number) => +((dv & (1 << 3)) !== 0);
 
       const x = msb(dvs.spa) | (msb(dvs.spe) << 1) | (msb(dvs.def) << 2) | (msb(dvs.atk) << 3);
-      const y = (dvs.spa ?? 15) & 0b11;
+      const y = dvs.spa & 0b11;
       return idiv(5 * x + y, 2) + 31;
     },
     return: (_, user) => idiv(user.base.friendship, 2.5),
@@ -1557,7 +1557,7 @@ export const moveOverrides: MovePropOverrides = {
   type: {
     hiddenpower(_battle, _user) {
       const user = "base" in _user ? _user.base : _user;
-      return HP_TYPES[(((user.ivs.atk ?? 15) & 0b11) << 2) | ((user.ivs.def ?? 15) & 0b11)];
+      return HP_TYPES[((user.ivs.atk & 0b11) << 2) | (user.ivs.def & 0b11)];
     },
     weatherball(battle) {
       const weather = typeof battle === "string" ? battle : battle?.getWeather();
