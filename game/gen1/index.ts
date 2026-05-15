@@ -569,7 +569,7 @@ export class Generation1 {
   tryDamage = tryDamage;
 
   handleLeadTurn(battle: Battle) {
-    for (const poke of battle.allActive) {
+    for (const poke of battle.battlers) {
       poke.handleSwitchInItem(battle);
     }
   }
@@ -663,7 +663,7 @@ export class Generation1 {
   }
 
   betweenTurns(battle: Battle) {
-    for (const poke of battle.allActive) {
+    for (const poke of battle.battlers) {
       poke.v.hazed = false;
       poke.v.flinch = false;
       poke.v.inPursuit = false;
@@ -678,7 +678,7 @@ export class Generation1 {
     }
 
     if (battle.betweenTurns < BetweenTurns.FutureSight) {
-      for (const poke of battle.allActive) {
+      for (const poke of battle.battlers) {
         poke.handleFutureSight(battle);
       }
 
@@ -700,7 +700,7 @@ export class Generation1 {
           break weather;
         }
 
-        for (const poke of battle.allActive) {
+        for (const poke of battle.battlers) {
           poke.handleWeather(battle, battle.weather!.kind);
         }
 
@@ -712,7 +712,7 @@ export class Generation1 {
     }
 
     if (battle.betweenTurns < BetweenTurns.PartialTrapping) {
-      for (const poke of battle.allActive) {
+      for (const poke of battle.battlers) {
         poke.handlePartialTrapping(battle);
       }
 
@@ -723,7 +723,7 @@ export class Generation1 {
     }
 
     if (battle.betweenTurns < BetweenTurns.PerishSong) {
-      for (const poke of battle.allActive) {
+      for (const poke of battle.battlers) {
         poke.handlePerishSong(battle);
       }
 
@@ -738,7 +738,7 @@ export class Generation1 {
     }
 
     battle.betweenTurns = BetweenTurns.Begin;
-    for (const poke of battle.allActive) {
+    for (const poke of battle.battlers) {
       if (poke.v.fainted) {
         continue;
       }
@@ -750,7 +750,7 @@ export class Generation1 {
     }
 
     // Defrost
-    for (const poke of battle.allActive) {
+    for (const poke of battle.battlers) {
       if (!poke.v.fainted && poke.base.status === "frz" && this.rng.tryDefrost(battle)) {
         poke.unstatus(battle, "thaw");
       }
@@ -767,12 +767,12 @@ export class Generation1 {
     }
 
     // Berries
-    for (const poke of battle.allActive) {
+    for (const poke of battle.battlers) {
       poke.handleBerry(battle, {pinch: true, status: true});
     }
 
     // Encore
-    for (const poke of battle.allActive) {
+    for (const poke of battle.battlers) {
       poke.handleEncore(battle);
 
       if (!poke.base.hp && !poke.v.fainted) {
@@ -857,7 +857,7 @@ export class Generation1 {
 
 export const shouldReturn = (battle: Battle, pursuit: bool) => {
   // Pursuit switches continue until Gen V
-  return battle.allActive.some(
+  return battle.battlers.some(
     p =>
       p.v.fainted &&
       p.getOptions(battle) &&

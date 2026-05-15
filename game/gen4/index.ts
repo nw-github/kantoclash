@@ -251,9 +251,9 @@ class DamageCalc {
       power >>= 1;
     }
 
-    if (type === "electric" && battle.allActive.some(poke => poke.v.hasFlag(VF.mudSport))) {
+    if (type === "electric" && battle.battlers.some(poke => poke.v.hasFlag(VF.mudSport))) {
       power >>= 1;
-    } else if (type === "fire" && battle.allActive.some(poke => poke.v.hasFlag(VF.waterSport))) {
+    } else if (type === "fire" && battle.battlers.some(poke => poke.v.hasFlag(VF.waterSport))) {
       power >>= 1;
     }
 
@@ -483,7 +483,7 @@ export class Generation4 extends Generation3 {
       return false;
     }
 
-    for (const poke of battle.allActive) {
+    for (const poke of battle.battlers) {
       if (poke.base.hp) {
         poke.handleBerry(battle, {pp: true, pinch: true, status: true});
       }
@@ -498,7 +498,7 @@ export class Generation4 extends Generation3 {
     // out of battle speeed?
     const turnOrder = battle.turnOrder;
 
-    if (!battle.allActive.some(p => p.v.fainted && p.canBeReplaced())) {
+    if (!battle.battlers.some(p => p.v.fainted && p.canBeReplaced())) {
       for (const poke of turnOrder) {
         poke.v.flinch = false;
         poke.v.inPursuit = false;
@@ -605,7 +605,7 @@ export class Generation4 extends Generation3 {
     }
 
     // A bunch of stuff
-    const hasUproar = battle.allActive.some(p => p.v.thrashing?.move?.id === "uproar");
+    const hasUproar = battle.battlers.some(p => p.v.thrashing?.move?.id === "uproar");
     for (const poke of turnOrder) {
       const ability = poke.getAbilityId();
       if (!poke.v.fainted) {

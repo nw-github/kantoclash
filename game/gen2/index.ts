@@ -351,7 +351,7 @@ export class Generation2 extends Generation1 {
       return false;
     } else if (user.v.tauntTurns && this.moveList[move].kind !== "damage") {
       return false;
-    } else if (battle.allActive.some(p => p.isImprisoning(user, move))) {
+    } else if (battle.battlers.some(p => p.isImprisoning(user, move))) {
       return false;
     } else if (
       user.v.hasFlag(VF.torment) &&

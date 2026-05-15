@@ -1157,7 +1157,7 @@ export const moveScripts: MoveScripts = {
   },
   imprison(battle, user) {
     const moves = new Set(user.moveset());
-    const good = battle.allActive.some(
+    const good = battle.battlers.some(
       p => !p.v.fainted && p.owner !== user.owner && !new Set(p.moveset()).isDisjointFrom(moves),
     );
 

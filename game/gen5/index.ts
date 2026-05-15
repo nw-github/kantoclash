@@ -195,9 +195,9 @@ class DamageCalc {
       mod = chainModIf(mod, Mod.BP_SOLARBEAM_PENALTY, move.charge === "sun" && weather && weather !== "sun");
       mod = chainModIf(mod, Mod.BP_CHARGE, user.v.hasFlag(VF.charge) && type === "electric");
       mod = chainModIf(mod, Mod.BP_HELPINGHAND, user.v.hasFlag(VF.helpingHand));
-      if (type === "electric" && battle.allActive.some(poke => poke.v.hasFlag(VF.mudSport))) {
+      if (type === "electric" && battle.battlers.some(poke => poke.v.hasFlag(VF.mudSport))) {
         mod = chainMod(mod, Mod.BP_SPORT);
-      } else if (type === "fire" && battle.allActive.some(poke => poke.v.hasFlag(VF.waterSport))) {
+      } else if (type === "fire" && battle.battlers.some(poke => poke.v.hasFlag(VF.waterSport))) {
         mod = chainMod(mod, Mod.BP_SPORT);
       }
     }

@@ -551,7 +551,7 @@ export class Battlemon {
     }
 
     if (battle.gen.id === 1) {
-      for (const other of battle.allActive) {
+      for (const other of battle.battlers) {
         if (other !== this) {
           // https://bulbapedia.bulbagarden.net/wiki/List_of_battle_glitches_(Generation_I)#Stat_modification_errors
           battle.gen.applyStatusDebuff(other);
@@ -972,11 +972,11 @@ export class Battlemon {
     }
 
     const switches = this.getSwitches();
-    if (battle.allActive.some(poke => poke.v.inBatonPass)) {
+    if (battle.battlers.some(poke => poke.v.inBatonPass)) {
       return this.v.inBatonPass ? {switches, moves: [], id: this.id} : undefined;
     } else if (this.v.fainted && !this.canBeReplaced(switches)) {
       return;
-    } else if (!this.v.fainted && battle.allActive.some(p => p.v.fainted && p.canBeReplaced())) {
+    } else if (!this.v.fainted && battle.battlers.some(p => p.v.fainted && p.canBeReplaced())) {
       return;
     } else if (battle.turnType === TurnType.Lead) {
       return {switches, moves: [], id: this.id};

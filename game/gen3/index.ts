@@ -204,12 +204,12 @@ export class DamageCalc {
       atk = idiv(atk * 150, 100);
     } else if (
       abilityId === "plus" &&
-      battle.allActive.some(poke => !poke.v.fainted && poke.getAbilityId() === "minus")
+      battle.battlers.some(poke => !poke.v.fainted && poke.getAbilityId() === "minus")
     ) {
       spa = idiv(spa * 150, 100);
     } else if (
       abilityId === "minus" &&
-      battle.allActive.some(poke => !poke.v.fainted && poke.getAbilityId() === "plus")
+      battle.battlers.some(poke => !poke.v.fainted && poke.getAbilityId() === "plus")
     ) {
       spa = idiv(spa * 150, 100);
     }
@@ -264,9 +264,9 @@ export class DamageCalc {
   }
 
   static getBoostedPower({battle, user, type, power}: BoostedPowerParams) {
-    if (type === "electric" && battle.allActive.some(poke => poke.v.hasFlag(VF.mudSport))) {
+    if (type === "electric" && battle.battlers.some(poke => poke.v.hasFlag(VF.mudSport))) {
       power >>= 1;
-    } else if (type === "fire" && battle.allActive.some(poke => poke.v.hasFlag(VF.waterSport))) {
+    } else if (type === "fire" && battle.battlers.some(poke => poke.v.hasFlag(VF.waterSport))) {
       power >>= 1;
     }
 
@@ -802,7 +802,7 @@ export class Generation3 extends Generation2 {
       battle.event({move: moveId, type: "cantuse", src: user.id, why: "taunt"});
       resetVolatiles();
       return false;
-    } else if (battle.allActive.some(p => p.isImprisoning(user, moveId))) {
+    } else if (battle.battlers.some(p => p.isImprisoning(user, moveId))) {
       battle.event({move: moveId, type: "cantuse", src: user.id, why: "generic"});
       resetVolatiles();
       return false;
@@ -847,7 +847,7 @@ export class Generation3 extends Generation2 {
       return false;
     }
 
-    for (const poke of battle.allActive) {
+    for (const poke of battle.battlers) {
       if (poke.base.hp !== 0) {
         poke.handleBerry(battle, {status: true});
       }
@@ -865,8 +865,7 @@ export class Generation3 extends Generation2 {
   override betweenTurns(battle: Battle) {
     const checkFaint = (poke: Battlemon) => {
       return (
-        battle.checkFaint(poke, true) &&
-        battle.allActive.some(p => p.v.fainted && p.canBeReplaced())
+        battle.checkFaint(poke, true) && battle.battlers.some(p => p.v.fainted && p.canBeReplaced())
       );
     };
 
@@ -910,7 +909,7 @@ export class Generation3 extends Generation2 {
         }
       }
 
-      const hasUproar = battle.allActive.some(p => p.v.thrashing?.move?.id === "uproar");
+      const hasUproar = battle.battlers.some(p => p.v.thrashing?.move?.id === "uproar");
       for (const poke of battle.turnOrder) {
         if (poke.betweenTurns >= BetweenTurns.EndTurnEffects || !poke.base.hp) {
           continue;
@@ -1054,7 +1053,7 @@ export class Generation3 extends Generation2 {
     }
 
     // pokeemerald/battle_main.c:TurnValuesCleanUp
-    for (const poke of battle.allActive) {
+    for (const poke of battle.battlers) {
       // TODO: reset recharge if the poke has been prevented from moving and resetting recharge
       // itself
       poke.v.flinch = false;

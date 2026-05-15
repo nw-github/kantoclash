@@ -174,7 +174,7 @@ export class Battle {
   finished = false;
   gen1LastDamage = 0;
   betweenTurns = 0;
-  allActive: Battlemon[];
+  battlers: Battlemon[];
   turnOrder: Battlemon[] = [];
 
   private constructor(
@@ -184,7 +184,7 @@ export class Battle {
     readonly mods: Mods,
     readonly rng: Random,
   ) {
-    this.allActive = [
+    this.battlers = [
       players[0].active[0],
       players[1].active[0],
       players[0].active[1],
@@ -225,7 +225,7 @@ export class Battle {
   }
 
   event<T extends BattleEvent>(event: T): T & BattleEvent {
-    const volatiles = this.allActive
+    const volatiles = this.battlers
       .filter(poke => poke.initialized && dirty.isDirty(poke.v))
       .map(poke => ({id: poke.id, v: poke.changedVolatiles()}));
     if (volatiles.length) {
@@ -290,11 +290,11 @@ export class Battle {
 
   switchOrder() {
     // Gen 3 switch order is Host first, Guest first, Host second, Guest second
-    return this.allActive;
+    return this.battlers;
   }
 
   inTurnOrder() {
-    return this.allActive
+    return this.battlers
       .filter(p => p.choice)
       .sort((a, b) => {
         if (b.choice!.move.priority !== a.choice!.move.priority) {
@@ -313,7 +313,7 @@ export class Battle {
   }
 
   calcTurnOrder() {
-    for (const poke of this.allActive) {
+    for (const poke of this.battlers) {
       if (poke.choice && !poke.choice.executed) {
         const isLead = this.turnType === TurnType.Lead;
         // Roll quick claw for lead turn in Gen 3 only
@@ -352,7 +352,7 @@ export class Battle {
   }
 
   nextTurn() {
-    if (!this.allActive.every(poke => !poke.options || poke.choice) || this.finished) {
+    if (!this.battlers.every(poke => !poke.options || poke.choice) || this.finished) {
       return;
     }
 
@@ -383,14 +383,14 @@ export class Battle {
       this.gen.handleLeadTurn(this);
       this.turnType = TurnType.Normal;
 
-      for (const poke of this.allActive) {
+      for (const poke of this.battlers) {
         poke.updateOptions(this);
       }
 
       return this.events.splice(0);
     }
 
-    const normal = this.turnType === TurnType.Normal && !this.allActive.some(p => p.v.inBatonPass);
+    const normal = this.turnType === TurnType.Normal && !this.battlers.some(p => p.v.inBatonPass);
     if (normal) {
       this._turn++;
       this.event({type: "next_turn", turn: this._turn});
@@ -407,8 +407,8 @@ export class Battle {
 
     this.runTurn(normal);
 
-    if (this.allActive.some(poke => poke.v.inBatonPass)) {
-      for (const poke of this.allActive) {
+    if (this.battlers.some(poke => poke.v.inBatonPass)) {
+      for (const poke of this.battlers) {
         if (poke.v.inBatonPass) {
           poke.updateOptions(this);
         } else {
@@ -422,10 +422,10 @@ export class Battle {
         return this.forceEnd("too_long");
       }
 
-      if (this.allActive.some(p => p.v.fainted && p.canBeReplaced())) {
+      if (this.battlers.some(p => p.v.fainted && p.canBeReplaced())) {
         this.turnType = TurnType.Switch;
 
-        for (const poke of this.allActive) {
+        for (const poke of this.battlers) {
           if (poke.v.fainted && poke.canBeReplaced()) {
             poke.updateOptions(this);
           } else {
@@ -438,7 +438,7 @@ export class Battle {
       } else {
         this.turnType = TurnType.Normal;
 
-        for (const poke of this.allActive) {
+        for (const poke of this.battlers) {
           poke.updateOptions(this);
         }
       }
@@ -476,7 +476,7 @@ export class Battle {
       return targets;
     }
     case Range.All:
-      return !forUser ? [...this.allActive.filter(a => !a.v.fainted)] : [];
+      return !forUser ? [...this.battlers.filter(a => !a.v.fainted)] : [];
     case Range.AllAllies:
       return !forUser ? user.owner.active.filter(a => a !== user && !a.v.fainted) : [];
     case Range.Field:
@@ -567,7 +567,7 @@ export class Battle {
   hasUproar(user: Battlemon) {
     return (
       !user.hasAbility("soundproof") &&
-      this.allActive.some(p => p.v.thrashing?.move?.id === "uproar")
+      this.battlers.some(p => p.v.thrashing?.move?.id === "uproar")
     );
   }
 
@@ -619,7 +619,7 @@ export class Battle {
   }
 
   getWeather() {
-    if (this.allActive.some(p => p.base.hp && p.getAbility()?.negatesWeather)) {
+    if (this.battlers.some(p => p.base.hp && p.getAbility()?.negatesWeather)) {
       return;
     }
     return this.weather?.kind;
@@ -806,7 +806,7 @@ export class Battle {
 
       const moveId = move.id!;
       if (move.kind === "damage") {
-        const damp = this.allActive.find(p => p.hasAbility("damp"));
+        const damp = this.battlers.find(p => p.hasAbility("damp"));
         if (damp && move.damp) {
           this.ability(damp);
           return this.event({type: "cantuse", src: user.id, move: moveId, why: "generic"});
@@ -858,7 +858,7 @@ export class Battle {
       }
 
       if (moveIndex !== undefined && !user.v.thrashing && !user.v.bide) {
-        const tr = move.range === Range.Field ? this.allActive : targets;
+        const tr = move.range === Range.Field ? this.battlers : targets;
         let pp = 1;
         for (const poke of tr) {
           if (poke.hasAbility("pressure") && poke !== user) {
