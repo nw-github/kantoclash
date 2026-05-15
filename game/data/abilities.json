@@ -177,7 +177,7 @@
   "magicguard": {"name": "Magic Guard", "desc": "Unimplemented"},
   "stormdrain": {"name": "Storm Drain", "desc": "Unimplemented"},
   "tangledfeet": {"name": "Tangled Feet", "desc": "Increased evasiveness when confused."},
-  "unburden": {"name": "Unburden", "desc": "Unimplemented"},
+  "unburden": {"name": "Unburden", "desc": "Doubles Spe after item is consumed."},
   "anticipation": {"name": "Anticipation", "desc": "Unimplemented"},
   "aftermath": {"name": "Aftermath", "desc": "Unimplemented"},
   "gluttony": {"name": "Gluttony", "desc": "Unimplemented"},

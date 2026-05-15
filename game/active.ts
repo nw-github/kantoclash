@@ -215,6 +215,9 @@ export class Battlemon {
     const item = this.base.itemId!;
     this.consumed = item;
     this.base.itemId = undefined;
+    if (this.hasAbility("unburden")) {
+      this.v.setFlag(VF.unburdened);
+    }
     battle.event({type: "item", src: this.id, item});
   }
 
@@ -1191,6 +1194,10 @@ export class Battlemon {
     cb(this.base);
     if (!this.base.item?.choice) {
       this.v.choiceLock = undefined;
+    }
+    // Knock Off/Thief also trigger Unburden
+    if (!this.base.itemId && this.hasAbility("unburden")) {
+      this.v.setFlag(VF.unburdened);
     }
   }
 

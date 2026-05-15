@@ -84,6 +84,7 @@ export enum VF {
   defenseCurl  = 0x0400_0000,
   powerTrick   = 0x0800_0000,
   aquaRing     = 0x1000_0000,
+  unburdened   = 0x2000_0000,
 }
 
 export enum Endure {

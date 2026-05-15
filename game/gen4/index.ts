@@ -825,10 +825,9 @@ export class Generation4 extends Generation3 {
 
     if (abilityId === "slowstart" && user.v.slowStartTurns < 5) {
       speed >>= 1;
+    } else if (abilityId === "unburden" && user.v.hasFlag(VF.unburdened)) {
+      speed <<= 1;
     }
-    // else if (abilityId === "unburden" && user.v.unburdenFlag) {
-    //   speed <<= 1;
-    // }
     if (user.owner.screens.tailwind) {
       speed <<= 1;
     }
