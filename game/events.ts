@@ -36,7 +36,6 @@ type AnyEvent =
   | BeatUpEvent
   | ItemEvent
   | RestorePPEvent
-  | ThiefEvent
   | TrickEvent
   | ForfeitEvent
   | SpikesEvent
@@ -395,23 +394,9 @@ export type WeatherEvent = {
 type PerishSongEvent = {type: "perish"; src: PokeId; turns: number};
 
 type ItemEvent =
-  | {
-      type: "item";
-      src: PokeId;
-      item?: ItemId;
-    }
-  | {
-      type: "recycle";
-      src: PokeId;
-      item: ItemId;
-    };
-
-type ThiefEvent = {
-  type: "thief" | "knockoff";
-  src: PokeId;
-  target: PokeId;
-  item: ItemId;
-};
+  | {type: "item"; src: PokeId; item?: ItemId}
+  | {type: "recycle"; src: PokeId; item: ItemId}
+  | {type: "thief" | "knockoff" | "pluck"; src: PokeId; target: PokeId; item: ItemId};
 
 type TrickEvent = {
   type: "trick";

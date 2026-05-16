@@ -384,6 +384,8 @@ export class ClientManager {
         this.cb.displayEvent({type: "obtain_item", src: e.target, item: e.targetItem});
       }
       return this.handleVolatiles(e);
+    } else if (e.type === "pluck") {
+      this.players.poke(e.target)!.base.itemId = undefined;
     } else if (e.type === "knockoff") {
       this.players.poke(e.target)!.base.itemUnusable = true;
     } else if (e.type === "recycle") {

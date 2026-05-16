@@ -842,10 +842,30 @@
     "desc": "Halves dmg from a Normal-type move.",
     "naturalGift": ["normal", 60]
   },
-  "micleberry": {"name": "Micle Berry", "fling": 10, "naturalGift": ["rock", 80]},
-  "custapberry": {"name": "Custap Berry", "fling": 10, "naturalGift": ["ghost", 80]},
-  "jabocaberry": {"name": "Jaboca Berry", "fling": 10, "naturalGift": ["dragon", 80]},
-  "rowapberry": {"name": "Rowap Berry", "fling": 10, "naturalGift": ["dark", 80]},
+  "micleberry": {
+    "name": "Micle Berry",
+    "fling": 10,
+    "naturalGift": ["rock", 80],
+    "desc": "Unimplemented."
+  },
+  "custapberry": {
+    "name": "Custap Berry",
+    "fling": 10,
+    "naturalGift": ["ghost", 80],
+    "desc": "Unimplemented."
+  },
+  "jabocaberry": {
+    "name": "Jaboca Berry",
+    "fling": 10,
+    "naturalGift": ["dragon", 80],
+    "desc": "Unimplemented."
+  },
+  "rowapberry": {
+    "name": "Rowap Berry",
+    "fling": 10,
+    "naturalGift": ["dark", 80],
+    "desc": "Unimplemented."
+  },
   "widelens": {"name": "Wide Lens", "fling": 10, "desc": "Boosts accuracy by 10%.", "boostAcc": 10},
   "muscleband": {"name": "Muscle Band", "fling": 10, "desc": "Boosts physical attacks by 10%."},
   "wiseglasses": {"name": "Wise Glasses", "fling": 10, "desc": "Boosts special attacks by 10%."},
@@ -854,9 +874,9 @@
     "fling": 10,
     "desc": "Boosts super effective attacks by 20%."
   },
-  "lightclay": {"name": "Light Clay", "fling": 30},
+  "lightclay": {"name": "Light Clay", "fling": 30, "desc": "Unimplemented."},
   "lifeorb": {"name": "Life Orb", "fling": 30, "desc": "Boosts damage, but hurts the user."},
-  "powerherb": {"name": "Power Herb", "fling": 70},
+  "powerherb": {"name": "Power Herb", "fling": 70, "desc": "Unimplemented."},
   "toxicorb": {
     "name": "Toxic Orb",
     "fling": 30,
@@ -881,16 +901,22 @@
     "fling": 10,
     "desc": "Boosts accuracy by 20% against targets that have already attacked."
   },
-  "metronome": {"name": "Metronome", "fling": 30},
-  "ironball": {"name": "Iron Ball", "fling": 130, "halveSpeed": true, "groundsUser": true},
+  "metronome": {"name": "Metronome", "fling": 30, "desc": "Unimplemented."},
+  "ironball": {
+    "name": "Iron Ball",
+    "fling": 130,
+    "halveSpeed": true,
+    "groundsUser": true,
+    "desc": "Grounds the user and halves Spe."
+  },
   "laggingtail": {
     "name": "Lagging Tail",
     "fling": 10,
     "desc": "Holder moves last in priority bracket.",
     "laggingTail": true
   },
-  "destinyknot": {"name": "Destiny Knot", "fling": 10},
-  "blacksludge": {"name": "Black Sludge", "fling": 30},
+  "destinyknot": {"name": "Destiny Knot", "fling": 10, "desc": "Unimplemented."},
+  "blacksludge": {"name": "Black Sludge", "fling": 30, "desc": "Unimplemented."},
   "icyrock": {
     "name": "Icy Rock",
     "fling": 40,
@@ -915,14 +941,14 @@
     "desc": "Extends Rain Dance to 8 turns.",
     "extendWeather": "rain"
   },
-  "gripclaw": {"name": "Grip Claw", "fling": 90},
+  "gripclaw": {"name": "Grip Claw", "fling": 90, "desc": "Unimplemented."},
   "choicescarf": {
     "name": "Choice Scarf",
     "desc": "Boosts Spe by 50% but prevents switching moves.",
     "fling": 10,
     "choice": "spe"
   },
-  "stickybarb": {"name": "Sticky Barb", "fling": 80},
+  "stickybarb": {"name": "Sticky Barb", "fling": 80, "desc": "Unimplemented."},
   "powerbracer": {
     "name": "Power Bracer",
     "fling": 70,
@@ -959,8 +985,8 @@
     "halveSpeed": true,
     "desc": "Halves the holder's Spe."
   },
-  "shedshell": {"name": "Shed Shell", "fling": 10},
-  "bigroot": {"name": "Big Root", "fling": 10},
+  "shedshell": {"name": "Shed Shell", "fling": 10, "desc": "Unimplemented."},
+  "bigroot": {"name": "Big Root", "fling": 10, "desc": "Unimplemented."},
   "choicespecs": {
     "name": "Choice Specs",
     "desc": "Boosts SpA by 50% but prevents switching moves.",

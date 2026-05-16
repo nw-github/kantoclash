@@ -863,6 +863,85 @@ export class Battlemon {
     }
   }
 
+  // pokeheartgold:TryEatOpponentBerry
+  tryPluck(battle: Battle, target: Battlemon) {
+    const item = target.base.item;
+    if (!item || !item.naturalGift || target.getAbilityId(this) === "stickyhold") {
+      return;
+    }
+
+    const pluck = () => {
+      battle.event({type: "pluck", src: this.id, target: target.id, item: target.base.itemId!});
+      target.base.itemId = undefined;
+    };
+
+    if (battle.gen.id <= 4 && (this.v.embargoTurns || this.getAbilityId() === "klutz")) {
+      return pluck();
+    }
+
+    const cures = item.cureStatus;
+    const statPinch = item.statPinch;
+    const status = this.base.status === "tox" ? "psn" : this.base.status;
+    if (item.healFixed) {
+      pluck();
+      this.recover(item.healFixed, this, battle, "item");
+    } else if (item.healPinchNature) {
+      pluck();
+      this.recover(idiv1(this.base.maxHp, 8), this, battle, "item");
+      if (this.base.nature !== undefined) {
+        const [, minus] = Object.keys(natureTable[this.base.nature]);
+        if (minus === item.healPinchNature && !this.hasAbility("owntempo")) {
+          this.confuse(battle);
+        }
+      }
+    } else if (item.healSitrus) {
+      pluck();
+      this.recover(idiv1(this.base.maxHp, 4), this, battle, "item");
+    } else if (item.restorePP) {
+      const slot = this.base.pp.findIndex(
+        (pp, i) => pp !== battle.gen.getMaxPP(this.base.moves[i]),
+      );
+      if (slot !== -1) {
+        const max = battle.gen.getMaxPP(this.base.moves[slot]);
+        this.base.pp[slot] = Math.min(this.base.pp[slot] + item.restorePP, max);
+        pluck();
+        battle.event({type: "pp", src: this.id, move: this.base.moves[slot]});
+      } else {
+        pluck();
+      }
+    } else if (cures && cures === status) {
+      pluck();
+      this.unstatus(battle);
+    } else if (cures === "any") {
+      if (this.base.status) {
+        pluck();
+        this.unstatus(battle);
+      } else if (this.v.confusion) {
+        this.v.confusion = 0;
+        pluck();
+        battle.info(this, "confused_end");
+      }
+    } else if (cures === "confuse" && this.v.confusion) {
+      this.v.confusion = 0;
+      pluck();
+      battle.info(this, "confused_end");
+    } else if (statPinch) {
+      pluck();
+      if (statPinch === "crit") {
+        this.v.setFlag(VF.focusEnergy);
+        battle.info(this, "focusEnergy");
+      } else {
+        if (statPinch === "random") {
+          this.modStages([[battle.rng.choice([...stageStatKeys])!, +2]], battle);
+        } else {
+          this.modStages([[statPinch, +1]], battle);
+        }
+      }
+    } else {
+      pluck();
+    }
+  }
+
   handleEndure(battle: Battle, endure: Endure) {
     switch (endure) {
       case Endure.Endure:

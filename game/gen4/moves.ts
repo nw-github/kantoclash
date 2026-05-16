@@ -395,6 +395,10 @@ export const tryDamage = (
       handledShellBell = true;
     }
 
+    if (self.flag === DMF.bugbite && !hadSub) {
+      user.tryPluck(battle, target);
+    }
+
     if (dealt !== 0) {
       tryContactAbility(type, hadSub);
     }

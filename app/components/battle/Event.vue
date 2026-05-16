@@ -129,7 +129,7 @@ const textLines = computed(() => {
           return gen.moveList[e.move].name;
         } else if (substr === "{ability}" && "ability" in e && e.ability) {
           return abilityList[e.ability].name;
-        } else if (substr === "{item}" && "item" in e && e.item) {
+        } else if (substr === "<b>{item}</b>" && "item" in e && e.item) {
           return gen.items[e.item].name;
         } else if (substr === "{wish}" && "why" in e && e.why && e.why.startsWith("wish:")) {
           return e.why.slice(5);
@@ -341,9 +341,9 @@ const createTemplate = (e: UIBattleEvent): FormattedText | undefined => {
     if (item) {
       return text(item);
     } else if (e.item?.includes('berry')) {
-      return text("{Src} ate its {item}!", "muted move");
+      return text("{Src} ate its <b>{item}</b>!", "muted move");
     } else { // berserk gene, mental herb
-      return text("{Src} used its {item}!", "muted move");
+      return text("{Src} used its <b>{item}</b>!", "muted move");
     }
   }
   case "info": {
@@ -380,15 +380,16 @@ const createTemplate = (e: UIBattleEvent): FormattedText | undefined => {
   case "snatch": return text("{Src} snatched {target}'s move!");
   case "helping_hand": return text("{Src} is ready to help {target}!");
   case "pp": return text("{Src}'s <b>{move}</b> was restored!");
-  case "thief": return text("{Src} stole {target}'s {item}!");
+  case "thief": return text("{Src} stole {target}'s <b>{item}</b>!");
+  case "pluck": return text("{Src} stole and ate {target}'s <b>{item}</b>!");
   case "trick": return text("{Src} switched items with its target!");
-  case "knockoff": return text("{Src} knocked off {target}'s {item}!");
-  case "recycle": return text("{Src} found one {item}!");
+  case "knockoff": return text("{Src} knocked off {target}'s <b>{item}</b>!");
+  case "recycle": return text("{Src} found one <b>{item}</b>!");
   case "copy_ability": return text("{Src} copied {target}'s <b>{ability}</b>!");
   case "trace": return text("{Src} traced {target}'s <b>{ability}</b>!");
   case "skill_swap": return text("{Src} swapped abilities with {target}!");
   case "stockpile": return text(`{Src} stockpiled ${e.count}!`);
-  case "obtain_item": return text("{Src} obtained one {item}!");
+  case "obtain_item": return text("{Src} obtained one <b>{item}</b>!");
   }
 };
 
