@@ -55,6 +55,7 @@ export const getRandomPokemon = (
         const itemData = gen.items[item];
         if (
           !itemData.desc ||
+          itemData.desc === "Unimplemented" ||
           !itemData.exists ||
           itemData.halveSpeed ||
           itemData.laggingTail ||
@@ -144,7 +145,11 @@ export const getRandomPokemon = (
 
         poke.nature = random.choice(natures);
         poke.shiny = random.int(0, 1024) === 0;
-        poke.ability = random.choice((s.abilities as AbilityId[]).filter(a => abilityList[a].desc));
+        poke.ability = random.choice(
+          (s.abilities as AbilityId[]).filter(
+            a => abilityList[a].desc && abilityList[a].desc !== "Unimplemented",
+          ),
+        );
         if (!poke.ability) {
           poke.ability = random.choice(s.abilities as AbilityId[]);
         }
