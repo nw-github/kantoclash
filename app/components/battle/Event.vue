@@ -129,7 +129,7 @@ const textLines = computed(() => {
           return gen.moveList[e.move].name;
         } else if (substr === "{ability}" && "ability" in e && e.ability) {
           return abilityList[e.ability].name;
-        } else if (substr === "<b>{item}</b>" && "item" in e && e.item) {
+        } else if (substr === "{item}" && "item" in e && e.item) {
           return gen.items[e.item].name;
         } else if (substr === "{wish}" && "why" in e && e.why && e.why.startsWith("wish:")) {
           return e.why.slice(5);
