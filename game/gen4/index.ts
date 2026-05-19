@@ -894,13 +894,17 @@ export class Generation4 extends Generation3 {
       stagesEva *= 2;
     }
 
-    if (target.v.identified && stagesEva > 0) {
+    if (userAbilityId === "unaware" || (target.v.identified && stagesEva > 0)) {
       stagesEva = 0;
     }
 
     let stagesAcc = user.v.stages.acc;
     if (userAbilityId === "simple") {
       stagesAcc *= 2;
+    }
+
+    if (targetAbilityId === "unaware") {
+      stagesAcc = 0;
     }
 
     let acc = applyStatStages(this, chance, stagesAcc - stagesEva, "accStageMultipliers");

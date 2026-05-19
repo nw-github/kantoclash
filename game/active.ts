@@ -1178,7 +1178,11 @@ export class Battlemon {
     ) {
       return;
     }
-    return !this.v.hasFlag(VF.gastroAcid) && !this.v.fainted ? this.v.ability : undefined;
+    if (!this.base.hp && this.base.gen.id >= 5) {
+      // Ignore Sticky Hold if the target has fainted, ignore ability if the Future Sight user is dead.
+      return;
+    }
+    return !this.v.hasFlag(VF.gastroAcid) ? this.v.ability : undefined;
   }
 
   getAbility(user?: Battlemon) {
@@ -1201,9 +1205,8 @@ export class Battlemon {
   }
 
   getItemId() {
-    return this.v.embargoTurns || this.hasAbility("klutz") || this.v.fainted
-      ? undefined
-      : this.base.itemId;
+    const dead = !this.base.hp && this.base.gen.id >= 5;
+    return this.v.embargoTurns || this.hasAbility("klutz") || dead ? undefined : this.base.itemId;
   }
 
   getItemIdAndData() {
