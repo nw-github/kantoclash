@@ -118,7 +118,7 @@
         <div class="events p-1">
           <template v-if="i > 0">
             <!-- eslint-disable-next-line vue/valid-v-for -->
-            <Event v-for="(e, j) of turn" :key="j" :e :my-id :players :perspective :gen />
+            <Event v-for="(e, j) of turn" :key="j" :e :my-id :perspective />
           </template>
           <div v-if="chats[i]?.length" class="pt-1"></div>
           <ChatMessage
@@ -129,7 +129,7 @@
           />
           <template v-if="i === 0">
             <!-- eslint-disable-next-line vue/valid-v-for -->
-            <Event v-for="(e, j) of turn" :key="j" :e :my-id :players :perspective :gen />
+            <Event v-for="(e, j) of turn" :key="j" :e :my-id :perspective />
           </template>
         </div>
       </template>
@@ -190,7 +190,6 @@
 
 <script setup lang="ts">
 import {useMutedPlayerIds} from "~/composables/states";
-import {GENERATIONS} from "~~/game/gen";
 import type {InfoRecord} from "~~/server/gameServer";
 import {until} from "@vueuse/core";
 import AlertModal from "~/components/dialog/AlertModal.vue";
@@ -212,7 +211,6 @@ const emit = defineEmits<{chat: [string]; report: [string]; forfeit: []; close: 
 const mutedPlayers = useMutedPlayerIds();
 const message = ref("");
 const scrollPoint = useTemplateRef("scrollPoint");
-const gen = computed(() => GENERATIONS[formatInfo[props.format].generation]!);
 const timeLeft = ref<ReturnType<typeof formatRemainingTime>>();
 
 const overlay = useOverlay();

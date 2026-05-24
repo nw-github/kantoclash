@@ -66,6 +66,8 @@ export const useIgnoreChallenges = () => useLocalStorage<bool>("ignoreChallenges
 
 export const useAutoMuteMusic = () => useLocalStorage<bool>("autoMuteMusic", false);
 
+export const useClassicBattleUI = () => useLocalStorage<bool>("classicBattleUI", false);
+
 const challenges = ref<Challenge[]>([]);
 
 export const useChallenges = () => challenges;

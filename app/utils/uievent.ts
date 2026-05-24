@@ -6,6 +6,7 @@ import type {
   InfoReason,
   PokeId,
   RecoverEvent,
+  RecoveryReason,
   ScreenEvent,
   WeatherEvent,
 } from "~~/game/events";
@@ -17,20 +18,24 @@ import type {ScreenId, HazardId} from "~~/game/utils";
 
 export type RawUIBattleEvent =
   | BattleEvent
-  | RetractEvent
-  | SubBroke
-  | GetSubstitute
+  | {type: "retract"; src: PokeId; name: string}
+  | {type: "sub_break"; target: PokeId}
+  | {type: "eff"; target: PokeId; eff?: number}
+  | {
+      type: "dmg_reason";
+      src: PokeId;
+      target: PokeId;
+      move?: MoveId;
+      why: DamageReason | RecoveryReason;
+    }
+  | {type: "get_sub"; src: PokeId}
+  | {type: "obtain_item"; src: PokeId; item: ItemId}
+  | {type: "hit_count"; hitCount: number}
+  | {type: "crit"; target: PokeId}
+  | {type: "start"}
   | UIDamageEvent
-  | UIRecoverEvent
-  | ObtainItem;
-export type UIBattleEvent = RawUIBattleEvent & {time: number} & {names: Record<string, string>};
-
-export type RetractEvent = {type: "retract"; src: PokeId; name: string};
-
-export type SubBroke = {type: "sub_break"; target: PokeId};
-
-export type GetSubstitute = {type: "get_sub"; src: PokeId};
-export type ObtainItem = {type: "obtain_item"; src: PokeId; item: ItemId};
+  | UIRecoverEvent;
+export type UIBattleEvent = RawUIBattleEvent & {names: Record<string, string>};
 
 export type UIDamageEvent = DamageEvent & {maxHp?: number};
 export type UIRecoverEvent = RecoverEvent & {maxHp?: number};
@@ -73,9 +78,10 @@ export const infoMessage: Record<InfoReason, string> = {
   cant_substitute: "{Src} doesn't have enough HP to create a substitute!",
   has_substitute: "{Src} already has a substitute!",
   fail_generic: "But it failed!",
-  fail_unimplemented: "But it failed! (Unimplemented move)",
+  fail_unimplemented: "But the devs were too lazy to implement it!",
   fail_notarget: "But there was no target...",
-  fail_sleep_clause: "But it failed!",
+  fail_sleep_clause:
+    "But it failed! (Sleep Clause Mod: Only one Pokémon may be put to sleep at a time)",
   whirlwind: "But it failed!",
   fail_focus: "{Src} lost its focus and couldn't move!",
   flinch: "{Src} flinched!",
@@ -124,7 +130,7 @@ export const infoMessage: Record<InfoReason, string> = {
   perish_song: "All affected pokemon will faint in three turns!",
   withdraw: "({Src} is trying to switch out...)",
   fail_present: "{Src} couldn't receive the gift!",
-  endure_band: "{Src} held on using its Focus Band!",
+  endure_band: "{Src} held on using its <b>Focus Band</b>!",
   wont_flinch: "{Src} wont flinch!",
   ingrain: "{Src} planted its roots!",
   taunt: "{Src} fell for the taunt!",
@@ -150,7 +156,7 @@ export const infoMessage: Record<InfoReason, string> = {
   pressure: "{Src} is exerting its Pressure!",
   gastroAcid: "{Src}'s ability was suppressed!",
   atk_maximize: "{Src} maxed its Attack!",
-  quickclaw: "{Src} can move faster thanks to its Quick Claw!",
+  quickclaw: "{Src} can move faster thanks to its <b>Quick Claw</b>!",
   heartswap: "{Src} switched stat stages with the target!",
   guardswap: "{Src} switched all changes to its Defense and Sp. Def with the target!",
   powerswap: "{Src} switched all changes to its Attack and Sp. Atk with the target!",
@@ -250,7 +256,7 @@ export const hazardMessage: Record<HazardId, {set: string; spin: string}> = {
   },
 };
 
-export const damageMessage: Partial<Record<DamageReason, string>> = {
+export const damageMessage: Partial<Record<DamageReason | RecoveryReason, string>> = {
   recoil: "{Src} is hit with recoil!",
   psn: "{Src} is hurt by poison!",
   brn: "{Src} is hurt by its burn!",
@@ -271,6 +277,15 @@ export const damageMessage: Partial<Record<DamageReason, string>> = {
   roughskin: "{Target} was hurt!",
   baddreams: "{Target} is tormented!",
   lifeorb: "{Src} is hurt by its Life Orb!",
+  trap_eot: "{Src} is hurt by {move}!",
+  // Recovery
+  drain: "{Src} had its energy drained!",
+  recover: "{Src} regained health!",
+  rest: "{Src} started sleeping!",
+  leftovers: "{Src} restored a little HP using its <b>Leftovers!</b>",
+  ingrain: "{Src} absorbed nutrients with its roots!",
+  aquaRing: "A veil of water restored {src}'s HP!",
+  shellbell: "{Src} restored a little HP using its <b>Shell Bell!</b>",
 };
 
 export const trapStart: Partial<Record<MoveId, string>> = {
@@ -312,16 +327,6 @@ export const cantUseTable: Partial<Record<(BattleEvent & {type: "cantuse"})["why
 };
 
 export const consumeItemTable: Partial<Record<ItemId, string>> = {
-  whiteherb: "{Src} restored its stats using its {item}!",
-  focussash: "{Src} held on using its {item}!",
-};
-
-export const recoveryReason: Partial<Record<(BattleEvent & {type: "recover"})["why"], string>> = {
-  drain: "{Src} had its energy drained!",
-  recover: "{Src} regained health!",
-  rest: "{Src} started sleeping!",
-  leftovers: "{Src} restored a little HP using its Leftovers!",
-  ingrain: "{Src} absorbed nutrients with its roots!",
-  aquaRing: "A veil of water restored {src}'s HP!",
-  shellbell: "{Src} restored a little HP using its Shell Bell!",
+  whiteherb: "{Src} restored its stats using its <b>{item}</b>!",
+  focussash: "{Src} held on using its <b>{item}</b>!",
 };

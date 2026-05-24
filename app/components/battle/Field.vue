@@ -1,7 +1,18 @@
 <template>
   <div class="flex w-full px-4 justify-around relative" :class="isSingles && 'gap-8'">
     <template v-for="(player, id) in players.items" :key="id">
-      <div v-if="player.bp" :class="[id !== perspective ? 'order-2' : 'pt-10 sm:pt-14']">
+      <div
+        v-if="player.bp"
+        class="relative"
+        :class="id !== perspective ? 'order-2' : 'pt-10 sm:pt-14'"
+      >
+        <div
+          class="absolute pt-20 sm:pt-30 overflow-hidden z-1000"
+          :class="id !== perspective ? '-right-8 sm:-right-12' : '-left-8 sm:-left-12'"
+        >
+          <AbilityDisplay ref="abilityDisplays" :invert="id !== perspective" :player-id="id" />
+        </div>
+
         <div class="flex gap-2 sm:gap-4" :class="id !== perspective && 'flex-row-reverse'">
           <ActivePokemon
             v-for="(poke, i) in player.bp.active"
@@ -58,16 +69,64 @@
 import type {ActivePokemon} from "#components";
 import type {PlayerId, PokeId} from "~~/game/events";
 import type {AnimationParams} from "./ActivePokemon.vue";
-import type {Weather} from "~~/game/utils";
+import {playerId, type Weather} from "~~/game/utils";
+import {abilityList} from "~~/game/species";
+import type {AnimationPlaybackControls, AnimationPlaybackControlsWithThen} from "motion-v";
 
-defineProps<{players: Players; perspective: PlayerId; isSingles: boolean; weather?: Weather}>();
+const {players, perspective} = defineProps<{
+  players: Players;
+  perspective: PlayerId;
+  isSingles: boolean;
+  weather?: Weather;
+}>();
 
 const activePokemon = useTemplateRef("activePokemon");
+const abilityDisplays = useTemplateRef("abilityDisplays");
+
+const animations: AnimationPlaybackControls[] = [];
 
 const playAnimation = (id: PokeId, params: AnimationParams) => {
   const component = activePokemon.value?.find(a => a?.getId() === id);
-  return component && component.playAnimation(params);
+  return anim(component && component.playAnimation(params));
 };
 
-defineExpose({playAnimation});
+const displayAbility = async (ev: UIBattleEvent & {type: "proc_ability"}) => {
+  const component = abilityDisplays.value?.find(a => a?.getId() === playerId(ev.src));
+  const poke = players.poke(ev.src)!;
+  const left = playerId(ev.src) === perspective;
+  return anim(
+    component &&
+      component.playSlideIn(
+        poke.base.name,
+        poke.v.speciesId,
+        poke.v.form,
+        abilityList[ev.ability].name,
+        left,
+      ),
+  );
+};
+
+const skipAnimations = () => {
+  animations.forEach(anim => anim.complete());
+  animations.length = 0;
+};
+
+const anim = (anim: AnimationPlaybackControlsWithThen | null | undefined) => {
+  if (!anim) {
+    return;
+  }
+  animations.push(anim);
+
+  const onFinish = () => {
+    const idx = animations.indexOf(anim);
+    if (idx !== -1) {
+      animations.splice(idx, 1);
+    }
+  };
+
+  anim.then(onFinish, onFinish);
+  return anim;
+};
+
+defineExpose({playAnimation, displayAbility, skipAnimations});
 </script>

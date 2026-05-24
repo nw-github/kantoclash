@@ -14,6 +14,7 @@
               <UCheckbox v-model="filter" label="Enable profanity filter" />
               <UCheckbox v-model="challenges" label="Ignore challenges" />
               <UCheckbox v-model="autoMute" label="Mute music at the end of a battle" />
+              <UCheckbox v-model="classicUI" label="Classic Battle UI (Beta)" />
               <UButton
                 :label="!loading ? 'Log out' : 'Logging out...'"
                 :loading="loading"
@@ -36,6 +37,7 @@ const {clear} = useUserSession();
 const filter = useChatCensorEnabled();
 const challenges = useIgnoreChallenges();
 const autoMute = useAutoMuteMusic();
+const classicUI = useClassicBattleUI();
 const loading = ref(false);
 const model = defineModel<boolean>({default: false});
 

@@ -241,6 +241,7 @@ type VFReason = Exclude<
   | "roost"
   | "minimize"
   | "defenseCurl"
+  | "unburdened"
 >;
 
 export type InfoReason =
