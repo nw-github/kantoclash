@@ -534,6 +534,10 @@ onMounted(async () => {
           await scrollboxText(ev);
         }
       }
+
+      if (isLive() && ev.type === "start") {
+        await field.value?.playTrainerIntro();
+      }
     },
   });
 

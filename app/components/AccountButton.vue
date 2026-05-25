@@ -14,7 +14,7 @@
               <UCheckbox v-model="filter" label="Enable profanity filter" />
               <UCheckbox v-model="challenges" label="Ignore challenges" />
               <UCheckbox v-model="autoMute" label="Mute music at the end of a battle" />
-              <UCheckbox v-model="classicUI" label="Classic Battle UI (Beta)" />
+              <UCheckbox v-model="classicUI" label="Classic battle UI (Beta)" />
               <UButton
                 :label="!loading ? 'Log out' : 'Logging out...'"
                 :loading="loading"
