@@ -26,6 +26,7 @@ export type RawUIBattleEvent =
       src: PokeId;
       target: PokeId;
       move?: MoveId;
+      item?: ItemId;
       why: DamageReason | RecoveryReason;
     }
   | {type: "get_sub"; src: PokeId}
@@ -282,10 +283,10 @@ export const damageMessage: Partial<Record<DamageReason | RecoveryReason, string
   drain: "{Src} had its energy drained!",
   recover: "{Src} regained health!",
   rest: "{Src} started sleeping!",
-  leftovers: "{Src} restored a little HP using its <b>Leftovers!</b>",
   ingrain: "{Src} absorbed nutrients with its roots!",
   aquaRing: "A veil of water restored {src}'s HP!",
-  shellbell: "{Src} restored a little HP using its <b>Shell Bell!</b>",
+  item: "{Src} restored HP using its <b>{item}</b>!",
+  item2: "{Src} restored a little HP using its <b>{item}!</b>!",
 };
 
 export const trapStart: Partial<Record<MoveId, string>> = {

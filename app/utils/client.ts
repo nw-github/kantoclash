@@ -229,12 +229,14 @@ export class ClientManager {
       };
 
       if (e.why.startsWith("wish") || damageMessage[e.why]) {
+        const item = e.type === "recover" ? e.item : undefined;
         await this.cb.displayEvent({
           type: "dmg_reason",
-          why: e.why,
+          why: item === "leftovers" || item === "shellbell" ? "item2" : e.why,
           src: e.src,
           target: e.target,
           move: e.type === "damage" ? e.move : undefined,
+          item,
         });
       }
 

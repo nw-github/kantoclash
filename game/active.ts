@@ -387,7 +387,7 @@ export class Battlemon {
     }
   }
 
-  recover(amount: number, src: Battlemon, battle: Battle, why: RecoveryReason) {
+  recover(amount: number, src: Battlemon, battle: Battle, why: RecoveryReason, item?: ItemId) {
     if ((why === "seeder" || why === "drain") && src !== this && src.hasAbility("liquidooze")) {
       battle.ability(src);
       return this.damage2(battle, {dmg: amount, src, why: "roughskin"});
@@ -411,6 +411,7 @@ export class Battlemon {
       hpBefore,
       hpAfter: this.base.hp,
       why,
+      item,
     });
   }
 
@@ -735,13 +736,13 @@ export class Battlemon {
 
   handleShellBell(battle: Battle, dmg: number) {
     if (this.base.hp && dmg !== 0 && !this.v.fainted && this.hasItem("shellbell")) {
-      this.recover(idiv1(dmg, 8), this, battle, "shellbell");
+      this.recover(idiv1(dmg, 8), this, battle, "item", "shellbell");
     }
   }
 
   handleLeftovers(battle: Battle) {
     if (!this.v.fainted && this.hasItem("leftovers")) {
-      this.recover(idiv1(this.base.maxHp, 16), this, battle, "leftovers");
+      this.recover(idiv1(this.base.maxHp, 16), this, battle, "item", "leftovers");
     }
   }
 
@@ -817,10 +818,10 @@ export class Battlemon {
         const healSitrus = item.healSitrus;
         if (healFixed) {
           this.consumeItem(battle);
-          this.recover(healFixed, this, battle, "item");
+          this.recover(healFixed, this, battle, "item", itemId);
         } else if (healPinch) {
           this.consumeItem(battle);
-          this.recover(idiv1(this.base.maxHp, 8), this, battle, "item");
+          this.recover(idiv1(this.base.maxHp, 8), this, battle, "item", itemId);
           if (this.base.nature !== undefined) {
             const [, minus] = Object.keys(natureTable[this.base.nature]);
             if (minus === healPinch && !this.hasAbility("owntempo")) {
@@ -829,7 +830,7 @@ export class Battlemon {
           }
         } else if (healSitrus) {
           this.consumeItem(battle);
-          this.recover(idiv1(this.base.maxHp, 4), this, battle, "item");
+          this.recover(idiv1(this.base.maxHp, 4), this, battle, "item", itemId);
         }
       }
 
@@ -884,10 +885,10 @@ export class Battlemon {
     const status = this.base.status === "tox" ? "psn" : this.base.status;
     if (item.healFixed) {
       pluck();
-      this.recover(item.healFixed, this, battle, "item");
+      this.recover(item.healFixed, this, battle, "none");
     } else if (item.healPinchNature) {
       pluck();
-      this.recover(idiv1(this.base.maxHp, 8), this, battle, "item");
+      this.recover(idiv1(this.base.maxHp, 8), this, battle, "none");
       if (this.base.nature !== undefined) {
         const [, minus] = Object.keys(natureTable[this.base.nature]);
         if (minus === item.healPinchNature && !this.hasAbility("owntempo")) {
@@ -896,7 +897,7 @@ export class Battlemon {
       }
     } else if (item.healSitrus) {
       pluck();
-      this.recover(idiv1(this.base.maxHp, 4), this, battle, "item");
+      this.recover(idiv1(this.base.maxHp, 4), this, battle, "none");
     } else if (item.restorePP) {
       const slot = this.base.pp.findIndex(
         (pp, i) => pp !== battle.gen.getMaxPP(this.base.moves[i]),
