@@ -22,6 +22,7 @@ export type ClientPlayer = {
   isSpectator: bool;
   connected: bool;
   admin: bool | undefined;
+  trainerSprite: string;
 
   time?: BattleTimers[string];
   bp?: Omit<Player, "active"> & {active: NonEmptyArray<ClientActivePokemon>};
@@ -104,6 +105,7 @@ export class Players {
       nPokemon,
       admin,
       teamPreview,
+      trainerSprite: "",
     });
   }
 }
@@ -275,12 +277,14 @@ export class ClientManager {
       }
 
       if (e.why === "substitute") {
-        this.players.poke(e.target)!.v.substitute = 1;
-        await this.cb.displayEvent({type: "get_sub", src: e.target});
         await this.cb.playAnimation(e.target, {
           anim: "get_sub",
-          cb: new AnimCallback(() => this.handleVolatiles(e)),
+          cb: new AnimCallback(() => {
+            this.handleVolatiles(e);
+            this.players.poke(e.target)!.v.substitute = 1;
+          }),
         });
+        await this.cb.displayEvent({type: "get_sub", src: e.target});
       }
       return;
     } else if (e.type === "info") {
