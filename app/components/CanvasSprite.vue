@@ -83,13 +83,15 @@ useAnimationFrame((_, dt) => {
   }
 });
 
-const animDuration = () => {
+const animDuration = (threshold = 0) => {
   if (!image) {
     return 0;
   }
   let time = 0;
   for (let i = 0; i < image.frameCount; i++) {
-    time += image.getDelay(i);
+    if (!threshold || threshold >= image.getDelay(i)) {
+      time += image.getDelay(i);
+    }
   }
   return time;
 };

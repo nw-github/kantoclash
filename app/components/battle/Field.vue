@@ -152,7 +152,8 @@ const displayAbility = (ev: UIBattleEvent & {type: "proc_ability"}) => {
 };
 
 const playTrainerIntro = () => {
-  const canvas = trainerSprite?.value?.[0]?.getCanvas();
+  const sprite = trainerSprite?.value?.[0];
+  const canvas = sprite?.getCanvas();
   if (!canvas) {
     return;
   }
@@ -165,7 +166,7 @@ const playTrainerIntro = () => {
       [canvas, {x: [0, 0], y: [0, 0], opacity: [1, 1]}, {at: 0, duration: ms(100)}],
       [trainerAnim.tint, {a: [255, 0]}, {duration: ms(500)}],
       onAnimComplete(new AnimCallback(() => (trainerAnim.paused = false))),
-      [{dummy: 0}, {dummy: 0}, {duration: ms(1300)}],
+      [{dummy: 0}, {dummy: 0}, {duration: ms(sprite!.animDuration(500))}], // For some reason, these APNGs have a few frames at the end with huge delays
       [canvas, {x: rem(3), y: -rem(1), opacity: [1, 0]}, {duration: ms(500)}],
     ]),
   );
