@@ -68,6 +68,12 @@ export const useAutoMuteMusic = () => useLocalStorage<bool>("autoMuteMusic", fal
 
 export const useClassicBattleUI = () => useLocalStorage<bool>("classicBattleUI", false);
 
+export type TextSpeed = (typeof textSpeeds)[number];
+
+export const textSpeeds = ["slow", "medium", "fast"] as const;
+
+export const useClassicTextSpeed = () => useLocalStorage<TextSpeed>("classicTextSpeed", "fast");
+
 const challenges = ref<Challenge[]>([]);
 
 export const useChallenges = () => challenges;

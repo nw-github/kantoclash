@@ -89,7 +89,7 @@
       <Scrollbox
         v-if="classicUI && scrollboxEvent && !(!playingEvents && isBattler && !isBattleOver)"
         :e="scrollboxEvent"
-        :char-delay
+        :char-delay="delays[classicTextSpeed].charDelay"
         :line-delay
         :perspective
         :my-id
@@ -272,6 +272,7 @@ const sfxVol = useSfxVolume();
 const {fadeOut} = useBGMusic();
 const isMounted = useMounted();
 const classicUI = useClassicBattleUI();
+const classicTextSpeed = useClassicTextSpeed();
 const gen = computed(() => GENERATIONS[formatInfo[format].generation]!);
 const isMenuBtnVisible = useElementVisibility(useTemplateRef("menuButton"));
 const unseenChats = ref(0);
@@ -302,7 +303,12 @@ const showTeamPreview = computed(() => {
 const mediaQuery = computed(() => (isSingles.value ? "(max-width: 900px)" : "(max-width: 1100px)"));
 const textBoxHidden = useMediaQuery(mediaQuery);
 
-const charDelay = ref(8);
+const delays: Record<TextSpeed, {lineDelay: number; charDelay: number}> = {
+  fast: {charDelay: 8, lineDelay: 400},
+  medium: {charDelay: 16, lineDelay: 500},
+  slow: {charDelay: 32, lineDelay: 600},
+};
+
 const lineDelay = ref(100);
 
 watch(classicUI, value => {
@@ -456,6 +462,7 @@ onMounted(async () => {
 
     if (
       isLive() &&
+      !classicUI.value &&
       e.type !== "sv" &&
       e.type !== "beatup" &&
       !(e.type === "info" && e.why === "uturn")
@@ -531,6 +538,14 @@ onMounted(async () => {
           field.value?.displayAbility(ev);
           await delay(200);
         } else if (isScrollboxEvent(ev)) {
+          const zeroDelay = new Set<UIBattleEvent["type"]>(["beatup", "switch", "retract"]);
+          if (zeroDelay.has(ev.type)) {
+            lineDelay.value = 0;
+          } else if (e.type === "weather" && e.kind === "continue") {
+            lineDelay.value = delays[classicTextSpeed.value].lineDelay + 200;
+          } else {
+            lineDelay.value = delays[classicTextSpeed.value].lineDelay;
+          }
           await scrollboxText(ev);
         }
       }

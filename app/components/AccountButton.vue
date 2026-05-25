@@ -14,7 +14,25 @@
               <UCheckbox v-model="filter" label="Enable profanity filter" />
               <UCheckbox v-model="challenges" label="Ignore challenges" />
               <UCheckbox v-model="autoMute" label="Mute music at the end of a battle" />
-              <UCheckbox v-model="classicUI" label="Classic battle UI (Beta)" />
+              <div class="flex items-center">
+                <UCheckbox v-model="classicUI" label="Classic battle UI (Beta)" />
+                <TooltipButton
+                  :text="classicUIDesc"
+                  label="?"
+                  size="xs"
+                  variant="link"
+                  color="neutral"
+                />
+              </div>
+              <UFormField v-if="classicUI" label="Text Speed">
+                <URadioGroup
+                  v-model="classicTextSpeed"
+                  :items="textSpeedItems"
+                  value-key="value"
+                  orientation="horizontal"
+                />
+              </UFormField>
+
               <UButton
                 :label="!loading ? 'Log out' : 'Logging out...'"
                 :loading="loading"
@@ -38,8 +56,16 @@ const filter = useChatCensorEnabled();
 const challenges = useIgnoreChallenges();
 const autoMute = useAutoMuteMusic();
 const classicUI = useClassicBattleUI();
+const classicTextSpeed = useClassicTextSpeed();
 const loading = ref(false);
 const model = defineModel<boolean>({default: false});
+
+const textSpeedItems = textSpeeds.map(speed => ({
+  label: toTitleCase(speed),
+  value: speed,
+}));
+
+const classicUIDesc = "Displays battle information in a scrolling text box";
 
 const logout = async () => {
   await clear();
