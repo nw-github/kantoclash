@@ -41,10 +41,19 @@ type Game = {
   eventNo(): number;
 };
 
-async function doStartBot(botType: BotType, games: Record<string, Game>, format?: FormatId) {
-  const result = await login();
+async function doStartBot(
+  botType: BotType,
+  games: Record<string, Game>,
+  format?: FormatId,
+  username?: string,
+) {
+  const result = username ? await loginAs(username) : await login();
   if (!result) {
-    console.log("Failed 3 times, not starting bot!");
+    if (username) {
+      console.log(`Login failed (wanted username ${username})!`);
+    } else {
+      console.log("Failed 3 times, not starting bot!");
+    }
     return;
   }
 
@@ -134,7 +143,7 @@ async function doStartBot(botType: BotType, games: Record<string, Game>, format?
     if (self !== -1) {
       console.log(`[${name}] was disconnected, attempting to reconnect...`);
       activeBots.splice(self, 1);
-      doStartBot(botType, games, format);
+      doStartBot(botType, games, format, name);
     } else {
       console.log(`[${name}] was disconnected but already not active?`);
     }
@@ -147,38 +156,43 @@ async function doStartBot(botType: BotType, games: Record<string, Game>, format?
     )!;
   }
 
-  async function login() {
-    let attempts = 4;
-    while (attempts--) {
-      const name = attempts > 1 ? generateName() : "BOT " + (usedNames.length + 1);
-
-      await $fetch("/api/_auth/session", {method: "DELETE"}).catch(() => {});
-      let resp;
+  async function loginAs(name: string) {
+    await $fetch("/api/_auth/session", {method: "DELETE"}).catch(() => {});
+    let resp;
+    try {
+      resp = await $fetch.raw("/api/register", {
+        method: "POST",
+        body: {username: name, password: process.env.BOT_PASSWORD},
+      });
+    } catch {
       try {
-        resp = await $fetch.raw("/api/register", {
+        resp = await $fetch.raw("/api/login", {
           method: "POST",
           body: {username: name, password: process.env.BOT_PASSWORD},
         });
-      } catch {
-        try {
-          resp = await $fetch.raw("/api/login", {
-            method: "POST",
-            body: {username: name, password: process.env.BOT_PASSWORD},
-          });
-        } catch (ex) {
-          console.log(`[${name}] Login failed: `, ex);
-          continue;
-        }
+      } catch (ex) {
+        console.log(`[${name}] Login failed: `, ex);
+        return;
       }
+    }
 
-      const cookie = resp.headers.getSetCookie().at(-1)!.split(";")[0];
-      const {user} = await $fetch("/api/_auth/session", {method: "GET", headers: {cookie}});
+    const cookie = resp.headers.getSetCookie().at(-1)!.split(";")[0];
+    const {user} = await $fetch("/api/_auth/session", {method: "GET", headers: {cookie}});
+    if (user) {
+      usedNames.push(name);
+      return {cookie, myId: user.id, name};
+    }
+
+    console.log(`[${name}] Login failed (no session returned)`);
+  }
+
+  async function login() {
+    let attempts = 4;
+    while (attempts--) {
+      const user = await loginAs(attempts > 1 ? generateName() : "BOT " + (usedNames.length + 1));
       if (user) {
-        usedNames.push(name);
-        return {cookie, myId: user.id, name};
+        return user;
       }
-
-      console.log(`[${name}] Login failed (no session returned)`);
     }
   }
 
