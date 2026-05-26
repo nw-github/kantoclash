@@ -8,6 +8,7 @@ import {type Battlemon, Battle, type Player} from "~~/game/battle";
 import type {NonEmptyArray} from "~~/game/utils";
 import type {DamagingMove, ForesightMove} from "~~/game/moves";
 import dirty from "~~/game/dirty";
+import {damageMessage} from "../../app/utils/uievent";
 
 export type ClientActivePokemon = Battlemon & {
   visible?: bool;
@@ -21,6 +22,7 @@ export type ClientPlayer = {
   isSpectator: bool;
   connected: bool;
   admin: bool | undefined;
+  trainerSprite: string;
 
   time?: BattleTimers[string];
   bp?: Omit<Player, "active"> & {active: NonEmptyArray<ClientActivePokemon>};
@@ -34,7 +36,7 @@ type Callbacks = {
   playShiny(id: PokeId): Promise<void> | void;
   playDmg(eff: number): Promise<void> | void;
   playAnimation(id: PokeId, params: AnimationParams): Promise<void> | void;
-  displayEvent(e: RawUIBattleEvent): void;
+  displayEvent(e: RawUIBattleEvent): Promise<void> | void;
 };
 
 type SwitchInEventData = (BattleEvent & {type: "init"})["pokes"][number];
@@ -103,6 +105,7 @@ export class Players {
       nPokemon,
       admin,
       teamPreview,
+      trainerSprite: "",
     });
   }
 }
@@ -114,6 +117,7 @@ export class ClientManager {
   private fake: Pokemon;
   private cb: Callbacks;
   private defaultCb: Callbacks;
+  private started = false;
 
   constructor(gen: Generation) {
     this.fake = Pokemon.fromDescriptor(gen, {speciesId: "abra", moves: [], level: 0});
@@ -139,6 +143,10 @@ export class ClientManager {
 
   unlisten() {
     this.cb = this.defaultCb;
+  }
+
+  get isDoubles() {
+    return Object.values(this.players.items).some(pl => (pl?.bp?.active.length ?? 0) > 1);
   }
 
   async handleEvent(e: BattleEvent) {
@@ -167,7 +175,12 @@ export class ClientManager {
     };
 
     if (e.type === "init") {
-      this.cb.displayEvent(e);
+      if (!this.started) {
+        await this.cb.displayEvent({type: "start"});
+        this.started = true;
+      }
+
+      await this.cb.displayEvent(e);
       return await Promise.allSettled(
         e.pokes.map(data => {
           return this.cb.playAnimation(data.src, {
@@ -182,7 +195,7 @@ export class ClientManager {
       const poke = this.players.poke(e.src)!;
       if (poke.initialized && !poke.v.fainted && e.why !== "batonpass" && e.why !== "uturn") {
         if (e.why !== "phaze") {
-          this.cb.displayEvent({type: "retract", src: e.src, name: poke.base.name});
+          await this.cb.displayEvent({type: "retract", src: e.src, name: poke.base.name});
         }
         await this.cb.playAnimation(e.src, {
           anim: e.why === "phaze" ? "phaze" : "retract",
@@ -191,7 +204,7 @@ export class ClientManager {
         });
       }
 
-      this.cb.displayEvent(e);
+      await this.cb.displayEvent(e);
       return await this.cb.playAnimation(e.src, {
         anim: "sendin",
         name: e.name,
@@ -199,7 +212,7 @@ export class ClientManager {
         cb: new AnimCallback(getSwitchCallback(e)),
       });
     } else if (e.type === "damage" || e.type === "recover") {
-      const update = () => {
+      const update = async () => {
         const target = this.players.poke(e.target)!;
         const ev = e as UIDamageEvent | UIRecoverEvent;
         target.base.hp = e.hpAfter;
@@ -211,23 +224,47 @@ export class ClientManager {
           this.handleVolatiles(ev);
         }
         if (e.why !== "explosion" || (e.eff ?? 1) !== 1) {
-          this.cb.displayEvent(ev);
+          await this.cb.displayEvent(ev);
         }
       };
+
+      if (e.why.startsWith("wish") || damageMessage[e.why]) {
+        const item = e.type === "recover" ? e.item : undefined;
+        await this.cb.displayEvent({
+          type: "dmg_reason",
+          why: item === "leftovers" || item === "shellbell" ? "item2" : e.why,
+          src: e.src,
+          target: e.target,
+          move: e.type === "damage" ? e.move : undefined,
+          item,
+        });
+      }
 
       if (e.type === "damage" && (e.why === "attacked" || e.why === "ohko" || e.why === "trap")) {
         const eff = e.why === "ohko" || !e.eff ? 1 : e.eff;
         await this.cb.playAnimation(e.src, {
           anim: "attack",
           target: e.target,
-          cb: new AnimCallback(() => {
-            update();
+          cb: new AnimCallback(async () => {
+            await update();
             this.cb.playDmg(eff);
             this.cb.playAnimation(e.target, {anim: "hurt", direct: true});
           }),
         });
+
+        if (e.why === "attacked" && e.isCrit) {
+          await this.cb.displayEvent({type: "crit", target: e.target});
+        }
+
+        if (e.hitCount === undefined && (e.eff ?? 1) !== 1) {
+          await this.cb.displayEvent({type: "eff", eff: e.eff, target: e.target});
+        }
+
+        if (e.hitCount) {
+          await this.cb.displayEvent({type: "hit_count", hitCount: e.hitCount});
+        }
       } else {
-        update();
+        await update();
         if (
           e.why === "confusion" ||
           e.why === "sand" ||
@@ -242,12 +279,14 @@ export class ClientManager {
       }
 
       if (e.why === "substitute") {
-        this.players.poke(e.target)!.v.substitute = 1;
-        this.cb.displayEvent({type: "get_sub", src: e.target});
         await this.cb.playAnimation(e.target, {
           anim: "get_sub",
-          cb: new AnimCallback(() => this.handleVolatiles(e)),
+          cb: new AnimCallback(() => {
+            this.handleVolatiles(e);
+            this.players.poke(e.target)!.v.substitute = 1;
+          }),
         });
+        await this.cb.displayEvent({type: "get_sub", src: e.target});
       }
       return;
     } else if (e.type === "info") {
@@ -260,8 +299,9 @@ export class ClientManager {
 
       if (e.why === "faint") {
         const poke = this.players.poke(e.src)!;
+        await this.cb.displayEvent(e);
+        // No await here is intentional
         this.cb.playCry(poke.v.speciesId, true);
-        this.cb.displayEvent(e);
         await this.cb.playAnimation(e.src, {anim: "faint"});
 
         poke.v.fainted = true;
@@ -277,7 +317,7 @@ export class ClientManager {
           batonPass: true,
         });
       } else if (e.why === "uturn") {
-        this.cb.displayEvent(e);
+        await this.cb.displayEvent(e);
         this.handleVolatiles(e);
         return await this.cb.playAnimation(e.src, {
           anim: "retract",
@@ -290,7 +330,7 @@ export class ClientManager {
         this.players.poke(e.src)!.v.confusion = 1;
       }
     } else if (e.type === "transform") {
-      this.cb.displayEvent(e);
+      await this.cb.displayEvent(e);
 
       return await this.cb.playAnimation(e.src, {
         anim: "transform",
@@ -321,6 +361,15 @@ export class ClientManager {
         }),
       });
     } else if (e.type === "hit_sub") {
+      if (e.why === "confusion") {
+        await this.cb.displayEvent({
+          type: "dmg_reason",
+          src: e.src,
+          target: e.target,
+          why: "confusion",
+        });
+      }
+
       if (e.why === "confusion" || e.why === "future_sight") {
         await Promise.allSettled([
           this.cb.playDmg(e.eff ?? 1),
@@ -331,15 +380,15 @@ export class ClientManager {
           anim: "attack",
           target: e.target,
           cb: new AnimCallback(() => {
-            this.cb.displayEvent(e);
             this.cb.playDmg(e.eff ?? 1);
             this.cb.playAnimation(e.target, {anim: "hurt", direct: false});
           }),
         });
+        await this.cb.displayEvent(e);
       }
       if (e.broken) {
         this.players.poke(e.target)!.v.substitute = 0;
-        this.cb.displayEvent({type: "sub_break", target: e.target});
+        await this.cb.displayEvent({type: "sub_break", target: e.target});
         await this.cb.playAnimation(e.target, {
           anim: "lose_sub",
           cb: new AnimCallback(() => this.handleVolatiles(e)),
@@ -376,12 +425,12 @@ export class ClientManager {
       this.players.poke(e.src)!.base.itemId = e.srcItem;
       this.players.poke(e.target)!.base.itemId = e.targetItem;
 
-      this.cb.displayEvent(e);
+      await this.cb.displayEvent(e);
       if (e.srcItem) {
-        this.cb.displayEvent({type: "obtain_item", src: e.src, item: e.srcItem});
+        await this.cb.displayEvent({type: "obtain_item", src: e.src, item: e.srcItem});
       }
       if (e.targetItem) {
-        this.cb.displayEvent({type: "obtain_item", src: e.target, item: e.targetItem});
+        await this.cb.displayEvent({type: "obtain_item", src: e.target, item: e.targetItem});
       }
       return this.handleVolatiles(e);
     } else if (e.type === "pluck") {
@@ -462,7 +511,7 @@ export class ClientManager {
 
     this.handleVolatiles(e);
     if (e.type !== "sv") {
-      this.cb.displayEvent(e);
+      await this.cb.displayEvent(e);
     }
   }
 
@@ -509,6 +558,7 @@ export class ClientManager {
     });
     this.players.get(player1.id).bp = this.battle.players[0];
     this.players.get(player2.id).bp = this.battle.players[1];
+    this.started = false;
   }
 
   isUnknown(poke: Pokemon) {

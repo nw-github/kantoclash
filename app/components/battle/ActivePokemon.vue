@@ -325,8 +325,6 @@ const badges = computed(() => {
   return result;
 });
 
-const rem = (rem: number) => parseFloat(getComputedStyle(document.documentElement).fontSize) * rem;
-
 export type AnimationParams =
   | SwitchAnim
   | RetractAnim
@@ -436,8 +434,6 @@ const playAnimation = (params: AnimationParams) => {
 
   return animate(seq, opts);
 };
-
-const ms = (ms: number) => ms / 1000;
 
 const onComplete = (cb: AnimCallback): Segment => {
   let once = false;

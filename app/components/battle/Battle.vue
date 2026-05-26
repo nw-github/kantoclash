@@ -49,7 +49,7 @@
               :transition="{duration: 0.5, ease: 'easeOut'}"
               layout
             >
-              <Event class="first:pt-0" :e :my-id :players="mgr.players" :perspective :gen />
+              <Event class="first:pt-0" :e="e.ev" :my-id :perspective />
             </motion.div>
           </AnimatePresence>
         </div>
@@ -72,7 +72,6 @@
           </TouchTooltip>
 
           <TooltipButton
-            v-if="currentTurnNo || localMode"
             class="font-bold"
             text="Go to Turn"
             :label="`Turn ${currentTurnNo}`"
@@ -86,8 +85,18 @@
 
       <USeparator class="pb-2" />
 
+      <Scrollbox
+        v-if="classicUI && scrollboxEvent && !(!playingEvents && isBattler && !isBattleOver)"
+        :e="scrollboxEvent"
+        :char-delay="delays[classicTextSpeed].charDelay"
+        :line-delay
+        :perspective
+        :my-id
+        @displayed="scrollboxDisplayed"
+      />
+
       <!-- Selectors & Buttons -->
-      <div class="w-full pb-2 relative">
+      <div class="w-full pt-1 pb-2 relative">
         <div class="absolute right-0 pr-1">
           <UTooltip v-if="textBoxHidden" text="Open Chat" :content="{side: 'top'}">
             <UChip :show="unseenChats !== 0" :text="unseenChats" size="xl" inset>
@@ -226,7 +235,7 @@ import type {Choice, InfoRecord} from "~~/server/gameServer";
 import criesSpritesheet from "~~/public/effects/cries.json";
 import {GENERATIONS} from "~~/game/gen";
 import {playerId, type Weather} from "~~/game/utils";
-import {AnimatePresence, motion, type AnimationPlaybackControls} from "motion-v";
+import {motion} from "motion-v";
 import type {Options} from "~~/game/battle";
 import GoToTurnModal from "../dialog/GoToTurnModal.vue";
 import type {SpeciesId} from "~~/game/species";
@@ -261,6 +270,8 @@ const {options, mgr, events, chats, finished, format, ready, myId, localMode} = 
 const sfxVol = useSfxVolume();
 const {fadeOut} = useBGMusic();
 const isMounted = useMounted();
+const classicUI = useClassicBattleUI();
+const classicTextSpeed = useClassicTextSpeed();
 const gen = computed(() => GENERATIONS[formatInfo[format].generation]!);
 const isMenuBtnVisible = useElementVisibility(useTemplateRef("menuButton"));
 const unseenChats = ref(0);
@@ -291,6 +302,20 @@ const showTeamPreview = computed(() => {
 const mediaQuery = computed(() => (isSingles.value ? "(max-width: 900px)" : "(max-width: 1100px)"));
 const textBoxHidden = useMediaQuery(mediaQuery);
 
+const delays: Record<TextSpeed, {lineDelay: number; charDelay: number}> = {
+  fast: {charDelay: 8, lineDelay: 400},
+  medium: {charDelay: 16, lineDelay: 500},
+  slow: {charDelay: 32, lineDelay: 600},
+};
+
+const lineDelay = ref(100);
+
+watch(classicUI, value => {
+  if (!value) {
+    scrollboxDisplayed();
+  }
+});
+
 const opponent = computed(() => {
   for (const id in mgr.players.items) {
     if (!mgr.players.get(id).isSpectator && id !== perspective.value) {
@@ -300,7 +325,8 @@ const opponent = computed(() => {
   return "";
 });
 const htmlTurns = ref<UIBattleEvent[][]>([[]]);
-const liveEvents = ref<UIBattleEvent[]>([]);
+const liveEvents = ref<{ev: UIBattleEvent; time: number}[]>([]);
+const scrollboxEvent = ref<UIBattleEvent>();
 
 const currOptions = computed(() =>
   !playingEvents.value && !isBattleOver.value ? options[events.length] : undefined,
@@ -312,6 +338,8 @@ const sound = useAudio({
   ineffective: {src: "/effects/ineffective.mp3"},
   neutral: {src: "/effects/neutral.mp3"},
   shiny: {src: "/effects/shiny.mp3"},
+  abilityProc: {src: "/effects/abilityProc.mp3"},
+  // itemProc: {src: "/effects/itemProc.mp3"},
 });
 
 provideManager(mgr);
@@ -338,7 +366,7 @@ const goToTurn = async () => {
   }
 };
 
-const animations: AnimationPlaybackControls[] = [];
+let scrollboxPromise: ((_: unknown) => void) | undefined;
 
 const updatePerspective = () => {
   perspective.value = isBattler.value
@@ -361,8 +389,6 @@ const skipToTurn = (turn: number) => {
   }
 
   // console.log(`skipTo(${turn}) => index: ${index} (nextEvent was: ${nextEvent.value})`);
-
-  // TODO: mute current sounds
   if (index < nextEvent.value) {
     nextEvent.value = 0;
   }
@@ -373,8 +399,21 @@ const skipToTurn = (turn: number) => {
     playToIndex.value = index;
   }
 
-  animations.forEach(anim => anim.complete());
-  animations.length = 0;
+  sound.stopAll();
+  field.value?.skipAnimations();
+  scrollboxDisplayed();
+};
+
+const scrollboxText = (ev: UIBattleEvent) => {
+  scrollboxEvent.value = ev;
+  return new Promise(resolve => (scrollboxPromise = resolve));
+};
+
+const scrollboxDisplayed = () => {
+  if (scrollboxPromise) {
+    scrollboxPromise(undefined);
+    scrollboxPromise = undefined;
+  }
 };
 
 watchImmediate([isBattler, () => mgr.players, () => myId], updatePerspective);
@@ -423,6 +462,7 @@ onMounted(async () => {
 
     if (
       isLive() &&
+      !classicUI.value &&
       e.type !== "sv" &&
       e.type !== "beatup" &&
       !(e.type === "info" && e.why === "uturn")
@@ -433,6 +473,18 @@ onMounted(async () => {
     if ((e.type === "end" || e.type === "forfeit") && useAutoMuteMusic().value) {
       fadeOut();
     }
+  };
+
+  const isScrollboxEvent = (e: UIBattleEvent) => {
+    if (e.type === "info" && e.why === "withdraw") {
+      return false;
+    } else if (e.type === "proc_ability" || e.type === "damage" || e.type === "recover") {
+      return false;
+    }
+    // else if (e.type === "item") {
+    //   return false;
+    // }
+    return true;
   };
 
   mgr.listen({
@@ -463,22 +515,17 @@ onMounted(async () => {
           return;
         }
 
-        animations.push(animation);
         await animation;
         params.cb?.exec();
-
-        const idx = animations.indexOf(animation);
-        if (idx !== -1) {
-          animations.splice(idx, 1);
-        }
 
         if (isLive() && params.anim === "faint") {
           await delay(400);
         }
       }
     },
-    displayEvent(e) {
-      const ev = {...e, names: {}, time: Date.now()} as UIBattleEvent;
+    async displayEvent(e) {
+      const ev = e as UIBattleEvent;
+      ev.names = {};
       if ("src" in ev && ev.src) {
         ev.names[ev.src] = mgr.players.poke(ev.src as PokeId)!.base.name;
       }
@@ -488,7 +535,34 @@ onMounted(async () => {
 
       htmlTurns.value.at(-1)!.push(ev);
       if (isLive()) {
-        liveEvents.value.push(ev);
+        if (!classicUI.value) {
+          liveEvents.value.push({ev, time: Date.now()});
+        } else if (ev.type === "proc_ability") {
+          field.value?.displayAbility(ev);
+          await sound.play("abilityProc", {volume: sfxVol.value});
+        } else if (isScrollboxEvent(ev)) {
+          const zeroDelay = new Set<UIBattleEvent["type"]>(["beatup", "switch", "retract"]);
+          if (zeroDelay.has(ev.type)) {
+            lineDelay.value = 0;
+          } else if (e.type === "weather" && e.kind === "continue") {
+            lineDelay.value = delays[classicTextSpeed.value].lineDelay + 200;
+          } else {
+            lineDelay.value = delays[classicTextSpeed.value].lineDelay;
+          }
+          await scrollboxText(ev);
+        }
+      }
+
+      if (!isLive() && isScrollboxEvent(ev)) {
+        scrollboxEvent.value = ev;
+      }
+
+      // if (isLive() && ev.type === "item") {
+      //   sound.play("itemProc", {volume: sfxVol.value});
+      // }
+
+      if (isLive() && ev.type === "start") {
+        await field.value?.playTrainerIntro();
       }
     },
   });

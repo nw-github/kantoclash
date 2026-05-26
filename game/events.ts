@@ -132,9 +132,8 @@ export type RecoveryReason =
   | "seeder"
   | "pain_split"
   | "present"
-  | "leftovers"
-  | "shellbell"
   | "item"
+  | "item2"
   | "ingrain"
   | "aquaRing"
   | "none"
@@ -170,6 +169,7 @@ export type RecoverEvent = {
   hpBefore: number;
   hpAfter: number;
   why: RecoveryReason;
+  item?: ItemId;
 };
 
 export type HitSubstituteEvent = {
@@ -241,6 +241,7 @@ type VFReason = Exclude<
   | "roost"
   | "minimize"
   | "defenseCurl"
+  | "unburdened"
 >;
 
 export type InfoReason =

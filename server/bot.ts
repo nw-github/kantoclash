@@ -2139,4 +2139,4 @@ Adamant Nature
  - Agility
 `;
 
-const namedTrainers = ["Colress", "Cynthia", "Iris", "Misty", "Nate", "Red", "Sabrina", "Skyla"];
+const namedTrainers = ["Colress", "Cynthia", "Iris", "Misty", "Nate", "Roxie", "Sabrina", "Skyla"];
