@@ -316,7 +316,7 @@ const parseGIF = (st, handler) => {
     handler.img && handler.img(img);
   };
 
-  var parseBlock = function () {
+  var parseBlock = function (blockNo = 0) {
     var block = {};
     block.sentinel = st.readByte();
 
@@ -340,9 +340,11 @@ const parseGIF = (st, handler) => {
     }
 
     if (block.type !== "eof") {
-      return new Promise(resolve => setTimeout(() => parseBlock().then(resolve), 0));
-    } else {
-      return Promise.resolve();
+      if (blockNo % 8 == 0) {
+        setTimeout(() => parseBlock(blockNo + 1), 0);
+      } else {
+        return parseBlock(blockNo + 1);
+      }
     }
   };
 
@@ -350,7 +352,7 @@ const parseGIF = (st, handler) => {
   return parseBlock();
 };
 
-export const loadGIF = async data => {
+export const loadGIF = data => {
   var hdr;
   var transparency = null;
   var delay = null;
@@ -369,106 +371,110 @@ export const loadGIF = async data => {
     }
   };
 
-  await parseGIF(new Stream(new Uint8Array(data)), {
-    hdr: _hdr => {
-      hdr = _hdr;
-      tmpCanvas.width = hdr.width;
-      tmpCanvas.height = hdr.height;
-      tmpCanvas.style.width = hdr.width + "px";
-      tmpCanvas.style.height = hdr.height + "px";
-      tmpCanvas.getContext("2d").setTransform(1, 0, 0, 1, 0, 0);
-    },
-    gce: gce => {
-      pushFrame();
-      lastDisposalMethod = disposalMethod;
-      transparency = gce.transparencyGiven ? gce.transparencyIndex : null;
-      delay = gce.delayTime * 10;
-      disposalMethod = gce.disposalMethod;
-      // We don't have much to do with the rest of GCE.
-    },
-    com: () => {},
-    img: img => {
-      frame = tmpCanvas.getContext("2d");
-      var currIdx = frames.length;
+  return new Promise(resolve => {
+    parseGIF(new Stream(new Uint8Array(data)), {
+      hdr: _hdr => {
+        hdr = _hdr;
+        tmpCanvas.width = hdr.width;
+        tmpCanvas.height = hdr.height;
+        tmpCanvas.style.width = hdr.width + "px";
+        tmpCanvas.style.height = hdr.height + "px";
+        tmpCanvas.getContext("2d").setTransform(1, 0, 0, 1, 0, 0);
+      },
+      gce: gce => {
+        pushFrame();
+        lastDisposalMethod = disposalMethod;
+        transparency = gce.transparencyGiven ? gce.transparencyIndex : null;
+        delay = gce.delayTime * 10;
+        disposalMethod = gce.disposalMethod;
+        // We don't have much to do with the rest of GCE.
+      },
+      com: () => {},
+      img: img => {
+        frame = tmpCanvas.getContext("2d");
+        var currIdx = frames.length;
 
-      //ct = color table, gct = global color table
-      var ct = img.lctFlag ? img.lct : hdr.gct; // TODO: What if neither exists?
+        //ct = color table, gct = global color table
+        var ct = img.lctFlag ? img.lct : hdr.gct; // TODO: What if neither exists?
 
-      /*
-        Disposal method indicates the way in which the graphic is to
-        be treated after being displayed.
+        /*
+          Disposal method indicates the way in which the graphic is to
+          be treated after being displayed.
 
-        Values :    0 - No disposal specified. The decoder is not required to take any action.
-                    1 - Do not dispose. The graphic is to be left in place.
-                    2 - Restore to background color. The area used by the graphic must be restored
-                        to the background color.
-                    3 - Restore to previous. The decoder is required to restore the area overwritten
-                        by the graphic with what was there prior to rendering the graphic.
+          Values :    0 - No disposal specified. The decoder is not required to take any action.
+                      1 - Do not dispose. The graphic is to be left in place.
+                      2 - Restore to background color. The area used by the graphic must be restored
+                          to the background color.
+                      3 - Restore to previous. The decoder is required to restore the area overwritten
+                          by the graphic with what was there prior to rendering the graphic.
 
-                        Importantly, "previous" means the frame state after the last disposal of
-                        method 0, 1, or 2.
-            */
-      if (currIdx > 0) {
-        if (lastDisposalMethod === 3) {
-          // Restore to previous
-          // If we disposed every frame including first frame up to this point, then we have
-          // no composited frame to restore to. In this case, restore to background instead.
-          if (disposalRestoreFromIdx !== null) {
-            frame.putImageData(frames[disposalRestoreFromIdx].data, 0, 0);
+                          Importantly, "previous" means the frame state after the last disposal of
+                          method 0, 1, or 2.
+              */
+        if (currIdx > 0) {
+          if (lastDisposalMethod === 3) {
+            // Restore to previous
+            // If we disposed every frame including first frame up to this point, then we have
+            // no composited frame to restore to. In this case, restore to background instead.
+            if (disposalRestoreFromIdx !== null) {
+              frame.putImageData(frames[disposalRestoreFromIdx].data, 0, 0);
+            } else {
+              frame.clearRect(lastImg.leftPos, lastImg.topPos, lastImg.width, lastImg.height);
+            }
           } else {
+            disposalRestoreFromIdx = currIdx - 1;
+          }
+
+          if (lastDisposalMethod === 2) {
+            // Restore to background color
+            // Browser implementations historically restore to transparent; we do the same.
+            // http://www.wizards-toolkit.org/discourse-server/viewtopic.php?f=1&t=21172#p86079
             frame.clearRect(lastImg.leftPos, lastImg.topPos, lastImg.width, lastImg.height);
           }
-        } else {
-          disposalRestoreFromIdx = currIdx - 1;
         }
+        // else, Undefined/Do not dispose.
+        // frame contains final pixel data from the last frame; do nothing
 
-        if (lastDisposalMethod === 2) {
-          // Restore to background color
-          // Browser implementations historically restore to transparent; we do the same.
-          // http://www.wizards-toolkit.org/discourse-server/viewtopic.php?f=1&t=21172#p86079
-          frame.clearRect(lastImg.leftPos, lastImg.topPos, lastImg.width, lastImg.height);
-        }
-      }
-      // else, Undefined/Do not dispose.
-      // frame contains final pixel data from the last frame; do nothing
+        //Get existing pixels for img region after applying disposal method
+        const imgData = frame.getImageData(img.leftPos, img.topPos, img.width, img.height);
 
-      //Get existing pixels for img region after applying disposal method
-      const imgData = frame.getImageData(img.leftPos, img.topPos, img.width, img.height);
+        //apply color table colors
+        img.pixels.forEach(function (pixel, i) {
+          // imgData.data === [R,G,B,A,R,G,B,A,...]
+          if (pixel !== transparency) {
+            imgData.data[i * 4 + 0] = ct[pixel][0];
+            imgData.data[i * 4 + 1] = ct[pixel][1];
+            imgData.data[i * 4 + 2] = ct[pixel][2];
+            imgData.data[i * 4 + 3] = 255; // Opaque.
+          }
+        });
 
-      //apply color table colors
-      img.pixels.forEach(function (pixel, i) {
-        // imgData.data === [R,G,B,A,R,G,B,A,...]
-        if (pixel !== transparency) {
-          imgData.data[i * 4 + 0] = ct[pixel][0];
-          imgData.data[i * 4 + 1] = ct[pixel][1];
-          imgData.data[i * 4 + 2] = ct[pixel][2];
-          imgData.data[i * 4 + 3] = 255; // Opaque.
-        }
-      });
+        frame.putImageData(imgData, img.leftPos, img.topPos);
 
-      frame.putImageData(imgData, img.leftPos, img.topPos);
+        lastImg = img;
+      },
+      eof: () => {
+        pushFrame();
 
-      lastImg = img;
-    },
-    eof: pushFrame,
+        return resolve({
+          width: hdr.width,
+          height: hdr.height,
+          frameCount: frames.length,
+          getDelay: i => frames[i].delay,
+          // scaleCanvas(canvas, max_width = 0) {
+          //   const scale = max_width ? max_width / hdr.width : 1;
+          //   canvas.width = w * scale;
+          //   canvas.height = h * scale;
+          //   canvas.getContext("2d").scale(scale, scale);
+          // },
+          drawFrame(ctx, i, x = 0, y = 0) {
+            tmpCanvas.getContext("2d").putImageData(frames[i].data, x, y);
+
+            ctx.globalCompositeOperation = "copy";
+            ctx.drawImage(tmpCanvas, 0, 0);
+          },
+        });
+      },
+    });
   });
-
-  return {
-    width: hdr.width,
-    height: hdr.height,
-    frameCount: frames.length,
-    getDelay: i => frames[i].delay,
-    // scaleCanvas(canvas, max_width = 0) {
-    //   const scale = max_width ? max_width / hdr.width : 1;
-    //   canvas.width = w * scale;
-    //   canvas.height = h * scale;
-    //   canvas.getContext("2d").scale(scale, scale);
-    // },
-    drawFrame(ctx, i, x = 0, y = 0) {
-      tmpCanvas.getContext("2d").putImageData(frames[i].data, x, y);
-
-      ctx.globalCompositeOperation = "copy";
-      ctx.drawImage(tmpCanvas, 0, 0);
-    },
-  };
 };

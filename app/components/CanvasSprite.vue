@@ -44,6 +44,9 @@ const adjustCanvas = (c: HTMLCanvasElement, image: Gif) => {
 watchImmediate(
   () => src,
   async newSrc => {
+    image = undefined;
+    frame.value = 0;
+    timer = 0;
     try {
       let data = animCache ? animCache.load(newSrc) : AnimationCache.rawLoad(newSrc);
       if (data instanceof Promise) {
@@ -54,17 +57,12 @@ watchImmediate(
       }
 
       image = data;
-      if (canvas.value && image) {
+      if (canvas.value) {
         adjustCanvas(canvas.value, image);
       }
     } catch {
-      if (newSrc !== src) {
-        return;
-      }
-      image = undefined;
+      /* */
     }
-    frame.value = 0;
-    timer = 0;
   },
 );
 
@@ -75,7 +73,13 @@ watch([canvas, () => canvasScale], ([c]) => {
 });
 
 useAnimationFrame((absTime, dt) => {
-  if (!image || !canvas.value) {
+  if (!canvas.value) {
+    return;
+  }
+
+  const ctx = canvas.value.getContext("2d")!;
+  if (!image) {
+    ctx.clearRect(0, 0, canvas.value.width, canvas.value.height);
     return;
   }
 
@@ -87,7 +91,6 @@ useAnimationFrame((absTime, dt) => {
     }
   }
 
-  const ctx = canvas.value.getContext("2d")!;
   image.drawFrame(ctx, frame.value);
 
   if (tint) {
