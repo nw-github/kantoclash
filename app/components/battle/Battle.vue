@@ -72,6 +72,7 @@
           </TouchTooltip>
 
           <TooltipButton
+            v-if="currentTurnNo || localMode"
             class="font-bold"
             text="Go to Turn"
             :label="`Turn ${currentTurnNo}`"
