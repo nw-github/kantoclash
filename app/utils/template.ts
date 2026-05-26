@@ -34,6 +34,18 @@ const infoClass: Partial<Record<InfoReason, string>> = {
   withdraw: "muted",
 };
 
+const statMod: Record<number, string> = {
+  [6]: "won't go any higher!",
+  [3]: "rose drastically!",
+  [2]: "rose sharply!",
+  [1]: "rose!",
+  [-6]: "won't go any lower!",
+  [-3]: "severely fell!",
+  [-2]: "fell sharply!",
+  [-1]: "fell!",
+  [0]: "was not lowered!",
+};
+
 export const eventText = (data: SubstituteParams & TemplateParams) => {
   const templ = createTemplate(data);
   return templ && fillTemplate(templ, data);
@@ -233,18 +245,7 @@ const createTemplate = ({
       return text("It's a draw!");
     }
   case "sub_break": return text("{Target}'s substitute broke!");
-  case "stages":
-    switch (e.count) {
-    case 6: return text(`{Src}'s ${getStageTable(gen)[e.stat]} won't go any higher!`);
-    case -6: return text(`{Src}'s ${getStageTable(gen)[e.stat]} won't go any lower!`);
-    case 0: return text(`{Src}'s ${getStageTable(gen)[e.stat]} was not lowered!`);
-    default: {
-      const statMod = (e.count < 0)
-        ? {[2]: "fell sharply", [3]: "severely fell"}[e.count] ?? "fell"
-        : {[2]: "rose sharply", [3]: "rose drastically"}[e.count] ?? "rose";
-      return text(`{Src}'s ${getStageTable(gen)[e.stat]} ${statMod}!`)
-    };
-    }
+  case "stages": return text(`{Src}'s ${getStageTable(gen)[e.stat]} ${statMod[e.count]}!`);
   case "miss":
     if (isDoubles) {
       return text("{Target} avoided the attack!");
