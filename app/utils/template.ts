@@ -305,7 +305,6 @@ const createTemplate = ({
     }
   }
   case "proc_ability": return text("[{Src}'s <b>{ability}</b>]", "move ability");
-  case "get_sub": return text("{Src} put in a substitute!");
   case "disable": return text("{Src}'s <b>{move}</b> was disabled!");
   case "mimic": return text("{Src} learned <b>{move}</b>!");
   case "in_love": return text("{Src} is in love with {target}!", "move");

@@ -228,18 +228,6 @@ export class ClientManager {
         }
       };
 
-      if (e.why.startsWith("wish") || damageMessage[e.why]) {
-        const item = e.type === "recover" ? e.item : undefined;
-        await this.cb.displayEvent({
-          type: "dmg_reason",
-          why: item === "leftovers" || item === "shellbell" ? "item2" : e.why,
-          src: e.src,
-          target: e.target,
-          move: e.type === "damage" ? e.move : undefined,
-          item,
-        });
-      }
-
       if (e.type === "damage" && (e.why === "attacked" || e.why === "ohko" || e.why === "trap")) {
         const eff = e.why === "ohko" || !e.eff ? 1 : e.eff;
         await this.cb.playAnimation(e.src, {
@@ -278,15 +266,26 @@ export class ClientManager {
         }
       }
 
-      if (e.why === "substitute") {
-        await this.cb.playAnimation(e.target, {
-          anim: "get_sub",
-          cb: new AnimCallback(() => {
-            this.handleVolatiles(e);
-            this.players.poke(e.target)!.v.substitute = 1;
-          }),
+      if (e.why.startsWith("wish") || damageMessage[e.why]) {
+        if (e.why === "substitute") {
+          await this.cb.playAnimation(e.target, {
+            anim: "get_sub",
+            cb: new AnimCallback(() => {
+              this.handleVolatiles(e);
+              this.players.poke(e.target)!.v.substitute = 1;
+            }),
+          });
+        }
+
+        const item = e.type === "recover" ? e.item : undefined;
+        await this.cb.displayEvent({
+          type: "dmg_reason",
+          why: item === "leftovers" || item === "shellbell" ? "item2" : e.why,
+          src: e.src,
+          target: e.target,
+          move: e.type === "damage" ? e.move : undefined,
+          item,
         });
-        await this.cb.displayEvent({type: "get_sub", src: e.target});
       }
       return;
     } else if (e.type === "info") {

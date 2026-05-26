@@ -29,7 +29,6 @@ export type RawUIBattleEvent =
       item?: ItemId;
       why: DamageReason | RecoveryReason;
     }
-  | {type: "get_sub"; src: PokeId}
   | {type: "obtain_item"; src: PokeId; item: ItemId}
   | {type: "hit_count"; hitCount: number}
   | {type: "crit"; target: PokeId}
@@ -279,6 +278,7 @@ export const damageMessage: Partial<Record<DamageReason | RecoveryReason, string
   baddreams: "{Target} is tormented!",
   lifeorb: "{Src} is hurt by its Life Orb!",
   trap_eot: "{Src} is hurt by {move}!",
+  substitute: "{Src} put in a substitute!",
   // Recovery
   drain: "{Src} had its energy drained!",
   recover: "{Src} regained health!",
