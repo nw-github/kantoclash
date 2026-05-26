@@ -87,6 +87,7 @@ import type {AnimationParams} from "./ActivePokemon.vue";
 import {playerId, type Weather} from "~~/game/utils";
 import {abilityList} from "~~/game/species";
 import {animate, type AnimationPlaybackControlsWithThen, type Segment} from "motion-v";
+import {Random} from "random";
 
 const {players, perspective} = defineProps<{
   players: Players;
@@ -123,7 +124,7 @@ watchImmediate(opp, opp => {
     // FIXME: this is kinda hacky, temporary until we allow choosing trainer sprite
     if (!opp.trainerSprite) {
       const it = !import.meta.dev && allTrainerSprites.find(item => item.includes(opp.name));
-      opp.trainerSprite = it || randChoice(allTrainerSprites);
+      opp.trainerSprite = it || new Random(opp.name + document.URL).choice(allTrainerSprites)!;
     }
 
     trainerAnim.src = opp.trainerSprite;

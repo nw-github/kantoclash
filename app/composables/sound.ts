@@ -52,40 +52,43 @@ type Sprites = Record<string, {start: number; end: number}>;
 export const useAudio = (sounds: Record<string, {src: string; sprites?: Sprites}>) => {
   const saved: Record<string, [AudioBuffer, Sprites | undefined]> = {};
   const context = useAudioContext();
-  const playing: AudioBufferSourceNode[] = [];
+  const playing: [AudioBufferSourceNode, () => void][] = [];
   let mounted = false;
 
-  const loading: Promise<void>[] = [];
+  const loading: Partial<Record<string, Promise<void>>> = {};
   onMounted(() => {
     for (const name in sounds) {
-      loading.push(load(name, sounds[name].src, sounds[name].sprites));
+      load(name, sounds[name].src, sounds[name].sprites);
     }
 
     mounted = true;
   });
 
   onUnmounted(() => {
-    for (const item of playing.splice(0, playing.length)) {
-      item.stop();
-    }
-
+    stopAll();
     mounted = false;
   });
 
-  const load = async (name: string, src: string, sprites?: Sprites) => {
+  const load = (name: string, src: string, sprites?: Sprites) => {
     if (!context) {
       sounds[name] = {src, sprites};
       return;
     }
 
-    const sound = await $fetch<Blob>(src, {method: "GET"}).then(s => s.arrayBuffer());
-    saved[name] = [await context.decodeAudioData(sound), sprites];
+    const doLoad = async () => {
+      const sound = await $fetch<Blob>(src, {method: "GET"}).then(s => s.arrayBuffer());
+      saved[name] = [await context.decodeAudioData(sound), sprites];
+      // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+      delete loading[name];
+    };
+
+    return (loading[name] = doLoad());
   };
 
   const play = async (name: string, opts: {sprite?: string; volume?: number; detune?: number}) => {
-    if (loading.length) {
-      await Promise.allSettled(loading);
-      loading.length = 0;
+    const promise = loading[name];
+    if (promise) {
+      await promise;
     }
 
     const audio = saved[name];
@@ -110,14 +113,26 @@ export const useAudio = (sounds: Record<string, {src: string; sprites?: Sprites}
     source.detune.value = opts.detune ?? 0;
     source.connect(gain);
     return new Promise<void>(resolve => {
-      playing.push(source);
-      source.onended = () => {
-        playing.splice(playing.indexOf(source), 1);
-        resolve();
+      const onEnded = () => {
+        const idx = playing.findIndex(s => s[0] === source);
+        if (idx !== -1) {
+          playing.splice(idx, 1);
+          resolve();
+        }
       };
+
+      playing.push([source, onEnded]);
+      source.onended = onEnded;
       source.start(0, offset, duration);
     });
   };
 
-  return {load, play};
+  const stopAll = () => {
+    for (const [item, cb] of playing.splice(0, playing.length)) {
+      item.stop();
+      cb();
+    }
+  };
+
+  return {load, play, stopAll};
 };

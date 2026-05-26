@@ -72,7 +72,6 @@
           </TouchTooltip>
 
           <TooltipButton
-            v-if="currentTurnNo || localMode"
             class="font-bold"
             text="Go to Turn"
             :label="`Turn ${currentTurnNo}`"
@@ -390,8 +389,6 @@ const skipToTurn = (turn: number) => {
   }
 
   // console.log(`skipTo(${turn}) => index: ${index} (nextEvent was: ${nextEvent.value})`);
-
-  // TODO: mute current sounds
   if (index < nextEvent.value) {
     nextEvent.value = 0;
   }
@@ -402,6 +399,7 @@ const skipToTurn = (turn: number) => {
     playToIndex.value = index;
   }
 
+  sound.stopAll();
   field.value?.skipAnimations();
   scrollboxDisplayed();
 };
@@ -553,6 +551,10 @@ onMounted(async () => {
           }
           await scrollboxText(ev);
         }
+      }
+
+      if (!isLive() && isScrollboxEvent(ev)) {
+        scrollboxEvent.value = ev;
       }
 
       // if (isLive() && ev.type === "item") {
