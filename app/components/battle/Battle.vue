@@ -438,9 +438,15 @@ onMounted(async () => {
     const back = playerId(e.src) === perspective.value;
     const form = ev.volatiles?.find(v => v.id === e.src)?.v.form || undefined;
     const gender = gen1Gender[e.speciesId] ?? e.gender;
-    animCache.load(getSpritePath(e.speciesId, gender === "F", e.shiny, back, form));
-    // Also load the other sprite for switch sides
-    animCache.load(getSpritePath(e.speciesId, gender === "F", e.shiny, !back, form));
+    const promise = animCache.load(getSpritePath(e.speciesId, gender === "F", e.shiny, back, form));
+    const loadOtherSide = () => {
+      animCache.load(getSpritePath(e.speciesId, gender === "F", e.shiny, !back, form));
+    };
+    if (promise instanceof Promise) {
+      promise.then(loadOtherSide);
+    } else {
+      setTimeout(loadOtherSide, 0);
+    }
   };
 
   const runEvent = async (e: BattleEvent) => {

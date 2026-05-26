@@ -339,14 +339,18 @@ const parseGIF = (st, handler) => {
         throw new Error("Unknown block: 0x" + block.sentinel.toString(16)); // TODO: Pad this with a 0.
     }
 
-    if (block.type !== "eof") parseBlock();
+    if (block.type !== "eof") {
+      return new Promise(resolve => setTimeout(() => parseBlock().then(resolve), 0));
+    } else {
+      return Promise.resolve();
+    }
   };
 
   parseHeader();
-  parseBlock();
+  return parseBlock();
 };
 
-export const loadGIF = data => {
+export const loadGIF = async data => {
   var hdr;
   var transparency = null;
   var delay = null;
@@ -365,7 +369,7 @@ export const loadGIF = data => {
     }
   };
 
-  parseGIF(new Stream(new Uint8Array(data)), {
+  await parseGIF(new Stream(new Uint8Array(data)), {
     hdr: _hdr => {
       hdr = _hdr;
       tmpCanvas.width = hdr.width;

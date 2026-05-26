@@ -7,4 +7,4 @@ export type Gif = {
   drawFrame(ctx: CanvasRenderingContext2D, frame: number, xOffset?: number, yOffset?: number);
 };
 
-export function loadGIF(data: ArrayBuffer): Gif;
+export function loadGIF(data: ArrayBuffer): Promise<Gif>;

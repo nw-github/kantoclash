@@ -8,7 +8,7 @@ export class AnimationCache {
 
   static async rawLoad(src: string) {
     const data = await fetch(src).then(data => data.arrayBuffer());
-    return src.endsWith("gif") ? loadGIF(data) : new APNG(data);
+    return src.endsWith("gif") ? await loadGIF(data) : new APNG(data);
   }
 
   load(src: string) {
