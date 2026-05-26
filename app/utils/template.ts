@@ -35,15 +35,15 @@ const infoClass: Partial<Record<InfoReason, string>> = {
 };
 
 const statMod: Record<number, string> = {
-  [6]: "won't go any higher!",
-  [3]: "rose drastically!",
-  [2]: "rose sharply!",
-  [1]: "rose!",
-  [-6]: "won't go any lower!",
-  [-3]: "severely fell!",
-  [-2]: "fell sharply!",
-  [-1]: "fell!",
-  [0]: "was not lowered!",
+  [6]: "won't go any higher",
+  [3]: "rose drastically",
+  [2]: "rose sharply",
+  [1]: "rose",
+  [-6]: "won't go any lower",
+  [-3]: "severely fell",
+  [-2]: "fell sharply",
+  [-1]: "fell",
+  [0]: "was not lowered",
 };
 
 export const eventText = (data: SubstituteParams & TemplateParams) => {
