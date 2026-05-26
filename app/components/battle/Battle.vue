@@ -403,7 +403,7 @@ const skipToTurn = (turn: number) => {
     playToIndex.value = index;
   }
 
-  sound.stopAll();
+  // sound.stopAll();
   field.value?.skipAnimations();
   scrollboxDisplayed();
 };
