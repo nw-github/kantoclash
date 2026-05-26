@@ -3,13 +3,8 @@ import type {Generation} from "~~/game/gen";
 import {abilityList} from "~~/game/species";
 import {hpPercentExact, playerId} from "~~/game/utils";
 
-export type TextSpan = {
-  text: string;
-  clazz?: string;
-  tooltip?: string;
-};
-
-export type FormattedText = {spans: TextSpan[]; clazz?: string; p?: bool};
+export type TextSpan = {text: string; clazz?: string; tooltip?: string};
+export type FormattedText = {spans: TextSpan[]; clazz?: string};
 
 type TemplateParams = {
   e: UIBattleEvent;
@@ -139,7 +134,7 @@ const createTemplate = ({
   perspective,
   myId,
 }: TemplateParams): FormattedText | undefined => {
-  const text = (text: string, clazz?: string, p?: bool): FormattedText => {
+  const text = (text: string, clazz?: string): FormattedText => {
     const spans: TextSpan[] = [];
     let next;
     while ((next = text.indexOf("<b>")) !== -1) {
@@ -159,14 +154,10 @@ const createTemplate = ({
     if (text) {
       spans.push({text});
     }
-    return {spans, clazz, p};
+    return {spans, clazz};
   };
 
-  const p = (text: string, clazz?: string): FormattedText => ({
-    spans: [{text}],
-    clazz,
-    p: true,
-  });
+  const nofmt = (text: string, clazz?: string): FormattedText => ({spans: [{text}], clazz});
 
   const dmgRecoverMessage = (e: UIDamageEvent | UIRecoverEvent): FormattedText => {
     const lines: TextSpan[] = [];
@@ -190,9 +181,9 @@ const createTemplate = ({
     }
     lines.push({text: " of its health!"});
     if (e.type === "recover") {
-      return {spans: lines, clazz: "text-xs sm:text-[0.8rem] text-(--stat-up)", p: true};
+      return {spans: lines, clazz: "text-xs sm:text-[0.8rem] text-(--stat-up)"};
     } else {
-      return {spans: lines, clazz: "text-xs sm:text-[0.8rem] text-(--stat-down)", p: true};
+      return {spans: lines, clazz: "text-xs sm:text-[0.8rem] text-(--stat-down)"};
     }
   };
 
@@ -212,13 +203,13 @@ const createTemplate = ({
     }
   case "damage":
   case "recover": return dmgRecoverMessage(e);
-  case "hit_sub": return p("{Target}'s substitute took the hit!");
-  case "hit_count": return p(`Hit ${e.hitCount} time(s)!`);
+  case "hit_sub": return nofmt("{Target}'s substitute took the hit!");
+  case "hit_count": return nofmt(`Hit ${e.hitCount} time(s)!`);
   case "crit": {
     if (isDoubles) {
-      return p("A critical hit on {target}!");
+      return nofmt("A critical hit on {target}!");
     } else {
-      return p("A critical hit!");
+      return nofmt("A critical hit!");
     }
   }
   case "move":
@@ -277,31 +268,31 @@ const createTemplate = ({
   case "eff": {
     const se = (e.eff ?? 1) > 1;
     if (isDoubles) {
-      return p(
+      return nofmt(
         `It's ${se ? `super effective on {target}!` : `not very effective on {target}...`}`,
         "italic",
       );
     } else {
-      return p(`It's ${se ? "super effective!" : "not very effective..."}`, "italic");
+      return nofmt(`It's ${se ? "super effective!" : "not very effective..."}`, "italic");
     }
   }
-  case "info": return text(infoMessage[e.why], infoClass[e.why], true);
+  case "info": return text(infoMessage[e.why], infoClass[e.why]);
   case "magnitude": return text(`Magnitude ${e.magnitude}!`);
   case "beatup": return text("{name}'s attack!");
   case "status": return text("{Src} " + statusTable[e.status] + "!");
   case "cantuse": return text(cantUseTable[e.why] ?? "{Src} can't use <b>{move}</b>!");
   case "weather": return text(weatherMessage[e.weather][e.kind]);
   case "screen": return text(screenMessage[e.screen][e.kind]);
-  case "bug": return text(bugMessage[e.bug], undefined, true);
+  case "bug": return text(bugMessage[e.bug], undefined);
   case "charge": return text(chargeMessage[e.move] ?? "{Src} is charging a <b>{move}</b>", "move");
   case "moldbreaker": return text(moldBreakerMessage[e.ability]!);
   case "hazard": return text(hazardMessage[e.hazard][e.spin ? 'spin' : 'set']);
   case "futuresight": return text(futureSightMessage[e.move]![e.release ? 'release' : 'set']);
   case "dmg_reason": {
     if (e.why.startsWith("wish:")) {
-      return p(`{wish}'s wish came true!`);
+      return nofmt(`{wish}'s wish came true!`);
     } else {
-      return text(damageMessage[e.why]!, undefined, true);
+      return text(damageMessage[e.why]!, undefined);
     }
   }
   case "proc_ability": return text("[{Src}'s <b>{ability}</b>]", "move ability");
