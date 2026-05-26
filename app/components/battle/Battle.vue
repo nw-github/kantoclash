@@ -339,6 +339,8 @@ const sound = useAudio({
   ineffective: {src: "/effects/ineffective.mp3"},
   neutral: {src: "/effects/neutral.mp3"},
   shiny: {src: "/effects/shiny.mp3"},
+  abilityProc: {src: "/effects/abilityProc.mp3"},
+  // itemProc: {src: "/effects/itemProc.mp3"},
 });
 
 provideManager(mgr);
@@ -481,6 +483,9 @@ onMounted(async () => {
     } else if (e.type === "proc_ability" || e.type === "damage" || e.type === "recover") {
       return false;
     }
+    // else if (e.type === "item") {
+    //   return false;
+    // }
     return true;
   };
 
@@ -536,7 +541,7 @@ onMounted(async () => {
           liveEvents.value.push({ev, time: Date.now()});
         } else if (ev.type === "proc_ability") {
           field.value?.displayAbility(ev);
-          await delay(200);
+          await sound.play("abilityProc", {volume: sfxVol.value});
         } else if (isScrollboxEvent(ev)) {
           const zeroDelay = new Set<UIBattleEvent["type"]>(["beatup", "switch", "retract"]);
           if (zeroDelay.has(ev.type)) {
@@ -549,6 +554,10 @@ onMounted(async () => {
           await scrollboxText(ev);
         }
       }
+
+      // if (isLive() && ev.type === "item") {
+      //   sound.play("itemProc", {volume: sfxVol.value});
+      // }
 
       if (isLive() && ev.type === "start") {
         await field.value?.playTrainerIntro();

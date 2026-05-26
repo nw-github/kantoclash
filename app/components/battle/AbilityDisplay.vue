@@ -1,11 +1,8 @@
 <template>
   <div
     ref="sprite"
-    class="sprite p-1 px-3 bg-muted/90 flex gap-1 items-center ring ring-inset ring-accented"
-    :class="[
-      !speciesId && 'invisible',
-      invert ? 'rounded-tl-xl rounded-bl-xl flex-row-reverse' : 'rounded-tr-xl rounded-br-xl',
-    ]"
+    class="sprite p-1 px-3 bg-muted/90 flex gap-1 items-center ring ring-inset ring-accented opacity-0"
+    :class="invert ? 'rounded-tl-xl rounded-bl-xl flex-row-reverse' : 'rounded-tr-xl rounded-br-xl'"
   >
     <BoxSprite :species-id :form />
     <div class="text-center text-nowrap">
@@ -45,7 +42,7 @@ const playSlideIn = (
 
   return animate(
     [
-      [sprite.value!, {x: [left ? -rem(20) : rem(20), 0], opacity: [0, 1]}, {duration: ms(200)}],
+      [sprite.value!, {x: [left ? -rem(20) : rem(20), 0], opacity: [0, 1]}, {duration: ms(250)}],
       [sprite.value, {x: [0, 0]}, {duration: ms(500)}],
     ],
     {repeat: 1, repeatType: "reverse"},

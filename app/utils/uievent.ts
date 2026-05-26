@@ -286,7 +286,7 @@ export const damageMessage: Partial<Record<DamageReason | RecoveryReason, string
   ingrain: "{Src} absorbed nutrients with its roots!",
   aquaRing: "A veil of water restored {src}'s HP!",
   item: "{Src} restored HP using its <b>{item}</b>!",
-  item2: "{Src} restored a little HP using its <b>{item}!</b>!",
+  item2: "{Src} restored a little HP using its <b>{item}</b>!",
 };
 
 export const trapStart: Partial<Record<MoveId, string>> = {
