@@ -84,14 +84,12 @@
             <div
               class="absolute w-[128px] h-[117px] sm:w-[256px] sm:h-[234px] flex justify-center items-center select-none"
             >
-              <Sprite
-                v-show="poke?.v?.speciesId"
-                :species-id="poke?.v?.speciesId"
-                :scale="lessThanSm ? 0.95 : 1.75"
-                :shiny="poke?.v?.shiny"
-                :form="poke?.v?.form"
-                :gender
-                :back
+              <CanvasSprite
+                :src="spriteSrc"
+                :canvas-scale="lessThanSm ? 0.95 : 1.75"
+                :speed="spriteSpeed"
+                :tint="getTint"
+                :paused="spritePaused"
               />
 
               <img
@@ -247,6 +245,37 @@ const scrColor = {
   reflect: "bg-blue-400",
   mist: "bg-sky-400",
 };
+
+const spritePaused = computed(() => poke?.base.status === "frz");
+const spriteSpeed = computed(() => {
+  if (poke?.base.status === "slp") {
+    return 0.5;
+  } else if (poke?.base.status === "par") {
+    return 0.8;
+  } else {
+    return 0.95;
+  }
+});
+
+const getTint = (absTime: number) => {
+  const pulse = 0.25 + Math.abs(Math.sin(absTime / 1500)) * 0.25;
+
+  // prettier-ignore
+  switch (poke?.base.status) {
+  case "frz": return "hsla(202, 74%, 50%, 0.5)";
+  case "brn": return `hsla(5, 100%, 50%, ${pulse})`;
+  case "par": return `hsla(39, 100%, 50%, ${pulse})`;
+  case "tox":
+  case "psn": return `hsla(273, 74%, 50%, ${pulse})`;
+  }
+};
+
+const spriteSrc = computed(() => {
+  const speciesId = poke?.v?.speciesId;
+  const shiny = poke?.v?.shiny;
+  const form = poke?.v?.form;
+  return getSpritePath(speciesId, gender.value === "F", shiny, back, form);
+});
 
 const screens = computed(() => {
   const screens: {name: string; clazz: string}[] = [];

@@ -1,6 +1,6 @@
 <template>
   <canvas ref="cv">
-    <img :src />
+    <img :srcset="`${src} ${1 / (canvasScale ?? 1)}x`" />
   </canvas>
 </template>
 
@@ -10,17 +10,18 @@ import {loadGIF, type Gif} from "../libs/libgif";
 
 const frame = defineModel<number>("frame", {default: 0});
 
-const {
-  src,
-  paused,
-  tint,
-  loop = true,
-} = defineProps<{
+type Tint = {r: number; g: number; b: number; a: number} | string;
+
+type Params = {
   src: string;
   paused?: boolean;
   loop?: boolean;
-  tint?: {r: number; g: number; b: number; a: number};
-}>();
+  speed?: number;
+  tint?: Tint | ((absTime: number, dt: number) => Tint | undefined);
+  canvasScale?: number;
+};
+
+const {src, paused, tint, canvasScale, loop = true, speed = 1} = defineProps<Params>();
 
 const canvas = useTemplateRef("cv");
 
@@ -30,22 +31,35 @@ let timer = 0;
 const adjustCanvas = (c: HTMLCanvasElement, image: Gif) => {
   c.width = image.width;
   c.height = image.height;
+
+  if (canvasScale !== undefined) {
+    c.style.width = `${image.width * canvasScale}px`;
+    c.style.height = `${image.height * canvasScale}px`;
+  }
   const ctx = c.getContext("2d")!;
   ctx.imageSmoothingEnabled = false;
 };
 
 watchImmediate(
   () => src,
-  async () => {
+  async newSrc => {
     try {
-      const data = await fetch(src).then(data => data.arrayBuffer());
-      image = src.endsWith("gif") ? loadGIF(data) : new APNG(data);
+      const data = await fetch(newSrc).then(data => data.arrayBuffer());
+      if (newSrc !== src) {
+        return;
+      }
+
+      image = newSrc.endsWith("gif") ? loadGIF(data) : new APNG(data);
       frame.value = 0;
       timer = 0;
       if (canvas.value && image) {
         adjustCanvas(canvas.value, image);
       }
     } catch {
+      if (newSrc !== src) {
+        return;
+      }
+
       image = undefined;
       frame.value = 0;
       timer = 0;
@@ -53,20 +67,20 @@ watchImmediate(
   },
 );
 
-watch(canvas, c => {
+watch([canvas, () => canvasScale], ([c]) => {
   if (c && image) {
     adjustCanvas(c, image);
   }
 });
 
-useAnimationFrame((_, dt) => {
+useAnimationFrame((absTime, dt) => {
   if (!image || !canvas.value) {
     return;
   }
 
   if (!paused && (loop || frame.value < image.frameCount - 1)) {
     timer += dt;
-    if (timer >= image.getDelay(frame.value)) {
+    if (timer >= image.getDelay(frame.value) * (1 / speed)) {
       frame.value = (frame.value + 1) % image.frameCount;
       timer = 0;
     }
@@ -76,8 +90,17 @@ useAnimationFrame((_, dt) => {
   image.drawFrame(ctx, frame.value);
 
   if (tint) {
+    const realTint = typeof tint === "function" ? tint(absTime, dt) : tint;
+    if (!realTint) {
+      return;
+    }
+
     ctx.globalCompositeOperation = "source-atop";
-    ctx.fillStyle = `rgba(${tint.r}, ${tint.g}, ${tint.b}, ${tint.a / 255})`;
+    if (typeof realTint === "object") {
+      ctx.fillStyle = `rgba(${realTint.r}, ${realTint.g}, ${realTint.b}, ${realTint.a / 255})`;
+    } else {
+      ctx.fillStyle = realTint;
+    }
     ctx.fillRect(0, 0, image.width, image.height);
     ctx.globalCompositeOperation = "source-over";
   }
