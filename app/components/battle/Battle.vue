@@ -345,6 +345,9 @@ const sound = useAudio({
 
 provideManager(mgr);
 
+const animCache = new AnimationCache();
+provideAnimationCache(animCache);
+
 useIntervalFn(() => {
   liveEvents.value = liveEvents.value.filter(e => Date.now() - e.time < 1400);
 }, 400);
@@ -432,17 +435,15 @@ onMounted(async () => {
     ev: BattleEvent,
     e: {src: PokeId; speciesId: SpeciesId; gender: Gender; shiny: bool},
   ) => {
-    // Preload the sprite
     const back = playerId(e.src) === perspective.value;
     const form = ev.volatiles?.find(v => v.id === e.src)?.v.form || undefined;
     const gender = gen1Gender[e.speciesId] ?? e.gender;
-    const img = new Image();
-    img.src = getSpritePath(e.speciesId, gender === "F", e.shiny, back, form);
-    return img;
+    animCache.load(getSpritePath(e.speciesId, gender === "F", e.shiny, back, form));
+    // Also load the other sprite for switch sides
+    animCache.load(getSpritePath(e.speciesId, gender === "F", e.shiny, !back, form));
   };
 
   const runEvent = async (e: BattleEvent) => {
-    let _img: any;
     if (e.type === "next_turn") {
       currentTurnNo.value = e.turn;
       htmlTurns.value.push([]);
@@ -452,9 +453,9 @@ onMounted(async () => {
       }
       return;
     } else if (e.type === "switch" || e.type === "transform") {
-      _img = preloadSprite(e, e);
+      preloadSprite(e, e);
     } else if (e.type === "init") {
-      _img = e.pokes.map(poke => preloadSprite(e, poke));
+      e.pokes.forEach(poke => preloadSprite(e, poke));
     }
 
     smoothScroll.value = isLive();

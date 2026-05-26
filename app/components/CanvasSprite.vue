@@ -5,8 +5,7 @@
 </template>
 
 <script setup lang="ts">
-import APNG from "../libs/apng";
-import {loadGIF, type Gif} from "../libs/libgif";
+import type {Gif} from "../libs/libgif";
 
 const frame = defineModel<number>("frame", {default: 0});
 
@@ -28,6 +27,8 @@ const canvas = useTemplateRef("cv");
 let image: Gif | undefined;
 let timer = 0;
 
+const animCache = injectAnimationCache();
+
 const adjustCanvas = (c: HTMLCanvasElement, image: Gif) => {
   c.width = image.width;
   c.height = image.height;
@@ -44,14 +45,15 @@ watchImmediate(
   () => src,
   async newSrc => {
     try {
-      const data = await fetch(newSrc).then(data => data.arrayBuffer());
-      if (newSrc !== src) {
-        return;
+      let data = animCache ? animCache.load(newSrc) : AnimationCache.rawLoad(newSrc);
+      if (data instanceof Promise) {
+        data = await data;
+        if (newSrc !== src) {
+          return;
+        }
       }
 
-      image = newSrc.endsWith("gif") ? loadGIF(data) : new APNG(data);
-      frame.value = 0;
-      timer = 0;
+      image = data;
       if (canvas.value && image) {
         adjustCanvas(canvas.value, image);
       }
@@ -59,11 +61,10 @@ watchImmediate(
       if (newSrc !== src) {
         return;
       }
-
       image = undefined;
-      frame.value = 0;
-      timer = 0;
     }
+    frame.value = 0;
+    timer = 0;
   },
 );
 
