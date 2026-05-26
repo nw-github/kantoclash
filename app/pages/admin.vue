@@ -1,5 +1,6 @@
 <template>
   <div class="h-full w-full space-x-1 overflow-auto items-center flex flex-col">
+    <span>Build Hash: {{ runtimeConfig.public.gitCommitHash }}</span>
     <div v-if="!viewingBattle" class="flex gap-1">
       <UButton
         :label="!config.maintenance ? 'Start Maintenace Mode' : 'Cancel Maintenance Mode'"
@@ -118,6 +119,7 @@ const config = ref<ServerConfig>({});
 const loading = ref(true);
 const reportedBattles = ref<BugReportEntry[]>([]);
 const viewingBattle = ref<BattleRecipe>();
+const runtimeConfig = useRuntimeConfig();
 
 onMounted(() => {
   if (!$conn.connected) {

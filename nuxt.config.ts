@@ -1,6 +1,6 @@
 import {execSync} from "node:child_process";
 
-const gitCommitHash = execSync("git rev-parse --short HEAD").toString().trim();
+const gitCommitHash = execSync("git rev-parse HEAD").toString().trim();
 
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
