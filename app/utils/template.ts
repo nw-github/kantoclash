@@ -9,7 +9,7 @@ export type TextSpan = {
   tooltip?: string;
 };
 
-export type FormattedText = {text: TextSpan[]; clazz?: string; p?: bool};
+export type FormattedText = {spans: TextSpan[]; clazz?: string; p?: bool};
 
 type TemplateParams = {
   e: UIBattleEvent;
@@ -58,7 +58,7 @@ const fillTemplate = (lines: FormattedText, {e, gen, perspective, players}: Subs
 
   const re =
     /{(?:Src|src|SrcTeam|srcTeam|Target|target|TargetTeam|targetTeam|owner|name|name\d|user|move|ability|victor|wish|item|opp)}/g;
-  for (const text of lines.text) {
+  for (const text of lines.spans) {
     text.text = text.text.replaceAll(re, substr => {
       // prettier-ignore
       if ("src" in e && e.src) {
@@ -147,11 +147,11 @@ const createTemplate = ({
     if (text) {
       spans.push({text});
     }
-    return {text: spans, clazz, p};
+    return {spans, clazz, p};
   };
 
   const p = (text: string, clazz?: string): FormattedText => ({
-    text: [{text}],
+    spans: [{text}],
     clazz,
     p: true,
   });
@@ -178,9 +178,9 @@ const createTemplate = ({
     }
     lines.push({text: " of its health!"});
     if (e.type === "recover") {
-      return {text: lines, clazz: "text-xs sm:text-[0.8rem] text-(--stat-up)", p: true};
+      return {spans: lines, clazz: "text-xs sm:text-[0.8rem] text-(--stat-up)", p: true};
     } else {
-      return {text: lines, clazz: "text-xs sm:text-[0.8rem] text-(--stat-down)", p: true};
+      return {spans: lines, clazz: "text-xs sm:text-[0.8rem] text-(--stat-down)", p: true};
     }
   };
 
@@ -252,7 +252,7 @@ const createTemplate = ({
       return text("{Src}'s attack missed!");
     }
   case "transform": return text(e.target ? "{Src} transformed into {target}!" : "{Src} transformed!");
-  case "conversion": return text(e.target ? "Converted type to match {target}!" : `{Src} converted into the <b>${toTitleCase(e.types[0])}</b>!`);
+  case "conversion": return text(e.target ? "Converted type to match {target}!" : `{Src} converted into the <b>${toTitleCase(e.types[0])}</b> type!`);
   case "cure":
     if (e.status === "slp") {
       return text("{Src} woke up!");

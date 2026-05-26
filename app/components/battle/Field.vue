@@ -139,7 +139,6 @@ const playAnimation = (id: PokeId, params: AnimationParams) => {
 const displayAbility = (ev: UIBattleEvent & {type: "proc_ability"}) => {
   const component = abilityDisplays.value?.find(a => a?.getId() === playerId(ev.src));
   const poke = players.poke(ev.src)!;
-  const left = playerId(ev.src) === perspective;
   return anim(
     component &&
       component.playSlideIn(
@@ -147,7 +146,6 @@ const displayAbility = (ev: UIBattleEvent & {type: "proc_ability"}) => {
         poke.v.speciesId,
         poke.v.form,
         abilityList[ev.ability].name,
-        left,
       ),
   );
 };

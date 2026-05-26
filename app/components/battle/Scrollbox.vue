@@ -2,8 +2,10 @@
   <div
     class="w-full h-16 sm:h-18 rounded-lg bg-muted text-default sm:text-lg p-2 text-wrap overflow-hidden ring ring-inset ring-accented"
   >
-    <span v-for="(part, i) in displayText" :key="i" :class="part.clazz">{{ part.text }}</span>
-    <span class="invisible" :clazz="invisText.clazz">{{ invisText.text }}</span>
+    <span v-for="(part, i) in visible" :key="i" :class="part.clazz">{{ part.text }}</span>
+    <span v-for="(part, i) in invisible" :key="i" class="invisible" :clazz="part.clazz">{{
+      part.text
+    }}</span>
   </div>
 </template>
 
@@ -18,53 +20,32 @@ const {e, perspective, myId, charDelay, lineDelay} = defineProps<{
   lineDelay: number;
 }>();
 
-const displayText = reactive<{text: string; clazz?: string}[]>([]);
-const invisText = reactive({text: "", clazz: "" as string | undefined});
+const visible = ref<TextSpan[]>([]);
+const invisible = ref<TextSpan[]>([]);
 const mgr = injectManager()!;
-
-let chunkNo = 0;
-let characterNo = 0;
-
-const textLines = ref();
 
 const {pause, resume, reset} = useInterval(() => charDelay, {
   controls: true,
-  immediate: true,
   callback: () => {
-    const line = textLines.value;
-    if (!line) {
+    const chunk = invisible.value[0];
+    if (!chunk) {
       return;
     }
 
-    let chunk = line.text[chunkNo];
-    if (!chunk || !chunk.text[characterNo]) {
-      chunk = line.text[++chunkNo];
-      characterNo = 0;
-      if (!chunk) {
-        return nextLine();
+    if (!visible.value.length) {
+      visible.value.push({text: "", clazz: chunk.clazz});
+    }
+
+    visible.value.at(-1)!.text += chunk.text.slice(0, 1);
+    chunk.text = chunk.text.slice(1);
+
+    if (!chunk.text) {
+      invisible.value.shift();
+      visible.value.push({text: "", clazz: invisible.value[0]?.clazz});
+
+      if (!invisible.value.length) {
+        nextLine();
       }
-    }
-
-    const ch = chunk.text[characterNo++];
-    if (!ch) {
-      return nextLine();
-    }
-
-    const span = displayText.at(-1);
-    if (!span || span.clazz !== chunk.clazz) {
-      displayText.push({text: ch, clazz: chunk.clazz});
-    } else {
-      span.text += ch;
-    }
-
-    // This doesn't cover words that are split into several chunks but we don't produce things like
-    // that anyway.
-    if (ch !== " " && chunk.text[characterNo] && chunk.text[characterNo] !== " ") {
-      const end = chunk.text.indexOf(" ", characterNo + 1);
-      invisText.text = chunk.text.slice(characterNo, end === -1 ? undefined : end);
-      invisText.clazz = chunk.clazz;
-    } else {
-      invisText.text = "";
     }
   },
 });
@@ -74,18 +55,10 @@ const nextLine = () => {
   setTimeout(() => emit("displayed"), lineDelay);
 };
 
-const resetText = () => {
-  displayText.length = 0;
-  chunkNo = 0;
-  characterNo = 0;
-  reset();
-  resume();
-};
-
 watchImmediate(
   () => [e, perspective] as const,
   ([e, perspective]) => {
-    textLines.value =
+    const text =
       e &&
       eventText({
         e,
@@ -95,7 +68,21 @@ watchImmediate(
         isDoubles: mgr.isDoubles,
         players: mgr.players,
       });
-    resetText();
+    if (!text) {
+      pause();
+      return;
+    }
+
+    visible.value = [];
+    invisible.value = text.spans.filter(span => !!span.text);
+    reset();
+    resume();
+
+    if (!charDelay) {
+      visible.value = invisible.value;
+      invisible.value = [];
+      nextLine();
+    }
   },
 );
 </script>

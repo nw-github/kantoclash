@@ -33,7 +33,6 @@ const playSlideIn = (
   speciesId_: SpeciesId,
   form_: FormId | undefined,
   abilityName_: string,
-  left: bool,
 ) => {
   speciesId.value = speciesId_;
   form.value = form_;
@@ -42,7 +41,7 @@ const playSlideIn = (
 
   return animate(
     [
-      [sprite.value!, {x: [left ? -rem(20) : rem(20), 0], opacity: [0, 1]}, {duration: ms(250)}],
+      [sprite.value!, {x: [!invert ? -rem(20) : rem(20), 0], opacity: [0, 1]}, {duration: ms(250)}],
       [sprite.value, {x: [0, 0]}, {duration: ms(500)}],
     ],
     {repeat: 1, repeatType: "reverse"},

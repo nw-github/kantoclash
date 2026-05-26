@@ -1,6 +1,6 @@
 <template>
   <div v-if="textLines" class="text-sm sm:text-base" :class="textLines.clazz">
-    <template v-for="(text, j) in textLines.text" :key="j">
+    <template v-for="(text, j) in textLines.spans" :key="j">
       <UTooltip v-if="text.tooltip" :text="text.tooltip">
         <span :class="text.clazz">{{ text.text }}</span>
       </UTooltip>
