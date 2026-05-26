@@ -10,7 +10,7 @@ import {playerId, VF} from "~~/game/utils";
 import type {MoveId} from "~~/game/moves";
 import {type Generation, GENERATIONS} from "~~/game/gen";
 
-import {type FormatId, formatInfo, tryReconnect} from "~/utils/shared";
+import {type FormatId, formatInfo} from "~/utils/shared";
 import {convertTeam, parseTeams, type Team} from "~/utils/pokemon";
 import {ClientManager} from "~/utils/client";
 
@@ -41,7 +41,7 @@ type Game = {
   eventNo(): number;
 };
 
-export async function startBot(botType: BotType, format?: FormatId) {
+async function doStartBot(botType: BotType, games: Record<string, Game>, format?: FormatId) {
   const result = await login();
   if (!result) {
     console.log("Failed 3 times, not starting bot!");
@@ -62,9 +62,21 @@ export async function startBot(botType: BotType, format?: FormatId) {
   }
 
   const $conn: S = io(url, {extraHeaders: {cookie}, secure, rejectUnauthorized});
-  const games: Record<string, Game> = {};
   $conn.on("connect", () => {
     activeBots.push(myId);
+
+    console.log(`[${name}] (re)connected!`);
+
+    for (const roomId in games) {
+      $conn.emit("joinRoom", roomId, games[roomId].eventNo(), resp => {
+        if (resp === "bad_room" || !resp) {
+          console.error(`[${name}] got bad room trying to rejoin ${roomId}!`);
+          return;
+        }
+
+        games[roomId].nextTurn(resp.events, resp.options);
+      });
+    }
 
     $conn.on("foundMatch", roomId => {
       $conn.emit("joinRoom", roomId, 0, resp => {
@@ -122,20 +134,7 @@ export async function startBot(botType: BotType, format?: FormatId) {
     if (self !== -1) {
       console.log(`[${name}] was disconnected, attempting to reconnect...`);
       activeBots.splice(self, 1);
-      tryReconnect($conn, random).then(() => {
-        console.log(`[${name}] reconnected!`);
-
-        for (const roomId in games) {
-          $conn.emit("joinRoom", roomId, games[roomId].eventNo(), resp => {
-            if (resp === "bad_room" || !resp) {
-              console.error(`[${name}] got bad room trying to rejoin ${roomId}!`);
-              return;
-            }
-
-            games[roomId].nextTurn(resp.events, resp.options);
-          });
-        }
-      });
+      doStartBot(botType, games, format);
     } else {
       console.log(`[${name}] was disconnected but already not active?`);
     }
@@ -346,6 +345,10 @@ export async function startBot(botType: BotType, format?: FormatId) {
 
     games[room].nextTurn(events, options);
   }
+}
+
+export function startBot(botType: BotType, format?: FormatId) {
+  return doStartBot(botType, {}, format);
 }
 
 const teams: Team[] = [];
