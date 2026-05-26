@@ -13,7 +13,6 @@ import {
   NO_SKILL_SWAP_ABILITIES,
 } from "../utils";
 import {doBeatUp} from "../gen2/moves";
-import {abilityList} from "../species";
 
 /**
  * TODO:
@@ -120,6 +119,9 @@ export const tryDamage = (
   _spread: bool,
   power?: number,
 ): number => {
+  // Get ability early in case we cause the target to faint
+  const {data: targetAbility, id: targetAbilityId} = target.getAbilityIdAndData();
+
   const isImmune = (poke: Battlemon, status: Status) => {
     if (poke.base.status) {
       return true;
@@ -139,8 +141,6 @@ export const tryDamage = (
   };
 
   const tryContactAbility = (type: Type, hadSub: bool) => {
-    const targetAbilityId = target.getAbilityId(user);
-    const targetAbility = abilityList[targetAbilityId!];
     if (
       user.getItem()?.kingsRock &&
       self.kingsRock &&
