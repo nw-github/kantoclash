@@ -1,4 +1,4 @@
-import type {BattleEvent, PlayerId, PokeId} from "~~/game/events";
+import type {BattleEvent, DamageReason, PlayerId, PokeId, RecoveryReason} from "~~/game/events";
 import {Pokemon, type ValidatedPokemonDesc} from "~~/game/pokemon";
 import type {SpeciesId} from "~~/game/species";
 import type {Generation} from "~~/game/gen";
@@ -8,7 +8,6 @@ import {type Battlemon, Battle, type Player} from "~~/game/battle";
 import type {NonEmptyArray} from "~~/game/utils";
 import type {DamagingMove, ForesightMove} from "~~/game/moves";
 import dirty from "~~/game/dirty";
-import {damageMessage} from "../../app/utils/uievent";
 
 export type ClientActivePokemon = Battlemon & {
   visible?: bool;
@@ -661,3 +660,38 @@ function apply(obj: any, diff: any, prop: any, mapper?: any) {
     obj[prop] = mapper ? mapper(diff[prop]) : diff[prop];
   }
 }
+
+// This really belongs in uievent.ts, but putting it here avoids this file having a dependency on it
+// forcing a server restart in dev mode when changing any UI text
+export const damageMessage: Partial<Record<DamageReason | RecoveryReason, string>> = {
+  recoil: "{Src} is hit with recoil!",
+  psn: "{Src} is hurt by poison!",
+  brn: "{Src} is hurt by its burn!",
+  spikes: "{Src} is hurt by the spikes!",
+  rocks: "Pointed stones dug into {src}!",
+  confusion: "It hurt itself in its confusion!",
+  crash: "{Src} kept going and crashed!",
+  trap: "{Src}'s attack continues!",
+  ohko: "It's a one-hit KO!",
+  nightmare: "{Src} is locked in a Nightmare!",
+  sand: "{Src} is buffeted by the sandstorm!",
+  hail: "{Src} is buffeted by the hail!",
+  seeded: "{Src}'s health was sapped by Leech Seed!",
+  belly_drum: "{Src} cut its own HP and maximized its Attack!",
+  set_curse: "{Target} cut its own HP and laid a curse on {src}!",
+  curse: "{Src} is afflicted by the Curse!",
+  destiny_bond: "{Src} took {target} with it!",
+  roughskin: "{Target} was hurt!",
+  baddreams: "{Target} is tormented!",
+  lifeorb: "{Src} is hurt by its Life Orb!",
+  trap_eot: "{Src} is hurt by {move}!",
+  substitute: "{Src} put in a substitute!",
+  // Recovery
+  drain: "{Src} had its energy drained!",
+  recover: "{Src} regained health!",
+  rest: "{Src} started sleeping!",
+  ingrain: "{Src} absorbed nutrients with its roots!",
+  aquaRing: "A veil of water restored {src}'s HP!",
+  item: "{Src} restored HP using its <b>{item}</b>!",
+  item2: "{Src} restored a little HP using its <b>{item}</b>!",
+};
