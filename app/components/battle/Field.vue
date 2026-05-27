@@ -53,7 +53,7 @@
         </div>
         <div class="relative flex justify-center w-full">
           <div
-            class="absolute bottom-4 sm:bottom-8 bg-accented w-[115%] h-10 sm:h-16 rounded-[100%] flex justify-center border-2 border-inverted/20"
+            class="absolute bottom-2 sm:bottom-8 bg-accented w-[115%] h-10 sm:h-16 rounded-[100%] flex justify-center border-2 border-inverted/20"
             :class="isSingles && 'w-full'"
           />
 

@@ -77,7 +77,7 @@
         <TouchPopover :content="{side: 'top'}">
           <div
             ref="sprite"
-            class="sprite relative z-20 flex justify-center h-28 sm:h-56"
+            class="sprite relative z-20 flex justify-center h-28 sm:h-56 w-12 sm:w-18"
             :class="!poke?.visible && 'invisible'"
             :data-poke-id="pokeId"
           >

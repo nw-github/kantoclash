@@ -8,7 +8,6 @@
         @touchend="endTouch"
         @mouseover="isHovered = true"
         @mouseleave="isHovered = false"
-        @click="$emit('click')"
       >
         <slot></slot>
       </div>
@@ -36,8 +35,6 @@ const open = computed({
   get: () => !disabled && isHovered.value,
   set: val => (isHovered.value = val),
 });
-
-defineEmits<{click: []}>();
 
 const element = useTemplateRef("element");
 const touchedEl = useTouchedElement();

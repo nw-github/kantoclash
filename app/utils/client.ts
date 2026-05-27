@@ -359,20 +359,19 @@ export class ClientManager {
         }),
       });
     } else if (e.type === "hit_sub") {
-      if (e.why === "confusion") {
-        await this.cb.displayEvent({
-          type: "dmg_reason",
-          src: e.src,
-          target: e.target,
-          why: "confusion",
-        });
-      }
-
       if (e.why === "confusion" || e.why === "future_sight") {
         await Promise.allSettled([
           this.cb.playDmg(e.eff ?? 1),
           this.cb.playAnimation(e.target, {anim: "hurt", direct: false}),
         ]);
+        if (e.why === "confusion") {
+          await this.cb.displayEvent({
+            type: "dmg_reason",
+            src: e.src,
+            target: e.target,
+            why: "confusion",
+          });
+        }
       } else {
         await this.cb.playAnimation(e.src, {
           anim: "attack",
@@ -386,11 +385,11 @@ export class ClientManager {
       }
       if (e.broken) {
         this.players.poke(e.target)!.v.substitute = 0;
-        await this.cb.displayEvent({type: "sub_break", target: e.target});
         await this.cb.playAnimation(e.target, {
           anim: "lose_sub",
           cb: new AnimCallback(() => this.handleVolatiles(e)),
         });
+        await this.cb.displayEvent({type: "sub_break", target: e.target});
       }
       return;
     } else if (e.type === "end") {
