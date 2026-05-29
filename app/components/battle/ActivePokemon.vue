@@ -1,185 +1,101 @@
 <template>
-  <div class="all w-full flex flex-col items-center">
-    <div
-      class="flex flex-col gap-0.5 sm:gap-1 text-sm z-40"
-      :class="[!poke?.visible && 'invisible', !isSingles ? 'w-16 sm:w-32' : 'w-28 sm:w-40']"
-    >
-      <div class="flex justify-between flex-col sm:flex-row gap-1">
-        <div class="font-bold flex items-center grow overflow-hidden">
-          <span class="truncate text-xs">{{ poke?.base?.name || "--" }}</span>
-          <GenderIcon class="size-4 hidden sm:block" :gender />
-        </div>
-        <div class="flex items-center">
-          <span class="text-[0.65rem] sm:text-xs whitespace-nowrap">
-            Lv. {{ poke?.base?.level ?? 0 }}
-          </span>
-          <GenderIcon
-            class="size-4 sm:hidden"
-            :class="gender === 'N' && 'invisible'"
-            :gender="gender === 'N' ? 'M' : gender"
-          />
-        </div>
-      </div>
-      <div class="relative overflow-hidden rounded-md bg-[#333] flex">
-        <div class="hp-fill absolute h-full rounded-md" />
+  <div ref="scope" class="flex flex-col items-center">
+    <div class="flex items-center justify-center">
+      <TouchPopover :content="{side: 'top'}">
         <div
-          class="w-full text-center text-gray-100 dark:text-highlighted text-[0.65rem] leading-4 sm:text-xs font-medium z-30"
+          ref="sprite"
+          class="sprite relative z-20 flex justify-center items-center select-none"
+          :class="!poke?.visible && 'invisible'"
+          :data-poke-id="pokeId"
         >
-          {{ hpPercent }}%
-        </div>
-      </div>
-      <div class="relative">
-        <div
-          v-if="poke"
-          class="flex gap-1 flex-wrap absolute *:px-[0.2rem] *:py-[0.1rem] *:text-[0.6rem] *:leading-3 sm:*:text-xs"
-        >
-          <UBadge v-if="poke.v.transformed" color="neutral" label="Transformed" variant="subtle" />
-
-          <UBadge
-            v-if="poke.base.status"
-            :color="statusColor[poke.base.status].color"
-            :variant="statusColor[poke.base.status].variant"
-            :label="poke.base.status.toUpperCase()"
+          <CanvasSprite
+            :src="spriteSrc"
+            :canvas-scale="lessThanSm ? 0.95 : 1.75"
+            :speed="spriteSpeed"
+            :tint="getTint"
+            :paused="spritePaused"
           />
 
-          <template v-if="!poke.v.species.types.every((ty, i) => ty === poke.v.types?.[i])">
-            <TypeBadge v-for="type in poke.v.types" :key="type" :type />
-          </template>
-
-          <TypeBadge
-            v-if="poke.v.charging"
-            :type="poke.v.charging.move.type"
-            :label="poke.v.charging.move.name"
+          <img
+            v-if="poke && !poke.v.fainted && poke.v.confusion"
+            class="absolute size-10 sm:size-20 -top-3 sm:top-0 z-30 dark:invisible"
+            src="/dizzy-light.gif"
+            alt="confused"
           />
 
-          <UBadge v-for="(props, i) in badges" :key="i" v-bind="props" />
+          <img
+            v-if="poke && !poke.v.fainted && poke.v.confusion"
+            class="absolute size-10 sm:size-20 -top-3 sm:top-0 z-30 invisible dark:visible"
+            src="/dizzy.gif"
+            alt="confused"
+          />
 
-          <template v-for="(val, stage) in poke.v.stages">
-            <UBadge v-if="val" :key="stage" :color="val > 0 ? 'old-lime' : 'error'">
-              {{
-                roundTo(
-                  stage === "acc" || stage === "eva"
-                    ? poke.base.gen.accStageMultipliers[val][0] /
-                        poke.base.gen.accStageMultipliers[val][1]
-                    : poke.base.gen.stageMultipliers[val][0] /
-                        poke.base.gen.stageMultipliers[val][1],
-                  2,
-                )
-              }}x {{ statShortName![stage] }}
-            </UBadge>
-          </template>
+          <AnimatePresence>
+            <motion.img
+              v-if="poke?.base?.status === 'slp'"
+              class="absolute size-6 sm:size-10 top-6 z-30 invert dark:invert-0 rotate-180 ml-24"
+              src="/zzz.gif"
+              alt="sleeping"
+              :initial="{opacity: 0}"
+              :transition="{duration: 0.2}"
+              :animate="{opacity: 1}"
+              :exit="{opacity: 0}"
+            />
+          </AnimatePresence>
         </div>
-      </div>
+
+        <template v-if="poke?.visible" #content>
+          <PokemonTTContent v-if="poke.owned && !poke.v.transformed" :poke :weather />
+          <UnknownPokeTTContent v-else :poke />
+        </template>
+      </TouchPopover>
+
+      <AnimatePresence>
+        <motion.div
+          v-for="({name: key, clazz}, i) in screens"
+          :key
+          class="absolute w-16 h-14 sm:w-32 sm:h-28 opacity-30 z-30 rounded-md pointer-events-none"
+          :class="clazz"
+          :transition="{duration: 0.35, ease: 'easeOut'}"
+          :initial="{scale: 0}"
+          :animate="{scale: 1, y: i * -5, x: i * -5}"
+          :exit="{scale: 0}"
+          layout
+        />
+      </AnimatePresence>
     </div>
 
-    <div ref="scope" class="flex flex-col items-center relative">
-      <div class="items-center justify-center flex">
-        <TouchPopover :content="{side: 'top'}">
-          <div
-            ref="sprite"
-            class="sprite relative z-20 flex justify-center h-28 sm:h-56 w-12 sm:w-18"
-            :class="!poke?.visible && 'invisible'"
-            :data-poke-id="pokeId"
-          >
-            <div
-              class="absolute w-[128px] h-[117px] sm:w-[256px] sm:h-[234px] flex justify-center items-center select-none"
-            >
-              <CanvasSprite
-                :src="spriteSrc"
-                :canvas-scale="lessThanSm ? 0.95 : 1.75"
-                :speed="spriteSpeed"
-                :tint="getTint"
-                :paused="spritePaused"
-              />
-
-              <img
-                v-if="poke && !poke.v.fainted && poke.v.confusion"
-                class="absolute size-10 sm:size-20 -top-3 sm:top-0 z-30 dark:invisible"
-                src="/dizzy-light.gif"
-                alt="confused"
-              />
-
-              <img
-                v-if="poke && !poke.v.fainted && poke.v.confusion"
-                class="absolute size-10 sm:size-20 -top-3 sm:top-0 z-30 invisible dark:visible"
-                src="/dizzy.gif"
-                alt="confused"
-              />
-
-              <AnimatePresence>
-                <motion.img
-                  v-if="poke?.base?.status === 'slp'"
-                  class="absolute size-6 sm:size-10 top-6 z-30 invert dark:invert-0 rotate-180 ml-24"
-                  src="/zzz.gif"
-                  alt="sleeping"
-                  :initial="{opacity: 0}"
-                  :transition="{duration: 0.2}"
-                  :animate="{opacity: 1}"
-                  :exit="{opacity: 0}"
-                />
-              </AnimatePresence>
-            </div>
-          </div>
-
-          <template v-if="poke?.visible" #content>
-            <PokemonTTContent v-if="poke.owned && !poke.v.transformed" :poke :weather />
-            <UnknownPokeTTContent v-else :poke />
-          </template>
-        </TouchPopover>
-
-        <AnimatePresence>
-          <motion.div
-            v-for="({name: key, clazz}, i) in screens"
-            :key
-            class="absolute w-16 h-14 sm:w-32 sm:h-28 opacity-30 z-30 rounded-md pointer-events-none"
-            :class="clazz"
-            :transition="{duration: 0.35, ease: 'easeOut'}"
-            :initial="{scale: 0}"
-            :animate="{scale: 1, y: i * -5, x: i * -5}"
-            :exit="{scale: 0}"
-            layout
-          />
-        </AnimatePresence>
-      </div>
+    <div
+      class="ground absolute -bottom-4 sm:-bottom-8 h-10 w-20 sm:h-16 sm:w-40 flex justify-center"
+      :class="{back, front: !back}"
+    >
+      <div class="pokeball absolute size-[42px] z-10 opacity-0 pointer-events-none" />
 
       <div
-        class="ground absolute bottom-4 sm:bottom-8 h-10 w-20 sm:h-16 sm:w-40 rounded-[100%] flex justify-center"
-        :class="{back, front: !back}"
+        class="substitute absolute opacity-0 bottom-[50%] pointer-events-none"
+        :class="back ? 'z-10' : 'z-40'"
       >
-        <div class="pokeball absolute size-[42px] z-10 opacity-0 pointer-events-none" />
-
-        <div
-          class="substitute absolute opacity-0 bottom-[50%] pointer-events-none"
-          :class="back ? 'z-10' : 'z-40'"
-        >
-          <NuxtImg
-            :srcset="
-              back
-                ? `/sprites/battle/back/substitute.gif ${lessThanSm ? 2 : 1}x`
-                : `/sprites/battle/substitute.gif ${lessThanSm ? 1 : 0.5}x`
-            "
-            alt="substitute"
-          />
-        </div>
-
-        <img
-          v-for="i in 3"
-          :key="i"
-          class="caltrop absolute size-4 sm:size-7 opacity-0 z-30 pointer-events-none"
-          src="/caltrop.svg"
+        <NuxtImg
+          :srcset="
+            back
+              ? `/sprites/battle/back/substitute.gif ${lessThanSm ? 2 : 1}x`
+              : `/sprites/battle/substitute.gif ${lessThanSm ? 1 : 0.5}x`
+          "
+          alt="substitute"
         />
       </div>
+
+      <img
+        v-for="i in 3"
+        :key="i"
+        class="caltrop absolute size-4 sm:size-7 opacity-0 z-30 pointer-events-none"
+        src="/caltrop.svg"
+      />
     </div>
   </div>
 </template>
 
 <style scoped>
-.hp-fill {
-  width: v-bind("hpPercent + '%'");
-  background-color: v-bind("hpColor(hpPercent)");
-  transition: width 0.5s, background-color 0.5s;
-}
-
 .pokeball {
   background: url("/sprites/pokeballs.png") v-bind("offsX(pbCol)") v-bind("offsY(pbRow)");
 
@@ -212,7 +128,6 @@ import {
   type SequenceOptions,
   type SequenceTime,
 } from "motion-v";
-import type {BadgeProps} from "@nuxt/ui";
 import type {SpeciesId} from "~~/game/species";
 
 const {poke, back, player, pokeId} = defineProps<{
@@ -220,21 +135,12 @@ const {poke, back, player, pokeId} = defineProps<{
   poke?: ClientActivePokemon;
   back?: bool;
   pokeId: PokeId;
-  isSingles: bool;
   weather?: Weather;
 }>();
 
-const hpPercent = computed(() => {
-  const value = poke?.base?.hpPercent ?? 0;
-  return value ? Math.min(Math.max(Math.round(value), 1), 100) : 0;
-});
-const statShortName = computed(
-  () => poke && {...getStatKeys(poke.base.gen), spd: "SpD", acc: "Acc", eva: "Eva"},
-);
 const gender = computed(() => gen1Gender[poke?.v.speciesId as SpeciesId] ?? poke?.v.gender ?? "N");
 
-const breakpoint = useBreakpoints(breakpointsTailwind);
-const lessThanSm = breakpoint.smaller("sm");
+const lessThanSm = useBreakpoints(breakpointsTailwind).smaller("sm");
 
 const sprite = useTemplateRef("sprite");
 const pbRow = ref(0);
@@ -305,54 +211,6 @@ const [scope, animate] = useAnimate();
 const offsX = (number: number) => `-${number * 42 - number}px`;
 const offsY = (number: number) => `-${number * 42 - number * 2}px`;
 const relativePos = (src: DOMRect, x: number, y: number) => [x - src.left, y - src.top];
-
-// prettier-ignore
-const badges = computed(() => {
-  const result: BadgeProps[] = [];
-  if (!poke) {
-    return result;
-  }
-
-  if (poke.v.trapped) { result.push({color: "error", icon: "tabler:prison", label: poke.v.trapped.move.name, variant: "subtle"}); }
-  if (poke.v.perishCount) { result.push({color: "error", icon: "material-symbols:skull", label: poke.v.perishCount, variant: "subtle"}); }
-  if (poke.v.stockpile) { result.push({color: "old-lime", icon: "material-symbols-light:money-bag", label: poke.v.stockpile, variant: "subtle"}); }
-  if (poke.v.hasFlag(VF.followMe)) { result.push({color: "old-lime", icon: "tabler:hand-finger", variant: "subtle"}); }
-  if (poke.v.hasFlag(VF.snatch)) { result.push({color: "old-lime", icon: "tabler:hand-grab", variant: "subtle"}); }
-  if (poke.v.attract) { result.push({color: "old-pink", icon: "material-symbols:favorite", variant: "subtle"}); }
-  if (poke.v.hasFlag(VF.powerTrick)) { result.push({color: "old-pink", icon: "mi:switch", variant: "subtle"}); }
-  if (poke.v.hasFlag(VF.lockon)) { result.push({color: "error", icon: "ri:crosshair-2-line", variant: "subtle"}); }
-  if (poke.v.meanLook) { result.push({color: "error", icon: "tabler:prison", variant: "subtle"}); }
-  if (poke.v.seededBy) { result.push({color: "old-lime", icon: "tabler:seedling-filled", variant: "subtle"}); }
-  if (poke.v.hasFlag(VF.flashFire)) { result.push({color: "error", icon: "mdi:fire", variant: "subtle"}); }
-  if (poke.v.hasFlag(VF.helpingHand)) { result.push({color: "old-lime", icon: "mdi:hand-clap", variant: "subtle"}); }
-  if (poke.v.hasFlag(VF.charge)) { result.push({color: "old-yellow", icon: "material-symbols:bolt", variant: "subtle"}); }
-  if (poke.v.hasFlag(VF.magicCoat)) { result.push({color: "old-pink", icon: "mdi:mirror", variant: "subtle"}); }
-  if (poke.v.hasFlag(VF.gastroAcid)) { result.push({ color: "old-purple", icon: "material-symbols:block-outline", label: "Suppressed", variant: "subtle" }); }
-  if (poke.v.encore) { result.push({color: "old-sky", icon: "material-symbols:celebration", variant: "subtle"}); }
-  if (poke.v.disabled) { result.push({color: "error", icon: "material-symbols:block-outline", variant: "subtle"}); }
-  if (poke.v.tauntTurns) { result.push({color: "error", icon: "fluent-emoji-high-contrast:anger-symbol", variant: "subtle"}); }
-  if (poke.v.embargoTurns) { result.push({color: "error", icon: "tabler:truck-off", variant: "subtle"}); }
-  if (poke.v.hasFlag(VF.torment)) { result.push({ color: "error", icon: "fluent-emoji-high-contrast:anger-symbol", variant: "subtle", label: "Torment" }); }
-  if (poke.v.identified) { result.push({color: "old-violet", icon: "material-symbols:search-rounded", variant: "subtle"}); }
-  if (poke.v.magnetRise) { result.push({color: "old-amber", icon: "tabler:magnet", variant: "subtle"}); }
-  if (poke.v.hasFlag(VF.imprisoning)) { result.push({ color: "error", icon: "material-symbols:lock", variant: "subtle", label: "Imprisoning" }); }
-  if (poke.v.hasFlag(VF.curse)) { result.push({color: "error", icon: "mdi:nail", label: "Cursed", variant: "subtle"}); }
-  if (poke.v.hasFlag(VF.ingrain)) { result.push({color: "old-lime", icon: "tabler:prison", variant: "subtle", label: "Ingrain"}); }
-  if (poke.v.hasFlag(VF.aquaRing)) { result.push({color: "old-sky", variant: "subtle", label: "Aqua Ring"}); }
-  if (poke.v.hasFlag(VF.roost)) { result.push({color: "neutral", label: "Roost", icon: "mdi:feather", variant: "subtle"}); }
-  if (poke.v.hasFlag(VF.focusEnergy)) { result.push({color: "old-emerald", label: "Focus Energy"}); }
-  if (poke.v.hasFlag(VF.mist)) { result.push({color: "old-teal", label: "Mist"}); }
-  if (poke.v.hasFlag(VF.destinyBond)) { result.push({color: "neutral", label: "Destiny Bond", variant: "subtle"}); }
-  if (poke.v.hasFlag(VF.grudge)) { result.push({color: "neutral", label: "Grudge", variant: "subtle"}); }
-  if (poke.v.hasFlag(VF.protect)) { result.push({color: "neutral", label: "Protect"}); }
-  if (poke.v.hasFlag(VF.endure)) { result.push({color: "neutral", label: "Endure"}); }
-  if (poke.v.hasFlag(VF.nightmare)) { result.push({color: "neutral", label: "Nightmare"}); }
-  if (poke.v.drowsy) { result.push({color: "neutral", label: "Drowsy"}); }
-  if (poke.v.hasFlag(VF.waterSport)) { result.push({color: "old-sky", label: "Water Sport"}); }
-  if (poke.v.hasFlag(VF.mudSport)) { result.push({color: "old-orange", label: "Mud Sport"}); }
-
-  return result;
-});
 
 export type AnimationParams =
   | SwitchAnim
