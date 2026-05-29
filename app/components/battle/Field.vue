@@ -37,7 +37,7 @@
           >
             <StatusBar :poke :is-singles />
 
-            <ActivePokemon
+            <Battler
               ref="battlers"
               class="absolute z-20"
               :class="
@@ -82,9 +82,8 @@
 </template>
 
 <script setup lang="ts">
-import type {ActivePokemon} from "#components";
 import type {PlayerId, PokeId} from "~~/game/events";
-import type {AnimationParams} from "./ActivePokemon.vue";
+import type {AnimationParams} from "./Battler.vue";
 import {playerId, type Weather} from "~~/game/utils";
 import {abilityList} from "~~/game/species";
 import {animate, type AnimationPlaybackControlsWithThen, type Segment} from "motion-v";
