@@ -51,7 +51,7 @@
           :label="poke.v.charging.move.name"
         />
 
-        <UBadge v-for="(props, i) in badges" :key="i" v-bind="props" />
+        <UBadge v-for="(props, i) in badges" :key="i" v-bind="props" size="sm" />
 
         <template v-for="(val, stage) in poke.v.stages">
           <UBadge v-if="val" :key="stage" :color="val > 0 ? 'old-lime' : 'error'">
