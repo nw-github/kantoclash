@@ -1451,6 +1451,15 @@ export const moveScripts: MoveScripts = {
     battle.field.trickRoom = 5;
     battle.event({type: "weather", kind: "start", weather: "trickRoom", src: user.id});
   },
+  // Gen V
+  soak(battle, user, [target]) {
+    if (target.v.ability === "multitype" || target.v.substitute) {
+      return battle.info(user, "fail_generic");
+    }
+
+    target.v.types = ["water"];
+    battle.event({type: "conversion", src: target.id, types: ["water"]});
+  },
 };
 
 export const moveOverrides: MovePropOverrides = {

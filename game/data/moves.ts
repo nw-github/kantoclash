@@ -5932,13 +5932,13 @@ export const rawMoveList = {
     sound: true,
   },
   soak: {
-    kind: "fail",
+    kind: "soak",
     name: "Soak",
     pp: 20,
     type: "water",
     range: "Adjacent",
     acc: 100,
-    why: "fail_unimplemented",
+    magicCoat: true,
   },
   steamroller: {
     kind: "damage",
