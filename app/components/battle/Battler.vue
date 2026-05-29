@@ -18,14 +18,14 @@
 
           <img
             v-if="poke && !poke.v.fainted && poke.v.confusion"
-            class="absolute size-10 sm:size-20 -top-3 sm:top-0 z-30 dark:invisible"
+            class="absolute size-10 sm:size-20 -top-1/3 z-30 dark:invisible"
             src="/dizzy-light.gif"
             alt="confused"
           />
 
           <img
             v-if="poke && !poke.v.fainted && poke.v.confusion"
-            class="absolute size-10 sm:size-20 -top-3 sm:top-0 z-30 invisible dark:visible"
+            class="absolute size-10 sm:size-20 -top-1/3 z-30 invisible dark:visible"
             src="/dizzy.gif"
             alt="confused"
           />
@@ -33,7 +33,7 @@
           <AnimatePresence>
             <motion.img
               v-if="poke?.base?.status === 'slp'"
-              class="absolute size-6 sm:size-10 top-6 z-30 invert dark:invert-0 rotate-180 ml-24"
+              class="absolute size-6 sm:size-10 -top-6 z-30 invert dark:invert-0 rotate-180 ml-24"
               src="/zzz.gif"
               alt="sleeping"
               :initial="{opacity: 0}"
