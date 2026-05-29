@@ -180,6 +180,7 @@ export type HitSubstituteEvent = {
   why: DamageReason;
   hitCount?: number;
   eff?: number;
+  isCrit?: bool;
 };
 
 type UseMoveEvent = {

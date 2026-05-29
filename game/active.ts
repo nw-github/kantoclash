@@ -348,6 +348,7 @@ export class Battlemon {
         src: src.id,
         target: this.id,
         broken: this.v.substitute === 0,
+        isCrit,
         why,
         eff,
       });

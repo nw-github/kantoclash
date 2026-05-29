@@ -2,7 +2,7 @@ import type {BattleEvent, DamageReason, PlayerId, PokeId, RecoveryReason} from "
 import {Pokemon, type ValidatedPokemonDesc} from "~~/game/pokemon";
 import type {SpeciesId} from "~~/game/species";
 import type {Generation} from "~~/game/gen";
-import type {AnimationParams} from "~/components/battle/ActivePokemon.vue";
+import type {AnimationParams} from "~/components/battle/Battler.vue";
 import type {BattleTimers, TeamPreview} from "~~/server/gameServer";
 import {type Battlemon, Battle, type Player} from "~~/game/battle";
 import type {NonEmptyArray} from "~~/game/utils";
@@ -262,6 +262,10 @@ export class ClientManager {
             this.cb.playDmg(e.eff ?? 1),
             this.cb.playAnimation(e.target, {anim: "hurt", direct: true}),
           ]);
+
+          if ((e.eff ?? 1) !== 1) {
+            await this.cb.displayEvent({type: "eff", eff: e.eff, target: e.target});
+          }
         }
       }
 
@@ -381,6 +385,10 @@ export class ClientManager {
             this.cb.playAnimation(e.target, {anim: "hurt", direct: false});
           }),
         });
+        if (e.isCrit) {
+          await this.cb.displayEvent({type: "crit", target: e.target});
+        }
+
         await this.cb.displayEvent(e);
       }
       if (e.broken) {
