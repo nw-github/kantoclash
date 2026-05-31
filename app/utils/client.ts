@@ -511,6 +511,18 @@ export class ClientManager {
       if (!src.owned && !src.base.ability && !src.abilityUnknown) {
         src.base.ability = e.ability;
       }
+    } else if (e.type === "spite") {
+      const src = this.players.poke(e.src)!;
+      if (!src.owned) {
+        const idx = src.base.moves.findIndex(id => id === e.move);
+        const ppcost = e.amount;
+        if (idx === -1) {
+          src.base.moves.push(e.move);
+          src.base.pp.push(src.base.gen.getMaxPP(e.move) - ppcost);
+        } else {
+          src.base.pp[idx] -= ppcost;
+        }
+      }
     }
     // TODO: PP restoring berries, mimic
 
