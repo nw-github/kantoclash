@@ -3,7 +3,7 @@
     class="w-full h-16 sm:h-18 rounded-lg bg-muted text-default sm:text-lg p-2 text-wrap overflow-hidden ring ring-inset ring-accented"
   >
     <span v-for="(part, i) in visible" :key="i" :class="part.clazz">{{ part.text }}</span>
-    <span v-for="(part, i) in invisible" :key="i" class="invisible" :clazz="part.clazz">{{
+    <span v-for="(part, i) in invisible" :key="i" :class="['invisible', part.clazz]">{{
       part.text
     }}</span>
   </div>
