@@ -21,7 +21,7 @@
             v-if="id !== perspective"
             ref="trainerSprite"
             v-model:frame="trainerAnim.frame"
-            class="absolute z-50 h-24 sm:h-40 opacity-0 pointer-events-none touch-none select-none bottom-[25%]"
+            class="absolute z-50 h-24 sm:h-40 opacity-0 pointer-events-none touch-none select-none bottom-[30%] sm:bottom-[25%]"
             :loop="false"
             :src="trainerAnim.src"
             :tint="trainerAnim.tint"
