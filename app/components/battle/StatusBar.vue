@@ -32,13 +32,20 @@
         v-if="poke"
         class="flex gap-1 flex-wrap absolute *:px-[0.2rem] *:py-[0.1rem] *:text-[0.6rem] *:leading-3 sm:*:text-xs"
       >
-        <UBadge v-if="poke.v.transformed" color="neutral" label="Transformed" variant="subtle" />
+        <UBadge
+          v-if="poke.v.transformed"
+          color="neutral"
+          label="Transformed"
+          variant="subtle"
+          size="sm"
+        />
 
         <UBadge
           v-if="poke.base.status"
           :color="statusColor[poke.base.status].color"
           :variant="statusColor[poke.base.status].variant"
           :label="poke.base.status.toUpperCase()"
+          size="sm"
         />
 
         <template v-if="!poke.v.species.types.every((ty, i) => ty === poke.v.types?.[i])">
@@ -51,20 +58,31 @@
           :label="poke.v.charging.move.name"
         />
 
-        <UBadge v-for="(props, i) in badges" :key="i" v-bind="props" size="sm" />
+        <template v-for="(props, i) in badges" :key="i">
+          <UTooltip :text="props.tooltip">
+            <UBadge v-bind="props" size="sm" />
+          </UTooltip>
+        </template>
 
-        <template v-for="(val, stage) in poke.v.stages">
-          <UBadge v-if="val" :key="stage" :color="val > 0 ? 'old-lime' : 'error'">
-            {{
-              roundTo(
-                stage === "acc" || stage === "eva"
-                  ? poke.base.gen.accStageMultipliers[val][0] /
-                      poke.base.gen.accStageMultipliers[val][1]
-                  : poke.base.gen.stageMultipliers[val][0] / poke.base.gen.stageMultipliers[val][1],
-                2,
-              )
-            }}x {{ statShortName![stage] }}
-          </UBadge>
+        <template v-for="(val, stat) in poke.v.stages">
+          <UTooltip
+            v-if="val"
+            :key="stat"
+            :text="`${val >= 0 ? `+${val}` : val} ${statShortName![stat]} Stage(s)`"
+          >
+            <UBadge :color="val > 0 ? 'old-lime' : 'error'" size="sm">
+              {{
+                roundTo(
+                  stat === "acc" || stat === "eva"
+                    ? poke.base.gen.accStageMultipliers[val][0] /
+                        poke.base.gen.accStageMultipliers[val][1]
+                    : poke.base.gen.stageMultipliers[val][0] /
+                        poke.base.gen.stageMultipliers[val][1],
+                  2,
+                )
+              }}x {{ statShortName![stat] }}
+            </UBadge>
+          </UTooltip>
         </template>
       </div>
     </div>
@@ -75,6 +93,8 @@
 import type {BadgeProps} from "@nuxt/ui";
 import type {SpeciesId} from "~~/game/species";
 import {VF} from "~~/game/utils";
+
+type BadgePropsEx = BadgeProps & {tooltip?: string};
 
 const {poke} = defineProps<{poke?: ClientActivePokemon; isSingles: bool}>();
 
@@ -91,40 +111,39 @@ const gender = computed(() => gen1Gender[poke?.v.speciesId as SpeciesId] ?? poke
 
 // prettier-ignore
 const badges = computed(() => {
-  const result: BadgeProps[] = [];
+  const result: BadgePropsEx[] = [];
   if (!poke) {
     return result;
   }
 
   if (poke.v.trapped) { result.push({color: "error", icon: "tabler:prison", label: poke.v.trapped.move.name, variant: "subtle"}); }
-  if (poke.v.perishCount) { result.push({color: "error", icon: "material-symbols:skull", label: poke.v.perishCount, variant: "subtle"}); }
-  if (poke.v.stockpile) { result.push({color: "old-lime", icon: "material-symbols-light:money-bag", label: poke.v.stockpile, variant: "subtle"}); }
-  if (poke.v.hasFlag(VF.followMe)) { result.push({color: "old-lime", icon: "tabler:hand-finger", variant: "subtle"}); }
-  if (poke.v.hasFlag(VF.snatch)) { result.push({color: "old-lime", icon: "tabler:hand-grab", variant: "subtle"}); }
-  if (poke.v.attract) { result.push({color: "old-pink", icon: "material-symbols:favorite", variant: "subtle"}); }
-  if (poke.v.hasFlag(VF.powerTrick)) { result.push({color: "old-pink", icon: "mi:switch", variant: "subtle"}); }
-  if (poke.v.hasFlag(VF.lockon)) { result.push({color: "error", icon: "ri:crosshair-2-line", variant: "subtle"}); }
-  if (poke.v.meanLook) { result.push({color: "error", icon: "tabler:prison", variant: "subtle"}); }
-  if (poke.v.seededBy) { result.push({color: "old-lime", icon: "tabler:seedling-filled", variant: "subtle"}); }
-  if (poke.v.hasFlag(VF.flashFire)) { result.push({color: "error", icon: "mdi:fire", variant: "subtle"}); }
-  if (poke.v.hasFlag(VF.helpingHand)) { result.push({color: "old-lime", icon: "mdi:hand-clap", variant: "subtle"}); }
-  if (poke.v.hasFlag(VF.charge)) { result.push({color: "old-yellow", icon: "material-symbols:bolt", variant: "subtle"}); }
-  if (poke.v.hasFlag(VF.magicCoat)) { result.push({color: "old-pink", icon: "mdi:mirror", variant: "subtle"}); }
-  if (poke.v.hasFlag(VF.gastroAcid)) { result.push({ color: "old-purple", icon: "material-symbols:block-outline", label: "Suppressed", variant: "subtle" }); }
-  if (poke.v.encore) { result.push({color: "old-sky", icon: "material-symbols:celebration", variant: "subtle"}); }
-  if (poke.v.disabled) { result.push({color: "error", icon: "material-symbols:block-outline", variant: "subtle"}); }
-  if (poke.v.tauntTurns) { result.push({color: "error", icon: "fluent-emoji-high-contrast:anger-symbol", variant: "subtle"}); }
-  if (poke.v.embargoTurns) { result.push({color: "error", icon: "tabler:truck-off", variant: "subtle"}); }
-  if (poke.v.hasFlag(VF.torment)) { result.push({ color: "error", icon: "fluent-emoji-high-contrast:anger-symbol", variant: "subtle", label: "Torment" }); }
-  if (poke.v.identified) { result.push({color: "old-violet", icon: "material-symbols:search-rounded", variant: "subtle"}); }
-  if (poke.v.magnetRise) { result.push({color: "old-amber", icon: "tabler:magnet", variant: "subtle"}); }
-  if (poke.v.hasFlag(VF.imprisoning)) { result.push({ color: "error", icon: "material-symbols:lock", variant: "subtle", label: "Imprisoning" }); }
-  if (poke.v.hasFlag(VF.curse)) { result.push({color: "error", icon: "mdi:nail", label: "Cursed", variant: "subtle"}); }
-  if (poke.v.hasFlag(VF.ingrain)) { result.push({color: "old-lime", icon: "tabler:prison", variant: "subtle", label: "Ingrain"}); }
+  if (poke.v.perishCount) { result.push({color: "error", icon: "material-symbols:skull", label: poke.v.perishCount, variant: "subtle", tooltip: `Perishes in ${poke.v.perishCount} turn(s)`}); }
+  if (poke.v.stockpile) { result.push({color: "old-lime", icon: "material-symbols-light:money-bag", label: poke.v.stockpile, variant: "subtle", tooltip: `${poke.v.stockpile} Stockpiled`}); }
+  if (poke.v.hasFlag(VF.followMe)) { result.push({color: "old-lime", icon: "tabler:hand-finger", variant: "subtle", tooltip: "Center of attention"}); }
+  if (poke.v.hasFlag(VF.snatch)) { result.push({color: "old-lime", icon: "tabler:hand-grab", variant: "subtle", tooltip: "Lying in wait"}); }
+  if (poke.v.attract) { result.push({color: "old-pink", icon: "material-symbols:favorite", variant: "subtle", tooltip: `Attracted to ${poke.v.attract.base.name}`}); }
+  if (poke.v.hasFlag(VF.powerTrick)) { result.push({color: "old-pink", icon: "mi:switch", variant: "subtle", tooltip: "Atk and Def swapped"}); }
+  if (poke.v.hasFlag(VF.lockon)) { result.push({color: "error", icon: "ri:crosshair-2-line", variant: "subtle", tooltip: "Locked onto"}); }
+  if (poke.v.meanLook) { result.push({color: "error", icon: "tabler:prison", variant: "subtle", tooltip: "Can't switch out"}); }
+  if (poke.v.seededBy) { result.push({color: "old-lime", icon: "tabler:seedling-filled", variant: "subtle", tooltip: `Seeded by ${poke.v.seededBy.base.name}`}); }
+  if (poke.v.hasFlag(VF.flashFire)) { result.push({color: "error", icon: "mdi:fire", variant: "subtle", tooltip: "Flash Fire activated"}); }
+  if (poke.v.hasFlag(VF.helpingHand)) { result.push({color: "old-lime", icon: "mdi:hand-clap", variant: "subtle", tooltip: "Boosted by Helping Hand"}); }
+  if (poke.v.hasFlag(VF.charge)) { result.push({color: "old-yellow", icon: "material-symbols:bolt", variant: "subtle", tooltip: "Charged"}); }
+  if (poke.v.hasFlag(VF.magicCoat)) { result.push({color: "old-pink", icon: "mdi:mirror", variant: "subtle", tooltip: "Magic Coat active"}); }
+  if (poke.v.hasFlag(VF.gastroAcid)) { result.push({ color: "old-purple", icon: "material-symbols:block-outline", variant: "subtle", tooltip: "Ability suppressed" }); }
+  if (poke.v.encore) { result.push({color: "old-sky", icon: "material-symbols:celebration", variant: "subtle", tooltip: "Received an Encore"}); }
+  if (poke.v.disabled) { result.push({color: "error", icon: "material-symbols:block-outline", variant: "subtle", tooltip: "Move disabled"}); }
+  if (poke.v.tauntTurns) { result.push({color: "error", icon: "fluent-emoji-high-contrast:anger-symbol", variant: "subtle", tooltip: "Can only use damaging moves"}); }
+  if (poke.v.embargoTurns) { result.push({color: "error", icon: "tabler:truck-off", variant: "subtle", tooltip: "Item effects suppressed"}); }
+  if (poke.v.hasFlag(VF.torment)) { result.push({ color: "error", icon: "fluent-emoji-high-contrast:anger-symbol", variant: "subtle", tooltip: "Can't use the same move twice in a row" }); }
+  if (poke.v.identified) { result.push({color: "old-violet", icon: "material-symbols:search-rounded", variant: "subtle", tooltip: `Identified by ${poke.v.identified.name}`}); }
+  if (poke.v.magnetRise) { result.push({color: "old-amber", icon: "tabler:magnet", variant: "subtle", tooltip: "Magnet Rise (Ungrounded)"}); }
+  if (poke.v.hasFlag(VF.imprisoning)) { result.push({ color: "error", icon: "material-symbols:lock", variant: "subtle", tooltip: "Imprisoning" }); }
+  if (poke.v.hasFlag(VF.curse)) { result.push({color: "error", icon: "mdi:nail", variant: "subtle", tooltip: "Cursed"}); }
+  if (poke.v.hasFlag(VF.ingrain)) { result.push({color: "old-lime", icon: "tabler:prison", variant: "subtle", tooltip: "Ingrain"}); }
+  if (poke.v.hasFlag(VF.roost)) { result.push({color: "neutral", icon: "mdi:feather", variant: "subtle", tooltip: "Roosting (Grounded)"}); }
   if (poke.v.hasFlag(VF.aquaRing)) { result.push({color: "old-sky", variant: "subtle", label: "Aqua Ring"}); }
-  if (poke.v.hasFlag(VF.roost)) { result.push({color: "neutral", label: "Roost", icon: "mdi:feather", variant: "subtle"}); }
   if (poke.v.hasFlag(VF.focusEnergy)) { result.push({color: "old-emerald", label: "Focus Energy"}); }
-  if (poke.v.hasFlag(VF.mist)) { result.push({color: "old-teal", label: "Mist"}); }
   if (poke.v.hasFlag(VF.destinyBond)) { result.push({color: "neutral", label: "Destiny Bond", variant: "subtle"}); }
   if (poke.v.hasFlag(VF.grudge)) { result.push({color: "neutral", label: "Grudge", variant: "subtle"}); }
   if (poke.v.hasFlag(VF.protect)) { result.push({color: "neutral", label: "Protect"}); }

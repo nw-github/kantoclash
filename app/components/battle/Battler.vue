@@ -197,6 +197,10 @@ const screens = computed(() => {
     screens.push({name: "reflect", clazz: scrColor.reflect});
   }
 
+  if (poke?.v.hasFlag(VF.mist)) {
+    screens.push({name: "mist", clazz: scrColor.mist});
+  }
+
   for (const screen in scrColor) {
     if (player?.bp?.screens?.[screen as ScreenId]) {
       screens.push({name: screen, clazz: scrColor[screen as keyof typeof scrColor]});

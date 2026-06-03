@@ -5,7 +5,12 @@
     :src="`/sprites/type/${encodeURIComponent(type)}.png`"
     :alt="type"
   />
-  <UBadge v-else :style="{backgroundColor: typeColor[type]}" :label="label ?? toTitleCase(type)" />
+  <UBadge
+    v-else
+    :style="{backgroundColor: typeColor[type]}"
+    :label="label ?? toTitleCase(type)"
+    size="sm"
+  />
 </template>
 
 <script setup lang="ts">
