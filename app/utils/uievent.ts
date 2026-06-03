@@ -178,10 +178,12 @@ const infoMessage: Record<InfoReason, string> = {
 
 const infoClass: Partial<Record<InfoReason, string>> = {
   confused: "confused",
-  sleep: "move",
   disable_end: "move",
-  wake: "move",
   withdraw: "muted",
+  sleep: "move",
+  wake: "move",
+  paralyze: "move",
+  frozen: "move",
 };
 
 const weatherMessage: Record<WeatherEvent["weather"], Record<WeatherEvent["kind"], string>> = {
@@ -252,16 +254,16 @@ const screenMessage: Record<ScreenId, Record<ScreenEvent["kind"], string>> = {
 
 const hazardMessage: Record<HazardId, {set: string; spin: string}> = {
   spikes: {
-    set: "Spikes were scattered all around the feet of {srcTeam}!",
-    spin: "{Src} blew away the Spikes around {srcTeam}'s feet!",
+    set: "Spikes were scattered all around the feet of {playerTeam}!",
+    spin: "{Src} blew away the Spikes around {playerTeam}'s feet!",
   },
   rocks: {
-    set: "Pointed stones float in the air around {srcTeam}!",
-    spin: "The pointed stones disappeared from the ground around {srcTeam}'s feet!",
+    set: "Pointed stones float in the air around {playerTeam}!",
+    spin: "The pointed stones disappeared from the ground around {playerTeam}'s feet!",
   },
   tspikes: {
-    set: "Poison spikes were scattered all around {srcTeam}'s feet!",
-    spin: "The poison spikes disappeared from the ground around {srcTeam}'s feet!",
+    set: "Poison spikes were scattered all around {playerTeam}'s feet!",
+    spin: "The poison spikes disappeared from the ground around {playerTeam}'s feet!",
   },
 };
 
@@ -338,6 +340,8 @@ const statMod: Record<number, string> = {
   [0]: "was not lowered",
 };
 
+const templateRegex = /{(?:\w+)}/g;
+
 export const eventText = (data: SubstituteParams & TemplateParams) => {
   const templ = createTemplate(data);
   return templ && fillTemplate(templ, data);
@@ -360,38 +364,39 @@ const fillTemplate = (lines: FormattedText, {e, gen, perspective, players}: Subs
     }
   };
 
-  const re =
-    /{(?:Src|src|SrcTeam|srcTeam|Target|target|TargetTeam|targetTeam|owner|name|name\d|user|move|ability|victor|wish|item|opp)}/g;
   for (const text of lines.spans) {
-    text.text = text.text.replaceAll(re, substr => {
+    text.text = text.text.replaceAll(templateRegex, substr => {
       // prettier-ignore
       if ("src" in e && e.src) {
-          switch (substr) {
-          case "{Src}": return pn(e.src, true);
-          case "{src}": return pn(e.src, false);
-          case "{SrcTeam}": return tn(e.src, true);
-          case "{srcTeam}": return tn(e.src, false);
-          case "{owner}": return players.clientOwnerOf(e.src).name;
-          }
+        switch (substr) {
+        case "{Src}": return pn(e.src, true);
+        case "{src}": return pn(e.src, false);
+        case "{SrcTeam}": return tn(e.src, true);
+        case "{srcTeam}": return tn(e.src, false);
+        case "{owner}": return players.clientOwnerOf(e.src).name;
         }
+      }
       // prettier-ignore
       if ("target" in e && e.target) {
-          switch (substr) {
-          case "{Target}": return pn(e.target, true);
-          case "{target}": return pn(e.target, false);
-          case "{TargetTeam}": return tn(e.target, true);
-          case "{targetTeam}": return tn(e.target, false);
-          case "{owner}": return players.clientOwnerOf(e.target).name;
-          }
+        switch (substr) {
+        case "{Target}": return pn(e.target, true);
+        case "{target}": return pn(e.target, false);
+        case "{TargetTeam}": return tn(e.target, true);
+        case "{targetTeam}": return tn(e.target, false);
+        case "{owner}": return players.clientOwnerOf(e.target).name;
         }
+      }
       // prettier-ignore
       if ("user" in e) {
-          switch (substr) {
-          case "{user}": return players.get(e.user).name;
-          case "{SrcTeam}": return tn(e.user, true);
-          case "{srcTeam}": return tn(e.user, false);
-          }
+        switch (substr) {
+        case "{user}": return players.get(e.user).name;
+        case "{SrcTeam}": return tn(e.user, true);
+        case "{srcTeam}": return tn(e.user, false);
         }
+      }
+      if ("player" in e && substr === "{playerTeam}") {
+        return tn(e.player, false);
+      }
 
       if (substr === "{name}" && "name" in e) {
         return e.name;

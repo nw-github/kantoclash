@@ -332,9 +332,7 @@ export class ClientManager {
         this.players.poke(e.src)!.v.confusion = 1;
       }
     } else if (e.type === "transform") {
-      await this.cb.displayEvent(e);
-
-      return await this.cb.playAnimation(e.src, {
+      await this.cb.playAnimation(e.src, {
         anim: "transform",
         cb: new AnimCallback(() => {
           this.handleVolatiles(e);
@@ -362,6 +360,7 @@ export class ClientManager {
           }
         }),
       });
+      return await this.cb.displayEvent(e);
     } else if (e.type === "hit_sub") {
       if (e.why === "confusion" || e.why === "future_sight") {
         await Promise.allSettled([
