@@ -154,12 +154,13 @@ const scrColor = {
 
 const spritePaused = computed(() => poke?.base.status === "frz");
 const spriteSpeed = computed(() => {
+  const mod = poke?.v.speciesId === "timburr" && !back ? 0.1 : 1;
   if (poke?.base.status === "slp") {
-    return 0.5;
+    return 0.5 * mod;
   } else if (poke?.base.status === "par") {
-    return 0.8;
+    return 0.8 * mod;
   } else {
-    return 0.95;
+    return 0.95 * mod;
   }
 });
 
