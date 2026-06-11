@@ -408,7 +408,12 @@ export const moveScripts: MoveScripts = {
         }
       }
 
-      target.modStages(this.stages, battle, user);
+      let stages = this.stages;
+      if (battle.gen.id >= 5 && this.id === "growth" && battle.hasWeather("sun")) {
+        stages = stages.map(stage => [stage[0], stage[1] * 2]);
+      }
+
+      target.modStages(stages, battle, user);
       failed = false;
     }
 

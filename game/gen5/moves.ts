@@ -106,6 +106,12 @@ export const movePatches: Partial<Record<MoveId, Partial<Move>>> = {
   futuresight: {power: 100, acc: 100, pp: 10},
   glare: {acc: 90},
   gigadrain: {power: 75},
+  growth: {
+    stages: [
+      ["atk", +1],
+      ["spa", +1],
+    ],
+  },
   hijumpkick: {power: 130, pp: 10},
   iciclespear: {power: 25},
   imprison: {snatch: true},
