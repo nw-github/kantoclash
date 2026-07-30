@@ -139,6 +139,15 @@ async function doStartBot(
     findMatch();
   });
   $conn.on("disconnect", () => {
+    $conn.disconnect();
+    $conn.off("foundMatch");
+    $conn.off("nextTurn");
+    $conn.off("info");
+    $conn.off("maintenanceState");
+    $conn.off("challengeReceived");
+    $conn.off("connect");
+    $conn.off("disconnect");
+
     const self = activeBots.indexOf(myId);
     if (self !== -1) {
       console.log(`[${name}] was disconnected, attempting to reconnect...`);
